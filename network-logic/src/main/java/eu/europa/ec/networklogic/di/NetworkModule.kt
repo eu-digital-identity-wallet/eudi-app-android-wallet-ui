@@ -18,6 +18,7 @@
 
 package eu.europa.ec.networklogic.di
 
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.networklogic.api.Api
 import eu.europa.ec.networklogic.api.ApiClient
 import eu.europa.ec.networklogic.api.ApiClientImpl
@@ -29,6 +30,7 @@ import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 @Module
 @ComponentScan("eu.europa.ec.networklogic")
@@ -41,8 +43,15 @@ fun providesHttpLoggingInterceptor() = HttpLoggingInterceptor()
     }
 
 @Factory
-fun provideOkHttpClient(httpLoggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
-    return OkHttpClient().newBuilder().addInterceptor(httpLoggingInterceptor).build()
+fun provideOkHttpClient(
+    httpLoggingInterceptor: HttpLoggingInterceptor,
+    configLogic: ConfigLogic
+): OkHttpClient {
+    return OkHttpClient().newBuilder()
+        .readTimeout(configLogic.environmentConfig.readTimeoutSeconds, TimeUnit.SECONDS)
+        .connectTimeout(configLogic.environmentConfig.connectTimeoutSeconds, TimeUnit.SECONDS)
+        .addInterceptor(httpLoggingInterceptor)
+        .build()
 }
 
 @Factory
@@ -55,7 +64,11 @@ fun provideConverterFactory(): GsonConverterFactory = GsonConverterFactory.creat
 fun provideApiClient(api: Api): ApiClient = ApiClientImpl(api)
 
 @Single
-fun provideRetrofit(okHttpClient: OkHttpClient, converterFactory: GsonConverterFactory): Retrofit {
-    return Retrofit.Builder().baseUrl("https://test.com").client(okHttpClient)
+fun provideRetrofit(
+    okHttpClient: OkHttpClient,
+    converterFactory: GsonConverterFactory,
+    configLogic: ConfigLogic
+): Retrofit {
+    return Retrofit.Builder().baseUrl(configLogic.environmentConfig.getServerHost()).client(okHttpClient)
         .addConverterFactory(converterFactory).build()
 }

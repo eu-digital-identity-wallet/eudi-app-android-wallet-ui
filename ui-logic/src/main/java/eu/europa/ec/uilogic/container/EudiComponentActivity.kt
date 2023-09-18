@@ -29,11 +29,14 @@ import androidx.navigation.NavGraphBuilder
 import eu.europa.ec.resourceslogic.theme.EUDIWalletTheme
 import eu.europa.ec.uilogic.navigation.RouterHost
 import org.koin.android.ext.android.inject
+import org.koin.androidx.compose.KoinAndroidContext
+import org.koin.core.annotation.KoinExperimentalAPI
 
 open class EudiComponentActivity : ComponentActivity() {
 
     private val routerHost: RouterHost by inject()
 
+    @OptIn(KoinExperimentalAPI::class)
     @Composable
     protected fun Content(builder: NavGraphBuilder.(NavController) -> Unit) {
         EUDIWalletTheme {
@@ -41,8 +44,10 @@ open class EudiComponentActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background
             ) {
-                routerHost.StartFlow {
-                    builder(it)
+                KoinAndroidContext {
+                    routerHost.StartFlow {
+                        builder(it)
+                    }
                 }
             }
         }

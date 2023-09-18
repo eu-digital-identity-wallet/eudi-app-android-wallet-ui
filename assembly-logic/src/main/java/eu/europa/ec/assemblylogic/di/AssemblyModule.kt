@@ -19,6 +19,7 @@
 package eu.europa.ec.assemblylogic.di
 
 import android.app.Application
+import eu.europa.ec.businesslogic.di.LogicBusinessModule
 import eu.europa.ec.featurestartup.di.FeatureStartupModule
 import eu.europa.ec.networklogic.di.LogicNetworkModule
 import eu.europa.ec.resourceslogic.di.LogicResourceModule
@@ -26,6 +27,7 @@ import eu.europa.ec.uilogic.di.LogicUiModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext
+import org.koin.dsl.koinApplication
 import org.koin.ksp.generated.module
 
 private val assembledModules = listOf(
@@ -34,6 +36,7 @@ private val assembledModules = listOf(
     LogicNetworkModule().module,
     LogicUiModule().module,
     LogicResourceModule().module,
+    LogicBusinessModule().module,
 
     // Feature Modules
     FeatureStartupModule().module
