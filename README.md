@@ -28,7 +28,7 @@ The released software is a initial development release version:
 
 ## How to contribute
 
-We welcome  contributions to this project. To ensure that the process is smooth for everyone
+We welcome contributions to this project. To ensure that the process is smooth for everyone
 involved, follow the guidelines found in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
