@@ -17,3 +17,12 @@
 
 # API Models
 -keep class ceu.europa.ec.networklogic.model.** { *; }
+
+# Enum
+-keep enum * { *; }
+
+# UI Config
+-keep interface eu.europa.ec.uilogic.utilities.serializer.UiSerializableParser
+-keep interface eu.europa.ec.uilogic.utilities.serializer.UiSerializable
+-keepclassmembers class * implements eu.europa.ec.uilogic.utilities.serializer.UiSerializableParser { *; }
+-keepclassmembers class * implements eu.europa.ec.uilogic.utilities.serializer.UiSerializable { *; }

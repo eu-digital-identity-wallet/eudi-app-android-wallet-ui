@@ -56,12 +56,16 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             }
             extensions.configure<SecretsPluginExtension> {
                 defaultPropertiesFileName = "secrets.defaults.properties"
+                ignoreList.add("sdk.*")
             }
             dependencies {
                 add("androidTestImplementation", kotlin("test"))
                 add("androidTestImplementation", libs.findLibrary("androidx-test-rules").get())
                 add("androidTestImplementation", libs.findLibrary("androidx-test-runner").get())
-                add("androidTestImplementation", libs.findLibrary("androidx-test-orchestrator").get())
+                add(
+                    "androidTestImplementation",
+                    libs.findLibrary("androidx-test-orchestrator").get()
+                )
 
                 add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
                 add("implementation", libs.findLibrary("kotlinx-coroutines-guava").get())

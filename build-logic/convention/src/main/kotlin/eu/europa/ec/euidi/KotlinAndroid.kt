@@ -52,9 +52,8 @@ internal fun Project.configureKotlinAndroid(
         }
 
         compileOptions {
-            // Up to Java 11 APIs are available through desugaring
-            sourceCompatibility = JavaVersion.VERSION_11
-            targetCompatibility = JavaVersion.VERSION_11
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
             isCoreLibraryDesugaringEnabled = true
         }
     }
@@ -71,9 +70,8 @@ internal fun Project.configureKotlinAndroid(
  */
 internal fun Project.configureKotlinJvm() {
     extensions.configure<JavaPluginExtension> {
-        // Up to Java 11 APIs are available through desugaring
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     configureKotlin()
@@ -85,8 +83,7 @@ internal fun Project.configureKotlinJvm() {
 private fun Project.configureKotlin() {
     tasks.withType<KotlinCompile>().configureEach {
         kotlinOptions {
-            // Set JVM target to 11
-            jvmTarget = JavaVersion.VERSION_11.toString()
+            jvmTarget = JavaVersion.VERSION_17.toString()
             // Treat all Kotlin warnings as errors (disabled by default)
             val warningsAsErrors: String? by project
             allWarningsAsErrors = warningsAsErrors.toBoolean()

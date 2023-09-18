@@ -23,6 +23,11 @@ plugins {
 
 android {
     namespace = "eu.europa.ec.assemblylogic"
+
+    defaultConfig {
+        manifestPlaceholders["deepLinkScheme"] = "eudi-wallet"
+        manifestPlaceholders["deepLinkHost"] = "*"
+    }
 }
 
 dependencies {

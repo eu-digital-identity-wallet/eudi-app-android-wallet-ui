@@ -18,16 +18,21 @@
 
 package eu.europa.ec.uilogic.container
 
+import android.content.Intent
+import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import eu.europa.ec.resourceslogic.theme.EUDIWalletTheme
 import eu.europa.ec.uilogic.navigation.RouterHost
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.KoinAndroidContext
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -35,6 +40,14 @@ import org.koin.core.annotation.KoinExperimentalAPI
 open class EudiComponentActivity : ComponentActivity() {
 
     private val routerHost: RouterHost by inject()
+
+    private var flowStarted: Boolean = false
+
+    internal var pendingDeepLink: Uri? = null
+
+    private fun cacheDeepLink(intent: Intent?) {
+        pendingDeepLink = intent?.data
+    }
 
     @OptIn(KoinExperimentalAPI::class)
     @Composable
@@ -48,8 +61,38 @@ open class EudiComponentActivity : ComponentActivity() {
                     routerHost.StartFlow {
                         builder(it)
                     }
+                    flowStarted = true
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (flowStarted) {
+            handleDeepLink(intent)
+        } else {
+            runPendingDeepLink(intent)
+        }
+    }
+
+    private fun runPendingDeepLink(intent: Intent?) {
+        lifecycleScope.launch {
+            var count = 0
+            while (!flowStarted && count <= 10) {
+                count++
+                delay(500)
+            }
+            if (count <= 10) {
+                handleDeepLink(intent)
+            }
+        }
+    }
+
+    private fun handleDeepLink(intent: Intent?) {
+        cacheDeepLink(intent)
+        if (routerHost.currentFlowIsAfterOnBoarding()) {
+            routerHost.popToLandingScreen()
         }
     }
 }

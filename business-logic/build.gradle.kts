@@ -16,10 +16,25 @@
  *
  */
 
+import eu.europa.ec.euidi.addConfigField
+
 plugins {
     id("eudi.android.library")
 }
 
 android {
     namespace = "eu.europa.ec.businesslogic"
+
+    defaultConfig {
+        addConfigField("DEEPLINK", "eudi-wallet://")
+    }
+}
+
+dependencies {
+    implementation(project(":resources-logic"))
+    implementation(libs.gson)
+    implementation(libs.androidx.biometric)
+    implementation(libs.androidx.security)
+    implementation(libs.androidx.appAuth)
+    implementation(libs.logcat)
 }

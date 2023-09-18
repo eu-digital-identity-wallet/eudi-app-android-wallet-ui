@@ -16,20 +16,19 @@
  *
  */
 
-plugins {
-    id("eudi.android.library")
-    id("eudi.android.library.compose")
-}
+package eu.europa.ec.euidi
 
-android {
-    namespace = "eu.europa.ec.uilogic"
-}
+import org.gradle.api.Project
+import java.util.Properties
 
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(project(":business-logic"))
-
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.gson)
+@Suppress("UNCHECKED_CAST")
+fun <T> Project.getProperty(key: String, fileName: String = "local.properties"): T? {
+    return try {
+        val properties = Properties().apply {
+            load(rootProject.file(fileName).reader())
+        }
+        properties[key] as? T
+    } catch (_: Exception) {
+        null
+    }
 }

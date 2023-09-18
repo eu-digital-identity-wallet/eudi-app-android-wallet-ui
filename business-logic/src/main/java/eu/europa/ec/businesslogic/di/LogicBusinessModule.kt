@@ -20,6 +20,13 @@ package eu.europa.ec.businesslogic.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.ConfigLogicImpl
+import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.businesslogic.controller.log.LogControllerImpl
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.businesslogic.controller.storage.PrefKeysImpl
+import eu.europa.ec.businesslogic.controller.storage.PrefsController
+import eu.europa.ec.businesslogic.controller.storage.PrefsControllerImpl
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
@@ -30,3 +37,15 @@ class LogicBusinessModule
 
 @Single
 fun provideConfigLogic(): ConfigLogic = ConfigLogicImpl()
+
+@Single
+fun provideLogController(configLogic: ConfigLogic): LogController =
+    LogControllerImpl(configLogic)
+
+@Single
+fun providePrefsController(resourceProvider: ResourceProvider): PrefsController =
+    PrefsControllerImpl(resourceProvider)
+
+@Single
+fun providePrefKeys(prefsController: PrefsController): PrefKeys =
+    PrefKeysImpl(prefsController)

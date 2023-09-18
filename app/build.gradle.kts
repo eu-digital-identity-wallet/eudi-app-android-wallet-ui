@@ -17,6 +17,7 @@
  */
 
 import eu.europa.ec.euidi.EudiBuildType
+import eu.europa.ec.euidi.getProperty
 
 plugins {
     id("eudi.android.application")
@@ -30,12 +31,9 @@ android {
 
             storeFile = file("${rootProject.projectDir}/sign")
 
-            keyAlias = (project.findProperty("androidKeyAlias") as? String)
-                ?: System.getenv("ANDROID_KEY_ALIAS")
-            keyPassword = (project.findProperty("androidKeyPassword") as? String)
-                ?: System.getenv("ANDROID_KEY_PASSWORD")
-            storePassword = (project.findProperty("androidKeyPassword") as? String)
-                ?: System.getenv("ANDROID_KEY_PASSWORD")
+            keyAlias = getProperty("androidKeyAlias") ?: System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword = getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
+            storePassword = getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
 
             enableV2Signing = true
         }
@@ -50,9 +48,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-        manifestPlaceholders["deepLinkScheme"] = "eudi-wallet"
-        manifestPlaceholders["deepLinkHost"] = "*"
     }
 
     buildTypes {

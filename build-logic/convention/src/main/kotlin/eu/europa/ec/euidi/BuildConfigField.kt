@@ -16,20 +16,18 @@
  *
  */
 
-plugins {
-    id("eudi.android.library")
-    id("eudi.android.library.compose")
-}
+package eu.europa.ec.euidi
 
-android {
-    namespace = "eu.europa.ec.uilogic"
-}
+import com.android.build.api.dsl.VariantDimension
 
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(project(":business-logic"))
-
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.gson)
+@Suppress("IMPLICIT_CAST_TO_ANY")
+inline fun <reified ValueT> VariantDimension.addConfigField(
+    name: String,
+    value: ValueT
+) {
+    val resolvedValue = when (value) {
+        is String -> "\"$value\""
+        else -> value
+    }.toString()
+    buildConfigField(ValueT::class.java.simpleName, name, resolvedValue)
 }

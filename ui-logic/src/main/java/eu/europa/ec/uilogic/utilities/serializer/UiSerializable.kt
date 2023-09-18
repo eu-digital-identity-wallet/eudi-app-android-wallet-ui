@@ -16,20 +16,15 @@
  *
  */
 
-plugins {
-    id("eudi.android.library")
-    id("eudi.android.library.compose")
-}
+package eu.europa.ec.uilogic.utilities.serializer
 
-android {
-    namespace = "eu.europa.ec.uilogic"
-}
+import com.google.gson.Gson
 
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(project(":business-logic"))
+interface UiSerializable
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.gson)
+interface UiSerializableParser {
+    val serializedKeyName: String
+    fun provideParser(): Gson {
+        return Gson()
+    }
 }

@@ -69,6 +69,7 @@ fun provideRetrofit(
     converterFactory: GsonConverterFactory,
     configLogic: ConfigLogic
 ): Retrofit {
-    return Retrofit.Builder().baseUrl(configLogic.environmentConfig.getServerHost()).client(okHttpClient)
+    return Retrofit.Builder().baseUrl(configLogic.environmentConfig.getServerHost())
+        .client(okHttpClient)
         .addConverterFactory(converterFactory).build()
 }

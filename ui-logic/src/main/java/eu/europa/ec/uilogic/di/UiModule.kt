@@ -18,9 +18,16 @@
 
 package eu.europa.ec.uilogic.di
 
+import eu.europa.ec.uilogic.config.ConfigUILogic
+import eu.europa.ec.uilogic.config.ConfigUILogicImpl
+import eu.europa.ec.uilogic.controller.AnalyticsController
+import eu.europa.ec.uilogic.controller.AnalyticsControllerImpl
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.RouterHostImpl
+import eu.europa.ec.uilogic.utilities.serializer.UiSerializer
+import eu.europa.ec.uilogic.utilities.serializer.UiSerializerImpl
 import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
@@ -29,5 +36,18 @@ import org.koin.core.annotation.Single
 class LogicUiModule
 
 @Single
-fun provideRouterHost(): RouterHost = RouterHostImpl()
+fun provideRouterHost(
+    configUILogic: ConfigUILogic,
+    analyticsController: AnalyticsController
+): RouterHost = RouterHostImpl(configUILogic, analyticsController)
+
+@Factory
+fun provideUiSerializer(): UiSerializer = UiSerializerImpl()
+
+@Factory
+fun provideAnalyticsController(configUILogic: ConfigUILogic): AnalyticsController =
+    AnalyticsControllerImpl(configUILogic)
+
+@Single
+fun provideConfigUILogic(): ConfigUILogic = ConfigUILogicImpl()
 

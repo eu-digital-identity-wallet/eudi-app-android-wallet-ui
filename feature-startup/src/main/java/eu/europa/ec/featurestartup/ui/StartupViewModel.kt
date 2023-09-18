@@ -21,7 +21,6 @@ package eu.europa.ec.featurestartup.ui
 import android.util.Log
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.featurestartup.interactor.StartupInteractor
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect

@@ -16,20 +16,18 @@
  *
  */
 
-plugins {
-    id("eudi.android.library")
-    id("eudi.android.library.compose")
-}
+package eu.europa.ec.uilogic.config
 
-android {
-    namespace = "eu.europa.ec.uilogic"
-}
+import eu.europa.ec.uilogic.analytics.AnalyticsProvider
+import eu.europa.ec.uilogic.analytics.FirebaseAnalyticsProvider
+import eu.europa.ec.uilogic.navigation.Screen
+import eu.europa.ec.uilogic.navigation.StartupScreens
 
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(project(":business-logic"))
+class ConfigUILogicImpl : ConfigUILogic {
+    // TODO - CHANGE THE ROUTE TO THE DASHBOARD ONCE READY
+    override val landingScreenIdentifier: Screen
+        get() = StartupScreens.Splash
 
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-    implementation(libs.gson)
+    override val analyticsProviders: List<AnalyticsProvider>
+        get() = listOf<AnalyticsProvider>(FirebaseAnalyticsProvider)
 }

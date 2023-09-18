@@ -26,16 +26,23 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import eu.europa.ec.uilogic.config.ConfigUILogic
+import eu.europa.ec.uilogic.controller.AnalyticsController
 
 interface RouterHost {
     fun getNavController(): NavHostController
     fun getNavContext(): Context
+    fun currentFlowIsAfterOnBoarding(): Boolean
+    fun popToLandingScreen()
 
     @Composable
     fun StartFlow(builder: NavGraphBuilder.(NavController) -> Unit)
 }
 
-class RouterHostImpl : RouterHost {
+class RouterHostImpl constructor(
+    private val configUILogic: ConfigUILogic,
+    private val analyticsController: AnalyticsController
+) : RouterHost {
 
     private lateinit var navController: NavHostController
     private lateinit var context: Context
@@ -53,5 +60,30 @@ class RouterHostImpl : RouterHost {
         ) {
             builder(navController)
         }
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            destination.route?.let { route ->
+                analyticsController.logScreen(route)
+            }
+        }
+    }
+
+    override fun currentFlowIsAfterOnBoarding(): Boolean {
+        val screenRoute = configUILogic.landingScreenIdentifier.screenRoute
+        try {
+            if (navController.currentDestination?.route == screenRoute) {
+                return true
+            }
+            navController.getBackStackEntry(screenRoute)
+            return true
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
+    override fun popToLandingScreen() {
+        navController.popBackStack(
+            route = configUILogic.landingScreenIdentifier.screenRoute,
+            inclusive = false
+        )
     }
 }

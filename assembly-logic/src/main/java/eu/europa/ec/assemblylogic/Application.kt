@@ -20,10 +20,16 @@ package eu.europa.ec.assemblylogic
 
 import android.app.Application
 import eu.europa.ec.assemblylogic.di.setupKoin
+import eu.europa.ec.businesslogic.controller.log.LogController
+import org.koin.android.ext.android.inject
 
 class Application : Application() {
+
+    private val logController: LogController by inject()
+
     override fun onCreate() {
         super.onCreate()
         setupKoin()
+        logController.install()
     }
 }
