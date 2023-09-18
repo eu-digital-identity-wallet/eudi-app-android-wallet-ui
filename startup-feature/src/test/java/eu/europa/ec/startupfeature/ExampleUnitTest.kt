@@ -16,20 +16,19 @@
  *
  */
 
-package eu.europa.ec.assemblylogic.ui
+package eu.europa.ec.startupfeature
 
-import android.os.Bundle
-import androidx.activity.compose.setContent
-import eu.europa.ec.startupfeature.router.featureStartupGraph
-import eu.europa.ec.uilogic.container.EudiComponentActivity
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-class MainActivity : EudiComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            Content {
-                featureStartupGraph(it)
-            }
-        }
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
     }
 }

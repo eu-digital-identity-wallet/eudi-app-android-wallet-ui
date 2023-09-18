@@ -16,20 +16,10 @@
  *
  */
 
-package eu.europa.ec.assemblylogic.ui
+plugins {
+    id("eudi.android.feature")
+}
 
-import android.os.Bundle
-import androidx.activity.compose.setContent
-import eu.europa.ec.startupfeature.router.featureStartupGraph
-import eu.europa.ec.uilogic.container.EudiComponentActivity
-
-class MainActivity : EudiComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            Content {
-                featureStartupGraph(it)
-            }
-        }
-    }
+android {
+    namespace = "eu.europa.ec.startupfeature"
 }

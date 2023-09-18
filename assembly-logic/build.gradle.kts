@@ -39,5 +39,5 @@ dependencies {
     api(project(":network-logic"))
 
     // Feature Modules
-    api(project(":feature-startup"))
+    api(project(":startup-feature"))
 }
