@@ -26,7 +26,9 @@ android {
 
 dependencies {
     implementation(project(":business-logic"))
+
     api(libs.retrofit.core)
-    api(libs.retrofit.gson)
+    implementation(libs.retrofit.gson)
     implementation(libs.okhttp.logging)
+    implementation(libs.okhttp.mockwebserver)
 }

@@ -28,7 +28,7 @@ androidxUiAutomator = "2.2.0"
 androidxWindowManager = "1.1.0"
 androidxWork = "2.9.0-beta01"
 androidxBiometric = "1.1.0"
-androidxSecurity = "1.1.0-alpha04"
+androidxSecurity = "1.1.0-alpha06"
 androidxAppAuth = "1.0.0-alpha02"
 coil = "2.4.0"
 firebaseBom = "32.3.1"
@@ -150,6 +150,7 @@ slf4j = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 rootbeer = { group = "com.scottyab", name = "rootbeer-lib", version.ref = "rootbeer" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 logcat = { group = "com.squareup.logcat", name = "logcat", version.ref = "logcat" }
+okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
