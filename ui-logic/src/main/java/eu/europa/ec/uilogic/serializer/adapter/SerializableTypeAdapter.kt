@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.businesslogic.utilities.gson
+package eu.europa.ec.uilogic.serializer.adapter
 
 import com.google.gson.*
 import java.lang.reflect.Type

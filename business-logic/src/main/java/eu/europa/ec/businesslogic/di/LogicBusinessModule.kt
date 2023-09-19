@@ -20,6 +20,12 @@ package eu.europa.ec.businesslogic.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.ConfigLogicImpl
+import eu.europa.ec.businesslogic.controller.biometry.BiometricController
+import eu.europa.ec.businesslogic.controller.biometry.BiometricControllerImpl
+import eu.europa.ec.businesslogic.controller.crypto.CryptoController
+import eu.europa.ec.businesslogic.controller.crypto.CryptoControllerImpl
+import eu.europa.ec.businesslogic.controller.crypto.KeystoreController
+import eu.europa.ec.businesslogic.controller.crypto.KeystoreControllerImpl
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.log.LogControllerImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
@@ -49,3 +55,22 @@ fun providePrefsController(resourceProvider: ResourceProvider): PrefsController 
 @Single
 fun providePrefKeys(prefsController: PrefsController): PrefKeys =
     PrefKeysImpl(prefsController)
+
+@Single
+fun provideKeystoreController(
+    prefKeys: PrefKeys,
+    logController: LogController
+): KeystoreController =
+    KeystoreControllerImpl(prefKeys, logController)
+
+@Single
+fun provideCryptoController(keystoreController: KeystoreController): CryptoController =
+    CryptoControllerImpl(keystoreController)
+
+@Single
+fun provideBiometricController(
+    cryptoController: CryptoController,
+    prefKeys: PrefKeys,
+    resourceProvider: ResourceProvider
+): BiometricController =
+    BiometricControllerImpl(resourceProvider, cryptoController, prefKeys)

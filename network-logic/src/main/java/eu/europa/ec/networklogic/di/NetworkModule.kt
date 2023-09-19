@@ -18,6 +18,7 @@
 
 package eu.europa.ec.networklogic.di
 
+import eu.europa.ec.businesslogic.config.AppBuildType
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.networklogic.api.Api
 import eu.europa.ec.networklogic.api.ApiClient
@@ -37,9 +38,12 @@ import java.util.concurrent.TimeUnit
 class LogicNetworkModule
 
 @Factory
-fun providesHttpLoggingInterceptor() = HttpLoggingInterceptor()
+fun providesHttpLoggingInterceptor(configLogic: ConfigLogic) = HttpLoggingInterceptor()
     .apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = when (configLogic.appBuildType) {
+            AppBuildType.DEBUG -> HttpLoggingInterceptor.Level.BODY
+            AppBuildType.RELEASE -> HttpLoggingInterceptor.Level.NONE
+        }
     }
 
 @Factory

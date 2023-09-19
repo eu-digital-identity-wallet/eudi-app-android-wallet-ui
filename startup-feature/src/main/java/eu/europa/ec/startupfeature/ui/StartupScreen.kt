@@ -37,7 +37,8 @@ fun StartupScreen(
         state = viewModel.viewState.value,
         effectFlow = viewModel.effect,
         onEventSend = { viewModel.setEvent(it) },
-        onNavigationRequested = {})
+        onNavigationRequested = {}
+    )
 }
 
 @Composable

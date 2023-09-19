@@ -22,7 +22,7 @@
 -keep enum * { *; }
 
 # UI Config
--keep interface eu.europa.ec.uilogic.utilities.serializer.UiSerializableParser
--keep interface eu.europa.ec.uilogic.utilities.serializer.UiSerializable
--keepclassmembers class * implements eu.europa.ec.uilogic.utilities.serializer.UiSerializableParser { *; }
--keepclassmembers class * implements eu.europa.ec.uilogic.utilities.serializer.UiSerializable { *; }
+-keep interface eu.europa.ec.uilogic.serializer.UiSerializableParser
+-keep interface eu.europa.ec.uilogic.serializer.UiSerializable
+-keepclassmembers class * implements eu.europa.ec.uilogic.serializer.UiSerializableParser { *; }
+-keepclassmembers class * implements eu.europa.ec.uilogic.serializer.UiSerializable { *; }

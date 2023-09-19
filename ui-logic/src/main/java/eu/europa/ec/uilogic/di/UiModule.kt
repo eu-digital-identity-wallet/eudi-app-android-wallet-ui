@@ -24,8 +24,8 @@ import eu.europa.ec.uilogic.controller.AnalyticsController
 import eu.europa.ec.uilogic.controller.AnalyticsControllerImpl
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.RouterHostImpl
-import eu.europa.ec.uilogic.utilities.serializer.UiSerializer
-import eu.europa.ec.uilogic.utilities.serializer.UiSerializerImpl
+import eu.europa.ec.uilogic.serializer.UiSerializer
+import eu.europa.ec.uilogic.serializer.UiSerializerImpl
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module

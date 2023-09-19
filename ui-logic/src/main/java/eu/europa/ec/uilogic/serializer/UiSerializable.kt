@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.utilities.serializer
+package eu.europa.ec.uilogic.serializer
 
 import com.google.gson.Gson
 

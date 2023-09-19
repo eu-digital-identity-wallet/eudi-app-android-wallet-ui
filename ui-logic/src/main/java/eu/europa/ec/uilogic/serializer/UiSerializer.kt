@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.utilities.serializer
+package eu.europa.ec.uilogic.serializer
 
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.extension.encodeToBase64
