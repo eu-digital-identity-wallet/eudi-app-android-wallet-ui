@@ -26,7 +26,7 @@ import eu.europa.ec.startupfeature.di.FeatureStartupModule
 import eu.europa.ec.uilogic.di.LogicUiModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.GlobalContext
+import org.koin.core.context.GlobalContext.startKoin
 import org.koin.ksp.generated.module
 
 private val assembledModules = listOf(
@@ -42,7 +42,7 @@ private val assembledModules = listOf(
 )
 
 internal fun Application.setupKoin() {
-    GlobalContext.startKoin {
+    startKoin {
         androidContext(this@setupKoin)
         androidLogger()
         modules(assembledModules)
