@@ -77,6 +77,10 @@ gradlePlugin {
             id = "eudi.android.test"
             implementationClass = "AndroidTestConventionPlugin"
         }
+        register("androidFeatureTest") {
+            id = "eudi.android.feature.test"
+            implementationClass = "AndroidFeatureTestConventionPlugin"
+        }
         register("androidKoin") {
             id = "eudi.android.koin"
             implementationClass = "AndroidKoinConventionPlugin"

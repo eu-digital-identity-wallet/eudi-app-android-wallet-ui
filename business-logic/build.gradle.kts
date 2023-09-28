@@ -37,4 +37,6 @@ dependencies {
     implementation(libs.androidx.security)
     implementation(libs.androidx.appAuth)
     implementation(libs.logcat)
+
+    testImplementation(project(":test-logic"))
 }

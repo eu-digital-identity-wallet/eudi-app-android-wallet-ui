@@ -17,20 +17,9 @@
  */
 
 plugins {
-    id("eudi.android.library")
+    id("eudi.android.feature.test")
 }
 
 android {
-    namespace = "eu.europa.ec.networklogic"
-}
-
-dependencies {
-    implementation(project(":business-logic"))
-
-    api(libs.retrofit.core)
-    implementation(libs.retrofit.gson)
-    implementation(libs.okhttp.logging)
-    implementation(libs.okhttp.mockwebserver)
-
-    testImplementation(project(":test-logic"))
+    namespace = "eu.europa.ec.testfeature"
 }

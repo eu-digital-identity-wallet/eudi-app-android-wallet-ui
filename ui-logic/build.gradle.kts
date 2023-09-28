@@ -32,4 +32,6 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.gson)
+
+    testImplementation(project(":test-logic"))
 }

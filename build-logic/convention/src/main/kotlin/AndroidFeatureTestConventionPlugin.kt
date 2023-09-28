@@ -23,12 +23,11 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 
-class AndroidFeatureConventionPlugin : Plugin<Project> {
+class AndroidFeatureTestConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply {
                 apply("eudi.android.library")
-                apply("eudi.android.library.compose")
             }
             extensions.configure<LibraryExtension> {
                 defaultConfig {
@@ -43,8 +42,7 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 add("implementation", project(":ui-logic"))
                 add("implementation", project(":network-logic"))
                 add("implementation", project(":resources-logic"))
-                add("testImplementation", project(":test-feature"))
-                add("androidTestImplementation", project(":test-feature"))
+                add("api", project(":test-logic"))
             }
         }
     }
