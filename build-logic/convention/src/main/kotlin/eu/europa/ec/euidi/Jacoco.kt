@@ -33,7 +33,8 @@ private val coverageExclusions = listOf(
     "**/R.class",
     "**/R\$*.class",
     "**/BuildConfig.*",
-    "**/Manifest*.*"
+    "**/Manifest*.*",
+    "org/koin/ksp/generated"
 )
 
 private fun String.capitalize() = replaceFirstChar {
