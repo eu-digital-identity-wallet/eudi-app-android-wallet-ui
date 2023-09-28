@@ -16,21 +16,10 @@
  *
  */
 
-plugins {
-    id("eudi.android.library")
-}
+package eu.europa.ec.testfeature
 
-android {
-    namespace = "eu.europa.ec.networklogic"
-}
+const val mockedGenericErrorMessage = "resourceProvider's genericErrorMessage"
+const val plainFailureMessage = "failure message"
 
-dependencies {
-    implementation(project(":business-logic"))
-
-    api(libs.retrofit.core)
-    implementation(libs.retrofit.gson)
-    implementation(libs.okhttp.logging)
-    implementation(libs.okhttp.mockwebserver)
-
-    testImplementation(project(":test-logic"))
-}
+val mockedExceptionWithMessage = RuntimeException("Exception to test interactor.")
+val mockedExceptionWithNoMessage = RuntimeException()
