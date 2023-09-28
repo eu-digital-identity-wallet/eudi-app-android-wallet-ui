@@ -23,11 +23,11 @@ import eu.europa.ec.resourceslogic.theme.templates.ThemeShapesTemplate
 class ThemeShapes {
     companion object {
         val shapes = ThemeShapesTemplate(
-            extraSmall = 0.0,
-            small = 0.0,
-            medium = 0.0,
-            large = 0.0,
-            extraLarge = 0.0
+            extraSmall = 16.0,
+            small = 16.0,
+            medium = 20.0,
+            large = 20.0,
+            extraLarge = 20.0
         )
     }
 }

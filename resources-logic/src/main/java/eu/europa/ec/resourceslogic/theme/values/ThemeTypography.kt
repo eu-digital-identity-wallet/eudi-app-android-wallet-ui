@@ -18,25 +18,140 @@
 
 package eu.europa.ec.resourceslogic.theme.values
 
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.templates.ThemeTextStyle
 import eu.europa.ec.resourceslogic.theme.templates.ThemeTypographyTemplate
+import eu.europa.ec.resourceslogic.theme.templates.structures.ThemeFont
+import eu.europa.ec.resourceslogic.theme.templates.structures.ThemeFontStyle
+import eu.europa.ec.resourceslogic.theme.templates.structures.ThemeFontWeight
+import eu.europa.ec.resourceslogic.theme.templates.structures.ThemeTextAlign
 
 class ThemeTypography {
     companion object {
         val typo: ThemeTypographyTemplate
             get() {
                 return ThemeTypographyTemplate(
-                    displayLarge = ThemeTextStyle(),
-                    displayMedium = ThemeTextStyle(),
-                    displaySmall = ThemeTextStyle(),
+                    displayLarge = ThemeTextStyle(
+                        color = null,
+                        fontSize = 20,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoMedium,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
+                    displayMedium = ThemeTextStyle(
+                        color = null,
+                        fontSize = 20,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoMedium,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
+                    displaySmall = ThemeTextStyle(
+                        color = null,
+                        fontSize = 16,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoRegular,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
                     headlineLarge = ThemeTextStyle(),
-                    headlineMedium = ThemeTextStyle(),
-                    headlineSmall = ThemeTextStyle(),
-                    titleLarge = ThemeTextStyle(),
-                    titleMedium = ThemeTextStyle(),
-                    titleSmall = ThemeTextStyle(),
-                    bodyLarge = ThemeTextStyle(),
-                    bodyMedium = ThemeTextStyle(),
+                    headlineMedium = ThemeTextStyle(
+                        color = null,
+                        fontSize = 12,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoRegular,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
+                    headlineSmall = ThemeTextStyle(
+                        color = null,
+                        fontSize = 12,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoBold,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
+                    titleLarge = ThemeTextStyle(
+                        color = null,
+                        fontSize = 32,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoMedium,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
+                    titleMedium = ThemeTextStyle(
+                        color = null,
+                        fontSize = 24,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoMedium,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
+                    titleSmall = ThemeTextStyle(
+                        color = null,
+                        fontSize = 24,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoMedium,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
+                    bodyLarge = ThemeTextStyle(
+                        color = null,
+                        fontSize = 14,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoRegular,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
+                    bodyMedium = ThemeTextStyle(
+                        color = null,
+                        fontSize = 14,
+                        fontFamily = listOf(
+                            ThemeFont(
+                                res = RobotoRegular,
+                                weight = ThemeFontWeight.W400,
+                                style = ThemeFontStyle.Normal,
+                            )
+                        ),
+                        textAlign = ThemeTextAlign.Left
+                    ),
                     bodySmall = ThemeTextStyle(),
                     labelLarge = ThemeTextStyle(),
                     labelMedium = ThemeTextStyle(),
@@ -45,3 +160,7 @@ class ThemeTypography {
             }
     }
 }
+
+internal val RobotoRegular = R.font.roboto_regular
+internal val RobotoMedium = R.font.roboto_medium
+internal val RobotoBold = R.font.roboto_bold
