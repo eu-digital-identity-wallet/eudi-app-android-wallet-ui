@@ -29,7 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import eu.europa.ec.resourceslogic.theme.EUDIWalletTheme
+import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.navigation.RouterHost
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,8 +51,10 @@ open class EudiComponentActivity : ComponentActivity() {
 
     @OptIn(KoinExperimentalAPI::class)
     @Composable
-    protected fun Content(builder: NavGraphBuilder.(NavController) -> Unit) {
-        EUDIWalletTheme {
+    protected fun Content(
+        builder: NavGraphBuilder.(NavController) -> Unit
+    ) {
+        ThemeManager.instance.Theme {
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.background

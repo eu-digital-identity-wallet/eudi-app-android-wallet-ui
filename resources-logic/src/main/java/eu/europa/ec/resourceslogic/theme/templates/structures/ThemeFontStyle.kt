@@ -16,12 +16,18 @@
  *
  */
 
-package eu.europa.ec.resourceslogic.theme
+package eu.europa.ec.resourceslogic.theme.templates.structures
 
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 
-val DarkGrey = Color(0xFF303030)
-val LightGrey = Color(0xFFC2C4C4)
-val Blue = Color(0xFF1A438F)
-val Black = Color(0xFF000000)
-val White = Color(0xFFFFFFFF)
+sealed class ThemeFontStyle {
+    data object Normal : ThemeFontStyle()
+    data object Italic : ThemeFontStyle()
+
+    companion object {
+        fun ThemeFontStyle.toFontStyle(): FontStyle = when (this) {
+            Normal -> FontStyle.Normal
+            Italic -> FontStyle.Italic
+        }
+    }
+}

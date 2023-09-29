@@ -21,6 +21,11 @@ package eu.europa.ec.assemblylogic
 import android.app.Application
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.resourceslogic.theme.ThemeManager
+import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
+import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 import org.koin.android.ext.android.inject
 
 class Application : Application() {
@@ -30,6 +35,25 @@ class Application : Application() {
     override fun onCreate() {
         super.onCreate()
         setupKoin()
+        initializeLogging()
+        initializeTheme()
+    }
+
+    private fun initializeLogging() {
         logController.install()
+    }
+
+    private fun initializeTheme() {
+        ThemeManager.Builder()
+            .withLightColors(ThemeColors.lightColors)
+            .withDarkColors(ThemeColors.darkColors)
+            .withTypography(ThemeTypography.typo)
+            .withShapes(ThemeShapes.shapes)
+            .withDimensions(
+                ThemeDimensTemplate(
+                    screenPadding = 10.0
+                )
+            )
+            .build()
     }
 }

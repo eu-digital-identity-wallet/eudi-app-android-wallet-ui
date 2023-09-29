@@ -16,8 +16,13 @@
  *
  */
 
-package eu.europa.ec.resourceslogic.theme
+package eu.europa.ec.resourceslogic.theme.templates
 
-import androidx.compose.material3.Typography
-
-val Typography = Typography()
+/**
+ * Class that contains all dimension values that should be used.
+ *
+ * @param screenPadding The padding to apply on every screen's content.
+ */
+data class ThemeDimensTemplate(
+    val screenPadding: Double
+)
