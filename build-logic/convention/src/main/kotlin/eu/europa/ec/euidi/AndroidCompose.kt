@@ -54,6 +54,8 @@ internal fun Project.configureAndroidCompose(
             add("implementation", libs.findLibrary("androidx.lifecycle.runtimeCompose").get())
             add("implementation", libs.findLibrary("androidx.lifecycle.viewModelCompose").get())
 
+            add("implementation", libs.findLibrary("androidx.constraintlayout.compose").get())
+
             add("androidTestImplementation", platform(bom))
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.testManifest").get())
             add("testImplementation", libs.findLibrary("robolectric").get())

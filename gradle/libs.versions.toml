@@ -31,6 +31,7 @@ androidxBiometric = "1.1.0"
 androidxSecurity = "1.1.0-alpha06"
 androidxAppAuth = "1.0.0-alpha02"
 coil = "2.4.0"
+constraintlayoutVersion = "1.0.1"
 firebaseBom = "32.3.1"
 firebaseCrashlyticsPlugin = "2.9.9"
 firebasePerfPlugin = "1.4.2"
@@ -86,6 +87,7 @@ androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-t
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
+androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
 androidx-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }

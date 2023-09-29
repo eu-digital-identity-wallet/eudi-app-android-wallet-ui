@@ -16,19 +16,30 @@
  *
  */
 
-package eu.europa.ec.uilogic.navigation
+package eu.europa.ec.uilogic.component
 
-interface NavigatableItem
+/**
+ * Z index of loading overlay.
+ */
+const val Z_LOADING = 20f
 
-open class Screen(name: String, parameters: String = "") : NavigatableItem {
-    val screenRoute: String = name + parameters
-    val screenName = name
-}
+/**
+ * Z index of snackbar.
+ */
+const val Z_SNACKBAR = 10f
 
-sealed class StartupScreens {
-    data object Splash : Screen(name = "SPLASH")
-}
+/**
+ * Z index of sticky composable. Mostly same as [Z_SNACKBAR].
+ */
+const val Z_STICKY = 10f
 
-sealed class ModuleRoute(val route: String) : NavigatableItem {
-    data object StartupModule : ModuleRoute("STARTUP_MODULE")
-}
+const val SPACING_EXTRA_SMALL = 4
+const val SPACING_SMALL = 8
+const val SPACING_MEDIUM = 16
+const val SPACING_LARGE = 24
+const val SPACING_EXTRA_LARGE = 48
+
+const val ALPHA_ENABLED = 1.0f
+const val ALPHA_DISABLED = 0.38f
+
+const val MAX_TOOLBAR_ACTIONS = 2
