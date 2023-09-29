@@ -18,9 +18,6 @@
 
 package eu.europa.ec.resourceslogic.theme.values
 
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
 import eu.europa.ec.resourceslogic.theme.templates.ThemeColorsTemplate
 
 class ThemeColors {
