@@ -16,19 +16,15 @@
  *
  */
 
-package eu.europa.ec.uilogic.navigation
+package eu.europa.ec.uilogic.component.utils
 
-interface NavigatableItem
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.SPACING_MEDIUM
 
-open class Screen(name: String, parameters: String = "") : NavigatableItem {
-    val screenRoute: String = name + parameters
-    val screenName = name
-}
-
-sealed class StartupScreens {
-    data object Splash : Screen(name = "SPLASH")
-}
-
-sealed class ModuleRoute(val route: String) : NavigatableItem {
-    data object StartupModule : ModuleRoute("STARTUP_MODULE")
-}
+fun screenPaddings(append: PaddingValues? = null) = PaddingValues(
+    start = SPACING_MEDIUM.dp,
+    top = SPACING_MEDIUM.dp + (append?.calculateTopPadding() ?: 0.dp),
+    end = SPACING_MEDIUM.dp,
+    bottom = SPACING_MEDIUM.dp + (append?.calculateBottomPadding() ?: 0.dp)
+)
