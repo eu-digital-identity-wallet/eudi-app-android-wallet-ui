@@ -25,9 +25,9 @@ class ThemeShapes {
         val shapes = ThemeShapesTemplate(
             extraSmall = 16.0,
             small = 16.0,
-            medium = 20.0,
-            large = 20.0,
-            extraLarge = 20.0
+            medium = 16.0,
+            large = 32.0,
+            extraLarge = 32.0
         )
     }
 }

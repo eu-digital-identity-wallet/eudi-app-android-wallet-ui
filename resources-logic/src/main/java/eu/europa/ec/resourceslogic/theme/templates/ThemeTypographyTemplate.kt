@@ -80,7 +80,7 @@ data class ThemeTextStyle(
     val fontWeight: ThemeFontWeight? = null,
     val fontStyle: ThemeFontStyle? = null,
     val fontFamily: List<ThemeFont>? = null,
-    val letterSpacing: Long? = null,
+    val letterSpacing: Float? = null,
     val background: Long? = null,
     val textDecoration: ThemeTextDecoration? = null,
     val textAlign: ThemeTextAlign? = null,
@@ -111,7 +111,7 @@ data class ThemeTextStyle(
                 when (letterSpacing) {
                     null -> TextUnit.Unspecified
                     else -> TextUnit(
-                        value = letterSpacing.toFloat(),
+                        value = letterSpacing,
                         type = TextUnitType.Sp
                     )
                 }

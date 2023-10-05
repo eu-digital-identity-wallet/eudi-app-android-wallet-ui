@@ -42,7 +42,11 @@ data class IconData(
     val imageVector: ImageVector? = null,
 ) {
     init {
-        require(resourceId == null && imageVector == null) {
+        require(
+            resourceId == null && imageVector != null
+                    || resourceId != null && imageVector == null
+                    || resourceId != null && imageVector != null
+        ) {
             "An Icon should at least have a valid resourceId or a valid imageVector."
         }
     }
@@ -69,5 +73,11 @@ object AppIcons {
         resourceId = null,
         contentDescriptionId = R.string.content_description_more_vert_icon,
         imageVector = Icons.Filled.MoreVert
+    )
+
+    val Error: IconData = IconData(
+        resourceId = R.drawable.ic_error_24,
+        contentDescriptionId = R.string.content_description_error,
+        imageVector = null
     )
 }

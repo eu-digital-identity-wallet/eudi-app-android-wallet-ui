@@ -56,12 +56,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import eu.europa.ec.resourceslogic.theme.values.colorInfo
-import eu.europa.ec.resourceslogic.theme.values.colorOnInfo
 import eu.europa.ec.resourceslogic.theme.values.colorOnSuccess
-import eu.europa.ec.resourceslogic.theme.values.colorOnWarning
 import eu.europa.ec.resourceslogic.theme.values.colorSuccess
-import eu.europa.ec.resourceslogic.theme.values.colorWarning
 import eu.europa.ec.uilogic.component.Snackbar.Builder
 import eu.europa.ec.uilogic.component.Snackbar.SnackbarType
 import kotlinx.coroutines.launch
@@ -590,20 +586,11 @@ class Snackbar private constructor(private val data: SnackbarValue) {
      * Sealed class that contains all the available [Snackbar] types.
      */
     sealed class SnackbarType {
-        /**
-         * Used to show an info snackbar.
-         */
-        data object Info : SnackbarType()
 
         /**
          * Used to show a success snackbar.
          */
         data object Success : SnackbarType()
-
-        /**
-         * Used to show a warning snackbar.
-         */
-        data object Warning : SnackbarType()
 
         /**
          * Used to show an error snackbar.
@@ -619,9 +606,7 @@ class Snackbar private constructor(private val data: SnackbarValue) {
         @Composable
         fun colorBackground(): Color {
             return when (this) {
-                is Info -> MaterialTheme.colorScheme.colorInfo
                 is Success -> MaterialTheme.colorScheme.colorSuccess
-                is Warning -> MaterialTheme.colorScheme.colorWarning
                 is Error -> MaterialTheme.colorScheme.error
             }
         }
@@ -635,9 +620,7 @@ class Snackbar private constructor(private val data: SnackbarValue) {
         @Composable
         fun colorOnBackground(): Color {
             return when (this) {
-                is Info -> MaterialTheme.colorScheme.colorOnInfo
                 is Success -> MaterialTheme.colorScheme.colorOnSuccess
-                is Warning -> MaterialTheme.colorScheme.colorOnWarning
                 is Error -> MaterialTheme.colorScheme.onError
             }
         }

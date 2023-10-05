@@ -18,8 +18,10 @@
 
 package eu.europa.ec.uilogic.extension
 
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -81,4 +83,34 @@ fun Modifier.throttledClickable(
         indication = LocalIndication.current,
         interactionSource = remember { MutableInteractionSource() }
     )
+}
+
+/**
+ * Configure component to receive clicks via input or accessibility "click" event.
+ *
+ * Add this modifier to the element to make it clickable within its bounds and show a default
+ * indication when it's pressed.
+ *
+ * This version has no [MutableInteractionSource] or [Indication] parameters, default indication from
+ * [LocalIndication] will be used. To specify [MutableInteractionSource] or [Indication], use another
+ * overload.
+ *
+ * If you need to support double click or long click alongside the single click, consider
+ * using [combinedClickable].
+ *
+ * Same as [clickable]. Difference here is that ripple effect will not be shown to element modifier
+ * applied at.
+ *
+ * @param onClick will be called when user clicks on the element
+ */
+inline fun Modifier.clickableNoRipple(
+    enabled: Boolean = true,
+    crossinline onClick: () -> Unit
+): Modifier = composed {
+    clickable(
+        enabled = enabled,
+        indication = null,
+        interactionSource = remember { MutableInteractionSource() }) {
+        onClick()
+    }
 }

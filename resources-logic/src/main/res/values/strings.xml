@@ -30,6 +30,7 @@
     <string name="content_description_more_vert_icon">More Items Vertically</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
+    <string name="content_description_error">Error</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric login</string>
