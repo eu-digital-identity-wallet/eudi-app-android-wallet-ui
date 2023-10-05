@@ -16,11 +16,7 @@
  *
  */
 
-package eu.europa.ec.loginfeature
+package eu.europa.ec.commonfeature
 
-import androidx.compose.runtime.Composable
-
-@Composable
-fun Login() {
-
+class Placeholder {
 }
