@@ -18,38 +18,53 @@
 
 package eu.europa.ec.uilogic.component
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonElevation
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.dp
 
 @Composable
-fun WrapButton(
-    modifier: Modifier,
+fun WrapPrimaryButton(
+    modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
     onClick: () -> Unit,
-    shape: Shape = ButtonDefaults.shape,
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
-    elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
-    border: BorderStroke? = null,
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
     content: @Composable RowScope.() -> Unit
 ) {
     Button(
-        onClick = onClick,
         modifier = modifier,
         enabled = isEnabled,
-        shape = shape,
-        colors = colors,
-        elevation = elevation,
-        border = border,
-        contentPadding = contentPadding,
-        content = content,
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.textButtonColors(
+            containerColor = MaterialTheme.colorScheme.tertiary,
+            contentColor = MaterialTheme.colorScheme.onTertiary,
+            disabledContainerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = ALPHA_DISABLED),
+        ),
+        content = content
+    )
+}
+
+@Composable
+fun WrapSecondaryButton(
+    modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
+    onClick: () -> Unit,
+    content: @Composable RowScope.() -> Unit
+) {
+    OutlinedButton(
+        modifier = modifier,
+        enabled = isEnabled,
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.textButtonColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.onBackground,
+        ),
+        content = content
     )
 }

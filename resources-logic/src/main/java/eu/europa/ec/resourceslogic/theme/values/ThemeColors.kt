@@ -18,6 +18,7 @@
 
 package eu.europa.ec.resourceslogic.theme.values
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -25,125 +26,156 @@ import eu.europa.ec.resourceslogic.theme.templates.ThemeColorsTemplate
 
 class ThemeColors {
     companion object {
-        internal const val eudiw_theme_light_darkGrey = 0xFF303030
-        internal const val eudiw_theme_light_lightGrey = 0xFFC2C4C4
-        internal const val eudiw_theme_light_blue = 0xFF1A438F
-        internal const val eudiw_theme_light_black = 0xFF000000
-        internal const val eudiw_theme_light_white = 0xFFFFFFFF
-        internal const val eudiw_theme_light_red = 0xFFFF0000
+        private const val white = 0xFFFFFFFF
+        private const val black = 0xFF000000
+        private const val primary = 0xFF803589
+        private const val secondary = 0xFF2F1E5C
+        private const val tertiary = 0xFFF3C126
+        private const val error = 0xFFC56519
+        private const val success = 0xFF02797C
+        const val primaryMainGradientStart = secondary
+        const val primaryMainGradientEnd = primary
+        internal const val eudiw_theme_light_success = success
+        internal const val eudiw_theme_light_onSuccess = white
+        internal const val eudiw_theme_dark_success = success
+        internal const val eudiw_theme_dark_onSuccess = white
 
-        internal const val eudiw_theme_lightGreen = 0xFF4CAF50
-        internal const val eudiw_theme_orange = 0xFFFF5722
+        private const val eudiw_theme_light_primary = primary
+        private const val eudiw_theme_light_onPrimary = white
+        private const val eudiw_theme_light_primaryContainer = 0xFFFFD6FD
+        private const val eudiw_theme_light_onPrimaryContainer = 0xFF36003E
+        private const val eudiw_theme_light_secondary = secondary
+        private const val eudiw_theme_light_onSecondary = white
+        private const val eudiw_theme_light_secondaryContainer = 0xFFE8DDFF
+        private const val eudiw_theme_light_onSecondaryContainer = 0xFF21005D
+        private const val eudiw_theme_light_tertiary = tertiary
+        private const val eudiw_theme_light_onTertiary = black
+        private const val eudiw_theme_light_tertiaryContainer = 0xFFFFDF92
+        private const val eudiw_theme_light_onTertiaryContainer = 0xFF241A00
+        private const val eudiw_theme_light_error = error
+        private const val eudiw_theme_light_errorContainer = 0xFFffdbc8
+        private const val eudiw_theme_light_onError = white
+        private const val eudiw_theme_light_onErrorContainer = 0xFF311300
+        private const val eudiw_theme_light_background = white
+        private const val eudiw_theme_light_onBackground = black
+        private const val eudiw_theme_light_surface = white
+        private const val eudiw_theme_light_onSurface = black
+        private const val eudiw_theme_light_surfaceVariant = 0xFFEDDFE8
+        private const val eudiw_theme_light_onSurfaceVariant = 0xFF4D444C
+        private const val eudiw_theme_light_outline = 0xFF7F747C
+        private const val eudiw_theme_light_inverseOnSurface = 0xFFF7EEF2
+        private const val eudiw_theme_light_inverseSurface = 0xFF332F32
+        private const val eudiw_theme_light_inversePrimary = 0xFFFBAAFF
+        private const val eudiw_theme_light_surfaceTint = 0xFF8B3F94
+        private const val eudiw_theme_light_outlineVariant = 0xFFD0C3CC
+        private const val eudiw_theme_light_scrim = black
 
-        internal const val eudiw_theme_light_tertiaryMain = 0xFFF3C126
-        internal const val eudiw_theme_light_secondaryMain = 0xFF803589
-        internal const val eudiw_theme_light_successText = 0xFF02797C
-        internal const val eudiw_theme_light_backgroundDefault = 0xFF0000000A
-        internal const val eudiw_theme_light_text_secondaryDark = 0xFF0000008A
-        internal const val eudiw_theme_light_dividerDark = 0xFF0000001F
-        internal const val eudiw_theme_light_backgroundPaper = 0xFFFFFFFF
-        internal const val eudiw_theme_light_text_disabledDark = 0xFF00000061
-        internal const val eudiw_theme_light_lightBlue = 0xFF1266D8
-        internal const val eudiw_theme_light_gradientStart = 0xFF443187
-        internal const val eudiw_theme_light_gradientEnd = 0xFF803589
-        internal const val eudiw_theme_light_text_primaryDark = 0xFF000000DE
-        internal const val eudiw_theme_light_onError = 0xFFB00020
-
-        internal const val eudiw_theme_dark_tertiaryMain = 0xFFF3C126
-        internal const val eudiw_theme_dark_secondaryMain = 0xFF803589
-        internal const val eudiw_theme_dark_successText = 0xFF02797C
-        internal const val eudiw_theme_dark_backgroundDefault = 0xFF0000000A
-        internal const val eudiw_theme_dark_text_secondaryDark = 0xFF0000008A
-        internal const val eudiw_theme_dark_dividerDark = 0xFF0000001F
-        internal const val eudiw_theme_dark_backgroundPaper = 0xFFFFFFFF
-        internal const val eudiw_theme_dark_text_disabledDark = 0xFF00000061
-        internal const val eudiw_theme_dark_lightBlue = 0xFF1266D8
-        internal const val eudiw_theme_dark_gradientStart = 0xFF443187
-        internal const val eudiw_theme_dark_gradientEnd = 0xFF803589
-        internal const val eudiw_theme_dark_text_primaryDark = 0xFF000000DE
-        internal const val eudiw_theme_dark_onError = 0xFFB00020
-
+        private const val eudiw_theme_dark_primary = 0xFFFBAAFF
+        private const val eudiw_theme_dark_onPrimary = 0xFF560761
+        private const val eudiw_theme_dark_primaryContainer = 0xFF70267A
+        private const val eudiw_theme_dark_onPrimaryContainer = 0xFFFFD6FD
+        private const val eudiw_theme_dark_secondary = 0xFFCEBDFF
+        private const val eudiw_theme_dark_onSecondary = 0xFF371E73
+        private const val eudiw_theme_dark_secondaryContainer = 0xFF4E378B
+        private const val eudiw_theme_dark_onSecondaryContainer = 0xFFE8DDFF
+        private const val eudiw_theme_dark_tertiary = 0xFFF2C025
+        private const val eudiw_theme_dark_onTertiary = 0xFF3E2E00
+        private const val eudiw_theme_dark_tertiaryContainer = 0xFF594400
+        private const val eudiw_theme_dark_onTertiaryContainer = 0xFFFFDF92
+        private const val eudiw_theme_dark_error = 0xFFffb689
+        private const val eudiw_theme_dark_errorContainer = 0xFF743500
+        private const val eudiw_theme_dark_onError = 0xFF512300
+        private const val eudiw_theme_dark_onErrorContainer = 0xFFffdbc8
+        private const val eudiw_theme_dark_background = black
+        private const val eudiw_theme_dark_onBackground = white
+        private const val eudiw_theme_dark_surface = black
+        private const val eudiw_theme_dark_onSurface = white
+        private const val eudiw_theme_dark_surfaceVariant = 0xFF4D444C
+        private const val eudiw_theme_dark_onSurfaceVariant = 0xFFD0C3CC
+        private const val eudiw_theme_dark_outline = 0xFF998D96
+        private const val eudiw_theme_dark_inverseOnSurface = black
+        private const val eudiw_theme_dark_inverseSurface = white
+        private const val eudiw_theme_dark_inversePrimary = 0xFF8B3F94
+        private const val eudiw_theme_dark_surfaceTint = 0xFFFBAAFF
+        private const val eudiw_theme_dark_outlineVariant = 0xFF4D444C
+        private const val eudiw_theme_dark_scrim = black
 
         val lightColors = ThemeColorsTemplate(
-            primary = eudiw_theme_light_secondaryMain,
-            onPrimary = eudiw_theme_light_white,
-            primaryContainer = eudiw_theme_light_blue,
-            onPrimaryContainer = eudiw_theme_light_white,
-            inversePrimary = eudiw_theme_light_blue,
-            secondary = eudiw_theme_light_blue,
-            onSecondary = eudiw_theme_light_blue,
-            secondaryContainer = eudiw_theme_light_blue,
-            onSecondaryContainer = eudiw_theme_light_blue,
-            tertiary = eudiw_theme_light_tertiaryMain,
-            onTertiary = eudiw_theme_light_blue,
-            tertiaryContainer = eudiw_theme_light_blue,
-            onTertiaryContainer = eudiw_theme_light_blue,
-            background = eudiw_theme_light_white,
-            onBackground = eudiw_theme_light_black,
-            surface = eudiw_theme_light_white,
-            onSurface = eudiw_theme_light_black,
-            surfaceVariant = eudiw_theme_light_blue,
-            onSurfaceVariant = eudiw_theme_light_blue,
-            surfaceTint = eudiw_theme_light_blue,
-            inverseSurface = eudiw_theme_light_blue,
-            inverseOnSurface = eudiw_theme_light_blue,
-            error = eudiw_theme_light_blue,
-            onError = eudiw_theme_light_blue,
-            errorContainer = eudiw_theme_light_blue,
-            onErrorContainer = eudiw_theme_light_blue,
-            outline = eudiw_theme_light_blue,
-            outlineVariant = eudiw_theme_light_blue,
-            scrim = eudiw_theme_light_blue,
+            primary = eudiw_theme_light_primary,
+            onPrimary = eudiw_theme_light_onPrimary,
+            primaryContainer = eudiw_theme_light_primaryContainer,
+            onPrimaryContainer = eudiw_theme_light_onPrimaryContainer,
+            secondary = eudiw_theme_light_secondary,
+            onSecondary = eudiw_theme_light_onSecondary,
+            secondaryContainer = eudiw_theme_light_secondaryContainer,
+            onSecondaryContainer = eudiw_theme_light_onSecondaryContainer,
+            tertiary = eudiw_theme_light_tertiary,
+            onTertiary = eudiw_theme_light_onTertiary,
+            tertiaryContainer = eudiw_theme_light_tertiaryContainer,
+            onTertiaryContainer = eudiw_theme_light_onTertiaryContainer,
+            error = eudiw_theme_light_error,
+            errorContainer = eudiw_theme_light_errorContainer,
+            onError = eudiw_theme_light_onError,
+            onErrorContainer = eudiw_theme_light_onErrorContainer,
+            background = eudiw_theme_light_background,
+            onBackground = eudiw_theme_light_onBackground,
+            surface = eudiw_theme_light_surface,
+            onSurface = eudiw_theme_light_onSurface,
+            surfaceVariant = eudiw_theme_light_surfaceVariant,
+            onSurfaceVariant = eudiw_theme_light_onSurfaceVariant,
+            outline = eudiw_theme_light_outline,
+            inverseOnSurface = eudiw_theme_light_inverseOnSurface,
+            inverseSurface = eudiw_theme_light_inverseSurface,
+            inversePrimary = eudiw_theme_light_inversePrimary,
+            surfaceTint = eudiw_theme_light_surfaceTint,
+            outlineVariant = eudiw_theme_light_outlineVariant,
+            scrim = eudiw_theme_light_scrim,
         )
 
         val darkColors = ThemeColorsTemplate(
-            primary = eudiw_theme_light_red,
-            onPrimary = eudiw_theme_light_white,
-            primaryContainer = eudiw_theme_light_blue,
-            onPrimaryContainer = eudiw_theme_light_white,
-            inversePrimary = eudiw_theme_light_blue,
-            secondary = eudiw_theme_light_blue,
-            onSecondary = eudiw_theme_light_blue,
-            secondaryContainer = eudiw_theme_light_blue,
-            onSecondaryContainer = eudiw_theme_light_blue,
-            tertiary = eudiw_theme_light_blue,
-            onTertiary = eudiw_theme_light_blue,
-            tertiaryContainer = eudiw_theme_light_blue,
-            onTertiaryContainer = eudiw_theme_light_blue,
-            background = eudiw_theme_light_black,
-            onBackground = eudiw_theme_light_white,
-            surface = eudiw_theme_light_darkGrey,
-            onSurface = eudiw_theme_light_white,
-            surfaceVariant = eudiw_theme_light_blue,
-            onSurfaceVariant = eudiw_theme_light_blue,
-            surfaceTint = eudiw_theme_light_blue,
-            inverseSurface = eudiw_theme_light_blue,
-            inverseOnSurface = eudiw_theme_light_blue,
-            error = eudiw_theme_light_blue,
-            onError = eudiw_theme_light_blue,
-            errorContainer = eudiw_theme_light_blue,
-            onErrorContainer = eudiw_theme_light_blue,
-            outline = eudiw_theme_light_blue,
-            outlineVariant = eudiw_theme_light_blue,
-            scrim = eudiw_theme_light_blue,
+            primary = eudiw_theme_dark_primary,
+            onPrimary = eudiw_theme_dark_onPrimary,
+            primaryContainer = eudiw_theme_dark_primaryContainer,
+            onPrimaryContainer = eudiw_theme_dark_onPrimaryContainer,
+            secondary = eudiw_theme_dark_secondary,
+            onSecondary = eudiw_theme_dark_onSecondary,
+            secondaryContainer = eudiw_theme_dark_secondaryContainer,
+            onSecondaryContainer = eudiw_theme_dark_onSecondaryContainer,
+            tertiary = eudiw_theme_dark_tertiary,
+            onTertiary = eudiw_theme_dark_onTertiary,
+            tertiaryContainer = eudiw_theme_dark_tertiaryContainer,
+            onTertiaryContainer = eudiw_theme_dark_onTertiaryContainer,
+            error = eudiw_theme_dark_error,
+            errorContainer = eudiw_theme_dark_errorContainer,
+            onError = eudiw_theme_dark_onError,
+            onErrorContainer = eudiw_theme_dark_onErrorContainer,
+            background = eudiw_theme_dark_background,
+            onBackground = eudiw_theme_dark_onBackground,
+            surface = eudiw_theme_dark_surface,
+            onSurface = eudiw_theme_dark_onSurface,
+            surfaceVariant = eudiw_theme_dark_surfaceVariant,
+            onSurfaceVariant = eudiw_theme_dark_onSurfaceVariant,
+            outline = eudiw_theme_dark_outline,
+            inverseOnSurface = eudiw_theme_dark_inverseOnSurface,
+            inverseSurface = eudiw_theme_dark_inverseSurface,
+            inversePrimary = eudiw_theme_dark_inversePrimary,
+            surfaceTint = eudiw_theme_dark_surfaceTint,
+            outlineVariant = eudiw_theme_dark_outlineVariant,
+            scrim = eudiw_theme_dark_scrim,
         )
     }
 }
 
 val ColorScheme.colorSuccess: Color
-    @Composable get() = Color(ThemeColors.eudiw_theme_lightGreen)
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_light_success)
+    } else {
+        Color(ThemeColors.eudiw_theme_dark_success)
+    }
 
 val ColorScheme.colorOnSuccess: Color
-    @Composable get() = Color(ThemeColors.eudiw_theme_light_white)
-
-val ColorScheme.colorWarning: Color
-    @Composable get() = Color(ThemeColors.eudiw_theme_orange)
-
-val ColorScheme.colorOnWarning: Color
-    @Composable get() = Color(ThemeColors.eudiw_theme_light_white)
-
-val ColorScheme.colorInfo: Color
-    @Composable get() = Color(ThemeColors.eudiw_theme_light_blue)
-
-val ColorScheme.colorOnInfo: Color
-    @Composable get() = Color(ThemeColors.eudiw_theme_light_white)
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_light_onSuccess)
+    } else {
+        Color(ThemeColors.eudiw_theme_dark_onSuccess)
+    }

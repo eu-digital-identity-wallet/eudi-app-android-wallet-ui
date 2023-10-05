@@ -18,7 +18,9 @@
 
 package eu.europa.ec.uilogic.component
 
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
@@ -37,6 +39,20 @@ data class FabData(
 fun WrapFab(modifier: Modifier = Modifier, data: FabData) {
     FloatingActionButton(
         modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.tertiary,
+        contentColor = MaterialTheme.colorScheme.onTertiary,
+        onClick = data.onClick
+    ) {
+        data.content()
+    }
+}
+
+@Composable
+fun WrapExtendedFab(modifier: Modifier = Modifier, data: FabData) {
+    ExtendedFloatingActionButton(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.tertiary,
+        contentColor = MaterialTheme.colorScheme.onTertiary,
         onClick = data.onClick
     ) {
         data.content()
