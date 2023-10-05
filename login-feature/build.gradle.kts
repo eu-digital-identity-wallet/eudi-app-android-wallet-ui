@@ -16,30 +16,10 @@
  *
  */
 
-pluginManagement {
-    includeBuild("build-logic")
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
+plugins {
+    id("eudi.android.feature")
 }
 
-rootProject.name = "EUDI Wallet"
-include(":app")
-include(":business-logic")
-include(":ui-logic")
-include(":network-logic")
-include(":resources-logic")
-include(":assembly-logic")
-include(":startup-feature")
-include(":test-logic")
-include(":test-feature")
-include(":login-feature")
+android {
+    namespace = "eu.europa.ec.loginfeature"
+}

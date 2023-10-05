@@ -16,30 +16,13 @@
  *
  */
 
-pluginManagement {
-    includeBuild("build-logic")
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+package eu.europa.ec.loginfeature
 
-rootProject.name = "EUDI Wallet"
-include(":app")
-include(":business-logic")
-include(":ui-logic")
-include(":network-logic")
-include(":resources-logic")
-include(":assembly-logic")
-include(":startup-feature")
-include(":test-logic")
-include(":test-feature")
-include(":login-feature")
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+
+@Composable
+@Preview
+fun Login {
+
+}

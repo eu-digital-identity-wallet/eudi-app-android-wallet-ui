@@ -16,30 +16,20 @@
  *
  */
 
-pluginManagement {
-    includeBuild("build-logic")
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
+package eu.europa.ec.loginfeature
 
-rootProject.name = "EUDI Wallet"
-include(":app")
-include(":business-logic")
-include(":ui-logic")
-include(":network-logic")
-include(":resources-logic")
-include(":assembly-logic")
-include(":startup-feature")
-include(":test-logic")
-include(":test-feature")
-include(":login-feature")
+import org.junit.Test
+
+import org.junit.Assert.*
+
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
+    }
+}
