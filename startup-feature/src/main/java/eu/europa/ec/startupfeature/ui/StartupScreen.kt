@@ -53,7 +53,8 @@ private fun Content(
             modifier = Modifier.align(Alignment.Center),
             onClick = { onEventSend(Event.OnClick) }
         ) {
-            Text(text = "Press to test")
+            Text(text = "Press here to test")
         }
     }
+
 }
