@@ -16,22 +16,11 @@
  *
  */
 
-package eu.europa.ec.assemblylogic.ui
+package eu.europa.ec.commonfeature.di
 
-import android.os.Bundle
-import androidx.activity.compose.setContent
-import eu.europa.ec.commonfeature.router.featureCommonGraph
-import eu.europa.ec.startupfeature.router.featureStartupGraph
-import eu.europa.ec.uilogic.container.EudiComponentActivity
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Module
 
-class MainActivity : EudiComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            Content {
-                featureStartupGraph(it)
-                featureCommonGraph(it)
-            }
-        }
-    }
-}
+@Module
+@ComponentScan("eu.europa.ec.commonfeature")
+class FeatureCommonModule

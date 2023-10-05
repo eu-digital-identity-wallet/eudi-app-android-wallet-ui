@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.commonfeature
+package eu.europa.ec.commonfeature.ui.biometric
 
 class Placeholder {
 }

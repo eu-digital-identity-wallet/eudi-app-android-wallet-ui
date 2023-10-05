@@ -40,4 +40,7 @@
     <string name="biometric_no_hardware">Your device does not support biometric authentication</string>
     <string name="biometric_unknown_error">Something went wrong initializing biometric authentication. Please try again</string>
 
+    <!-- Success Screen -->
+    <string name="content_description_success_screen_icon">Success icon</string>
+
 </resources>

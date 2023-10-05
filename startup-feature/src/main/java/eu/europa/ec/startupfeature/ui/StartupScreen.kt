@@ -23,10 +23,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import eu.europa.ec.uilogic.navigation.ModuleRoute
+import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun StartupScreen(
@@ -37,7 +42,21 @@ fun StartupScreen(
         state = viewModel.viewState.value,
         effectFlow = viewModel.effect,
         onEventSend = { viewModel.setEvent(it) },
-        onNavigationRequested = {}
+        onNavigationRequested = {
+            when (it) {
+                is Effect.Navigation.SwitchModule -> {
+                    navController.navigate(it.moduleRoute.route) {
+                        popUpTo(ModuleRoute.StartupModule.route) { inclusive = true }
+                    }
+                }
+
+                is Effect.Navigation.SwitchScreen -> {
+                    navController.navigate(it.screen) {
+                        popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
+                    }
+                }
+            }
+        }
     )
 }
 
@@ -57,4 +76,12 @@ private fun Content(
         }
     }
 
+    LaunchedEffect(Unit) {
+        effectFlow?.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation.SwitchModule -> onNavigationRequested(effect)
+                is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
+            }
+        }?.collect()
+    }
 }

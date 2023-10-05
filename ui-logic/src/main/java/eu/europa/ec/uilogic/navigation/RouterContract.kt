@@ -29,6 +29,11 @@ sealed class StartupScreens {
     data object Splash : Screen(name = "SPLASH")
 }
 
+sealed class CommonScreens {
+    data object Success : Screen(name = "SUCCESS", parameters = "?successConfig={successConfig}")
+}
+
 sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object StartupModule : ModuleRoute("STARTUP_MODULE")
+    data object CommonModule : ModuleRoute("COMMON_MODULE")
 }
