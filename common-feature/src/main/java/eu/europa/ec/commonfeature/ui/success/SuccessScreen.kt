@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.resourceslogic.theme.values.colorSuccess
+import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.ContentScreen
 import eu.europa.ec.uilogic.component.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.VSpacer
@@ -138,7 +139,7 @@ private fun SuccessScreenView(
             Text(
                 text = state.successConfig.content,
                 style = MaterialTheme.typography.titleSmall.copy(
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5F)
+                    color = MaterialTheme.colorScheme.textSecondaryDark
                 )
             )
             VSpacer.Small()

@@ -24,6 +24,7 @@ import androidx.compose.material3.Typography
 import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
 
 data class ThemeSet(
+    val isInDarkMode: Boolean,
     val lightColors: ColorScheme,
     val darkColors: ColorScheme,
     val typo: Typography,
