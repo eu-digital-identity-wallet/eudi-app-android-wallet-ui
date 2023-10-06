@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.loginfeature
+package eu.europa.ec.loginfeature.ui.login
 
 import androidx.compose.runtime.Composable
 
