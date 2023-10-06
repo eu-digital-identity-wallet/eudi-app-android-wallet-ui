@@ -22,7 +22,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.resourceslogic.theme.templates.ThemeColorsTemplate
+
+private val isInDarkMode: Boolean
+    get() {
+        return ThemeManager.instance.set.isInDarkMode
+    }
 
 class ThemeColors {
     companion object {
@@ -39,6 +45,22 @@ class ThemeColors {
         internal const val eudiw_theme_light_onSuccess = white
         internal const val eudiw_theme_dark_success = success
         internal const val eudiw_theme_dark_onSuccess = white
+        internal const val eudiw_theme_light_textPrimaryDark: Long = 0xDE000000
+        internal const val eudiw_theme_light_textSecondaryDark: Long = 0x8A000000
+        internal const val eudiw_theme_light_textDisabledDark: Long = 0x61000000
+        internal const val eudiw_theme_light_dividerDark: Long = 0x1F000000
+        internal const val eudiw_theme_light_backgroundDefault: Long = 0x0A000000
+        internal const val eudiw_theme_light_backgroundPaper: Long = 0xFFFFFFFF
+        internal const val eudiw_theme_light_textSecondaryLight: Long = 0xB3FFFFFF
+        internal const val eudiw_theme_light_textDisabledLight: Long = 0x80FFFFFF
+        internal const val eudiw_theme_dark_textPrimaryDark: Long = 0xDEFFFFFF
+        internal const val eudiw_theme_dark_textSecondaryDark: Long = 0x8AFFFFFF
+        internal const val eudiw_theme_dark_textDisabledDark: Long = 0x61FFFFFF
+        internal const val eudiw_theme_dark_dividerDark: Long = 0x1FFFFFFF
+        internal const val eudiw_theme_dark_backgroundDefault: Long = 0x0AFFFFFF
+        internal const val eudiw_theme_dark_backgroundPaper: Long = 0xFF000000
+        internal const val eudiw_theme_dark_textSecondaryLight: Long = 0xB3000000
+        internal const val eudiw_theme_dark_textDisabledLight: Long = 0x80000000
 
         private const val eudiw_theme_light_primary = primary
         private const val eudiw_theme_light_onPrimary = white
@@ -163,8 +185,120 @@ class ThemeColors {
             outlineVariant = eudiw_theme_dark_outlineVariant,
             scrim = eudiw_theme_dark_scrim,
         )
+
+        val textPrimaryDark: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_textPrimaryDark)
+            } else {
+                Color(eudiw_theme_light_textPrimaryDark)
+            }
+
+        val textSecondaryDark: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_textSecondaryDark)
+            } else {
+                Color(eudiw_theme_light_textSecondaryDark)
+            }
+
+        val textDisabledDark: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_textDisabledDark)
+            } else {
+                Color(eudiw_theme_light_textDisabledDark)
+            }
+
+        val dividerDark: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_dividerDark)
+            } else {
+                Color(eudiw_theme_light_dividerDark)
+            }
+
+        val backgroundDefault: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_backgroundDefault)
+            } else {
+                Color(eudiw_theme_light_backgroundDefault)
+            }
+
+        val backgroundPaper: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_backgroundPaper)
+            } else {
+                Color(eudiw_theme_light_backgroundPaper)
+            }
+
+        val textSecondaryLight: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_textSecondaryLight)
+            } else {
+                Color(eudiw_theme_light_textSecondaryLight)
+            }
+
+        val textDisabledLight: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_textDisabledLight)
+            } else {
+                Color(eudiw_theme_light_textDisabledLight)
+            }
     }
 }
+
+val ColorScheme.textPrimaryDark: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_textPrimaryDark)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_textPrimaryDark)
+    }
+
+val ColorScheme.textSecondaryDark: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_textSecondaryDark)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_textSecondaryDark)
+    }
+
+val ColorScheme.textDisabledDark: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_textDisabledDark)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_textDisabledDark)
+    }
+
+val ColorScheme.dividerDark: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_dividerDark)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_dividerDark)
+    }
+
+val ColorScheme.backgroundDefault: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_backgroundDefault)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_backgroundDefault)
+    }
+
+val ColorScheme.backgroundPaper: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_backgroundPaper)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_backgroundPaper)
+    }
+
+val ColorScheme.textSecondaryLight: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_textSecondaryLight)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_textSecondaryLight)
+    }
+
+val ColorScheme.textDisabledLight: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_textDisabledLight)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_textDisabledLight)
+    }
 
 val ColorScheme.colorSuccess: Color
     @Composable get() = if (isSystemInDarkTheme()) {

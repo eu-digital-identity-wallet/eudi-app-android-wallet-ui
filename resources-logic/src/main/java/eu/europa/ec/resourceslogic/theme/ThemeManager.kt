@@ -86,6 +86,8 @@ class ThemeManager {
             }
         }
 
+        set = set.copy(isInDarkMode = darkTheme)
+
         MaterialTheme(
             colorScheme = colorScheme,
             shapes = set.shapes,
@@ -120,6 +122,7 @@ class ThemeManager {
          */
         fun ThemeManager.build(builder: Builder): ThemeManager {
             set = ThemeSet(
+                isInDarkMode = builder.isInDarkMode ?: false,
                 lightColors = builder.lightColors.toColorScheme(),
                 darkColors = builder.darkColors.toColorScheme(),
                 typo = builder.typography.toTypography(),
@@ -130,7 +133,7 @@ class ThemeManager {
         }
     }
 
-    class Builder {
+    class Builder(val isInDarkMode: Boolean? = null) {
         lateinit var lightColors: ThemeColorsTemplate
         lateinit var darkColors: ThemeColorsTemplate
         lateinit var typography: ThemeTypographyTemplate
