@@ -18,5 +18,13 @@
 
 package eu.europa.ec.commonfeature.ui.biometric
 
-class Placeholder {
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+
+@Composable
+fun BiometricScreen(
+    navController: NavController,
+    viewModel: BiometricViewModel
+) {
+
 }

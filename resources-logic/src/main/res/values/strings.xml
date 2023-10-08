@@ -43,4 +43,7 @@
     <!-- Success Screen -->
     <string name="content_description_success_screen_icon">Success icon</string>
 
+    <!-- Quick Pin -->
+    <string name="quick_pin_invalid_error">Invalid quick pin</string>
+
 </resources>

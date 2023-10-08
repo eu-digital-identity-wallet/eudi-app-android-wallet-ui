@@ -29,7 +29,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.kotlin
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -59,24 +58,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 ignoreList.add("sdk.*")
             }
             dependencies {
-                add("androidTestImplementation", kotlin("test"))
-                add("androidTestImplementation", libs.findLibrary("androidx-test-rules").get())
-                add("androidTestImplementation", libs.findLibrary("androidx-test-runner").get())
-                add(
-                    "androidTestImplementation",
-                    libs.findLibrary("androidx-test-orchestrator").get()
-                )
-
                 add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
                 add("implementation", libs.findLibrary("kotlinx-coroutines-guava").get())
-
-                add("testImplementation", kotlin("test"))
-                add("testImplementation", libs.findLibrary("androidx-work-testing").get())
-                add("testImplementation", libs.findLibrary("kotlinx-coroutines-test").get())
-                add("testImplementation", libs.findLibrary("turbine").get())
-                add("testImplementation", libs.findLibrary("mockito-core").get())
-                add("testImplementation", libs.findLibrary("mockito-kotlin").get())
-                add("testImplementation", libs.findLibrary("mockito-inline").get())
             }
         }
     }

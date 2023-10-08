@@ -16,28 +16,23 @@
  *
  */
 
-import eu.europa.ec.euidi.addConfigField
+package eu.europa.ec.commonfeature.config
 
-plugins {
-    id("eudi.android.library")
-}
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.serializer.UiSerializable
+import eu.europa.ec.uilogic.serializer.UiSerializableParser
 
-android {
-    namespace = "eu.europa.ec.businesslogic"
+data class BiometricUiConfig(
+    val title: String,
+    val subTitle: String,
+    val quickPinOnlySubTitle: String,
+    val isPreAuthorization: Boolean = false,
+    val shouldInitializeBiometricAuthOnCreate: Boolean = true,
+    val onSuccessNavigation: ConfigNavigation,
+    val onBackNavigation: ConfigNavigation
+) : UiSerializable {
 
-    defaultConfig {
-        addConfigField("DEEPLINK", "eudi-wallet://")
+    companion object Parser : UiSerializableParser {
+        override val serializedKeyName = "biometricConfig"
     }
-}
-
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(libs.gson)
-    implementation(libs.androidx.biometric)
-    implementation(libs.androidx.security)
-    implementation(libs.androidx.appAuth)
-    implementation(libs.logcat)
-    implementation(libs.google.phonenumber)
-
-    testImplementation(project(":test-logic"))
 }

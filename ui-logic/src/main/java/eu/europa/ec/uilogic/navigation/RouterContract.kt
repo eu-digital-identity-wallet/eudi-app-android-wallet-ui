@@ -31,6 +31,10 @@ sealed class StartupScreens {
 
 sealed class CommonScreens {
     data object Success : Screen(name = "SUCCESS", parameters = "?successConfig={successConfig}")
+    data object Biometric : Screen(
+        name = "BIOMETRIC",
+        parameters = "?biometricConfig={biometricConfig}"
+    )
 }
 
 sealed class ModuleRoute(val route: String) : NavigatableItem {

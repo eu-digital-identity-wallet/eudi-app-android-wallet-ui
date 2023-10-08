@@ -18,9 +18,36 @@
 
 package eu.europa.ec.commonfeature.di
 
+import eu.europa.ec.businesslogic.controller.biometry.BiometricController
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.businesslogic.validator.FormValidator
+import eu.europa.ec.commonfeature.interactor.BiometricInteractor
+import eu.europa.ec.commonfeature.interactor.BiometricInteractorImpl
+import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
+import eu.europa.ec.commonfeature.interactor.QuickPinInteractorImpl
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 
 @Module
 @ComponentScan("eu.europa.ec.commonfeature")
 class FeatureCommonModule
+
+@Factory
+fun provideQuickPinInteractor(
+    formValidator: FormValidator,
+    prefKeys: PrefKeys,
+    resourceProvider: ResourceProvider
+): QuickPinInteractor {
+    return QuickPinInteractorImpl(formValidator, prefKeys, resourceProvider)
+}
+
+@Factory
+fun provideBiometricInteractor(
+    prefKeys: PrefKeys,
+    biometricController: BiometricController,
+    quickPinInteractor: QuickPinInteractor
+): BiometricInteractor {
+    return BiometricInteractorImpl(prefKeys, biometricController, quickPinInteractor)
+}
