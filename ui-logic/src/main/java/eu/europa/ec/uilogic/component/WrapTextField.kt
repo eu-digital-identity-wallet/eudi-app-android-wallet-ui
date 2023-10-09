@@ -22,16 +22,18 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.extension.clickableNoRipple
@@ -57,19 +59,30 @@ fun WrapTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    onKeyEvent: ((KeyEvent) -> Boolean)? = null,
+    textStyle: TextStyle = LocalTextStyle.current,
 ) {
-    Column {
-        OutlinedTextField(
-            modifier = if (hasNoRipple) {
+
+    val textFieldModifier = modifier
+        .onKeyEvent {
+            onKeyEvent?.invoke(it) ?: false
+        }
+        .then(
+            if (hasNoRipple) {
                 modifier.clickableNoRipple(
                     enabled = enabled,
                     onClick = onClick ?: {}
                 )
             } else {
-                modifier.throttledClickable(enabled = enabled) {
+                Modifier.throttledClickable(enabled = enabled) {
                     onClick?.invoke()
                 }
-            },
+            }
+        )
+
+    Column {
+        OutlinedTextField(
+            modifier = textFieldModifier,
             value = value,
             onValueChange = { newValue ->
                 onValueChange?.invoke(newValue)
@@ -81,19 +94,12 @@ fun WrapTextField(
             label = label,
             placeholder = placeholder,
             leadingIcon = leadingIcon,
-            trailingIcon = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    trailingIcon?.invoke()
-                    if (isError) {
-                        val errorIcon = AppIcons.Error
-                        WrapIcon(iconData = errorIcon)
-                    }
-                }
-            },
+            trailingIcon = trailingIcon?.let { block -> { block() } },
             isError = isError,
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
-            keyboardActions = keyboardActions
+            keyboardActions = keyboardActions,
+            textStyle = textStyle,
         )
     }
 

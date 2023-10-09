@@ -25,7 +25,7 @@ import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.LoadingType
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
@@ -61,7 +61,7 @@ sealed class Event : ViewEvent {
 }
 
 data class State(
-    val isLoading: Boolean = false,
+    val isLoading: LoadingType = LoadingType.NONE,
     val error: BiometricError? = null,
     val config: BiometricUiConfig,
     val quickPinError: String? = null,
@@ -91,7 +91,6 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class BiometricViewModel constructor(
     private val biometricInteractor: BiometricInteractor,
-    private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
     private val biometricConfig: String
 ) : MviViewModel<Event, State, Effect>() {

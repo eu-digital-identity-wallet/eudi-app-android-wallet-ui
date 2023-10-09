@@ -20,6 +20,7 @@ package eu.europa.ec.startupfeature.ui
 
 import android.util.Log
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.startupfeature.interactor.StartupInteractor
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -59,40 +60,35 @@ class StartupViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.OnClick -> testNewScreen()
+            is Event.OnClick -> testBiometricScreen()
         }
     }
 
-    private fun testNewScreen() {
+    private fun testBiometricScreen() {
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screen = generateComposableNavigationLink(
-                    screen = CommonScreens.Success,
+                    screen = CommonScreens.Biometric,
                     arguments = generateComposableArguments(
                         mapOf(
-                            "successConfig" to uiSerializer.toBase64(
-                                SuccessUIConfig(
-                                    header = "Success",
-                                    content = "dsfsdfsdfsdfsdfsdfsdfsdfsdf",
-                                    imageConfig = SuccessUIConfig.ImageConfig(
-                                        type = SuccessUIConfig.ImageConfig.Type.DEFAULT
+                            "biometricConfig" to uiSerializer.toBase64(
+                                BiometricUiConfig(
+                                    title = "dsfsdfsdf",
+                                    subTitle = "dsfsdfsdfsdfsf",
+                                    quickPinOnlySubTitle = "dsfsdfsdfsdf",
+                                    isPreAuthorization = true,
+                                    shouldInitializeBiometricAuthOnCreate = true,
+                                    onSuccessNavigation = ConfigNavigation(
+                                        navigationType = NavigationType.PUSH,
+                                        screenToNavigate = CommonScreens.Success,
+                                        arguments = getSuccessConfig()
                                     ),
-                                    buttonConfig = listOf(
-                                        SuccessUIConfig.ButtonConfig(
-                                            text = "back",
-                                            style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                                            navigation = ConfigNavigation(
-                                                navigationType = NavigationType.POP,
-                                                screenToNavigate = StartupScreens.Splash
-                                            )
-                                        )
-                                    ),
-                                    onBackScreenToNavigate = ConfigNavigation(
-                                        navigationType = NavigationType.POP,
+                                    onBackNavigation = ConfigNavigation(
+                                        navigationType = NavigationType.PUSH,
                                         screenToNavigate = StartupScreens.Splash
-                                    ),
+                                    )
                                 ),
-                                SuccessUIConfig.Parser
+                                BiometricUiConfig.Parser
                             ).orEmpty()
                         )
                     )
@@ -100,6 +96,52 @@ class StartupViewModel(
             )
         }
     }
+
+    private fun testSuccessScreen() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screen = generateComposableNavigationLink(
+                    screen = CommonScreens.Success,
+                    arguments = getSuccessScreen()
+                )
+            )
+        }
+    }
+
+    private fun getSuccessScreen(): String = generateComposableNavigationLink(
+        screen = CommonScreens.Success,
+        arguments = generateComposableArguments(
+            getSuccessConfig()
+        )
+    )
+
+    private fun getSuccessConfig(): Map<String, String> =
+        mapOf(
+            "successConfig" to uiSerializer.toBase64(
+                SuccessUIConfig(
+                    header = "Success",
+                    content = "dsfsdfsdfsdfsdfsdfsdfsdfsdf",
+                    imageConfig = SuccessUIConfig.ImageConfig(
+                        type = SuccessUIConfig.ImageConfig.Type.DEFAULT
+                    ),
+                    buttonConfig = listOf(
+                        SuccessUIConfig.ButtonConfig(
+                            text = "back",
+                            style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                            navigation = ConfigNavigation(
+                                navigationType = NavigationType.POP,
+                                screenToNavigate = StartupScreens.Splash
+                            )
+                        )
+                    ),
+                    onBackScreenToNavigate = ConfigNavigation(
+                        navigationType = NavigationType.POP,
+                        screenToNavigate = StartupScreens.Splash
+                    ),
+                ),
+                SuccessUIConfig.Parser
+            ).orEmpty()
+        )
 
     private fun testNetworkCall() {
         viewModelScope.launch {

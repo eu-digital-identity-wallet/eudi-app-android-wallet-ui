@@ -22,6 +22,7 @@
     <string name="app_name">EUDI Wallet</string>
     <string name="generic_error_message">Oups! Something went wrong</string>
     <string name="generic_error_description">If the issue persists, please contact customer support</string>
+    <string name="generic_error_button_retry">Try again</string>
     <string name="generic_network_error_message">You are not connected to the internet</string>
     <string name="generic_error_retry">Please try again</string>
     <string name="generic_cancel">Cancel</string>
@@ -30,7 +31,8 @@
     <string name="content_description_more_vert_icon">More Items Vertically</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
-    <string name="content_description_error">Error</string>
+    <string name="content_description_error_icon">Error</string>
+    <string name="content_description_touch_id_icon">Touch id icon</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric login</string>

@@ -77,7 +77,13 @@ object AppIcons {
 
     val Error: IconData = IconData(
         resourceId = R.drawable.ic_error_24,
-        contentDescriptionId = R.string.content_description_error,
+        contentDescriptionId = R.string.content_description_error_icon,
+        imageVector = null
+    )
+
+    val TouchId: IconData = IconData(
+        resourceId = R.drawable.ic_touch_id_24,
+        contentDescriptionId = R.string.content_description_touch_id_icon,
         imageVector = null
     )
 }
