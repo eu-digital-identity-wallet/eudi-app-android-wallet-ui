@@ -48,6 +48,7 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 @Composable
 fun ContentTitle(
     title: String? = null,
+    titleStyle: TextStyle = MaterialTheme.typography.headlineSmall,
     subtitle: String? = null,
     subTitleMaxLines: Int = Int.MAX_VALUE,
     subTitleStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
@@ -80,7 +81,7 @@ fun ContentTitle(
             if (!title.isNullOrEmpty()) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.headlineSmall,
+                    style = titleStyle,
                 )
             }
             if (!subtitle.isNullOrEmpty()) {

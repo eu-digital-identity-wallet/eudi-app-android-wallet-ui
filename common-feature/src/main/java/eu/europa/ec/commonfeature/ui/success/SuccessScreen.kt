@@ -128,6 +128,9 @@ private fun SuccessScreenView(
         Column(modifier = Modifier.fillMaxWidth()) {
             ContentTitle(
                 title = state.successConfig.header,
+                titleStyle = MaterialTheme.typography.headlineSmall.copy(
+                    color = MaterialTheme.colorScheme.colorSuccess
+                ),
                 subtitle = state.successConfig.content
             )
             VSpacer.Small()
