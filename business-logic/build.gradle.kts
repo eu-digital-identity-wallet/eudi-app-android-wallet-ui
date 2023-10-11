@@ -41,4 +41,5 @@ dependencies {
     implementation(libs.rootbeer)
 
     testImplementation(project(":test-logic"))
+    androidTestImplementation(project(":test-logic"))
 }

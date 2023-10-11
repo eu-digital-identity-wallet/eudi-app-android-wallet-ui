@@ -58,7 +58,8 @@ class LogicBusinessModule
 fun provideConfigLogic(): ConfigLogic = ConfigLogicImpl()
 
 @Single
-fun provideConfigSecurityLogic(): ConfigSecurityLogic = ConfigSecurityLogicImpl()
+fun provideConfigSecurityLogic(configLogic: ConfigLogic): ConfigSecurityLogic =
+    ConfigSecurityLogicImpl(configLogic)
 
 @Single
 fun provideLogController(configLogic: ConfigLogic): LogController =
