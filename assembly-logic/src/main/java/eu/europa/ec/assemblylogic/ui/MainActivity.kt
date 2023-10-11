@@ -29,6 +29,7 @@ import eu.europa.ec.uilogic.container.EudiComponentActivity
 class MainActivity : EudiComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        windowFlags()
         setContent {
             Content {
                 featureStartupGraph(it)
