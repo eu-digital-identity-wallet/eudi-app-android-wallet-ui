@@ -16,29 +16,27 @@
  *
  */
 
-import eu.europa.ec.euidi.addConfigField
+package eu.europa.ec.businesslogic.controller.security
 
-plugins {
-    id("eudi.android.library")
+import com.scottyab.rootbeer.RootBeer
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+
+interface RootController {
+    fun isRooted(): Boolean
+    fun areRootCloakingAppsInstalled(): Boolean
 }
 
-android {
-    namespace = "eu.europa.ec.businesslogic"
+class RootControllerImpl constructor(
+    resourceProvider: ResourceProvider
+) : RootController {
 
-    defaultConfig {
-        addConfigField("DEEPLINK", "eudi-wallet://")
-    }
-}
+    private val rootBeer = RootBeer(resourceProvider.provideContext())
 
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(libs.gson)
-    implementation(libs.androidx.biometric)
-    implementation(libs.androidx.security)
-    implementation(libs.androidx.appAuth)
-    implementation(libs.logcat)
-    implementation(libs.google.phonenumber)
-    implementation(libs.rootbeer)
+    override fun isRooted() = rootBeer.isRooted
 
-    testImplementation(project(":test-logic"))
+    override fun areRootCloakingAppsInstalled() = rootBeer.detectRootCloakingApps(
+        arrayOf(
+            "com.android.SSLTrustKiller"
+        )
+    )
 }

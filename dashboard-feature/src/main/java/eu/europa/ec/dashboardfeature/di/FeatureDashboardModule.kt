@@ -16,29 +16,17 @@
  *
  */
 
-import eu.europa.ec.euidi.addConfigField
+package eu.europa.ec.dashboardfeature.di
 
-plugins {
-    id("eudi.android.library")
-}
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
+import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Factory
+import org.koin.core.annotation.Module
 
-android {
-    namespace = "eu.europa.ec.businesslogic"
+@Module
+@ComponentScan("eu.europa.ec.dashboardfeature")
+class FeatureDashboardModule
 
-    defaultConfig {
-        addConfigField("DEEPLINK", "eudi-wallet://")
-    }
-}
-
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(libs.gson)
-    implementation(libs.androidx.biometric)
-    implementation(libs.androidx.security)
-    implementation(libs.androidx.appAuth)
-    implementation(libs.logcat)
-    implementation(libs.google.phonenumber)
-    implementation(libs.rootbeer)
-
-    testImplementation(project(":test-logic"))
-}
+@Factory
+fun provideDashboardInteractor(): DashboardInteractor = DashboardInteractorImpl()

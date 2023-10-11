@@ -16,29 +16,12 @@
  *
  */
 
-import eu.europa.ec.euidi.addConfigField
+package eu.europa.ec.dashboardfeature.ui
 
-plugins {
-    id("eudi.android.library")
-}
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 
-android {
-    namespace = "eu.europa.ec.businesslogic"
+@Composable
+fun DashboardScreen(navController: NavController) {
 
-    defaultConfig {
-        addConfigField("DEEPLINK", "eudi-wallet://")
-    }
-}
-
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(libs.gson)
-    implementation(libs.androidx.biometric)
-    implementation(libs.androidx.security)
-    implementation(libs.androidx.appAuth)
-    implementation(libs.logcat)
-    implementation(libs.google.phonenumber)
-    implementation(libs.rootbeer)
-
-    testImplementation(project(":test-logic"))
 }
