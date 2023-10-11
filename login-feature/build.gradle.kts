@@ -23,3 +23,7 @@ plugins {
 android {
     namespace = "eu.europa.ec.loginfeature"
 }
+
+dependencies {
+    implementation(project(":common-feature"))
+}

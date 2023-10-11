@@ -59,6 +59,7 @@ internal fun Project.configureAndroidCompose(
 
             add("androidTestImplementation", platform(bom))
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.testManifest").get())
+            add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())
             add("testImplementation", libs.findLibrary("robolectric").get())
 
         }
