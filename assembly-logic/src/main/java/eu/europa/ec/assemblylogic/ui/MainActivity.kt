@@ -21,6 +21,7 @@ package eu.europa.ec.assemblylogic.ui
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import eu.europa.ec.commonfeature.router.featureCommonGraph
+import eu.europa.ec.dashboardfeature.router.featureDashboardGraph
 import eu.europa.ec.loginfeature.router.featureLoginGraph
 import eu.europa.ec.startupfeature.router.featureStartupGraph
 import eu.europa.ec.uilogic.container.EudiComponentActivity
@@ -33,6 +34,7 @@ class MainActivity : EudiComponentActivity() {
                 featureStartupGraph(it)
                 featureCommonGraph(it)
                 featureLoginGraph(it)
+                featureDashboardGraph(it)
             }
         }
     }

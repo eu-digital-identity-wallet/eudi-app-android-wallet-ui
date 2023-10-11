@@ -16,29 +16,20 @@
  *
  */
 
-import eu.europa.ec.euidi.addConfigField
+package eu.europa.ec.dashboardfeature
 
-plugins {
-    id("eudi.android.library")
-}
+import org.junit.Test
 
-android {
-    namespace = "eu.europa.ec.businesslogic"
+import org.junit.Assert.*
 
-    defaultConfig {
-        addConfigField("DEEPLINK", "eudi-wallet://")
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
     }
-}
-
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(libs.gson)
-    implementation(libs.androidx.biometric)
-    implementation(libs.androidx.security)
-    implementation(libs.androidx.appAuth)
-    implementation(libs.logcat)
-    implementation(libs.google.phonenumber)
-    implementation(libs.rootbeer)
-
-    testImplementation(project(":test-logic"))
 }

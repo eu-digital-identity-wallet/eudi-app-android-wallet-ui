@@ -20,6 +20,8 @@ package eu.europa.ec.businesslogic.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.ConfigLogicImpl
+import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
+import eu.europa.ec.businesslogic.config.ConfigSecurityLogicImpl
 import eu.europa.ec.businesslogic.controller.biometry.BiometricController
 import eu.europa.ec.businesslogic.controller.biometry.BiometricControllerImpl
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
@@ -28,6 +30,14 @@ import eu.europa.ec.businesslogic.controller.crypto.KeystoreController
 import eu.europa.ec.businesslogic.controller.crypto.KeystoreControllerImpl
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.log.LogControllerImpl
+import eu.europa.ec.businesslogic.controller.security.AndroidPackageController
+import eu.europa.ec.businesslogic.controller.security.AndroidPackageControllerImpl
+import eu.europa.ec.businesslogic.controller.security.AntiHookController
+import eu.europa.ec.businesslogic.controller.security.AntiHookControllerImpl
+import eu.europa.ec.businesslogic.controller.security.RootController
+import eu.europa.ec.businesslogic.controller.security.RootControllerImpl
+import eu.europa.ec.businesslogic.controller.security.SecurityController
+import eu.europa.ec.businesslogic.controller.security.SecurityControllerImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.controller.storage.PrefKeysImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
@@ -36,6 +46,7 @@ import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.businesslogic.validator.FormValidatorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
@@ -45,6 +56,9 @@ class LogicBusinessModule
 
 @Single
 fun provideConfigLogic(): ConfigLogic = ConfigLogicImpl()
+
+@Single
+fun provideConfigSecurityLogic(): ConfigSecurityLogic = ConfigSecurityLogicImpl()
 
 @Single
 fun provideLogController(configLogic: ConfigLogic): LogController =
@@ -65,11 +79,11 @@ fun provideKeystoreController(
 ): KeystoreController =
     KeystoreControllerImpl(prefKeys, logController)
 
-@Single
+@Factory
 fun provideCryptoController(keystoreController: KeystoreController): CryptoController =
     CryptoControllerImpl(keystoreController)
 
-@Single
+@Factory
 fun provideBiometricController(
     cryptoController: CryptoController,
     prefKeys: PrefKeys,
@@ -77,6 +91,37 @@ fun provideBiometricController(
 ): BiometricController =
     BiometricControllerImpl(resourceProvider, cryptoController, prefKeys)
 
-@Single
+@Factory
 fun provideFormValidator(logController: LogController): FormValidator =
     FormValidatorImpl(logController)
+
+@Factory
+fun provideAndroidPackageController(
+    resourceProvider: ResourceProvider,
+    logController: LogController
+): AndroidPackageController =
+    AndroidPackageControllerImpl(resourceProvider, logController)
+
+@Factory
+fun provideAntiHookController(logController: LogController): AntiHookController =
+    AntiHookControllerImpl(logController)
+
+@Factory
+fun provideRootController(resourceProvider: ResourceProvider): RootController =
+    RootControllerImpl(resourceProvider)
+
+@Factory
+fun provideSecurityController(
+    configLogic: ConfigLogic,
+    configSecurityLogic: ConfigSecurityLogic,
+    rootController: RootController,
+    antiHookController: AntiHookController,
+    androidPackageController: AndroidPackageController
+): SecurityController =
+    SecurityControllerImpl(
+        configLogic,
+        configSecurityLogic,
+        rootController,
+        antiHookController,
+        androidPackageController
+    )

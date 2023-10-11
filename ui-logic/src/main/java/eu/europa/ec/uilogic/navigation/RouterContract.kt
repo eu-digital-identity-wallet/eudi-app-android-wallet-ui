@@ -37,6 +37,10 @@ sealed class CommonScreens {
     )
 }
 
+sealed class DashboardScreens {
+    data object Dashboard : Screen(name = "DASHBOARD")
+}
+
 sealed class LoginScreens {
     data object Welcome : Screen(name = "WELCOME")
     data object Faq : Screen(name = "FAQ")
@@ -46,4 +50,5 @@ sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object StartupModule : ModuleRoute("STARTUP_MODULE")
     data object CommonModule : ModuleRoute("COMMON_MODULE")
     data object LoginModule : ModuleRoute("LOGIN_MODULE")
+    data object DashboardModule : ModuleRoute("DASHBOARD_MODULE")
 }

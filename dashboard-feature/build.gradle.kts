@@ -15,30 +15,10 @@
  *  * limitations under the License.
  *
  */
-
-import eu.europa.ec.euidi.addConfigField
-
 plugins {
-    id("eudi.android.library")
+    id("eudi.android.feature")
 }
 
 android {
-    namespace = "eu.europa.ec.businesslogic"
-
-    defaultConfig {
-        addConfigField("DEEPLINK", "eudi-wallet://")
-    }
-}
-
-dependencies {
-    implementation(project(":resources-logic"))
-    implementation(libs.gson)
-    implementation(libs.androidx.biometric)
-    implementation(libs.androidx.security)
-    implementation(libs.androidx.appAuth)
-    implementation(libs.logcat)
-    implementation(libs.google.phonenumber)
-    implementation(libs.rootbeer)
-
-    testImplementation(project(":test-logic"))
+    namespace = "eu.europa.ec.dashboardfeature"
 }
