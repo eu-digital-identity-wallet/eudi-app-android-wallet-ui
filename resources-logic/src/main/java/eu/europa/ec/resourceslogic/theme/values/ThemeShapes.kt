@@ -18,16 +18,37 @@
 
 package eu.europa.ec.resourceslogic.theme.values
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Shapes
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.templates.ThemeShapesTemplate
+import eu.europa.ec.resourceslogic.theme.values.ThemeShapes.Companion.SMALL
 
 class ThemeShapes {
     companion object {
+        const val EXTRA_SMALL = 16.0
+        const val SMALL = 16.0
+        const val MEDIUM = 16.0
+        const val LARGE = 32.0
+        const val EXTRA_LARGE = 32.0
+
         val shapes = ThemeShapesTemplate(
-            extraSmall = 16.0,
-            small = 16.0,
-            medium = 16.0,
-            large = 32.0,
-            extraLarge = 32.0
+            extraSmall = EXTRA_SMALL,
+            small = SMALL,
+            medium = MEDIUM,
+            large = LARGE,
+            extraLarge = EXTRA_LARGE
         )
     }
 }
+
+val Shapes.bottomCorneredShapeSmall: Shape
+    @Composable get() = RoundedCornerShape(bottomStart = SMALL.dp, bottomEnd = SMALL.dp)
+
+val Shapes.topCorneredShapeSmall: Shape
+    @Composable get() = RoundedCornerShape(topStart = SMALL.dp, topEnd = SMALL.dp)
+
+val Shapes.allCorneredShapeSmall: Shape
+    @Composable get() = RoundedCornerShape(SMALL.dp)
