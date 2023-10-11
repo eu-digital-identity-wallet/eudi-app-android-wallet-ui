@@ -18,4 +18,7 @@
 
 package eu.europa.ec.businesslogic.config
 
-class ConfigSecurityLogicImpl : ConfigSecurityLogic
+class ConfigSecurityLogicImpl(private val configLogic: ConfigLogic) : ConfigSecurityLogic {
+    override val useNetworkLogger: Boolean
+        get() = configLogic.appBuildType == AppBuildType.DEBUG
+}

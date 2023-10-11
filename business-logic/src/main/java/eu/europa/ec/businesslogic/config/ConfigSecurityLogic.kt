@@ -63,4 +63,9 @@ interface ConfigSecurityLogic {
      * Activate Strict mode for Debug Builds
      */
     val enableStrictMode: Boolean get() = false
+
+    /**
+     * Use network logger for debug builds.
+     */
+    val useNetworkLogger: Boolean get() = false
 }

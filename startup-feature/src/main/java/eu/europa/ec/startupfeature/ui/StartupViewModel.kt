@@ -60,7 +60,7 @@ class StartupViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.OnClick -> testBiometricScreen()
+            is Event.OnClick -> testNetworkCall()
         }
     }
 
