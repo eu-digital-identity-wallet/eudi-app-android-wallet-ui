@@ -20,6 +20,7 @@ package eu.europa.ec.uilogic.container
 
 import android.content.Intent
 import android.net.Uri
+import android.view.WindowManager
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -29,6 +30,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import eu.europa.ec.businesslogic.controller.security.SecurityController
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.navigation.RouterHost
 import kotlinx.coroutines.delay
@@ -40,6 +42,7 @@ import org.koin.core.annotation.KoinExperimentalAPI
 open class EudiComponentActivity : FragmentActivity() {
 
     private val routerHost: RouterHost by inject()
+    private val securityController: SecurityController by inject()
 
     private var flowStarted: Boolean = false
 
@@ -95,6 +98,15 @@ open class EudiComponentActivity : FragmentActivity() {
         cacheDeepLink(intent)
         if (routerHost.currentFlowIsAfterOnBoarding()) {
             routerHost.popToLandingScreen()
+        }
+    }
+
+    protected fun windowFlags() {
+        if (securityController.blockScreenCapture()) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
         }
     }
 }
