@@ -24,20 +24,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import eu.europa.ec.uilogic.component.utils.screenPaddings
 
@@ -61,11 +56,10 @@ enum class ScreenNavigateAction {
     BACKABLE, CANCELABLE, NONE
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ContentScreen(
     loadingType: LoadingType = LoadingType.NONE,
-    isFullScreen: Boolean = false,
     toolBarConfig: ToolbarConfig? = null,
     navigatableAction: ScreenNavigateAction = ScreenNavigateAction.BACKABLE,
     onBack: (() -> Unit)? = null,
@@ -78,25 +72,21 @@ fun ContentScreen(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-
     val snackbarHostState = remember {
         SnackbarHostState()
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             if (topBar != null) topBar.invoke()
-            else toolBarConfig?.let {
+            else {
                 DefaultToolBar(
-                    scrollBehavior = scrollBehavior,
                     navigatableAction = navigatableAction,
                     onBack = onBack,
                     keyboardController = keyboardController,
-                    toolbarConfig = it,
+                    toolbarConfig = toolBarConfig,
                 )
-            } ?: {}
+            }
         },
         bottomBar = bottomBar ?: {},
         floatingActionButton = {
@@ -110,12 +100,8 @@ fun ContentScreen(
         }
     ) { padding ->
 
-        val calculatedPadding =
-            if (isFullScreen) PaddingValues(all = 0.dp) else screenPaddings(padding)
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(calculatedPadding)
+            modifier = Modifier.fillMaxSize()
         ) {
 
             Column(modifier = Modifier.fillMaxSize()) {

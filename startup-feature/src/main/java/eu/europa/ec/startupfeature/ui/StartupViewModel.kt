@@ -112,18 +112,13 @@ class StartupViewModel(
             Effect.Navigation.SwitchScreen(
                 screen = generateComposableNavigationLink(
                     screen = CommonScreens.Success,
-                    arguments = getSuccessScreen()
+                    arguments = generateComposableArguments(
+                        getSuccessConfig()
+                    )
                 )
             )
         }
     }
-
-    private fun getSuccessScreen(): String = generateComposableNavigationLink(
-        screen = CommonScreens.Success,
-        arguments = generateComposableArguments(
-            getSuccessConfig()
-        )
-    )
 
     private fun getSuccessConfig(): Map<String, String> =
         mapOf(
