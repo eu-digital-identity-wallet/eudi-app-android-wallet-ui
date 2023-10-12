@@ -86,4 +86,10 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_touch_id_icon,
         imageVector = null
     )
+
+    val Logo: IconData = IconData(
+        resourceId = R.drawable.ic_logo_192,
+        contentDescriptionId = R.string.content_description_logo_icon,
+        imageVector = null
+    )
 }

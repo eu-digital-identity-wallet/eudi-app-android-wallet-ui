@@ -22,27 +22,31 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.LoginScreens
+import org.koin.android.annotation.KoinViewModel
 
-object State: ViewState
+object State : ViewState
 
-sealed class Event: ViewEvent {
-    data object GoToLogin: Event()
-    data object GoToFaq: Event()
+sealed class Event : ViewEvent {
+    data object GoToLogin : Event()
+    data object GoToFaq : Event()
 }
 
-sealed class Effect: ViewSideEffect {
-    sealed class Navigation: Effect() {
-        data object Login: Navigation()
-        data object Faq: Navigation()
+sealed class Effect : ViewSideEffect {
+    sealed class Navigation : Effect() {
+        data object Login : Navigation()
+        data class Faq(val screen: String) : Navigation()
     }
 }
-class WelcomeScreenViewModel: MviViewModel<Event, State, Effect>(){
+
+@KoinViewModel
+class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State
 
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.GoToLogin -> setEffect { Effect.Navigation.Login }
-            is Event.GoToFaq -> setEffect { Effect.Navigation.Faq }
+            is Event.GoToFaq -> setEffect { Effect.Navigation.Faq(LoginScreens.Faq.screenRoute) }
         }
     }
 }

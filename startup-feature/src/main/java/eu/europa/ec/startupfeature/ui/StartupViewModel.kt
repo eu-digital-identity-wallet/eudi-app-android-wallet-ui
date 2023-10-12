@@ -30,6 +30,7 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
@@ -60,7 +61,16 @@ class StartupViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.OnClick -> testBiometricScreen()
+            is Event.OnClick -> {
+                testWelcomeScreen()
+                //testBiometricScreen()
+            }
+        }
+    }
+
+    private fun testWelcomeScreen() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(LoginScreens.Welcome.screenRoute)
         }
     }
 

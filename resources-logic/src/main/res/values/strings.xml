@@ -33,6 +33,7 @@
     <string name="content_description_close_icon">Close</string>
     <string name="content_description_error_icon">Error</string>
     <string name="content_description_touch_id_icon">Touch id icon</string>
+    <string name="content_description_logo_icon">Logo icon</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric login</string>
@@ -48,4 +49,7 @@
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
 
+    <!-- Login -->
+    <string name="label_login">Login</string>
+    <string name="label_read_faq">READ FAQs</string>
 </resources>

@@ -37,6 +37,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import eu.europa.ec.uilogic.component.utils.screenPaddings
 
@@ -64,6 +65,7 @@ enum class ScreenNavigateAction {
 @Composable
 fun ContentScreen(
     loadingType: LoadingType = LoadingType.NONE,
+    isFullScreen: Boolean = false,
     toolBarConfig: ToolbarConfig? = null,
     navigatableAction: ScreenNavigateAction = ScreenNavigateAction.BACKABLE,
     onBack: (() -> Unit)? = null,
@@ -108,10 +110,12 @@ fun ContentScreen(
         }
     ) { padding ->
 
+        val calculatedPadding =
+            if (isFullScreen) PaddingValues(all = 0.dp) else screenPaddings(padding)
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(screenPaddings(padding))
+                .padding(calculatedPadding)
         ) {
 
             Column(modifier = Modifier.fillMaxSize()) {
