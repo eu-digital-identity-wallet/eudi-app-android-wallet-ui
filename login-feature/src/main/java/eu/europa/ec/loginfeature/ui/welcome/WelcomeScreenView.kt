@@ -64,7 +64,8 @@ fun WelcomeScreen(
     viewModel: WelcomeScreenViewModel
 ) {
     ContentScreen(
-        isFullScreen = true
+        isFullScreen = true,
+        onBack = { viewModel.setEvent(Event.GoBack) }
     ) {
         Content(
             state = viewModel.viewState.value,
@@ -80,6 +81,10 @@ fun WelcomeScreen(
                         navController.navigate(navigationEffect.screen) {
                             popUpTo(LoginScreens.Faq.screenRoute) { inclusive = true }
                         }
+                    }
+
+                    is Effect.Navigation.Back -> {
+                        navController.popBackStack()
                     }
                 }
             }
@@ -154,6 +159,7 @@ fun Content(
             when (effect) {
                 is Effect.Navigation.Login -> onNavigationRequested(effect)
                 is Effect.Navigation.Faq -> onNavigationRequested(effect)
+                is Effect.Navigation.Back -> onNavigationRequested(effect)
             }
         }?.collect()
     }
