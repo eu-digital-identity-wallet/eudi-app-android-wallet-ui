@@ -20,6 +20,7 @@ package eu.europa.ec.uilogic.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -54,13 +55,14 @@ fun ContentTitle(
     subTitleStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
         color = MaterialTheme.colorScheme.textSecondaryDark
     ),
+    verticalPadding: PaddingValues = PaddingValues(bottom = SPACING_MEDIUM.dp),
     trailingLabel: String? = null,
     trailingAction: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
             .wrapContentHeight()
-            .padding(vertical = SPACING_MEDIUM.dp)
+            .padding(verticalPadding)
             .then(
                 if (trailingLabel != null) {
                     Modifier.fillMaxWidth()

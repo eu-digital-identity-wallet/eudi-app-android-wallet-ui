@@ -60,7 +60,7 @@ class StartupViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.OnClick -> testNetworkCall()
+            is Event.OnClick -> testBiometricScreen()
         }
     }
 
@@ -102,18 +102,13 @@ class StartupViewModel(
             Effect.Navigation.SwitchScreen(
                 screen = generateComposableNavigationLink(
                     screen = CommonScreens.Success,
-                    arguments = getSuccessScreen()
+                    arguments = generateComposableArguments(
+                        getSuccessConfig()
+                    )
                 )
             )
         }
     }
-
-    private fun getSuccessScreen(): String = generateComposableNavigationLink(
-        screen = CommonScreens.Success,
-        arguments = generateComposableArguments(
-            getSuccessConfig()
-        )
-    )
 
     private fun getSuccessConfig(): Map<String, String> =
         mapOf(

@@ -71,7 +71,7 @@ fun SuccessScreen(
 
     ContentScreen(
         onBack = { viewModel.setEvent(Event.BackPressed) },
-        navigatableAction = ScreenNavigateAction.NONE,
+        navigatableAction = ScreenNavigateAction.NONE
     ) { paddingValues ->
         SuccessScreenView(
             state = viewModel.viewState.value,
@@ -131,7 +131,7 @@ private fun SuccessScreenView(
                 titleStyle = MaterialTheme.typography.headlineSmall.copy(
                     color = MaterialTheme.colorScheme.colorSuccess
                 ),
-                subtitle = state.successConfig.content
+                subtitle = state.successConfig.content,
             )
             VSpacer.Small()
         }
