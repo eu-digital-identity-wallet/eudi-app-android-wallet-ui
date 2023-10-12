@@ -63,22 +63,28 @@ fun WelcomeScreen(
     navController: NavController,
     viewModel: WelcomeScreenViewModel
 ) {
-    Content(
-        state = viewModel.viewState.value,
-        effectFlow = viewModel.effect,
-        onEventSend = { viewModel.setEvent(it) },
-        onNavigationRequested = { navigationEffect ->
-            when (navigationEffect) {
-                is Effect.Navigation.Login -> {
-                    // TODO navigate to Login screen
-                }
+    ContentScreen(
+        isFullScreen = true
+    ) {
+        Content(
+            state = viewModel.viewState.value,
+            effectFlow = viewModel.effect,
+            onEventSend = { viewModel.setEvent(it) },
+            onNavigationRequested = { navigationEffect ->
+                when (navigationEffect) {
+                    is Effect.Navigation.Login -> {
+                        // TODO navigate to Login screen
+                    }
 
-                is Effect.Navigation.Faq -> {
-                    // TODO navigate to FAQ screen
+                    is Effect.Navigation.Faq -> {
+                        navController.navigate(navigationEffect.screen) {
+                            popUpTo(LoginScreens.Faq.screenRoute) { inclusive = true }
+                        }
+                    }
                 }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable

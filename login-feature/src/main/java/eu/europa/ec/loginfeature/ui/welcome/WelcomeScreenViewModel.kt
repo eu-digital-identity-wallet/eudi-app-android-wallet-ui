@@ -30,14 +30,12 @@ object State : ViewState
 sealed class Event : ViewEvent {
     data object GoToLogin : Event()
     data object GoToFaq : Event()
-    data object GoBack : Event()
 }
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Login : Navigation()
         data class Faq(val screen: String) : Navigation()
-        data object Back : Navigation()
     }
 }
 
@@ -49,7 +47,6 @@ class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
         when (event) {
             is Event.GoToLogin -> setEffect { Effect.Navigation.Login }
             is Event.GoToFaq -> setEffect { Effect.Navigation.Faq(LoginScreens.Faq.screenRoute) }
-            is Event.GoBack -> setEffect { Effect.Navigation.Back }
         }
     }
 }
