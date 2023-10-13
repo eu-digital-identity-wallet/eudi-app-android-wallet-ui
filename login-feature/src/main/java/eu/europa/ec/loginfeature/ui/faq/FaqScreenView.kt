@@ -24,8 +24,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -73,7 +75,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.uilogic.component.ContentScreen
+import eu.europa.ec.uilogic.component.ContentTitle
+import eu.europa.ec.uilogic.component.ScreenNavigateAction
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.flow.Flow
@@ -85,8 +90,7 @@ fun FaqScreen(
     navController: NavController,
     viewModel: FaqScreenViewModel
 ) {
-    ContentScreen {
-
+    ContentScreen(navigatableAction = ScreenNavigateAction.BACKABLE) {
         Content(
             state = viewModel.viewState.value,
             effectFlow = viewModel.effect,
@@ -108,7 +112,6 @@ fun FaqScreen(
             }
         )
     }
-
 }
 
 @Composable
@@ -116,43 +119,69 @@ private fun Content(
     state: State,
     effectFlow: Flow<Effect>?,
     onEventSend: (Event) -> Unit,
-    onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
+    onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
 ) {
 
-    ExpandableListScreen(
-        sections = listOf(
-            CollapsableSection(
-                title = "Question A goes Here",
-                description = "Lorem ipsum dolor sit amet," +
-                        " consectetur adipiscing elit,"
-            ),
-            CollapsableSection(
-                title = "Question B goes Here",
-                description = "Duis aute irure dolor in reprehenderit in" +
-                        " voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-            ),
-            CollapsableSection(
-                title = "Question C goes Here",
-                description = "Excepteur sint occaecat cupidatat non proident, " +
-                        "sunt in culpa qui officia deserunt mollit anim id est laborum."
-            ),
-            CollapsableSection(
-                title = "Question D goes Here",
-                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-                        "sed  magn laboris nisi ut aliquip ex ea commodo consequat."
-            ),
-            CollapsableSection(
-                title = "Question E goes Here",
-                description = "Duis aute irure dolor in reprehenderit" +
-                        " in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-            ),
-            CollapsableSection(
-                title = "Question F goes Here",
-                description = "Excepteur sint occaecat cupidatat non proident, " +
-                        "sunt in culpa qui officia deserunt mollit anim id est laborum."
-            ),
-        ),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
     )
+    {
+        var text by remember { mutableStateOf("") }
+        ContentTitle("FAQs")
+
+        OutlinedTextField(
+            value = text,
+            onValueChange = { text = it },
+            singleLine = true,
+            label = { Text("Search") },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = LightGray
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(start = 5.dp, end = 10.dp, top = 10.dp, bottom = 20.dp)
+                .clip(RoundedCornerShape(12.dp)),
+        )
+
+        ExpandableListScreen(
+            sections = listOf(
+                CollapsableSection(
+                    title = "Question A goes Here",
+                    description = "Lorem ipsum dolor sit amet," +
+                            " consectetur adipiscing elit,"
+                ),
+                CollapsableSection(
+                    title = "Question B goes Here",
+                    description = "Duis aute irure dolor in reprehenderit in" +
+                            " voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+                ),
+                CollapsableSection(
+                    title = "Question C goes Here",
+                    description = "Excepteur sint occaecat cupidatat non proident, " +
+                            "sunt in culpa qui officia deserunt mollit anim id est laborum."
+                ),
+                CollapsableSection(
+                    title = "Question D goes Here",
+                    description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+                            "sed  magn laboris nisi ut aliquip ex ea commodo consequat."
+                ),
+                CollapsableSection(
+                    title = "Question E goes Here",
+                    description = "Duis aute irure dolor in reprehenderit" +
+                            " in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+                ),
+                CollapsableSection(
+                    title = "Question F goes Here",
+                    description = "Excepteur sint occaecat cupidatat non proident, " +
+                            "sunt in culpa qui officia deserunt mollit anim id est laborum."
+                ),
+            ),
+        )
+    }
 
     LaunchedEffect(Unit) {
         effectFlow?.onEach { effect ->
@@ -164,102 +193,79 @@ private fun Content(
     }
 }
 
-
 data class CollapsableSection(val title: String, val description: String)
 
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpandableListScreen(
     sections: List<CollapsableSection>,
 ) {
-
     var expandedItemIndex by remember { mutableStateOf(-1) }
 
+    LazyColumn {
+        sections.forEachIndexed { i, dataItem ->
+            var isExpanded by mutableStateOf(i == expandedItemIndex)
+
+            item(key = "header_$i") {
+                Column(
+                    modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(6.dp)
+                        .background(
+                            MaterialTheme.colorScheme.backgroundDefault,
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .clickable {
+                            expandedItemIndex = if (isExpanded) -1 else i
+                            isExpanded = !isExpanded
+                        }) {
+
+                    Row(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+
+                    ) {
+                        Text(
+                            text = dataItem.title,
+                            Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Black
+                        )
+                        Icon(
+                            Icons.Default.run {
+                                if (isExpanded)
+                                    KeyboardArrowDown
+                                else
+                                    KeyboardArrowUp
+                            },
+                            contentDescription = "arrow-down",
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
 
 
-
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-            var text by remember { mutableStateOf("") }
-
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                singleLine = true,
-                label = { Text("Search") },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = LightGray
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(start = 5.dp, end = 10.dp, top = 80.dp, bottom = 20.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-            )
-
-            LazyColumn( modifier = Modifier.fillMaxSize()) {
-                sections.forEachIndexed { i, dataItem ->
-                    var isExpanded by mutableStateOf(i == expandedItemIndex)
-
-                    item(key = "header_$i") {
-                        Column(
+                    if (isExpanded) {
+                        Box(
                             modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .padding(6.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.inverseOnSurface,
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .clickable {
-                                    expandedItemIndex = if (isExpanded) -1 else i
-                                    isExpanded = !isExpanded
-                                }) {
-
-                            Row(
-                                modifier = Modifier
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-
-                            ) {
-                                Text(text = dataItem.title, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, color = Black)
-                                Icon(
-                                    Icons.Default.run {
-                                        if (isExpanded)
-                                            KeyboardArrowDown
-                                        else
-                                            KeyboardArrowUp
-                                    },
-                                    contentDescription = "arrow-down",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                            }
-
-
-                            if (isExpanded) {
-                                Box(
-                                    modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        //.clip(shape = MaterialTheme.shapes.small)
-                                        .padding(horizontal = 12.dp, vertical = 16.dp)
-                                ) {
-                                    Text(
-                                        text = dataItem.description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Gray
-                                    )
-                                }
-                            }
+                                .padding(horizontal = 12.dp, vertical = 16.dp)
+                        ) {
+                            Text(
+                                text = dataItem.description,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Gray
+                            )
                         }
-
                     }
                 }
+
             }
         }
+    }
+
 
 }
 
