@@ -30,11 +30,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import eu.europa.ec.uilogic.component.ContentError
-import eu.europa.ec.uilogic.component.ContentScreen
-import eu.europa.ec.uilogic.component.ContentTitle
-import eu.europa.ec.uilogic.component.LoadingIndicator
-import eu.europa.ec.uilogic.component.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.loader.LoadingIndicator
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -50,7 +49,8 @@ fun LoadingScreen(
     ContentScreen(
         isLoading = false,
         navigatableAction = ScreenNavigateAction.CANCELABLE,
-        onBack = { viewModel.setEvent(Event.GoBack) }
+        onBack = { viewModel.setEvent(Event.GoBack) },
+        contentErrorConfig = state.error
     ) { paddingValues ->
         LoadingScreenView(
             state = state,
@@ -75,18 +75,6 @@ fun LoadingScreen(
                 }
             },
             paddingValues = paddingValues
-        )
-    }
-
-    state.error?.let {
-        ContentError(
-            errorSubTitle = it.errorMsg,
-            onRetry = {
-                viewModel.setEvent(Event.DoWork)
-            },
-            onCancel = {
-                viewModel.setEvent(Event.GoBack)
-            }
         )
     }
 

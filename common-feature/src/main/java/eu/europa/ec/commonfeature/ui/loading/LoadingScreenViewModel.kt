@@ -19,6 +19,7 @@
 package eu.europa.ec.commonfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -29,12 +30,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-data class LoadingError(
-    val errorMsg: String
-)
-
 data class State(
-    val error: LoadingError?,
+    val error: ContentErrorConfig? = null,
     val screenTitle: String,
     val screenSubtitle: String,
 ) : ViewState
@@ -118,6 +115,9 @@ abstract class CommonLoadingViewModel : MviViewModel<Event, State, Effect>() {
 
             is Event.GoBack -> {
                 job.cancel()
+                setState {
+                    copy(error = null)
+                }
                 doNavigation(NavigationType.POP)
             }
 
@@ -131,7 +131,13 @@ abstract class CommonLoadingViewModel : MviViewModel<Event, State, Effect>() {
 
     protected fun setErrorState(errorMsg: String) {
         setState {
-            copy(error = LoadingError(errorMsg))
+            copy(
+                error = ContentErrorConfig(
+                    errorSubTitle = errorMsg,
+                    onCancel = { setEvent(Event.GoBack) },
+                    onRetry = { setEvent(Event.DoWork) }
+                )
+            )
         }
     }
 

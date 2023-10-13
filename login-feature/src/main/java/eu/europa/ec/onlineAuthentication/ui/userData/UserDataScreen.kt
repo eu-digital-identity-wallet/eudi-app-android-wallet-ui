@@ -38,17 +38,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.uilogic.component.ContentError
-import eu.europa.ec.uilogic.component.ContentScreen
-import eu.europa.ec.uilogic.component.ContentTitle
 import eu.europa.ec.uilogic.component.DialogBottomSheet
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
-import eu.europa.ec.uilogic.component.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.VSpacer
-import eu.europa.ec.uilogic.component.WrapPrimaryButton
-import eu.europa.ec.uilogic.component.WrapSecondaryButton
+import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -72,7 +71,8 @@ fun UserDataScreen(
     ContentScreen(
         navigatableAction = ScreenNavigateAction.NONE,
         isLoading = state.isLoading,
-        onBack = { viewModel.setEvent(Event.GoBack) }
+        onBack = { viewModel.setEvent(Event.GoBack) },
+        contentErrorConfig = state.error
     ) { paddingValues ->
         UserDataScreenView(
             state = state,
@@ -114,18 +114,6 @@ fun UserDataScreen(
                 )
             }
         }
-    }
-
-    state.error?.let {
-        ContentError(
-            errorSubTitle = it.errorMsg,
-            onRetry = {
-                viewModel.setEvent(it.event)
-            },
-            onCancel = {
-                viewModel.setEvent(Event.DismissError)
-            }
-        )
     }
 
     OneTimeLaunchedEffect {

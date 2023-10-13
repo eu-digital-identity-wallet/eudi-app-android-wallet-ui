@@ -24,6 +24,7 @@ import eu.europa.ec.onlineAuthentication.interactor.OnlineAuthenticationInteract
 import eu.europa.ec.onlineAuthentication.model.UserDataDomain
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -34,14 +35,9 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
-data class UserDataError(
-    val event: Event,
-    val errorMsg: String
-)
-
 data class State(
     val isLoading: Boolean = true,
-    val error: UserDataError? = null,
+    val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
 
     val screenTitle: String,
@@ -109,6 +105,9 @@ class UserDataViewModel(
             }
 
             is Event.GoBack -> {
+                setState {
+                    copy(error = null)
+                }
                 goBackToSplashScreen()
             }
 
@@ -156,9 +155,10 @@ class UserDataViewModel(
                         setState {
                             copy(
                                 isLoading = false,
-                                error = UserDataError(
-                                    event = event,
-                                    errorMsg = response.error
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(event) },
+                                    errorSubTitle = response.error,
+                                    onCancel = { setEvent(Event.GoBack) }
                                 )
                             )
                         }

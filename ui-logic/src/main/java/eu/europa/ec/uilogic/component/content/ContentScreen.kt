@@ -24,11 +24,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -49,6 +50,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.loader.LoadingIndicator
 import eu.europa.ec.uilogic.component.snackbar.Snackbar
+import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
+import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.MAX_TOOLBAR_ACTIONS
 import eu.europa.ec.uilogic.component.utils.Z_STICKY
 import eu.europa.ec.uilogic.component.utils.screenPaddings
@@ -75,6 +78,35 @@ data class ToolbarConfig(
 
 enum class ScreenNavigateAction {
     BACKABLE, CANCELABLE, NONE
+}
+
+@Composable
+fun ContentScreen(
+    isLoading: Boolean = false,
+    toolBarConfig: ToolbarConfig? = null,
+    navigatableAction: ScreenNavigateAction = ScreenNavigateAction.BACKABLE,
+    onBack: (() -> Unit)? = null,
+    topBar: @Composable (() -> Unit)? = null,
+    bottomBar: @Composable (() -> Unit)? = null,
+    stickyBottom: @Composable (() -> Unit)? = null,
+    fab: FabData? = null,
+    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    contentErrorConfig: ContentErrorConfig? = null,
+    bodyContent: @Composable (PaddingValues) -> Unit
+) {
+    ContentScreen(
+        loadingType = if (isLoading) LoadingType.NORMAL else LoadingType.NONE,
+        toolBarConfig = toolBarConfig,
+        navigatableAction = navigatableAction,
+        onBack = onBack,
+        topBar = topBar,
+        bottomBar = bottomBar,
+        stickyBottom = stickyBottom,
+        fab = fab,
+        floatingActionButtonPosition = floatingActionButtonPosition,
+        contentErrorConfig = contentErrorConfig,
+        bodyContent = bodyContent
+    )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -144,6 +176,7 @@ fun ContentScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(screenPaddings(padding))
                                 .zIndex(Z_STICKY),
                             contentAlignment = Alignment.Center
                         ) {
