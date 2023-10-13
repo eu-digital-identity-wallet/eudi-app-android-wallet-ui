@@ -53,6 +53,7 @@ import eu.europa.ec.uilogic.component.snackbar.Snackbar
 import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
 import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.MAX_TOOLBAR_ACTIONS
+import eu.europa.ec.uilogic.component.utils.TopSpacing
 import eu.europa.ec.uilogic.component.utils.Z_STICKY
 import eu.europa.ec.uilogic.component.utils.screenPaddings
 import eu.europa.ec.uilogic.component.wrap.FabData
@@ -130,10 +131,13 @@ fun ContentScreen(
         SnackbarHostState()
     }
 
+    val hasToolBar = contentErrorConfig != null || navigatableAction != ScreenNavigateAction.NONE
+    val topSpacing = if (hasToolBar) TopSpacing.WithToolbar else TopSpacing.WithoutToolbar
+
     Scaffold(
         topBar = {
             if (topBar != null) topBar.invoke()
-            else {
+            else if (hasToolBar) {
                 DefaultToolBar(
                     navigatableAction = contentErrorConfig?.let {
                         ScreenNavigateAction.CANCELABLE
@@ -169,7 +173,7 @@ fun ContentScreen(
                 Column(modifier = Modifier.fillMaxSize()) {
 
                     Box(modifier = Modifier.weight(1f)) {
-                        bodyContent(screenPaddings(padding))
+                        bodyContent(screenPaddings(padding, topSpacing))
                     }
 
                     stickyBottom?.let { stickyBottomContent ->

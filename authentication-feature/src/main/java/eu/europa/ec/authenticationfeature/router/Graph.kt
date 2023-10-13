@@ -16,59 +16,44 @@
  *
  */
 
-package eu.europa.ec.router
+package eu.europa.ec.authenticationfeature.router
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
+import eu.europa.ec.authenticationfeature.ui.loading.AuthenticationLoadingScreen
+import eu.europa.ec.authenticationfeature.ui.request.AuthenticationRequestScreen
 import eu.europa.ec.businesslogic.BuildConfig
-import eu.europa.ec.onlineAuthentication.ui.loading.OnlineAuthenticationLoadingScreen
-import eu.europa.ec.onlineAuthentication.ui.userData.UserDataScreen
+import eu.europa.ec.uilogic.navigation.AuthenticationScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import eu.europa.ec.uilogic.navigation.OnlineAuthenticationScreens
-import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
-import org.koin.core.parameter.parametersOf
 
-fun NavGraphBuilder.featureOnlineAuthenticationGraph(navController: NavController) {
+fun NavGraphBuilder.featureAuthenticationGraph(navController: NavController) {
     navigation(
-        startDestination = OnlineAuthenticationScreens.UserData.screenRoute,
-        route = ModuleRoute.OnlineAuthenticationModule.route
+        startDestination = AuthenticationScreens.Request.screenRoute,
+        route = ModuleRoute.AuthenticationModule.route
     ) {
         composable(
-            route = OnlineAuthenticationScreens.UserData.screenRoute,
+            route = AuthenticationScreens.Request.screenRoute,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                        BuildConfig.DEEPLINK + OnlineAuthenticationScreens.UserData.screenRoute
-                }
-            ),
-            arguments = listOf(
-                navArgument("userId") {
-                    type = NavType.StringType
+                        BuildConfig.DEEPLINK + AuthenticationScreens.Request.screenRoute
                 }
             )
         ) {
-            UserDataScreen(
+            AuthenticationRequestScreen(
                 navController,
-                getViewModel(
-                    parameters = {
-                        parametersOf(
-                            it.arguments?.getString("userId").orEmpty()
-                        )
-                    }
-                )
+                koinViewModel()
             )
         }
 
         composable(
-            route = OnlineAuthenticationScreens.Loading.screenRoute,
+            route = AuthenticationScreens.Loading.screenRoute,
         ) {
-            OnlineAuthenticationLoadingScreen(
+            AuthenticationLoadingScreen(
                 navController,
                 koinViewModel()
             )

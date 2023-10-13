@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.onlineAuthentication.ui.loading
+package eu.europa.ec.authenticationfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
@@ -25,18 +25,19 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.navigation.AuthenticationScreens
 import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.OnlineAuthenticationScreens
 import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class OnlineAuthenticationLoadingViewModel constructor(
+class AuthenticationLoadingViewModel constructor(
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider
 ) : CommonLoadingViewModel() {
@@ -50,11 +51,11 @@ class OnlineAuthenticationLoadingViewModel constructor(
     }
 
     override fun getPreviousScreen(): Screen {
-        return OnlineAuthenticationScreens.UserData
+        return AuthenticationScreens.Request
     }
 
     override fun getCallerScreen(): Screen {
-        return OnlineAuthenticationScreens.Loading
+        return AuthenticationScreens.Loading
     }
 
     override fun getNextScreen(): String {
@@ -67,13 +68,8 @@ class OnlineAuthenticationLoadingViewModel constructor(
     }
 
     override fun doWork() {
-        println("I am doing work.")
-
         viewModelScope.launch {
-            // Interactor makes a call here..
-            // If it succeeds, call doNavigation(NavigationType.PUSH)
-            // else, call setErrorState(errorMsg = interactor.errorMsg)
-
+            delay(5000)
             doNavigation(NavigationType.PUSH)
         }
     }

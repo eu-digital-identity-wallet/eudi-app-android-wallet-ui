@@ -16,40 +16,39 @@
  *
  */
 
-package eu.europa.ec.onlineAuthentication.interactor
+package eu.europa.ec.authenticationfeature.interactor
 
+import eu.europa.ec.authenticationfeature.model.RequestDomain
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.onlineAuthentication.model.UserDataDomain
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-sealed class OnlineAuthenticationInteractorPartialState {
-    data class Success(val userDataDomain: UserDataDomain) :
-        OnlineAuthenticationInteractorPartialState()
+sealed class AuthenticationInteractorPartialState {
+    data class Success(val requestDomain: RequestDomain) :
+        AuthenticationInteractorPartialState()
 
-    data class Failure(val error: String) : OnlineAuthenticationInteractorPartialState()
+    data class Failure(val error: String) : AuthenticationInteractorPartialState()
 }
 
-interface OnlineAuthenticationInteractor {
-    fun getUserData(userId: String): Flow<OnlineAuthenticationInteractorPartialState>
+interface AuthenticationInteractor {
+    fun getUserData(): Flow<AuthenticationInteractorPartialState>
 }
 
-class OnlineAuthenticationInteractorImpl(
+class AuthenticationInteractorImpl(
     private val resourceProvider: ResourceProvider,
-) : OnlineAuthenticationInteractor {
+) : AuthenticationInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getUserData(userId: String): Flow<OnlineAuthenticationInteractorPartialState> =
+    override fun getUserData(): Flow<AuthenticationInteractorPartialState> =
         flow {
             delay(2_000L)
-
             emit(
-                OnlineAuthenticationInteractorPartialState.Success(
-                    userDataDomain = UserDataDomain(
+                AuthenticationInteractorPartialState.Success(
+                    requestDomain = RequestDomain(
                         id = "AG6743267807776",
                         dateOfBirth = "10/12/1990",
                         taxClearanceNumber = "67769685649007-9"
@@ -57,7 +56,7 @@ class OnlineAuthenticationInteractorImpl(
                 )
             )
         }.safeAsync {
-            OnlineAuthenticationInteractorPartialState.Failure(
+            AuthenticationInteractorPartialState.Failure(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }

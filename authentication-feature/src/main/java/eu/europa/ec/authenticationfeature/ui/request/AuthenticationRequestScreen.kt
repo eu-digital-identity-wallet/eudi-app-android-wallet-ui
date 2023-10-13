@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.onlineAuthentication.ui.userData
+package eu.europa.ec.authenticationfeature.ui.request
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -56,9 +56,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserDataScreen(
+fun AuthenticationRequestScreen(
     navController: NavController,
-    viewModel: UserDataViewModel
+    viewModel: AuthenticationRequestViewModel
 ) {
     val state = viewModel.viewState.value
 
@@ -74,7 +74,7 @@ fun UserDataScreen(
         onBack = { viewModel.setEvent(Event.GoBack) },
         contentErrorConfig = state.error
     ) { paddingValues ->
-        UserDataScreenView(
+        Content(
             state = state,
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
@@ -85,11 +85,8 @@ fun UserDataScreen(
                         navController.navigate(navigationEffect.screenRoute)
                     }
 
-                    is Effect.Navigation.PopBackStackUpTo -> {
-                        navController.popBackStack(
-                            route = navigationEffect.screenRoute,
-                            inclusive = navigationEffect.inclusive
-                        )
+                    is Effect.Navigation.Pop -> {
+                        navController.popBackStack()
                     }
                 }
             },
@@ -122,7 +119,7 @@ fun UserDataScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun UserDataScreenView(
+private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
@@ -148,7 +145,7 @@ private fun UserDataScreenView(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
         ) {
-            state.userData?.let { userData ->
+            state.request?.let { userData ->
                 item {
                     InfoTextWithNameAndValue(
                         infoName = stringResource(id = R.string.online_authentication_userData_id_number),

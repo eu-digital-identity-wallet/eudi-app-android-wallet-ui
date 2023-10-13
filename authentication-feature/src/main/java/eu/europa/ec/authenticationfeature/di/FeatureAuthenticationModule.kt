@@ -16,22 +16,22 @@
  *
  */
 
-package eu.europa.ec.onlineAuthentication.di
+package eu.europa.ec.authenticationfeature.di
 
-import eu.europa.ec.onlineAuthentication.interactor.OnlineAuthenticationInteractor
-import eu.europa.ec.onlineAuthentication.interactor.OnlineAuthenticationInteractorImpl
+import eu.europa.ec.authenticationfeature.interactor.AuthenticationInteractor
+import eu.europa.ec.authenticationfeature.interactor.AuthenticationInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 
 @Module
-@ComponentScan("eu.europa.ec.onlineAuthentication")
-class FeatureOnlineAuthenticationModule
+@ComponentScan("eu.europa.ec.authenticationfeature")
+class FeatureAuthenticationModule
 
 @Factory
-fun provideOnlineAuthenticationInteractor(
+fun provideAuthenticationInteractor(
     resourceProvider: ResourceProvider,
-): OnlineAuthenticationInteractor {
-    return OnlineAuthenticationInteractorImpl(resourceProvider)
+): AuthenticationInteractor {
+    return AuthenticationInteractorImpl(resourceProvider)
 }

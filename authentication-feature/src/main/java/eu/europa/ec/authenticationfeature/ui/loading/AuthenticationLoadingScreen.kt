@@ -16,10 +16,19 @@
  *
  */
 
-package eu.europa.ec.onlineAuthentication.model
+package eu.europa.ec.authenticationfeature.ui.loading
 
-data class UserDataDomain(
-    val id: String,
-    val dateOfBirth: String,
-    val taxClearanceNumber: String,
-)
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
+
+@Composable
+fun AuthenticationLoadingScreen(
+    navController: NavController,
+    viewModel: AuthenticationLoadingViewModel
+) {
+    LoadingScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
+}

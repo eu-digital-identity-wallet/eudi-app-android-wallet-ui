@@ -18,7 +18,6 @@
 
 package eu.europa.ec.commonfeature.ui.loading
 
-import androidx.lifecycle.viewModelScope
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -26,9 +25,6 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.Screen
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 data class State(
     val error: ContentErrorConfig? = null,
@@ -53,7 +49,6 @@ sealed class Effect : ViewSideEffect {
 }
 
 abstract class CommonLoadingViewModel : MviViewModel<Event, State, Effect>() {
-    private lateinit var job: Job
 
     /**
      * The title of the re-usable [LoadingScreen] .
@@ -101,20 +96,9 @@ abstract class CommonLoadingViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.DoWork -> {
-                job = viewModelScope.launch {
-                    setState {
-                        copy(error = null)
-                    }
-
-                    delay(2_000L)
-
-                    doWork()
-                }
-            }
+            is Event.DoWork -> doWork()
 
             is Event.GoBack -> {
-                job.cancel()
                 setState {
                     copy(error = null)
                 }

@@ -16,10 +16,10 @@
  *
  */
 
-plugins {
-    id("eudi.android.feature")
-}
+package eu.europa.ec.authenticationfeature.model
 
-android {
-    namespace = "eu.europa.ec.loginfeature"
-}
+data class RequestDomain(
+    val id: String,
+    val dateOfBirth: String,
+    val taxClearanceNumber: String,
+)
