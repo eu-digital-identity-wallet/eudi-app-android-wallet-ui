@@ -36,7 +36,6 @@ class MainActivity : EudiComponentActivity() {
                 featureCommonGraph(it)
                 featureLoginGraph(it)
                 featureDashboardGraph(it)
-                featureLoginGraph(it)
             }
         }
     }
