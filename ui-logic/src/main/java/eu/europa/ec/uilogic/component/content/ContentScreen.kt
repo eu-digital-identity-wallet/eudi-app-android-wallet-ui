@@ -24,10 +24,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -48,7 +50,10 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.loader.LoadingIndicator
 import eu.europa.ec.uilogic.component.snackbar.Snackbar
+import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
+import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.MAX_TOOLBAR_ACTIONS
+import eu.europa.ec.uilogic.component.utils.TopSpacing
 import eu.europa.ec.uilogic.component.utils.Z_STICKY
 import eu.europa.ec.uilogic.component.utils.screenPaddings
 import eu.europa.ec.uilogic.component.wrap.FabData
@@ -76,6 +81,35 @@ enum class ScreenNavigateAction {
     BACKABLE, CANCELABLE, NONE
 }
 
+@Composable
+fun ContentScreen(
+    isLoading: Boolean = false,
+    toolBarConfig: ToolbarConfig? = null,
+    navigatableAction: ScreenNavigateAction = ScreenNavigateAction.BACKABLE,
+    onBack: (() -> Unit)? = null,
+    topBar: @Composable (() -> Unit)? = null,
+    bottomBar: @Composable (() -> Unit)? = null,
+    stickyBottom: @Composable (() -> Unit)? = null,
+    fab: FabData? = null,
+    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    contentErrorConfig: ContentErrorConfig? = null,
+    bodyContent: @Composable (PaddingValues) -> Unit
+) {
+    ContentScreen(
+        loadingType = if (isLoading) LoadingType.NORMAL else LoadingType.NONE,
+        toolBarConfig = toolBarConfig,
+        navigatableAction = navigatableAction,
+        onBack = onBack,
+        topBar = topBar,
+        bottomBar = bottomBar,
+        stickyBottom = stickyBottom,
+        fab = fab,
+        floatingActionButtonPosition = floatingActionButtonPosition,
+        contentErrorConfig = contentErrorConfig,
+        bodyContent = bodyContent
+    )
+}
+
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ContentScreen(
@@ -97,10 +131,13 @@ fun ContentScreen(
         SnackbarHostState()
     }
 
+    val hasToolBar = contentErrorConfig != null || navigatableAction != ScreenNavigateAction.NONE
+    val topSpacing = if (hasToolBar) TopSpacing.WithToolbar else TopSpacing.WithoutToolbar
+
     Scaffold(
         topBar = {
             if (topBar != null) topBar.invoke()
-            else {
+            else if (hasToolBar) {
                 DefaultToolBar(
                     navigatableAction = contentErrorConfig?.let {
                         ScreenNavigateAction.CANCELABLE
@@ -136,13 +173,14 @@ fun ContentScreen(
                 Column(modifier = Modifier.fillMaxSize()) {
 
                     Box(modifier = Modifier.weight(1f)) {
-                        bodyContent(screenPaddings(padding))
+                        bodyContent(screenPaddings(padding, topSpacing))
                     }
 
                     stickyBottom?.let { stickyBottomContent ->
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(screenPaddings(padding))
                                 .zIndex(Z_STICKY),
                             contentAlignment = Alignment.Center
                         ) {
@@ -176,7 +214,8 @@ private fun DefaultToolBar(
     TopAppBar(
         title = {
             Text(
-                text = toolbarConfig?.title.orEmpty()
+                text = toolbarConfig?.title.orEmpty(),
+                color = MaterialTheme.colorScheme.primary
             )
         },
         navigationIcon = {
@@ -192,7 +231,8 @@ private fun DefaultToolBar(
                     onClick = {
                         onBack?.invoke()
                         keyboardController?.hide()
-                    }
+                    },
+                    customTint = MaterialTheme.colorScheme.primary
                 )
             }
         },
@@ -208,7 +248,8 @@ private fun DefaultToolBar(
                         WrapIconButton(
                             iconData = visibleToolbarAction.icon,
                             onClick = visibleToolbarAction.onClick,
-                            enabled = visibleToolbarAction.enabled
+                            enabled = visibleToolbarAction.enabled,
+                            customTint = MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -219,7 +260,8 @@ private fun DefaultToolBar(
                         WrapIconButton(
                             onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
                             iconData = iconMore,
-                            enabled = true
+                            enabled = true,
+                            customTint = MaterialTheme.colorScheme.primary
                         )
                         DropdownMenu(
                             expanded = dropDownMenuExpanded,
@@ -238,7 +280,15 @@ private fun DefaultToolBar(
                                             Text(text = stringResource(id = dropDownMenuToolbarActionIcon.contentDescriptionId))
                                         },
                                         trailingIcon = {
-                                            WrapIcon(iconData = dropDownMenuToolbarActionIcon)
+                                            WrapIcon(
+                                                iconData = dropDownMenuToolbarActionIcon,
+                                                customTint = MaterialTheme.colorScheme.primary,
+                                                contentAlpha = if (dropDownMenuToolbarAction.enabled) {
+                                                    ALPHA_ENABLED
+                                                } else {
+                                                    ALPHA_DISABLED
+                                                }
+                                            )
                                         }
                                     )
                                 }

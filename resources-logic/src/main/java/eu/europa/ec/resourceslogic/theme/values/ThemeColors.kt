@@ -122,7 +122,7 @@ class ThemeColors {
         private const val eudiw_theme_dark_inversePrimary = 0xFF8B3F94
         private const val eudiw_theme_dark_surfaceTint = 0xFFFBAAFF
         private const val eudiw_theme_dark_outlineVariant = 0xFF4D444C
-        private const val eudiw_theme_dark_scrim = black
+        private const val eudiw_theme_dark_scrim = white
 
         val lightColors = ThemeColorsTemplate(
             primary = eudiw_theme_light_primary,

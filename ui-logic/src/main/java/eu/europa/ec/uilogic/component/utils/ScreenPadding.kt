@@ -21,9 +21,21 @@ package eu.europa.ec.uilogic.component.utils
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
 
-fun screenPaddings(append: PaddingValues? = null) = PaddingValues(
+enum class TopSpacing {
+    WithToolbar, WithoutToolbar
+}
+
+fun screenPaddings(
+    append: PaddingValues? = null,
+    topSpacing: TopSpacing = TopSpacing.WithToolbar
+) = PaddingValues(
     start = SPACING_MEDIUM.dp,
-    top = SPACING_MEDIUM.dp + (append?.calculateTopPadding() ?: 0.dp),
+    top = calculateTopSpacing(topSpacing).dp + (append?.calculateTopPadding() ?: 0.dp),
     end = SPACING_MEDIUM.dp,
     bottom = SPACING_MEDIUM.dp + (append?.calculateBottomPadding() ?: 0.dp)
 )
+
+private fun calculateTopSpacing(topSpacing: TopSpacing): Int = when (topSpacing) {
+    TopSpacing.WithToolbar -> SPACING_SMALL
+    TopSpacing.WithoutToolbar -> SPACING_EXTRA_LARGE
+}

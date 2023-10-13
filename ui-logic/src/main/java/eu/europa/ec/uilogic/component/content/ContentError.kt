@@ -60,8 +60,7 @@ internal fun ContentError(config: ContentErrorConfig, paddingValues: PaddingValu
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(id = R.string.generic_error_button_retry),
-                    Modifier.weight(1f)
+                    text = stringResource(id = R.string.generic_error_button_retry)
                 )
             }
         }

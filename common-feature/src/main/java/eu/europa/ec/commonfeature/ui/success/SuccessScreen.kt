@@ -48,7 +48,6 @@ import eu.europa.ec.resourceslogic.theme.values.colorSuccess
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -70,6 +69,7 @@ fun SuccessScreen(
     val context = LocalContext.current
 
     ContentScreen(
+        isLoading = false,
         onBack = { viewModel.setEvent(Event.BackPressed) },
         navigatableAction = ScreenNavigateAction.NONE
     ) { paddingValues ->
@@ -133,7 +133,6 @@ private fun SuccessScreenView(
                 ),
                 subtitle = state.successConfig.content,
             )
-            VSpacer.Small()
         }
 
         val imageConfig = state.successConfig.imageConfig

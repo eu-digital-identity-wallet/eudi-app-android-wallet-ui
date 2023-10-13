@@ -29,6 +29,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.AuthenticationScreens
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
@@ -40,6 +41,7 @@ import org.koin.android.annotation.KoinViewModel
 
 sealed class Event : ViewEvent {
     data object OnClick : Event()
+    data object OnlineAuthenticationClicked : Event()
 }
 
 object State : ViewState
@@ -61,6 +63,15 @@ class StartupViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.OnClick -> testBiometricScreen()
+            is Event.OnlineAuthenticationClicked -> testReusableLoadingScreen()
+        }
+    }
+
+    private fun testReusableLoadingScreen() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screen = AuthenticationScreens.Request.screenRoute
+            )
         }
     }
 
