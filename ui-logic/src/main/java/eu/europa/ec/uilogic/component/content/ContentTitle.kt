@@ -51,7 +51,9 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 @Composable
 fun ContentTitle(
     title: String? = null,
-    titleStyle: TextStyle = MaterialTheme.typography.headlineSmall,
+    titleStyle: TextStyle = MaterialTheme.typography.headlineSmall.copy(
+        color = MaterialTheme.colorScheme.primary
+    ),
     subtitle: String? = null,
     subTitleMaxLines: Int = Int.MAX_VALUE,
     subTitleStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(

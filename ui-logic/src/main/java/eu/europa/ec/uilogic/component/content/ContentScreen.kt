@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -176,7 +177,8 @@ private fun DefaultToolBar(
     TopAppBar(
         title = {
             Text(
-                text = toolbarConfig?.title.orEmpty()
+                text = toolbarConfig?.title.orEmpty(),
+                color = MaterialTheme.colorScheme.primary
             )
         },
         navigationIcon = {
@@ -192,7 +194,8 @@ private fun DefaultToolBar(
                     onClick = {
                         onBack?.invoke()
                         keyboardController?.hide()
-                    }
+                    },
+                    customTint = MaterialTheme.colorScheme.primary
                 )
             }
         },
@@ -208,7 +211,8 @@ private fun DefaultToolBar(
                         WrapIconButton(
                             iconData = visibleToolbarAction.icon,
                             onClick = visibleToolbarAction.onClick,
-                            enabled = visibleToolbarAction.enabled
+                            enabled = visibleToolbarAction.enabled,
+                            customTint = MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -219,7 +223,8 @@ private fun DefaultToolBar(
                         WrapIconButton(
                             onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
                             iconData = iconMore,
-                            enabled = true
+                            enabled = true,
+                            customTint = MaterialTheme.colorScheme.primary
                         )
                         DropdownMenu(
                             expanded = dropDownMenuExpanded,
@@ -238,7 +243,15 @@ private fun DefaultToolBar(
                                             Text(text = stringResource(id = dropDownMenuToolbarActionIcon.contentDescriptionId))
                                         },
                                         trailingIcon = {
-                                            WrapIcon(iconData = dropDownMenuToolbarActionIcon)
+                                            WrapIcon(
+                                                iconData = dropDownMenuToolbarActionIcon,
+                                                customTint = MaterialTheme.colorScheme.primary,
+                                                contentAlpha = if (dropDownMenuToolbarAction.enabled) {
+                                                    ALPHA_ENABLED
+                                                } else {
+                                                    ALPHA_DISABLED
+                                                }
+                                            )
                                         }
                                     )
                                 }
