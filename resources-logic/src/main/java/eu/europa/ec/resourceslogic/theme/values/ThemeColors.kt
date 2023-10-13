@@ -21,6 +21,8 @@ package eu.europa.ec.resourceslogic.theme.values
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.resourceslogic.theme.templates.ThemeColorsTemplate
@@ -241,6 +243,16 @@ class ThemeColors {
             } else {
                 Color(eudiw_theme_light_textDisabledLight)
             }
+
+        val gradientBackground: Brush
+            @Composable get() = Brush.linearGradient(
+                colors = listOf(
+                    Color(primaryMainGradientStart),
+                    Color(primaryMainGradientEnd)
+                ),
+                start = Offset(0f, 0f),
+                end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+            )
     }
 }
 
