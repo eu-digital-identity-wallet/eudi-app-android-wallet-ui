@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -48,7 +49,6 @@ import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
 import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ContentScreen
 import eu.europa.ec.uilogic.component.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.WrapSecondaryButton
 import eu.europa.ec.uilogic.navigation.LoginScreens
@@ -63,28 +63,24 @@ fun WelcomeScreen(
     navController: NavController,
     viewModel: WelcomeScreenViewModel
 ) {
-    ContentScreen(
-        isFullScreen = true
-    ) {
-        Content(
-            state = viewModel.viewState.value,
-            effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
-            onNavigationRequested = { navigationEffect ->
-                when (navigationEffect) {
-                    is Effect.Navigation.Login -> {
-                        // TODO navigate to Login screen
-                    }
+    Content(
+        state = viewModel.viewState.value,
+        effectFlow = viewModel.effect,
+        onEventSend = { viewModel.setEvent(it) },
+        onNavigationRequested = { navigationEffect ->
+            when (navigationEffect) {
+                is Effect.Navigation.Login -> {
+                    // TODO navigate to Login screen
+                }
 
-                    is Effect.Navigation.Faq -> {
-                        navController.navigate(navigationEffect.screen) {
-                            popUpTo(LoginScreens.Faq.screenRoute) { inclusive = true }
-                        }
+                is Effect.Navigation.Faq -> {
+                    navController.navigate(navigationEffect.screen) {
+                        popUpTo(LoginScreens.Faq.screenRoute) { inclusive = true }
                     }
                 }
             }
-        )
-    }
+        }
+    )
 }
 
 @Composable
@@ -94,11 +90,9 @@ fun Content(
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
-
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
+            .fillMaxSize()
     ) {
         Box(
             modifier = Modifier
@@ -154,7 +148,6 @@ fun Content(
             when (effect) {
                 is Effect.Navigation.Login -> onNavigationRequested(effect)
                 is Effect.Navigation.Faq -> onNavigationRequested(effect)
-                is Effect.Navigation.Back -> onNavigationRequested(effect)
             }
         }?.collect()
     }
