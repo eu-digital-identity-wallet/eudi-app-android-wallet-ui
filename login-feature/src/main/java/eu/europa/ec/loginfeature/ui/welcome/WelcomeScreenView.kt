@@ -64,7 +64,6 @@ fun WelcomeScreen(
     viewModel: WelcomeScreenViewModel
 ) {
     Content(
-        state = viewModel.viewState.value,
         effectFlow = viewModel.effect,
         onEventSend = { viewModel.setEvent(it) },
         onNavigationRequested = { navigationEffect ->
@@ -85,7 +84,6 @@ fun WelcomeScreen(
 
 @Composable
 fun Content(
-    state: State,
     effectFlow: Flow<Effect>?,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
@@ -169,7 +167,6 @@ fun WelcomeScreenPreview() {
         .build()
     ThemeManager.instance.Theme {
         Content(
-            state = State,
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {}
