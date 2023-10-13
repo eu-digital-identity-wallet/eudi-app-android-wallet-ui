@@ -20,60 +20,38 @@ package eu.europa.ec.loginfeature.ui.faq
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.Gray
-import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.Color.Companion.LightGray
-import androidx.compose.ui.graphics.Color.Companion.Yellow
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.uilogic.component.ContentScreen
@@ -148,38 +126,7 @@ private fun Content(
         )
 
         ExpandableListScreen(
-            sections = listOf(
-                CollapsableSection(
-                    title = "Question A goes Here",
-                    description = "Lorem ipsum dolor sit amet," +
-                            " consectetur adipiscing elit,"
-                ),
-                CollapsableSection(
-                    title = "Question B goes Here",
-                    description = "Duis aute irure dolor in reprehenderit in" +
-                            " voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-                ),
-                CollapsableSection(
-                    title = "Question C goes Here",
-                    description = "Excepteur sint occaecat cupidatat non proident, " +
-                            "sunt in culpa qui officia deserunt mollit anim id est laborum."
-                ),
-                CollapsableSection(
-                    title = "Question D goes Here",
-                    description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-                            "sed  magn laboris nisi ut aliquip ex ea commodo consequat."
-                ),
-                CollapsableSection(
-                    title = "Question E goes Here",
-                    description = "Duis aute irure dolor in reprehenderit" +
-                            " in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-                ),
-                CollapsableSection(
-                    title = "Question F goes Here",
-                    description = "Excepteur sint occaecat cupidatat non proident, " +
-                            "sunt in culpa qui officia deserunt mollit anim id est laborum."
-                ),
-            ),
+            sections = state.faqItems
         )
     }
 
@@ -193,7 +140,6 @@ private fun Content(
     }
 }
 
-data class CollapsableSection(val title: String, val description: String)
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable

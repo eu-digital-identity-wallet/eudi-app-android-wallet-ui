@@ -41,7 +41,10 @@ sealed class Event : ViewEvent {
     data object OnClick : Event()
 }
 
-object State : ViewState
+data class State(val faqItems: List<CollapsableSection>) : ViewState
+
+data class CollapsableSection(val title: String, val description: String)
+
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
@@ -55,7 +58,41 @@ class FaqScreenViewModel(
     private val interactor: LoginInteractor,
     private val uiSerializer: UiSerializer
 ) : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State
+
+    override fun setInitialState(): State = State(
+        listOf(
+            CollapsableSection(
+                title = "Question A goes Here",
+                description = "Lorem ipsum dolor sit amet," +
+                        " consectetur adipiscing elit,"
+            ),
+            CollapsableSection(
+                title = "Question B goes Here",
+                description = "Duis aute irure dolor in reprehenderit in" +
+                        " voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+            ),
+            CollapsableSection(
+                title = "Question C goes Here",
+                description = "Excepteur sint occaecat cupidatat non proident, " +
+                        "sunt in culpa qui officia deserunt mollit anim id est laborum."
+            ),
+            CollapsableSection(
+                title = "Question D goes Here",
+                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+                        "sed  magn laboris nisi ut aliquip ex ea commodo consequat."
+            ),
+            CollapsableSection(
+                title = "Question E goes Here",
+                description = "Duis aute irure dolor in reprehenderit" +
+                        " in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+            ),
+            CollapsableSection(
+                title = "Question F goes Here",
+                description = "Excepteur sint occaecat cupidatat non proident, " +
+                        "sunt in culpa qui officia deserunt mollit anim id est laborum."
+            ),
+        )
+    )
 
     override fun handleEvents(event: Event) {
         when (event) {
