@@ -31,6 +31,7 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
+import eu.europa.ec.uilogic.navigation.OnlineAuthenticationScreens
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -40,6 +41,7 @@ import org.koin.android.annotation.KoinViewModel
 
 sealed class Event : ViewEvent {
     data object OnClick : Event()
+    data object OnlineAuthenticationClicked : Event()
 }
 
 object State : ViewState
@@ -61,6 +63,20 @@ class StartupViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.OnClick -> testBiometricScreen()
+            is Event.OnlineAuthenticationClicked -> testReusableLoadingScreen()
+        }
+    }
+
+    private fun testReusableLoadingScreen() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screen = generateComposableNavigationLink(
+                    screen = OnlineAuthenticationScreens.UserData,
+                    arguments = generateComposableArguments(
+                        mapOf("userId" to "69")
+                    )
+                )
+            )
         }
     }
 

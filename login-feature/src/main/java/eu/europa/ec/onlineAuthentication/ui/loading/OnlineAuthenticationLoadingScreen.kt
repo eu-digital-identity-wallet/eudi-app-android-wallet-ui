@@ -16,14 +16,19 @@
  *
  */
 
-plugins {
-    id("eudi.android.feature")
-}
+package eu.europa.ec.onlineAuthentication.ui.loading
 
-android {
-    namespace = "eu.europa.ec.loginfeature"
-}
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
 
-dependencies {
-    implementation(project(":common-feature"))
+@Composable
+fun OnlineAuthenticationLoadingScreen(
+    navController: NavController,
+    viewModel: OnlineAuthenticationLoadingViewModel
+) {
+    LoadingScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
 }

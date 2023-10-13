@@ -16,7 +16,7 @@
   ~  */
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Generic -->
     <string name="app_name">EUDI Wallet</string>
@@ -26,6 +26,8 @@
     <string name="generic_network_error_message">You are not connected to the internet</string>
     <string name="generic_error_retry">Please try again</string>
     <string name="generic_cancel">Cancel</string>
+    <string name="generic_success">Success</string>
+    <string name="generic_ok">OK</string>
 
     <!-- Content Description -->
     <string name="content_description_more_vert_icon">More Items Vertically</string>
@@ -47,5 +49,25 @@
 
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
+
+    <!-- Online Authentication UserData Screen -->
+    <string name="online_authentication_userData_title">Relying party requests the following info</string>
+    <string name="online_authentication_userData_subtitle">Please review carefully before sharing your data</string>
+    <string name="online_authentication_userData_id_number">ID number</string>
+    <string name="online_authentication_userData_date_of_birth">Date of birth</string>
+    <string name="online_authentication_userData_tax_clearance_number">Tax clearance number</string>
+    <string name="online_authentication_userData_primary_button_text">SHARE</string>
+    <string name="online_authentication_userData_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="online_authentication_userData_bottom_sheet_title">Cancel information sharing?</string>
+    <string name="online_authentication_userData_bottom_sheet_subtitle">Cancel will redirect you back to the login without sharing any information</string>
+    <string name="online_authentication_userData_bottom_sheet_primary_button_text">CONTINUE SHARING</string>
+    <string name="online_authentication_userData_bottom_sheet_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+
+    <!-- Online Authentication Loading Screen -->
+    <string name="online_authentication_loading_title">Relying party requests the following info</string>
+    <string name="online_authentication_loading_subtitle">Sharing your data…</string>
+    <string name="online_authentication_success_config_title">@string/generic_success</string>
+    <string name="online_authentication_success_config_subtitle">You successfully shared information with the Relying party</string>
+    <string name="online_authentication_success_config_primary_button_text">@string/generic_ok</string>
 
 </resources>

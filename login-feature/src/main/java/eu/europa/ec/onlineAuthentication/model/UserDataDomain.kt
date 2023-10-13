@@ -16,14 +16,10 @@
  *
  */
 
-plugins {
-    id("eudi.android.feature")
-}
+package eu.europa.ec.onlineAuthentication.model
 
-android {
-    namespace = "eu.europa.ec.loginfeature"
-}
-
-dependencies {
-    implementation(project(":common-feature"))
-}
+data class UserDataDomain(
+    val id: String,
+    val dateOfBirth: String,
+    val taxClearanceNumber: String,
+)

@@ -18,15 +18,19 @@
 
 package eu.europa.ec.startupfeature.ui
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import eu.europa.ec.uilogic.component.VSpacer
+import eu.europa.ec.uilogic.component.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.utils.screenPaddings
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.flow.Flow
@@ -67,12 +71,25 @@ private fun Content(
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Button(
-            modifier = Modifier.align(Alignment.Center),
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(screenPaddings()),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        WrapPrimaryButton(
             onClick = { onEventSend(Event.OnClick) }
         ) {
             Text(text = "Press here to test")
+        }
+
+        VSpacer.Medium()
+
+        WrapPrimaryButton(
+            onClick = { onEventSend(Event.OnlineAuthenticationClicked) }
+        ) {
+            Text(text = "ONLINE AUTHENTICATION")
         }
     }
 

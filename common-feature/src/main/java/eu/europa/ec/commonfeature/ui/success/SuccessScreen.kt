@@ -45,6 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.resourceslogic.theme.values.colorSuccess
+import eu.europa.ec.uilogic.component.ContentScreen
+import eu.europa.ec.uilogic.component.ContentTitle
+import eu.europa.ec.uilogic.component.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.WrapSecondaryButton
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -70,6 +75,7 @@ fun SuccessScreen(
     val context = LocalContext.current
 
     ContentScreen(
+        isLoading = false,
         onBack = { viewModel.setEvent(Event.BackPressed) },
         navigatableAction = ScreenNavigateAction.NONE
     ) { paddingValues ->
@@ -133,7 +139,6 @@ private fun SuccessScreenView(
                 ),
                 subtitle = state.successConfig.content,
             )
-            VSpacer.Small()
         }
 
         val imageConfig = state.successConfig.imageConfig
