@@ -26,7 +26,9 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.ui.biometric.BiometricScreen
 import eu.europa.ec.commonfeature.ui.success.SuccessScreen
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
@@ -35,9 +37,34 @@ import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
     navigation(
-        startDestination = CommonScreens.Success.screenRoute,
+        startDestination = CommonScreens.Biometric.screenRoute,
         route = ModuleRoute.CommonModule.route
     ) {
+        composable(
+            route = CommonScreens.Biometric.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + CommonScreens.Biometric.screenRoute
+                }
+            ),
+            arguments = listOf(
+                navArgument(BiometricUiConfig.serializedKeyName) {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            BiometricScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(BiometricUiConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
+            )
+        }
         composable(
             route = CommonScreens.Success.screenRoute,
             deepLinks = listOf(

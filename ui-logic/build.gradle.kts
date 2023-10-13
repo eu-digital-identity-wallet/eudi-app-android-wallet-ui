@@ -33,5 +33,8 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.gson)
 
+    debugImplementation(libs.chucker.android)
+    releaseImplementation(libs.chucker.android.no.op)
+
     testImplementation(project(":test-logic"))
 }

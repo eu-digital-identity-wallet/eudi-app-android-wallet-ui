@@ -1,0 +1,269 @@
+/*
+ *
+ *  * Copyright (c) 2023 European Commission
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *     http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
+package eu.europa.ec.commonfeature.ui.biometric
+
+import android.content.Context
+import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.biometry.BiometricsAuthenticate
+import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.interactor.BiometricInteractor
+import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
+import eu.europa.ec.uilogic.component.LoadingType
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.FlowCompletion
+import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.mvi.MviViewModel
+import eu.europa.ec.uilogic.mvi.ViewEvent
+import eu.europa.ec.uilogic.mvi.ViewSideEffect
+import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.Screen
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.launch
+import org.koin.android.annotation.KoinViewModel
+
+data class BiometricError(
+    val event: Event,
+    val errorMsg: String,
+    val isBiometricError: Boolean
+)
+
+sealed class Event : ViewEvent {
+    data class OnBiometricsClicked(
+        val context: Context,
+        val shouldThrowErrorIfNotAvailable: Boolean
+    ) : Event()
+
+    data object LaunchBiometricSystemScreen : Event()
+    data object OnNavigateBack : Event()
+    data object OnErrorDismiss : Event()
+    data object Init : Event()
+    data class OnQuickPinEntered(val quickPin: String) : Event()
+}
+
+data class State(
+    val isLoading: LoadingType = LoadingType.NONE,
+    val error: BiometricError? = null,
+    val config: BiometricUiConfig,
+    val quickPinError: String? = null,
+    val quickPin: String = "",
+    val userBiometricsAreEnabled: Boolean = false
+) : ViewState
+
+sealed class Effect : ViewSideEffect {
+    data object InitializeBiometricAuthOnCreate : Effect()
+    sealed class Navigation : Effect() {
+        data class SwitchScreen(
+            val screen: String,
+            val screenPopUpTo: String
+        ) : Navigation()
+
+        data class PopBackStackUpTo(
+            val screenRoute: String,
+            val inclusive: Boolean,
+            val indicateFlowCompletion: FlowCompletion
+        ) : Navigation()
+
+        data object LaunchBiometricsSystemScreen : Navigation()
+        data class Deeplink(val screen: Screen) : Navigation()
+    }
+}
+
+@KoinViewModel
+class BiometricViewModel constructor(
+    private val biometricInteractor: BiometricInteractor,
+    private val uiSerializer: UiSerializer,
+    private val biometricConfig: String
+) : MviViewModel<Event, State, Effect>() {
+
+    private val biometricUiConfig
+        get() = viewState.value.config
+
+    override fun setInitialState(): State = State(
+        config = uiSerializer.fromBase64(
+            biometricConfig,
+            BiometricUiConfig::class.java,
+            BiometricUiConfig.Parser
+        ) ?: throw RuntimeException("BiometricUiConfig:: is Missing or invalid"),
+        userBiometricsAreEnabled = biometricInteractor.getBiometricUserSelection()
+    )
+
+    override fun handleEvents(event: Event) {
+        when (event) {
+            is Event.Init -> {
+                if (biometricUiConfig.shouldInitializeBiometricAuthOnCreate && viewState.value.userBiometricsAreEnabled) {
+                    setEffect {
+                        Effect.InitializeBiometricAuthOnCreate
+                    }
+                }
+            }
+
+            is Event.OnBiometricsClicked -> {
+                setState { copy(error = null) }
+                biometricInteractor.getBiometricsAvailability {
+                    when (it) {
+                        is BiometricsAvailability.CanAuthenticate -> authenticate(
+                            event.context
+                        )
+
+                        is BiometricsAvailability.NonEnrolled -> {
+                            if (!event.shouldThrowErrorIfNotAvailable) {
+                                return@getBiometricsAvailability
+                            }
+                            setEffect {
+                                Effect.Navigation.LaunchBiometricsSystemScreen
+                            }
+                        }
+
+                        is BiometricsAvailability.Failure -> {
+                            if (!event.shouldThrowErrorIfNotAvailable) {
+                                return@getBiometricsAvailability
+                            }
+                            setState {
+                                copy(
+                                    error = BiometricError(
+                                        event = event,
+                                        errorMsg = it.errorMessage,
+                                        isBiometricError = true
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            is Event.LaunchBiometricSystemScreen -> {
+                setState { copy(error = null) }
+                biometricInteractor.launchBiometricSystemScreen()
+            }
+
+            is Event.OnNavigateBack -> {
+                setState { copy(error = null) }
+                doNavigation(
+                    navigation = biometricUiConfig.onBackNavigation,
+                    flowSucceeded = false
+                )
+            }
+
+            is Event.OnErrorDismiss -> setState {
+                copy(error = null)
+            }
+
+            is Event.OnQuickPinEntered -> {
+                setState {
+                    copy(quickPin = event.quickPin, quickPinError = null)
+                }
+                authorizeWithPin(event.quickPin)
+            }
+        }
+    }
+
+    private fun authorizeWithPin(pin: String) {
+
+        if (pin.length != 4) {
+            return
+        }
+
+        viewModelScope.launch {
+            biometricInteractor.isPinValid(pin)
+                .collect {
+                    when (it) {
+                        is QuickPinInteractorPinValidPartialState.Failed -> {
+                            setState {
+                                copy(
+                                    quickPinError = it.errorMessage
+                                )
+                            }
+                        }
+
+                        is QuickPinInteractorPinValidPartialState.Success -> {
+                            authenticationSuccess()
+                        }
+                    }
+                }
+        }
+    }
+
+    private fun authenticate(context: Context) {
+        biometricInteractor.authenticateWithBiometrics(context) {
+            when (it) {
+                is BiometricsAuthenticate.Success -> {
+                    authenticationSuccess()
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+    private fun authenticationSuccess() {
+        doNavigation(
+            navigation = biometricUiConfig.onSuccessNavigation,
+            flowSucceeded = true
+        )
+    }
+
+    private fun doNavigation(
+        navigation: ConfigNavigation,
+        screenRoute: String = CommonScreens.Biometric.screenRoute,
+        flowSucceeded: Boolean
+    ) {
+        navigate(navigation, screenRoute, flowSucceeded)
+    }
+
+    private fun navigate(
+        navigation: ConfigNavigation,
+        screenRoute: String = CommonScreens.Biometric.screenRoute,
+        flowSucceeded: Boolean
+    ) {
+        val navigationEffect: Effect.Navigation = when (navigation.navigationType) {
+            NavigationType.POP -> {
+                Effect.Navigation.PopBackStackUpTo(
+                    screenRoute = navigation.screenToNavigate.screenRoute,
+                    inclusive = false,
+                    indicateFlowCompletion = when (navigation.indicateFlowCompletion) {
+                        FlowCompletion.CANCEL -> if (!flowSucceeded) FlowCompletion.CANCEL else FlowCompletion.NONE
+                        FlowCompletion.SUCCESS -> if (flowSucceeded) FlowCompletion.SUCCESS else FlowCompletion.NONE
+                        FlowCompletion.NONE -> FlowCompletion.NONE
+                    }
+                )
+            }
+
+            NavigationType.PUSH -> {
+                Effect.Navigation.SwitchScreen(
+                    generateComposableNavigationLink(
+                        screen = navigation.screenToNavigate,
+                        arguments = generateComposableArguments(navigation.arguments)
+                    ),
+                    screenPopUpTo = screenRoute
+                )
+            }
+
+            NavigationType.DEEPLINK -> Effect.Navigation.Deeplink(navigation.screenToNavigate)
+        }
+
+        setEffect {
+            navigationEffect
+        }
+    }
+}

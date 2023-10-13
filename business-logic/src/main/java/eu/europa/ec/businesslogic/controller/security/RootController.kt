@@ -16,7 +16,27 @@
  *
  */
 
-package eu.europa.ec.commonfeature.ui.biometric
+package eu.europa.ec.businesslogic.controller.security
 
-class Placeholder {
+import com.scottyab.rootbeer.RootBeer
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+
+interface RootController {
+    fun isRooted(): Boolean
+    fun areRootCloakingAppsInstalled(): Boolean
+}
+
+class RootControllerImpl constructor(
+    resourceProvider: ResourceProvider
+) : RootController {
+
+    private val rootBeer = RootBeer(resourceProvider.provideContext())
+
+    override fun isRooted() = rootBeer.isRooted
+
+    override fun areRootCloakingAppsInstalled() = rootBeer.detectRootCloakingApps(
+        arrayOf(
+            "com.android.SSLTrustKiller"
+        )
+    )
 }

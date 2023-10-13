@@ -20,13 +20,12 @@ package eu.europa.ec.uilogic.config
 
 import eu.europa.ec.uilogic.analytics.AnalyticsProvider
 import eu.europa.ec.uilogic.analytics.FirebaseAnalyticsProvider
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.Screen
-import eu.europa.ec.uilogic.navigation.StartupScreens
 
 class ConfigUILogicImpl : ConfigUILogic {
-    // TODO - CHANGE THE ROUTE TO THE DASHBOARD ONCE READY
     override val landingScreenIdentifier: Screen
-        get() = StartupScreens.Splash
+        get() = DashboardScreens.Dashboard
 
     override val analyticsProviders: List<AnalyticsProvider>
         get() = listOf<AnalyticsProvider>(FirebaseAnalyticsProvider)

@@ -316,6 +316,10 @@ interface PrefKeys {
     fun setBiometricAlias(value: String)
     fun getBiometricData(): BiometricData?
     fun setBiometricData(value: BiometricData?)
+    fun setUseBiometricsAuth(value: Boolean)
+    fun getUseBiometricsAuth(): Boolean
+    fun getDevicePin(): String
+    fun setDevicePin(pin: String)
 }
 
 class PrefKeysImpl constructor(
@@ -360,5 +364,28 @@ class PrefKeysImpl constructor(
     override fun setBiometricData(value: BiometricData?) {
         if (value == null) prefsController.clear("BiometricData")
         prefsController.setString("BiometricData", Gson().toJson(value))
+    }
+
+    /**
+     * Key to use Biometrics Auth instead of quick pin.
+     *
+     * Setting an empty value will clear the entry from shared prefs.
+     */
+    override fun setUseBiometricsAuth(value: Boolean) {
+        prefsController.setBool("UseBiometricsAuth", value)
+    }
+
+    // TODO: - Default Value is true but it should be false.
+    //  We will change that once the onboarding flow is implemented
+    override fun getUseBiometricsAuth(): Boolean {
+        return prefsController.getBool("UseBiometricsAuth", true)
+    }
+
+    override fun setDevicePin(pin: String) {
+        prefsController.setString("DevicePin", pin)
+    }
+
+    override fun getDevicePin(): String {
+        return prefsController.getString("DevicePin", "")
     }
 }

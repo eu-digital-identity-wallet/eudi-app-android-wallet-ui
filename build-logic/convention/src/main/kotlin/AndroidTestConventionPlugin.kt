@@ -40,19 +40,20 @@ class AndroidTestConventionPlugin : Plugin<Project> {
             }
 
             dependencies {
-                add("implementation", kotlin("test"))
+                add("api", kotlin("test"))
                 add(
-                    "implementation",
+                    "api",
                     libs.findLibrary("androidx-test-orchestrator").get()
                 )
-                add("implementation", libs.findLibrary("androidx-test-rules").get())
-                add("implementation", libs.findLibrary("androidx-test-runner").get())
-                add("implementation", libs.findLibrary("androidx-work-testing").get())
-                add("implementation", libs.findLibrary("kotlinx-coroutines-test").get())
-                add("implementation", libs.findLibrary("turbine").get())
-                add("implementation", libs.findLibrary("mockito-core").get())
-                add("implementation", libs.findLibrary("mockito-kotlin").get())
-                add("implementation", libs.findLibrary("mockito-inline").get())
+                add("api", libs.findLibrary("androidx-test-rules").get())
+                add("api", libs.findLibrary("androidx-test-runner").get())
+                add("api", libs.findLibrary("androidx-work-testing").get())
+                add("api", libs.findLibrary("kotlinx-coroutines-test").get())
+                add("api", libs.findLibrary("turbine").get())
+                add("api", libs.findLibrary("mockito-core").get())
+                add("api", libs.findLibrary("mockito-kotlin").get())
+                add("api", libs.findLibrary("mockito-inline").get())
+                add("api", libs.findLibrary("robolectric").get())
             }
         }
     }

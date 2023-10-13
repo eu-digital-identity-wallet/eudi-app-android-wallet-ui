@@ -37,6 +37,9 @@ dependencies {
     implementation(libs.androidx.security)
     implementation(libs.androidx.appAuth)
     implementation(libs.logcat)
+    implementation(libs.google.phonenumber)
+    implementation(libs.rootbeer)
 
     testImplementation(project(":test-logic"))
+    androidTestImplementation(project(":test-logic"))
 }

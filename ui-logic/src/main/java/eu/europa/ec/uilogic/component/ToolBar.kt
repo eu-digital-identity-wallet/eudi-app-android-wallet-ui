@@ -24,7 +24,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,21 +36,19 @@ import androidx.compose.ui.res.stringResource
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DefaultToolBar(
-    scrollBehavior: TopAppBarScrollBehavior,
     navigatableAction: ScreenNavigateAction,
     onBack: (() -> Unit)?,
     keyboardController: SoftwareKeyboardController?,
-    toolbarConfig: ToolbarConfig,
+    toolbarConfig: ToolbarConfig?,
 ) {
     var dropDownMenuExpanded by remember {
         mutableStateOf(false)
     }
 
     TopAppBar(
-        scrollBehavior = scrollBehavior,
         title = {
             Text(
-                text = toolbarConfig.title
+                text = toolbarConfig?.title.orEmpty()
             )
         },
         navigationIcon = {
@@ -74,46 +71,50 @@ fun DefaultToolBar(
         // Add toolbar actions.
         actions = {
             // Show first [MAX_TOOLBAR_ACTIONS] actions.
-            toolbarConfig.actions
-                .sortedByDescending { it.order }
-                .take(MAX_TOOLBAR_ACTIONS)
-                .map { visibleToolbarAction ->
-                    WrapIconButton(
-                        iconData = visibleToolbarAction.icon,
-                        onClick = visibleToolbarAction.onClick,
-                        enabled = visibleToolbarAction.enabled
-                    )
-                }
+            toolbarConfig?.actions?.let { actions ->
 
-            // Check if there are more actions to show.
-            if (toolbarConfig.actions.size > MAX_TOOLBAR_ACTIONS) {
-                Box {
-                    val iconMore = AppIcons.VerticalMore
-                    WrapIconButton(
-                        onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
-                        iconData = iconMore,
-                        enabled = true
-                    )
-                    DropdownMenu(
-                        expanded = dropDownMenuExpanded,
-                        onDismissRequest = { dropDownMenuExpanded = false }
-                    ) {
-                        toolbarConfig.actions
-                            .sortedByDescending { it.order }
-                            .drop(MAX_TOOLBAR_ACTIONS)
-                            .map { dropDownMenuToolbarAction ->
-                                val dropDownMenuToolbarActionIcon = dropDownMenuToolbarAction.icon
-                                DropdownMenuItem(
-                                    onClick = dropDownMenuToolbarAction.onClick,
-                                    enabled = dropDownMenuToolbarAction.enabled,
-                                    text = {
-                                        Text(text = stringResource(id = dropDownMenuToolbarActionIcon.contentDescriptionId))
-                                    },
-                                    trailingIcon = {
-                                        WrapIcon(iconData = dropDownMenuToolbarActionIcon)
-                                    }
-                                )
-                            }
+                actions
+                    .sortedByDescending { it.order }
+                    .take(MAX_TOOLBAR_ACTIONS)
+                    .map { visibleToolbarAction ->
+                        WrapIconButton(
+                            iconData = visibleToolbarAction.icon,
+                            onClick = visibleToolbarAction.onClick,
+                            enabled = visibleToolbarAction.enabled
+                        )
+                    }
+
+                // Check if there are more actions to show.
+                if (actions.size > MAX_TOOLBAR_ACTIONS) {
+                    Box {
+                        val iconMore = AppIcons.VerticalMore
+                        WrapIconButton(
+                            onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
+                            iconData = iconMore,
+                            enabled = true
+                        )
+                        DropdownMenu(
+                            expanded = dropDownMenuExpanded,
+                            onDismissRequest = { dropDownMenuExpanded = false }
+                        ) {
+                            actions
+                                .sortedByDescending { it.order }
+                                .drop(MAX_TOOLBAR_ACTIONS)
+                                .map { dropDownMenuToolbarAction ->
+                                    val dropDownMenuToolbarActionIcon =
+                                        dropDownMenuToolbarAction.icon
+                                    DropdownMenuItem(
+                                        onClick = dropDownMenuToolbarAction.onClick,
+                                        enabled = dropDownMenuToolbarAction.enabled,
+                                        text = {
+                                            Text(text = stringResource(id = dropDownMenuToolbarActionIcon.contentDescriptionId))
+                                        },
+                                        trailingIcon = {
+                                            WrapIcon(iconData = dropDownMenuToolbarActionIcon)
+                                        }
+                                    )
+                                }
+                        }
                     }
                 }
             }

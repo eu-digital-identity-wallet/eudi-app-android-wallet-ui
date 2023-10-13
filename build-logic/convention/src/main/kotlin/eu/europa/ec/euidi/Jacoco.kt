@@ -82,7 +82,6 @@ internal fun Project.configureJacoco(
 
     tasks.withType<Test>().configureEach {
         configure<JacocoTaskExtension> {
-            // TODO: Consider removing if not we don't add Robolectric
             isIncludeNoLocationClasses = true
 
             // Required for JDK 11 with the above

@@ -19,7 +19,9 @@
 package eu.europa.ec.assemblylogic
 
 import android.app.Application
+import android.os.StrictMode
 import eu.europa.ec.assemblylogic.di.setupKoin
+import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
@@ -31,12 +33,14 @@ import org.koin.android.ext.android.inject
 class Application : Application() {
 
     private val logController: LogController by inject()
+    private val configSecurityLogic: ConfigSecurityLogic by inject()
 
     override fun onCreate() {
         super.onCreate()
         setupKoin()
         initializeLogging()
         initializeTheme()
+        handleStrictMode()
     }
 
     private fun initializeLogging() {
@@ -55,5 +59,24 @@ class Application : Application() {
                 )
             )
             .build()
+    }
+
+    private fun handleStrictMode() {
+        if (configSecurityLogic.enableStrictMode) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .detectDiskReads()
+                    .detectDiskWrites()
+                    .detectNetwork()
+                    .penaltyLog()
+                    .build()
+            )
+            StrictMode.setVmPolicy(
+                StrictMode.VmPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build()
+            )
+        }
     }
 }

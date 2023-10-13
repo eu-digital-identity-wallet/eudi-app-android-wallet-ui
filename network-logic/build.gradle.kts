@@ -32,5 +32,8 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.okhttp.mockwebserver)
 
+    debugImplementation(libs.chucker.android)
+    releaseImplementation(libs.chucker.android.no.op)
+
     testImplementation(project(":test-logic"))
 }

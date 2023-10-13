@@ -42,4 +42,5 @@ dependencies {
     api(project(":common-feature"))
     api(project(":startup-feature"))
     api(project(":login-feature"))
+    api(project(":dashboard-feature"))
 }
