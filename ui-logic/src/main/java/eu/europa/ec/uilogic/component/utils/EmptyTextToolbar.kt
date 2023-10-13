@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.utils
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.TextToolbar

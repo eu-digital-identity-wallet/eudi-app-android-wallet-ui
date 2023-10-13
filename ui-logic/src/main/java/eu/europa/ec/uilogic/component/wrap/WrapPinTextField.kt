@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,6 +52,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.utils.EmptyTextToolbar
+import eu.europa.ec.uilogic.component.utils.HSpacer
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

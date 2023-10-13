@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn

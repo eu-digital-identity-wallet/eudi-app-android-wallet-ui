@@ -16,12 +16,20 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.content
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -29,13 +37,133 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.zIndex
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.loader.LoadingIndicator
+import eu.europa.ec.uilogic.component.snackbar.Snackbar
+import eu.europa.ec.uilogic.component.utils.MAX_TOOLBAR_ACTIONS
+import eu.europa.ec.uilogic.component.utils.Z_STICKY
+import eu.europa.ec.uilogic.component.utils.screenPaddings
+import eu.europa.ec.uilogic.component.wrap.FabData
+import eu.europa.ec.uilogic.component.wrap.WrapFab
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
+
+enum class LoadingType {
+    NORMAL, NONE
+}
+
+data class ToolbarAction(
+    val icon: IconData,
+    val order: Int = 100,
+    val onClick: () -> Unit,
+    val enabled: Boolean = true
+)
+
+data class ToolbarConfig(
+    val title: String = "",
+    val actions: List<ToolbarAction> = listOf()
+)
+
+enum class ScreenNavigateAction {
+    BACKABLE, CANCELABLE, NONE
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun ContentScreen(
+    loadingType: LoadingType = LoadingType.NONE,
+    toolBarConfig: ToolbarConfig? = null,
+    navigatableAction: ScreenNavigateAction = ScreenNavigateAction.BACKABLE,
+    onBack: (() -> Unit)? = null,
+    topBar: @Composable (() -> Unit)? = null,
+    bottomBar: @Composable (() -> Unit)? = null,
+    stickyBottom: @Composable (() -> Unit)? = null,
+    fab: FabData? = null,
+    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    contentErrorConfig: ContentErrorConfig? = null,
+    bodyContent: @Composable (PaddingValues) -> Unit
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+
+    Scaffold(
+        topBar = {
+            if (topBar != null) topBar.invoke()
+            else {
+                DefaultToolBar(
+                    navigatableAction = contentErrorConfig?.let {
+                        ScreenNavigateAction.CANCELABLE
+                    } ?: navigatableAction,
+                    onBack = contentErrorConfig?.onCancel ?: onBack,
+                    keyboardController = keyboardController,
+                    toolbarConfig = toolBarConfig,
+                )
+            }
+        },
+        bottomBar = bottomBar ?: {},
+        floatingActionButton = {
+            fab?.let { fabData ->
+                WrapFab(data = fabData)
+            }
+        },
+        floatingActionButtonPosition = floatingActionButtonPosition,
+        snackbarHost = {
+            Snackbar.PlaceHolder(snackbarHostState = snackbarHostState)
+        }
+    ) { padding ->
+
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            if (contentErrorConfig != null) {
+                ContentError(
+                    config = contentErrorConfig,
+                    paddingValues = screenPaddings(padding)
+                )
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
+
+                    Box(modifier = Modifier.weight(1f)) {
+                        bodyContent(screenPaddings(padding))
+                    }
+
+                    stickyBottom?.let { stickyBottomContent ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .zIndex(Z_STICKY),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            stickyBottomContent()
+                        }
+                    }
+                }
+
+                if (loadingType == LoadingType.NORMAL) LoadingIndicator()
+            }
+        }
+    }
+
+    BackHandler(enabled = true) {
+        onBack?.invoke()
+    }
+}
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun DefaultToolBar(
+private fun DefaultToolBar(
     navigatableAction: ScreenNavigateAction,
     onBack: (() -> Unit)?,
     keyboardController: SoftwareKeyboardController?,

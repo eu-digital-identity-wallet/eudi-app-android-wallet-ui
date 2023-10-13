@@ -20,7 +20,6 @@ package eu.europa.ec.uilogic.component.utils
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.uilogic.component.SPACING_MEDIUM
 
 fun screenPaddings(append: PaddingValues? = null) = PaddingValues(
     start = SPACING_MEDIUM.dp,

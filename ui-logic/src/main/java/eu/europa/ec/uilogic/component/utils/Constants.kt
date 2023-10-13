@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.utils
 
 /**
  * Z index of loading overlay.

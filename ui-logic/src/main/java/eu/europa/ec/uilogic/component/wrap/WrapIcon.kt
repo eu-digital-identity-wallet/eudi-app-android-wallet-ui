@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,6 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
+import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 
 /**
  * Reusable Wrapper Composable to be used instead of plain Icon.
