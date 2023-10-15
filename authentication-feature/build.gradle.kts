@@ -15,31 +15,14 @@
  *  * limitations under the License.
  *
  */
+plugins {
+    id("eudi.android.feature")
+}
 
-package eu.europa.ec.uilogic.component
+android {
+    namespace = "eu.europa.ec.authenticationfeature"
+}
 
-/**
- * Z index of loading overlay.
- */
-const val Z_LOADING = 20f
-
-/**
- * Z index of snackbar.
- */
-const val Z_SNACKBAR = 10f
-
-/**
- * Z index of sticky composable. Mostly same as [Z_SNACKBAR].
- */
-const val Z_STICKY = 10f
-
-const val SPACING_EXTRA_SMALL = 4
-const val SPACING_SMALL = 8
-const val SPACING_MEDIUM = 16
-const val SPACING_LARGE = 24
-const val SPACING_EXTRA_LARGE = 48
-
-const val ALPHA_ENABLED = 1.0f
-const val ALPHA_DISABLED = 0.38f
-
-const val MAX_TOOLBAR_ACTIONS = 2
+dependencies {
+    implementation(project(":common-feature"))
+}

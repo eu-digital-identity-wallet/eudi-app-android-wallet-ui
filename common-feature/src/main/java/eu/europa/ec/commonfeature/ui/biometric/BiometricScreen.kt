@@ -37,13 +37,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ContentError
-import eu.europa.ec.uilogic.component.ContentScreen
-import eu.europa.ec.uilogic.component.ContentTitle
-import eu.europa.ec.uilogic.component.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.WrapIcon
-import eu.europa.ec.uilogic.component.WrapPinTextField
+import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
@@ -72,7 +71,8 @@ fun BiometricScreen(
         navigatableAction = ScreenNavigateAction.CANCELABLE,
         onBack = {
             viewModel.setEvent(Event.OnNavigateBack)
-        }
+        },
+        contentErrorConfig = state.error
     ) {
         Body(
             state = state,
@@ -127,18 +127,6 @@ fun BiometricScreen(
                 }
             },
             padding = it
-        )
-    }
-
-    viewModel.viewState.value.error?.let {
-        ContentError(
-            errorSubTitle = it.errorMsg,
-            onRetry = {
-                viewModel.setEvent(it.event)
-            },
-            onCancel = {
-                viewModel.setEvent(Event.OnErrorDismiss)
-            }
         )
     }
 

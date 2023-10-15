@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.content
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +35,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.extension.throttledClickable
 
 /**
@@ -49,7 +51,9 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 @Composable
 fun ContentTitle(
     title: String? = null,
-    titleStyle: TextStyle = MaterialTheme.typography.headlineSmall,
+    titleStyle: TextStyle = MaterialTheme.typography.headlineSmall.copy(
+        color = MaterialTheme.colorScheme.primary
+    ),
     subtitle: String? = null,
     subTitleMaxLines: Int = Int.MAX_VALUE,
     subTitleStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(

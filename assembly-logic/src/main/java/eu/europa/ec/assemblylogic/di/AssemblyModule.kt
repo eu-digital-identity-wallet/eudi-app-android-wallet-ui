@@ -19,6 +19,7 @@
 package eu.europa.ec.assemblylogic.di
 
 import android.app.Application
+import eu.europa.ec.authenticationfeature.di.FeatureAuthenticationModule
 import eu.europa.ec.businesslogic.di.LogicBusinessModule
 import eu.europa.ec.commonfeature.di.FeatureCommonModule
 import eu.europa.ec.loginfeature.di.LoginModule
@@ -45,6 +46,10 @@ private val assembledModules = listOf(
     FeatureDashboardModule().module,
     FeatureStartupModule().module,
     LoginModule().module
+
+    FeatureDashboardModule().module,
+    FeatureAuthenticationModule().module
+
 )
 
 internal fun Application.setupKoin() {

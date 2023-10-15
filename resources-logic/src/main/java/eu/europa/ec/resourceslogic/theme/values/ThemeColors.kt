@@ -21,6 +21,8 @@ package eu.europa.ec.resourceslogic.theme.values
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.resourceslogic.theme.templates.ThemeColorsTemplate
@@ -120,7 +122,7 @@ class ThemeColors {
         private const val eudiw_theme_dark_inversePrimary = 0xFF8B3F94
         private const val eudiw_theme_dark_surfaceTint = 0xFFFBAAFF
         private const val eudiw_theme_dark_outlineVariant = 0xFF4D444C
-        private const val eudiw_theme_dark_scrim = black
+        private const val eudiw_theme_dark_scrim = white
 
         val lightColors = ThemeColorsTemplate(
             primary = eudiw_theme_light_primary,
@@ -241,6 +243,16 @@ class ThemeColors {
             } else {
                 Color(eudiw_theme_light_textDisabledLight)
             }
+
+        val gradientBackground: Brush
+            @Composable get() = Brush.linearGradient(
+                colors = listOf(
+                    Color(primaryMainGradientStart),
+                    Color(primaryMainGradientEnd)
+                ),
+                start = Offset(0f, 0f),
+                end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
+            )
     }
 }
 

@@ -18,24 +18,28 @@
 
 package eu.europa.ec.uilogic.component.utils
 
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.ui.unit.dp
+/**
+ * Z index of loading overlay.
+ */
+const val Z_LOADING = 20f
 
-enum class TopSpacing {
-    WithToolbar, WithoutToolbar
-}
+/**
+ * Z index of snackbar.
+ */
+const val Z_SNACKBAR = 10f
 
-fun screenPaddings(
-    append: PaddingValues? = null,
-    topSpacing: TopSpacing = TopSpacing.WithToolbar
-) = PaddingValues(
-    start = SPACING_MEDIUM.dp,
-    top = calculateTopSpacing(topSpacing).dp + (append?.calculateTopPadding() ?: 0.dp),
-    end = SPACING_MEDIUM.dp,
-    bottom = SPACING_MEDIUM.dp + (append?.calculateBottomPadding() ?: 0.dp)
-)
+/**
+ * Z index of sticky composable. Mostly same as [Z_SNACKBAR].
+ */
+const val Z_STICKY = 10f
 
-private fun calculateTopSpacing(topSpacing: TopSpacing): Int = when (topSpacing) {
-    TopSpacing.WithToolbar -> SPACING_SMALL
-    TopSpacing.WithoutToolbar -> SPACING_EXTRA_LARGE
-}
+const val SPACING_EXTRA_SMALL = 4
+const val SPACING_SMALL = 8
+const val SPACING_MEDIUM = 16
+const val SPACING_LARGE = 24
+const val SPACING_EXTRA_LARGE = 48
+
+const val ALPHA_ENABLED = 1.0f
+const val ALPHA_DISABLED = 0.38f
+
+const val MAX_TOOLBAR_ACTIONS = 2

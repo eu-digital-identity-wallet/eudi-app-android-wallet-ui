@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.utils
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height

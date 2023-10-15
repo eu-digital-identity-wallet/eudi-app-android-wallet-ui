@@ -25,7 +25,8 @@ import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
-import eu.europa.ec.uilogic.component.LoadingType
+import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.LoadingType
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
@@ -40,12 +41,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
-
-data class BiometricError(
-    val event: Event,
-    val errorMsg: String,
-    val isBiometricError: Boolean
-)
 
 sealed class Event : ViewEvent {
     data class OnBiometricsClicked(
@@ -62,7 +57,7 @@ sealed class Event : ViewEvent {
 
 data class State(
     val isLoading: LoadingType = LoadingType.NONE,
-    val error: BiometricError? = null,
+    val error: ContentErrorConfig? = null,
     val config: BiometricUiConfig,
     val quickPinError: String? = null,
     val quickPin: String = "",
@@ -140,10 +135,9 @@ class BiometricViewModel constructor(
                             }
                             setState {
                                 copy(
-                                    error = BiometricError(
-                                        event = event,
-                                        errorMsg = it.errorMessage,
-                                        isBiometricError = true
+                                    error = ContentErrorConfig(
+                                        errorSubTitle = it.errorMessage,
+                                        onCancel = { setEvent(Event.OnErrorDismiss) }
                                     )
                                 )
                             }

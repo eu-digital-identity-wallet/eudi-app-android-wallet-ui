@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.snackbar
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,8 +58,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import eu.europa.ec.resourceslogic.theme.values.colorOnSuccess
 import eu.europa.ec.resourceslogic.theme.values.colorSuccess
-import eu.europa.ec.uilogic.component.Snackbar.Builder
-import eu.europa.ec.uilogic.component.Snackbar.SnackbarType
+import eu.europa.ec.uilogic.component.snackbar.Snackbar.Builder
+import eu.europa.ec.uilogic.component.snackbar.Snackbar.SnackbarType
+import eu.europa.ec.uilogic.component.utils.Z_SNACKBAR
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -224,10 +225,10 @@ class Snackbar private constructor(private val data: SnackbarValue) {
         @Composable
         fun PlaceHolder(snackbarHostState: SnackbarHostState) {
             // Check is host state is the same as previous.
-            if (this.snackbarHostState != snackbarHostState) dismissAll()
+            if (Companion.snackbarHostState != snackbarHostState) dismissAll()
 
             // Store host state.
-            this.snackbarHostState = snackbarHostState
+            Companion.snackbarHostState = snackbarHostState
 
             // Get current data.
             snackbarHostState.currentSnackbarData?.visuals?.message?.let { currentId ->

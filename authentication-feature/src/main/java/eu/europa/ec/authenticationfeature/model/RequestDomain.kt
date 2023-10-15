@@ -16,24 +16,10 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.authenticationfeature.model
 
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.platform.TextToolbar
-import androidx.compose.ui.platform.TextToolbarStatus
-
-object EmptyTextToolbar : TextToolbar {
-
-    override val status: TextToolbarStatus = TextToolbarStatus.Hidden
-
-    override fun hide() {}
-
-    override fun showMenu(
-        rect: Rect,
-        onCopyRequested: (() -> Unit)?,
-        onPasteRequested: (() -> Unit)?,
-        onCutRequested: (() -> Unit)?,
-        onSelectAllRequested: (() -> Unit)?,
-    ) {
-    }
-}
+data class RequestDomain(
+    val id: String,
+    val dateOfBirth: String,
+    val taxClearanceNumber: String,
+)
