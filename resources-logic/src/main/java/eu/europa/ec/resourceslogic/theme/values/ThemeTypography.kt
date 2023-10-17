@@ -34,13 +34,13 @@ class ThemeTypography {
                     displayLarge = ThemeTextStyle(
                         fontFamily = listOf(RobotoLight),
                         fontSize = 96,
-                        letterSpacing = -1.5f,
+                        letterSpacing = -0.14f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     displayMedium = ThemeTextStyle(
                         fontFamily = listOf(RobotoLight),
                         fontSize = 60,
-                        letterSpacing = -0.5f,
+                        letterSpacing = -0.03f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     displaySmall = ThemeTextStyle(
@@ -53,7 +53,7 @@ class ThemeTypography {
                     headlineMedium = ThemeTextStyle(
                         fontFamily = listOf(RobotoRegular),
                         fontSize = 30,
-                        letterSpacing = 0.25f,
+                        letterSpacing = 0.01f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     headlineSmall = ThemeTextStyle(
@@ -65,50 +65,50 @@ class ThemeTypography {
                     titleLarge = ThemeTextStyle(
                         fontFamily = listOf(RobotoMedium),
                         fontSize = 20,
-                        letterSpacing = 0.15f,
+                        letterSpacing = 0f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     titleMedium = ThemeTextStyle(
                         fontFamily = listOf(RobotoMedium),
                         fontSize = 16,
-                        letterSpacing = 0.15f,
+                        letterSpacing = 0f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     titleSmall = ThemeTextStyle(
                         fontFamily = listOf(RobotoMedium),
                         fontSize = 14,
-                        letterSpacing = 0.1f,
+                        letterSpacing = 0f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     bodyLarge = ThemeTextStyle(
                         fontFamily = listOf(RobotoRegular),
                         fontSize = 16,
-                        letterSpacing = 0.5f,
+                        letterSpacing = 0.01f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     bodyMedium = ThemeTextStyle(
                         fontFamily = listOf(RobotoRegular),
-                        fontSize = 16,
-                        letterSpacing = 0.25f,
+                        fontSize = 14,
+                        letterSpacing = 0f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     bodySmall = ThemeTextStyle(
                         fontFamily = listOf(RobotoRegular),
                         fontSize = 12,
-                        letterSpacing = 0.4f,
+                        letterSpacing = 0f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     labelLarge = ThemeTextStyle(
                         fontFamily = listOf(RobotoMedium),
                         fontSize = 14,
-                        letterSpacing = 1.25f,
+                        letterSpacing = 0.02f,
                         textAlign = ThemeTextAlign.Start
                     ),
                     labelMedium = ThemeTextStyle(),
                     labelSmall = ThemeTextStyle(
                         fontFamily = listOf(RobotoRegular),
                         fontSize = 10,
-                        letterSpacing = 1.5f,
+                        letterSpacing = 0.01f,
                         textAlign = ThemeTextAlign.Start
                     )
                 )

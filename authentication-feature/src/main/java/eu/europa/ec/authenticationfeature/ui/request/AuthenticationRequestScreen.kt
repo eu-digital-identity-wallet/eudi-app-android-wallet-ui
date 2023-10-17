@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
+import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -148,22 +149,28 @@ private fun Content(
             state.request?.let { userData ->
                 item {
                     InfoTextWithNameAndValue(
-                        infoName = stringResource(id = R.string.online_authentication_userData_id_number),
-                        infoValue = userData.id
+                        itemData = InfoTextWithNameAndValueData(
+                            infoName = stringResource(id = R.string.online_authentication_userData_id_number),
+                            infoValue = userData.id
+                        )
                     )
                 }
 
                 item {
                     InfoTextWithNameAndValue(
-                        infoName = stringResource(id = R.string.online_authentication_userData_date_of_birth),
-                        infoValue = userData.dateOfBirth
+                        itemData = InfoTextWithNameAndValueData(
+                            infoName = stringResource(id = R.string.online_authentication_userData_date_of_birth),
+                            infoValue = userData.dateOfBirth
+                        )
                     )
                 }
 
                 item {
                     InfoTextWithNameAndValue(
-                        infoName = stringResource(id = R.string.online_authentication_userData_tax_clearance_number),
-                        infoValue = userData.taxClearanceNumber
+                        itemData = InfoTextWithNameAndValueData(
+                            infoName = stringResource(id = R.string.online_authentication_userData_tax_clearance_number),
+                            infoValue = userData.taxClearanceNumber
+                        )
                     )
                 }
             }
