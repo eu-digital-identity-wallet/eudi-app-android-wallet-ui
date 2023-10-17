@@ -53,9 +53,9 @@ fun WrapPrimaryButton(
         onClick = onClick,
         shape = buttonsShape,
         colors = ButtonDefaults.textButtonColors(
-            containerColor = MaterialTheme.colorScheme.tertiary,
+            containerColor = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.textPrimaryDark,
-            disabledContainerColor = MaterialTheme.colorScheme.tertiary.copy(alpha = ALPHA_DISABLED),
+            disabledContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = ALPHA_DISABLED),
             disabledContentColor = MaterialTheme.colorScheme.textDisabledDark,
         ),
         contentPadding = buttonsContentPadding,

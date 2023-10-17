@@ -212,7 +212,7 @@ fun WrapPinTextField(
  */
 @Preview
 @Composable
-fun PreviewWrapPinTextField() {
+private fun PreviewWrapPinTextField() {
     WrapPinTextField(
         modifier = Modifier.wrapContentSize(),
         onPinUpdate = {},

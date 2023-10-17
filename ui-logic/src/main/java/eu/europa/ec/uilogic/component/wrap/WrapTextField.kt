@@ -23,6 +23,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.LocalTextStyle
@@ -31,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
@@ -61,6 +63,7 @@ fun WrapTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     onKeyEvent: ((KeyEvent) -> Boolean)? = null,
     textStyle: TextStyle = LocalTextStyle.current,
+    shape: Shape = RoundedCornerShape(16.dp),
 ) {
 
     val textFieldModifier = modifier
@@ -99,6 +102,7 @@ fun WrapTextField(
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
+            shape = shape,
             textStyle = textStyle,
         )
     }
