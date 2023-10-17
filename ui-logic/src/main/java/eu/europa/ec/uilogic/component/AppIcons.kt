@@ -76,16 +76,47 @@ object AppIcons {
     )
 
     val Error: IconData = IconData(
-        resourceId = R.drawable.ic_error_24,
+        resourceId = R.drawable.ic_error,
         contentDescriptionId = R.string.content_description_error_icon,
         imageVector = null
     )
 
     val TouchId: IconData = IconData(
-        resourceId = R.drawable.ic_touch_id_24,
+        resourceId = R.drawable.ic_touch_id,
         contentDescriptionId = R.string.content_description_touch_id_icon,
         imageVector = null
     )
+
+    val QR: IconData = IconData(
+        resourceId = R.drawable.ic_qr,
+        contentDescriptionId = R.string.content_description_qr_icon,
+        imageVector = null
+    )
+
+    val NFC: IconData = IconData(
+        resourceId = R.drawable.ic_nfc,
+        contentDescriptionId = R.string.content_description_nfc_icon,
+        imageVector = null
+    )
+
+    val User: IconData = IconData(
+        resourceId = R.drawable.ic_user,
+        contentDescriptionId = R.string.content_description_user_icon,
+        imageVector = null
+    )
+
+    val Id: IconData = IconData(
+        resourceId = R.drawable.ic_id,
+        contentDescriptionId = R.string.content_description_id_icon,
+        imageVector = null
+    )
+
+    val IdStroke: IconData = IconData(
+        resourceId = R.drawable.ic_id_stroke,
+        contentDescriptionId = R.string.content_description_id_stroke_icon,
+        imageVector = null
+    )
+
 
     val Logo: IconData = IconData(
         resourceId = R.drawable.ic_logo_192,

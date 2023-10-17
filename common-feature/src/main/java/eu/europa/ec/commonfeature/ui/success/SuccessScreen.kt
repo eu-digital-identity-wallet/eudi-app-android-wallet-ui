@@ -44,13 +44,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
-import eu.europa.ec.resourceslogic.theme.values.colorSuccess
-import eu.europa.ec.uilogic.component.ContentScreen
-import eu.europa.ec.uilogic.component.ContentTitle
-import eu.europa.ec.uilogic.component.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.VSpacer
-import eu.europa.ec.uilogic.component.WrapPrimaryButton
-import eu.europa.ec.uilogic.component.WrapSecondaryButton
+import eu.europa.ec.resourceslogic.theme.values.success
+import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -70,6 +69,7 @@ fun SuccessScreen(
     val context = LocalContext.current
 
     ContentScreen(
+        isLoading = false,
         onBack = { viewModel.setEvent(Event.BackPressed) },
         navigatableAction = ScreenNavigateAction.NONE
     ) { paddingValues ->
@@ -129,11 +129,10 @@ private fun SuccessScreenView(
             ContentTitle(
                 title = state.successConfig.header,
                 titleStyle = MaterialTheme.typography.headlineSmall.copy(
-                    color = MaterialTheme.colorScheme.colorSuccess
+                    color = MaterialTheme.colorScheme.success
                 ),
                 subtitle = state.successConfig.content,
             )
-            VSpacer.Small()
         }
 
         val imageConfig = state.successConfig.imageConfig
@@ -150,7 +149,7 @@ private fun SuccessScreenView(
                         modifier = Modifier.fillMaxWidth(0.6f),
                         imageVector = Icons.Outlined.CheckCircle,
                         contentDescription = imageConfig.contentDescription,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.colorSuccess),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.success),
                         contentScale = ContentScale.FillWidth
                     )
                 }
@@ -226,7 +225,7 @@ private fun ButtonRow(text: String) {
 
 @Preview
 @Composable
-fun SuccessPreview() {
+private fun SuccessPreview() {
     SuccessScreenView(
         state = State(
             successConfig = SuccessUIConfig(
