@@ -56,8 +56,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
-import eu.europa.ec.resourceslogic.theme.values.colorOnSuccess
-import eu.europa.ec.resourceslogic.theme.values.colorSuccess
+import eu.europa.ec.resourceslogic.theme.values.onSuccess
+import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.snackbar.Snackbar.Builder
 import eu.europa.ec.uilogic.component.snackbar.Snackbar.SnackbarType
 import eu.europa.ec.uilogic.component.utils.Z_SNACKBAR
@@ -607,7 +607,7 @@ class Snackbar private constructor(private val data: SnackbarValue) {
         @Composable
         fun colorBackground(): Color {
             return when (this) {
-                is Success -> MaterialTheme.colorScheme.colorSuccess
+                is Success -> MaterialTheme.colorScheme.success
                 is Error -> MaterialTheme.colorScheme.error
             }
         }
@@ -621,7 +621,7 @@ class Snackbar private constructor(private val data: SnackbarValue) {
         @Composable
         fun colorOnBackground(): Color {
             return when (this) {
-                is Success -> MaterialTheme.colorScheme.colorOnSuccess
+                is Success -> MaterialTheme.colorScheme.onSuccess
                 is Error -> MaterialTheme.colorScheme.onError
             }
         }

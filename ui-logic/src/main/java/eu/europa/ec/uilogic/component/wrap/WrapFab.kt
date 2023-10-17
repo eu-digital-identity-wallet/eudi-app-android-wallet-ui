@@ -39,8 +39,8 @@ data class FabData(
 fun WrapFab(modifier: Modifier = Modifier, data: FabData) {
     FloatingActionButton(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.tertiary,
-        contentColor = MaterialTheme.colorScheme.onTertiary,
+        containerColor = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
         onClick = data.onClick
     ) {
         data.content()
@@ -48,11 +48,14 @@ fun WrapFab(modifier: Modifier = Modifier, data: FabData) {
 }
 
 @Composable
-fun WrapExtendedFab(modifier: Modifier = Modifier, data: FabData) {
+fun WrapExtendedFab(
+    modifier: Modifier = Modifier,
+    data: FabData
+) {
     ExtendedFloatingActionButton(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.tertiary,
-        contentColor = MaterialTheme.colorScheme.onTertiary,
+        containerColor = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
         onClick = data.onClick
     ) {
         data.content()

@@ -123,7 +123,7 @@ fun DialogBottomSheet(
 
 @Composable
 @Preview
-fun DialogBottomSheetPreview() {
+private fun DialogBottomSheetPreview() {
     DialogBottomSheet(
         title = "Title",
         message = "Message",

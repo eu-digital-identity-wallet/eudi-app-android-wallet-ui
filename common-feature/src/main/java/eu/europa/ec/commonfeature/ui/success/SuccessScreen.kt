@@ -44,7 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
-import eu.europa.ec.resourceslogic.theme.values.colorSuccess
+import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -129,7 +129,7 @@ private fun SuccessScreenView(
             ContentTitle(
                 title = state.successConfig.header,
                 titleStyle = MaterialTheme.typography.headlineSmall.copy(
-                    color = MaterialTheme.colorScheme.colorSuccess
+                    color = MaterialTheme.colorScheme.success
                 ),
                 subtitle = state.successConfig.content,
             )
@@ -149,7 +149,7 @@ private fun SuccessScreenView(
                         modifier = Modifier.fillMaxWidth(0.6f),
                         imageVector = Icons.Outlined.CheckCircle,
                         contentDescription = imageConfig.contentDescription,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.colorSuccess),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.success),
                         contentScale = ContentScale.FillWidth
                     )
                 }
@@ -225,7 +225,7 @@ private fun ButtonRow(text: String) {
 
 @Preview
 @Composable
-fun SuccessPreview() {
+private fun SuccessPreview() {
     SuccessScreenView(
         state = State(
             successConfig = SuccessUIConfig(

@@ -34,7 +34,12 @@
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
     <string name="content_description_error_icon">Error</string>
-    <string name="content_description_touch_id_icon">Touch id icon</string>
+    <string name="content_description_touch_id_icon">Touch id</string>
+    <string name="content_description_qr_icon">QR</string>
+    <string name="content_description_nfc_icon">NFC</string>
+    <string name="content_description_user_icon">User</string>
+    <string name="content_description_id_icon">Id</string>
+    <string name="content_description_id_stroke_icon">Id stroke</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>

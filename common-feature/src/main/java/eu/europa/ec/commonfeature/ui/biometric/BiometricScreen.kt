@@ -240,7 +240,7 @@ fun PinFieldLayout(
  */
 @Preview
 @Composable
-fun PreviewBiometricScreen() {
+private fun PreviewBiometricScreen() {
     Body(
         state = State(
             config = BiometricUiConfig(

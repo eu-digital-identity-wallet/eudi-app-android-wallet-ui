@@ -24,37 +24,44 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.utils.VSpacer
 
+data class InfoTextWithNameAndValueData(
+    val infoName: String,
+    val infoValue: String,
+)
+
 @Composable
 fun InfoTextWithNameAndValue(
-    infoName: String,
-    infoNameStyle: TextStyle = MaterialTheme.typography.bodySmall.copy(
+    itemData: InfoTextWithNameAndValueData,
+    modifier: Modifier = Modifier,
+    infoNameTextStyle: TextStyle = MaterialTheme.typography.bodySmall.copy(
         color = MaterialTheme.colorScheme.textSecondaryDark
     ),
-    infoValue: String,
-    infoValueStyle: TextStyle = MaterialTheme.typography.bodyLarge.copy(
+    infoValueTextStyle: TextStyle = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.textPrimaryDark
     )
 ) {
     Column(
-        verticalArrangement = Arrangement.Center,
+        modifier = modifier,
+        verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.Start
     ) {
         Text(
-            text = infoName,
-            style = infoNameStyle
+            text = itemData.infoName,
+            style = infoNameTextStyle
         )
 
         VSpacer.ExtraSmall()
 
         Text(
-            text = infoValue,
-            style = infoValueStyle
+            text = itemData.infoValue,
+            style = infoValueTextStyle
         )
     }
 }
@@ -62,8 +69,10 @@ fun InfoTextWithNameAndValue(
 @Preview
 @Composable
 private fun InfoTextWithNameAndValuePreview() {
-    InfoTextWithNameAndValue(
+    val infoItemData = InfoTextWithNameAndValueData(
         infoName = "Name:",
         infoValue = "John Smith"
     )
+
+    InfoTextWithNameAndValue(itemData = infoItemData)
 }
