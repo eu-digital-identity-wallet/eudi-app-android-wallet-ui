@@ -54,9 +54,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.uilogic.component.ContentScreen
-import eu.europa.ec.uilogic.component.ContentTitle
-import eu.europa.ec.uilogic.component.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.flow.Flow
@@ -68,7 +68,7 @@ fun FaqScreen(
     navController: NavController,
     viewModel: FaqScreenViewModel
 ) {
-    ContentScreen(navigatableAction = ScreenNavigateAction.BACKABLE) {
+    ContentScreen(isLoading = false, navigatableAction = ScreenNavigateAction.BACKABLE) {
         Content(
             state = viewModel.viewState.value,
             effectFlow = viewModel.effect,
