@@ -45,7 +45,7 @@ private val assembledModules = listOf(
     FeatureCommonModule().module,
     FeatureStartupModule().module,
     LoginModule().module,
-    FeatureDashboardModule().module
+    FeatureDashboardModule().module,
     FeatureAuthenticationModule().module
 )
 

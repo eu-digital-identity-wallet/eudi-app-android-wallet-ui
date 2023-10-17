@@ -49,8 +49,9 @@ import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
 import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.WrapPrimaryButton
-import eu.europa.ec.uilogic.component.WrapSecondaryButton
+import eu.europa.ec.uilogic.component.content.ContentTitle
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -97,7 +98,7 @@ fun Content(
                 .fillMaxWidth()
                 .fillMaxHeight(0.75f)
                 .background(
-                    brush = ThemeColors.gradientBackground,
+                    color = MaterialTheme.colorScheme.primary,
                     shape = MaterialTheme.shapes.bottomCorneredShapeSmall
                 ),
             contentAlignment = Alignment.Center
