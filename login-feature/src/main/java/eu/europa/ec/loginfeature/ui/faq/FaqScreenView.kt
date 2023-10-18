@@ -56,6 +56,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
+import eu.europa.ec.resourceslogic.theme.values.dividerDark
+import eu.europa.ec.resourceslogic.theme.values.textDisabledLight
+import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -211,7 +215,7 @@ fun ExpandableListScreen(
                             Text(
                                 text = dataItem.description,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = Gray
+                                color = MaterialTheme.colorScheme.textSecondaryDark
                             )
                         }
                     }
