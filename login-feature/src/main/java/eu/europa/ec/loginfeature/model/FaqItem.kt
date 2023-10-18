@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.loginfeature.ui.login
+package eu.europa.ec.loginfeature.model
 
-class LoginScreenViewModel {
-}
+
+data class FaqItem(val title: String, val description: String)

@@ -18,32 +18,21 @@
 
 package eu.europa.ec.loginfeature.ui.faq
 
-import android.util.Log
-import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.loginfeature.interactor.LoginInteractor
-import eu.europa.ec.uilogic.config.ConfigNavigation
-import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.loginfeature.model.FaqItem
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import eu.europa.ec.uilogic.navigation.StartupScreens
-import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
-import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 sealed class Event : ViewEvent {
     data object OnClick : Event()
 }
 
-data class State(val faqItems: List<CollapsableSection>) : ViewState
-
-data class CollapsableSection(val title: String, val description: String)
+data class State(val faqItems: List<FaqItem>) : ViewState
 
 
 sealed class Effect : ViewSideEffect {
@@ -60,89 +49,11 @@ class FaqScreenViewModel(
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State(
-        listOf(
-            CollapsableSection(
-                title = "Question A goes Here",
-                description = "Lorem ipsum dolor sit amet," +
-                        " consectetur adipiscing elit,"
-            ),
-            CollapsableSection(
-                title = "Question B goes Here",
-                description = "Duis aute irure dolor in reprehenderit in" +
-                        " voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-            ),
-            CollapsableSection(
-                title = "Question C goes Here",
-                description = "Excepteur sint occaecat cupidatat non proident, " +
-                        "sunt in culpa qui officia deserunt mollit anim id est laborum."
-            ),
-            CollapsableSection(
-                title = "Question D goes Here",
-                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-                        "sed  magn laboris nisi ut aliquip ex ea commodo consequat."
-            ),
-            CollapsableSection(
-                title = "Question E goes Here",
-                description = "Duis aute irure dolor in reprehenderit" +
-                        " in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-            ),
-            CollapsableSection(
-                title = "Question F goes Here",
-                description = "Excepteur sint occaecat cupidatat non proident, " +
-                        "sunt in culpa qui officia deserunt mollit anim id est laborum."
-            ),
-        )
+        interactor.initializeData()
     )
 
     override fun handleEvents(event: Event) {
-        when (event) {
-            is Event.OnClick -> testNewScreen()
-        }
+        TODO("Not yet implemented")
     }
 
-    private fun testNewScreen() {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screen = generateComposableNavigationLink(
-                    screen = CommonScreens.Success,
-                    arguments = generateComposableArguments(
-                        mapOf(
-                            "successConfig" to uiSerializer.toBase64(
-                                SuccessUIConfig(
-                                    header = "Success",
-                                    content = "dsfsdfsdfsdfsdfsdfsdfsdfsdf",
-                                    imageConfig = SuccessUIConfig.ImageConfig(
-                                        type = SuccessUIConfig.ImageConfig.Type.DEFAULT
-                                    ),
-                                    buttonConfig = listOf(
-                                        SuccessUIConfig.ButtonConfig(
-                                            text = "back",
-                                            style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                                            navigation = ConfigNavigation(
-                                                navigationType = NavigationType.POP,
-                                                screenToNavigate = StartupScreens.Splash
-                                            )
-                                        )
-                                    ),
-                                    onBackScreenToNavigate = ConfigNavigation(
-                                        navigationType = NavigationType.POP,
-                                        screenToNavigate = StartupScreens.Splash
-                                    ),
-                                ),
-                                SuccessUIConfig.Parser
-                            ).orEmpty()
-                        )
-                    )
-                )
-            )
-        }
-    }
-
-    private fun testNetworkCall() {
-        viewModelScope.launch {
-            interactor.test().collect {
-                Log.d(FaqScreenViewModel::class.java.name, it.toString())
-            }
-        }
-    }
 }

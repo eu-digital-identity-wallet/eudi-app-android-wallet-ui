@@ -18,8 +18,8 @@
 
 package eu.europa.ec.loginfeature.di
 
+import eu.europa.ec.loginfeature.interactor.FaqInteractorImpl
 import eu.europa.ec.loginfeature.interactor.LoginInteractor
-import eu.europa.ec.loginfeature.interactor.LoginInteractorImpl
 import eu.europa.ec.loginfeature.repository.LoginRepository
 import eu.europa.ec.loginfeature.repository.LoginRepositoryImpl
 import eu.europa.ec.networklogic.api.ApiClient
@@ -44,5 +44,5 @@ fun provideLoginInteractor(
     loginRepository: LoginRepository,
     resourceProvider: ResourceProvider
 ): LoginInteractor {
-    return LoginInteractorImpl(loginRepository, resourceProvider)
+    return FaqInteractorImpl(loginRepository, resourceProvider)
 }

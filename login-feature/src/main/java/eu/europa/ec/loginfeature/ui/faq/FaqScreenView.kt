@@ -18,10 +18,8 @@
 
 package eu.europa.ec.loginfeature.ui.faq
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -36,11 +34,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,32 +44,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.Gray
-import androidx.compose.ui.graphics.Color.Companion.LightGray
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.loginfeature.model.FaqItem
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.dividerDark
-import eu.europa.ec.resourceslogic.theme.values.textDisabledLight
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.wrap.WrapTextField
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun FaqScreen(
     navController: NavController,
     viewModel: FaqScreenViewModel
 ) {
-
     ContentScreen(
         isLoading = false,
         navigatableAction = ScreenNavigateAction.BACKABLE
@@ -84,22 +72,29 @@ fun FaqScreen(
             effectFlow = viewModel.effect,
             onEventSend = { event -> viewModel.setEvent(event) },
             onNavigationRequested = { navigationEffect ->
-                when (navigationEffect) {
-                    is Effect.Navigation.SwitchModule -> {
-                        navController.navigate(navigationEffect.moduleRoute.route) {
-                            popUpTo(ModuleRoute.StartupModule.route) { inclusive = true }
-                        }
-                    }
-
-                    is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(navigationEffect.screen) {
-                            popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
-                        }
-                    }
-                }
+                handleNavigationEffect(navigationEffect, navController)
             },
             paddingValues = paddingValues
         )
+    }
+}
+
+private fun handleNavigationEffect(
+    navigationEffect: Effect.Navigation,
+    navController: NavController
+) {
+    when (navigationEffect) {
+        is Effect.Navigation.SwitchModule -> {
+            navController.navigate(navigationEffect.moduleRoute.route) {
+                popUpTo(ModuleRoute.StartupModule.route) { inclusive = true }
+            }
+        }
+
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screen) {
+                popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
+            }
+        }
     }
 }
 
@@ -108,119 +103,99 @@ private fun FaqScreenView(
     state: State,
     effectFlow: Flow<Effect>?,
     onEventSend: (Event) -> Unit,
-    onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
+    onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
-    )
-    {
+            .padding(paddingValues)
+    ) {
         var text by remember { mutableStateOf("") }
         ContentTitle("FAQs")
 
-        OutlinedTextField(
+        WrapTextField(
             value = text,
             onValueChange = { text = it },
             singleLine = true,
             label = { Text("Search") },
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.inversePrimary
-            ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            modifier =
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 5.dp, end = 10.dp, top = 10.dp, bottom = 20.dp)
-                .clip(RoundedCornerShape(12.dp)),
+                .clip(RoundedCornerShape(12.dp))
         )
 
-        ExpandableListScreen(
-            sections = state.faqItems
-        )
-    }
-
-    LaunchedEffect(Unit) {
-        effectFlow?.onEach { effect ->
-            when (effect) {
-                is Effect.Navigation.SwitchModule -> onNavigationRequested(effect)
-                is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
-            }
-        }?.collect()
+        ExpandableListScreen(sections = state.faqItems, onNavigationRequested)
     }
 }
 
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ExpandableListScreen(
-    sections: List<CollapsableSection>,
+    sections: List<FaqItem>,
+    onNavigationRequested: (Effect.Navigation) -> Unit
 ) {
     var expandedItemIndex by remember { mutableStateOf(-1) }
 
     LazyColumn {
         sections.forEachIndexed { i, dataItem ->
-            var isExpanded by mutableStateOf(i == expandedItemIndex)
+            val isExpanded = i == expandedItemIndex  // Initialize isExpanded here
 
             item(key = "header_$i") {
-                Column(
-                    modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(6.dp)
-                        .background(
-                            MaterialTheme.colorScheme.backgroundDefault,
-                            shape = RoundedCornerShape(16.dp)
-                        )
-                        .clickable {
-                            expandedItemIndex = if (isExpanded) -1 else i
-                            isExpanded = !isExpanded
-                        }) {
-
-                    Row(
-                        modifier = Modifier
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-
-                    ) {
-                        Text(
-                            text = dataItem.title,
-                            Modifier.weight(1f),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Black
-                        )
-                        Icon(
-                            Icons.Default.run {
-                                if (isExpanded)
-                                    KeyboardArrowDown
-                                else
-                                    KeyboardArrowUp
-                            },
-                            contentDescription = "arrow-down",
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
+                ExpandableListItem(
+                    dataItem = dataItem,
+                    isExpanded = isExpanded,
+                    onHeaderClicked = {
+                        expandedItemIndex = if (isExpanded) -1 else i
                     }
-
-
-                    if (isExpanded) {
-                        Box(
-                            modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 16.dp)
-                        ) {
-                            Text(
-                                text = dataItem.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.textSecondaryDark
-                            )
-                        }
-                    }
-                }
+                )
             }
+        }
+    }
+}
+
+@Composable
+fun ExpandableListItem(
+    dataItem: FaqItem,
+    isExpanded: Boolean,
+    onHeaderClicked: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(6.dp)
+            .background(
+                MaterialTheme.colorScheme.backgroundDefault,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clickable(onClick = onHeaderClicked)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = dataItem.title,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = Black
+            )
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
+                contentDescription = "arrow-down",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        if (isExpanded) {
+            Text(
+                text = dataItem.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.textSecondaryDark,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 16.dp)
+            )
         }
     }
 }
