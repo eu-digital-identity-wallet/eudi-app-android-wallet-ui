@@ -18,12 +18,8 @@
 
 package eu.europa.ec.loginfeature.di
 
+import eu.europa.ec.loginfeature.interactor.FaqInteractor
 import eu.europa.ec.loginfeature.interactor.FaqInteractorImpl
-import eu.europa.ec.loginfeature.interactor.LoginInteractor
-import eu.europa.ec.loginfeature.repository.LoginRepository
-import eu.europa.ec.loginfeature.repository.LoginRepositoryImpl
-import eu.europa.ec.networklogic.api.ApiClient
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -31,18 +27,9 @@ import org.koin.core.annotation.Module
 
 @Module
 @ComponentScan("eu.europa.ec.loginfeature")
-class LoginModule
-
-
-@Factory
-fun provideLoginRepository(apiClient: ApiClient): LoginRepository {
-    return LoginRepositoryImpl(apiClient)
-}
+class FeatureLoginModule
 
 @Factory
-fun provideLoginInteractor(
-    loginRepository: LoginRepository,
-    resourceProvider: ResourceProvider
-): LoginInteractor {
-    return FaqInteractorImpl(loginRepository, resourceProvider)
+fun provideFaqInteractor(): FaqInteractor {
+    return FaqInteractorImpl()
 }

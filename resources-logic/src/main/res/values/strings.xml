@@ -41,6 +41,8 @@
     <string name="content_description_id_icon">Id</string>
     <string name="content_description_id_stroke_icon">Id stroke</string>
     <string name="content_description_logo_icon">Logo icon</string>
+    <string name="content_description_arrow_up_icon">Arrow up</string>
+    <string name="content_description_arrow_down_icon">Arrow down</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>

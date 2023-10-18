@@ -22,7 +22,6 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import eu.europa.ec.authenticationfeature.router.featureAuthenticationGraph
 import eu.europa.ec.commonfeature.router.featureCommonGraph
-import eu.europa.ec.loginfeature.router.featureLoginGraph
 import eu.europa.ec.dashboardfeature.router.featureDashboardGraph
 import eu.europa.ec.loginfeature.router.featureLoginGraph
 import eu.europa.ec.startupfeature.router.featureStartupGraph

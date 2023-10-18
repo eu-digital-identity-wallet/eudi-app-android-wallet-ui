@@ -24,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.loginfeature.ui.faq.FaqScreen
 import eu.europa.ec.loginfeature.ui.welcome.WelcomeScreen
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
@@ -36,11 +37,11 @@ fun NavGraphBuilder.featureLoginGraph(navController: NavController) {
     ) {
         composable(
             route = LoginScreens.Welcome.screenRoute,
-            deepLinks =
-            listOf(
+            deepLinks = listOf(
                 navDeepLink {
                     uriPattern = BuildConfig.DEEPLINK + LoginScreens.Welcome.screenRoute
-                })
+                }
+            )
         ) {
             WelcomeScreen(navController, koinViewModel())
         }
@@ -48,11 +49,11 @@ fun NavGraphBuilder.featureLoginGraph(navController: NavController) {
 
     composable(
         route = LoginScreens.Faq.screenRoute,
-        deepLinks =
-        listOf(
+        deepLinks = listOf(
             navDeepLink {
                 uriPattern = BuildConfig.DEEPLINK + LoginScreens.Faq.screenRoute
-            })
+            }
+        )
     ) {
         FaqScreen(navController, koinViewModel())
     }

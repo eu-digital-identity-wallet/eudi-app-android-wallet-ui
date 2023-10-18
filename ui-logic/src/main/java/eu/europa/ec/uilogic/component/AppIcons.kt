@@ -23,6 +23,8 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -117,10 +119,21 @@ object AppIcons {
         imageVector = null
     )
 
-
     val Logo: IconData = IconData(
         resourceId = R.drawable.ic_logo_192,
         contentDescriptionId = R.string.content_description_logo_icon,
         imageVector = null
+    )
+
+    val KeyboardArrowDown: IconData = IconData(
+        resourceId = null,
+        contentDescriptionId = R.string.content_description_arrow_down_icon,
+        imageVector = Icons.Default.KeyboardArrowDown
+    )
+
+    val KeyboardArrowUp: IconData = IconData(
+        resourceId = null,
+        contentDescriptionId = R.string.content_description_arrow_up_icon,
+        imageVector = Icons.Default.KeyboardArrowUp
     )
 }

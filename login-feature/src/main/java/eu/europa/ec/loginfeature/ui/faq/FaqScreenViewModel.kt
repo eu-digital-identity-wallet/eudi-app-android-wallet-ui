@@ -18,34 +18,31 @@
 
 package eu.europa.ec.loginfeature.ui.faq
 
-import eu.europa.ec.loginfeature.interactor.LoginInteractor
-import eu.europa.ec.loginfeature.model.FaqItem
+import eu.europa.ec.loginfeature.interactor.FaqInteractor
+import eu.europa.ec.loginfeature.model.FaqUiModel
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.ModuleRoute
-import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.android.annotation.KoinViewModel
 
 sealed class Event : ViewEvent {
-    data object OnClick : Event()
+    data object Pop : Event()
 }
 
-data class State(val faqItems: List<FaqItem>) : ViewState
+data class State(val faqItems: List<FaqUiModel>) : ViewState
 
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
-        data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
+        data object Pop : Navigation()
         data class SwitchScreen(val screen: String) : Navigation()
     }
 }
 
 @KoinViewModel
 class FaqScreenViewModel(
-    private val interactor: LoginInteractor,
-    private val uiSerializer: UiSerializer
+    private val interactor: FaqInteractor
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State(
@@ -53,7 +50,8 @@ class FaqScreenViewModel(
     )
 
     override fun handleEvents(event: Event) {
-        TODO("Not yet implemented")
+        when (event) {
+            Event.Pop -> setEffect { Effect.Navigation.Pop }
+        }
     }
-
 }
