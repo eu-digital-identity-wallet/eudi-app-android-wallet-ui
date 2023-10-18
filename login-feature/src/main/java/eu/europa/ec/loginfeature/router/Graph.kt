@@ -54,7 +54,6 @@ fun NavGraphBuilder.featureLoginGraph(navController: NavController) {
                 uriPattern = BuildConfig.DEEPLINK + LoginScreens.Faq.screenRoute
             })
     ) {
-        // TODO Replace with FaqScreen Composable
-        WelcomeScreen(navController, koinViewModel())
+        FaqScreen(navController, koinViewModel())
     }
 }

@@ -55,6 +55,7 @@ internal fun Project.configureAndroidCompose(
             add("implementation", libs.findLibrary("androidx.lifecycle.viewModelCompose").get())
 
             add("implementation", libs.findLibrary("androidx.constraintlayout.compose").get())
+            add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())
             add("implementation", libs.findLibrary("androidx.compose.ui.tooling.preview").get())
 
             add("androidTestImplementation", platform(bom))
