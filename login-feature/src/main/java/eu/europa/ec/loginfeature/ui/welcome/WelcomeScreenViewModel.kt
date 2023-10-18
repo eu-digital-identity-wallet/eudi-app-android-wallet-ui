@@ -28,14 +28,14 @@ import org.koin.android.annotation.KoinViewModel
 object State : ViewState
 
 sealed class Event : ViewEvent {
-    data object GoToLogin : Event()
-    data object GoToFaq : Event()
+    data object NavigateToLogin : Event()
+    data object NavigateToFaq : Event()
 }
 
 sealed class Effect : ViewSideEffect {
+
     sealed class Navigation : Effect() {
-        data object Login : Navigation()
-        data class Faq(val screen: String) : Navigation()
+        data class SwitchScreen(val screen: String) : Navigation()
     }
 }
 
@@ -45,8 +45,8 @@ class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.GoToLogin -> setEffect { Effect.Navigation.Login }
-            is Event.GoToFaq -> setEffect { Effect.Navigation.Faq(LoginScreens.Faq.screenRoute) }
+            is Event.NavigateToLogin -> {}
+            is Event.NavigateToFaq -> setEffect { Effect.Navigation.SwitchScreen(LoginScreens.Faq.screenRoute) }
         }
     }
 }

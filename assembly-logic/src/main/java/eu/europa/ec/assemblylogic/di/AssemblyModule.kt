@@ -22,8 +22,8 @@ import android.app.Application
 import eu.europa.ec.authenticationfeature.di.FeatureAuthenticationModule
 import eu.europa.ec.businesslogic.di.LogicBusinessModule
 import eu.europa.ec.commonfeature.di.FeatureCommonModule
-import eu.europa.ec.loginfeature.di.LoginModule
 import eu.europa.ec.dashboardfeature.di.FeatureDashboardModule
+import eu.europa.ec.loginfeature.di.LoginModule
 import eu.europa.ec.networklogic.di.LogicNetworkModule
 import eu.europa.ec.resourceslogic.di.LogicResourceModule
 import eu.europa.ec.startupfeature.di.FeatureStartupModule

@@ -49,10 +49,8 @@ import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
 import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
-import eu.europa.ec.uilogic.navigation.LoginScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -69,22 +67,14 @@ fun WelcomeScreen(
         onEventSend = { viewModel.setEvent(it) },
         onNavigationRequested = { navigationEffect ->
             when (navigationEffect) {
-                is Effect.Navigation.Login -> {
-                    // TODO navigate to Login screen
-                }
-
-                is Effect.Navigation.Faq -> {
-                    navController.navigate(navigationEffect.screen) {
-                        popUpTo(LoginScreens.Faq.screenRoute) { inclusive = true }
-                    }
-                }
+                is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screen)
             }
         }
     )
 }
 
 @Composable
-fun Content(
+private fun Content(
     effectFlow: Flow<Effect>?,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
@@ -121,7 +111,7 @@ fun Content(
             WrapPrimaryButton(
                 modifier = Modifier
                     .fillMaxWidth(),
-                onClick = { onEventSend(Event.GoToLogin) }
+                onClick = { onEventSend(Event.NavigateToLogin) }
             ) {
                 Text(
                     text = stringResource(id = R.string.label_login).uppercase(),
@@ -132,7 +122,7 @@ fun Content(
             WrapSecondaryButton(
                 modifier = Modifier
                     .fillMaxWidth(),
-                onClick = { onEventSend(Event.GoToFaq) }
+                onClick = { onEventSend(Event.NavigateToFaq) }
             ) {
                 Text(
                     text = stringResource(id = R.string.label_read_faq),
@@ -145,8 +135,7 @@ fun Content(
     LaunchedEffect(Unit) {
         effectFlow?.onEach { effect ->
             when (effect) {
-                is Effect.Navigation.Login -> onNavigationRequested(effect)
-                is Effect.Navigation.Faq -> onNavigationRequested(effect)
+                is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
             }
         }?.collect()
     }
@@ -154,7 +143,7 @@ fun Content(
 
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
-fun WelcomeScreenPreview() {
+private fun WelcomeScreenPreview() {
     ThemeManager.Builder()
         .withLightColors(ThemeColors.lightColors)
         .withDarkColors(ThemeColors.darkColors)
