@@ -25,22 +25,36 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.loginfeature.ui.faq.FaqScreen
+import eu.europa.ec.loginfeature.ui.welcome.WelcomeScreen
+import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import eu.europa.ec.uilogic.navigation.StartupScreens
 import org.koin.androidx.compose.koinViewModel
 
 fun NavGraphBuilder.featureLoginGraph(navController: NavController) {
-  navigation(
-      startDestination = StartupScreens.Splash.screenRoute,
-      route = ModuleRoute.StartupModule.route) {
+    navigation(
+        startDestination = LoginScreens.Welcome.screenRoute,
+        route = ModuleRoute.LoginModule.route
+    ) {
         composable(
-            route = StartupScreens.Splash.screenRoute,
-            deepLinks =
-                listOf(
-                    navDeepLink {
-                      uriPattern = BuildConfig.DEEPLINK + StartupScreens.Splash.screenRoute
-                    })) {
-              FaqScreen(navController, koinViewModel())
+            route = LoginScreens.Welcome.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = BuildConfig.DEEPLINK + LoginScreens.Welcome.screenRoute
+                }
+            )
+        ) {
+            WelcomeScreen(navController, koinViewModel())
+        }
+    }
+
+    composable(
+        route = LoginScreens.Faq.screenRoute,
+        deepLinks = listOf(
+            navDeepLink {
+                uriPattern = BuildConfig.DEEPLINK + LoginScreens.Faq.screenRoute
             }
-      }
+        )
+    ) {
+        FaqScreen(navController, koinViewModel())
+    }
 }

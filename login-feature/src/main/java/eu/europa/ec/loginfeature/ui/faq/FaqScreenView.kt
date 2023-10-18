@@ -18,6 +18,7 @@
 
 package eu.europa.ec.loginfeature.ui.faq
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -27,16 +28,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,18 +43,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import eu.europa.ec.loginfeature.model.FaqItem
+import eu.europa.ec.loginfeature.model.FaqUiModel
+import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapTextField
-import eu.europa.ec.uilogic.navigation.ModuleRoute
-import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun FaqScreen(
@@ -65,9 +68,10 @@ fun FaqScreen(
 ) {
     ContentScreen(
         isLoading = false,
-        navigatableAction = ScreenNavigateAction.BACKABLE
+        navigatableAction = ScreenNavigateAction.BACKABLE,
+        onBack = { viewModel.setEvent(Event.Pop) }
     ) { paddingValues ->
-        FaqScreenView(
+        Content(
             state = viewModel.viewState.value,
             effectFlow = viewModel.effect,
             onEventSend = { event -> viewModel.setEvent(event) },
@@ -84,22 +88,14 @@ private fun handleNavigationEffect(
     navController: NavController
 ) {
     when (navigationEffect) {
-        is Effect.Navigation.SwitchModule -> {
-            navController.navigate(navigationEffect.moduleRoute.route) {
-                popUpTo(ModuleRoute.StartupModule.route) { inclusive = true }
-            }
-        }
+        is Effect.Navigation.Pop -> navController.popBackStack()
 
-        is Effect.Navigation.SwitchScreen -> {
-            navController.navigate(navigationEffect.screen) {
-                popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
-            }
-        }
+        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screen)
     }
 }
 
 @Composable
-private fun FaqScreenView(
+private fun Content(
     state: State,
     effectFlow: Flow<Effect>?,
     onEventSend: (Event) -> Unit,
@@ -109,9 +105,17 @@ private fun FaqScreenView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues)
+            .padding(
+                PaddingValues(
+                    start = paddingValues.calculateLeftPadding(LayoutDirection.Ltr),
+                    end = paddingValues.calculateRightPadding(LayoutDirection.Ltr),
+                    top = paddingValues.calculateTopPadding()
+                )
+            )
     ) {
+
         var text by remember { mutableStateOf("") }
+
         ContentTitle("FAQs")
 
         WrapTextField(
@@ -122,31 +126,42 @@ private fun FaqScreenView(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 5.dp, end = 10.dp, top = 10.dp, bottom = 20.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(MaterialTheme.shapes.allCorneredShapeSmall)
         )
 
-        ExpandableListScreen(sections = state.faqItems, onNavigationRequested)
+        ExpandableListScreen(sections = state.faqItems, onEventSend)
+    }
+
+    LaunchedEffect(Unit) {
+        effectFlow?.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
+                is Effect.Navigation.Pop -> onNavigationRequested(effect)
+            }
+        }?.collect()
     }
 }
 
 @Composable
-fun ExpandableListScreen(
-    sections: List<FaqItem>,
-    onNavigationRequested: (Effect.Navigation) -> Unit
+private fun ExpandableListScreen(
+    sections: List<FaqUiModel>,
+    onEventSend: (Event) -> Unit
 ) {
-    var expandedItemIndex by remember { mutableStateOf(-1) }
+    var expandedItemIndex by remember { mutableIntStateOf(-1) }
 
     LazyColumn {
-        sections.forEachIndexed { i, dataItem ->
-            val isExpanded = i == expandedItemIndex  // Initialize isExpanded here
-
-            item(key = "header_$i") {
+        sections.forEachIndexed { index, dataItem ->
+            val isExpanded = index == expandedItemIndex
+            item(key = index) {
                 ExpandableListItem(
                     dataItem = dataItem,
                     isExpanded = isExpanded,
+                    paddingValues = PaddingValues(
+                        top = SPACING_MEDIUM.dp,
+                        bottom = if (sections.lastIndex == index) SPACING_MEDIUM.dp else 0.dp
+                    ),
                     onHeaderClicked = {
-                        expandedItemIndex = if (isExpanded) -1 else i
+                        expandedItemIndex = if (isExpanded) -1 else index
                     }
                 )
             }
@@ -155,23 +170,24 @@ fun ExpandableListScreen(
 }
 
 @Composable
-fun ExpandableListItem(
-    dataItem: FaqItem,
+private fun ExpandableListItem(
+    dataItem: FaqUiModel,
     isExpanded: Boolean,
+    paddingValues: PaddingValues,
     onHeaderClicked: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(6.dp)
+            .padding(paddingValues)
             .background(
                 MaterialTheme.colorScheme.backgroundDefault,
-                shape = RoundedCornerShape(16.dp)
+                shape = MaterialTheme.shapes.allCorneredShapeSmall
             )
             .clickable(onClick = onHeaderClicked)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(SPACING_MEDIUM.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -180,21 +196,20 @@ fun ExpandableListItem(
                 style = MaterialTheme.typography.bodyMedium,
                 color = Black
             )
-            Icon(
-                imageVector = if (isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp,
-                contentDescription = "arrow-down",
-                tint = MaterialTheme.colorScheme.primary
+            WrapIcon(
+                iconData = if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown,
+                customTint = MaterialTheme.colorScheme.primary
             )
         }
 
-        if (isExpanded) {
+        AnimatedVisibility(visible = isExpanded) {
             Text(
                 text = dataItem.description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.textSecondaryDark,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 16.dp)
+                    .padding(SPACING_MEDIUM.dp)
             )
         }
     }

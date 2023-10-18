@@ -18,5 +18,4 @@
 
 package eu.europa.ec.loginfeature.model
 
-
-data class FaqItem(val title: String, val description: String)
+data class FaqUiModel(val title: String, val description: String)

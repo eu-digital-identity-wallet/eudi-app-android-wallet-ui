@@ -40,6 +40,9 @@
     <string name="content_description_user_icon">User</string>
     <string name="content_description_id_icon">Id</string>
     <string name="content_description_id_stroke_icon">Id stroke</string>
+    <string name="content_description_logo_icon">Logo icon</string>
+    <string name="content_description_arrow_up_icon">Arrow up</string>
+    <string name="content_description_arrow_down_icon">Arrow down</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
@@ -77,4 +80,7 @@
     <string name="online_authentication_biometry_share_subtitle">use your biometrics to share information</string>
     <string name="online_authentication_quick_pin_share_subtitle">type your quick pin to share information</string>
 
+    <!-- Login -->
+    <string name="label_login">Login</string>
+    <string name="label_read_faq">READ FAQs</string>
 </resources>
