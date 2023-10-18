@@ -16,11 +16,7 @@
  *
  */
 
-package eu.europa.ec.loginfeature
+package eu.europa.ec.loginfeature.model
 
-import androidx.compose.runtime.Composable
 
-@Composable
-fun Login() {
-
-}
+data class FaqItem(val title: String, val description: String)

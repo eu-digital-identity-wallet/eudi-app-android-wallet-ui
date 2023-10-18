@@ -16,14 +16,11 @@
  *
  */
 
-plugins {
-    id("eudi.android.feature")
-}
+package eu.europa.ec.loginfeature.ui.login
 
-android {
-    namespace = "eu.europa.ec.loginfeature"
-}
+import androidx.compose.runtime.Composable
 
-dependencies {
-    implementation(project(":common-feature"))
+@Composable
+fun Login() {
+
 }
