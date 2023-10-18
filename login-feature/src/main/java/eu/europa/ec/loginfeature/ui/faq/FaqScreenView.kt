@@ -23,6 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.LightGray
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -68,41 +70,48 @@ fun FaqScreen(
     navController: NavController,
     viewModel: FaqScreenViewModel
 ) {
-    ContentScreen(isLoading = false, navigatableAction = ScreenNavigateAction.BACKABLE) {
-        Content(
+
+    ContentScreen(
+        isLoading = false,
+        navigatableAction = ScreenNavigateAction.BACKABLE
+    ) { paddingValues ->
+        FaqScreenView(
             state = viewModel.viewState.value,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
-            onNavigationRequested = {
-                when (it) {
+            onEventSend = { event -> viewModel.setEvent(event) },
+            onNavigationRequested = { navigationEffect ->
+                when (navigationEffect) {
                     is Effect.Navigation.SwitchModule -> {
-                        navController.navigate(it.moduleRoute.route) {
+                        navController.navigate(navigationEffect.moduleRoute.route) {
                             popUpTo(ModuleRoute.StartupModule.route) { inclusive = true }
                         }
                     }
 
                     is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(it.screen) {
+                        navController.navigate(navigationEffect.screen) {
                             popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
                         }
                     }
                 }
-            }
+            },
+            paddingValues = paddingValues
         )
     }
 }
 
 @Composable
-private fun Content(
+private fun FaqScreenView(
     state: State,
     effectFlow: Flow<Effect>?,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
+    paddingValues: PaddingValues
 ) {
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(paddingValues),
     )
     {
         var text by remember { mutableStateOf("") }
@@ -115,7 +124,7 @@ private fun Content(
             label = { Text("Search") },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = LightGray
+                unfocusedBorderColor = MaterialTheme.colorScheme.inversePrimary
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             modifier =
@@ -207,11 +216,8 @@ fun ExpandableListScreen(
                         }
                     }
                 }
-
             }
         }
     }
-
-
 }
 
