@@ -81,6 +81,6 @@
     <string name="online_authentication_quick_pin_share_subtitle">type your quick pin to share information</string>
 
     <!-- Login -->
-    <string name="label_login">Login</string>
-    <string name="label_read_faq">READ FAQs</string>
+    <string name="welcome_login_button_title">LOGIN</string>
+    <string name="welcome_faq_button_title">READ FAQs</string>
 </resources>
