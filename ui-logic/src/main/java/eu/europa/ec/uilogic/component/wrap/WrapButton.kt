@@ -43,13 +43,13 @@ private val buttonsContentPadding: PaddingValues =
 @Composable
 fun WrapPrimaryButton(
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit
 ) {
     Button(
         modifier = buttonsHeight.then(modifier),
-        enabled = isEnabled,
+        enabled = enabled,
         onClick = onClick,
         shape = buttonsShape,
         colors = ButtonDefaults.textButtonColors(
@@ -66,13 +66,13 @@ fun WrapPrimaryButton(
 @Composable
 fun WrapSecondaryButton(
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true,
+    enabled: Boolean = true,
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit
 ) {
     OutlinedButton(
         modifier = buttonsHeight.then(modifier),
-        enabled = isEnabled,
+        enabled = enabled,
         onClick = onClick,
         shape = buttonsShape,
         colors = ButtonDefaults.textButtonColors(

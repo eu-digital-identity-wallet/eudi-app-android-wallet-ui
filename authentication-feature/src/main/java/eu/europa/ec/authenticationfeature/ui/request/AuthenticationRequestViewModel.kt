@@ -21,7 +21,8 @@ package eu.europa.ec.authenticationfeature.ui.request
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationfeature.interactor.AuthenticationInteractor
 import eu.europa.ec.authenticationfeature.interactor.AuthenticationInteractorPartialState
-import eu.europa.ec.authenticationfeature.model.RequestDomain
+import eu.europa.ec.authenticationfeature.ui.request.model.UserDataUi
+import eu.europa.ec.authenticationfeature.ui.request.transformer.toUserDataUi
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -42,26 +43,47 @@ import org.koin.android.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean = true,
+    val isShowingFullUserInfo: Boolean = false,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
+    val sheetContent: AuthenticationRequestBottomSheetContent = AuthenticationRequestBottomSheetContent.SUBTITLE,
 
     val screenTitle: String,
     val screenSubtitle: String,
+    val screenClickableSubtitle: String,
+    val cardText: String,
+    val warningText: String,
     val biometrySubtitle: String,
     val quickPinSubtitle: String,
 
-    val request: RequestDomain? = null,
+    val userDataUi: List<UserDataUi> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object DismissError : Event()
     data object GoBack : Event()
+    data object ChangeContentVisibility : Event()
+    data class UserDataItemCheckedStatusChanged(
+        val items: List<UserDataUi>,
+        val itemId: Int
+    ) : Event()
+
+    data object SubtitleClicked : Event()
     data object PrimaryButtonPressed : Event()
     data object SecondaryButtonPressed : Event()
-    data class UpdateBottomSheetState(val isOpen: Boolean) : Event()
-    data object SheetPrimaryButtonPressed : Event()
-    data object SheetSecondaryButtonPressed : Event()
+
+    sealed class BottomSheet : Event() {
+        data class UpdateBottomSheetState(val isOpen: Boolean) : Event()
+        sealed class Cancel : BottomSheet() {
+            data object PrimaryButtonPressed : Event()
+            data object SecondaryButtonPressed : Event()
+        }
+
+        sealed class Subtitle : BottomSheet() {
+            data object PrimaryButtonPressed : Event()
+        }
+    }
 }
 
 sealed class Effect : ViewSideEffect {
@@ -77,6 +99,10 @@ sealed class Effect : ViewSideEffect {
     data object CloseBottomSheet : Effect()
 }
 
+enum class AuthenticationRequestBottomSheetContent {
+    SUBTITLE, CANCEL
+}
+
 @KoinViewModel
 class AuthenticationRequestViewModel(
     private val interactor: AuthenticationInteractor,
@@ -87,7 +113,10 @@ class AuthenticationRequestViewModel(
     override fun setInitialState(): State {
         return State(
             screenTitle = resourceProvider.getString(R.string.online_authentication_userData_title),
-            screenSubtitle = resourceProvider.getString(R.string.online_authentication_userData_subtitle),
+            screenSubtitle = resourceProvider.getString(R.string.online_authentication_userData_subtitle_one),
+            screenClickableSubtitle = resourceProvider.getString(R.string.online_authentication_userData_subtitle_two),
+            cardText = resourceProvider.getString(R.string.online_authentication_userData_card_text),
+            warningText = resourceProvider.getString(R.string.online_authentication_userData_warning_text),
             biometrySubtitle = resourceProvider.getString(R.string.online_authentication_biometry_share_subtitle),
             quickPinSubtitle = resourceProvider.getString(R.string.online_authentication_quick_pin_share_subtitle)
         )
@@ -112,6 +141,20 @@ class AuthenticationRequestViewModel(
                 setEffect {
                     Effect.Navigation.Pop
                 }
+            }
+
+            is Event.ChangeContentVisibility -> {
+                setState {
+                    copy(isShowingFullUserInfo = !isShowingFullUserInfo)
+                }
+            }
+
+            is Event.UserDataItemCheckedStatusChanged -> {
+                updateUserDataItem(items = event.items, id = event.itemId)
+            }
+
+            is Event.SubtitleClicked -> {
+                showBottomSheet(sheetContent = AuthenticationRequestBottomSheetContent.SUBTITLE)
             }
 
             is Event.PrimaryButtonPressed -> {
@@ -147,24 +190,28 @@ class AuthenticationRequestViewModel(
             }
 
             is Event.SecondaryButtonPressed -> {
-                showBottomSheet()
+                showBottomSheet(sheetContent = AuthenticationRequestBottomSheetContent.CANCEL)
             }
 
-            is Event.UpdateBottomSheetState -> {
+            is Event.BottomSheet.UpdateBottomSheetState -> {
                 setState {
                     copy(isBottomSheetOpen = event.isOpen)
                 }
             }
 
-            is Event.SheetPrimaryButtonPressed -> {
+            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
                 hideBottomSheet()
             }
 
-            is Event.SheetSecondaryButtonPressed -> {
+            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
                 hideBottomSheet()
                 setEffect {
                     Effect.Navigation.Pop
                 }
+            }
+
+            is Event.BottomSheet.Subtitle.PrimaryButtonPressed -> {
+                hideBottomSheet()
             }
         }
     }
@@ -198,7 +245,7 @@ class AuthenticationRequestViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                request = response.requestDomain
+                                userDataUi = response.userDataDomain.toUserDataUi()
                             )
                         }
                     }
@@ -207,7 +254,26 @@ class AuthenticationRequestViewModel(
         }
     }
 
-    private fun showBottomSheet() {
+    private fun updateUserDataItem(items: List<UserDataUi>, id: Int) {
+        val updatedList = items.mapIndexed { index, item ->
+            if (id == index) {
+                val itemCurrentCheckedState = item.checked
+                item.copy(
+                    checked = !itemCurrentCheckedState
+                )
+            } else {
+                item
+            }
+        }
+        setState {
+            copy(userDataUi = updatedList)
+        }
+    }
+
+    private fun showBottomSheet(sheetContent: AuthenticationRequestBottomSheetContent) {
+        setState {
+            copy(sheetContent = sheetContent)
+        }
         setEffect {
             Effect.ShowBottomSheet
         }

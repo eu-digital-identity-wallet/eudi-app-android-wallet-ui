@@ -22,18 +22,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
@@ -55,11 +62,14 @@ fun ContentTitle(
         color = MaterialTheme.colorScheme.primary
     ),
     subtitle: String? = null,
+    clickableSubtitle: String? = null,
+    onSubtitleClick: (() -> Unit)? = null,
     subTitleMaxLines: Int = Int.MAX_VALUE,
     subTitleStyle: TextStyle = MaterialTheme.typography.bodyMedium.copy(
         color = MaterialTheme.colorScheme.textSecondaryDark
     ),
     verticalPadding: PaddingValues = PaddingValues(bottom = SPACING_MEDIUM.dp),
+    subtitleTrailingContent: (@Composable RowScope.() -> Unit)? = null,
     trailingLabel: String? = null,
     trailingAction: (() -> Unit)? = null
 ) {
@@ -90,16 +100,66 @@ fun ContentTitle(
                     style = titleStyle,
                 )
             }
-            if (!subtitle.isNullOrEmpty()) {
-                if (!title.isNullOrEmpty()) {
-                    VSpacer.Small()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                if (!subtitle.isNullOrEmpty()) {
+                    if (!title.isNullOrEmpty()) {
+                        VSpacer.Small()
+                    }
+
+                    safeLet(
+                        clickableSubtitle,
+                        onSubtitleClick
+                    ) { clickableSubtitle, onSubtitleClick ->
+                        val annotatedSubtitle = buildAnnotatedString {
+                            // Plain, non-clickable text.
+                            append(subtitle)
+
+                            // Clickable part of subtitle.
+                            withStyle(
+                                style = SpanStyle(
+                                    fontStyle = subTitleStyle.fontStyle,
+                                    textDecoration = TextDecoration.Underline,
+                                    color = subTitleStyle.color
+                                )
+                            ) {
+                                pushStringAnnotation(
+                                    tag = clickableSubtitle,
+                                    annotation = clickableSubtitle
+                                )
+                                append(clickableSubtitle)
+                            }
+                        }
+
+                        ClickableText(
+                            modifier = Modifier
+                                .weight(1f),
+                            text = annotatedSubtitle,
+                            onClick = { offset ->
+                                annotatedSubtitle.getStringAnnotations(offset, offset)
+                                    .firstOrNull()?.let {
+                                        onSubtitleClick()
+                                    }
+                            },
+                            style = subTitleStyle,
+                            maxLines = subTitleMaxLines,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    } ?: Text(
+                        modifier = Modifier.weight(1f),
+                        text = subtitle,
+                        style = subTitleStyle,
+                        maxLines = subTitleMaxLines,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
-                Text(
-                    text = subtitle,
-                    style = subTitleStyle,
-                    maxLines = subTitleMaxLines,
-                    overflow = TextOverflow.Ellipsis
-                )
+
+                subtitleTrailingContent?.invoke(this)
             }
         }
         trailingLabel?.let {
