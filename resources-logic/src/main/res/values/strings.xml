@@ -62,7 +62,7 @@
 
     <!-- Authentication UserData Screen -->
     <string name="online_authentication_userData_title">EUDI Conference requests the following</string>
-    <string name="online_authentication_userData_subtitle_one">Please review carefully before sharing your data. </string>
+    <string name="online_authentication_userData_subtitle_one">Please review carefully before sharing your data.</string>
     <string name="online_authentication_userData_subtitle_two">Why we need your data?</string>
     <string name="online_authentication_userData_card_text">EUDI Conference</string>
     <string name="online_authentication_userData_warning_text">Your selection of data to be shared may impact the service</string>

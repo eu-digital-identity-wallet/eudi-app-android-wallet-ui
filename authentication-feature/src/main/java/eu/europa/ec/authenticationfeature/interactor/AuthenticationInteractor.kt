@@ -78,6 +78,26 @@ class AuthenticationInteractorImpl(
             UserDataDomain(
                 name = "Seat Number",
                 value = "128"
+            ),
+            UserDataDomain(
+                name = "Registration ID",
+                value = "EUDI123456"
+            ),
+            UserDataDomain(
+                name = "Family Name",
+                value = "Doe"
+            ),
+            UserDataDomain(
+                name = "First Name",
+                value = "Jane"
+            ),
+            UserDataDomain(
+                name = "Room Number",
+                value = "A2"
+            ),
+            UserDataDomain(
+                name = "Seat Number",
+                value = "128"
             )
         )
     }

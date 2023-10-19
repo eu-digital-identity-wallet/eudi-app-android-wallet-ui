@@ -56,6 +56,7 @@ import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
@@ -182,10 +183,6 @@ private fun Content(
             ) {
 
                 item {
-                    VSpacer.Small()
-                }
-
-                item {
                     RelayingPartyCard(
                         cardText = state.cardText,
                         paddingValues = paddingValues
@@ -239,6 +236,7 @@ private fun Content(
 
             // Sticky Bottom Section.
             Column {
+
                 VSpacer.ExtraSmall()
 
                 AnimatedVisibility(
@@ -246,9 +244,11 @@ private fun Content(
                         !it.checked
                     }
                 ) {
-                    WarningCard(warningText = state.warningText)
+                    Column {
+                        WarningCard(warningText = state.warningText)
+                        VSpacer.Medium()
+                    }
                 }
-                VSpacer.Medium()
 
                 WrapPrimaryButton(
                     enabled = !state.isLoading,
@@ -346,7 +346,7 @@ private fun RelayingPartyCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryDark.copy(alpha = 0.12f),
         ),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+        contentPadding = PaddingValues(horizontal = SPACING_MEDIUM.dp)
     )
 }
 
@@ -370,6 +370,6 @@ private fun WarningCard(warningText: String) {
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f)
         ),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 18.dp)
+        contentPadding = PaddingValues(SPACING_MEDIUM.dp)
     )
 }
