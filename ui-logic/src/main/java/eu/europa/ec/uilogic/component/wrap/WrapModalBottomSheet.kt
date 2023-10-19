@@ -99,7 +99,7 @@ fun DialogBottomSheet(
             WrapPrimaryButton(
                 onClick = { onPositiveClick.invoke() },
                 modifier = Modifier.fillMaxWidth(),
-                isEnabled = true
+                enabled = true
             ) {
                 Text(
                     text = positiveButtonText
@@ -111,7 +111,7 @@ fun DialogBottomSheet(
             WrapSecondaryButton(
                 onClick = { onNegativeClick.invoke() },
                 modifier = Modifier.fillMaxWidth(),
-                isEnabled = true
+                enabled = true
             ) {
                 Text(
                     text = negativeButtonText

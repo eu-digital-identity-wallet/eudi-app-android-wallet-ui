@@ -136,4 +136,16 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_arrow_up_icon,
         imageVector = Icons.Default.KeyboardArrowUp
     )
+
+    val Visibility: IconData = IconData(
+        resourceId = R.drawable.ic_visibility,
+        contentDescriptionId = R.string.content_description_visibility_icon,
+        imageVector = null
+    )
+
+    val VisibilityOff: IconData = IconData(
+        resourceId = R.drawable.ic_visibility_off,
+        contentDescriptionId = R.string.content_description_visibility_off_icon,
+        imageVector = null
+    )
 }

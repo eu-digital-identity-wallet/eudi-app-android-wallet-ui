@@ -16,10 +16,25 @@
  *
  */
 
-package eu.europa.ec.authenticationfeature.model
+package eu.europa.ec.authenticationfeature.ui.request.transformer
 
-data class RequestDomain(
-    val id: String,
-    val dateOfBirth: String,
-    val taxClearanceNumber: String,
-)
+import eu.europa.ec.authenticationfeature.model.UserDataDomain
+import eu.europa.ec.authenticationfeature.ui.request.model.UserDataUi
+
+fun UserDataDomain.toUserDataUi(id: Int): UserDataUi {
+    return UserDataUi(
+        id = id,
+        checked = true,
+        enabled = true,
+        userDataDomain = UserDataDomain(
+            name = this.name,
+            value = this.value
+        )
+    )
+}
+
+fun List<UserDataDomain>.toUserDataUi(): List<UserDataUi> {
+    return this.mapIndexed { index, item ->
+        item.toUserDataUi(id = index)
+    }
+}

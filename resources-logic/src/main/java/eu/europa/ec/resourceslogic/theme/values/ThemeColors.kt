@@ -35,8 +35,10 @@ class ThemeColors {
         private const val white: Long = 0xFFFFFFFF
         private const val black: Long = 0xFF000000
 
-        internal const val eudiw_theme_light_chipBackground: Long = 0xFD7DEE7
+        internal const val eudiw_theme_light_chipBackground: Long = 0xFFE0E7F0
+        internal const val eudiw_theme_dark_chipBackground: Long = 0xFF006495
         internal const val eudiw_theme_light_infoBackground: Long = 0xFFFFAE3
+        internal const val eudiw_theme_dark_infoBackground: Long = 0xFFFFAE3
 
         internal const val eudiw_theme_light_primaryMain: Long = 0xFF004494
         internal const val eudiw_theme_light_primaryDark: Long = 0xFF003D84
@@ -406,4 +408,18 @@ val ColorScheme.onSuccess: Color
         Color(ThemeColors.eudiw_theme_dark_onSuccess)
     } else {
         Color(ThemeColors.eudiw_theme_light_onSuccess)
+    }
+
+val ColorScheme.chipBackground: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_chipBackground)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_chipBackground)
+    }
+
+val ColorScheme.infoBackground: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_infoBackground)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_infoBackground)
     }

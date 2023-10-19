@@ -52,7 +52,7 @@ fun LoadingScreen(
         onBack = { viewModel.setEvent(Event.GoBack) },
         contentErrorConfig = state.error
     ) { paddingValues ->
-        LoadingScreenView(
+        Content(
             state = state,
             effectFlow = viewModel.effect,
             onEventSent = { event -> viewModel.setEvent(event) },
@@ -84,7 +84,7 @@ fun LoadingScreen(
 }
 
 @Composable
-private fun LoadingScreenView(
+private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSent: (Event) -> Unit,
