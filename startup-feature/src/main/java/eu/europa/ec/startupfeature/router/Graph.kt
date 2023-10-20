@@ -25,6 +25,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.startupfeature.ui.StartupScreen
+import eu.europa.ec.startupfeature.ui.splash.SplashScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import org.koin.androidx.compose.koinViewModel
@@ -39,14 +40,25 @@ fun NavGraphBuilder.featureStartupGraph(navController: NavController) {
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                        BuildConfig.DEEPLINK + StartupScreens.Splash.screenRoute
+                    BuildConfig.DEEPLINK + StartupScreens.Splash.screenRoute
                 }
             )
         ) {
-            StartupScreen(
-                navController,
-                koinViewModel()
+            SplashScreen(navController, koinViewModel())
+        }
+        composable(
+            route = StartupScreens.Startup.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + StartupScreens.Startup.screenRoute
+                }
             )
+        ) {
+            StartupScreen(navController, koinViewModel())
         }
     }
+
+
+
 }

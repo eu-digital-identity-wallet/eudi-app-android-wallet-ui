@@ -22,6 +22,8 @@ import eu.europa.ec.networklogic.api.ApiClient
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.startupfeature.interactor.StartupInteractor
 import eu.europa.ec.startupfeature.interactor.StartupInteractorImpl
+import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
+import eu.europa.ec.startupfeature.interactor.splash.SplashInteractorImpl
 import eu.europa.ec.startupfeature.repository.StartupRepository
 import eu.europa.ec.startupfeature.repository.StartupRepositoryImpl
 import org.koin.core.annotation.ComponentScan
@@ -43,4 +45,9 @@ fun provideStartupInteractor(
     resourceProvider: ResourceProvider
 ): StartupInteractor {
     return StartupInteractorImpl(startupRepository, resourceProvider)
+}
+
+@Factory
+fun provideSplashInteractor(): SplashInteractor {
+    return SplashInteractorImpl()
 }
