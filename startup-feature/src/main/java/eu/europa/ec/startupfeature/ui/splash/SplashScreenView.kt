@@ -18,7 +18,10 @@
 
 package eu.europa.ec.startupfeature.ui.splash
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,13 +32,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
@@ -49,32 +48,34 @@ fun SplashScreen(
     navController: NavController,
     viewModel: SplashScreenViewModel
 ) {
-        Content(
-            effectFlow = viewModel.effect,
-            onNavigationRequested = {
-                when (it) {
-                    is Effect.Navigation.SwitchModule -> {
-                        navController.navigate(it.moduleRoute.route) {
-                            popUpTo(ModuleRoute.StartupModule.route) { inclusive = true }
-                        }
+    Content(
+        state = viewModel.viewState.value,
+        effectFlow = viewModel.effect,
+        onNavigationRequested = {
+            when (it) {
+                is Effect.Navigation.SwitchModule -> {
+                    navController.navigate(it.moduleRoute.route) {
+                        popUpTo(ModuleRoute.StartupModule.route) { inclusive = true }
                     }
+                }
 
-                    is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(it.screen.screenRoute) {
-                            popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
-                        }
+                is Effect.Navigation.SwitchScreen -> {
+                    navController.navigate(it.screen.screenRoute) {
+                        popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
                     }
                 }
             }
-        )
-
-        OneTimeLaunchedEffect {
-            viewModel.setEvent(Event.Initialize)
         }
+    )
+
+    OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Initialize)
+    }
 }
 
 @Composable
 private fun Content(
+    state: State,
     effectFlow: Flow<Effect>?,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
@@ -86,8 +87,15 @@ private fun Content(
                 .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
-            WrapImage(
-                iconData = AppIcons.Logo)
+            AnimatedVisibility(
+                visible = state.showLogo,
+                enter = fadeIn(animationSpec = tween(state.logoAnimationDuration)),
+                exit  = fadeOut(animationSpec = tween(state.logoAnimationDuration)),
+            ) {
+                WrapImage(
+                    iconData = AppIcons.Logo
+                )
+            }
         }
     }
 

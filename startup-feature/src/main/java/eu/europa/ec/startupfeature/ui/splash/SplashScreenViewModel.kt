@@ -30,7 +30,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
-object State : ViewState
+data class State(
+    val showLogo: Boolean = true,
+    val logoAnimationDuration: Int = 250
+) : ViewState
 
 sealed class Event : ViewEvent {
     data object Initialize : Event()
@@ -48,7 +51,7 @@ sealed class Effect : ViewSideEffect {
 class SplashScreenViewModel(
     private val interactor: SplashInteractor
 ) : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State
+    override fun setInitialState(): State = State()
 
     override fun handleEvents(event: Event) {
         when (event) {
@@ -58,7 +61,9 @@ class SplashScreenViewModel(
 
     private fun enterApplication() {
         viewModelScope.launch {
-            delay(1500)
+            delay(3500)
+            setState { copy(showLogo = false) }
+            delay(viewState.value.logoAnimationDuration.toLong())
             setEffect {
                 Effect.Navigation.SwitchScreen(interactor.getAfterSplashRoute())
             }
