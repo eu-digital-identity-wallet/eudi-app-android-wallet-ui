@@ -19,6 +19,8 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,8 +31,8 @@ import androidx.compose.ui.tooling.preview.Preview
 
 data class CheckboxData(
     val isChecked: Boolean,
-    val onCheckedChange: ((Boolean) -> Unit)?,
-    val enabled: Boolean = true
+    val enabled: Boolean = true,
+    val onCheckedChange: ((Boolean) -> Unit)?
 )
 
 @Composable
@@ -42,7 +44,10 @@ fun WrapCheckbox(
         checked = checkboxData.isChecked,
         onCheckedChange = checkboxData.onCheckedChange,
         modifier = modifier,
-        enabled = checkboxData.enabled
+        enabled = checkboxData.enabled,
+        colors = CheckboxDefaults.colors(
+            uncheckedColor = MaterialTheme.colorScheme.primary
+        )
     )
 }
 
@@ -55,10 +60,10 @@ private fun WrapCheckBoxPreview() {
 
     val checkBoxData = CheckboxData(
         isChecked = isChecked,
+        enabled = true,
         onCheckedChange = {
             isChecked = it
-        },
-        enabled = true
+        }
     )
 
     WrapCheckbox(checkboxData = checkBoxData)

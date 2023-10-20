@@ -18,7 +18,7 @@
 
 package eu.europa.ec.authenticationfeature.interactor
 
-import eu.europa.ec.authenticationfeature.model.RequestDomain
+import eu.europa.ec.authenticationfeature.model.UserDataDomain
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class AuthenticationInteractorPartialState {
-    data class Success(val requestDomain: RequestDomain) :
+    data class Success(val userDataDomain: List<UserDataDomain>) :
         AuthenticationInteractorPartialState()
 
     data class Failure(val error: String) : AuthenticationInteractorPartialState()
@@ -48,11 +48,7 @@ class AuthenticationInteractorImpl(
             delay(2_000L)
             emit(
                 AuthenticationInteractorPartialState.Success(
-                    requestDomain = RequestDomain(
-                        id = "AG6743267807776",
-                        dateOfBirth = "10/12/1990",
-                        taxClearanceNumber = "67769685649007-9"
-                    )
+                    userDataDomain = getFakeUserData()
                 )
             )
         }.safeAsync {
@@ -60,4 +56,49 @@ class AuthenticationInteractorImpl(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }
+
+    private fun getFakeUserData(): List<UserDataDomain> {
+        return listOf(
+            UserDataDomain(
+                name = "Registration ID",
+                value = "EUDI123456"
+            ),
+            UserDataDomain(
+                name = "Family Name",
+                value = "Doe"
+            ),
+            UserDataDomain(
+                name = "First Name",
+                value = "Jane"
+            ),
+            UserDataDomain(
+                name = "Room Number",
+                value = "A2"
+            ),
+            UserDataDomain(
+                name = "Seat Number",
+                value = "128"
+            ),
+            UserDataDomain(
+                name = "Registration ID",
+                value = "EUDI123456"
+            ),
+            UserDataDomain(
+                name = "Family Name",
+                value = "Doe"
+            ),
+            UserDataDomain(
+                name = "First Name",
+                value = "Jane"
+            ),
+            UserDataDomain(
+                name = "Room Number",
+                value = "A2"
+            ),
+            UserDataDomain(
+                name = "Seat Number",
+                value = "128"
+            )
+        )
+    }
 }

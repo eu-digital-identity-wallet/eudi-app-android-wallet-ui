@@ -43,6 +43,8 @@
     <string name="content_description_logo_icon">Logo icon</string>
     <string name="content_description_arrow_up_icon">Arrow up</string>
     <string name="content_description_arrow_down_icon">Arrow down</string>
+    <string name="content_description_visibility_icon">Show</string>
+    <string name="content_description_visibility_off_icon">Hide</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
@@ -59,17 +61,20 @@
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
 
     <!-- Authentication UserData Screen -->
-    <string name="online_authentication_userData_title">Relying party requests the following info</string>
-    <string name="online_authentication_userData_subtitle">Please review carefully before sharing your data</string>
-    <string name="online_authentication_userData_id_number">ID number</string>
-    <string name="online_authentication_userData_date_of_birth">Date of birth</string>
-    <string name="online_authentication_userData_tax_clearance_number">Tax clearance number</string>
+    <string name="online_authentication_userData_title">EUDI Conference requests the following</string>
+    <string name="online_authentication_userData_subtitle_one">Please review carefully before sharing your data.</string>
+    <string name="online_authentication_userData_subtitle_two">Why we need your data?</string>
+    <string name="online_authentication_userData_card_text">EUDI Conference</string>
+    <string name="online_authentication_userData_warning_text">Your selection of data to be shared may impact the service</string>
     <string name="online_authentication_userData_primary_button_text">SHARE</string>
     <string name="online_authentication_userData_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
-    <string name="online_authentication_userData_bottom_sheet_title">Cancel information sharing?</string>
-    <string name="online_authentication_userData_bottom_sheet_subtitle">Cancel will redirect you back to the login without sharing any information</string>
-    <string name="online_authentication_userData_bottom_sheet_primary_button_text">CONTINUE SHARING</string>
-    <string name="online_authentication_userData_bottom_sheet_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="online_authentication_userData_bottom_sheet_cancel_title">Cancel information sharing?</string>
+    <string name="online_authentication_userData_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the dashboard without sharing any information</string>
+    <string name="online_authentication_userData_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
+    <string name="online_authentication_userData_bottom_sheet_cancel_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="online_authentication_userData_bottom_sheet_subtitle_title">Why we need your data</string>
+    <string name="online_authentication_userData_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
+    <string name="online_authentication_userData_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
 
     <!-- Authentication Loading Screen -->
     <string name="online_authentication_loading_title">Relying party requests the following info</string>
@@ -81,6 +86,6 @@
     <string name="online_authentication_quick_pin_share_subtitle">type your quick pin to share information</string>
 
     <!-- Login -->
-    <string name="label_login">Login</string>
-    <string name="label_read_faq">READ FAQs</string>
+    <string name="welcome_login_button_title">LOGIN</string>
+    <string name="welcome_faq_button_title">READ FAQs</string>
 </resources>

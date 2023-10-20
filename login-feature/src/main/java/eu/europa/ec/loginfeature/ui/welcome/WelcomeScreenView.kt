@@ -18,16 +18,13 @@
 
 package eu.europa.ec.loginfeature.ui.welcome
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +45,9 @@ import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
 import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import kotlinx.coroutines.channels.Channel
@@ -93,39 +92,36 @@ private fun Content(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            val image = AppIcons.Logo
-            Image(
-                painter = painterResource(
-                    id = image.resourceId!!
-                ),
-                contentDescription = stringResource(id = image.contentDescriptionId)
-            )
+            WrapImage(iconData = AppIcons.Logo)
         }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(horizontal = 32.dp),
+                .padding(horizontal = SPACING_LARGE.dp),
             verticalArrangement = Arrangement.Center
         ) {
+
             WrapPrimaryButton(
                 modifier = Modifier
                     .fillMaxWidth(),
                 onClick = { onEventSend(Event.NavigateToLogin) }
             ) {
                 Text(
-                    text = stringResource(id = R.string.label_login).uppercase(),
+                    text = stringResource(id = R.string.welcome_login_button_title),
                     fontWeight = FontWeight.Medium,
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+
+            VSpacer.Medium()
+
             WrapSecondaryButton(
                 modifier = Modifier
                     .fillMaxWidth(),
                 onClick = { onEventSend(Event.NavigateToFaq) }
             ) {
                 Text(
-                    text = stringResource(id = R.string.label_read_faq),
+                    text = stringResource(id = R.string.welcome_faq_button_title),
                     style = MaterialTheme.typography.labelLarge
                 )
             }
