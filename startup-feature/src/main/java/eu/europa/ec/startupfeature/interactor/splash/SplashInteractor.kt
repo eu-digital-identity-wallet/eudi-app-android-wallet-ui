@@ -20,7 +20,6 @@ package eu.europa.ec.startupfeature.interactor.splash
 
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.Screen
-import eu.europa.ec.uilogic.navigation.StartupScreens
 
 interface SplashInteractor {
     fun getAfterSplashRoute(): Screen

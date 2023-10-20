@@ -90,7 +90,7 @@ private fun Content(
             AnimatedVisibility(
                 visible = state.showLogo,
                 enter = fadeIn(animationSpec = tween(state.logoAnimationDuration)),
-                exit  = fadeOut(animationSpec = tween(state.logoAnimationDuration)),
+                exit = fadeOut(animationSpec = tween(state.logoAnimationDuration)),
             ) {
                 WrapImage(
                     iconData = AppIcons.Logo

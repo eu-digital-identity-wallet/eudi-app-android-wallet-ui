@@ -32,7 +32,7 @@ import org.koin.android.annotation.KoinViewModel
 
 data class State(
     val showLogo: Boolean = true,
-    val logoAnimationDuration: Int = 250
+    val logoAnimationDuration: Int = 500
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -61,7 +61,7 @@ class SplashScreenViewModel(
 
     private fun enterApplication() {
         viewModelScope.launch {
-            delay(3500)
+            delay(viewState.value.logoAnimationDuration.toLong())
             setState { copy(showLogo = false) }
             delay(viewState.value.logoAnimationDuration.toLong())
             setEffect {

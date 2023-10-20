@@ -16,19 +16,19 @@
  *
  */
 
-package eu.europa.ec.startupfeature.di
+package eu.europa.ec.startupfeature
 
-import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
-import eu.europa.ec.startupfeature.interactor.splash.SplashInteractorImpl
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-@Module
-@ComponentScan("eu.europa.ec.startupfeature")
-class FeatureStartupModule
-
-@Factory
-fun provideSplashInteractor(): SplashInteractor {
-    return SplashInteractorImpl()
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
+    }
 }
