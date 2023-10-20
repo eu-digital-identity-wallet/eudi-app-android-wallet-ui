@@ -49,7 +49,6 @@ fun SplashScreen(
     navController: NavController,
     viewModel: SplashScreenViewModel
 ) {
-
         Content(
             effectFlow = viewModel.effect,
             onNavigationRequested = {
@@ -72,7 +71,6 @@ fun SplashScreen(
         OneTimeLaunchedEffect {
             viewModel.setEvent(Event.Initialize)
         }
-
 }
 
 @Composable

@@ -24,7 +24,6 @@ import eu.europa.ec.uilogic.navigation.StartupScreens
 
 interface SplashInteractor {
     fun getAfterSplashRoute(): Screen
-
 }
 
 class SplashInteractorImpl : SplashInteractor {

@@ -40,7 +40,6 @@ sealed class Effect : ViewSideEffect {
 
     sealed class Navigation : Effect() {
         data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
-
         data class SwitchScreen(val screen: Screen) : Navigation()
     }
 }
@@ -65,5 +64,4 @@ class SplashScreenViewModel(
             }
         }
     }
-
 }

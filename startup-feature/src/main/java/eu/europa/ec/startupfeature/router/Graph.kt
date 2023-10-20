@@ -47,8 +47,5 @@ fun NavGraphBuilder.featureStartupGraph(navController: NavController) {
         ) {
             SplashScreen(navController, koinViewModel())
         }
-
     }
-
-
 }
