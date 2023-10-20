@@ -41,25 +41,14 @@ fun NavGraphBuilder.featureStartupGraph(navController: NavController) {
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                    BuildConfig.DEEPLINK + StartupScreens.Splash.screenRoute
+                        BuildConfig.DEEPLINK + StartupScreens.Splash.screenRoute
                 }
             )
         ) {
             SplashScreen(navController, koinViewModel())
         }
-        composable(
-            route = LoginScreens.Welcome.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + LoginScreens.Welcome.screenRoute
-                }
-            )
-        ) {
-            StartupScreen(navController, koinViewModel())
-        }
-    }
 
+    }
 
 
 }
