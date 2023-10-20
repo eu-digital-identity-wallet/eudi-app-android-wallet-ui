@@ -16,19 +16,18 @@
  *
  */
 
-package eu.europa.ec.startupfeature.di
+package eu.europa.ec.startupfeature.interactor.splash
 
-import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
-import eu.europa.ec.startupfeature.interactor.splash.SplashInteractorImpl
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
+import eu.europa.ec.uilogic.navigation.LoginScreens
+import eu.europa.ec.uilogic.navigation.Screen
 
-@Module
-@ComponentScan("eu.europa.ec.startupfeature")
-class FeatureStartupModule
+interface SplashInteractor {
+    fun getAfterSplashRoute(): Screen
+}
 
-@Factory
-fun provideSplashInteractor(): SplashInteractor {
-    return SplashInteractorImpl()
+class SplashInteractorImpl : SplashInteractor {
+
+    override fun getAfterSplashRoute(): Screen {
+        return LoginScreens.Welcome
+    }
 }

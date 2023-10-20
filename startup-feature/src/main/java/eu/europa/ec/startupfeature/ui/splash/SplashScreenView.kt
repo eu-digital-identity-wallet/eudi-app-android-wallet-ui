@@ -16,36 +16,41 @@
  *
  */
 
-package eu.europa.ec.startupfeature.ui
+package eu.europa.ec.startupfeature.ui.splash
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.utils.screenPaddings
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
+
 @Composable
-fun StartupScreen(
+fun SplashScreen(
     navController: NavController,
-    viewModel: StartupViewModel
+    viewModel: SplashScreenViewModel
 ) {
     Content(
         state = viewModel.viewState.value,
         effectFlow = viewModel.effect,
-        onEventSend = { viewModel.setEvent(it) },
         onNavigationRequested = {
             when (it) {
                 is Effect.Navigation.SwitchModule -> {
@@ -55,41 +60,42 @@ fun StartupScreen(
                 }
 
                 is Effect.Navigation.SwitchScreen -> {
-                    navController.navigate(it.screen) {
+                    navController.navigate(it.screen.screenRoute) {
                         popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
                     }
                 }
             }
         }
     )
+
+    OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Initialize)
+    }
 }
 
 @Composable
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>?,
-    onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(screenPaddings()),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        WrapPrimaryButton(
-            onClick = { onEventSend(Event.OnClick) }
+    Scaffold { paddingValues ->
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
         ) {
-            Text(text = "Press here to test")
-        }
-
-        VSpacer.Medium()
-
-        WrapPrimaryButton(
-            onClick = { onEventSend(Event.OnlineAuthenticationClicked) }
-        ) {
-            Text(text = "ONLINE AUTHENTICATION")
+            AnimatedVisibility(
+                visible = state.showLogo,
+                enter = fadeIn(animationSpec = tween(state.logoAnimationDuration)),
+                exit = fadeOut(animationSpec = tween(state.logoAnimationDuration)),
+            ) {
+                WrapImage(
+                    iconData = AppIcons.Logo
+                )
+            }
         }
     }
 
