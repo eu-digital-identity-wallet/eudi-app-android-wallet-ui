@@ -27,7 +27,6 @@ open class Screen(name: String, parameters: String = "") : NavigatableItem {
 
 sealed class StartupScreens {
     data object Splash : Screen(name = "SPLASH")
-    data object Startup : Screen(name = "STARTUP")
 }
 
 sealed class CommonScreens {

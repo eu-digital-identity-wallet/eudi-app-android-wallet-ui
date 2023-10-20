@@ -18,6 +18,7 @@
 
 package eu.europa.ec.startupfeature.interactor.splash
 
+import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.StartupScreens
 
@@ -29,6 +30,6 @@ interface SplashInteractor {
 class SplashInteractorImpl : SplashInteractor {
 
     override fun getAfterSplashRoute(): Screen {
-        return StartupScreens.Startup
+        return LoginScreens.Welcome
     }
 }

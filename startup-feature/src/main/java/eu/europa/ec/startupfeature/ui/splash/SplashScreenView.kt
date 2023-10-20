@@ -31,9 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.flow.Flow
@@ -46,10 +49,7 @@ fun SplashScreen(
     navController: NavController,
     viewModel: SplashScreenViewModel
 ) {
-    ContentScreen(
-        isLoading = false,
-        navigatableAction = ScreenNavigateAction.NONE,
-    ) {
+
         Content(
             effectFlow = viewModel.effect,
             onNavigationRequested = {
@@ -72,7 +72,7 @@ fun SplashScreen(
         OneTimeLaunchedEffect {
             viewModel.setEvent(Event.Initialize)
         }
-    }
+
 }
 
 @Composable
@@ -88,10 +88,8 @@ private fun Content(
                 .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(id = eu.europa.ec.resourceslogic.R.drawable.ic_logo_192),
-                contentDescription = ""
-            )
+            WrapImage(
+                iconData = AppIcons.Logo)
         }
     }
 
