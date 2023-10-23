@@ -28,6 +28,7 @@ import org.koin.android.annotation.KoinViewModel
 
 sealed class Event : ViewEvent {
     data object Pop : Event()
+    data class Search(val queryString: String) : Event()
 }
 
 data class State(val faqItems: List<FaqUiModel>) : ViewState
@@ -45,6 +46,8 @@ class FaqScreenViewModel(
     private val interactor: FaqInteractor
 ) : MviViewModel<Event, State, Effect>() {
 
+    private val initialFaqItems = viewState.value.faqItems
+
     override fun setInitialState(): State = State(
         interactor.initializeData()
     )
@@ -52,6 +55,14 @@ class FaqScreenViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             Event.Pop -> setEffect { Effect.Navigation.Pop }
+            is Event.Search -> setState { copy(faqItems = initialFaqItems.query(event.queryString)) }
+        }
+    }
+
+    private fun List<FaqUiModel>.query(queryString: String): List<FaqUiModel> {
+        return filter {
+            it.title.contains(other = queryString, true) ||
+                    it.description.contains(other = queryString, true)
         }
     }
 }
