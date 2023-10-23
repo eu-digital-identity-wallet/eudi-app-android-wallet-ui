@@ -37,12 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.utils.PreviewTheme
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.ThemeManager
-import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
-import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
-import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
@@ -140,18 +136,7 @@ private fun Content(
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
 private fun WelcomeScreenPreview() {
-    ThemeManager.Builder()
-        .withLightColors(ThemeColors.lightColors)
-        .withDarkColors(ThemeColors.darkColors)
-        .withTypography(ThemeTypography.typo)
-        .withShapes(ThemeShapes.shapes)
-        .withDimensions(
-            ThemeDimensTemplate(
-                screenPadding = 10.0
-            )
-        )
-        .build()
-    ThemeManager.instance.Theme {
+    PreviewTheme {
         Content(
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
