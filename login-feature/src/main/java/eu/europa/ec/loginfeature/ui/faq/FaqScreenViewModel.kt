@@ -31,7 +31,11 @@ sealed class Event : ViewEvent {
     data class Search(val queryString: String) : Event()
 }
 
-data class State(val faqItems: List<FaqUiModel>) : ViewState
+data class State(
+    val initialFaqItems: List<FaqUiModel>,
+    val presentableFaqItems: List<FaqUiModel>,
+    val noSearchResult: Boolean = false
+) : ViewState
 
 
 sealed class Effect : ViewSideEffect {
@@ -46,16 +50,18 @@ class FaqScreenViewModel(
     private val interactor: FaqInteractor
 ) : MviViewModel<Event, State, Effect>() {
 
-    private val initialFaqItems = viewState.value.faqItems
-
     override fun setInitialState(): State = State(
-        interactor.initializeData()
+        initialFaqItems = interactor.initializeData(),
+        presentableFaqItems = interactor.initializeData()
     )
 
     override fun handleEvents(event: Event) {
         when (event) {
             Event.Pop -> setEffect { Effect.Navigation.Pop }
-            is Event.Search -> setState { copy(faqItems = initialFaqItems.query(event.queryString)) }
+            is Event.Search -> setState {
+                val searchResult = initialFaqItems.query(event.queryString)
+                copy(presentableFaqItems = searchResult, noSearchResult = searchResult.isEmpty())
+            }
         }
     }
 

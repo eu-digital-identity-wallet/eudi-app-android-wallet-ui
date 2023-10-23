@@ -136,7 +136,7 @@ private fun Content(
                 .clip(MaterialTheme.shapes.allCorneredShapeSmall)
         )
 
-        if (state.faqItems.isNullOrEmpty()) {
+        if (state.noSearchResult) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -149,7 +149,7 @@ private fun Content(
             }
         }
 
-        ExpandableListScreen(sections = state.faqItems)
+        ExpandableListScreen(sections = state.presentableFaqItems)
     }
 
     LaunchedEffect(Unit) {
@@ -239,7 +239,7 @@ private fun ExpandableListItem(
 fun FaqScreenPreview() {
     Content(
         state = State(
-            listOf(
+            presentableFaqItems = listOf(
                 FaqUiModel(
                     title = "Question A goes Here",
                     description = "Lorem ipsum dolor sit amet," +
@@ -255,7 +255,8 @@ fun FaqScreenPreview() {
                     description = "Excepteur sint occaecat cupidatat non proident, " +
                             "sunt in culpa qui officia deserunt mollit anim id est laborum."
                 )
-            )
+            ),
+            initialFaqItems = listOf()
         ),
         effectFlow = Channel<Effect>().receiveAsFlow(),
         onEventSend = {},
@@ -268,7 +269,7 @@ fun FaqScreenPreview() {
 @Preview(showSystemUi = true)
 fun FaqScreenEmptyPreview() {
     Content(
-        state = State(listOf()),
+        state = State(listOf(), listOf()),
         effectFlow = Channel<Effect>().receiveAsFlow(),
         onEventSend = {},
         onNavigationRequested = {},
