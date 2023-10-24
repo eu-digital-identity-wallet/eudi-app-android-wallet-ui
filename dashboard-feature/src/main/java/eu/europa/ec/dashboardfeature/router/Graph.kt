@@ -27,6 +27,7 @@ import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.dashboardfeature.ui.DashboardScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
+import org.koin.androidx.compose.koinViewModel
 
 fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
     navigation(
@@ -42,7 +43,7 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
                 }
             )
         ) {
-            DashboardScreen(navController = navController)
+            DashboardScreen( navController, koinViewModel())
         }
     }
 }
