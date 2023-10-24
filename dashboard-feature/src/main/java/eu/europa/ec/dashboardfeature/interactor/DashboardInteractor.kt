@@ -18,6 +18,28 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-interface DashboardInteractor
+import eu.europa.ec.dashboardfeature.model.DashboardUiModel
 
-class DashboardInteractorImpl : DashboardInteractor
+interface DashboardInteractor{
+    fun initializeDocumentList(): List<DashboardUiModel>
+}
+
+class DashboardInteractorImpl : DashboardInteractor{
+    override fun initializeDocumentList(): List<DashboardUiModel> = listOf(
+        DashboardUiModel(
+            documentType = "Digital ID",
+            documentStatus = true,
+            documentImage = "image1"
+        ),
+        DashboardUiModel(
+            documentType = "Driving License",
+            documentStatus = true,
+            documentImage = "image1"
+        ),
+        DashboardUiModel(
+            documentType = "Student ID",
+            documentStatus = false,
+            documentImage = "image1"
+        ),
+    )
+}

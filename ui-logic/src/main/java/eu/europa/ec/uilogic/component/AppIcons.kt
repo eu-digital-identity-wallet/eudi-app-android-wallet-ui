@@ -148,4 +148,11 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_visibility_off_icon,
         imageVector = null
     )
+
+    val UserProfilePlaceholder: IconData = IconData(
+        resourceId = R.drawable.ic_user,
+        contentDescriptionId = R.string.content_description_user_profile_placeholder,
+        imageVector = null
+    )
+
 }

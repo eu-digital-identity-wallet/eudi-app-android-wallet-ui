@@ -19,6 +19,7 @@
 package eu.europa.ec.dashboardfeature.ui
 
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
+import eu.europa.ec.dashboardfeature.model.DashboardUiModel
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -26,13 +27,16 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.android.annotation.KoinViewModel
 
-sealed class Event : ViewEvent
+sealed class Event : ViewEvent {
+    data object Pop : Event()
+}
 
-object State : ViewState
+data class State(val dashboardDocumentItems: List<DashboardUiModel>) : ViewState
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
-        data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
+        data object Pop : Navigation()
+        //data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
         data class SwitchScreen(val screen: String) : Navigation()
     }
 }
@@ -41,8 +45,13 @@ sealed class Effect : ViewSideEffect {
 class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor
 ) : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State
+    override fun setInitialState(): State = State(
+        dashboardInteractor.initializeDocumentList()
+    )
 
     override fun handleEvents(event: Event) {
+        when (event) {
+            Event.Pop -> setEffect { Effect.Navigation.Pop }
+        }
     }
 }

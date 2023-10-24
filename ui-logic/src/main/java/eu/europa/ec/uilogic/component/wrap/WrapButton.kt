@@ -59,6 +59,7 @@ fun WrapPrimaryButton(
             disabledContentColor = MaterialTheme.colorScheme.textDisabledDark,
         ),
         contentPadding = buttonsContentPadding,
+
         content = content
     )
 }
