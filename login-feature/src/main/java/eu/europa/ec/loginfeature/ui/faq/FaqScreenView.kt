@@ -21,6 +21,7 @@ package eu.europa.ec.loginfeature.ui.faq
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -57,9 +59,11 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapTextField
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @Composable
 fun FaqScreen(
@@ -120,7 +124,10 @@ private fun Content(
 
         WrapTextField(
             value = text,
-            onValueChange = { text = it },
+            onValueChange = {
+                onEventSend(Event.Search(it))
+                text = it
+            },
             singleLine = true,
             label = { Text("Search") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
@@ -129,7 +136,20 @@ private fun Content(
                 .clip(MaterialTheme.shapes.allCorneredShapeSmall)
         )
 
-        ExpandableListScreen(sections = state.faqItems, onEventSend)
+        if (state.noSearchResult) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No results",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Black
+                )
+            }
+        }
+
+        ExpandableListScreen(sections = state.presentableFaqItems)
     }
 
     LaunchedEffect(Unit) {
@@ -144,8 +164,7 @@ private fun Content(
 
 @Composable
 private fun ExpandableListScreen(
-    sections: List<FaqUiModel>,
-    onEventSend: (Event) -> Unit
+    sections: List<FaqUiModel>
 ) {
     var expandedItemIndex by remember { mutableIntStateOf(-1) }
 
@@ -184,7 +203,7 @@ private fun ExpandableListItem(
                 MaterialTheme.colorScheme.backgroundDefault,
                 shape = MaterialTheme.shapes.allCorneredShapeSmall
             )
-            .clickable(onClick = onHeaderClicked)
+            .clickable(onClick = { onHeaderClicked() })
     ) {
         Row(
             modifier = Modifier.padding(SPACING_MEDIUM.dp),
@@ -215,3 +234,45 @@ private fun ExpandableListItem(
     }
 }
 
+@Composable
+@Preview(showSystemUi = true)
+fun FaqScreenPreview() {
+    Content(
+        state = State(
+            presentableFaqItems = listOf(
+                FaqUiModel(
+                    title = "Question A goes Here",
+                    description = "Lorem ipsum dolor sit amet," +
+                            " consectetur adipiscing elit,"
+                ),
+                FaqUiModel(
+                    title = "Question B goes Here",
+                    description = "Duis aute irure dolor in reprehenderit in" +
+                            " voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+                ),
+                FaqUiModel(
+                    title = "Question C goes Here",
+                    description = "Excepteur sint occaecat cupidatat non proident, " +
+                            "sunt in culpa qui officia deserunt mollit anim id est laborum."
+                )
+            ),
+            initialFaqItems = listOf()
+        ),
+        effectFlow = Channel<Effect>().receiveAsFlow(),
+        onEventSend = {},
+        onNavigationRequested = {},
+        paddingValues = PaddingValues(10.dp)
+    )
+}
+
+@Composable
+@Preview(showSystemUi = true)
+fun FaqScreenEmptyPreview() {
+    Content(
+        state = State(listOf(), listOf()),
+        effectFlow = Channel<Effect>().receiveAsFlow(),
+        onEventSend = {},
+        onNavigationRequested = {},
+        paddingValues = PaddingValues(10.dp)
+    )
+}

@@ -28,9 +28,14 @@ import org.koin.android.annotation.KoinViewModel
 
 sealed class Event : ViewEvent {
     data object Pop : Event()
+    data class Search(val queryString: String) : Event()
 }
 
-data class State(val faqItems: List<FaqUiModel>) : ViewState
+data class State(
+    val initialFaqItems: List<FaqUiModel>,
+    val presentableFaqItems: List<FaqUiModel>,
+    val noSearchResult: Boolean = false
+) : ViewState
 
 
 sealed class Effect : ViewSideEffect {
@@ -46,12 +51,24 @@ class FaqScreenViewModel(
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State(
-        interactor.initializeData()
+        initialFaqItems = interactor.initializeData(),
+        presentableFaqItems = interactor.initializeData()
     )
 
     override fun handleEvents(event: Event) {
         when (event) {
             Event.Pop -> setEffect { Effect.Navigation.Pop }
+            is Event.Search -> setState {
+                val searchResult = initialFaqItems.query(event.queryString)
+                copy(presentableFaqItems = searchResult, noSearchResult = searchResult.isEmpty())
+            }
+        }
+    }
+
+    private fun List<FaqUiModel>.query(queryString: String): List<FaqUiModel> {
+        return filter {
+            it.title.contains(other = queryString, true) ||
+                    it.description.contains(other = queryString, true)
         }
     }
 }
