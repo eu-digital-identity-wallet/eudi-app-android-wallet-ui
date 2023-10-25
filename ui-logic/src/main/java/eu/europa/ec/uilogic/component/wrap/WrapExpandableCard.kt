@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.VSpacer
 
 @Composable
 fun WrapExpandableCard(
@@ -72,8 +71,6 @@ fun WrapExpandableCard(
                 )
         ) {
             cardTitleContent()
-
-            VSpacer.Small()
 
             AnimatedVisibility(visible = expandCard) {
                 Column(

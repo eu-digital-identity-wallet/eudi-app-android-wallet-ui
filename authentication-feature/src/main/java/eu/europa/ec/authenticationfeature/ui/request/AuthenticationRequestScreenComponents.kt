@@ -23,11 +23,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
@@ -52,6 +51,7 @@ import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
@@ -72,7 +72,7 @@ fun <T> AuthenticationRequest(
         verticalArrangement = Arrangement.Center
     ) {
 
-        itemsIndexed(items) { index, item ->
+        items(items) { item ->
             when (item) {
                 is AuthenticationRequestDataUi.Divider -> {
                     Divider()
@@ -81,7 +81,6 @@ fun <T> AuthenticationRequest(
                 is AuthenticationRequestDataUi.Identification -> {
                     IdentificationPartyCard(
                         cardText = item.identificationItemUi.title,
-                        paddingValues = contentPadding,
                     )
                 }
 
@@ -112,12 +111,8 @@ fun <T> AuthenticationRequest(
 @Composable
 fun IdentificationPartyCard(
     cardText: String,
-    paddingValues: PaddingValues,
 ) {
     CardWithIconAndText(
-        modifier = Modifier.padding(
-            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr)
-        ),
         text = {
             Text(
                 text = cardText,
@@ -233,7 +228,7 @@ fun <T> RequiredFields(
                 }
             }
         },
-        cardContentPadding = PaddingValues(all = SPACING_EXTRA_SMALL.dp),
+        cardContentPadding = PaddingValues(all = SPACING_SMALL.dp),
         onCardClick = { onEventSend(item.event) },
         expandCard = item.expanded,
     )
@@ -269,7 +264,6 @@ private fun IdentificationPartyCardPreview() {
     PreviewTheme {
         IdentificationPartyCard(
             cardText = "Warning",
-            paddingValues = PaddingValues(SPACING_MEDIUM.dp)
         )
     }
 }
