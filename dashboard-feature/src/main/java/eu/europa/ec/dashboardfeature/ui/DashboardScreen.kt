@@ -19,6 +19,7 @@
 package eu.europa.ec.dashboardfeature.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -59,11 +59,10 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.wrap.FabData
-import eu.europa.ec.uilogic.component.wrap.WrapFab
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
-import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryFab
+import eu.europa.ec.uilogic.component.wrap.WrapSecondaryFab
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -118,7 +117,7 @@ private fun Content(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp )
+                .padding(bottom = 48.dp)
                 .background(
                     color = MaterialTheme.colorScheme.primary,
                     shape = MaterialTheme.shapes.bottomCorneredShapeSmall
@@ -126,9 +125,11 @@ private fun Content(
             contentAlignment = Alignment.Center
         ) {
 
-            Row(modifier = Modifier.fillMaxWidth()) {
-
-
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
                 WrapImage(
                     iconData = AppIcons.UserProfilePlaceholder,
                     modifier = Modifier
@@ -150,39 +151,59 @@ private fun Content(
                     )
                 }
             }
-
         }
 
-
-            DocumentTypeListScreen(sections = state.dashboardDocumentItems, Modifier.weight(1f))
-
-
+        DocumentTypeListScreen(sections = state.dashboardDocumentItems, Modifier.weight(1f), onEventSend)
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 33.dp, bottom = 24.dp, end = 33.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
 
-            WrapFab(
+            ) {
+
+            WrapPrimaryFab(
                 modifier = Modifier
-                    .weight(1f),
-                FabData(onClick = { onEventSend(Event.Pop)  } ){ Text(
-                    text = stringResource(id = R.string.dashboard_button_add_doc),
-                    fontWeight = FontWeight.Medium,
-                )}
+                    .weight(0.75f),
+                FabData(onClick = { onEventSend(Event.NavigateToAddDocument) }) {
+                    Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
 
+                        WrapIcon(
+                            customTint = MaterialTheme.colorScheme.textPrimaryDark,
+                            iconData = AppIcons.AddDocumentPlaceholder
+                        )
+                        Text(
+                            text = stringResource(id = R.string.dashboard_button_add_doc),
+                            style =  MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.textPrimaryDark)
+
+                           )
+                    }
+
+                }
             )
 
-            WrapFab(
+            WrapSecondaryFab(
                 modifier = Modifier
                     .weight(1f),
-                FabData(onClick = { onEventSend(Event.Pop)  } ){ Text(
-                    text = stringResource(id = R.string.dashboard_button_show_qr_tap),
-                    fontWeight = FontWeight.Medium,
-                )}
+
+                FabData(onClick = { onEventSend(Event.NavigateToShowQr) }) {
+                    Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)){
+
+                        WrapIcon(
+                            customTint = MaterialTheme.colorScheme.textPrimaryDark,
+                            modifier = Modifier.size(20.dp, 20.dp),
+                            iconData = AppIcons.QR
+                        )
+                        Text(
+                            text = stringResource(id = R.string.dashboard_button_show_qr_tap),
+                            style =  MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.textPrimaryDark)
+
+                        )
+                    }
+                }
             )
+
         }
     }
 
@@ -198,29 +219,28 @@ private fun Content(
 
 @Composable
 private fun DocumentTypeListScreen(
-    sections: List<DashboardUiModel>, modifier: Modifier
-    // onEventSend: (Event) -> Unit
+    sections: List<DashboardUiModel>,
+    modifier: Modifier,
+    onEventSend: (Event) -> Unit
 ) {
-
-    LazyVerticalGrid(modifier = modifier
-        .fillMaxWidth()
-        .padding(start = 24.dp, end = 24.dp, top = 48.dp, bottom = 48.dp),
+    LazyVerticalGrid(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 24.dp),
         columns = GridCells.Adaptive(minSize = 148.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(sections.size) { section ->
-            CardListItem(sections[section])
+            CardListItem(sections[section], onEventSend)
         }
     }
 }
 
-
 @Composable
 private fun CardListItem(
     dataItem: DashboardUiModel,
-    // paddingValues: PaddingValues,
-    // onHeaderClicked: () -> Unit
+    onEventSend: (Event) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -229,11 +249,11 @@ private fun CardListItem(
             .background(
                 MaterialTheme.colorScheme.backgroundDefault,
                 shape = MaterialTheme.shapes.allCorneredShapeSmall
-            ),
+            )
+            .clickable(onClick = { onEventSend(Event.NavigateToDocument) }),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
 
-        // .clickable(onClick = onHeaderClicked)
     ) {
 
         WrapIcon(
@@ -242,8 +262,7 @@ private fun CardListItem(
         )
         Text(
             text = dataItem.documentType,
-
-            style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.textPrimaryDark),
+            style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.textPrimaryDark),
         )
         Text(
             text = dataItem.documentStatus.toString(),
@@ -252,14 +271,6 @@ private fun CardListItem(
     }
 }
 
-//@Composable
-//fun CardTestitems(viewModel: DashboardViewModel = viewModel) {
-//    DocumentTypeListScreen(
-//
-//        // ViewModel sends the network requests and makes posts available as a state
-//        sections = viewModel.viewState.value
-//    )
-//}
 
 @Composable
 @Preview(showSystemUi = true, showBackground = true)

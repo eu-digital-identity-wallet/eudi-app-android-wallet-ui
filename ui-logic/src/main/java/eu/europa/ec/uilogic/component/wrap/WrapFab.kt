@@ -23,6 +23,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 
 /**
  * Data class that is used to construct and initialize the fab button.
@@ -37,6 +38,30 @@ data class FabData(
 
 @Composable
 fun WrapFab(modifier: Modifier = Modifier, data: FabData) {
+    FloatingActionButton(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.secondary,
+        contentColor = MaterialTheme.colorScheme.onSecondary,
+        onClick = data.onClick
+    ) {
+        data.content()
+    }
+}
+
+@Composable
+fun WrapPrimaryFab(modifier: Modifier = Modifier, data: FabData) {
+    FloatingActionButton(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.backgroundPaper,
+        contentColor = MaterialTheme.colorScheme.backgroundPaper,
+        onClick = data.onClick
+    ) {
+        data.content()
+    }
+}
+
+@Composable
+fun WrapSecondaryFab(modifier: Modifier = Modifier, data: FabData) {
     FloatingActionButton(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.secondary,

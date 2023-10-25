@@ -29,6 +29,10 @@ import org.koin.android.annotation.KoinViewModel
 
 sealed class Event : ViewEvent {
     data object Pop : Event()
+    data object NavigateToDocument: Event()
+    data object NavigateToAddDocument: Event()
+    data object NavigateToShowQr: Event()
+
 }
 
 data class State(val dashboardDocumentItems: List<DashboardUiModel>) : ViewState
@@ -36,8 +40,8 @@ data class State(val dashboardDocumentItems: List<DashboardUiModel>) : ViewState
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
-        //data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
         data class SwitchScreen(val screen: String) : Navigation()
+
     }
 }
 
@@ -52,6 +56,9 @@ class DashboardViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             Event.Pop -> setEffect { Effect.Navigation.Pop }
+            Event.NavigateToShowQr -> setEffect { Effect.Navigation.SwitchScreen("") }
+            Event.NavigateToDocument -> setEffect { Effect.Navigation.SwitchScreen("") }
+            Event.NavigateToAddDocument -> setEffect { Effect.Navigation.SwitchScreen("") }
         }
     }
 }
