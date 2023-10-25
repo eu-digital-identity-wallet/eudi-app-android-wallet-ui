@@ -42,9 +42,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.utils.PreviewTheme
 import eu.europa.ec.dashboardfeature.model.DashboardUiModel
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.theme.ThemeManager
+import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
+import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
@@ -72,7 +76,7 @@ fun DashboardScreen(
 ) {
     ContentScreen(
         isLoading = false,
-        navigatableAction = ScreenNavigateAction.NONE,
+        navigatableAction = ScreenNavigateAction.BACKABLE,
         onBack = { viewModel.setEvent(Event.Pop) }
     ) { paddingValues ->
         Content(
@@ -149,11 +153,7 @@ private fun Content(
             }
         }
 
-        DocumentTypeListScreen(
-            sections = state.dashboardDocumentItems,
-            Modifier.weight(1f),
-            onEventSend
-        )
+        DocumentTypeListScreen(sections = state.dashboardDocumentItems, Modifier.weight(1f), onEventSend)
 
         Row(
             modifier = Modifier
@@ -167,11 +167,7 @@ private fun Content(
                 modifier = Modifier
                     .weight(0.75f),
                 FabData(onClick = { onEventSend(Event.NavigateToAddDocument) }) {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
 
                         WrapIcon(
                             customTint = MaterialTheme.colorScheme.textPrimaryDark,
@@ -179,10 +175,11 @@ private fun Content(
                         )
                         Text(
                             text = stringResource(id = R.string.dashboard_button_add_doc),
-                            style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.textPrimaryDark)
+                            style =  MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.textPrimaryDark)
 
-                        )
+                           )
                     }
+
                 }
             )
 
@@ -191,11 +188,8 @@ private fun Content(
                     .weight(1f),
 
                 FabData(onClick = { onEventSend(Event.NavigateToShowQr) }) {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)){
+
                         WrapIcon(
                             customTint = MaterialTheme.colorScheme.textPrimaryDark,
                             modifier = Modifier.size(20.dp, 20.dp),
@@ -203,7 +197,7 @@ private fun Content(
                         )
                         Text(
                             text = stringResource(id = R.string.dashboard_button_show_qr_tap),
-                            style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.textPrimaryDark)
+                            style =  MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.textPrimaryDark)
 
                         )
                     }
@@ -280,8 +274,19 @@ private fun CardListItem(
 
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
-private fun DashboardScreenPreview() {
-    PreviewTheme {
+private fun WelcomeScreenPreview() {
+    ThemeManager.Builder()
+        .withLightColors(ThemeColors.lightColors)
+        .withDarkColors(ThemeColors.darkColors)
+        .withTypography(ThemeTypography.typo)
+        .withShapes(ThemeShapes.shapes)
+        .withDimensions(
+            ThemeDimensTemplate(
+                screenPadding = 10.0
+            )
+        )
+        .build()
+    ThemeManager.instance.Theme {
         Content(
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
