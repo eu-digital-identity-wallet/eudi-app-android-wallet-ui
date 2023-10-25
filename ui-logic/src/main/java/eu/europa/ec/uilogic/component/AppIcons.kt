@@ -155,4 +155,10 @@ object AppIcons {
         imageVector = null
     )
 
+    val AddDocumentPlaceholder: IconData = IconData(
+        resourceId = R.drawable.ic_add,
+        contentDescriptionId = R.string.content_description_add_document_placeholder,
+        imageVector = null
+    )
+
 }
