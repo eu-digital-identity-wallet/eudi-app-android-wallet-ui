@@ -45,14 +45,18 @@ class ThemeColors {
         internal const val eudiw_theme_light_primaryLight: Long = 0xFF4073AF
         private const val eudiw_theme_light_secondary: Long = 0xFFFFD617
         internal const val eudiw_theme_light_success: Long = 0xFF467A39
+        internal const val eudiw_theme_light_warning: Long = 0xFFF29527
         private const val eudiw_theme_light_error: Long = 0xFFDA2131
+        internal const val eudiw_theme_light_info: Long = 0xFF006FB4
 
         internal const val eudiw_theme_dark_primaryMain: Long = 0xFFADC6FF
         internal const val eudiw_theme_dark_primaryDark: Long = 0xFFACC7FF
         internal const val eudiw_theme_dark_primaryLight: Long = 0xFFA2C9FF
         private const val eudiw_theme_dark_secondary: Long = 0xFFEAC300
         internal const val eudiw_theme_dark_success: Long = 0xFF97D783
+        internal const val eudiw_theme_dark_warning: Long = 0xFFFFB872
         private const val eudiw_theme_dark_error: Long = 0xFFFFB3AF
+        internal const val eudiw_theme_dark_info: Long = 0xFF9BCBFF
 
         internal const val eudiw_theme_light_onSuccess: Long = white
         internal const val eudiw_theme_dark_onSuccess: Long = 0xFF033900
@@ -259,6 +263,20 @@ class ThemeColors {
                 Color(eudiw_theme_light_onError)
             }
 
+        val warning: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_warning)
+            } else {
+                Color(eudiw_theme_light_warning)
+            }
+
+        val info: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_info)
+            } else {
+                Color(eudiw_theme_light_info)
+            }
+
         val textPrimaryDark: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_textPrimaryDark)
@@ -422,4 +440,18 @@ val ColorScheme.infoBackground: Color
         Color(ThemeColors.eudiw_theme_dark_infoBackground)
     } else {
         Color(ThemeColors.eudiw_theme_light_infoBackground)
+    }
+
+val ColorScheme.warning: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_warning)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_warning)
+    }
+
+val ColorScheme.info: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_info)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_info)
     }

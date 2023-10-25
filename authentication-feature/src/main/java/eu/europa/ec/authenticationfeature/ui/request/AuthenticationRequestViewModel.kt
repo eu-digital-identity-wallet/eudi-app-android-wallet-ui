@@ -21,8 +21,8 @@ package eu.europa.ec.authenticationfeature.ui.request
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationfeature.interactor.AuthenticationInteractor
 import eu.europa.ec.authenticationfeature.interactor.AuthenticationInteractorPartialState
-import eu.europa.ec.authenticationfeature.ui.request.model.UserDataUi
-import eu.europa.ec.authenticationfeature.ui.request.transformer.toUserDataUi
+import eu.europa.ec.authenticationfeature.ui.request.model.AuthenticationRequestDataUi
+import eu.europa.ec.authenticationfeature.ui.request.transformer.AuthenticationRequestTransformer
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -51,12 +51,11 @@ data class State(
     val screenTitle: String,
     val screenSubtitle: String,
     val screenClickableSubtitle: String,
-    val cardText: String,
     val warningText: String,
     val biometrySubtitle: String,
     val quickPinSubtitle: String,
 
-    val userDataUi: List<UserDataUi> = emptyList(),
+    val items: List<AuthenticationRequestDataUi<Event>> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -64,8 +63,8 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
     data object GoBack : Event()
     data object ChangeContentVisibility : Event()
-    data class UserDataItemCheckedStatusChanged(
-        val items: List<UserDataUi>,
+    data object ExpandOrCollapseRequiredDataList : Event()
+    data class UserIdentificationClicked(
         val itemId: Int
     ) : Event()
 
@@ -115,7 +114,6 @@ class AuthenticationRequestViewModel(
             screenTitle = resourceProvider.getString(R.string.online_authentication_userData_title),
             screenSubtitle = resourceProvider.getString(R.string.online_authentication_userData_subtitle_one),
             screenClickableSubtitle = resourceProvider.getString(R.string.online_authentication_userData_subtitle_two),
-            cardText = resourceProvider.getString(R.string.online_authentication_userData_card_text),
             warningText = resourceProvider.getString(R.string.online_authentication_userData_warning_text),
             biometrySubtitle = resourceProvider.getString(R.string.online_authentication_biometry_share_subtitle),
             quickPinSubtitle = resourceProvider.getString(R.string.online_authentication_quick_pin_share_subtitle)
@@ -149,8 +147,12 @@ class AuthenticationRequestViewModel(
                 }
             }
 
-            is Event.UserDataItemCheckedStatusChanged -> {
-                updateUserDataItem(items = event.items, id = event.itemId)
+            is Event.ExpandOrCollapseRequiredDataList -> {
+                expandOrCollapseRequiredDataList(items = viewState.value.items)
+            }
+
+            is Event.UserIdentificationClicked -> {
+                updateUserIdentificationItem(id = event.itemId)
             }
 
             is Event.SubtitleClicked -> {
@@ -216,6 +218,22 @@ class AuthenticationRequestViewModel(
         }
     }
 
+    private fun expandOrCollapseRequiredDataList(items: List<AuthenticationRequestDataUi<Event>>) {
+        val updatedItems = items.map { item ->
+            if (item is AuthenticationRequestDataUi.RequiredFields) {
+                item.copy(
+                    requiredFieldsItemUi = item.requiredFieldsItemUi
+                        .copy(expanded = !item.requiredFieldsItemUi.expanded)
+                )
+            } else {
+                item
+            }
+        }
+        setState {
+            copy(items = updatedItems)
+        }
+    }
+
     private fun fetchUserData(event: Event) {
         setState {
             copy(
@@ -245,7 +263,9 @@ class AuthenticationRequestViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                userDataUi = response.userDataDomain.toUserDataUi()
+                                items = AuthenticationRequestTransformer.transformToUiItems(
+                                    userDataDomain = response.userDataDomain
+                                )
                             )
                         }
                     }
@@ -254,19 +274,26 @@ class AuthenticationRequestViewModel(
         }
     }
 
-    private fun updateUserDataItem(items: List<UserDataUi>, id: Int) {
-        val updatedList = items.mapIndexed { index, item ->
-            if (id == index) {
-                val itemCurrentCheckedState = item.checked
-                item.copy(
+    private fun updateUserIdentificationItem(id: Int) {
+        val items: List<AuthenticationRequestDataUi<Event>> = viewState.value.items
+        val updatedList = items.map { item ->
+            if (item is AuthenticationRequestDataUi.OptionalField
+                && id == item.optionalFieldItemUi.userIdentificationUi.id
+            ) {
+                val itemCurrentCheckedState = item.optionalFieldItemUi.userIdentificationUi.checked
+                val updatedUiItem = item.optionalFieldItemUi.userIdentificationUi.copy(
                     checked = !itemCurrentCheckedState
+                )
+                item.copy(
+                    optionalFieldItemUi = item.optionalFieldItemUi
+                        .copy(userIdentificationUi = updatedUiItem)
                 )
             } else {
                 item
             }
         }
         setState {
-            copy(userDataUi = updatedList)
+            copy(items = updatedList)
         }
     }
 

@@ -18,7 +18,9 @@
 
 package eu.europa.ec.authenticationfeature.interactor
 
+import eu.europa.ec.authenticationfeature.model.IdentificationDomain
 import eu.europa.ec.authenticationfeature.model.UserDataDomain
+import eu.europa.ec.authenticationfeature.model.UserIdentificationDomain
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
@@ -26,7 +28,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class AuthenticationInteractorPartialState {
-    data class Success(val userDataDomain: List<UserDataDomain>) :
+    data class Success(val userDataDomain: UserDataDomain) :
         AuthenticationInteractorPartialState()
 
     data class Failure(val error: String) : AuthenticationInteractorPartialState()
@@ -57,47 +59,69 @@ class AuthenticationInteractorImpl(
             )
         }
 
-    private fun getFakeUserData(): List<UserDataDomain> {
-        return listOf(
-            UserDataDomain(
-                name = "Registration ID",
-                value = "EUDI123456"
+    private fun getFakeUserData(): UserDataDomain {
+        return UserDataDomain(
+            identification = IdentificationDomain.DIGITAL_ID,
+            optionalFields = listOf(
+                UserIdentificationDomain(
+                    name = "Registration ID",
+                    value = "EUDI123456"
+                ),
+                UserIdentificationDomain(
+                    name = "Family Name",
+                    value = "Doe"
+                ),
+                UserIdentificationDomain(
+                    name = "First Name",
+                    value = "Jane"
+                ),
+                UserIdentificationDomain(
+                    name = "Room Number",
+                    value = "A2"
+                ),
+                UserIdentificationDomain(
+                    name = "Seat Number",
+                    value = "128"
+                ),
+                UserIdentificationDomain(
+                    name = "Registration ID",
+                    value = "EUDI123456"
+                ),
+                UserIdentificationDomain(
+                    name = "Family Name",
+                    value = "Doe"
+                ),
+                UserIdentificationDomain(
+                    name = "First Name",
+                    value = "Jane"
+                ),
+                UserIdentificationDomain(
+                    name = "Room Number",
+                    value = "A2"
+                ),
+                UserIdentificationDomain(
+                    name = "Seat Number",
+                    value = "128"
+                )
             ),
-            UserDataDomain(
-                name = "Family Name",
-                value = "Doe"
-            ),
-            UserDataDomain(
-                name = "First Name",
-                value = "Jane"
-            ),
-            UserDataDomain(
-                name = "Room Number",
-                value = "A2"
-            ),
-            UserDataDomain(
-                name = "Seat Number",
-                value = "128"
-            ),
-            UserDataDomain(
-                name = "Registration ID",
-                value = "EUDI123456"
-            ),
-            UserDataDomain(
-                name = "Family Name",
-                value = "Doe"
-            ),
-            UserDataDomain(
-                name = "First Name",
-                value = "Jane"
-            ),
-            UserDataDomain(
-                name = "Room Number",
-                value = "A2"
-            ),
-            UserDataDomain(
-                name = "Seat Number",
-                value = "128"
+            requiredFieldsTitle = "Verification Data",
+            requiredFields = listOf(
+                UserIdentificationDomain(
+                    name = "Issuance date",
+                    value = null
+                ),
+                UserIdentificationDomain(
+                    name = "Expiration date",
+                    value = null
+                ),
+                UserIdentificationDomain(
+                    name = "Country of issuance",
+                    value = null
+                ),
+                UserIdentificationDomain(
+                    name = "Issuing authority",
+                    value = null
+                )
             )
         )
     }

@@ -20,8 +20,11 @@ package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,20 +38,26 @@ data class CheckboxData(
     val onCheckedChange: ((Boolean) -> Unit)?
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WrapCheckbox(
     checkboxData: CheckboxData,
     modifier: Modifier = Modifier,
 ) {
-    Checkbox(
-        checked = checkboxData.isChecked,
-        onCheckedChange = checkboxData.onCheckedChange,
-        modifier = modifier,
-        enabled = checkboxData.enabled,
-        colors = CheckboxDefaults.colors(
-            uncheckedColor = MaterialTheme.colorScheme.primary
+    // This is needed, otherwise M3 adds unwanted space around CheckBoxes.
+    CompositionLocalProvider(
+        LocalMinimumInteractiveComponentEnforcement provides false
+    ) {
+        Checkbox(
+            checked = checkboxData.isChecked,
+            onCheckedChange = checkboxData.onCheckedChange,
+            modifier = modifier,
+            enabled = checkboxData.enabled,
+            colors = CheckboxDefaults.colors(
+                uncheckedColor = MaterialTheme.colorScheme.primary
+            )
         )
-    )
+    }
 }
 
 @Preview
