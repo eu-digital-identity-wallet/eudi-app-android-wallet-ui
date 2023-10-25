@@ -33,7 +33,7 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 
 data class InfoTextWithNameAndValueData(
     val infoName: String,
-    val infoValue: String,
+    val infoValue: String?,
 )
 
 @Composable
@@ -57,12 +57,14 @@ fun InfoTextWithNameAndValue(
             style = infoNameTextStyle
         )
 
-        VSpacer.ExtraSmall()
+        itemData.infoValue?.let {
+            VSpacer.ExtraSmall()
 
-        Text(
-            text = itemData.infoValue,
-            style = infoValueTextStyle
-        )
+            Text(
+                text = itemData.infoValue,
+                style = infoValueTextStyle
+            )
+        }
     }
 }
 

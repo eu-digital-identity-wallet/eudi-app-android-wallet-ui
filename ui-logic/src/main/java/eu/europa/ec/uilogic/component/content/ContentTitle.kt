@@ -36,11 +36,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.businesslogic.util.safeLet
+import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
@@ -124,8 +124,7 @@ fun ContentTitle(
                             withStyle(
                                 style = SpanStyle(
                                     fontStyle = subTitleStyle.fontStyle,
-                                    textDecoration = TextDecoration.Underline,
-                                    color = subTitleStyle.color
+                                    color = MaterialTheme.colorScheme.textPrimaryDark
                                 )
                             ) {
                                 pushStringAnnotation(

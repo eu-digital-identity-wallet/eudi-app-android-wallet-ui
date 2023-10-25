@@ -51,12 +51,12 @@ fun CardWithIconAndText(
     ) {
         Row(
             modifier = Modifier.padding(contentPadding),
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             icon?.invoke()
 
-            HSpacer.ExtraSmall()
+            HSpacer.Small()
 
             text.invoke()
         }
@@ -71,7 +71,7 @@ private fun CardWithIconAndTextPreview() {
             Text(text = "This is a card with icon and text.")
         },
         icon = {
-            WrapIcon(iconData = AppIcons.Error)
+            WrapIcon(iconData = AppIcons.Warning)
         }
     )
 }

@@ -30,7 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 
@@ -43,13 +43,15 @@ fun CheckboxWithContent(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(0.dp),
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
         WrapCheckbox(
             checkboxData = checkboxData,
             modifier = checkboxModifier
         )
+
+        HSpacer.Medium()
 
         content(this)
     }
@@ -71,7 +73,6 @@ private fun CheckboxWithContentPreview() {
 
     CheckboxWithContent(
         checkboxData = checkBoxData,
-        modifier = Modifier,
         content = {
             Text(text = "Name")
         }
