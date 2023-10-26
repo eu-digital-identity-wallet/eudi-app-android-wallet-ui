@@ -25,7 +25,11 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import org.koin.android.annotation.KoinViewModel
 
-object State : ViewState
+data class State(
+    val showContent: Boolean = false,
+    val enterAnimationDelay: Int = 350,
+    val enterAnimationDuration: Int = 750
+) : ViewState
 
 sealed class Event : ViewEvent {
     data object NavigateToLogin : Event()
@@ -41,7 +45,7 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State
+    override fun setInitialState(): State = State()
 
     override fun handleEvents(event: Event) {
         when (event) {
