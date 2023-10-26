@@ -24,18 +24,17 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.android.annotation.KoinViewModel
 
 sealed class Event : ViewEvent {
     data object Pop : Event()
-    data object NavigateToDocument: Event()
-    data object NavigateToAddDocument: Event()
-    data object NavigateToShowQr: Event()
+    data object NavigateToDocument : Event()
+    data object NavigateToAddDocument : Event()
+    data object NavigateToShowQr : Event()
 
 }
 
-data class State(val dashboardDocumentItems: List<DashboardUiModel>) : ViewState
+data class State(val dashboardDocumentItems: List<DashboardUiModel>, val isLoading: Boolean = false) : ViewState
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {

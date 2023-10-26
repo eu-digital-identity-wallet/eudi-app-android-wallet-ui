@@ -95,4 +95,6 @@
     <!-- Dashboard -->
     <string name="dashboard_button_add_doc">ADD DOC</string>
     <string name="dashboard_button_show_qr_tap">SHOW QR / TAP</string>
+    <string name="dashboard_document_status_is_active">Active</string>
+
 </resources>

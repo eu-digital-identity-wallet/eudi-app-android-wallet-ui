@@ -23,7 +23,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -71,19 +70,17 @@ fun DashboardScreen(
     viewModel: DashboardViewModel
 ) {
     ContentScreen(
-        isLoading = false,
+        isLoading = viewModel.viewState.value.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
         onBack = { viewModel.setEvent(Event.Pop) }
-    ) { paddingValues ->
+    ) {
         Content(
             state = viewModel.viewState.value,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
-            onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController)
-            },
-            paddingValues = paddingValues
-        )
+            onEventSend = { viewModel.setEvent(it) }
+        ) { navigationEffect ->
+            handleNavigationEffect(navigationEffect, navController)
+        }
     }
 }
 
@@ -102,8 +99,7 @@ private fun Content(
     state: State,
     effectFlow: Flow<Effect>?,
     onEventSend: (Event) -> Unit,
-    onNavigationRequested: (Effect.Navigation) -> Unit,
-    paddingValues: PaddingValues
+    onNavigationRequested: (Effect.Navigation) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -272,22 +268,20 @@ private fun CardListItem(
             text = dataItem.documentType,
             style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.textPrimaryDark),
         )
-        Text(
-            text = dataItem.documentStatus.toString(),
-            style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.success),
-        )
+        if (dataItem.documentStatus){
+            Text(
+                text = stringResource(id = R.string.dashboard_document_status_is_active),
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.success))
+        }
     }
 }
 
 
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
-private fun WelcomeScreenPreview() {
+private fun DashboardScreenPreview() {
     PreviewTheme {
         Content(
-            effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {},
-            onNavigationRequested = {},
             state = State(
                 listOf(
                     DashboardUiModel("Digital ID", true, "image1"),
@@ -297,7 +291,8 @@ private fun WelcomeScreenPreview() {
                     DashboardUiModel("Other document 2", true, "image1")
                 )
             ),
-            paddingValues = PaddingValues(20.dp)
-        )
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {}
+        ) {}
     }
 }
