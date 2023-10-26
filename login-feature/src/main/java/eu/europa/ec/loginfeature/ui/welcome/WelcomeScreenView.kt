@@ -18,6 +18,9 @@
 
 package eu.europa.ec.loginfeature.ui.welcome
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,6 +33,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -58,6 +65,7 @@ fun WelcomeScreen(
     viewModel: WelcomeScreenViewModel
 ) {
     Content(
+        state = viewModel.viewState.value,
         effectFlow = viewModel.effect,
         onEventSend = { viewModel.setEvent(it) },
         onNavigationRequested = { navigationEffect ->
@@ -70,10 +78,21 @@ fun WelcomeScreen(
 
 @Composable
 private fun Content(
+    state: State,
     effectFlow: Flow<Effect>?,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
+    var showContent by remember { mutableStateOf(state.showContent) }
+    val animatedWeight by animateFloatAsState(
+        targetValue = if (showContent) 0.75f else 1f,
+        animationSpec = tween(
+            delayMillis = state.enterAnimationDelay,
+            durationMillis = state.enterAnimationDuration,
+            easing = LinearOutSlowInEasing
+        ),
+        label = ""
+    )
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -81,7 +100,7 @@ private fun Content(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.75f)
+                .fillMaxHeight(animatedWeight)
                 .background(
                     color = MaterialTheme.colorScheme.primary,
                     shape = MaterialTheme.shapes.bottomCorneredShapeSmall
@@ -125,6 +144,7 @@ private fun Content(
     }
 
     LaunchedEffect(Unit) {
+        showContent = true
         effectFlow?.onEach { effect ->
             when (effect) {
                 is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
@@ -138,6 +158,7 @@ private fun Content(
 private fun WelcomeScreenPreview() {
     PreviewTheme {
         Content(
+            state = State(),
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {}
