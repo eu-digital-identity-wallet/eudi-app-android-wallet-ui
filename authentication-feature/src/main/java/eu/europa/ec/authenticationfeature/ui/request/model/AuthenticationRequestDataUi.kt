@@ -18,11 +18,27 @@
 
 package eu.europa.ec.authenticationfeature.ui.request.model
 
-import eu.europa.ec.authenticationfeature.model.UserDataDomain
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
-data class UserDataUi(
-    val id: Int,
-    val checked: Boolean,
-    val enabled: Boolean,
-    val userDataDomain: UserDataDomain,
-)
+sealed interface AuthenticationRequestDataUi<T> {
+
+    data class Identification<T>(
+        val identificationItemUi: IdentificationItemUi
+    ) : AuthenticationRequestDataUi<T>
+
+    data class OptionalField<T>(
+        val optionalFieldItemUi: OptionalFieldItemUi<T>
+    ) : AuthenticationRequestDataUi<T>
+
+    data class RequiredFields<T>(
+        val requiredFieldsItemUi: RequiredFieldsItemUi<T>
+    ) : AuthenticationRequestDataUi<T>
+
+    data class Space<T>(
+        val space: Int = SPACING_MEDIUM
+    ) : AuthenticationRequestDataUi<T>
+
+    data class Divider<T>(
+        val width: Int = -1
+    ) : AuthenticationRequestDataUi<T>
+}

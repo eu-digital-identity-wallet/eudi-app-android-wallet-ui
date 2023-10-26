@@ -22,15 +22,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
@@ -41,35 +36,30 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.authenticationfeature.ui.request.model.AuthenticationRequestDataUi
+import eu.europa.ec.commonfeature.utils.PreviewTheme
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.primaryDark
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.CardWithIconAndText
-import eu.europa.ec.uilogic.component.CheckboxWithContent
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -177,95 +167,20 @@ private fun Content(
 
         if (!state.isLoading) {
             // Screen Main Content.
-            LazyColumn(
+            AuthenticationRequest(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
-            ) {
-
-                item {
-                    RelayingPartyCard(
-                        cardText = state.cardText,
-                        paddingValues = paddingValues
-                    )
-                    VSpacer.Small()
-                }
-
-                itemsIndexed(
-                    items = state.userDataUi
-                ) { index, userDataUi ->
-                    CheckboxWithContent(
-                        checkboxData = CheckboxData(
-                            isChecked = userDataUi.checked,
-                            enabled = userDataUi.enabled,
-                            onCheckedChange = {
-                                onEventSend(
-                                    Event.UserDataItemCheckedStatusChanged(
-                                        items = state.userDataUi,
-                                        itemId = index
-                                    )
-                                )
-                            }
-                        )
-                    ) {
-                        val infoValueStyle = if (userDataUi.checked) {
-                            MaterialTheme.typography.titleMedium
-                        } else {
-                            MaterialTheme.typography.bodyLarge
-                        }
-                        if (state.isShowingFullUserInfo) {
-                            InfoTextWithNameAndValue(
-                                itemData = InfoTextWithNameAndValueData(
-                                    infoName = userDataUi.userDataDomain.name,
-                                    infoValue = userDataUi.userDataDomain.value,
-                                ),
-                                infoValueTextStyle = infoValueStyle
-                            )
-                        } else {
-                            Text(
-                                text = userDataUi.userDataDomain.name,
-                                style = infoValueStyle
-                            )
-                        }
-                    }
-
-                    if (index != state.userDataUi.lastIndex) {
-                        Divider()
-                    }
-                }
-            }
+                items = state.items,
+                isShowingFullUserInfo = state.isShowingFullUserInfo,
+                onEventSend = onEventSend,
+                listState = rememberLazyListState(),
+                contentPadding = paddingValues
+            )
 
             // Sticky Bottom Section.
-            Column {
-
-                VSpacer.ExtraSmall()
-
-                AnimatedVisibility(
-                    visible = state.userDataUi.any {
-                        !it.checked
-                    }
-                ) {
-                    Column {
-                        WarningCard(warningText = state.warningText)
-                        VSpacer.Medium()
-                    }
-                }
-
-                WrapPrimaryButton(
-                    enabled = !state.isLoading,
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onEventSend(Event.PrimaryButtonPressed) }
-                ) {
-                    Text(text = stringResource(id = R.string.online_authentication_userData_primary_button_text))
-                }
-                VSpacer.Medium()
-
-                WrapSecondaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onEventSend(Event.SecondaryButtonPressed) }
-                ) {
-                    Text(text = stringResource(id = R.string.online_authentication_userData_secondary_button_text))
-                }
-            }
+            StickyBottomSection(
+                state = state,
+                onEventSend = onEventSend
+            )
         }
     }
 
@@ -321,55 +236,102 @@ private fun SheetContent(
 }
 
 @Composable
-private fun RelayingPartyCard(
-    cardText: String,
-    paddingValues: PaddingValues
+fun StickyBottomSection(
+    state: State,
+    onEventSend: (Event) -> Unit,
 ) {
-    CardWithIconAndText(
-        modifier = Modifier.padding(
-            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr)
-        ),
-        text = {
-            Text(
-                text = cardText,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primaryDark
-            )
-        },
-        icon = {
-            WrapIcon(
-                modifier = Modifier.size(50.dp),
-                iconData = AppIcons.Id,
-                customTint = MaterialTheme.colorScheme.primary
-            )
-        },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryDark.copy(alpha = 0.12f),
-        ),
-        contentPadding = PaddingValues(horizontal = SPACING_MEDIUM.dp)
-    )
+    Column {
+        VSpacer.ExtraSmall()
+
+        AnimatedVisibility(
+            visible = state.items.any {
+                it is AuthenticationRequestDataUi.OptionalField
+                        && !it.optionalFieldItemUi.userIdentificationUi.checked
+            }
+        ) {
+            Column {
+                WarningCard(warningText = state.warningText)
+                VSpacer.Medium()
+            }
+        }
+
+        WrapPrimaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { onEventSend(Event.PrimaryButtonPressed) }
+        ) {
+            Text(text = stringResource(id = R.string.online_authentication_userData_primary_button_text))
+        }
+        VSpacer.Medium()
+
+        WrapSecondaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { onEventSend(Event.SecondaryButtonPressed) }
+        ) {
+            Text(text = stringResource(id = R.string.online_authentication_userData_secondary_button_text))
+        }
+    }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true)
 @Composable
-private fun WarningCard(warningText: String) {
-    CardWithIconAndText(
-        text = {
-            Text(
-                text = warningText,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.textPrimaryDark
-            )
-        },
-        icon = {
-            WrapIcon(
-                modifier = Modifier.size(32.dp),
-                iconData = AppIcons.Error,
-                customTint = MaterialTheme.colorScheme.secondary
-            )
-        },
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.12f)
-        ),
-        contentPadding = PaddingValues(SPACING_MEDIUM.dp)
-    )
+private fun ContentPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                screenTitle = "Title",
+                screenSubtitle = "Subtitle ",
+                screenClickableSubtitle = "clickable subtitle",
+                warningText = "Warning",
+                biometrySubtitle = "biometrySubtitle",
+                quickPinSubtitle = "quickPinSubtitle"
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
+            coroutineScope = rememberCoroutineScope(),
+            modalBottomSheetState = rememberModalBottomSheetState()
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SheetContentCancelPreview() {
+    PreviewTheme {
+        SheetContent(
+            sheetContent = AuthenticationRequestBottomSheetContent.CANCEL,
+            onEventSent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SheetContentSubtitlePreview() {
+    PreviewTheme {
+        SheetContent(
+            sheetContent = AuthenticationRequestBottomSheetContent.SUBTITLE,
+            onEventSent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun StickyBottomSectionPreview() {
+    PreviewTheme {
+        StickyBottomSection(
+            state = State(
+                screenTitle = "Title",
+                screenSubtitle = "Subtitle ",
+                screenClickableSubtitle = "clickable subtitle",
+                warningText = "Warning",
+                biometrySubtitle = "biometrySubtitle",
+                quickPinSubtitle = "quickPinSubtitle"
+            ),
+            onEventSend = {}
+        )
+    }
 }

@@ -16,23 +16,11 @@
  *
  */
 
-package eu.europa.ec.authenticationfeature.model
+package eu.europa.ec.authenticationfeature.ui.request.model
 
-data class UserDataDomain(
-    val identification: IdentificationDomain,
-    val optionalFields: List<UserIdentificationDomain>,
-    val requiredFieldsTitle: String,
-    val requiredFields: List<UserIdentificationDomain>,
-)
-
-enum class IdentificationDomain(
-    val title: String
-) {
-    DRIVING_LICENCE(title = "Driving Licence"),
-    DIGITAL_ID(title = "Digital ID")
-}
-
-data class UserIdentificationDomain(
-    val name: String,
-    val value: String?,
+data class RequiredFieldsItemUi<T>(
+    val userIdentificationsUi: List<UserIdentificationUi<T>>,
+    val expanded: Boolean = false,
+    val title: String,
+    val event: T
 )

@@ -33,7 +33,7 @@
     <string name="content_description_more_vert_icon">More Items Vertically</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
-    <string name="content_description_error_icon">Error</string>
+    <string name="content_description_warning_icon">Warning</string>
     <string name="content_description_touch_id_icon">Touch id</string>
     <string name="content_description_qr_icon">QR</string>
     <string name="content_description_nfc_icon">NFC</string>
@@ -66,7 +66,7 @@
     <!-- Authentication UserData Screen -->
     <string name="online_authentication_userData_title">EUDI Conference requests the following</string>
     <string name="online_authentication_userData_subtitle_one">Please review carefully before sharing your data.</string>
-    <string name="online_authentication_userData_subtitle_two">Why we need your data?</string>
+    <string name="online_authentication_userData_subtitle_two"> Why we need your data?</string>
     <string name="online_authentication_userData_card_text">EUDI Conference</string>
     <string name="online_authentication_userData_warning_text">Your selection of data to be shared may impact the service</string>
     <string name="online_authentication_userData_primary_button_text">SHARE</string>
@@ -80,13 +80,13 @@
     <string name="online_authentication_userData_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
 
     <!-- Authentication Loading Screen -->
-    <string name="online_authentication_loading_title">Relying party requests the following info</string>
-    <string name="online_authentication_loading_subtitle">Sharing your data…</string>
+    <string name="online_authentication_loading_title">Relying party requests the following</string>
+    <string name="online_authentication_loading_subtitle">Please wait…</string>
     <string name="online_authentication_success_config_title">@string/generic_success</string>
     <string name="online_authentication_success_config_subtitle">You successfully shared information with the Relying party</string>
     <string name="online_authentication_success_config_primary_button_text">@string/generic_ok</string>
-    <string name="online_authentication_biometry_share_subtitle">use your biometrics to share information</string>
-    <string name="online_authentication_quick_pin_share_subtitle">type your quick pin to share information</string>
+    <string name="online_authentication_biometry_share_subtitle">Use your biometrics to share information</string>
+    <string name="online_authentication_quick_pin_share_subtitle">Type your quick pin to share information</string>
 
     <!-- Login -->
     <string name="welcome_login_button_title">LOGIN</string>

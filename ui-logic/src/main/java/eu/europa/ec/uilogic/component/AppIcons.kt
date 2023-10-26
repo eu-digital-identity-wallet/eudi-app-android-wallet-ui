@@ -77,9 +77,9 @@ object AppIcons {
         imageVector = Icons.Filled.MoreVert
     )
 
-    val Error: IconData = IconData(
-        resourceId = R.drawable.ic_error,
-        contentDescriptionId = R.string.content_description_error_icon,
+    val Warning: IconData = IconData(
+        resourceId = R.drawable.ic_warning,
+        contentDescriptionId = R.string.content_description_warning_icon,
         imageVector = null
     )
 
@@ -138,7 +138,7 @@ object AppIcons {
     )
 
     val Visibility: IconData = IconData(
-        resourceId = R.drawable.ic_visibility,
+        resourceId = R.drawable.ic_visibility_on,
         contentDescriptionId = R.string.content_description_visibility_icon,
         imageVector = null
     )
