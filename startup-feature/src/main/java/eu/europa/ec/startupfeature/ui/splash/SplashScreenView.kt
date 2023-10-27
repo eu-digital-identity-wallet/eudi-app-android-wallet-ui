@@ -81,7 +81,7 @@ private fun Content(
     effectFlow: Flow<Effect>?,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
-    val state = remember {
+    val visibilityState = remember {
         MutableTransitionState(false).apply {
             targetState = true
         }
@@ -95,9 +95,9 @@ private fun Content(
             contentAlignment = Alignment.Center
         ) {
             AnimatedVisibility(
-                visibleState = state,
-                enter = fadeIn(animationSpec = tween(2500)),
-                exit = fadeOut(animationSpec = tween(1500)),
+                visibleState = visibilityState,
+                enter = fadeIn(animationSpec = tween(state.logoAnimationDuration)),
+                exit = fadeOut(animationSpec = tween(state.logoAnimationDuration)),
             ) {
                 WrapImage(
                     iconData = AppIcons.Logo
