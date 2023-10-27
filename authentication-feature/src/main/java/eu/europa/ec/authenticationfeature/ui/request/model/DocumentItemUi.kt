@@ -16,13 +16,8 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.authenticationfeature.ui.request.model
 
-data class DashboardUiModel (
-    val documentType: String,
-    val documentStatus: Boolean,
-    val documentImage: String
+data class DocumentItemUi(
+    val title: String
 )
-
-
-

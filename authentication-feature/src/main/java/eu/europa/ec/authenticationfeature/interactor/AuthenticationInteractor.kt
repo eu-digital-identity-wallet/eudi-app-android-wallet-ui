@@ -18,10 +18,10 @@
 
 package eu.europa.ec.authenticationfeature.interactor
 
-import eu.europa.ec.authenticationfeature.model.IdentificationDomain
 import eu.europa.ec.authenticationfeature.model.UserDataDomain
 import eu.europa.ec.authenticationfeature.model.UserIdentificationDomain
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -61,7 +61,7 @@ class AuthenticationInteractorImpl(
 
     private fun getFakeUserData(): UserDataDomain {
         return UserDataDomain(
-            identification = IdentificationDomain.DIGITAL_ID,
+            documentTypeUi = DocumentTypeUi.DIGITAL_ID,
             optionalFields = listOf(
                 UserIdentificationDomain(
                     name = "Registration ID",

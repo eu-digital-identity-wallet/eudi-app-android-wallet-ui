@@ -22,7 +22,9 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.LoginScreens
+import eu.europa.ec.uilogic.navigation.Screen
 import org.koin.android.annotation.KoinViewModel
 
 data class State(
@@ -39,7 +41,7 @@ sealed class Event : ViewEvent {
 sealed class Effect : ViewSideEffect {
 
     sealed class Navigation : Effect() {
-        data class SwitchScreen(val screen: String) : Navigation()
+        data class SwitchScreen(val screenRoute: String) : Navigation()
     }
 }
 
@@ -49,8 +51,14 @@ class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.NavigateToLogin -> {}
-            is Event.NavigateToFaq -> setEffect { Effect.Navigation.SwitchScreen(LoginScreens.Faq.screenRoute) }
+            is Event.NavigateToLogin -> navigateTo(DashboardScreens.Dashboard)
+            is Event.NavigateToFaq -> navigateTo(LoginScreens.Faq)
+        }
+    }
+
+    private fun navigateTo(screen: Screen) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(screenRoute = screen.screenRoute)
         }
     }
 }

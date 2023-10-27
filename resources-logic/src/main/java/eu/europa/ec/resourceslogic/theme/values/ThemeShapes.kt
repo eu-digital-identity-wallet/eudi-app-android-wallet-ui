@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.templates.ThemeShapesTemplate
+import eu.europa.ec.resourceslogic.theme.values.ThemeShapes.Companion.LARGE
 import eu.europa.ec.resourceslogic.theme.values.ThemeShapes.Companion.SMALL
 
 class ThemeShapes {
@@ -52,3 +53,6 @@ val Shapes.topCorneredShapeSmall: Shape
 
 val Shapes.allCorneredShapeSmall: Shape
     @Composable get() = RoundedCornerShape(SMALL.dp)
+
+val Shapes.allCorneredShapeLarge: Shape
+    @Composable get() = RoundedCornerShape(LARGE.dp)

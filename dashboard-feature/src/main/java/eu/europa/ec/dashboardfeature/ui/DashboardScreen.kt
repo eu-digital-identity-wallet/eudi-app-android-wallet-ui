@@ -19,45 +19,58 @@
 package eu.europa.ec.dashboardfeature.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.utils.PreviewTheme
-import eu.europa.ec.dashboardfeature.model.DashboardUiModel
+import eu.europa.ec.commonfeature.model.DocumentStatusUi
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
+import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
+import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.FabData
+import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryFab
-import eu.europa.ec.uilogic.component.wrap.WrapSecondaryFab
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
+import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
+import eu.europa.ec.uilogic.extension.throttledClickable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -69,18 +82,35 @@ fun DashboardScreen(
     navController: NavController,
     viewModel: DashboardViewModel
 ) {
+    val state = viewModel.viewState.value
+
     ContentScreen(
-        isLoading = viewModel.viewState.value.isLoading,
+        isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
-        onBack = { viewModel.setEvent(Event.Pop) }
-    ) {
+        onBack = { viewModel.setEvent(Event.Pop) },
+        fab = {
+            FabContent(
+                onEventSend = { event ->
+                    viewModel.setEvent(event)
+                }
+            )
+        },
+        fabPosition = FabPosition.Center,
+        contentErrorConfig = state.error
+    ) { paddingValues ->
         Content(
-            state = viewModel.viewState.value,
+            state = state,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) }
-        ) { navigationEffect ->
-            handleNavigationEffect(navigationEffect, navController)
-        }
+            onEventSend = { viewModel.setEvent(it) },
+            onNavigationRequested = { navigationEffect ->
+                handleNavigationEffect(navigationEffect, navController)
+            },
+            paddingValues = paddingValues
+        )
+    }
+
+    OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Init)
     }
 }
 
@@ -97,181 +127,189 @@ private fun handleNavigationEffect(
 @Composable
 private fun Content(
     state: State,
-    effectFlow: Flow<Effect>?,
+    effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
-    onNavigationRequested: (Effect.Navigation) -> Unit
+    onNavigationRequested: (Effect.Navigation) -> Unit,
+    paddingValues: PaddingValues
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-
+        modifier = Modifier.fillMaxSize()
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 48.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = MaterialTheme.shapes.bottomCorneredShapeSmall
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-            ) {
-                WrapImage(
-                    iconData = AppIcons.UserProfilePlaceholder,
-                    modifier = Modifier
-                        .size(64.dp, 64.dp)
-                        .fillMaxWidth()
-                        .padding(start = 12.dp)
-                )
-                Column {
-                    Text(
-                        "Welcome back",
-                        modifier = Modifier.padding(start = 16.dp),
-                        color = MaterialTheme.colorScheme.textSecondaryLight
-                    )
-                    Text(
-                        "Jane",
-                        modifier = Modifier.padding(start = 16.dp),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.background
-                    )
-                }
-            }
-        }
-
-        DocumentTypeListScreen(
-            sections = state.dashboardDocumentItems,
-            Modifier.weight(1f),
-            onEventSend
+        // Title section.
+        Title(
+            message = stringResource(id = R.string.dashboard_title),
+            userName = state.userName,
+            image = AppIcons.User,
+            paddingValues = paddingValues
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 33.dp, bottom = 24.dp, end = 33.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-
-            ) {
-
-            WrapPrimaryFab(
-                modifier = Modifier
-                    .weight(0.75f),
-                FabData(onClick = { onEventSend(Event.NavigateToAddDocument) }) {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-
-                        WrapIcon(
-                            customTint = MaterialTheme.colorScheme.textPrimaryDark,
-                            iconData = AppIcons.AddDocumentPlaceholder
-                        )
-                        Text(
-                            text = stringResource(id = R.string.dashboard_button_add_doc),
-                            style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.textPrimaryDark)
-
-                        )
-                    }
-
-                }
-            )
-
-            WrapSecondaryFab(
-                modifier = Modifier
-                    .weight(1f),
-
-                FabData(onClick = { onEventSend(Event.NavigateToShowQr) }) {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-
-                        WrapIcon(
-                            customTint = MaterialTheme.colorScheme.textPrimaryDark,
-                            modifier = Modifier.size(20.dp, 20.dp),
-                            iconData = AppIcons.QR
-                        )
-                        Text(
-                            text = stringResource(id = R.string.dashboard_button_show_qr_tap),
-                            style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.textPrimaryDark)
-
-                        )
-                    }
-                }
-            )
-
-        }
+        // Documents section.
+        DocumentsList(
+            documents = state.documents,
+            modifier = Modifier.weight(1f),
+            onEventSend = onEventSend,
+            paddingValues = paddingValues
+        )
     }
 
     LaunchedEffect(Unit) {
-        effectFlow?.onEach { effect ->
+        effectFlow.onEach { effect ->
             when (effect) {
                 is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
                 is Effect.Navigation.Pop -> onNavigationRequested(effect)
             }
-        }?.collect()
+        }.collect()
     }
 }
 
 @Composable
-private fun DocumentTypeListScreen(
-    sections: List<DashboardUiModel>,
-    modifier: Modifier,
-    onEventSend: (Event) -> Unit
+private fun FabContent(
+    onEventSend: (Event) -> Unit,
+) {
+    val secondaryFabData = FabData(
+        text = { Text(stringResource(id = R.string.dashboard_secondary_fab_text)) },
+        icon = { WrapIcon(iconData = AppIcons.Add) },
+        onClick = { onEventSend(Event.Fab.SecondaryFabPressed) }
+    )
+    val primaryFabData = FabData(
+        text = { Text(text = stringResource(id = R.string.dashboard_primary_fab_text)) },
+        icon = {
+            WrapIcon(
+                modifier = Modifier.size(24.dp),
+                iconData = AppIcons.NFC
+            )
+        },
+        onClick = { onEventSend(Event.Fab.PrimaryFabPressed) },
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        WrapSecondaryExtendedFab(data = secondaryFabData)
+        WrapPrimaryExtendedFab(data = primaryFabData)
+    }
+}
+
+@Composable
+private fun Title(
+    message: String,
+    userName: String,
+    image: IconData,
+    paddingValues: PaddingValues
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.primary,
+                shape = MaterialTheme.shapes.bottomCorneredShapeSmall
+            )
+            .padding(all = paddingValues.calculateStartPadding(LayoutDirection.Ltr)),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            WrapImage(
+                iconData = image,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(SPACING_SMALL.dp))
+            )
+            Column(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .wrapContentHeight()
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.textSecondaryLight
+                )
+                VSpacer.Small()
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.background
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DocumentsList(
+    documents: List<DocumentUi>,
+    modifier: Modifier = Modifier,
+    onEventSend: (Event) -> Unit,
+    paddingValues: PaddingValues
 ) {
     LazyVerticalGrid(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 24.dp, end = 24.dp),
+            .padding(
+                top = 48.dp,
+                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+                bottom = paddingValues.calculateBottomPadding()
+            ),
         columns = GridCells.Adaptive(minSize = 148.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(sections.size) { section ->
-            CardListItem(sections[section], onEventSend)
+        items(documents.size) { index ->
+            CardListItem(
+                dataItem = documents[index],
+                onEventSend = onEventSend
+            )
         }
     }
 }
 
 @Composable
 private fun CardListItem(
-    dataItem: DashboardUiModel,
+    dataItem: DocumentUi,
     onEventSend: (Event) -> Unit
 ) {
-    Column(
+    WrapCard(
         modifier = Modifier
             .fillMaxWidth()
             .height(148.dp)
-            .background(
-                MaterialTheme.colorScheme.backgroundDefault,
-                shape = MaterialTheme.shapes.allCorneredShapeSmall
+            .throttledClickable(
+                onClick = {
+                    onEventSend(Event.NavigateToDocument(documentId = dataItem.documentId))
+                }
             )
-            .clickable(onClick = { onEventSend(Event.NavigateToDocument) }),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-
     ) {
-
-        WrapIcon(
-            iconData = AppIcons.Id,
-            customTint = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = dataItem.documentType,
-            style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.textPrimaryDark),
-        )
-        if (dataItem.documentStatus){
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            WrapIcon(
+                iconData = AppIcons.Id,
+                customTint = MaterialTheme.colorScheme.primary
+            )
             Text(
-                text = stringResource(id = R.string.dashboard_document_status_is_active),
-                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.success))
+                text = dataItem.documentType.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.textPrimaryDark
+            )
+            Text(
+                text = dataItem.documentStatus.title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = when (dataItem.documentStatus) {
+                    DocumentStatusUi.ACTIVE -> MaterialTheme.colorScheme.success
+                    DocumentStatusUi.INACTIVE -> MaterialTheme.colorScheme.error
+                }
+            )
         }
     }
 }
@@ -280,19 +318,35 @@ private fun CardListItem(
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
 private fun DashboardScreenPreview() {
-    PreviewTheme {
-        Content(
-            state = State(
-                listOf(
-                    DashboardUiModel("Digital ID", true, "image1"),
-                    DashboardUiModel("Driving Licence", true, "image1"),
-                    DashboardUiModel("Other document", true, "image1"),
-                    DashboardUiModel("Other document 1", true, "image1"),
-                    DashboardUiModel("Other document 2", true, "image1")
+    Content(
+        state = State(
+            isLoading = false,
+            error = null,
+            userName = "Jane",
+            documents = listOf(
+                DocumentUi(
+                    documentId = 0,
+                    documentType = DocumentTypeUi.DIGITAL_ID,
+                    documentStatus = DocumentStatusUi.ACTIVE,
+                    documentImage = "image1"
+                ),
+                DocumentUi(
+                    documentId = 1,
+                    documentType = DocumentTypeUi.DRIVING_LICENCE,
+                    documentStatus = DocumentStatusUi.ACTIVE,
+                    documentImage = "image2"
+                ),
+                DocumentUi(
+                    documentId = 2,
+                    documentType = DocumentTypeUi.OTHER,
+                    documentStatus = DocumentStatusUi.ACTIVE,
+                    documentImage = "image3"
                 )
-            ),
-            effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {}
-        ) {}
-    }
+            )
+        ),
+        effectFlow = Channel<Effect>().receiveAsFlow(),
+        onEventSend = {},
+        onNavigationRequested = {},
+        paddingValues = PaddingValues(SPACING_MEDIUM.dp)
+    )
 }

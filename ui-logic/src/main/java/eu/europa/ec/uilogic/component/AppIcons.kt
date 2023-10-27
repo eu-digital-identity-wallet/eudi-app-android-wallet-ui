@@ -149,15 +149,9 @@ object AppIcons {
         imageVector = null
     )
 
-    val UserProfilePlaceholder: IconData = IconData(
-        resourceId = R.drawable.ic_user,
-        contentDescriptionId = R.string.content_description_user_profile_placeholder,
-        imageVector = null
-    )
-
-    val AddDocumentPlaceholder: IconData = IconData(
+    val Add: IconData = IconData(
         resourceId = R.drawable.ic_add,
-        contentDescriptionId = R.string.content_description_add_document_placeholder,
+        contentDescriptionId = R.string.content_description_add_icon,
         imageVector = null
     )
 

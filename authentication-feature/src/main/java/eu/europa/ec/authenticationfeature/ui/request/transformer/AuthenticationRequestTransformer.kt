@@ -21,7 +21,7 @@ package eu.europa.ec.authenticationfeature.ui.request.transformer
 import eu.europa.ec.authenticationfeature.model.UserDataDomain
 import eu.europa.ec.authenticationfeature.ui.request.Event
 import eu.europa.ec.authenticationfeature.ui.request.model.AuthenticationRequestDataUi
-import eu.europa.ec.authenticationfeature.ui.request.model.IdentificationItemUi
+import eu.europa.ec.authenticationfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.authenticationfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.authenticationfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.authenticationfeature.ui.request.model.UserIdentificationUi
@@ -35,10 +35,10 @@ object AuthenticationRequestTransformer {
     ): List<AuthenticationRequestDataUi<Event>> {
         val items = mutableListOf<AuthenticationRequestDataUi<Event>>()
 
-        // Add identification item.
-        items += AuthenticationRequestDataUi.Identification(
-            identificationItemUi = IdentificationItemUi(
-                title = userDataDomain.identification.title
+        // Add document item.
+        items += AuthenticationRequestDataUi.Document(
+            documentItemUi = DocumentItemUi(
+                title = userDataDomain.documentTypeUi.title
             )
         )
         items += AuthenticationRequestDataUi.Space()

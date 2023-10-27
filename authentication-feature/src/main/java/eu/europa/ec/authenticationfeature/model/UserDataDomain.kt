@@ -18,19 +18,14 @@
 
 package eu.europa.ec.authenticationfeature.model
 
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
+
 data class UserDataDomain(
-    val identification: IdentificationDomain,
+    val documentTypeUi: DocumentTypeUi,
     val optionalFields: List<UserIdentificationDomain>,
     val requiredFieldsTitle: String,
     val requiredFields: List<UserIdentificationDomain>,
 )
-
-enum class IdentificationDomain(
-    val title: String
-) {
-    DRIVING_LICENCE(title = "Driving Licence"),
-    DIGITAL_ID(title = "Digital ID")
-}
 
 data class UserIdentificationDomain(
     val name: String,

@@ -23,4 +23,6 @@ android {
     namespace = "eu.europa.ec.dashboardfeature"
 }
 
-dependencies {implementation(project(":common-feature"))}
+dependencies {
+    implementation(project(":common-feature"))
+}

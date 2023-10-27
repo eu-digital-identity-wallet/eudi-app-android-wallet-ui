@@ -29,10 +29,10 @@ fun screenPaddings(
     append: PaddingValues? = null,
     topSpacing: TopSpacing = TopSpacing.WithToolbar
 ) = PaddingValues(
-    start = SPACING_MEDIUM.dp,
+    start = SPACING_LARGE.dp,
     top = calculateTopSpacing(topSpacing).dp + (append?.calculateTopPadding() ?: 0.dp),
-    end = SPACING_MEDIUM.dp,
-    bottom = SPACING_MEDIUM.dp + (append?.calculateBottomPadding() ?: 0.dp)
+    end = SPACING_LARGE.dp,
+    bottom = SPACING_LARGE.dp + (append?.calculateBottomPadding() ?: 0.dp)
 )
 
 private fun calculateTopSpacing(topSpacing: TopSpacing): Int = when (topSpacing) {
