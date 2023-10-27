@@ -19,6 +19,7 @@
 package eu.europa.ec.startupfeature.ui.splash
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -79,6 +81,11 @@ private fun Content(
     effectFlow: Flow<Effect>?,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
+    val visibilityState = remember {
+        MutableTransitionState(false).apply {
+            targetState = true
+        }
+    }
     Scaffold { paddingValues ->
         Box(
             Modifier
@@ -88,7 +95,7 @@ private fun Content(
             contentAlignment = Alignment.Center
         ) {
             AnimatedVisibility(
-                visible = state.showLogo,
+                visibleState = visibilityState,
                 enter = fadeIn(animationSpec = tween(state.logoAnimationDuration)),
                 exit = fadeOut(animationSpec = tween(state.logoAnimationDuration)),
             ) {
@@ -96,6 +103,7 @@ private fun Content(
                     iconData = AppIcons.Logo
                 )
             }
+
         }
     }
 
