@@ -31,11 +31,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +59,7 @@ import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
@@ -88,14 +87,6 @@ fun DashboardScreen(
         isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
         onBack = { viewModel.setEvent(Event.Pop) },
-        fab = {
-            FabContent(
-                onEventSend = { event ->
-                    viewModel.setEvent(event)
-                }
-            )
-        },
-        fabPosition = FabPosition.Center,
         contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
@@ -150,6 +141,13 @@ private fun Content(
             onEventSend = onEventSend,
             paddingValues = paddingValues
         )
+
+        FabContent(
+            paddingValues = paddingValues,
+            onEventSend = { event ->
+                onEventSend(event)
+            }
+        )
     }
 
     LaunchedEffect(Unit) {
@@ -165,6 +163,7 @@ private fun Content(
 @Composable
 private fun FabContent(
     onEventSend: (Event) -> Unit,
+    paddingValues: PaddingValues
 ) {
     val secondaryFabData = FabData(
         text = { Text(stringResource(id = R.string.dashboard_secondary_fab_text)) },
@@ -184,12 +183,19 @@ private fun FabContent(
 
     Row(
         modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+            .fillMaxWidth()
+            .padding(
+                bottom = SPACING_MEDIUM.dp,
+                top = SPACING_SMALL.dp,
+                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+            )
+            .background(MaterialTheme.colorScheme.background),
+        horizontalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        WrapSecondaryExtendedFab(data = secondaryFabData)
-        WrapPrimaryExtendedFab(data = primaryFabData)
+        WrapSecondaryExtendedFab(data = secondaryFabData, modifier = Modifier.weight(1f))
+        WrapPrimaryExtendedFab(data = primaryFabData, modifier = Modifier.weight(1f))
     }
 }
 
@@ -207,12 +213,19 @@ private fun Title(
                 color = MaterialTheme.colorScheme.primary,
                 shape = MaterialTheme.shapes.bottomCorneredShapeSmall
             )
-            .padding(all = paddingValues.calculateStartPadding(LayoutDirection.Ltr)),
+            .padding(
+                PaddingValues(
+                    top = SPACING_EXTRA_LARGE.dp,
+                    bottom = SPACING_EXTRA_LARGE.dp,
+                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             WrapImage(
                 iconData = image,
@@ -222,10 +235,7 @@ private fun Title(
             )
             Column(
                 modifier = Modifier
-                    .padding(start = 16.dp)
-                    .wrapContentHeight()
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.SpaceBetween,
+                    .padding(start = SPACING_MEDIUM.dp),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
@@ -233,7 +243,6 @@ private fun Title(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.textSecondaryLight
                 )
-                VSpacer.Small()
                 Text(
                     text = userName,
                     style = MaterialTheme.typography.headlineSmall,
@@ -255,20 +264,29 @@ private fun DocumentsList(
         modifier = modifier
             .fillMaxWidth()
             .padding(
-                top = 48.dp,
                 start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                 end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                bottom = paddingValues.calculateBottomPadding()
             ),
         columns = GridCells.Adaptive(minSize = 148.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
+        horizontalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
+
+        // Top Spacing
+        items(2) {
+            VSpacer.Large()
+        }
+
         items(documents.size) { index ->
             CardListItem(
                 dataItem = documents[index],
                 onEventSend = onEventSend
             )
+        }
+
+        // Bottom Spacing
+        items(2) {
+            VSpacer.Large()
         }
     }
 }
