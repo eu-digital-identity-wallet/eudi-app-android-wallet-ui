@@ -43,7 +43,7 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
                 }
             )
         ) {
-            DashboardScreen( navController, koinViewModel())
+            DashboardScreen(navController, koinViewModel())
         }
     }
 }
