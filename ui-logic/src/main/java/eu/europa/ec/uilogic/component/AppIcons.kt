@@ -148,4 +148,11 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_visibility_off_icon,
         imageVector = null
     )
+
+    val Add: IconData = IconData(
+        resourceId = R.drawable.ic_add,
+        contentDescriptionId = R.string.content_description_add_icon,
+        imageVector = null
+    )
+
 }

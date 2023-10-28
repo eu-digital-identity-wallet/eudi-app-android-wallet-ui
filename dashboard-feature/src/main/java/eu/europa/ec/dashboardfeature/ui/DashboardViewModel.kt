@@ -18,31 +18,119 @@
 
 package eu.europa.ec.dashboardfeature.ui
 
+import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.ModuleRoute
+import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
-sealed class Event : ViewEvent
+data class State(
+    val isLoading: Boolean = false,
+    val error: ContentErrorConfig? = null,
 
-object State : ViewState
+    val userName: String,
+    val documents: List<DocumentUi> = emptyList()
+) : ViewState
+
+sealed class Event : ViewEvent {
+    data object Init : Event()
+    data object Pop : Event()
+    data class NavigateToDocument(val documentId: Int) : Event()
+    data object NavigateToAddDocument : Event()
+    data object NavigateToShowQr : Event()
+    sealed class Fab : Event() {
+        data object PrimaryFabPressed : Fab()
+        data object SecondaryFabPressed : Fab()
+    }
+}
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
-        data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
+        data object Pop : Navigation()
         data class SwitchScreen(val screen: String) : Navigation()
     }
 }
 
 @KoinViewModel
 class DashboardViewModel(
-    private val dashboardInteractor: DashboardInteractor
+    private val dashboardInteractor: DashboardInteractor,
+    private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State
+
+    override fun setInitialState(): State = State(
+        userName = dashboardInteractor.getUserName()
+    )
 
     override fun handleEvents(event: Event) {
+        when (event) {
+            is Event.Init -> getDocuments(event)
+
+            is Event.Pop -> setEffect { Effect.Navigation.Pop }
+
+            is Event.NavigateToShowQr -> {
+                //TODO()
+            }
+
+            is Event.NavigateToDocument -> {
+                //TODO()
+            }
+
+            is Event.NavigateToAddDocument -> {
+                //TODO()
+            }
+
+            is Event.Fab.PrimaryFabPressed -> {
+                //TODO()
+            }
+
+            is Event.Fab.SecondaryFabPressed -> {
+                //TODO()
+            }
+        }
+    }
+
+    private fun getDocuments(event: Event) {
+        setState {
+            copy(
+                isLoading = true,
+                error = null
+            )
+        }
+
+        viewModelScope.launch {
+            dashboardInteractor.getDocuments().collect { response ->
+                when (response) {
+                    is DashboardInteractorPartialState.Failure -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(event) },
+                                    errorSubTitle = response.error,
+                                    onCancel = { setEvent(Event.Pop) }
+                                )
+                            )
+                        }
+                    }
+
+                    is DashboardInteractorPartialState.Success -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = null,
+                                documents = response.documents
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }

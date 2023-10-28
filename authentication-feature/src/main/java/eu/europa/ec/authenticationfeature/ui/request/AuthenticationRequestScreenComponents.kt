@@ -78,9 +78,9 @@ fun <T> AuthenticationRequest(
                     Divider()
                 }
 
-                is AuthenticationRequestDataUi.Identification -> {
-                    IdentificationPartyCard(
-                        cardText = item.identificationItemUi.title,
+                is AuthenticationRequestDataUi.Document -> {
+                    DocumentCard(
+                        cardText = item.documentItemUi.title,
                     )
                 }
 
@@ -109,7 +109,7 @@ fun <T> AuthenticationRequest(
 }
 
 @Composable
-fun IdentificationPartyCard(
+fun DocumentCard(
     cardText: String,
 ) {
     CardWithIconAndText(
@@ -262,7 +262,7 @@ fun WarningCard(warningText: String) {
 @Composable
 private fun IdentificationPartyCardPreview() {
     PreviewTheme {
-        IdentificationPartyCard(
+        DocumentCard(
             cardText = "Warning",
         )
     }

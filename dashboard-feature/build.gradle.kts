@@ -22,3 +22,7 @@ plugins {
 android {
     namespace = "eu.europa.ec.dashboardfeature"
 }
+
+dependencies {
+    implementation(project(":common-feature"))
+}

@@ -70,7 +70,7 @@ fun WelcomeScreen(
         onEventSend = { viewModel.setEvent(it) },
         onNavigationRequested = { navigationEffect ->
             when (navigationEffect) {
-                is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screen)
+                is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute)
             }
         }
     )

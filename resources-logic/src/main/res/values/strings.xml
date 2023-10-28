@@ -45,6 +45,7 @@
     <string name="content_description_arrow_down_icon">Arrow down</string>
     <string name="content_description_visibility_icon">Show</string>
     <string name="content_description_visibility_off_icon">Hide</string>
+    <string name="content_description_add_icon">Add</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
@@ -88,4 +89,10 @@
     <!-- Login -->
     <string name="welcome_login_button_title">LOGIN</string>
     <string name="welcome_faq_button_title">READ FAQs</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Welcome back</string>
+    <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
+    <string name="dashboard_secondary_fab_text">ADD DOC</string>
+
 </resources>

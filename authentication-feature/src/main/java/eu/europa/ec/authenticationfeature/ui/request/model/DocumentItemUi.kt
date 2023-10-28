@@ -18,6 +18,6 @@
 
 package eu.europa.ec.authenticationfeature.ui.request.model
 
-data class IdentificationItemUi(
+data class DocumentItemUi(
     val title: String
 )

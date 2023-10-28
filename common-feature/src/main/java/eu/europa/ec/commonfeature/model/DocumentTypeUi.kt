@@ -16,18 +16,26 @@
  *
  */
 
-package eu.europa.ec.authenticationfeature.model
+package eu.europa.ec.commonfeature.model
 
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
-
-data class UserDataDomain(
-    val documentTypeUi: DocumentTypeUi,
-    val optionalFields: List<UserIdentificationDomain>,
-    val requiredFieldsTitle: String,
-    val requiredFields: List<UserIdentificationDomain>,
+data class DocumentUi(
+    val documentId: Int,
+    val documentType: DocumentTypeUi,
+    val documentStatus: DocumentStatusUi,
+    val documentImage: String,
 )
 
-data class UserIdentificationDomain(
-    val name: String,
-    val value: String?,
-)
+enum class DocumentTypeUi(
+    val title: String
+) {
+    DRIVING_LICENCE(title = "Driving Licence"),
+    DIGITAL_ID(title = "Digital ID"),
+    OTHER(title = "Other document")
+}
+
+enum class DocumentStatusUi(
+    val title: String
+) {
+    ACTIVE(title = "Active"),
+    INACTIVE(title = "Inactive")
+}

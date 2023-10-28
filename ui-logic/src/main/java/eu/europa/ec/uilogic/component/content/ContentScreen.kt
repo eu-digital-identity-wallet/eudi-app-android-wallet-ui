@@ -56,8 +56,6 @@ import eu.europa.ec.uilogic.component.utils.MAX_TOOLBAR_ACTIONS
 import eu.europa.ec.uilogic.component.utils.TopSpacing
 import eu.europa.ec.uilogic.component.utils.Z_STICKY
 import eu.europa.ec.uilogic.component.utils.screenPaddings
-import eu.europa.ec.uilogic.component.wrap.FabData
-import eu.europa.ec.uilogic.component.wrap.WrapFab
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 
@@ -90,8 +88,8 @@ fun ContentScreen(
     topBar: @Composable (() -> Unit)? = null,
     bottomBar: @Composable (() -> Unit)? = null,
     stickyBottom: @Composable (() -> Unit)? = null,
-    fab: FabData? = null,
-    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    fab: @Composable () -> Unit = {},
+    fabPosition: FabPosition = FabPosition.End,
     contentErrorConfig: ContentErrorConfig? = null,
     bodyContent: @Composable (PaddingValues) -> Unit
 ) {
@@ -104,7 +102,7 @@ fun ContentScreen(
         bottomBar = bottomBar,
         stickyBottom = stickyBottom,
         fab = fab,
-        floatingActionButtonPosition = floatingActionButtonPosition,
+        fabPosition = fabPosition,
         contentErrorConfig = contentErrorConfig,
         bodyContent = bodyContent
     )
@@ -120,8 +118,8 @@ fun ContentScreen(
     topBar: @Composable (() -> Unit)? = null,
     bottomBar: @Composable (() -> Unit)? = null,
     stickyBottom: @Composable (() -> Unit)? = null,
-    fab: FabData? = null,
-    floatingActionButtonPosition: FabPosition = FabPosition.End,
+    fab: @Composable () -> Unit = {},
+    fabPosition: FabPosition = FabPosition.End,
     contentErrorConfig: ContentErrorConfig? = null,
     bodyContent: @Composable (PaddingValues) -> Unit
 ) {
@@ -149,12 +147,8 @@ fun ContentScreen(
             }
         },
         bottomBar = bottomBar ?: {},
-        floatingActionButton = {
-            fab?.let { fabData ->
-                WrapFab(data = fabData)
-            }
-        },
-        floatingActionButtonPosition = floatingActionButtonPosition,
+        floatingActionButton = fab,
+        floatingActionButtonPosition = fabPosition,
         snackbarHost = {
             Snackbar.PlaceHolder(snackbarHostState = snackbarHostState)
         }

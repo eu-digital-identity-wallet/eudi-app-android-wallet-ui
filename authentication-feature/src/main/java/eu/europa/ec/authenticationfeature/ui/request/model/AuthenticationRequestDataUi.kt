@@ -22,8 +22,8 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 sealed interface AuthenticationRequestDataUi<T> {
 
-    data class Identification<T>(
-        val identificationItemUi: IdentificationItemUi
+    data class Document<T>(
+        val documentItemUi: DocumentItemUi
     ) : AuthenticationRequestDataUi<T>
 
     data class OptionalField<T>(
