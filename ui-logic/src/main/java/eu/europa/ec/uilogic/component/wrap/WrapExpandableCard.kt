@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
@@ -91,31 +92,35 @@ fun WrapExpandableCard(
 @Preview
 @Composable
 private fun WrapExpandableCardCollapsedPreview() {
-    WrapExpandableCard(
-        cardTitleContent = {
-            Text(text = "Verification Data")
-        },
-        cardContent = {
-            repeat(5) {
-                Text(text = "Data $it")
-            }
-        },
-        expandCard = false
-    )
+    PreviewTheme {
+        WrapExpandableCard(
+            cardTitleContent = {
+                Text(text = "Verification Data")
+            },
+            cardContent = {
+                repeat(5) {
+                    Text(text = "Data $it")
+                }
+            },
+            expandCard = false
+        )
+    }
 }
 
 @Preview
 @Composable
 private fun WrapExpandableCardExpandedPreview() {
-    WrapExpandableCard(
-        cardTitleContent = {
-            Text(text = "Verification Data")
-        },
-        cardContent = {
-            repeat(5) {
-                Text(text = "Data $it")
-            }
-        },
-        expandCard = true
-    )
+    PreviewTheme {
+        WrapExpandableCard(
+            cardTitleContent = {
+                Text(text = "Verification Data")
+            },
+            cardContent = {
+                repeat(5) {
+                    Text(text = "Data $it")
+                }
+            },
+            expandCard = true
+        )
+    }
 }

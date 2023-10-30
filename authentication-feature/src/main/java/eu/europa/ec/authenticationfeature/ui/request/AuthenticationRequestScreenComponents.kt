@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.authenticationfeature.ui.request.model.AuthenticationRequestDataUi
 import eu.europa.ec.authenticationfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.authenticationfeature.ui.request.model.RequiredFieldsItemUi
-import eu.europa.ec.commonfeature.utils.PreviewTheme
 import eu.europa.ec.resourceslogic.theme.values.primaryDark
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -49,6 +48,7 @@ import eu.europa.ec.uilogic.component.CardWithIconAndText
 import eu.europa.ec.uilogic.component.CheckboxWithContent
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL

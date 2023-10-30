@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.VSpacer
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -124,10 +125,12 @@ fun DialogBottomSheet(
 @Composable
 @Preview
 private fun DialogBottomSheetPreview() {
-    DialogBottomSheet(
-        title = "Title",
-        message = "Message",
-        positiveButtonText = "OK",
-        negativeButtonText = "Cancel"
-    )
+    PreviewTheme {
+        DialogBottomSheet(
+            title = "Title",
+            message = "Message",
+            positiveButtonText = "OK",
+            negativeButtonText = "Cancel"
+        )
+    }
 }

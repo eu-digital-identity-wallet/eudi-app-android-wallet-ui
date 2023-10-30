@@ -44,10 +44,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.utils.PreviewTheme
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapImage
@@ -153,8 +153,8 @@ private fun Content(
     }
 }
 
-@Composable
 @Preview(showSystemUi = true, showBackground = true)
+@Composable
 private fun WelcomeScreenPreview() {
     PreviewTheme {
         Content(

@@ -40,6 +40,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
@@ -241,26 +242,28 @@ fun PinFieldLayout(
 @Preview
 @Composable
 private fun PreviewBiometricScreen() {
-    Body(
-        state = State(
-            config = BiometricUiConfig(
-                title = "Biometric Title",
-                subTitle = "Biometric Subtitle",
-                quickPinOnlySubTitle = "Quick Pin Subtitle",
-                isPreAuthorization = true,
-                onSuccessNavigation = ConfigNavigation(
-                    navigationType = NavigationType.PUSH,
-                    screenToNavigate = CommonScreens.Biometric
-                ),
-                onBackNavigation = ConfigNavigation(
-                    navigationType = NavigationType.PUSH,
-                    screenToNavigate = CommonScreens.Biometric
+    PreviewTheme {
+        Body(
+            state = State(
+                config = BiometricUiConfig(
+                    title = "Biometric Title",
+                    subTitle = "Biometric Subtitle",
+                    quickPinOnlySubTitle = "Quick Pin Subtitle",
+                    isPreAuthorization = true,
+                    onSuccessNavigation = ConfigNavigation(
+                        navigationType = NavigationType.PUSH,
+                        screenToNavigate = CommonScreens.Biometric
+                    ),
+                    onBackNavigation = ConfigNavigation(
+                        navigationType = NavigationType.PUSH,
+                        screenToNavigate = CommonScreens.Biometric
+                    )
                 )
-            )
-        ),
-        effectFlow = Channel<Effect>().receiveAsFlow(),
-        onEventSent = {},
-        onNavigationRequested = {},
-        padding = PaddingValues(16.dp)
-    )
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSent = {},
+            onNavigationRequested = {},
+            padding = PaddingValues(16.dp)
+        )
+    }
 }

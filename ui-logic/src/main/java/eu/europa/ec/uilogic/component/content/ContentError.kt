@@ -31,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 
 @Composable
@@ -80,5 +81,7 @@ data class ContentErrorConfig(
 @Preview
 @Composable
 private fun PreviewContentErrorScreen() {
-    ContentError(config = ContentErrorConfig(onCancel = {}), paddingValues = PaddingValues(16.dp))
+    PreviewTheme {
+        ContentError(config = ContentErrorConfig(onCancel = {}), paddingValues = PaddingValues(16.dp))
+    }
 }

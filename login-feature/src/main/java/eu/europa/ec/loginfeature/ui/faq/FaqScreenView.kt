@@ -56,6 +56,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapTextField
@@ -234,45 +235,49 @@ private fun ExpandableListItem(
     }
 }
 
-@Composable
 @Preview(showSystemUi = true)
-fun FaqScreenPreview() {
-    Content(
-        state = State(
-            presentableFaqItems = listOf(
-                FaqUiModel(
-                    title = "Question A goes Here",
-                    description = "Lorem ipsum dolor sit amet," +
-                            " consectetur adipiscing elit,"
+@Composable
+private fun FaqScreenPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                presentableFaqItems = listOf(
+                    FaqUiModel(
+                        title = "Question A goes Here",
+                        description = "Lorem ipsum dolor sit amet," +
+                                " consectetur adipiscing elit,"
+                    ),
+                    FaqUiModel(
+                        title = "Question B goes Here",
+                        description = "Duis aute irure dolor in reprehenderit in" +
+                                " voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+                    ),
+                    FaqUiModel(
+                        title = "Question C goes Here",
+                        description = "Excepteur sint occaecat cupidatat non proident, " +
+                                "sunt in culpa qui officia deserunt mollit anim id est laborum."
+                    )
                 ),
-                FaqUiModel(
-                    title = "Question B goes Here",
-                    description = "Duis aute irure dolor in reprehenderit in" +
-                            " voluptate velit esse cillum dolore eu fugiat nulla pariatur."
-                ),
-                FaqUiModel(
-                    title = "Question C goes Here",
-                    description = "Excepteur sint occaecat cupidatat non proident, " +
-                            "sunt in culpa qui officia deserunt mollit anim id est laborum."
-                )
+                initialFaqItems = listOf()
             ),
-            initialFaqItems = listOf()
-        ),
-        effectFlow = Channel<Effect>().receiveAsFlow(),
-        onEventSend = {},
-        onNavigationRequested = {},
-        paddingValues = PaddingValues(10.dp)
-    )
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(10.dp)
+        )
+    }
 }
 
-@Composable
 @Preview(showSystemUi = true)
-fun FaqScreenEmptyPreview() {
-    Content(
-        state = State(listOf(), listOf()),
-        effectFlow = Channel<Effect>().receiveAsFlow(),
-        onEventSend = {},
-        onNavigationRequested = {},
-        paddingValues = PaddingValues(10.dp)
-    )
+@Composable
+private fun FaqScreenEmptyPreview() {
+    PreviewTheme {
+        Content(
+            state = State(listOf(), listOf()),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(10.dp)
+        )
+    }
 }
