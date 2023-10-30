@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.commonfeature.utils
+package eu.europa.ec.uilogic.component.preview
 
 import androidx.compose.runtime.Composable
 import eu.europa.ec.resourceslogic.theme.ThemeManager

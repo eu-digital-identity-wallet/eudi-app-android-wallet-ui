@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
@@ -71,10 +72,12 @@ private fun CheckboxWithContentPreview() {
         enabled = true
     )
 
-    CheckboxWithContent(
-        checkboxData = checkBoxData,
-        content = {
-            Text(text = "Name")
-        }
-    )
+    PreviewTheme {
+        CheckboxWithContent(
+            checkboxData = checkBoxData,
+            content = {
+                Text(text = "Name")
+            }
+        )
+    }
 }

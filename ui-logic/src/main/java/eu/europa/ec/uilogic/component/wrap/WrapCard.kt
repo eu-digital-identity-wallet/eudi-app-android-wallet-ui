@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 
 @Composable
 fun WrapCard(
@@ -49,7 +50,9 @@ fun WrapCard(
 @Preview
 @Composable
 private fun WrapCardPreview() {
-    WrapCard {
-        Text(text = "This is a wrap card preview.")
+    PreviewTheme {
+        WrapCard {
+            Text(text = "This is a wrap card preview.")
+        }
     }
 }

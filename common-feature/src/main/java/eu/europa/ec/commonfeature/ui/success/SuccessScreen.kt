@@ -48,6 +48,7 @@ import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -226,33 +227,35 @@ private fun ButtonRow(text: String) {
 @Preview
 @Composable
 private fun SuccessPreview() {
-    SuccessScreenView(
-        state = State(
-            successConfig = SuccessUIConfig(
-                header = "Success",
-                content = "",
-                imageConfig = SuccessUIConfig.ImageConfig(
-                    type = SuccessUIConfig.ImageConfig.Type.DEFAULT
-                ),
-                buttonConfig = listOf(
-                    SuccessUIConfig.ButtonConfig(
-                        text = "back",
-                        style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                        navigation = ConfigNavigation(
-                            navigationType = NavigationType.POP,
-                            screenToNavigate = StartupScreens.Splash
+    PreviewTheme {
+        SuccessScreenView(
+            state = State(
+                successConfig = SuccessUIConfig(
+                    header = "Success",
+                    content = "",
+                    imageConfig = SuccessUIConfig.ImageConfig(
+                        type = SuccessUIConfig.ImageConfig.Type.DEFAULT
+                    ),
+                    buttonConfig = listOf(
+                        SuccessUIConfig.ButtonConfig(
+                            text = "back",
+                            style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                            navigation = ConfigNavigation(
+                                navigationType = NavigationType.POP,
+                                screenToNavigate = StartupScreens.Splash
+                            )
                         )
-                    )
-                ),
-                onBackScreenToNavigate = ConfigNavigation(
-                    navigationType = NavigationType.POP,
-                    screenToNavigate = StartupScreens.Splash
-                ),
-            )
-        ),
-        effectFlow = Channel<Effect>().receiveAsFlow(),
-        onEventSent = {},
-        onNavigationRequested = {},
-        paddingValues = PaddingValues(16.dp)
-    )
+                    ),
+                    onBackScreenToNavigate = ConfigNavigation(
+                        navigationType = NavigationType.POP,
+                        screenToNavigate = StartupScreens.Splash
+                    ),
+                )
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSent = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(16.dp)
+        )
+    }
 }

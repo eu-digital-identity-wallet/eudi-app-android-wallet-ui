@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapCard
@@ -63,15 +64,17 @@ fun CardWithIconAndText(
     }
 }
 
-@Preview()
+@Preview
 @Composable
 private fun CardWithIconAndTextPreview() {
-    CardWithIconAndText(
-        text = {
-            Text(text = "This is a card with icon and text.")
-        },
-        icon = {
-            WrapIcon(iconData = AppIcons.Warning)
-        }
-    )
+    PreviewTheme {
+        CardWithIconAndText(
+            text = {
+                Text(text = "This is a card with icon and text.")
+            },
+            icon = {
+                WrapIcon(iconData = AppIcons.Warning)
+            }
+        )
+    }
 }

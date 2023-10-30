@@ -58,6 +58,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
@@ -336,35 +337,37 @@ private fun CardListItem(
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
 private fun DashboardScreenPreview() {
-    Content(
-        state = State(
-            isLoading = false,
-            error = null,
-            userName = "Jane",
-            documents = listOf(
-                DocumentUi(
-                    documentId = 0,
-                    documentType = DocumentTypeUi.DIGITAL_ID,
-                    documentStatus = DocumentStatusUi.ACTIVE,
-                    documentImage = "image1"
-                ),
-                DocumentUi(
-                    documentId = 1,
-                    documentType = DocumentTypeUi.DRIVING_LICENCE,
-                    documentStatus = DocumentStatusUi.ACTIVE,
-                    documentImage = "image2"
-                ),
-                DocumentUi(
-                    documentId = 2,
-                    documentType = DocumentTypeUi.OTHER,
-                    documentStatus = DocumentStatusUi.ACTIVE,
-                    documentImage = "image3"
+    PreviewTheme {
+        Content(
+            state = State(
+                isLoading = false,
+                error = null,
+                userName = "Jane",
+                documents = listOf(
+                    DocumentUi(
+                        documentId = 0,
+                        documentType = DocumentTypeUi.DIGITAL_ID,
+                        documentStatus = DocumentStatusUi.ACTIVE,
+                        documentImage = "image1"
+                    ),
+                    DocumentUi(
+                        documentId = 1,
+                        documentType = DocumentTypeUi.DRIVING_LICENCE,
+                        documentStatus = DocumentStatusUi.ACTIVE,
+                        documentImage = "image2"
+                    ),
+                    DocumentUi(
+                        documentId = 2,
+                        documentType = DocumentTypeUi.OTHER,
+                        documentStatus = DocumentStatusUi.ACTIVE,
+                        documentImage = "image3"
+                    )
                 )
-            )
-        ),
-        effectFlow = Channel<Effect>().receiveAsFlow(),
-        onEventSend = {},
-        onNavigationRequested = {},
-        paddingValues = PaddingValues(SPACING_MEDIUM.dp)
-    )
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp)
+        )
+    }
 }

@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 
 data class CheckboxData(
     val isChecked: Boolean,
@@ -75,5 +76,7 @@ private fun WrapCheckBoxPreview() {
         }
     )
 
-    WrapCheckbox(checkboxData = checkBoxData)
+    PreviewTheme {
+        WrapCheckbox(checkboxData = checkBoxData)
+    }
 }

@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.EmptyTextToolbar
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -213,11 +214,13 @@ fun WrapPinTextField(
 @Preview
 @Composable
 private fun PreviewWrapPinTextField() {
-    WrapPinTextField(
-        modifier = Modifier.wrapContentSize(),
-        onPinUpdate = {},
-        length = 4,
-        visualTransformation = PasswordVisualTransformation(),
-        pinWidth = 46.dp
-    )
+    PreviewTheme {
+        WrapPinTextField(
+            modifier = Modifier.wrapContentSize(),
+            onPinUpdate = {},
+            length = 4,
+            visualTransformation = PasswordVisualTransformation(),
+            pinWidth = 46.dp
+        )
+    }
 }

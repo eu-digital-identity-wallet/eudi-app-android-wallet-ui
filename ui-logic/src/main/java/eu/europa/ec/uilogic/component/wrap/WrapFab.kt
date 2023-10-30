@@ -30,6 +30,7 @@ import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeLarge
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 
 private val fabShape: Shape
     @Composable get() = MaterialTheme.shapes.allCorneredShapeLarge
@@ -133,10 +134,12 @@ fun WrapSecondaryExtendedFab(
 @Preview
 @Composable
 fun WrapPrimaryFabPreview() {
-    WrapPrimaryFab(
-        data = FabData(
-            icon = { WrapIcon(iconData = AppIcons.Add) },
-            onClick = {}
+    PreviewTheme {
+        WrapPrimaryFab(
+            data = FabData(
+                icon = { WrapIcon(iconData = AppIcons.Add) },
+                onClick = {}
+            )
         )
-    )
+    }
 }

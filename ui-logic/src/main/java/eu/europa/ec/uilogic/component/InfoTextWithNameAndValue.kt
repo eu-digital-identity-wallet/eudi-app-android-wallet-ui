@@ -29,6 +29,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.VSpacer
 
 data class InfoTextWithNameAndValueData(
@@ -76,5 +77,7 @@ private fun InfoTextWithNameAndValuePreview() {
         infoValue = "John Smith"
     )
 
-    InfoTextWithNameAndValue(itemData = infoItemData)
+    PreviewTheme {
+        InfoTextWithNameAndValue(itemData = infoItemData)
+    }
 }
