@@ -60,7 +60,9 @@ import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
@@ -150,18 +152,21 @@ private fun Content(
         )
 
         // Documents section.
-        DocumentsList(
-            documents = state.documents,
+        ContentGradient(
             modifier = Modifier.weight(1f),
-            onEventSend = onEventSend,
-            paddingValues = paddingValues
-        )
+            gradientEdge = GradientEdge.BOTTOM
+        ) {
+            DocumentsList(
+                documents = state.documents,
+                modifier = Modifier,
+                onEventSend = onEventSend,
+                paddingValues = paddingValues
+            )
+        }
 
         FabContent(
             paddingValues = paddingValues,
-            onEventSend = { event ->
-                onEventSend(event)
-            }
+            onEventSend = onEventSend
         )
     }
 
@@ -178,6 +183,7 @@ private fun Content(
 
 @Composable
 private fun FabContent(
+    modifier: Modifier = Modifier,
     onEventSend: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
@@ -198,17 +204,16 @@ private fun FabContent(
     )
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(
                 bottom = SPACING_MEDIUM.dp,
                 top = SPACING_SMALL.dp,
                 start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                 end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
-            )
-            .background(MaterialTheme.colorScheme.background),
+            ),
         horizontalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Bottom
     ) {
         WrapSecondaryExtendedFab(data = secondaryFabData, modifier = Modifier.weight(1f))
         WrapPrimaryExtendedFab(data = primaryFabData, modifier = Modifier.weight(1f))
@@ -376,6 +381,24 @@ private fun DashboardScreenPreview() {
                         documentType = DocumentTypeUi.OTHER,
                         documentStatus = DocumentStatusUi.ACTIVE,
                         documentImage = "image3"
+                    ),
+                    DocumentUi(
+                        documentId = 2,
+                        documentType = DocumentTypeUi.OTHER,
+                        documentStatus = DocumentStatusUi.ACTIVE,
+                        documentImage = "image4"
+                    ),
+                    DocumentUi(
+                        documentId = 2,
+                        documentType = DocumentTypeUi.OTHER,
+                        documentStatus = DocumentStatusUi.ACTIVE,
+                        documentImage = "image5"
+                    ),
+                    DocumentUi(
+                        documentId = 2,
+                        documentType = DocumentTypeUi.OTHER,
+                        documentStatus = DocumentStatusUi.ACTIVE,
+                        documentImage = "image6"
                     )
                 )
             ),
