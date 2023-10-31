@@ -230,6 +230,7 @@ fun <T> RequiredFields(
         },
         cardContentPadding = PaddingValues(all = SPACING_SMALL.dp),
         onCardClick = { onEventSend(item.event) },
+        throttleClicks = false,
         expandCard = item.expanded,
     )
 }

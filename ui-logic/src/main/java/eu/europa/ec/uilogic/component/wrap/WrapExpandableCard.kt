@@ -19,7 +19,6 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,20 +44,14 @@ fun WrapExpandableCard(
     cardContent: @Composable () -> Unit,
     cardContentPadding: PaddingValues? = null,
     onCardClick: (() -> Unit)? = null,
+    throttleClicks: Boolean = true,
     cardColors: CardColors? = null,
     expandCard: Boolean,
 ) {
     WrapCard(
-        modifier = modifier
-            .then(
-                if (onCardClick != null) {
-                    Modifier.clickable {
-                        onCardClick()
-                    }
-                } else {
-                    Modifier
-                }
-            ),
+        modifier = modifier,
+        onClick = onCardClick,
+        throttleClicks = throttleClicks,
         colors = cardColors ?: CardDefaults.cardColors(
             contentColor = MaterialTheme.colorScheme.textPrimaryDark
         )

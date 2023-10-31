@@ -18,9 +18,7 @@
 
 package eu.europa.ec.loginfeature.ui.faq
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,19 +43,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.loginfeature.model.FaqUiModel
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
+import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapTextField
 import kotlinx.coroutines.channels.Channel
@@ -110,13 +110,7 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(
-                PaddingValues(
-                    start = paddingValues.calculateLeftPadding(LayoutDirection.Ltr),
-                    end = paddingValues.calculateRightPadding(LayoutDirection.Ltr),
-                    top = paddingValues.calculateTopPadding()
-                )
-            )
+            .padding(paddingValues)
     ) {
 
         var text by remember { mutableStateOf("") }
@@ -169,22 +163,28 @@ private fun ExpandableListScreen(
 ) {
     var expandedItemIndex by remember { mutableIntStateOf(-1) }
 
-    LazyColumn {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        item {
+            VSpacer.Medium()
+        }
+
         sections.forEachIndexed { index, dataItem ->
             val isExpanded = index == expandedItemIndex
             item(key = index) {
                 ExpandableListItem(
                     dataItem = dataItem,
                     isExpanded = isExpanded,
-                    paddingValues = PaddingValues(
-                        top = SPACING_MEDIUM.dp,
-                        bottom = if (sections.lastIndex == index) SPACING_MEDIUM.dp else 0.dp
-                    ),
                     onHeaderClicked = {
                         expandedItemIndex = if (isExpanded) -1 else index
                     }
                 )
             }
+        }
+
+        item {
+            VSpacer.Medium()
         }
     }
 }
@@ -193,46 +193,38 @@ private fun ExpandableListScreen(
 private fun ExpandableListItem(
     dataItem: FaqUiModel,
     isExpanded: Boolean,
-    paddingValues: PaddingValues,
     onHeaderClicked: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(paddingValues)
-            .background(
-                MaterialTheme.colorScheme.backgroundDefault,
-                shape = MaterialTheme.shapes.allCorneredShapeSmall
-            )
-            .clickable(onClick = { onHeaderClicked() })
-    ) {
-        Row(
-            modifier = Modifier.padding(SPACING_MEDIUM.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = dataItem.title,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Black
-            )
-            WrapIcon(
-                iconData = if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown,
-                customTint = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        AnimatedVisibility(visible = isExpanded) {
+    WrapExpandableCard(
+        cardTitleContent = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = dataItem.title,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Black
+                )
+                WrapIcon(
+                    iconData = if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown,
+                    customTint = MaterialTheme.colorScheme.primary
+                )
+            }
+        },
+        cardContent = {
             Text(
                 text = dataItem.description,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.textSecondaryDark,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(SPACING_MEDIUM.dp)
+                color = MaterialTheme.colorScheme.textSecondaryDark
             )
-        }
-    }
+        },
+        cardTitlePadding = PaddingValues(SPACING_LARGE.dp),
+        cardContentPadding = PaddingValues(horizontal = 0.dp, vertical = SPACING_SMALL.dp),
+        onCardClick = { onHeaderClicked() },
+        throttleClicks = false,
+        expandCard = isExpanded
+    )
 }
 
 @Preview(showSystemUi = true)

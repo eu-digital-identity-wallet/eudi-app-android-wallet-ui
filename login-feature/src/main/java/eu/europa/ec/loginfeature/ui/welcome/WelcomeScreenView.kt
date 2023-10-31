@@ -145,6 +145,19 @@ private fun Content(
                     style = MaterialTheme.typography.labelLarge
                 )
             }
+
+            VSpacer.Medium()
+
+            WrapSecondaryButton(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                onClick = { onEventSend(Event.NavigateToAuth) }
+            ) {
+                Text(
+                    text = "Go to Auth",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
         }
     }
 
