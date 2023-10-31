@@ -75,7 +75,6 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
-import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -315,12 +314,9 @@ private fun CardListItem(
     WrapCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(148.dp)
-            .throttledClickable(
-                onClick = {
-                    onEventSend(Event.NavigateToDocument(documentId = dataItem.documentId))
-                }
-            )
+            .height(148.dp),
+        onClick = { onEventSend(Event.NavigateToDocument(documentId = dataItem.documentId)) },
+        throttleClicks = true,
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

@@ -22,6 +22,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.AuthenticationScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.Screen
@@ -36,6 +37,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object NavigateToLogin : Event()
     data object NavigateToFaq : Event()
+    data object NavigateToAuth : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -54,6 +56,7 @@ class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
         when (event) {
             is Event.NavigateToLogin -> navigateTo(DashboardScreens.Dashboard, true)
             is Event.NavigateToFaq -> navigateTo(LoginScreens.Faq, false)
+            is Event.NavigateToAuth -> navigateTo(AuthenticationScreens.Request, true)
         }
     }
 
