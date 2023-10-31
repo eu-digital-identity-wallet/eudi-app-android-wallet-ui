@@ -60,6 +60,7 @@ import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.ScalableText
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -180,13 +181,27 @@ private fun FabContent(
     onEventSend: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
+    val titleSmallTextStyle = MaterialTheme.typography.titleSmall
+        .copy(color = MaterialTheme.colorScheme.textPrimaryDark)
+
     val secondaryFabData = FabData(
-        text = { Text(stringResource(id = R.string.dashboard_secondary_fab_text)) },
+        text = {
+            ScalableText(
+                text = stringResource(id = R.string.dashboard_secondary_fab_text),
+                textStyle = titleSmallTextStyle
+            )
+        },
         icon = { WrapIcon(iconData = AppIcons.Add) },
         onClick = { onEventSend(Event.Fab.SecondaryFabPressed) }
     )
+
     val primaryFabData = FabData(
-        text = { Text(text = stringResource(id = R.string.dashboard_primary_fab_text)) },
+        text = {
+            ScalableText(
+                text = stringResource(id = R.string.dashboard_primary_fab_text),
+                textStyle = titleSmallTextStyle
+            )
+        },
         icon = {
             WrapIcon(
                 modifier = Modifier.size(24.dp),
