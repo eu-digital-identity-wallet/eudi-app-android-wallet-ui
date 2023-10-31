@@ -41,7 +41,8 @@ sealed class Event : ViewEvent {
 sealed class Effect : ViewSideEffect {
 
     sealed class Navigation : Effect() {
-        data class SwitchScreen(val screenRoute: String) : Navigation()
+        data class SwitchScreen(val screenRoute: String, val currentInclusive: Boolean) :
+            Navigation()
     }
 }
 
@@ -51,14 +52,17 @@ class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.NavigateToLogin -> navigateTo(DashboardScreens.Dashboard)
-            is Event.NavigateToFaq -> navigateTo(LoginScreens.Faq)
+            is Event.NavigateToLogin -> navigateTo(DashboardScreens.Dashboard, true)
+            is Event.NavigateToFaq -> navigateTo(LoginScreens.Faq, false)
         }
     }
 
-    private fun navigateTo(screen: Screen) {
+    private fun navigateTo(screen: Screen, currentInclusive: Boolean) {
         setEffect {
-            Effect.Navigation.SwitchScreen(screenRoute = screen.screenRoute)
+            Effect.Navigation.SwitchScreen(
+                screenRoute = screen.screenRoute,
+                currentInclusive = currentInclusive
+            )
         }
     }
 }

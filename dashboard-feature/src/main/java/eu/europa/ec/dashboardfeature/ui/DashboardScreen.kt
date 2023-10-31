@@ -18,6 +18,7 @@
 
 package eu.europa.ec.dashboardfeature.ui
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,10 +42,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
@@ -59,7 +63,7 @@ import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
-import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -70,7 +74,9 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
+import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.throttledClickable
+import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -83,6 +89,7 @@ fun DashboardScreen(
     viewModel: DashboardViewModel
 ) {
     val state = viewModel.viewState.value
+    val context = LocalContext.current
 
     ContentScreen(
         isLoading = state.isLoading,
@@ -95,24 +102,31 @@ fun DashboardScreen(
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController)
+                handleNavigationEffect(navigationEffect, navController, context)
             },
             paddingValues = paddingValues
         )
     }
 
-    OneTimeLaunchedEffect {
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
         viewModel.setEvent(Event.Init)
     }
 }
 
 private fun handleNavigationEffect(
     navigationEffect: Effect.Navigation,
-    navController: NavController
+    navController: NavController,
+    context: Context
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> navController.popBackStack()
         is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screen)
+        is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
+            handleDeepLinkAction(navController, it)
+        }
     }
 }
 
@@ -156,6 +170,7 @@ private fun Content(
             when (effect) {
                 is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
                 is Effect.Navigation.Pop -> onNavigationRequested(effect)
+                is Effect.Navigation.OpenDeepLinkAction -> onNavigationRequested(effect)
             }
         }.collect()
     }

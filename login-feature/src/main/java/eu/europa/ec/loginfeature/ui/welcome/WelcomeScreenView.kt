@@ -53,6 +53,7 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
+import eu.europa.ec.uilogic.navigation.LoginScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -70,7 +71,11 @@ fun WelcomeScreen(
         onEventSend = { viewModel.setEvent(it) },
         onNavigationRequested = { navigationEffect ->
             when (navigationEffect) {
-                is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute)
+                is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute) {
+                    popUpTo(LoginScreens.Welcome.screenRoute) {
+                        inclusive = navigationEffect.currentInclusive
+                    }
+                }
             }
         }
     )

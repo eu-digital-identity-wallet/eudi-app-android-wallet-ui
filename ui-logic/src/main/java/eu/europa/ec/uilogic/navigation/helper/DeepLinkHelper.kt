@@ -22,8 +22,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
+import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
+import eu.europa.ec.uilogic.navigation.AuthenticationScreens
 import eu.europa.ec.uilogic.navigation.Screen
 
 fun <T> generateComposableArguments(arguments: Map<String, T>): String {
@@ -73,3 +75,31 @@ fun generateNewTaskDeepLink(
     ).apply {
         addFlags(flags)
     }
+
+fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
+    return deepLinkUri?.let { uri ->
+        DeepLinkType.parse(uri.host)?.let {
+            DeepLinkAction(link = uri, type = it)
+        }
+    }
+}
+
+fun handleDeepLinkAction(navController: NavController, uri: Uri) {
+    hasDeepLink(uri)?.let {
+        val screen: Screen = when (it.type) {
+            DeepLinkType.AUTHORIZATION -> AuthenticationScreens.Request
+        }
+        navController.navigate(screen.screenRoute) {
+            popUpTo(screen.screenRoute) { inclusive = true }
+        }
+    }
+}
+
+data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
+enum class DeepLinkType(val type: String) {
+    AUTHORIZATION("authorization");
+
+    companion object {
+        fun parse(type: String?): DeepLinkType? = entries.firstOrNull { it.type == type }
+    }
+}

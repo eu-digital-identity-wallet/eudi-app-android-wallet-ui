@@ -60,6 +60,7 @@ open class EudiComponentActivity : FragmentActivity() {
     @OptIn(KoinExperimentalAPI::class)
     @Composable
     protected fun Content(
+        intent: Intent?,
         builder: NavGraphBuilder.(NavController) -> Unit
     ) {
         ThemeManager.instance.Theme {
@@ -72,6 +73,7 @@ open class EudiComponentActivity : FragmentActivity() {
                         builder(it)
                     }
                     flowStarted = true
+                    handleDeepLink(intent)
                     ChuckerPermissions()
                 }
             }

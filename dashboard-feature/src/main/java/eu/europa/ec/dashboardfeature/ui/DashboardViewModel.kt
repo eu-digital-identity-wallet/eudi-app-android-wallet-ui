@@ -55,6 +55,7 @@ sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
         data class SwitchScreen(val screen: String) : Navigation()
+        data object OpenDeepLinkAction : Navigation()
     }
 }
 
@@ -97,9 +98,10 @@ class DashboardViewModel(
     }
 
     private fun getDocuments(event: Event) {
+
         setState {
             copy(
-                isLoading = true,
+                isLoading = documents.isEmpty(),
                 error = null
             )
         }
@@ -128,6 +130,7 @@ class DashboardViewModel(
                                 documents = response.documents
                             )
                         }
+                        setEffect { Effect.Navigation.OpenDeepLinkAction }
                     }
                 }
             }

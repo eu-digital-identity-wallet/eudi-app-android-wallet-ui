@@ -33,7 +33,7 @@ class MainActivity : EudiComponentActivity() {
 
         windowFlags()
         setContent {
-            Content {
+            Content(intent) {
                 featureStartupGraph(it)
                 featureCommonGraph(it)
                 featureLoginGraph(it)

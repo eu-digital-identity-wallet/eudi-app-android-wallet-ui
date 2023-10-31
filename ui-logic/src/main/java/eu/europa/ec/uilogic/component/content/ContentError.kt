@@ -82,6 +82,9 @@ data class ContentErrorConfig(
 @Composable
 private fun PreviewContentErrorScreen() {
     PreviewTheme {
-        ContentError(config = ContentErrorConfig(onCancel = {}), paddingValues = PaddingValues(16.dp))
+        ContentError(
+            config = ContentErrorConfig(onCancel = {}),
+            paddingValues = PaddingValues(16.dp)
+        )
     }
 }
