@@ -30,7 +30,6 @@ dependencies {
     implementation(project(":business-logic"))
 
     implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
     implementation(libs.gson)
 
     debugImplementation(libs.chucker.android)

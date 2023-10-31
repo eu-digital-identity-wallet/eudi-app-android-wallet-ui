@@ -19,7 +19,6 @@
 package eu.europa.ec.uilogic.config
 
 import eu.europa.ec.uilogic.analytics.AnalyticsProvider
-import eu.europa.ec.uilogic.analytics.FirebaseAnalyticsProvider
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.Screen
 
@@ -28,5 +27,5 @@ class ConfigUILogicImpl : ConfigUILogic {
         get() = DashboardScreens.Dashboard
 
     override val analyticsProviders: List<AnalyticsProvider>
-        get() = listOf<AnalyticsProvider>(FirebaseAnalyticsProvider)
+        get() = emptyList()
 }
