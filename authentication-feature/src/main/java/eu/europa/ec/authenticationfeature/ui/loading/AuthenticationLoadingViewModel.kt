@@ -27,8 +27,8 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.AuthenticationScreens
 import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.Screen
-import eu.europa.ec.uilogic.navigation.StartupScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -89,13 +89,13 @@ class AuthenticationLoadingViewModel constructor(
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = ConfigNavigation(
                                 navigationType = NavigationType.POP,
-                                screenToNavigate = StartupScreens.Splash
+                                screenToNavigate = DashboardScreens.Dashboard
                             )
                         )
                     ),
                     onBackScreenToNavigate = ConfigNavigation(
                         navigationType = NavigationType.POP,
-                        screenToNavigate = StartupScreens.Splash
+                        screenToNavigate = DashboardScreens.Dashboard
                     ),
                 ),
                 SuccessUIConfig.Parser

@@ -49,6 +49,7 @@ fun CardWithIconAndText(
         modifier = modifier,
         shape = shape,
         colors = colors,
+        onClick = null,
     ) {
         Row(
             modifier = Modifier.padding(contentPadding),

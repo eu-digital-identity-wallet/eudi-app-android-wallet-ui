@@ -61,6 +61,7 @@ import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.content.ContentGradient
+import eu.europa.ec.uilogic.component.ScalableText
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -77,7 +78,6 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
-import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -187,13 +187,27 @@ private fun FabContent(
     onEventSend: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
+    val titleSmallTextStyle = MaterialTheme.typography.titleSmall
+        .copy(color = MaterialTheme.colorScheme.textPrimaryDark)
+
     val secondaryFabData = FabData(
-        text = { Text(stringResource(id = R.string.dashboard_secondary_fab_text)) },
+        text = {
+            ScalableText(
+                text = stringResource(id = R.string.dashboard_secondary_fab_text),
+                textStyle = titleSmallTextStyle
+            )
+        },
         icon = { WrapIcon(iconData = AppIcons.Add) },
         onClick = { onEventSend(Event.Fab.SecondaryFabPressed) }
     )
+
     val primaryFabData = FabData(
-        text = { Text(text = stringResource(id = R.string.dashboard_primary_fab_text)) },
+        text = {
+            ScalableText(
+                text = stringResource(id = R.string.dashboard_primary_fab_text),
+                textStyle = titleSmallTextStyle
+            )
+        },
         icon = {
             WrapIcon(
                 modifier = Modifier.size(24.dp),
@@ -320,12 +334,9 @@ private fun CardListItem(
     WrapCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(148.dp)
-            .throttledClickable(
-                onClick = {
-                    onEventSend(Event.NavigateToDocument(documentId = dataItem.documentId))
-                }
-            )
+            .height(148.dp),
+        onClick = { onEventSend(Event.NavigateToDocument(documentId = dataItem.documentId)) },
+        throttleClicks = true,
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -381,24 +392,6 @@ private fun DashboardScreenPreview() {
                         documentType = DocumentTypeUi.OTHER,
                         documentStatus = DocumentStatusUi.ACTIVE,
                         documentImage = "image3"
-                    ),
-                    DocumentUi(
-                        documentId = 2,
-                        documentType = DocumentTypeUi.OTHER,
-                        documentStatus = DocumentStatusUi.ACTIVE,
-                        documentImage = "image4"
-                    ),
-                    DocumentUi(
-                        documentId = 2,
-                        documentType = DocumentTypeUi.OTHER,
-                        documentStatus = DocumentStatusUi.ACTIVE,
-                        documentImage = "image5"
-                    ),
-                    DocumentUi(
-                        documentId = 2,
-                        documentType = DocumentTypeUi.OTHER,
-                        documentStatus = DocumentStatusUi.ACTIVE,
-                        documentImage = "image6"
                     )
                 )
             ),
