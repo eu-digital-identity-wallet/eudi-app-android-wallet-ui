@@ -43,3 +43,9 @@ const val ALPHA_ENABLED = 1.0f
 const val ALPHA_DISABLED = 0.38f
 
 const val MAX_TOOLBAR_ACTIONS = 2
+
+const val SIZE_EXTRA_SMALL = 4
+const val SIZE_SMALL = 8
+const val SIZE_MEDIUM = 16
+const val SIZE_LARGE = 24
+const val SIZE_EXTRA_LARGE = 48
