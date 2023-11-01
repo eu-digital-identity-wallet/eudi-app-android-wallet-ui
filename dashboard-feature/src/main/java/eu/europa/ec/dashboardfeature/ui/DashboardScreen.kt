@@ -222,7 +222,6 @@ private fun FabContent(
             .fillMaxWidth()
             .padding(
                 bottom = SPACING_MEDIUM.dp,
-                top = 0.dp,
                 start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                 end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
             ),
