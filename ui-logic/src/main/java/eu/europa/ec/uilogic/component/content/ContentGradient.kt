@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -46,7 +47,7 @@ fun ContentGradient(
     gradientStartColor: Color = MaterialTheme.colorScheme.backgroundPaper,
     gradientEndColor: Color = Color.Transparent,
     gradientEdge: GradientEdge = GradientEdge.BOTTOM,
-    height: Int = SIZE_EXTRA_LARGE,
+    height: Dp = SIZE_EXTRA_LARGE.dp,
     bodyContent: @Composable () -> Unit
 ) {
 
@@ -84,16 +85,14 @@ fun ContentGradient(
 @Composable
 private fun BoxGradient(
     modifier: Modifier,
-    height: Int,
+    height: Dp,
     colorStops: Array<Pair<Float, Color>>
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(height = height.dp)
-            .background(
-                brush = Brush.verticalGradient(*colorStops)
-            )
+            .height(height = height)
+            .background(brush = Brush.verticalGradient(*colorStops))
     )
 }
 

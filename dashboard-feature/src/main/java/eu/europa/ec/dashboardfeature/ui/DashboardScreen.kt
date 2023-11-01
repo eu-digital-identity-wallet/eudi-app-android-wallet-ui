@@ -60,8 +60,8 @@ import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
-import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.ScalableText
+import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -222,12 +222,12 @@ private fun FabContent(
             .fillMaxWidth()
             .padding(
                 bottom = SPACING_MEDIUM.dp,
-                top = SPACING_SMALL.dp,
+                top = 0.dp,
                 start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                 end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
             ),
         horizontalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
-        verticalAlignment = Alignment.Bottom
+        verticalAlignment = Alignment.CenterVertically
     ) {
         WrapSecondaryExtendedFab(data = secondaryFabData, modifier = Modifier.weight(1f))
         WrapPrimaryExtendedFab(data = primaryFabData, modifier = Modifier.weight(1f))
@@ -369,31 +369,32 @@ private fun CardListItem(
 @Preview(showSystemUi = true, showBackground = true)
 private fun DashboardScreenPreview() {
     PreviewTheme {
+        val documents = listOf(
+            DocumentUi(
+                documentId = 0,
+                documentType = DocumentTypeUi.DIGITAL_ID,
+                documentStatus = DocumentStatusUi.ACTIVE,
+                documentImage = "image1"
+            ),
+            DocumentUi(
+                documentId = 1,
+                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentStatus = DocumentStatusUi.ACTIVE,
+                documentImage = "image2"
+            ),
+            DocumentUi(
+                documentId = 2,
+                documentType = DocumentTypeUi.OTHER,
+                documentStatus = DocumentStatusUi.ACTIVE,
+                documentImage = "image3"
+            )
+        )
         Content(
             state = State(
                 isLoading = false,
                 error = null,
                 userName = "Jane",
-                documents = listOf(
-                    DocumentUi(
-                        documentId = 0,
-                        documentType = DocumentTypeUi.DIGITAL_ID,
-                        documentStatus = DocumentStatusUi.ACTIVE,
-                        documentImage = "image1"
-                    ),
-                    DocumentUi(
-                        documentId = 1,
-                        documentType = DocumentTypeUi.DRIVING_LICENCE,
-                        documentStatus = DocumentStatusUi.ACTIVE,
-                        documentImage = "image2"
-                    ),
-                    DocumentUi(
-                        documentId = 2,
-                        documentType = DocumentTypeUi.OTHER,
-                        documentStatus = DocumentStatusUi.ACTIVE,
-                        documentImage = "image3"
-                    )
-                )
+                documents = documents + documents
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
