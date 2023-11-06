@@ -1,0 +1,67 @@
+[versions]
+activity-compose = "1.7.2"
+appcompat = "1.6.1"
+biometric-ktx = "1.2.0-alpha05"
+cbor = "0.9"
+compose-bom = "2023.06.00"
+constraintlayout-compose = "1.1.0-alpha10"
+core-ktx = "1.10.1"
+eudi-lib-android-wallet-core = "0.2.0-SNAPSHOT"
+fragment-ktx = "1.6.1"
+json = "20210307"
+kotlin = "1.8.10"
+kotlin-compiler-ext = "1.4.3"
+java = "1.8"
+gradle-plugin = "7.4.2"
+dependency-license-report = "2.4"
+bouncy-castle = "1.67"
+junit = "4.13.2"
+junit-android = "1.1.5"
+lifecycle-livedata-ktx = "2.6.2"
+lifecycle-runtime-ktx = "2.6.2"
+lifecycle-viewmodel-ktx = "2.6.2"
+lifecycle-viewmodel-savedstate = "2.6.2"
+material = "1.9.0"
+material3 = "1.1.2"
+mockito-inline = "4.0.0"
+mockk = "1.13.5"
+espresso-core = "3.5.1"
+androidx-navigation-safeargs = "2.5.3"
+navigation-fragment-ktx = "2.6.0"
+navigation-ui-ktx = "2.6.0"
+
+[libraries]
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+biometric-ktx = { module = "androidx.biometric:biometric-ktx", version.ref = "biometric-ktx" }
+cbor = { module = "co.nstant.in:cbor", version.ref = "cbor" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayout-compose" }
+core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
+eudi-lib-android-wallet-core = { module = "eu.europa.ec.eudi:eudi-lib-android-wallet-core", version.ref = "eudi-lib-android-wallet-core" }
+fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment-ktx" }
+json = { module = "org.json:json", version.ref = "json" }
+lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle-livedata-ktx" }
+lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle-viewmodel-ktx" }
+lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "lifecycle-viewmodel-savedstate" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation-fragment-ktx" }
+navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation-ui-ktx" }
+bouncy-castle-prov = { module = "org.bouncycastle:bcprov-jdk15on", version.ref = "bouncy-castle" }
+bouncy-castle-pkix = { module = "org.bouncycastle:bcpkix-jdk15on", version.ref = "bouncy-castle" }
+junit = { module = "junit:junit", version.ref = "junit" }
+mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito-inline" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-inline" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+android-junit = { module = "androidx.test.ext:junit", version.ref = "junit-android" }
+espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "gradle-plugin" }
+android-library = { id = "com.android.library", version.ref = "gradle-plugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidx-navigation-safeargs = { id= "androidx.navigation.safeargs", version.ref = "androidx-navigation-safeargs"}
+dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
+dependency-license-report = { id = "com.github.jk1.dependency-license-report", version.ref = "dependency-license-report" }
