@@ -1,0 +1,113 @@
+import com.github.jk1.license.filter.ExcludeTransitiveDependenciesFilter
+import com.github.jk1.license.filter.LicenseBundleNormalizer
+import com.github.jk1.license.filter.ReduceDuplicateLicensesFilter
+import com.github.jk1.license.render.InventoryMarkdownReportRenderer
+
+plugins {
+    alias libs.plugins.android.application
+    alias libs.plugins.kotlin.android
+    alias libs.plugins.androidx.navigation.safeargs
+    id 'kotlin-kapt'
+    alias libs.plugins.dependency.license.report
+}
+
+android {
+    namespace 'eu.europa.ec.eudi.wallet.ui'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "eu.europa.ec.eudi.wallet.ui"
+        minSdk 28
+        targetSdk 33
+        versionCode 1
+        versionName "20231106"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // Note: set 'VERIFIER_API' and 'verifierHostName' for opendi4vp
+        buildConfigField "String", "VERIFIER_API", "\"http://localhost:8080\""
+        manifestPlaceholders.verifierHostName = "set verifier host name"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.toVersion(libs.versions.java.get())
+        targetCompatibility JavaVersion.toVersion(libs.versions.java.get())
+    }
+    kotlinOptions {
+        jvmTarget = libs.versions.java.get()
+    }
+    buildFeatures {
+        dataBinding true
+        viewBinding true
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion libs.versions.kotlin.compiler.ext.get()
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+
+    // wallet core library
+    implementation libs.eudi.lib.android.wallet.core
+    implementation project(':web-light-issuing')
+
+    implementation libs.core.ktx
+
+    implementation libs.biometric.ktx
+
+    implementation libs.lifecycle.runtime.ktx
+    implementation libs.lifecycle.viewmodel.ktx
+    implementation libs.lifecycle.viewmodel.savedstate
+    implementation libs.lifecycle.livedata.ktx
+
+    implementation platform(libs.compose.bom)
+    implementation "androidx.compose.ui:ui"
+    implementation 'androidx.compose.foundation:foundation'
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation 'androidx.compose.material:material'
+    implementation libs.material3
+
+    implementation libs.material
+
+    implementation libs.activity.compose
+    implementation libs.constraintlayout.compose
+    implementation libs.fragment.ktx
+
+    implementation libs.navigation.fragment.ktx
+    implementation libs.navigation.ui.ktx
+
+    testImplementation libs.junit
+    androidTestImplementation libs.android.junit
+    androidTestImplementation libs.espresso.core
+    debugImplementation "androidx.compose.ui:ui-tooling"
+    debugImplementation "androidx.compose.ui:ui-test-manifest"
+}
+
+licenseReport {
+    unionParentPomLicenses = false
+    filters = [new LicenseBundleNormalizer(), new ReduceDuplicateLicensesFilter(), new ExcludeTransitiveDependenciesFilter()]
+    configurations = ['releaseRuntimeClasspath']
+    projects = [project] + project.subprojects
+    excludeBoms = true
+    excludeOwnGroup = true
+    renderers = [new InventoryMarkdownReportRenderer("licenses.md", "EUDI Wallet UI for Android")]
+}
+
+tasks.register('copyLicenseReport', Copy) {
+    from "$buildDir/reports/dependency-license/licenses.md"
+    into "$rootDir"
+    dependsOn 'generateLicenseReport'
+}
+generateLicenseReport.finalizedBy("copyLicenseReport")

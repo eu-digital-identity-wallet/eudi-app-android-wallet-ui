@@ -1,0 +1,23 @@
+$dokka.format:gfm-v1
+$dokka.linkExtension:md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing////PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Country.CW///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-country/-c-w/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Country.FC///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-country/-f-c/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Country.PT///PointingToDeclaration/{"org.jetbrains.dokka.links.EnumEntryDRIExtra":{"key":"org.jetbrains.dokka.links.EnumEntryDRIExtra"}}web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-country/-p-t/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Country///PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-country/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Country/code/#/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-country/code.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Country/valueOf/#kotlin.String/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-country/value-of.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Country/values/#/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-country/values.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Result.Failure///PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-result/-failure/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Result.Failure/Failure/#kotlin.Throwable/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-result/-failure/-failure.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Result.Failure/throwable/#/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-result/-failure/throwable.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Result.Success///PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-result/-success/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Result.Success/Success/#kotlin.ByteArray/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-result/-success/-success.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Result.Success/documentBytes/#/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-result/-success/document-bytes.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer.Result///PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/-result/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer///PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuer/issueDocument/#androidx.activity.ComponentActivity#eu.europa.ec.eudi.web.lightIssuing.EudiPidIssuer.Country#kotlin.collections.Collection[java.security.cert.X509Certificate]#kotlin.Function1[eu.europa.ec.eudi.web.lightIssuing.EudiPidIssuer.Result,kotlin.Unit]/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer/issue-document.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuerActivity///PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer-activity/index.md
+$dokka.location:eu.europa.ec.eudi.web.lightIssuing/EudiPidIssuerActivity/EudiPidIssuerActivity/#/PointingToDeclaration/web-light-issuing/eu.europa.ec.eudi.web.lightIssuing/-eudi-pid-issuer-activity/-eudi-pid-issuer-activity.md
+eu.europa.ec.eudi.web.lightIssuing
+

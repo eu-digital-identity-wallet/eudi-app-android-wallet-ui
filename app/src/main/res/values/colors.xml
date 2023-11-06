@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2023 European Commission
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <!--Source: https://ec.europa.eu/component-library/v1.15.0/eu/components/detail/eu-style-color/-->
+
+    <!--Primary colors-->
+    <color name="ec_blue">#004494</color>
+    <color name="ec_yellow">#ffd617</color>
+    <color name="ec_gray">#404040</color>
+
+    <!--Colour palettes-->
+    <color name="ec_blue_120">#003776</color>
+    <color name="ec_yellow_120">#F8AE21</color>
+
+    <color name="ec_blue_110">#003776</color>
+    <color name="ec_yellow_110">#FBC11D</color>
+    <color name="ec_gray_75">#707070</color>
+
+    <color name="ec_gray_50">#9F9F9F</color>
+
+    <color name="ec_blue_50">#7FA1C9</color>
+    <color name="ec_yellow_50">#FFE879</color>
+    <color name="ec_gray_15">#E3E3E3</color>
+
+    <color name="ec_blue_25">#BFD0E4</color>
+    <color name="ec_yellow_25">#FFF4BB</color>
+    <color name="ec_gray_10">#EBEBEB</color>
+
+    <color name="ec_gray_5">#F5F5F5</color>
+
+    <!--Notification colors-->
+    <color name="ec_blue_n">#006FB4</color>
+    <color name="ec_orange_n">#F29527</color>
+    <color name="ec_green_n">#467A39</color>
+    <color name="ec_red_n">#DA2131</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+</resources>

@@ -1,0 +1,70 @@
+<!--
+  ~ Copyright (c) 2023 European Commission
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+
+    <string name="app_name">EUDIW</string>
+    <string name="app_version">version: %s</string>
+    <string name="eudi_wallet_ui">EUDI Wallet UI</string>
+
+    <string name="share">Share</string>
+    <string name="transfer">Transfer</string>
+    <string name="send">Send</string>
+    <string name="close">Close</string>
+
+    <!--BLE Permissions-->
+    <string name="ble_permissions">BLE Permissions</string>
+    <string name="enable_ble">Enable BLE</string>
+    <string name="enable_ble_permissions">Enable BLE permissions</string>
+    <string name="enable_location_provider">Enable location provider</string>
+    <string name="app_requires_bluetooth_to_be_enabled_for_offline_data_transfer_please_accept_the_requested_permissions">App requires Bluetooth to be enabled for offline transfer. Please also accept the required permissions.</string>
+
+    <!--User Authentication-->
+    <string name="bio_auth_title">Authenticate to share data</string>
+    <string name="bio_auth_use_pin">Use PIN</string>
+    <string name="bio_auth_failed">User authentication has failed</string>
+    <string name="user_auth_failed">User auth failed.</string>
+
+    <!--Reader Auth-->
+    <string name="reader_auth_verifier_anonymous">Anonymous verifier is requesting the following information</string>
+    <string name="reader_auth_verifier_trusted_with_name">Trusted verifier \"%1$s\" is requesting the following information</string>
+    <string name="reader_auth_verifier_untrusted_with_name">Untrusted verifier \"%1$s\" is requesting the following information</string>
+
+    <!--Transfer-->
+    <string name="connection_mdoc_open">Connection to mdoc verifier is open</string>
+    <string name="connection_mdoc_closed">Connection to mdoc verifier is closed</string>
+    <string name="txt_documents_sent">%d request(s) served</string>
+    <string name="scan_qr_code_with_mdoc_verifier_device">Scan QR code with mdoc verifier device</string>
+    <string name="scan_qr_code_with_mdoc_verifier_device_or_tap_for_nfc">Scan QR code with mdoc verifier device \nor\nTap for NFC</string>
+    <string name="qr_device_engagement">QR Device Engagement</string>
+    <string name="connected">Connected!</string>
+    <string name="error_on_presentation">Error on presentation!</string>
+    <string name="response_has_been_sent">Response has been sent</string>
+    <string name="request_received_please_wait">Request received. Please wait…</string>
+
+    <string name="no_documents">No documents</string>
+    <string name="add_sample_documents">Add sample documents</string>
+    <string name="start_by_adding_sample_documents">Start by adding sample documents</string>
+    <string name="delete">delete</string>
+    <string name="document_not_found">Document not found.</string>
+    <string name="error_deleting_document">Error deleting document</string>
+
+    <string name="issue_utopia_pid">Issue Utopia PID</string>
+    <string name="issue_portugal_pid">Issue Portugal PID</string>
+    <string name="issue_eidas_pid">Issue eIDAS PID</string>
+    <string name="error_sending_response">Error sending response</string>
+
+</resources>
