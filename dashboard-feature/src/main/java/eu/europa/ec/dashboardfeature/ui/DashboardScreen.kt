@@ -67,9 +67,9 @@ import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.FabData
 import eu.europa.ec.uilogic.component.wrap.WrapCard
@@ -265,7 +265,7 @@ private fun Title(
                 iconData = image,
                 modifier = Modifier
                     .size(64.dp)
-                    .clip(RoundedCornerShape(SPACING_SMALL.dp))
+                    .clip(RoundedCornerShape(SIZE_SMALL.dp))
             )
             Column(
                 modifier = Modifier
