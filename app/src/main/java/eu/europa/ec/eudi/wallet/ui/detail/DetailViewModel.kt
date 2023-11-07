@@ -21,7 +21,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.eudi.wallet.ui.util.log
-import eu.europa.ec.eudi.wallet.EudiWalletSDK
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
 import kotlinx.coroutines.Dispatchers
@@ -36,13 +36,13 @@ class DetailViewModel : ViewModel() {
         get() = _document
 
     fun loadDocument(documentId: String) {
-        val doc = EudiWalletSDK.getDocumentById(documentId)
+        val doc = EudiWallet.getDocumentById(documentId)
         viewModelScope.launch(Dispatchers.Main) { _document.value = doc }
     }
 
     fun deleteDocument() {
         when (val result = document.value?.let {
-            EudiWalletSDK.deleteDocumentById(it.id)
+            EudiWallet.deleteDocumentById(it.id)
         }) {
             is DeleteDocumentResult.Success -> viewModelScope.launch(Dispatchers.Main) {
                 _document.value = null

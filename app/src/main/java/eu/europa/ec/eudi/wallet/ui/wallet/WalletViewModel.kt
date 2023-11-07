@@ -31,7 +31,7 @@ import eu.europa.ec.eudi.wallet.ui.R
 import eu.europa.ec.eudi.wallet.ui.util.EuPidIssuance
 import eu.europa.ec.eudi.wallet.ui.util.logError
 import eu.europa.ec.eudi.web.lightIssuing.EudiPidIssuer
-import eu.europa.ec.eudi.wallet.EudiWalletSDK
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.sample.LoadSampleResult
 import org.json.JSONObject
@@ -52,7 +52,7 @@ class WalletViewModel(
 
     fun loadDocuments() {
         isLoading.set(false)
-        val docs = EudiWalletSDK.getDocuments()
+        val docs = EudiWallet.getDocuments()
         _documents.value = docs
         noDocuments.set(docs.isEmpty())
     }
@@ -74,7 +74,7 @@ class WalletViewModel(
     fun createSampleData() {
 
         isLoading.set(true)
-        when (val result = EudiWalletSDK.loadSampleData(
+        when (val result = EudiWallet.loadSampleData(
             Base64.getDecoder().decode(
                 JSONObject(
                     context.getStringFromRaw(R.raw.sample_data)
@@ -82,7 +82,7 @@ class WalletViewModel(
             )
         )) {
             is LoadSampleResult.Success -> {
-                EudiWalletSDK.getDocuments().let {
+                EudiWallet.getDocuments().let {
                     _documents.value = it
                     noDocuments.set(it.isEmpty())
                     isLoading.set(false)

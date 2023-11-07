@@ -41,7 +41,7 @@ import eu.europa.ec.eudi.wallet.ui.transfer.TransferViewModel
 import eu.europa.ec.eudi.wallet.ui.userauth.UserAuthPromptBuilder
 import eu.europa.ec.eudi.wallet.ui.util.log
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
-import eu.europa.ec.eudi.wallet.EudiWalletSDK
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.Document
 
 class SelectiveDisclosureFragment : BottomSheetDialogFragment() {
@@ -88,7 +88,7 @@ class SelectiveDisclosureFragment : BottomSheetDialogFragment() {
         elementsToSelect: List<RequestDocument>,
     ): List<SelectiveDisclosureSheetData> {
         return elementsToSelect.map { documentData ->
-            val doc: Document? = EudiWalletSDK.getDocumentById(documentData.documentId)
+            val doc: Document? = EudiWallet.getDocumentById(documentData.documentId)
             transferViewModel.addDocumentForSelection(documentData)
             val elements = documentData.docRequest.requestItems.map { element ->
                 transferViewModel.toggleDocItem(documentData.documentId, element)

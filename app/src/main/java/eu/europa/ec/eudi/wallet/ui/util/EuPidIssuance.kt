@@ -20,7 +20,7 @@ import androidx.activity.ComponentActivity
 import eu.europa.ec.eudi.wallet.ui.util.EuPidIssuance.Result.Failure
 import eu.europa.ec.eudi.wallet.ui.util.EuPidIssuance.Result.Success
 import eu.europa.ec.eudi.web.lightIssuing.EudiPidIssuer
-import eu.europa.ec.eudi.wallet.EudiWalletSDK
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.AddDocumentResult
 import eu.europa.ec.eudi.wallet.document.Constants
 import eu.europa.ec.eudi.wallet.document.CreateIssuanceRequestResult
@@ -47,8 +47,8 @@ object EuPidIssuance {
      * @return
      */
     suspend fun issueDocument(activity: ComponentActivity, country: EudiPidIssuer.Country): Result {
-        val hardwareBacked = EudiWalletSDK.config.useHardwareToStoreKeys
-        return when (val r1 = EudiWalletSDK.createIssuanceRequest(docType, hardwareBacked)) {
+        val hardwareBacked = EudiWallet.config.useHardwareToStoreKeys
+        return when (val r1 = EudiWallet.createIssuanceRequest(docType, hardwareBacked)) {
             is CreateIssuanceRequestResult.Failure -> Failure(r1.throwable)
             is CreateIssuanceRequestResult.Success -> {
                 val request = r1.issuanceRequest
@@ -64,7 +64,7 @@ object EuPidIssuance {
                     is EudiPidIssuer.Result.Failure -> Failure(r2.throwable)
                     is EudiPidIssuer.Result.Success -> {
                         val bytes = r2.documentBytes
-                        when (val r3 = EudiWalletSDK.addDocument(request, bytes)) {
+                        when (val r3 = EudiWallet.addDocument(request, bytes)) {
                             is AddDocumentResult.Failure -> Failure(r3.throwable)
                             is AddDocumentResult.Success -> Success(r3.documentId)
                         }

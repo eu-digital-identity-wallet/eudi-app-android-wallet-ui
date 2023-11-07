@@ -33,7 +33,7 @@ import eu.europa.ec.eudi.wallet.ui.util.log
 import eu.europa.ec.eudi.wallet.ui.util.logError
 import eu.europa.ec.eudi.wallet.ui.wallet.ui.DocumentAdapter
 import eu.europa.ec.eudi.web.lightIssuing.EudiPidIssuer
-import eu.europa.ec.eudi.wallet.EudiWalletSDK
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.Document
 import kotlinx.coroutines.launch
 import javax.crypto.AEADBadTagException
@@ -72,7 +72,7 @@ class WalletFragment : WalletUIBaseFragment() {
                 // check for ble permissions
                 BlePermissionsFragment.showDialog(
                     parentFragmentManager,
-                    centralModeEnabled = EudiWalletSDK.config.bleCentralClientModeEnabled,
+                    centralModeEnabled = EudiWallet.config.bleCentralClientModeEnabled,
                     onSuccess = {
                         // when ble permissions have been enabled go to share screen
                         findNavController().navigate(R.id.action_WalletFragment_to_ShareFragment)
