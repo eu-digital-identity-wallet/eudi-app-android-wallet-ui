@@ -26,8 +26,8 @@ import eu.europa.ec.presentationfeature.ui.request.model.PresentationRequestData
 import eu.europa.ec.presentationfeature.ui.request.transformer.PresentationRequestTransformer
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.authenticationfeature.ui.request.model.AuthenticationRequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -50,16 +50,14 @@ data class State(
 
     val screenTitle: String,
     val screenSubtitle: String,
-    val screenClickableSubtitle: String,
+    val screenClickableSubtitle: String?,
     val warningText: String,
-    val biometrySubtitle: String,
-    val quickPinSubtitle: String,
 
     val items: List<PresentationRequestDataUi<Event>> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data object Init : Event()
+    data object DoWork : Event()
     data object DismissError : Event()
     data object GoBack : Event()
     data object ChangeContentVisibility : Event()
@@ -91,7 +89,10 @@ sealed class Effect : ViewSideEffect {
             val screenRoute: String
         ) : Navigation()
 
-        data object Pop : Navigation()
+        data class PopBackStackUpTo(
+            val screenRoute: String,
+            val inclusive: Boolean
+        ) : Navigation()
     }
 
     data object ShowBottomSheet : Effect()
@@ -102,29 +103,27 @@ enum class PresentationRequestBottomSheetContent {
     SUBTITLE, CANCEL
 }
 
-@KoinViewModel
-class PresentationRequestViewModel(
-    private val interactor: PresentationInteractor,
-    private val resourceProvider: ResourceProvider,
-    private val uiSerializer: UiSerializer
-) : MviViewModel<Event, State, Effect>() {
+abstract class CommonPresentationRequestViewModel : MviViewModel<Event, State, Effect>() {
+    abstract fun getScreenTitle(): String
+    abstract fun getScreenSubtitle(): String
+    abstract fun getScreenClickableSubtitle(): String?
+    abstract fun getWarningText(): String
+    abstract fun getNextScreen(): String
+    abstract fun getPreviousScreen(): String
+    abstract fun doWork()
 
     override fun setInitialState(): State {
         return State(
-            screenTitle = resourceProvider.getString(R.string.online_authentication_userData_title),
-            screenSubtitle = resourceProvider.getString(R.string.online_authentication_userData_subtitle_one),
-            screenClickableSubtitle = resourceProvider.getString(R.string.online_authentication_userData_subtitle_two),
-            warningText = resourceProvider.getString(R.string.online_authentication_userData_warning_text),
-            biometrySubtitle = resourceProvider.getString(R.string.online_authentication_biometry_share_subtitle),
-            quickPinSubtitle = resourceProvider.getString(R.string.online_authentication_quick_pin_share_subtitle)
+            screenTitle = getScreenTitle(),
+            screenSubtitle = getScreenSubtitle(),
+            screenClickableSubtitle = getScreenClickableSubtitle(),
+            warningText = getWarningText()
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> {
-                fetchUserData(event)
-            }
+            is Event.DoWork -> doWork()
 
             is Event.DismissError -> {
                 setState {
@@ -136,9 +135,7 @@ class PresentationRequestViewModel(
                 setState {
                     copy(error = null)
                 }
-                setEffect {
-                    Effect.Navigation.Pop
-                }
+                doNavigation(NavigationType.POP)
             }
 
             is Event.ChangeContentVisibility -> {
@@ -160,35 +157,7 @@ class PresentationRequestViewModel(
             }
 
             is Event.PrimaryButtonPressed -> {
-                setEffect {
-                    Effect.Navigation.SwitchScreen(
-                        screenRoute = generateComposableNavigationLink(
-                            screen = CommonScreens.Biometric,
-                            arguments = generateComposableArguments(
-                                mapOf(
-                                    BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
-                                        BiometricUiConfig(
-                                            title = viewState.value.screenTitle,
-                                            subTitle = viewState.value.biometrySubtitle,
-                                            quickPinOnlySubTitle = viewState.value.quickPinSubtitle,
-                                            isPreAuthorization = false,
-                                            shouldInitializeBiometricAuthOnCreate = true,
-                                            onSuccessNavigation = ConfigNavigation(
-                                                navigationType = NavigationType.PUSH,
-                                                screenToNavigate = PresentationScreens.Loading
-                                            ),
-                                            onBackNavigation = ConfigNavigation(
-                                                navigationType = NavigationType.POP,
-                                                screenToNavigate = PresentationScreens.Request
-                                            )
-                                        ),
-                                        BiometricUiConfig.Parser
-                                    ).orEmpty()
-                                )
-                            )
-                        )
-                    )
-                }
+                doNavigation(NavigationType.PUSH)
             }
 
             is Event.SecondaryButtonPressed -> {
@@ -207,14 +176,33 @@ class PresentationRequestViewModel(
 
             is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
                 hideBottomSheet()
-                setEffect {
-                    Effect.Navigation.Pop
-                }
+                doNavigation(NavigationType.POP)
             }
 
             is Event.BottomSheet.Subtitle.PrimaryButtonPressed -> {
                 hideBottomSheet()
             }
+        }
+    }
+
+    private fun doNavigation(navigationType: NavigationType) {
+        when (navigationType) {
+            NavigationType.PUSH -> {
+                setEffect {
+                    Effect.Navigation.SwitchScreen(getNextScreen())
+                }
+            }
+
+            NavigationType.POP -> {
+                setEffect {
+                    Effect.Navigation.PopBackStackUpTo(
+                        screenRoute = getPreviousScreen(),
+                        inclusive = false
+                    )
+                }
+            }
+
+            NavigationType.DEEPLINK -> {}
         }
     }
 
@@ -231,46 +219,6 @@ class PresentationRequestViewModel(
         }
         setState {
             copy(items = updatedItems)
-        }
-    }
-
-    private fun fetchUserData(event: Event) {
-        setState {
-            copy(
-                isLoading = true,
-                error = null
-            )
-        }
-
-        viewModelScope.launch {
-            interactor.getUserData().collect { response ->
-                when (response) {
-                    is PresentationInteractorPartialState.Failure -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.GoBack) }
-                                )
-                            )
-                        }
-                    }
-
-                    is PresentationInteractorPartialState.Success -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = null,
-                                items = PresentationRequestTransformer.transformToUiItems(
-                                    userDataDomain = response.userDataDomain
-                                )
-                            )
-                        }
-                    }
-                }
-            }
         }
     }
 

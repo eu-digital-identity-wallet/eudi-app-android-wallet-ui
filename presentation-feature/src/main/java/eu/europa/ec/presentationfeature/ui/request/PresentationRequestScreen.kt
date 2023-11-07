@@ -66,7 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PresentationRequestScreen(
     navController: NavController,
-    viewModel: PresentationRequestViewModel
+    viewModel: CommonPresentationRequestViewModel
 ) {
     val state = viewModel.viewState.value
 
@@ -79,6 +79,7 @@ fun PresentationRequestScreen(
     ContentScreen(
         navigatableAction = ScreenNavigateAction.NONE,
         isLoading = state.isLoading,
+        onBack = { viewModel.setEvent(Event.GoBack) },
         contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
@@ -92,8 +93,11 @@ fun PresentationRequestScreen(
                         navController.navigate(navigationEffect.screenRoute)
                     }
 
-                    is Effect.Navigation.Pop -> {
-                        navController.popBackStack()
+                    is Effect.Navigation.PopBackStackUpTo -> {
+                        navController.popBackStack(
+                            route = navigationEffect.screenRoute,
+                            inclusive = navigationEffect.inclusive
+                        )
                     }
                 }
             },
@@ -124,7 +128,7 @@ fun PresentationRequestScreen(
     }
 
     OneTimeLaunchedEffect {
-        viewModel.setEvent(Event.Init)
+        viewModel.setEvent(Event.DoWork)
     }
 }
 
@@ -282,8 +286,6 @@ private fun ContentPreview() {
                 screenSubtitle = "Subtitle ",
                 screenClickableSubtitle = "clickable subtitle",
                 warningText = "Warning",
-                biometrySubtitle = "biometrySubtitle",
-                quickPinSubtitle = "quickPinSubtitle"
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
@@ -327,8 +329,6 @@ private fun StickyBottomSectionPreview() {
                 screenSubtitle = "Subtitle ",
                 screenClickableSubtitle = "clickable subtitle",
                 warningText = "Warning",
-                biometrySubtitle = "biometrySubtitle",
-                quickPinSubtitle = "quickPinSubtitle"
             ),
             onEventSend = {}
         )

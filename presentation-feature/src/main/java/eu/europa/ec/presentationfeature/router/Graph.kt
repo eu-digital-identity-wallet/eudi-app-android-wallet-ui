@@ -23,6 +23,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
+import eu.europa.ec.authenticationfeature.ui.loading.AuthenticationLoadingScreen
+import eu.europa.ec.authenticationfeature.ui.request.crossdevice.AuthenticationRequestCrossDeviceScreen
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.presentationfeature.ui.loading.PresentationLoadingScreen
 import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
@@ -32,19 +34,19 @@ import org.koin.androidx.compose.koinViewModel
 
 fun NavGraphBuilder.presentationGraph(navController: NavController) {
     navigation(
-        startDestination = PresentationScreens.Request.screenRoute,
+        startDestination = PresentationScreens.CrossDevice.screenRoute,
         route = ModuleRoute.AuthenticationModule.route
     ) {
         composable(
-            route = PresentationScreens.Request.screenRoute,
+            route = PresentationScreens.CrossDevice.screenRoute,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                        BuildConfig.DEEPLINK + PresentationScreens.Request.screenRoute
+                        BuildConfig.DEEPLINK + PresentationScreens.CrossDevice.screenRoute
                 }
             )
         ) {
-            PresentationRequestScreen(
+            PresentationRequestCrossDeviceScreen(
                 navController,
                 koinViewModel()
             )

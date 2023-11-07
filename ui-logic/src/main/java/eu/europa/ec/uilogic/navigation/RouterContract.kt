@@ -52,6 +52,12 @@ sealed class PresentationScreens {
     data object Loading : Screen(name = "PRESENTATION_LOADING")
 }
 
+sealed class AuthenticationScreens {
+    data object CrossDevice : Screen(name = "AUTHENTICATION_REQUEST_CROSS_DEVICE")
+    data object SameDevice : Screen(name = "AUTHENTICATION_REQUEST_SAME_DEVICE")
+    data object Loading : Screen(name = "AUTHENTICATION_LOADING")
+}
+
 sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object StartupModule : ModuleRoute("STARTUP_MODULE")
     data object CommonModule : ModuleRoute("COMMON_MODULE")

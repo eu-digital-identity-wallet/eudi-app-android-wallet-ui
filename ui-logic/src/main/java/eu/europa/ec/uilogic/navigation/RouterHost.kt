@@ -34,6 +34,7 @@ interface RouterHost {
     fun getNavContext(): Context
     fun currentFlowIsAfterOnBoarding(): Boolean
     fun popToLandingScreen()
+    fun getLandingScreen(): String
 
     @Composable
     fun StartFlow(builder: NavGraphBuilder.(NavController) -> Unit)
@@ -68,7 +69,7 @@ class RouterHostImpl constructor(
     }
 
     override fun currentFlowIsAfterOnBoarding(): Boolean {
-        val screenRoute = configUILogic.landingScreenIdentifier.screenRoute
+        val screenRoute = getLandingScreen()
         try {
             if (navController.currentDestination?.route == screenRoute) {
                 return true
@@ -82,8 +83,12 @@ class RouterHostImpl constructor(
 
     override fun popToLandingScreen() {
         navController.popBackStack(
-            route = configUILogic.landingScreenIdentifier.screenRoute,
+            route = getLandingScreen(),
             inclusive = false
         )
+    }
+
+    override fun getLandingScreen(): String {
+        return configUILogic.landingScreenIdentifier.screenRoute
     }
 }

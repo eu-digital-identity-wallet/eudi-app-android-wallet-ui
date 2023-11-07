@@ -51,7 +51,7 @@ class PresentationLoadingViewModel constructor(
     }
 
     override fun getPreviousScreen(): Screen {
-        return PresentationScreens.Request
+        return PresentationScreens.CrossDevice
     }
 
     override fun getCallerScreen(): Screen {
