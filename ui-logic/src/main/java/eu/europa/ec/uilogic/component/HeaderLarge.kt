@@ -45,8 +45,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
 data class HeaderData(
     val title: String,
     val subtitle: String,
-    val image: IconData,
-    val icon: IconData? = null
+    val image: IconData = AppIcons.User,
+    val icon: IconData = AppIcons.IdStroke
 )
 
 @Composable
@@ -93,19 +93,18 @@ fun HeaderLarge(
                     },
                 iconData = data.image
             )
-            if (data.icon != null) {
-                WrapImage(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(SIZE_SMALL.dp))
-                        .constrainAs(icon) {
-                            start.linkTo(verticalGuideline)
-                            top.linkTo(image.top)
-                            bottom.linkTo(image.bottom)
-                            end.linkTo(verticalGuideline)
-                        },
-                    iconData = data.icon,
-                )
-            }
+
+            WrapImage(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(SIZE_SMALL.dp))
+                    .constrainAs(icon) {
+                        start.linkTo(verticalGuideline)
+                        top.linkTo(image.top)
+                        bottom.linkTo(image.bottom)
+                        end.linkTo(verticalGuideline)
+                    },
+                iconData = data.icon,
+            )
         }
     }
 }

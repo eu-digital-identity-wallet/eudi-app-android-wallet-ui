@@ -18,5 +18,50 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-class DocumentDetailsInteractor {
+import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.model.DocumentStatusUi
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
+import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+
+sealed class DocumentDetailsInteractorPartialState {
+    data class Success(val document: DocumentUi) : DocumentDetailsInteractorPartialState()
+    data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
+}
+
+interface DocumentDetailsInteractor {
+    fun getDocument(): Flow<DocumentDetailsInteractorPartialState>
+    fun getUserName(): String
+}
+
+class DocumentDetailsInteractorImpl(
+    private val resourceProvider: ResourceProvider
+) : DocumentDetailsInteractor {
+
+    private val genericErrorMsg
+        get() = resourceProvider.genericErrorMessage()
+
+    override fun getDocument(): Flow<DocumentDetailsInteractorPartialState> = flow {
+        delay(1_000L)
+        emit(
+            DocumentDetailsInteractorPartialState.Success(
+                document = DocumentUi(
+                    documentId = 0,
+                    documentType = DocumentTypeUi.DIGITAL_ID,
+                    documentStatus = DocumentStatusUi.ACTIVE,
+                    documentImage = "image"
+                )
+            )
+        )
+    }.safeAsync {
+        DocumentDetailsInteractorPartialState.Failure(
+            error = it.localizedMessage ?: genericErrorMsg
+        )
+    }
+
+    override fun getUserName(): String = "Jane"
+
 }

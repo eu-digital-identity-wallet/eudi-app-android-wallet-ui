@@ -20,6 +20,9 @@ package eu.europa.ec.dashboardfeature.ui.details
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
@@ -30,8 +33,11 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.details.DetailsContent
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 
 @Composable
@@ -49,8 +55,27 @@ fun DocumentDetailsScreen(
         Content(
             state = state,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) }
+            onEventSend = { viewModel.setEvent(it) },
+            onNavigationRequested = { navigationEffect ->
+                handleNavigationEffect(navigationEffect, navController)
+            }
         )
+    }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
+        viewModel.setEvent(Event.Init)
+    }
+}
+
+private fun handleNavigationEffect(
+    navigationEffect: Effect.Navigation,
+    navController: NavController
+) {
+    when (navigationEffect) {
+        is Effect.Navigation.Pop -> navController.popBackStack()
     }
 }
 
@@ -59,6 +84,7 @@ private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
+    onNavigationRequested: (Effect.Navigation) -> Unit
 ) {
     // TODO Remove
     val headerData = HeaderData("Title", "Subtitle", AppIcons.User, AppIcons.IdStroke)
@@ -73,6 +99,14 @@ private fun Content(
         HeaderLarge(data = headerData)
         DetailsContent(data = detailsData)
     }
+
+    LaunchedEffect(Unit) {
+        effectFlow.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation.Pop -> onNavigationRequested(effect)
+            }
+        }.collect()
+    }
 }
 
 @ThemeModePreviews
@@ -82,7 +116,8 @@ private fun ContentPreview() {
         Content(
             state = State(),
             effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {}
+            onEventSend = {},
+            onNavigationRequested = {}
         )
     }
 }

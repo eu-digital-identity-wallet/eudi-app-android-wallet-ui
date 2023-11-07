@@ -18,32 +18,88 @@
 
 package eu.europa.ec.dashboardfeature.ui.details
 
+import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorPartialState
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import kotlinx.coroutines.launch
+import org.koin.android.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
-): ViewState
+    val document: DocumentUi? = null,
+    val userName: String? = null
+) : ViewState
 
-sealed class Event: ViewEvent {
-
+sealed class Event : ViewEvent {
+    data object Init : Event()
+    data object Pop : Event()
 }
 
 
-sealed class Effect: ViewSideEffect {
-
+sealed class Effect : ViewSideEffect {
+    sealed class Navigation : Effect() {
+        data object Pop : Navigation()
+    }
 }
 
-class DocumentDetailsViewModel: MviViewModel<Event, State, Effect>() {
+@KoinViewModel
+class DocumentDetailsViewModel(
+    private val documentDetailsInteractor: DocumentDetailsInteractor,
+    private val resourceProvider: ResourceProvider,
+) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        isLoading = false
+        userName = documentDetailsInteractor.getUserName()
     )
 
-    override fun handleEvents(event: Event) {
+    override fun handleEvents(event: Event) = when (event) {
+        is Event.Init -> getDocument(event)
+        is Event.Pop -> setEffect { Effect.Navigation.Pop }
+    }
 
+    private fun getDocument(event: Event) {
+
+        setState {
+            copy(
+                isLoading = document == null,
+                error = null
+            )
+        }
+
+        viewModelScope.launch {
+            documentDetailsInteractor.getDocument().collect { response ->
+                when (response) {
+                    is DocumentDetailsInteractorPartialState.Success -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = null,
+                                document = response.document
+                            )
+                        }
+                    }
+
+                    is DocumentDetailsInteractorPartialState.Failure -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(event) },
+                                    errorSubTitle = response.error,
+                                    onCancel = { setEvent(Event.Pop) }
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }

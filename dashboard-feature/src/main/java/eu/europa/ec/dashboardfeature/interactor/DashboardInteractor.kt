@@ -38,7 +38,7 @@ interface DashboardInteractor {
 }
 
 class DashboardInteractorImpl(
-    private val resourceProvider: ResourceProvider,
+    private val resourceProvider: ResourceProvider
 ) : DashboardInteractor {
 
     private val genericErrorMsg
