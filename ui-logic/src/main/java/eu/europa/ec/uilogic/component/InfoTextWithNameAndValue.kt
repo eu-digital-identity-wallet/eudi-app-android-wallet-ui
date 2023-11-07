@@ -26,10 +26,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.VSpacer
 
 data class InfoTextWithNameAndValueData(
@@ -69,7 +69,7 @@ fun InfoTextWithNameAndValue(
     }
 }
 
-@Preview
+@ThemeModePreviews
 @Composable
 private fun InfoTextWithNameAndValuePreview() {
     val infoItemData = InfoTextWithNameAndValueData(
