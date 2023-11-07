@@ -44,4 +44,6 @@ dependencies {
     api(project(":login-feature"))
     api(project(":dashboard-feature"))
     api(project(":presentation-feature"))
+    api(project(":proximity-feature"))
+    api(project(":issuance-feature"))
 }
