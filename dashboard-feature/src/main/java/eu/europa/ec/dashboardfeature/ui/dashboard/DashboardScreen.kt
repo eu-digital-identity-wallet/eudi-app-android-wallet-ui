@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.ui
+package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Context
 import androidx.compose.foundation.background
@@ -67,6 +67,7 @@ import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
@@ -210,7 +211,7 @@ private fun FabContent(
         },
         icon = {
             WrapIcon(
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(SIZE_LARGE.dp),
                 iconData = AppIcons.NFC
             )
         },

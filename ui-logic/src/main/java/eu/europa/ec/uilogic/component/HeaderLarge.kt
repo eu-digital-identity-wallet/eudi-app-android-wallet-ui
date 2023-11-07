@@ -112,7 +112,7 @@ fun HeaderLarge(
 
 @ThemeModePreviews
 @Composable
-fun HeaderLargePreview() {
+private fun HeaderLargePreview() {
     PreviewTheme {
         HeaderLarge(
             modifier = Modifier.fillMaxWidth(),

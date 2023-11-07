@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.ui
+package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.model.DocumentUi
