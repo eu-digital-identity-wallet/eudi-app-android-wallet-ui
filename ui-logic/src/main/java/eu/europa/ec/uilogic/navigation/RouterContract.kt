@@ -46,10 +46,10 @@ sealed class LoginScreens {
     data object Faq : Screen(name = "FAQ")
 }
 
-sealed class AuthenticationScreens {
-    data object Request : Screen(name = "AUTHENTICATION_REQUEST")
+sealed class PresentationScreens {
+    data object Request : Screen(name = "PRESENTATION_REQUEST")
 
-    data object Loading : Screen(name = "AUTHENTICATION_LOADING")
+    data object Loading : Screen(name = "PRESENTATION_LOADING")
 }
 
 sealed class ModuleRoute(val route: String) : NavigatableItem {

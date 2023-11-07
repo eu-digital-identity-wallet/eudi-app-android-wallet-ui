@@ -15,33 +15,14 @@
  *  * limitations under the License.
  *
  */
-
 plugins {
-    id("eudi.android.library")
-    id("eudi.android.library.compose")
+    id("eudi.android.feature")
 }
 
 android {
-    namespace = "eu.europa.ec.assemblylogic"
-
-    defaultConfig {
-        manifestPlaceholders["deepLinkScheme"] = "eudi-wallet"
-        manifestPlaceholders["deepLinkHost"] = "*"
-    }
+    namespace = "eu.europa.ec.presentationfeature"
 }
 
 dependencies {
-
-    // Logic Modules
-    api(project(":resources-logic"))
-    api(project(":business-logic"))
-    api(project(":ui-logic"))
-    api(project(":network-logic"))
-
-    // Feature Modules
-    api(project(":common-feature"))
-    api(project(":startup-feature"))
-    api(project(":login-feature"))
-    api(project(":dashboard-feature"))
-    api(project(":presentation-feature"))
+    implementation(project(":common-feature"))
 }
