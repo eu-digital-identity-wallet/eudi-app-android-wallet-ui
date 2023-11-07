@@ -18,26 +18,13 @@ package eu.europa.ec.eudi.wallet.ui
 
 import android.app.Application
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
-import eu.europa.ec.eudi.wallet.EudiWalletSDK
+import eu.europa.ec.eudi.wallet.EudiWallet
 
 class WalletUIApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        val config = EudiWalletConfig.Builder(this)
-            .bleTransferMode(
-                EudiWalletConfig.BLE_SERVER_PERIPHERAL_MODE,
-                EudiWalletConfig.BLE_CLIENT_CENTRAL_MODE
-            )
-            .trustedReaderCertificates(R.raw.scytales_root_ca)
-            .documentsStorageDir(noBackupFilesDir)
-            .encryptDocumentsInStorage(true)
-            .userAuthenticationRequired(false)
-            .userAuthenticationTimeOut(30_000L)
-            .useHardwareToStoreKeys(true)
-            .openId4VpVerifierApiUri(BuildConfig.VERIFIER_API)
-            .build()
-
-        EudiWalletSDK.init(applicationContext, config)
+        val config = EudiWalletConfig.Builder(applicationContext).build()
+        EudiWallet.init(applicationContext, config)
     }
 }

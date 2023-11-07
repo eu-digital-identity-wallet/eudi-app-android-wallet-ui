@@ -32,7 +32,7 @@ import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.ResponseResult
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
-import eu.europa.ec.eudi.wallet.EudiWalletSDK
+import eu.europa.ec.eudi.wallet.EudiWallet
 import kotlinx.coroutines.launch
 
 class TransferViewModel(val app: Application) : AndroidViewModel(app) {
@@ -46,7 +46,7 @@ class TransferViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
     init {
-        EudiWalletSDK.addTransferEventListener(transferEventListener)
+        EudiWallet.addTransferEventListener(transferEventListener)
     }
 
     private var selectedDocuments = SelectedDocumentCollection()
@@ -57,7 +57,7 @@ class TransferViewModel(val app: Application) : AndroidViewModel(app) {
     var isLoading = ObservableBoolean(true)
 
     private val openId4VpManager
-        get() = EudiWalletSDK.openId4vpManager.apply {
+        get() = EudiWallet.openId4vpManager.apply {
             removeAllTransferEventListeners() // clear previous listeners
             addTransferEventListener(transferEventListener) // add only current listener
         }
@@ -94,14 +94,14 @@ class TransferViewModel(val app: Application) : AndroidViewModel(app) {
      */
     fun sendDocuments(): SendDocumentsResult {
         return when (val result =
-            EudiWalletSDK.createResponse(DisclosedDocuments(selectedDocuments.collect()))) {
+            EudiWallet.createResponse(DisclosedDocuments(selectedDocuments.collect()))) {
             is ResponseResult.Response -> {
                 if (openid4VPMode) { // send openid4vp response
                     viewModelScope.launch {
                         openId4VpManager.sendResponse(result.bytes)
                     }
                 } else {
-                    EudiWalletSDK.sendResponse(result.bytes)
+                    EudiWallet.sendResponse(result.bytes)
                 }
                 cleanUp()
                 SendDocumentsResult.Success
@@ -119,7 +119,7 @@ class TransferViewModel(val app: Application) : AndroidViewModel(app) {
     }
 
     fun cancelPresentation() {
-        EudiWalletSDK.stopPresentation()
+        EudiWallet.stopPresentation()
         openid4VPMode = false
         openId4VpManager.close()
         cleanUp()

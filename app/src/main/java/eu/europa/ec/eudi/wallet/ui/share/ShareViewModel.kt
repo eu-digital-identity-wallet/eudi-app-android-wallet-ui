@@ -24,7 +24,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
-import eu.europa.ec.eudi.wallet.EudiWalletSDK
+import eu.europa.ec.eudi.wallet.EudiWallet
 
 class ShareViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -37,7 +37,7 @@ class ShareViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     init {
-        EudiWalletSDK.addTransferEventListener(transferEventListener)
+        EudiWallet.addTransferEventListener(transferEventListener)
     }
 
     var deviceEngagementQr = ObservableField<View>()
@@ -45,7 +45,7 @@ class ShareViewModel(app: Application) : AndroidViewModel(app) {
     var isLoading = ObservableField(true)
 
     fun startQrEngagement() {
-        EudiWalletSDK.startQrEngagement()
+        EudiWallet.startQrEngagement()
     }
 
     fun showQrCode(qrCode: View) {
@@ -54,11 +54,11 @@ class ShareViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun startEngagementToApp(intent: Intent) {
-        EudiWalletSDK.startEngagementToApp(intent)
+        EudiWallet.startEngagementToApp(intent)
     }
 
     fun cancelPresentation() {
-        EudiWalletSDK.stopPresentation()
+        EudiWallet.stopPresentation()
         message.set("")
     }
 }
