@@ -87,7 +87,7 @@ fun IssuanceButton(
 
 @ThemeModePreviews
 @Composable
-fun IssuanceButtonsPreview(
+private fun IssuanceButtonsPreview(
     @PreviewParameter(TextLengthPreviewProvider::class) text: String
 ) {
     PreviewTheme {
@@ -96,7 +96,7 @@ fun IssuanceButtonsPreview(
             data = IssuanceButtonData(
                 text = text,
                 icon = AppIcons.Id
-            ), {}
-        )
+            )
+        ) {}
     }
 }
