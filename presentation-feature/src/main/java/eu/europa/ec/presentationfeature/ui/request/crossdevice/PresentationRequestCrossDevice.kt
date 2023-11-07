@@ -16,18 +16,18 @@
  *
  */
 
-package eu.europa.ec.authenticationfeature.ui.request.crossdevice
+package eu.europa.ec.presentationfeature.ui.request.crossdevice
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import eu.europa.ec.authenticationfeature.ui.request.AuthenticationRequestScreen
+import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
 
 @Composable
-fun AuthenticationRequestCrossDeviceScreen(
+fun PresentationRequestCrossDeviceScreen(
     navController: NavController,
-    viewModel: AuthenticationRequestCrossDeviceViewModel
+    viewModel: PresentationRequestCrossDeviceViewModel
 ) {
-    AuthenticationRequestScreen(
+    PresentationRequestScreen(
         navController = navController,
         viewModel = viewModel
     )

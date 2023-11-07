@@ -18,28 +18,13 @@
 
 package eu.europa.ec.presentationfeature.ui.request
 
-import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.BiometricUiConfig
-import eu.europa.ec.presentationfeature.interactor.PresentationInteractor
-import eu.europa.ec.presentationfeature.interactor.PresentationInteractorPartialState
 import eu.europa.ec.presentationfeature.ui.request.model.PresentationRequestDataUi
-import eu.europa.ec.presentationfeature.ui.request.transformer.PresentationRequestTransformer
-import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.authenticationfeature.ui.request.model.AuthenticationRequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.PresentationScreens
-import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
-import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
-import eu.europa.ec.uilogic.serializer.UiSerializer
-import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean = true,

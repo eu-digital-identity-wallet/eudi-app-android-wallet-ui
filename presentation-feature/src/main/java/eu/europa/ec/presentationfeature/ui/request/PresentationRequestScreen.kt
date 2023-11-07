@@ -218,19 +218,19 @@ private fun SheetContent(
     when (sheetContent) {
         PresentationRequestBottomSheetContent.SUBTITLE -> {
             DialogBottomSheet(
-                title = stringResource(id = R.string.online_authentication_userData_bottom_sheet_subtitle_title),
-                message = stringResource(id = R.string.online_authentication_userData_bottom_sheet_subtitle_subtitle),
-                positiveButtonText = stringResource(id = R.string.online_authentication_userData_bottom_sheet_subtitle_primary_button_text),
+                title = stringResource(id = R.string.presentation_cross_device_bottom_sheet_subtitle_title),
+                message = stringResource(id = R.string.presentation_cross_device_bottom_sheet_subtitle_subtitle),
+                positiveButtonText = stringResource(id = R.string.presentation_cross_device_bottom_sheet_subtitle_primary_button_text),
                 onPositiveClick = { onEventSent(Event.BottomSheet.Subtitle.PrimaryButtonPressed) },
             )
         }
 
         PresentationRequestBottomSheetContent.CANCEL -> {
             DialogBottomSheet(
-                title = stringResource(id = R.string.online_authentication_userData_bottom_sheet_cancel_title),
-                message = stringResource(id = R.string.online_authentication_userData_bottom_sheet_cancel_subtitle),
-                positiveButtonText = stringResource(id = R.string.online_authentication_userData_bottom_sheet_cancel_primary_button_text),
-                negativeButtonText = stringResource(id = R.string.online_authentication_userData_bottom_sheet_cancel_secondary_button_text),
+                title = stringResource(id = R.string.presentation_cross_device_bottom_sheet_cancel_title),
+                message = stringResource(id = R.string.presentation_cross_device_bottom_sheet_cancel_subtitle),
+                positiveButtonText = stringResource(id = R.string.presentation_cross_device_bottom_sheet_cancel_primary_button_text),
+                negativeButtonText = stringResource(id = R.string.presentation_cross_device_bottom_sheet_cancel_secondary_button_text),
                 onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
                 onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
             )
@@ -262,7 +262,7 @@ fun StickyBottomSection(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onEventSend(Event.PrimaryButtonPressed) }
         ) {
-            Text(text = stringResource(id = R.string.online_authentication_userData_primary_button_text))
+            Text(text = stringResource(id = R.string.presentation_cross_device_primary_button_text))
         }
         VSpacer.Medium()
 
@@ -270,7 +270,7 @@ fun StickyBottomSection(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onEventSend(Event.SecondaryButtonPressed) }
         ) {
-            Text(text = stringResource(id = R.string.online_authentication_userData_secondary_button_text))
+            Text(text = stringResource(id = R.string.presentation_cross_device_secondary_button_text))
         }
     }
 }

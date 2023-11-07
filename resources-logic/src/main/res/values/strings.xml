@@ -61,30 +61,30 @@
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
 
-    <!-- Authentication UserData Screen -->
-    <string name="online_authentication_userData_title">EUDI Conference requests the following</string>
-    <string name="online_authentication_userData_subtitle_one">Please review carefully before sharing your data.</string>
-    <string name="online_authentication_userData_subtitle_two"> Why we need your data?</string>
-    <string name="online_authentication_userData_card_text">EUDI Conference</string>
-    <string name="online_authentication_userData_warning_text">Your selection of data to be shared may impact the service</string>
-    <string name="online_authentication_userData_primary_button_text">SHARE</string>
-    <string name="online_authentication_userData_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
-    <string name="online_authentication_userData_bottom_sheet_cancel_title">Cancel information sharing?</string>
-    <string name="online_authentication_userData_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the dashboard without sharing any information</string>
-    <string name="online_authentication_userData_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
-    <string name="online_authentication_userData_bottom_sheet_cancel_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
-    <string name="online_authentication_userData_bottom_sheet_subtitle_title">Why we need your data</string>
-    <string name="online_authentication_userData_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
-    <string name="online_authentication_userData_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
+    <!-- Presentation Cross Device Screen -->
+    <string name="presentation_cross_device_title">EUDI Conference requests the following</string>
+    <string name="presentation_cross_device_subtitle_one">Please review carefully before sharing your data.</string>
+    <string name="presentation_cross_device_subtitle_two"> Why we need your data?</string>
+    <string name="presentation_cross_device_card_text">EUDI Conference</string>
+    <string name="presentation_cross_device_warning_text">Your selection of data to be shared may impact the service</string>
+    <string name="presentation_cross_device_primary_button_text">SHARE</string>
+    <string name="presentation_cross_device_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="presentation_cross_device_bottom_sheet_cancel_title">Cancel information sharing?</string>
+    <string name="presentation_cross_device_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the dashboard without sharing any information</string>
+    <string name="presentation_cross_device_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
+    <string name="presentation_cross_device_bottom_sheet_cancel_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="presentation_cross_device_bottom_sheet_subtitle_title">Why we need your data</string>
+    <string name="presentation_cross_device_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
+    <string name="presentation_cross_device_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
 
-    <!-- Authentication Loading Screen -->
-    <string name="online_authentication_loading_title">Relying party requests the following</string>
-    <string name="online_authentication_loading_subtitle">Please wait…</string>
-    <string name="online_authentication_success_config_title">@string/generic_success</string>
-    <string name="online_authentication_success_config_subtitle">You successfully shared information with the Relying party</string>
-    <string name="online_authentication_success_config_primary_button_text">@string/generic_ok</string>
-    <string name="online_authentication_biometry_share_subtitle">Use your biometrics to share information</string>
-    <string name="online_authentication_quick_pin_share_subtitle">Type your quick pin to share information</string>
+    <!-- Presentation Loading Screen -->
+    <string name="presentation_loading_title">Relying party requests the following</string>
+    <string name="presentation_loading_subtitle">Please wait…</string>
+    <string name="presentation_success_config_title">@string/generic_success</string>
+    <string name="presentation_success_config_subtitle">You successfully shared information with the Relying party</string>
+    <string name="presentation_success_config_primary_button_text">@string/generic_ok</string>
+    <string name="presentation_biometry_share_subtitle">Use your biometrics to share information</string>
+    <string name="presentation_quick_pin_share_subtitle">Type your quick pin to share information</string>
 
     <!-- Login -->
     <string name="welcome_login_button_title">LOGIN</string>

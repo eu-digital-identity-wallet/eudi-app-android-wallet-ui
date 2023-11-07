@@ -16,22 +16,22 @@
  *
  */
 
-package eu.europa.ec.authenticationfeature.ui.request.crossdevice
+package eu.europa.ec.presentationfeature.ui.request.crossdevice
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.authenticationfeature.interactor.AuthenticationInteractor
-import eu.europa.ec.authenticationfeature.interactor.AuthenticationInteractorPartialState
-import eu.europa.ec.authenticationfeature.ui.request.CommonAuthenticationRequestViewModel
-import eu.europa.ec.authenticationfeature.ui.request.Event
-import eu.europa.ec.authenticationfeature.ui.request.transformer.AuthenticationRequestTransformer
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.presentationfeature.interactor.PresentationInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationInteractorPartialState
+import eu.europa.ec.presentationfeature.ui.request.CommonPresentationRequestViewModel
+import eu.europa.ec.presentationfeature.ui.request.Event
+import eu.europa.ec.presentationfeature.ui.request.transformer.PresentationRequestTransformer
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
-import eu.europa.ec.uilogic.navigation.AuthenticationScreens
 import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -40,27 +40,27 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class AuthenticationRequestCrossDeviceViewModel(
-    private val interactor: AuthenticationInteractor,
+class PresentationRequestCrossDeviceViewModel(
+    private val interactor: PresentationInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
     private val routerHost: RouterHost
-) : CommonAuthenticationRequestViewModel() {
+) : CommonPresentationRequestViewModel() {
 
     override fun getScreenTitle(): String {
-        return resourceProvider.getString(R.string.online_authentication_userData_title)
+        return resourceProvider.getString(R.string.presentation_cross_device_title)
     }
 
     override fun getScreenSubtitle(): String {
-        return resourceProvider.getString(R.string.online_authentication_userData_subtitle_one)
+        return resourceProvider.getString(R.string.presentation_cross_device_subtitle_one)
     }
 
     override fun getScreenClickableSubtitle(): String? {
-        return resourceProvider.getString(R.string.online_authentication_userData_subtitle_two)
+        return resourceProvider.getString(R.string.presentation_cross_device_subtitle_two)
     }
 
     override fun getWarningText(): String {
-        return resourceProvider.getString(R.string.online_authentication_userData_warning_text)
+        return resourceProvider.getString(R.string.presentation_cross_device_warning_text)
     }
 
     override fun getNextScreen(): String {
@@ -71,17 +71,17 @@ class AuthenticationRequestCrossDeviceViewModel(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
                             title = getScreenTitle(),
-                            subTitle = resourceProvider.getString(R.string.online_authentication_biometry_share_subtitle),
-                            quickPinOnlySubTitle = resourceProvider.getString(R.string.online_authentication_quick_pin_share_subtitle),
+                            subTitle = resourceProvider.getString(R.string.presentation_biometry_share_subtitle),
+                            quickPinOnlySubTitle = resourceProvider.getString(R.string.presentation_quick_pin_share_subtitle),
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PUSH,
-                                screenToNavigate = AuthenticationScreens.Loading
+                                screenToNavigate = PresentationScreens.Loading
                             ),
                             onBackNavigation = ConfigNavigation(
                                 navigationType = NavigationType.POP,
-                                screenToNavigate = AuthenticationScreens.CrossDevice
+                                screenToNavigate = PresentationScreens.CrossDevice
                             )
                         ),
                         BiometricUiConfig.Parser
@@ -106,7 +106,7 @@ class AuthenticationRequestCrossDeviceViewModel(
         viewModelScope.launch {
             interactor.getUserData().collect { response ->
                 when (response) {
-                    is AuthenticationInteractorPartialState.Failure -> {
+                    is PresentationInteractorPartialState.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -119,12 +119,12 @@ class AuthenticationRequestCrossDeviceViewModel(
                         }
                     }
 
-                    is AuthenticationInteractorPartialState.Success -> {
+                    is PresentationInteractorPartialState.Success -> {
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                items = AuthenticationRequestTransformer.transformToUiItems(
+                                items = PresentationRequestTransformer.transformToUiItems(
                                     userDataDomain = response.userDataDomain
                                 )
                             )
