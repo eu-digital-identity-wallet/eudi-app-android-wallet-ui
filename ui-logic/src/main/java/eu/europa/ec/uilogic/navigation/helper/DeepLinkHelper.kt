@@ -87,7 +87,7 @@ fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
 fun handleDeepLinkAction(navController: NavController, uri: Uri) {
     hasDeepLink(uri)?.let {
         val screen: Screen = when (it.type) {
-            DeepLinkType.PRESENTATION -> PresentationScreens.CrossDevice
+            DeepLinkType.AUTHORIZATION -> PresentationScreens.CrossDevice
         }
         navController.navigate(screen.screenRoute) {
             popUpTo(screen.screenRoute) { inclusive = true }
@@ -97,7 +97,7 @@ fun handleDeepLinkAction(navController: NavController, uri: Uri) {
 
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
 enum class DeepLinkType(val type: String) {
-    PRESENTATION("presentation");
+    AUTHORIZATION("authorization");
 
     companion object {
         fun parse(type: String?): DeepLinkType? = entries.firstOrNull { it.type == type }
