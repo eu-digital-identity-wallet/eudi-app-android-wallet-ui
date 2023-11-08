@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.loginfeature.model.FaqUiModel
@@ -53,6 +52,7 @@ import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -227,7 +227,7 @@ private fun ExpandableListItem(
     )
 }
 
-@Preview(showSystemUi = true)
+@ThemeModePreviews
 @Composable
 private fun FaqScreenPreview() {
     PreviewTheme {
@@ -260,7 +260,7 @@ private fun FaqScreenPreview() {
     }
 }
 
-@Preview(showSystemUi = true)
+@ThemeModePreviews
 @Composable
 private fun FaqScreenEmptyPreview() {
     PreviewTheme {

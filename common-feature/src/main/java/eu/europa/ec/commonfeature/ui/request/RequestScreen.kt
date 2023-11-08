@@ -36,7 +36,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
@@ -46,6 +45,7 @@ import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
@@ -273,7 +273,7 @@ fun StickyBottomSection(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
+@ThemeModePreviews
 @Composable
 private fun ContentPreview() {
     PreviewTheme {
@@ -294,7 +294,7 @@ private fun ContentPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@ThemeModePreviews
 @Composable
 private fun SheetContentCancelPreview() {
     PreviewTheme {
@@ -305,7 +305,7 @@ private fun SheetContentCancelPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@ThemeModePreviews
 @Composable
 private fun SheetContentSubtitlePreview() {
     PreviewTheme {
@@ -316,7 +316,7 @@ private fun SheetContentSubtitlePreview() {
     }
 }
 
-@Preview(showBackground = true)
+@ThemeModePreviews
 @Composable
 private fun StickyBottomSectionPreview() {
     PreviewTheme {

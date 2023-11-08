@@ -34,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
@@ -49,6 +48,7 @@ import eu.europa.ec.uilogic.component.CheckboxWithContent
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -259,7 +259,7 @@ fun WarningCard(warningText: String) {
     )
 }
 
-@Preview(showBackground = true)
+@ThemeModePreviews
 @Composable
 private fun IdentificationPartyCardPreview() {
     PreviewTheme {
