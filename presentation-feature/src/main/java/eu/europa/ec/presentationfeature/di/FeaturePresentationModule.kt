@@ -27,7 +27,7 @@ import org.koin.core.annotation.Module
 
 @Module
 @ComponentScan("eu.europa.ec.presentationfeature")
-class PresentationModule
+class FeaturePresentationModule
 
 @Factory
 fun providePresentationInteractor(
