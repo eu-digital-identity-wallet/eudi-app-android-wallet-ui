@@ -16,18 +16,8 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.model
+package eu.europa.ec.commonfeature.ui.request.model
 
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
-
-data class UserDataDomain(
-    val documentTypeUi: DocumentTypeUi,
-    val optionalFields: List<UserIdentificationDomain>,
-    val requiredFieldsTitle: String,
-    val requiredFields: List<UserIdentificationDomain>,
-)
-
-data class UserIdentificationDomain(
-    val name: String,
-    val value: String?,
+data class DocumentItemUi(
+    val title: String
 )

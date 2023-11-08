@@ -16,9 +16,9 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request
+package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.presentationfeature.ui.request.model.PresentationRequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -31,14 +31,14 @@ data class State(
     val isShowingFullUserInfo: Boolean = false,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val sheetContent: PresentationRequestBottomSheetContent = PresentationRequestBottomSheetContent.SUBTITLE,
+    val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.SUBTITLE,
 
     val screenTitle: String,
     val screenSubtitle: String,
     val screenClickableSubtitle: String?,
     val warningText: String,
 
-    val items: List<PresentationRequestDataUi<Event>> = emptyList(),
+    val items: List<RequestDataUi<Event>> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -56,14 +56,15 @@ sealed class Event : ViewEvent {
     data object SecondaryButtonPressed : Event()
 
     sealed class BottomSheet : Event() {
-        data class UpdateBottomSheetState(val isOpen: Boolean) : Event()
+        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
+
         sealed class Cancel : BottomSheet() {
-            data object PrimaryButtonPressed : Event()
-            data object SecondaryButtonPressed : Event()
+            data object PrimaryButtonPressed : Cancel()
+            data object SecondaryButtonPressed : Cancel()
         }
 
         sealed class Subtitle : BottomSheet() {
-            data object PrimaryButtonPressed : Event()
+            data object PrimaryButtonPressed : Subtitle()
         }
     }
 }
@@ -74,27 +75,23 @@ sealed class Effect : ViewSideEffect {
             val screenRoute: String
         ) : Navigation()
 
-        data class PopBackStackUpTo(
-            val screenRoute: String,
-            val inclusive: Boolean
-        ) : Navigation()
+        data object Pop : Navigation()
     }
 
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
 }
 
-enum class PresentationRequestBottomSheetContent {
+enum class RequestBottomSheetContent {
     SUBTITLE, CANCEL
 }
 
-abstract class CommonPresentationRequestViewModel : MviViewModel<Event, State, Effect>() {
+abstract class CommonRequestViewModel : MviViewModel<Event, State, Effect>() {
     abstract fun getScreenTitle(): String
     abstract fun getScreenSubtitle(): String
     abstract fun getScreenClickableSubtitle(): String?
     abstract fun getWarningText(): String
     abstract fun getNextScreen(): String
-    abstract fun getPreviousScreen(): String
     abstract fun doWork()
 
     override fun setInitialState(): State {
@@ -102,7 +99,8 @@ abstract class CommonPresentationRequestViewModel : MviViewModel<Event, State, E
             screenTitle = getScreenTitle(),
             screenSubtitle = getScreenSubtitle(),
             screenClickableSubtitle = getScreenClickableSubtitle(),
-            warningText = getWarningText()
+            warningText = getWarningText(),
+            error = null
         )
     }
 
@@ -138,7 +136,7 @@ abstract class CommonPresentationRequestViewModel : MviViewModel<Event, State, E
             }
 
             is Event.SubtitleClicked -> {
-                showBottomSheet(sheetContent = PresentationRequestBottomSheetContent.SUBTITLE)
+                showBottomSheet(sheetContent = RequestBottomSheetContent.SUBTITLE)
             }
 
             is Event.PrimaryButtonPressed -> {
@@ -146,7 +144,7 @@ abstract class CommonPresentationRequestViewModel : MviViewModel<Event, State, E
             }
 
             is Event.SecondaryButtonPressed -> {
-                showBottomSheet(sheetContent = PresentationRequestBottomSheetContent.CANCEL)
+                showBottomSheet(sheetContent = RequestBottomSheetContent.CANCEL)
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
@@ -173,27 +171,20 @@ abstract class CommonPresentationRequestViewModel : MviViewModel<Event, State, E
     private fun doNavigation(navigationType: NavigationType) {
         when (navigationType) {
             NavigationType.PUSH -> {
-                setEffect {
-                    Effect.Navigation.SwitchScreen(getNextScreen())
-                }
+                setEffect { Effect.Navigation.SwitchScreen(getNextScreen()) }
             }
 
             NavigationType.POP -> {
-                setEffect {
-                    Effect.Navigation.PopBackStackUpTo(
-                        screenRoute = getPreviousScreen(),
-                        inclusive = false
-                    )
-                }
+                setEffect { Effect.Navigation.Pop }
             }
 
             NavigationType.DEEPLINK -> {}
         }
     }
 
-    private fun expandOrCollapseRequiredDataList(items: List<PresentationRequestDataUi<Event>>) {
+    private fun expandOrCollapseRequiredDataList(items: List<RequestDataUi<Event>>) {
         val updatedItems = items.map { item ->
-            if (item is PresentationRequestDataUi.RequiredFields) {
+            if (item is RequestDataUi.RequiredFields) {
                 item.copy(
                     requiredFieldsItemUi = item.requiredFieldsItemUi
                         .copy(expanded = !item.requiredFieldsItemUi.expanded)
@@ -208,9 +199,9 @@ abstract class CommonPresentationRequestViewModel : MviViewModel<Event, State, E
     }
 
     private fun updateUserIdentificationItem(id: Int) {
-        val items: List<PresentationRequestDataUi<Event>> = viewState.value.items
+        val items: List<RequestDataUi<Event>> = viewState.value.items
         val updatedList = items.map { item ->
-            if (item is PresentationRequestDataUi.OptionalField
+            if (item is RequestDataUi.OptionalField
                 && id == item.optionalFieldItemUi.userIdentificationUi.id
             ) {
                 val itemCurrentCheckedState = item.optionalFieldItemUi.userIdentificationUi.checked
@@ -230,7 +221,7 @@ abstract class CommonPresentationRequestViewModel : MviViewModel<Event, State, E
         }
     }
 
-    private fun showBottomSheet(sheetContent: PresentationRequestBottomSheetContent) {
+    private fun showBottomSheet(sheetContent: RequestBottomSheetContent) {
         setState {
             copy(sheetContent = sheetContent)
         }

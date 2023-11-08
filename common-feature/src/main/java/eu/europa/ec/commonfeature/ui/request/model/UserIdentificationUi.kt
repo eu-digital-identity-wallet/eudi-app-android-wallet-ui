@@ -16,9 +16,7 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request.model
-
-import eu.europa.ec.presentationfeature.model.UserIdentificationDomain
+package eu.europa.ec.commonfeature.ui.request.model
 
 data class UserIdentificationUi<T>(
     val id: Int,

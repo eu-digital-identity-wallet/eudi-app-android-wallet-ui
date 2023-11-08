@@ -61,21 +61,20 @@
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
 
-    <!-- Presentation Cross Device Screen -->
-    <string name="presentation_cross_device_title">EUDI Conference requests the following</string>
-    <string name="presentation_cross_device_subtitle_one">Please review carefully before sharing your data.</string>
-    <string name="presentation_cross_device_subtitle_two"> Why we need your data?</string>
-    <string name="presentation_cross_device_card_text">EUDI Conference</string>
-    <string name="presentation_cross_device_warning_text">Your selection of data to be shared may impact the service</string>
-    <string name="presentation_cross_device_primary_button_text">SHARE</string>
-    <string name="presentation_cross_device_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
-    <string name="presentation_cross_device_bottom_sheet_cancel_title">Cancel information sharing?</string>
-    <string name="presentation_cross_device_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the dashboard without sharing any information</string>
-    <string name="presentation_cross_device_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
-    <string name="presentation_cross_device_bottom_sheet_cancel_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
-    <string name="presentation_cross_device_bottom_sheet_subtitle_title">Why we need your data</string>
-    <string name="presentation_cross_device_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
-    <string name="presentation_cross_device_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
+    <!-- Request Screen -->
+    <string name="request_title">EUDI Conference requests the following</string>
+    <string name="request_subtitle_one">Please review carefully before sharing your data.</string>
+    <string name="request_subtitle_two"> Why we need your data?</string>
+    <string name="request_warning_text">Your selection of data to be shared may impact the service</string>
+    <string name="request_primary_button_text">SHARE</string>
+    <string name="request_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="request_bottom_sheet_cancel_title">Cancel information sharing?</string>
+    <string name="request_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the dashboard without sharing any information</string>
+    <string name="request_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
+    <string name="request_bottom_sheet_cancel_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="request_bottom_sheet_subtitle_title">Why we need your data</string>
+    <string name="request_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
+    <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
 
     <!-- Presentation Loading Screen -->
     <string name="presentation_loading_title">Relying party requests the following</string>

@@ -16,15 +16,15 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request.crossdevice
+package eu.europa.ec.presentationfeature.ui.crossdevice.request
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
-import eu.europa.ec.presentationfeature.interactor.PresentationInteractor
-import eu.europa.ec.presentationfeature.interactor.PresentationInteractorPartialState
-import eu.europa.ec.presentationfeature.ui.request.CommonPresentationRequestViewModel
-import eu.europa.ec.presentationfeature.ui.request.Event
-import eu.europa.ec.presentationfeature.ui.request.transformer.PresentationRequestTransformer
+import eu.europa.ec.commonfeature.ui.request.CommonRequestViewModel
+import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
+import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -32,7 +32,6 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
-import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -40,27 +39,26 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class PresentationRequestCrossDeviceViewModel(
-    private val interactor: PresentationInteractor,
+class PresentationCrossDeviceRequestViewModel(
+    private val interactor: PresentationCrossDeviceInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    private val routerHost: RouterHost
-) : CommonPresentationRequestViewModel() {
+) : CommonRequestViewModel() {
 
     override fun getScreenTitle(): String {
-        return resourceProvider.getString(R.string.presentation_cross_device_title)
+        return resourceProvider.getString(R.string.request_title)
     }
 
     override fun getScreenSubtitle(): String {
-        return resourceProvider.getString(R.string.presentation_cross_device_subtitle_one)
+        return resourceProvider.getString(R.string.request_subtitle_one)
     }
 
     override fun getScreenClickableSubtitle(): String? {
-        return resourceProvider.getString(R.string.presentation_cross_device_subtitle_two)
+        return resourceProvider.getString(R.string.request_subtitle_two)
     }
 
     override fun getWarningText(): String {
-        return resourceProvider.getString(R.string.presentation_cross_device_warning_text)
+        return resourceProvider.getString(R.string.request_warning_text)
     }
 
     override fun getNextScreen(): String {
@@ -77,11 +75,11 @@ class PresentationRequestCrossDeviceViewModel(
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PUSH,
-                                screenToNavigate = PresentationScreens.Loading
+                                screenToNavigate = PresentationScreens.CrossDeviceLoading
                             ),
                             onBackNavigation = ConfigNavigation(
                                 navigationType = NavigationType.POP,
-                                screenToNavigate = PresentationScreens.CrossDevice
+                                screenToNavigate = PresentationScreens.CrossDeviceRequest
                             )
                         ),
                         BiometricUiConfig.Parser
@@ -89,10 +87,6 @@ class PresentationRequestCrossDeviceViewModel(
                 )
             )
         )
-    }
-
-    override fun getPreviousScreen(): String {
-        return routerHost.getLandingScreen()
     }
 
     override fun doWork() {
@@ -106,7 +100,7 @@ class PresentationRequestCrossDeviceViewModel(
         viewModelScope.launch {
             interactor.getUserData().collect { response ->
                 when (response) {
-                    is PresentationInteractorPartialState.Failure -> {
+                    is PresentationCrossDeviceInteractorPartialState.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -119,12 +113,12 @@ class PresentationRequestCrossDeviceViewModel(
                         }
                     }
 
-                    is PresentationInteractorPartialState.Success -> {
+                    is PresentationCrossDeviceInteractorPartialState.Success -> {
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                items = PresentationRequestTransformer.transformToUiItems(
+                                items = RequestTransformer.transformToUiItems(
                                     userDataDomain = response.userDataDomain
                                 )
                             )

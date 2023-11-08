@@ -16,19 +16,18 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.loading
+package eu.europa.ec.commonfeature.ui.request.model
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
 
-@Composable
-fun PresentationLoadingScreen(
-    navController: NavController,
-    viewModel: PresentationLoadingViewModel
-) {
-    LoadingScreen(
-        navController = navController,
-        viewModel = viewModel
-    )
-}
+data class UserDataDomain(
+    val documentTypeUi: DocumentTypeUi,
+    val optionalFields: List<UserIdentificationDomain>,
+    val requiredFieldsTitle: String,
+    val requiredFields: List<UserIdentificationDomain>,
+)
+
+data class UserIdentificationDomain(
+    val name: String,
+    val value: String?,
+)

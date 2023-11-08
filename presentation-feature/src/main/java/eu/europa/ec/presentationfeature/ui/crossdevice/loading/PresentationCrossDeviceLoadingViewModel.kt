@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.loading
+package eu.europa.ec.presentationfeature.ui.crossdevice.loading
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class PresentationLoadingViewModel constructor(
+class PresentationCrossDeviceLoadingViewModel constructor(
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider
 ) : CommonLoadingViewModel() {
@@ -51,11 +51,11 @@ class PresentationLoadingViewModel constructor(
     }
 
     override fun getPreviousScreen(): Screen {
-        return PresentationScreens.CrossDevice
+        return PresentationScreens.CrossDeviceRequest
     }
 
     override fun getCallerScreen(): Screen {
-        return PresentationScreens.Loading
+        return PresentationScreens.CrossDeviceLoading
     }
 
     override fun getNextScreen(): String {

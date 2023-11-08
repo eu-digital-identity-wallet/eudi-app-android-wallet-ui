@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request
+package eu.europa.ec.commonfeature.ui.request
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -37,9 +37,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.presentationfeature.ui.request.model.OptionalFieldItemUi
-import eu.europa.ec.presentationfeature.ui.request.model.PresentationRequestDataUi
-import eu.europa.ec.presentationfeature.ui.request.model.RequiredFieldsItemUi
+import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.resourceslogic.theme.values.primaryDark
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -58,9 +58,9 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 @Composable
-fun <T> PresentationRequest(
+fun <T> Request(
     modifier: Modifier = Modifier,
-    items: List<PresentationRequestDataUi<T>>,
+    items: List<RequestDataUi<T>>,
     isShowingFullUserInfo: Boolean,
     onEventSend: (T) -> Unit,
     listState: LazyListState,
@@ -74,17 +74,17 @@ fun <T> PresentationRequest(
 
         items(items) { item ->
             when (item) {
-                is PresentationRequestDataUi.Divider -> {
+                is RequestDataUi.Divider -> {
                     Divider()
                 }
 
-                is PresentationRequestDataUi.Document -> {
+                is RequestDataUi.Document -> {
                     DocumentCard(
                         cardText = item.documentItemUi.title,
                     )
                 }
 
-                is PresentationRequestDataUi.OptionalField -> {
+                is RequestDataUi.OptionalField -> {
                     OptionalField(
                         item = item.optionalFieldItemUi,
                         showFullDetails = isShowingFullUserInfo,
@@ -92,7 +92,7 @@ fun <T> PresentationRequest(
                     )
                 }
 
-                is PresentationRequestDataUi.RequiredFields -> {
+                is RequestDataUi.RequiredFields -> {
                     RequiredFields(
                         item = item.requiredFieldsItemUi,
                         onEventSend = onEventSend,
@@ -100,7 +100,7 @@ fun <T> PresentationRequest(
                     )
                 }
 
-                is PresentationRequestDataUi.Space -> {
+                is RequestDataUi.Space -> {
                     VSpacer.Custom(space = item.space)
                 }
             }

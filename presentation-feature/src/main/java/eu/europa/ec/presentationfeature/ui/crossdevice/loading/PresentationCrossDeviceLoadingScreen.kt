@@ -16,18 +16,18 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request.crossdevice
+package eu.europa.ec.presentationfeature.ui.crossdevice.loading
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
+import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
 
 @Composable
-fun PresentationRequestCrossDeviceScreen(
+fun PresentationCrossDeviceLoadingScreen(
     navController: NavController,
-    viewModel: PresentationRequestCrossDeviceViewModel
+    viewModel: PresentationCrossDeviceLoadingViewModel
 ) {
-    PresentationRequestScreen(
+    LoadingScreen(
         navController = navController,
         viewModel = viewModel
     )
