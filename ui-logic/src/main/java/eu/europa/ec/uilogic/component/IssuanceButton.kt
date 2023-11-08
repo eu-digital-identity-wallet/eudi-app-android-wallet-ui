@@ -29,7 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
+import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
@@ -55,7 +55,7 @@ fun IssuanceButton(
         onClick = onClick,
         throttleClicks = true,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.backgroundPaper,
+            containerColor = MaterialTheme.colorScheme.backgroundDefault,
         )
     ) {
         Row(

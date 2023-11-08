@@ -19,9 +19,7 @@
 package eu.europa.ec.uilogic.component.details
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -31,19 +29,16 @@ import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 @Composable
 fun DetailsContent(
     modifier: Modifier = Modifier,
     data: List<InfoTextWithNameAndValueData>,
-    paddingValues: PaddingValues = PaddingValues(SPACING_LARGE.dp)
 ) {
     LazyColumn(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(paddingValues),
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         items(data) { item ->

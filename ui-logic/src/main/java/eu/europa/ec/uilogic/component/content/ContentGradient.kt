@@ -30,11 +30,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_LARGE
 
 enum class GradientEdge {
@@ -96,9 +96,9 @@ private fun BoxGradient(
     )
 }
 
-@Preview
+@ThemeModePreviews
 @Composable
-fun ContentGradientBottomPreview() {
+private fun ContentGradientBottomPreview() {
     PreviewTheme {
         ContentGradient(
             modifier = Modifier.size(100.dp, 100.dp)
@@ -112,9 +112,9 @@ fun ContentGradientBottomPreview() {
     }
 }
 
-@Preview
+@ThemeModePreviews
 @Composable
-fun ContentGradientTopPreview() {
+private fun ContentGradientTopPreview() {
     PreviewTheme {
         ContentGradient(
             modifier = Modifier.size(100.dp, 100.dp),
@@ -129,9 +129,9 @@ fun ContentGradientTopPreview() {
     }
 }
 
-@Preview
+@ThemeModePreviews
 @Composable
-fun ContentGradientColoredPreview() {
+private fun ContentGradientColoredPreview() {
     PreviewTheme {
         ContentGradient(
             modifier = Modifier.size(100.dp, 100.dp),

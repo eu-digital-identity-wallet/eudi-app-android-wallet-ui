@@ -23,24 +23,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 data class HeaderData(
     val title: String,
@@ -82,31 +76,10 @@ fun HeaderLarge(
 
         VSpacer.Large()
 
-        ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
-            val (image, icon) = createRefs()
-            val verticalGuideline = createGuidelineFromStart(0.50f)
-            WrapImage(
-                modifier = Modifier
-                    .size(160.dp, 160.dp)
-                    .constrainAs(image) {
-                        start.linkTo(parent.start)
-                    },
-                iconData = data.image
-            )
-            if (data.icon != null) {
-                WrapImage(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(SIZE_SMALL.dp))
-                        .constrainAs(icon) {
-                            start.linkTo(verticalGuideline)
-                            top.linkTo(image.top)
-                            bottom.linkTo(image.bottom)
-                            end.linkTo(verticalGuideline)
-                        },
-                    iconData = data.icon,
-                )
-            }
-        }
+        BigImageAndMediumIcon(
+            image = data.image,
+            icon = data.icon
+        )
     }
 }
 

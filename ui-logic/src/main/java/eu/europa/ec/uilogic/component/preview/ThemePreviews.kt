@@ -21,10 +21,17 @@ package eu.europa.ec.uilogic.component.preview
 import android.content.res.Configuration.UI_MODE_NIGHT_NO
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.ui.tooling.preview.Preview
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 
 /**
  * Creates previews for Light and Dark mode
  * */
-@Preview(name = "Light Mode", showBackground = true, uiMode = UI_MODE_NIGHT_NO)
-@Preview(name = "Dark Mode", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
+@Preview(
+    name = "Light Mode", showBackground = true, uiMode = UI_MODE_NIGHT_NO,
+    backgroundColor = ThemeColors.eudiw_theme_light_backgroundPaper
+)
+@Preview(
+    name = "Dark Mode", showBackground = true, uiMode = UI_MODE_NIGHT_YES,
+    backgroundColor = ThemeColors.eudiw_theme_dark_backgroundPaper
+)
 annotation class ThemeModePreviews
