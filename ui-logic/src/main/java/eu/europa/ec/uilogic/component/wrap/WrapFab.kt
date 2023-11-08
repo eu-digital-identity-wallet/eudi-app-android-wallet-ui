@@ -25,12 +25,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.tooling.preview.Preview
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeLarge
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 
 private val fabShape: Shape
     @Composable get() = MaterialTheme.shapes.allCorneredShapeLarge
@@ -131,9 +131,9 @@ fun WrapSecondaryExtendedFab(
     )
 }
 
-@Preview
+@ThemeModePreviews
 @Composable
-fun WrapPrimaryFabPreview() {
+private fun WrapPrimaryFabPreview() {
     PreviewTheme {
         WrapPrimaryFab(
             data = FabData(

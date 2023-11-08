@@ -29,10 +29,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
@@ -82,7 +82,7 @@ fun WrapExpandableCard(
     }
 }
 
-@Preview
+@ThemeModePreviews
 @Composable
 private fun WrapExpandableCardCollapsedPreview() {
     PreviewTheme {
@@ -100,7 +100,7 @@ private fun WrapExpandableCardCollapsedPreview() {
     }
 }
 
-@Preview
+@ThemeModePreviews
 @Composable
 private fun WrapExpandableCardExpandedPreview() {
     PreviewTheme {

@@ -29,9 +29,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.extension.throttledClickable
 
 @Composable
@@ -71,7 +71,7 @@ fun WrapCard(
     }
 }
 
-@Preview
+@ThemeModePreviews
 @Composable
 private fun WrapCardPreview() {
     PreviewTheme {
