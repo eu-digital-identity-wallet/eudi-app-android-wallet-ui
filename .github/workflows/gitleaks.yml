@@ -1,0 +1,27 @@
+name: Secret Scanning - Gitleaks
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  Secret_Scanning:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks from container
+        run: |
+            docker create --name GL --entrypoint /bin/bash --interactive --volume ${{ github.workspace }}:/src zricethezav/gitleaks 
+            docker start GL
+            docker exec GL git config --global --add safe.directory '/src'
+            docker exec --user $(id -u):$(id -g) GL gitleaks detect --source=/src --verbose -c /src/security/gitleaks/gitleaks.toml --report-path /src/gitleaks-report.json
+        continue-on-error: true
+
+      - name: upload_artifacts   
+        uses: actions/upload-artifact@v3
+        with:
+          name: Gitleaks Artifact Upload
+          path:  ${{ github.workspace }}/gitleaks-report.json
