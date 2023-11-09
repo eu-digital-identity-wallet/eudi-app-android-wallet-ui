@@ -30,6 +30,7 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.InjectedParam
 
 data class State(
     val isLoading: Boolean = false,
@@ -54,6 +55,7 @@ sealed class Effect : ViewSideEffect {
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
     private val resourceProvider: ResourceProvider,
+    @InjectedParam private val documentId: String
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
         userName = documentDetailsInteractor.getUserName()

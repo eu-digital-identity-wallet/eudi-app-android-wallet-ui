@@ -19,8 +19,11 @@
 package eu.europa.ec.dashboardfeature.ui.details
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
@@ -49,13 +52,12 @@ fun DocumentDetailsScreen(
 
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.NONE,
+        navigatableAction = ScreenNavigateAction.BACKABLE,
         contentErrorConfig = state.error
     ) { _ ->
         Content(
             state = state,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController)
             }
@@ -83,21 +85,29 @@ private fun handleNavigationEffect(
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
-    onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit
 ) {
-    // TODO Remove
-    val headerData = HeaderData("Title", "Subtitle", AppIcons.User, AppIcons.IdStroke)
-    val detailsData = (1..10).map {
-        InfoTextWithNameAndValueData(
-            infoName = "Name $it",
-            infoValue = "Value $it"
-        )
-    }
 
-    Column {
-        HeaderLarge(data = headerData)
-        DetailsContent(data = detailsData)
+    if (state.document != null) {
+        val headerData = HeaderData(
+            title = state.document.documentType.title,
+            subtitle = state.userName ?: "",
+            AppIcons.User,
+            AppIcons.IdStroke
+        )
+        val detailsData = state.document.documentItems.map {
+            InfoTextWithNameAndValueData(
+                infoName = it.title,
+                infoValue = it.value
+            )
+        }
+
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState())
+        ) {
+            HeaderLarge(data = headerData)
+            DetailsContent(data = detailsData)
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -116,7 +126,6 @@ private fun ContentPreview() {
         Content(
             state = State(),
             effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {},
             onNavigationRequested = {}
         )
     }

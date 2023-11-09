@@ -39,6 +39,8 @@ sealed class CommonScreens {
 
 sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
+    data object DocumentDetails :
+        Screen(name = "DOCUMENT_DETAILS", parameters = "?documentId={documentId}")
 }
 
 sealed class LoginScreens {

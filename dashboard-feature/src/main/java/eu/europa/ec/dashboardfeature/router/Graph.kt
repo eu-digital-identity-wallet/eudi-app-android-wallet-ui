@@ -20,14 +20,19 @@ package eu.europa.ec.dashboardfeature.router
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardScreen
+import eu.europa.ec.dashboardfeature.ui.details.DocumentDetailsScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
+import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
     navigation(
@@ -45,5 +50,31 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
         ) {
             DashboardScreen(navController, koinViewModel())
         }
+    }
+
+    composable(
+        route = DashboardScreens.DocumentDetails.screenRoute,
+        deepLinks = listOf(
+            navDeepLink {
+                uriPattern =
+                    BuildConfig.DEEPLINK + DashboardScreens.DocumentDetails.screenRoute
+            }
+        ),
+        arguments = listOf(
+            navArgument("documentId") {
+                type = NavType.StringType
+            }
+        )
+    ) {
+        DocumentDetailsScreen(
+            navController,
+            getViewModel(
+                parameters = {
+                    parametersOf(
+                        it.arguments?.getString("documentId").orEmpty()
+                    )
+                }
+            )
+        )
     }
 }

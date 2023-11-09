@@ -19,6 +19,7 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.model.DocumentItemUi
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
@@ -52,7 +53,10 @@ class DocumentDetailsInteractorImpl(
                     documentId = 0,
                     documentType = DocumentTypeUi.DIGITAL_ID,
                     documentStatus = DocumentStatusUi.ACTIVE,
-                    documentImage = "image"
+                    documentImage = "image",
+                    documentItems = (1..15).map {
+                        DocumentItemUi(title = "Title $it", value = "Value $it")
+                    }
                 )
             )
         )

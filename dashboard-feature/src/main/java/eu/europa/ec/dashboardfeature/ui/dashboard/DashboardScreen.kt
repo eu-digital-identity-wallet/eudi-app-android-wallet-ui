@@ -126,7 +126,7 @@ private fun handleNavigationEffect(
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> navController.popBackStack()
-        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screen)
+        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute)
         is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
             handleDeepLinkAction(navController, it)
         }
@@ -374,19 +374,22 @@ private fun DashboardScreenPreview() {
                 documentId = 0,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
+                documentImage = "image1",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 1,
                 documentType = DocumentTypeUi.DRIVING_LICENCE,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
+                documentImage = "image2",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 2,
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
+                documentImage = "image3",
+                documentItems = emptyList()
             )
         )
         Content(
