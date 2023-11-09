@@ -20,6 +20,8 @@ package eu.europa.ec.presentationfeature.di
 
 import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractorImpl
+import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -30,8 +32,15 @@ import org.koin.core.annotation.Module
 class FeaturePresentationModule
 
 @Factory
-fun providePresentationInteractor(
+fun providePresentationCrossDeviceInteractor(
     resourceProvider: ResourceProvider,
 ): PresentationCrossDeviceInteractor {
     return PresentationCrossDeviceInteractorImpl(resourceProvider)
+}
+
+@Factory
+fun providePresentationSameDeviceInteractor(
+    resourceProvider: ResourceProvider,
+): PresentationSameDeviceInteractor {
+    return PresentationSameDeviceInteractorImpl(resourceProvider)
 }
