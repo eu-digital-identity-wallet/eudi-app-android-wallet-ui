@@ -32,9 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 
 @Composable
 fun ScalableText(
@@ -70,7 +70,7 @@ fun ScalableText(
  * due to the fact that [ScalableText] is a stateful composable,
  * should be run in "Interactive Mode" to see it in action.
  * */
-@Preview(showBackground = true)
+@ThemeModePreviews
 @Composable
 private fun ScalableTextPreview() {
     PreviewTheme {

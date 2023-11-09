@@ -20,9 +20,7 @@ package eu.europa.ec.uilogic.component.details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,19 +28,16 @@ import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 @Composable
 fun DetailsContent(
     modifier: Modifier = Modifier,
     data: List<InfoTextWithNameAndValueData>,
-    paddingValues: PaddingValues = PaddingValues(SPACING_LARGE.dp)
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(paddingValues),
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         data.forEach { item ->
