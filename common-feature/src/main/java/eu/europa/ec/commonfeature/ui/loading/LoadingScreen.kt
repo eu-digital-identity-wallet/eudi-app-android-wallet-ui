@@ -51,7 +51,6 @@ fun LoadingScreen(
         Content(
             state = state,
             effectFlow = viewModel.effect,
-            onEventSent = { event -> viewModel.setEvent(event) },
             onNavigationRequested = { navigationEffect ->
                 when (navigationEffect) {
                     is Effect.Navigation.SwitchScreen -> {
@@ -83,7 +82,6 @@ fun LoadingScreen(
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
-    onEventSent: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues
 ) {
@@ -98,13 +96,13 @@ private fun Content(
             title = state.screenTitle,
             subtitle = state.screenSubtitle
         )
+    }
 
-        LaunchedEffect(Unit) {
-            effectFlow.onEach { effect ->
-                when (effect) {
-                    is Effect.Navigation -> onNavigationRequested(effect)
-                }
-            }.collect()
-        }
+    LaunchedEffect(Unit) {
+        effectFlow.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation -> onNavigationRequested(effect)
+            }
+        }.collect()
     }
 }
