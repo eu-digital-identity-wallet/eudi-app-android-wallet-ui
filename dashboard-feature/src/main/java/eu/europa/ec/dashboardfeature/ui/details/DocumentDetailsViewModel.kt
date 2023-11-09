@@ -22,7 +22,6 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorPartialState
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -54,7 +53,6 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
-    private val resourceProvider: ResourceProvider,
     @InjectedParam private val documentId: String
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
@@ -76,7 +74,7 @@ class DocumentDetailsViewModel(
         }
 
         viewModelScope.launch {
-            documentDetailsInteractor.getDocument().collect { response ->
+            documentDetailsInteractor.getDocument(documentId).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
                         setState {

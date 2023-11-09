@@ -34,7 +34,7 @@ sealed class DocumentDetailsInteractorPartialState {
 }
 
 interface DocumentDetailsInteractor {
-    fun getDocument(): Flow<DocumentDetailsInteractorPartialState>
+    fun getDocument(documentId: String): Flow<DocumentDetailsInteractorPartialState>
     fun getUserName(): String
 }
 
@@ -45,7 +45,7 @@ class DocumentDetailsInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getDocument(): Flow<DocumentDetailsInteractorPartialState> = flow {
+    override fun getDocument(documentId: String): Flow<DocumentDetailsInteractorPartialState> = flow {
         delay(1_000L)
         emit(
             DocumentDetailsInteractorPartialState.Success(

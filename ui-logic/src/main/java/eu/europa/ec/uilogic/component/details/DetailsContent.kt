@@ -29,6 +29,7 @@ import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.VSpacer
 
 @Composable
 fun DetailsContent(
@@ -40,9 +41,14 @@ fun DetailsContent(
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
+        VSpacer.Large()
         data.forEach { item ->
-            InfoTextWithNameAndValue(itemData = item)
+            InfoTextWithNameAndValue(
+                modifier = Modifier.fillMaxWidth(),
+                itemData = item
+            )
         }
+        VSpacer.Large()
     }
 }
 

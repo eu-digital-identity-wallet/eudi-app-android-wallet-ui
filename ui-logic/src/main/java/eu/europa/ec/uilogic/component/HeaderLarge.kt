@@ -58,8 +58,6 @@ fun HeaderLarge(
             .padding(contentPadding)
     ) {
 
-        VSpacer.Large()
-
         Text(
             text = data.title,
             style = MaterialTheme.typography.headlineSmall,
