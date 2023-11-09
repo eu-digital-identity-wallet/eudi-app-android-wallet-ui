@@ -16,36 +16,36 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request.transformer
+package eu.europa.ec.commonfeature.ui.request.transformer
 
-import eu.europa.ec.presentationfeature.model.UserDataDomain
-import eu.europa.ec.presentationfeature.ui.request.Event
-import eu.europa.ec.presentationfeature.ui.request.model.DocumentItemUi
-import eu.europa.ec.presentationfeature.ui.request.model.OptionalFieldItemUi
-import eu.europa.ec.presentationfeature.ui.request.model.PresentationRequestDataUi
-import eu.europa.ec.presentationfeature.ui.request.model.RequiredFieldsItemUi
-import eu.europa.ec.presentationfeature.ui.request.model.UserIdentificationUi
-import eu.europa.ec.presentationfeature.ui.request.model.toUserIdentificationUi
-import eu.europa.ec.presentationfeature.ui.request.model.toUserIdentificationsUi
+import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
+import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
+import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
+import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationUi
+import eu.europa.ec.commonfeature.ui.request.model.toUserIdentificationUi
+import eu.europa.ec.commonfeature.ui.request.model.toUserIdentificationsUi
 
-object PresentationRequestTransformer {
+object RequestTransformer {
 
     fun transformToUiItems(
         userDataDomain: UserDataDomain,
-    ): List<PresentationRequestDataUi<Event>> {
-        val items = mutableListOf<PresentationRequestDataUi<Event>>()
+    ): List<RequestDataUi<Event>> {
+        val items = mutableListOf<RequestDataUi<Event>>()
 
         // Add document item.
-        items += PresentationRequestDataUi.Document(
+        items += RequestDataUi.Document(
             documentItemUi = DocumentItemUi(
                 title = userDataDomain.documentTypeUi.title
             )
         )
-        items += PresentationRequestDataUi.Space()
+        items += RequestDataUi.Space()
 
         // Add optional field items.
         userDataDomain.optionalFields.forEachIndexed { itemIndex, userIdentificationDomain ->
-            items += PresentationRequestDataUi.OptionalField(
+            items += RequestDataUi.OptionalField(
                 optionalFieldItemUi = OptionalFieldItemUi(
                     userIdentificationUi = userIdentificationDomain.toUserIdentificationUi(
                         id = itemIndex,
@@ -56,11 +56,11 @@ object PresentationRequestTransformer {
             )
 
             if (itemIndex != userDataDomain.optionalFields.lastIndex) {
-                items += PresentationRequestDataUi.Space()
-                items += PresentationRequestDataUi.Divider()
+                items += RequestDataUi.Space()
+                items += RequestDataUi.Divider()
             }
 
-            items += PresentationRequestDataUi.Space()
+            items += RequestDataUi.Space()
         }
 
         // Add required fields item.
@@ -69,7 +69,7 @@ object PresentationRequestTransformer {
                 optional = false,
                 event = null
             )
-        items += PresentationRequestDataUi.RequiredFields(
+        items += RequestDataUi.RequiredFields(
             requiredFieldsItemUi = RequiredFieldsItemUi(
                 userIdentificationsUi = requiredFieldsUi,
                 expanded = false,
@@ -77,7 +77,7 @@ object PresentationRequestTransformer {
                 event = Event.ExpandOrCollapseRequiredDataList
             )
         )
-        items += PresentationRequestDataUi.Space()
+        items += RequestDataUi.Space()
 
         return items
     }

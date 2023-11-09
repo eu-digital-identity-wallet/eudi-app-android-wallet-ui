@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request
+package eu.europa.ec.commonfeature.ui.request
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
@@ -38,7 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import eu.europa.ec.presentationfeature.ui.request.model.PresentationRequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -64,9 +64,9 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PresentationRequestScreen(
+fun RequestScreen(
     navController: NavController,
-    viewModel: PresentationRequestViewModel
+    viewModel: CommonRequestViewModel,
 ) {
     val state = viewModel.viewState.value
 
@@ -79,6 +79,7 @@ fun PresentationRequestScreen(
     ContentScreen(
         navigatableAction = ScreenNavigateAction.NONE,
         isLoading = state.isLoading,
+        onBack = { viewModel.setEvent(Event.GoBack) },
         contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
@@ -124,7 +125,7 @@ fun PresentationRequestScreen(
     }
 
     OneTimeLaunchedEffect {
-        viewModel.setEvent(Event.Init)
+        viewModel.setEvent(Event.DoWork)
     }
 }
 
@@ -166,7 +167,7 @@ private fun Content(
 
         if (!state.isLoading) {
             // Screen Main Content.
-            PresentationRequest(
+            Request(
                 modifier = Modifier.weight(1f),
                 items = state.items,
                 isShowingFullUserInfo = state.isShowingFullUserInfo,
@@ -208,25 +209,25 @@ private fun Content(
 
 @Composable
 private fun SheetContent(
-    sheetContent: PresentationRequestBottomSheetContent,
+    sheetContent: RequestBottomSheetContent,
     onEventSent: (event: Event) -> Unit
 ) {
     when (sheetContent) {
-        PresentationRequestBottomSheetContent.SUBTITLE -> {
+        RequestBottomSheetContent.SUBTITLE -> {
             DialogBottomSheet(
-                title = stringResource(id = R.string.online_authentication_userData_bottom_sheet_subtitle_title),
-                message = stringResource(id = R.string.online_authentication_userData_bottom_sheet_subtitle_subtitle),
-                positiveButtonText = stringResource(id = R.string.online_authentication_userData_bottom_sheet_subtitle_primary_button_text),
+                title = stringResource(id = R.string.request_bottom_sheet_subtitle_title),
+                message = stringResource(id = R.string.request_bottom_sheet_subtitle_subtitle),
+                positiveButtonText = stringResource(id = R.string.request_bottom_sheet_subtitle_primary_button_text),
                 onPositiveClick = { onEventSent(Event.BottomSheet.Subtitle.PrimaryButtonPressed) },
             )
         }
 
-        PresentationRequestBottomSheetContent.CANCEL -> {
+        RequestBottomSheetContent.CANCEL -> {
             DialogBottomSheet(
-                title = stringResource(id = R.string.online_authentication_userData_bottom_sheet_cancel_title),
-                message = stringResource(id = R.string.online_authentication_userData_bottom_sheet_cancel_subtitle),
-                positiveButtonText = stringResource(id = R.string.online_authentication_userData_bottom_sheet_cancel_primary_button_text),
-                negativeButtonText = stringResource(id = R.string.online_authentication_userData_bottom_sheet_cancel_secondary_button_text),
+                title = stringResource(id = R.string.request_bottom_sheet_cancel_title),
+                message = stringResource(id = R.string.request_bottom_sheet_cancel_subtitle),
+                positiveButtonText = stringResource(id = R.string.request_bottom_sheet_cancel_primary_button_text),
+                negativeButtonText = stringResource(id = R.string.request_bottom_sheet_cancel_secondary_button_text),
                 onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
                 onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
             )
@@ -244,7 +245,7 @@ fun StickyBottomSection(
 
         AnimatedVisibility(
             visible = state.items.any {
-                it is PresentationRequestDataUi.OptionalField
+                it is RequestDataUi.OptionalField
                         && !it.optionalFieldItemUi.userIdentificationUi.checked
             }
         ) {
@@ -258,7 +259,7 @@ fun StickyBottomSection(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onEventSend(Event.PrimaryButtonPressed) }
         ) {
-            Text(text = stringResource(id = R.string.online_authentication_userData_primary_button_text))
+            Text(text = stringResource(id = R.string.request_primary_button_text))
         }
         VSpacer.Medium()
 
@@ -266,7 +267,7 @@ fun StickyBottomSection(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onEventSend(Event.SecondaryButtonPressed) }
         ) {
-            Text(text = stringResource(id = R.string.online_authentication_userData_secondary_button_text))
+            Text(text = stringResource(id = R.string.request_secondary_button_text))
         }
     }
 }
@@ -282,8 +283,6 @@ private fun ContentPreview() {
                 screenSubtitle = "Subtitle ",
                 screenClickableSubtitle = "clickable subtitle",
                 warningText = "Warning",
-                biometrySubtitle = "biometrySubtitle",
-                quickPinSubtitle = "quickPinSubtitle"
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
@@ -300,7 +299,7 @@ private fun ContentPreview() {
 private fun SheetContentCancelPreview() {
     PreviewTheme {
         SheetContent(
-            sheetContent = PresentationRequestBottomSheetContent.CANCEL,
+            sheetContent = RequestBottomSheetContent.CANCEL,
             onEventSent = {}
         )
     }
@@ -311,7 +310,7 @@ private fun SheetContentCancelPreview() {
 private fun SheetContentSubtitlePreview() {
     PreviewTheme {
         SheetContent(
-            sheetContent = PresentationRequestBottomSheetContent.SUBTITLE,
+            sheetContent = RequestBottomSheetContent.SUBTITLE,
             onEventSent = {}
         )
     }
@@ -327,8 +326,6 @@ private fun StickyBottomSectionPreview() {
                 screenSubtitle = "Subtitle ",
                 screenClickableSubtitle = "clickable subtitle",
                 warningText = "Warning",
-                biometrySubtitle = "biometrySubtitle",
-                quickPinSubtitle = "quickPinSubtitle"
             ),
             onEventSend = {}
         )

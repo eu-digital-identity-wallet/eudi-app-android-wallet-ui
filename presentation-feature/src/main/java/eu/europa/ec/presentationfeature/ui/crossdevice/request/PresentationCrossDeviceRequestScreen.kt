@@ -16,8 +16,19 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request.model
+package eu.europa.ec.presentationfeature.ui.crossdevice.request
 
-data class DocumentItemUi(
-    val title: String
-)
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.ui.request.RequestScreen
+
+@Composable
+fun PresentationCrossDeviceRequestScreen(
+    navController: NavController,
+    viewModel: PresentationCrossDeviceRequestViewModel
+) {
+    RequestScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
+}

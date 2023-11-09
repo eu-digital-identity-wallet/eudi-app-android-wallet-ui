@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.loading
+package eu.europa.ec.presentationfeature.ui.crossdevice.loading
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
@@ -37,25 +37,25 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class PresentationLoadingViewModel constructor(
+class PresentationCrossDeviceLoadingViewModel constructor(
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider
 ) : CommonLoadingViewModel() {
 
     override fun getTitle(): String {
-        return resourceProvider.getString(R.string.online_authentication_loading_title)
+        return resourceProvider.getString(R.string.presentation_loading_title)
     }
 
     override fun getSubtitle(): String {
-        return resourceProvider.getString(R.string.online_authentication_loading_subtitle)
+        return resourceProvider.getString(R.string.presentation_loading_subtitle)
     }
 
     override fun getPreviousScreen(): Screen {
-        return PresentationScreens.Request
+        return PresentationScreens.CrossDeviceRequest
     }
 
     override fun getCallerScreen(): Screen {
-        return PresentationScreens.Loading
+        return PresentationScreens.CrossDeviceLoading
     }
 
     override fun getNextScreen(): String {
@@ -78,14 +78,14 @@ class PresentationLoadingViewModel constructor(
         mapOf(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
-                    header = resourceProvider.getString(R.string.online_authentication_success_config_title),
-                    content = resourceProvider.getString(R.string.online_authentication_success_config_subtitle),
+                    header = resourceProvider.getString(R.string.presentation_success_config_title),
+                    content = resourceProvider.getString(R.string.presentation_success_config_subtitle),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.DEFAULT
                     ),
                     buttonConfig = listOf(
                         SuccessUIConfig.ButtonConfig(
-                            text = resourceProvider.getString(R.string.online_authentication_success_config_primary_button_text),
+                            text = resourceProvider.getString(R.string.presentation_success_config_primary_button_text),
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = ConfigNavigation(
                                 navigationType = NavigationType.POP,

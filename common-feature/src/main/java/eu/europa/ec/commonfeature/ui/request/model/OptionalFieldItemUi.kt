@@ -16,19 +16,8 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.loading
+package eu.europa.ec.commonfeature.ui.request.model
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
-
-@Composable
-fun PresentationLoadingScreen(
-    navController: NavController,
-    viewModel: PresentationLoadingViewModel
-) {
-    LoadingScreen(
-        navController = navController,
-        viewModel = viewModel
-    )
-}
+data class OptionalFieldItemUi<T>(
+    val userIdentificationUi: UserIdentificationUi<T>
+)

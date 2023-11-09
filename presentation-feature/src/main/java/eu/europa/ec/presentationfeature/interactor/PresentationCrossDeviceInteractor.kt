@@ -20,41 +20,41 @@ package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.presentationfeature.model.UserDataDomain
-import eu.europa.ec.presentationfeature.model.UserIdentificationDomain
+import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
+import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationDomain
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-sealed class PresentationInteractorPartialState {
+sealed class PresentationCrossDeviceInteractorPartialState {
     data class Success(val userDataDomain: UserDataDomain) :
-        PresentationInteractorPartialState()
+        PresentationCrossDeviceInteractorPartialState()
 
-    data class Failure(val error: String) : PresentationInteractorPartialState()
+    data class Failure(val error: String) : PresentationCrossDeviceInteractorPartialState()
 }
 
-interface PresentationInteractor {
-    fun getUserData(): Flow<PresentationInteractorPartialState>
+interface PresentationCrossDeviceInteractor {
+    fun getUserData(): Flow<PresentationCrossDeviceInteractorPartialState>
 }
 
-class PresentationInteractorImpl(
+class PresentationCrossDeviceInteractorImpl(
     private val resourceProvider: ResourceProvider,
-) : PresentationInteractor {
+) : PresentationCrossDeviceInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getUserData(): Flow<PresentationInteractorPartialState> =
+    override fun getUserData(): Flow<PresentationCrossDeviceInteractorPartialState> =
         flow {
             delay(2_000L)
             emit(
-                PresentationInteractorPartialState.Success(
+                PresentationCrossDeviceInteractorPartialState.Success(
                     userDataDomain = getFakeUserData()
                 )
             )
         }.safeAsync {
-            PresentationInteractorPartialState.Failure(
+            PresentationCrossDeviceInteractorPartialState.Failure(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }

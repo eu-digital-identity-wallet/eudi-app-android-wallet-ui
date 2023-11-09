@@ -16,11 +16,19 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request.model
+package eu.europa.ec.presentationfeature.ui.crossdevice.loading
 
-data class RequiredFieldsItemUi<T>(
-    val userIdentificationsUi: List<UserIdentificationUi<T>>,
-    val expanded: Boolean = false,
-    val title: String,
-    val event: T
-)
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
+
+@Composable
+fun PresentationCrossDeviceLoadingScreen(
+    navController: NavController,
+    viewModel: PresentationCrossDeviceLoadingViewModel
+) {
+    LoadingScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
+}

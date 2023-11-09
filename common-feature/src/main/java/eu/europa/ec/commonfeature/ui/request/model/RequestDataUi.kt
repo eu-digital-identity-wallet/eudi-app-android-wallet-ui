@@ -16,29 +16,29 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request.model
+package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
-sealed interface PresentationRequestDataUi<T> {
+sealed interface RequestDataUi<T> {
 
     data class Document<T>(
         val documentItemUi: DocumentItemUi
-    ) : PresentationRequestDataUi<T>
+    ) : RequestDataUi<T>
 
     data class OptionalField<T>(
         val optionalFieldItemUi: OptionalFieldItemUi<T>
-    ) : PresentationRequestDataUi<T>
+    ) : RequestDataUi<T>
 
     data class RequiredFields<T>(
         val requiredFieldsItemUi: RequiredFieldsItemUi<T>
-    ) : PresentationRequestDataUi<T>
+    ) : RequestDataUi<T>
 
     data class Space<T>(
         val space: Int = SPACING_MEDIUM
-    ) : PresentationRequestDataUi<T>
+    ) : RequestDataUi<T>
 
     data class Divider<T>(
         val width: Int = -1
-    ) : PresentationRequestDataUi<T>
+    ) : RequestDataUi<T>
 }
