@@ -18,9 +18,6 @@
 
 package eu.europa.ec.dashboardfeature.ui.details
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -32,7 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.LayoutDirection
@@ -44,6 +40,7 @@ import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
+import eu.europa.ec.uilogic.component.ActionTopBar
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.HeaderLarge
@@ -54,9 +51,7 @@ import eu.europa.ec.uilogic.component.details.DetailsContent
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -105,29 +100,6 @@ private fun handleNavigationEffect(
 }
 
 @Composable
-private fun DocumentDetailsTopBar(
-    onEventSend: (Event) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.primary)
-            .fillMaxWidth()
-            .padding(
-                start = SPACING_LARGE.dp,
-                end = SPACING_LARGE.dp,
-                top = SPACING_EXTRA_LARGE.dp
-            ),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        WrapIcon(
-            modifier = Modifier.clickable { onEventSend(Event.Pop) },
-            iconData = AppIcons.Close,
-            customTint = MaterialTheme.colorScheme.backgroundPaper
-        )
-    }
-}
-
-@Composable
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
@@ -153,18 +125,34 @@ private fun Content(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
         ) {
-            DocumentDetailsTopBar(onEventSend = onEventSend)
-            HeaderLarge(data = headerData)
-            DetailsContent(
+            ActionTopBar(
+                contentColor = MaterialTheme.colorScheme.primary,
+                iconColor = MaterialTheme.colorScheme.backgroundPaper,
+                iconData = AppIcons.Close
+            ) { onEventSend(Event.Pop) }
+            Column(
                 modifier = Modifier
-                    .padding(
-                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                    ),
-                data = detailsData
-            )
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                HeaderLarge(
+                    data = headerData,
+                    contentPadding = PaddingValues(
+                        start = SPACING_LARGE.dp,
+                        end = SPACING_LARGE.dp,
+                        bottom = SPACING_LARGE.dp,
+                    )
+                )
+                DetailsContent(
+                    modifier = Modifier
+                        .padding(
+                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+                        ),
+                    data = detailsData
+                )
+            }
         }
     }
 
@@ -201,16 +189,6 @@ private fun ContentPreview() {
             onNavigationRequested = {},
             onEventSend = {},
             paddingValues = PaddingValues(32.dp)
-        )
-    }
-}
-
-@ThemeModePreviews
-@Composable
-private fun TopBarPreview() {
-    PreviewTheme {
-        DocumentDetailsTopBar(
-            onEventSend = {}
         )
     }
 }
