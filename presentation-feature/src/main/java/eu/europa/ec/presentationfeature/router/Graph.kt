@@ -24,36 +24,36 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
-import eu.europa.ec.presentationfeature.ui.loading.PresentationLoadingScreen
-import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
+import eu.europa.ec.presentationfeature.ui.crossdevice.loading.PresentationCrossDeviceLoadingScreen
+import eu.europa.ec.presentationfeature.ui.crossdevice.request.PresentationCrossDeviceRequestScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import org.koin.androidx.compose.koinViewModel
 
 fun NavGraphBuilder.presentationGraph(navController: NavController) {
     navigation(
-        startDestination = PresentationScreens.Request.screenRoute,
-        route = ModuleRoute.AuthenticationModule.route
+        startDestination = PresentationScreens.CrossDeviceRequest.screenRoute,
+        route = ModuleRoute.PresentationModule.route
     ) {
         composable(
-            route = PresentationScreens.Request.screenRoute,
+            route = PresentationScreens.CrossDeviceRequest.screenRoute,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                        BuildConfig.DEEPLINK + PresentationScreens.Request.screenRoute
+                        BuildConfig.DEEPLINK + PresentationScreens.CrossDeviceRequest.screenRoute
                 }
             )
         ) {
-            PresentationRequestScreen(
+            PresentationCrossDeviceRequestScreen(
                 navController,
                 koinViewModel()
             )
         }
 
         composable(
-            route = PresentationScreens.Loading.screenRoute,
+            route = PresentationScreens.CrossDeviceLoading.screenRoute,
         ) {
-            PresentationLoadingScreen(
+            PresentationCrossDeviceLoadingScreen(
                 navController,
                 koinViewModel()
             )

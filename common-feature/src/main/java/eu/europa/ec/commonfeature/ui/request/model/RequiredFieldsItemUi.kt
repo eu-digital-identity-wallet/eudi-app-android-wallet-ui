@@ -16,8 +16,11 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.request.model
+package eu.europa.ec.commonfeature.ui.request.model
 
-data class OptionalFieldItemUi<T>(
-    val userIdentificationUi: UserIdentificationUi<T>
+data class RequiredFieldsItemUi<T>(
+    val userIdentificationsUi: List<UserIdentificationUi<T>>,
+    val expanded: Boolean = false,
+    val title: String,
+    val event: T
 )
