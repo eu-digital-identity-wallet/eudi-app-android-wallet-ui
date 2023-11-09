@@ -20,7 +20,7 @@ package eu.europa.ec.presentationfeature.ui.crossdevice.loading
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
-import eu.europa.ec.commonfeature.ui.loading.CommonLoadingViewModel
+import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -40,7 +40,7 @@ import org.koin.android.annotation.KoinViewModel
 class PresentationCrossDeviceLoadingViewModel constructor(
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider
-) : CommonLoadingViewModel() {
+) : LoadingViewModel() {
 
     override fun getTitle(): String {
         return resourceProvider.getString(R.string.presentation_loading_title)

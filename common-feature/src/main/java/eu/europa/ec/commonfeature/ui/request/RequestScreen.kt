@@ -66,7 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun RequestScreen(
     navController: NavController,
-    viewModel: CommonRequestViewModel,
+    viewModel: RequestViewModel,
 ) {
     val state = viewModel.viewState.value
 

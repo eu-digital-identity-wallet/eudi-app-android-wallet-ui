@@ -20,8 +20,8 @@ package eu.europa.ec.presentationfeature.ui.crossdevice.request
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
-import eu.europa.ec.commonfeature.ui.request.CommonRequestViewModel
 import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractorPartialState
@@ -43,7 +43,7 @@ class PresentationCrossDeviceRequestViewModel(
     private val interactor: PresentationCrossDeviceInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-) : CommonRequestViewModel() {
+) : RequestViewModel() {
 
     override fun getScreenTitle(): String {
         return resourceProvider.getString(R.string.request_title)

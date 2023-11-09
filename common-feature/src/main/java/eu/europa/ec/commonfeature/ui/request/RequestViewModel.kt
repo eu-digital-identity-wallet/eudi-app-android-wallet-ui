@@ -86,7 +86,7 @@ enum class RequestBottomSheetContent {
     SUBTITLE, CANCEL
 }
 
-abstract class CommonRequestViewModel : MviViewModel<Event, State, Effect>() {
+abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     abstract fun getScreenTitle(): String
     abstract fun getScreenSubtitle(): String
     abstract fun getScreenClickableSubtitle(): String?
