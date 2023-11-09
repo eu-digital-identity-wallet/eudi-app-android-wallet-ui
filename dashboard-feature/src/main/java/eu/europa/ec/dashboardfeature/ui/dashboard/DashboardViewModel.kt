@@ -104,7 +104,9 @@ class DashboardViewModel(
             }
 
             is Event.Fab.SecondaryFabPressed -> {
-                //TODO()
+                setEffect {
+                    Effect.Navigation.SwitchScreen(DashboardScreens.AddDocument.screenRoute)
+                }
             }
         }
     }

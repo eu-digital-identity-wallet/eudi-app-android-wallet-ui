@@ -72,7 +72,7 @@ class DashboardInteractorImpl(
             ),
             DocumentUi(
                 documentId = 1,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image2",
                 documentItems = emptyList()
@@ -100,7 +100,7 @@ class DashboardInteractorImpl(
             ),
             DocumentUi(
                 documentId = 5,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image2",
                 documentItems = emptyList()
@@ -128,7 +128,7 @@ class DashboardInteractorImpl(
             ),
             DocumentUi(
                 documentId = 9,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image2",
                 documentItems = emptyList()
@@ -156,7 +156,7 @@ class DashboardInteractorImpl(
             ),
             DocumentUi(
                 documentId = 13,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image2",
                 documentItems = emptyList()

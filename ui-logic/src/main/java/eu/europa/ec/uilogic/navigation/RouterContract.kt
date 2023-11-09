@@ -41,6 +41,7 @@ sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
     data object DocumentDetails :
         Screen(name = "DOCUMENT_DETAILS", parameters = "?documentId={documentId}")
+    data object AddDocument: Screen(name = "ADD_DOCUMENT")
 }
 
 sealed class LoginScreens {

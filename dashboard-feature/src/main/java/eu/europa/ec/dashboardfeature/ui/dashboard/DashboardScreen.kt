@@ -378,7 +378,7 @@ private fun DashboardScreenPreview() {
             ),
             DocumentUi(
                 documentId = 1,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image2",
                 documentItems = emptyList()
