@@ -66,7 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun RequestScreen(
     navController: NavController,
-    viewModel: CommonRequestViewModel,
+    viewModel: RequestViewModel,
 ) {
     val state = viewModel.viewState.value
 
@@ -159,29 +159,28 @@ private fun Content(
                 }
                 WrapIconButton(
                     iconData = icon,
+                    enabled = !state.isLoading,
                     customTint = MaterialTheme.colorScheme.primary,
                     onClick = { onEventSend(Event.ChangeContentVisibility) }
                 )
             }
         )
 
-        if (!state.isLoading) {
-            // Screen Main Content.
-            Request(
-                modifier = Modifier.weight(1f),
-                items = state.items,
-                isShowingFullUserInfo = state.isShowingFullUserInfo,
-                onEventSend = onEventSend,
-                listState = rememberLazyListState(),
-                contentPadding = paddingValues
-            )
+        // Screen Main Content.
+        Request(
+            modifier = Modifier.weight(1f),
+            items = state.items,
+            isShowingFullUserInfo = state.isShowingFullUserInfo,
+            onEventSend = onEventSend,
+            listState = rememberLazyListState(),
+            contentPadding = paddingValues
+        )
 
-            // Sticky Bottom Section.
-            StickyBottomSection(
-                state = state,
-                onEventSend = onEventSend
-            )
-        }
+        // Sticky Bottom Section.
+        StickyBottomSection(
+            state = state,
+            onEventSend = onEventSend
+        )
     }
 
     LaunchedEffect(Unit) {
@@ -257,6 +256,7 @@ fun StickyBottomSection(
 
         WrapPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
+            enabled = !state.isLoading,
             onClick = { onEventSend(Event.PrimaryButtonPressed) }
         ) {
             Text(text = stringResource(id = R.string.request_primary_button_text))

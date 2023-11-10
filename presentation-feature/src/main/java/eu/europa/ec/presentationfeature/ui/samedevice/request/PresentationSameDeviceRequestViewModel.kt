@@ -16,15 +16,15 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.crossdevice.request
+package eu.europa.ec.presentationfeature.ui.samedevice.request
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
-import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractor
-import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractorPartialState
+import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -39,8 +39,8 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class PresentationCrossDeviceRequestViewModel(
-    private val interactor: PresentationCrossDeviceInteractor,
+class PresentationSameDeviceRequestViewModel(
+    private val interactor: PresentationSameDeviceInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
 ) : RequestViewModel() {
@@ -75,11 +75,11 @@ class PresentationCrossDeviceRequestViewModel(
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PUSH,
-                                screenToNavigate = PresentationScreens.CrossDeviceLoading
+                                screenToNavigate = PresentationScreens.SameDeviceLoading
                             ),
                             onBackNavigation = ConfigNavigation(
                                 navigationType = NavigationType.POP,
-                                screenToNavigate = PresentationScreens.CrossDeviceRequest
+                                screenToNavigate = PresentationScreens.SameDeviceRequest
                             )
                         ),
                         BiometricUiConfig.Parser
@@ -100,7 +100,7 @@ class PresentationCrossDeviceRequestViewModel(
         viewModelScope.launch {
             interactor.getUserData().collect { response ->
                 when (response) {
-                    is PresentationCrossDeviceInteractorPartialState.Failure -> {
+                    is PresentationSameDeviceInteractorPartialState.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -113,7 +113,7 @@ class PresentationCrossDeviceRequestViewModel(
                         }
                     }
 
-                    is PresentationCrossDeviceInteractorPartialState.Success -> {
+                    is PresentationSameDeviceInteractorPartialState.Success -> {
                         setState {
                             copy(
                                 isLoading = false,

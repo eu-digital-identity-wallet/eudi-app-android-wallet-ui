@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.onEach
 @Composable
 fun LoadingScreen(
     navController: NavController,
-    viewModel: CommonLoadingViewModel
+    viewModel: LoadingViewModel
 ) {
     val state = viewModel.viewState.value
 

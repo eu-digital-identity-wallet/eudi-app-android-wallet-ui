@@ -26,6 +26,8 @@ import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.presentationfeature.ui.crossdevice.loading.PresentationCrossDeviceLoadingScreen
 import eu.europa.ec.presentationfeature.ui.crossdevice.request.PresentationCrossDeviceRequestScreen
+import eu.europa.ec.presentationfeature.ui.samedevice.loading.PresentationSameDeviceLoadingScreen
+import eu.europa.ec.presentationfeature.ui.samedevice.request.PresentationSameDeviceRequestScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import org.koin.androidx.compose.koinViewModel
@@ -35,6 +37,8 @@ fun NavGraphBuilder.presentationGraph(navController: NavController) {
         startDestination = PresentationScreens.CrossDeviceRequest.screenRoute,
         route = ModuleRoute.PresentationModule.route
     ) {
+
+        // Cross Device
         composable(
             route = PresentationScreens.CrossDeviceRequest.screenRoute,
             deepLinks = listOf(
@@ -54,6 +58,31 @@ fun NavGraphBuilder.presentationGraph(navController: NavController) {
             route = PresentationScreens.CrossDeviceLoading.screenRoute,
         ) {
             PresentationCrossDeviceLoadingScreen(
+                navController,
+                koinViewModel()
+            )
+        }
+
+        // Same Device
+        composable(
+            route = PresentationScreens.SameDeviceRequest.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + PresentationScreens.SameDeviceRequest.screenRoute
+                }
+            )
+        ) {
+            PresentationSameDeviceRequestScreen(
+                navController,
+                koinViewModel()
+            )
+        }
+
+        composable(
+            route = PresentationScreens.SameDeviceLoading.screenRoute,
+        ) {
+            PresentationSameDeviceLoadingScreen(
                 navController,
                 koinViewModel()
             )

@@ -48,7 +48,7 @@ sealed class Effect : ViewSideEffect {
     }
 }
 
-abstract class CommonLoadingViewModel : MviViewModel<Event, State, Effect>() {
+abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
 
     /**
      * The title of the re-usable [LoadingScreen] .

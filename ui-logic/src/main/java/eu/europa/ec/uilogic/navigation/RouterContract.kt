@@ -51,6 +51,7 @@ sealed class PresentationScreens {
     data object CrossDeviceLoading : Screen(name = "PRESENTATION_CROSS_DEVICE_LOADING")
 
     data object SameDeviceRequest : Screen(name = "PRESENTATION_SAME_DEVICE_REQUEST")
+    data object SameDeviceLoading : Screen(name = "PRESENTATION_SAME_DEVICE_LOADING")
 }
 
 sealed class ModuleRoute(val route: String) : NavigatableItem {
