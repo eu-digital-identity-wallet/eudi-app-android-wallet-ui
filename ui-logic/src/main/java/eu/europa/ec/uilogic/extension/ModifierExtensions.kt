@@ -44,7 +44,10 @@ fun Modifier.throttledClickable(
     enabled: Boolean = true,
     onClickLabel: String? = null,
     role: Role? = null,
-    onClick: () -> Unit
+    indication: Indication? = null,
+    interactionSource: MutableInteractionSource? = null,
+    throttleDuration: Long = 1_000L,
+    onClick: () -> Unit,
 ) = composed(
     inspectorInfo = debugInspectorInfo {
         name = "clickable"
@@ -68,21 +71,22 @@ fun Modifier.throttledClickable(
     LaunchedEffect(Unit) {
         debounceState
             .collect {
-                if (lastClicked <= 0 || (it.currentTimeInMillis - lastClicked) >= 1000) {
+                if (lastClicked <= 0 || (it.currentTimeInMillis - lastClicked) >= throttleDuration) {
                     it.event()
                     lastClicked = it.currentTimeInMillis
                 }
             }
     }
 
-    Modifier.clickable(
-        enabled = enabled,
-        onClickLabel = onClickLabel,
-        onClick = { debounceState.tryEmit(ClickState(onClick, System.currentTimeMillis())) },
-        role = role,
-        indication = LocalIndication.current,
-        interactionSource = remember { MutableInteractionSource() }
-    )
+    Modifier
+        .clickable(
+            enabled = enabled,
+            onClickLabel = onClickLabel,
+            onClick = { debounceState.tryEmit(ClickState(onClick, System.currentTimeMillis())) },
+            role = role,
+            indication = indication ?: LocalIndication.current,
+            interactionSource = interactionSource ?: remember { MutableInteractionSource() }
+        )
 }
 
 /**

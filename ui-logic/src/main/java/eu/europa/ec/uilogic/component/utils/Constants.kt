@@ -42,6 +42,8 @@ const val SPACING_EXTRA_LARGE = 48
 const val ALPHA_ENABLED = 1.0f
 const val ALPHA_DISABLED = 0.38f
 
+const val DEFAULT_ICON_SIZE = 24
+
 const val MAX_TOOLBAR_ACTIONS = 2
 
 const val SIZE_EXTRA_SMALL = 4
