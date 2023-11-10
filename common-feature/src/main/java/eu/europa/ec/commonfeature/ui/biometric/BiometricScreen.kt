@@ -42,7 +42,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
@@ -50,7 +50,6 @@ import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.resetBackStack
 import eu.europa.ec.uilogic.extension.setBackStackFlowCancelled
 import eu.europa.ec.uilogic.extension.setBackStackFlowSuccess
-import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.helper.generateNewTaskDeepLink
 import kotlinx.coroutines.channels.Channel
@@ -182,18 +181,17 @@ fun Body(
             horizontalArrangement = Arrangement.End,
         ) {
             if (state.userBiometricsAreEnabled) {
-                WrapIcon(
+                WrapIconButton(
                     iconData = AppIcons.TouchId,
-                    modifier = Modifier
-                        .padding(bottom = 5.dp)
-                        .throttledClickable {
-                            onEventSent(
-                                Event.OnBiometricsClicked(
-                                    context,
-                                    true
-                                )
+                    modifier = Modifier.padding(bottom = 5.dp),
+                    onClick = {
+                        onEventSent(
+                            Event.OnBiometricsClicked(
+                                context = context,
+                                shouldThrowErrorIfNotAvailable = true
                             )
-                        }
+                        )
+                    }
                 )
             }
         }
