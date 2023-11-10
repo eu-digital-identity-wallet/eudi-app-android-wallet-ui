@@ -42,7 +42,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
-    data class NavigateToIssueDocument(val url: String, val type: DocumentTypeUi): Event()
+    data class NavigateToIssueDocument(val url: String, val type: DocumentTypeUi) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -65,9 +65,7 @@ class AddDocumentViewModel(
         Event.Init -> getOptions(event)
         Event.Pop -> setEffect { Effect.Navigation.Pop }
         is Event.NavigateToIssueDocument -> {
-            // Dummy
-            val urlAndType = "${event.url}, ${event.type}"
-            //setEffect { Effect.Navigation.SwitchScreen() }
+            setEffect { Effect.Navigation.SwitchScreen("${event.url}, ${event.type}") }
         }
     }
 
