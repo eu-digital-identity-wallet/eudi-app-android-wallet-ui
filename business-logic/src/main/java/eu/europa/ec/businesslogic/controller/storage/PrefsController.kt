@@ -375,10 +375,8 @@ class PrefKeysImpl constructor(
         prefsController.setBool("UseBiometricsAuth", value)
     }
 
-    // TODO: - Default Value is true but it should be false.
-    //  We will change that once the onboarding flow is implemented
     override fun getUseBiometricsAuth(): Boolean {
-        return prefsController.getBool("UseBiometricsAuth", true)
+        return prefsController.getBool("UseBiometricsAuth", false)
     }
 
     override fun setDevicePin(pin: String) {
