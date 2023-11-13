@@ -125,7 +125,7 @@ private fun handleNavigationEffect(
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> navController.popBackStack()
-        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screen)
+        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute)
         is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
             handleDeepLinkAction(navController, it)
         }

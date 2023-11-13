@@ -54,10 +54,15 @@ sealed class PresentationScreens {
     data object SameDeviceLoading : Screen(name = "PRESENTATION_SAME_DEVICE_LOADING")
 }
 
+sealed class ProximityScreens {
+    data object QR : Screen(name = "PROXIMITY_QR")
+}
+
 sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object StartupModule : ModuleRoute("STARTUP_MODULE")
     data object CommonModule : ModuleRoute("COMMON_MODULE")
     data object LoginModule : ModuleRoute("LOGIN_MODULE")
     data object DashboardModule : ModuleRoute("DASHBOARD_MODULE")
     data object PresentationModule : ModuleRoute("PRESENTATION_MODULE")
+    data object ProximityModule : ModuleRoute("PROXIMITY_MODULE")
 }
