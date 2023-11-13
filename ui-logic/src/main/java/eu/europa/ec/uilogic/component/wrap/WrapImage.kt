@@ -21,6 +21,8 @@ package eu.europa.ec.uilogic.component.wrap
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import eu.europa.ec.uilogic.component.IconData
@@ -47,4 +49,19 @@ fun WrapImage(
             )
         }
     }
+}
+
+@Composable
+fun WrapImage(
+    modifier: Modifier = Modifier,
+    painter: BitmapPainter,
+    contentDescription: String,
+    contentScale: ContentScale? = null,
+) {
+    Image(
+        modifier = modifier,
+        painter = painter,
+        contentDescription = contentDescription,
+        contentScale = contentScale ?: ContentScale.FillBounds,
+    )
 }

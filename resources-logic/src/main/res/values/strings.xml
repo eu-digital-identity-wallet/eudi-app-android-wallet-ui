@@ -30,6 +30,7 @@
     <string name="generic_ok">OK</string>
 
     <!-- Content Description -->
+    <string name="content_description_qr_code">QR Code</string>
     <string name="content_description_more_vert_icon">More Items Vertically</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
@@ -97,5 +98,10 @@
     <string name="add_document_subtitle">Select a document to add in your EUDI Wallet</string>
     <string name="add_id">Digital ID</string>
     <string name="add_driving_license">Driving License</string>
+
+    <!-- QR -->
+    <string name="qr_title">Show QR or Tap</string>
+    <string name="qr_subtitle">Show this QR code to access the necessary information for sharing</string>
+    <string name="qr_use_nfc">Or use the NFC</string>
 
 </resources>

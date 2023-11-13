@@ -29,6 +29,7 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
@@ -46,8 +47,6 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data class NavigateToDocument(val documentId: Int) : Event()
-    data object NavigateToAddDocument : Event()
-    data object NavigateToShowQr : Event()
     sealed class Fab : Event() {
         data object PrimaryFabPressed : Fab()
         data object SecondaryFabPressed : Fab()
@@ -57,9 +56,7 @@ sealed class Event : ViewEvent {
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
-        data class SwitchScreen(val screenRoute: String) :
-            Navigation()
-
+        data class SwitchScreen(val screenRoute: String) : Navigation()
         data object OpenDeepLinkAction : Navigation()
     }
 }
@@ -80,10 +77,6 @@ class DashboardViewModel(
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
-            is Event.NavigateToShowQr -> {
-                //TODO()
-            }
-
             is Event.NavigateToDocument -> {
                 setEffect {
                     Effect.Navigation.SwitchScreen(
@@ -95,12 +88,12 @@ class DashboardViewModel(
                 }
             }
 
-            is Event.NavigateToAddDocument -> {
-                //TODO()
-            }
-
             is Event.Fab.PrimaryFabPressed -> {
-                //TODO()
+                setEffect {
+                    Effect.Navigation.SwitchScreen(
+                        screenRoute = ProximityScreens.QR.screenRoute
+                    )
+                }
             }
 
             is Event.Fab.SecondaryFabPressed -> {
