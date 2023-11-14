@@ -132,7 +132,7 @@ private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
-    onNavigationRequested: (Effect.Navigation) -> Unit,
+    onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
     paddingValues: PaddingValues
 ) {
     Column(
@@ -168,9 +168,7 @@ private fun Content(
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
             when (effect) {
-                is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
-                is Effect.Navigation.Pop -> onNavigationRequested(effect)
-                is Effect.Navigation.OpenDeepLinkAction -> onNavigationRequested(effect)
+                is Effect.Navigation -> onNavigationRequested(effect)
             }
         }.collect()
     }

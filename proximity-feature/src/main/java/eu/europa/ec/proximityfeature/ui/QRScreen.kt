@@ -18,10 +18,8 @@
 
 package eu.europa.ec.proximityfeature.ui
 
-import android.graphics.Bitmap
-import android.graphics.Color
-import androidx.annotation.ColorInt
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,24 +32,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.zxing.BarcodeFormat
-import com.google.zxing.EncodeHintType
-import com.google.zxing.WriterException
-import com.google.zxing.qrcode.QRCodeWriter
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.topCorneredShapeSmall
@@ -59,16 +46,15 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.rememberQrBitmapPainter
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 
 @Composable
 fun QRScreen(
@@ -86,10 +72,8 @@ fun QRScreen(
         Content(
             state = state,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
                 when (navigationEffect) {
-
                     is Effect.Navigation.SwitchScreen -> {
                         navController.navigate(navigationEffect.screenRoute)
                     }
@@ -112,7 +96,6 @@ fun QRScreen(
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
-    onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
     paddingValues: PaddingValues,
 ) {
@@ -153,7 +136,7 @@ private fun Content(
 }
 
 @Composable
-fun NFCSection() {
+private fun NFCSection() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -185,86 +168,27 @@ private fun QRCode(
     modifier: Modifier = Modifier,
     qrCode: String,
 ) {
+    val primaryPixelsColor = if (isSystemInDarkTheme()) {
+        Color.Black
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    val secondaryPixelsColor = if (isSystemInDarkTheme()) {
+        Color.White
+    } else {
+        MaterialTheme.colorScheme.background
+    }
+
     if (qrCode.isNotEmpty()) {
         WrapImage(
             modifier = modifier,
             painter = rememberQrBitmapPainter(
                 content = qrCode,
-                primaryPixelsColor = MaterialTheme.colorScheme.primary.toArgb(),
-                secondaryPixelsColor = MaterialTheme.colorScheme.background.toArgb()
+                primaryPixelsColor = primaryPixelsColor.toArgb(),
+                secondaryPixelsColor = secondaryPixelsColor.toArgb()
             ),
             contentDescription = stringResource(id = R.string.content_description_qr_code)
         )
-    }
-}
-
-@Composable
-fun rememberQrBitmapPainter(
-    content: String,
-    @ColorInt primaryPixelsColor: Int = Color.BLACK,
-    @ColorInt secondaryPixelsColor: Int = Color.WHITE,
-    size: Dp = 150.dp,
-    padding: Dp = 0.dp
-): BitmapPainter {
-
-    val density = LocalDensity.current
-
-    val sizePx = with(density) { size.roundToPx() }
-    val paddingPx = with(density) { padding.roundToPx() }
-
-    var bitmap by remember(content) {
-        mutableStateOf<Bitmap?>(null)
-    }
-
-    LaunchedEffect(bitmap) {
-        if (bitmap != null) return@LaunchedEffect
-
-        launch(Dispatchers.IO) {
-            val qrCodeWriter = QRCodeWriter()
-
-            val encodeHints = mutableMapOf<EncodeHintType, Any?>()
-                .apply {
-                    this[EncodeHintType.MARGIN] = paddingPx
-                }
-
-            val bitmapMatrix = try {
-                qrCodeWriter.encode(
-                    content, BarcodeFormat.QR_CODE,
-                    sizePx, sizePx, encodeHints
-                )
-            } catch (ex: WriterException) {
-                null
-            }
-
-            val matrixWidth = bitmapMatrix?.width ?: sizePx
-            val matrixHeight = bitmapMatrix?.height ?: sizePx
-
-            val newBitmap = Bitmap.createBitmap(
-                bitmapMatrix?.width ?: sizePx,
-                bitmapMatrix?.height ?: sizePx,
-                Bitmap.Config.ARGB_8888,
-            )
-
-            for (x in 0 until matrixWidth) {
-                for (y in 0 until matrixHeight) {
-                    val shouldColorPixel = bitmapMatrix?.get(x, y) ?: false
-                    val pixelColor =
-                        if (shouldColorPixel) primaryPixelsColor else secondaryPixelsColor
-
-                    newBitmap.setPixel(x, y, pixelColor)
-                }
-            }
-
-            bitmap = newBitmap
-        }
-    }
-
-    return remember(bitmap) {
-        val currentBitmap = bitmap ?: Bitmap.createBitmap(
-            sizePx, sizePx,
-            Bitmap.Config.ARGB_8888,
-        ).apply { eraseColor(Color.TRANSPARENT) }
-
-        BitmapPainter(currentBitmap.asImageBitmap())
     }
 }
