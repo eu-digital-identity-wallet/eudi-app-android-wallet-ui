@@ -21,6 +21,8 @@ package eu.europa.ec.proximityfeature.interactor
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
 sealed class QRInteractorPartialState {
     data class Success(val qRCode: String) : QRInteractorPartialState()
@@ -41,7 +43,11 @@ class QRInteractorImpl(
 
     private var onStateChange: ((QRInteractorPartialState) -> Unit)? = null
 
-    private var transferListener:TransferEvent.Listener? = null
+    private var transferListener: TransferEvent.Listener? = null
+
+    fun startQr(): Flow<QRInteractorPartialState> = callbackFlow {
+
+    }
 
     override fun startQrEngagement(stateChanged: (QRInteractorPartialState) -> Unit) {
         transferListener = TransferEvent.Listener { event ->
