@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.ui
+package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Context
 import androidx.compose.foundation.background
@@ -67,6 +67,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
@@ -125,7 +126,7 @@ private fun handleNavigationEffect(
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> navController.popBackStack()
-        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screen)
+        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute)
         is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
             handleDeepLinkAction(navController, it)
         }
@@ -210,7 +211,7 @@ private fun FabContent(
         },
         icon = {
             WrapIcon(
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(SIZE_LARGE.dp),
                 iconData = AppIcons.NFC
             )
         },
@@ -372,19 +373,22 @@ private fun DashboardScreenPreview() {
                 documentId = 0,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
+                documentImage = "image1",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 1,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
+                documentImage = "image2",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 2,
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
+                documentImage = "image3",
+                documentItems = emptyList()
             )
         )
         Content(

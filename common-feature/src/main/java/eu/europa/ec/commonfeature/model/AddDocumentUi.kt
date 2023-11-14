@@ -18,30 +18,11 @@
 
 package eu.europa.ec.commonfeature.model
 
-data class DocumentUi(
-    val documentId: Int,
-    val documentType: DocumentTypeUi,
-    val documentStatus: DocumentStatusUi,
-    val documentImage: String,
-    val documentItems: List<DocumentItemUi>
+import eu.europa.ec.uilogic.component.IconData
+
+data class DocumentOptionItemUi(
+    val text: String,
+    val icon: IconData,
+    val type: DocumentTypeUi,
+    val issuanceUrl: String
 )
-
-data class DocumentItemUi(
-    val title: String,
-    val value: String
-)
-
-enum class DocumentTypeUi(
-    val title: String
-) {
-    DRIVING_LICENSE(title = "Driving License"),
-    DIGITAL_ID(title = "Digital ID"),
-    OTHER(title = "Other document")
-}
-
-enum class DocumentStatusUi(
-    val title: String
-) {
-    ACTIVE(title = "Active"),
-    INACTIVE(title = "Inactive")
-}

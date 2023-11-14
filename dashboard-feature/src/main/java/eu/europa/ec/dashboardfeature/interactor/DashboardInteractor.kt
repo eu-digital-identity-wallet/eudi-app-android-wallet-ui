@@ -38,7 +38,7 @@ interface DashboardInteractor {
 }
 
 class DashboardInteractorImpl(
-    private val resourceProvider: ResourceProvider,
+    private val resourceProvider: ResourceProvider
 ) : DashboardInteractor {
 
     private val genericErrorMsg
@@ -67,97 +67,113 @@ class DashboardInteractorImpl(
                 documentId = 0,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
+                documentImage = "image1",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 1,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
+                documentImage = "image2",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 2,
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
+                documentImage = "image3",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 3,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4"
+                documentImage = "image4",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 4,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
+                documentImage = "image1",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 5,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
+                documentImage = "image2",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 6,
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
+                documentImage = "image3",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 7,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4"
+                documentImage = "image4",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 8,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
+                documentImage = "image1",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 9,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
+                documentImage = "image2",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 10,
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
+                documentImage = "image3",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 11,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4"
+                documentImage = "image4",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 12,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
+                documentImage = "image1",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 13,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
+                documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
+                documentImage = "image2",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 14,
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
+                documentImage = "image3",
+                documentItems = emptyList()
             ),
             DocumentUi(
                 documentId = 15,
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4"
+                documentImage = "image4",
+                documentItems = emptyList()
             )
         )
     }

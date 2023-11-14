@@ -39,8 +39,8 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 data class HeaderData(
     val title: String,
     val subtitle: String,
-    val image: IconData,
-    val icon: IconData? = null
+    val image: IconData = AppIcons.User,
+    val icon: IconData = AppIcons.IdStroke
 )
 
 @Composable
@@ -57,8 +57,6 @@ fun HeaderLarge(
             )
             .padding(contentPadding)
     ) {
-
-        VSpacer.Large()
 
         Text(
             text = data.title,
