@@ -19,7 +19,7 @@
 package eu.europa.ec.commonfeature.model
 
 data class DocumentUi(
-    val documentId: Int,
+    val documentId: String,
     val documentType: DocumentTypeUi,
     val documentStatus: DocumentStatusUi,
     val documentImage: String,
@@ -31,6 +31,12 @@ enum class DocumentTypeUi(
     DRIVING_LICENCE(title = "Driving Licence"),
     DIGITAL_ID(title = "Digital ID"),
     OTHER(title = "Other document")
+}
+
+fun String.toDocumentTypeUi(): DocumentTypeUi = when(this){
+    "eu.europa.ec.eudiw.pid.1" -> DocumentTypeUi.DIGITAL_ID
+    "org.iso.18013.5.1.mDL" -> DocumentTypeUi.DRIVING_LICENCE
+    else -> DocumentTypeUi.OTHER
 }
 
 enum class DocumentStatusUi(

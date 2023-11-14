@@ -21,6 +21,7 @@ package eu.europa.ec.resourceslogic.provider
 import android.content.ContentResolver
 import android.content.Context
 import androidx.annotation.PluralsRes
+import androidx.annotation.RawRes
 import androidx.annotation.StringRes
 import eu.europa.ec.resourceslogic.R
 
@@ -29,6 +30,7 @@ interface ResourceProvider {
     fun provideContext(): Context
     fun provideContentResolver(): ContentResolver
     fun getString(@StringRes resId: Int): String
+    fun getStringFromRaw(@RawRes resId: Int): String
     fun getQuantityString(@PluralsRes resId: Int, quantity: Int, vararg formatArgs: Any): String
     fun getString(@StringRes resId: Int, vararg formatArgs: Any): String
     fun genericErrorMessage(): String
@@ -53,6 +55,13 @@ class ResourceProviderImpl constructor(
     override fun getString(@StringRes resId: Int): String =
         try {
             context.getString(resId)
+        } catch (_: Exception) {
+            ""
+        }
+
+    override fun getStringFromRaw(@RawRes resId: Int): String =
+        try {
+            context.resources.openRawResource(resId).bufferedReader().use { it.readText() }
         } catch (_: Exception) {
             ""
         }

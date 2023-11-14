@@ -67,6 +67,8 @@ gson = "2.10.1"
 logcat = "0.1"
 googlePhoneNumber = "8.13.23"
 zxing = "3.5.2"
+eudiWalletCore = "0.2.0-SNAPSHOT"
+cborTree = "0.01.02"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -157,6 +159,8 @@ logcat = { group = "com.squareup.logcat", name = "logcat", version.ref = "logcat
 okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 google-phonenumber = { group = "com.googlecode.libphonenumber", name = "libphonenumber", version.ref = "googlePhoneNumber" }
 zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+eudi-wallet-core = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-wallet-core", version.ref = "eudiWalletCore" }
+cbor-tree = { group = "com.google.iot.cbor", name = "cbor", version.ref = "cborTree" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }

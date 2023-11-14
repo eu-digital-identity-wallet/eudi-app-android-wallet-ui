@@ -26,6 +26,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.PresentationScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -77,9 +78,8 @@ class QRViewModel(
                 error = null
             )
         }
-
         viewModelScope.launch {
-            interactor.generateQRCode().collect { response ->
+            interactor.startQrEngagement { response ->
                 when (response) {
                     is QRInteractorPartialState.Failure -> {
                         setState {
@@ -101,6 +101,12 @@ class QRViewModel(
                                 error = null,
                                 qrCode = response.qRCode
                             )
+                        }
+                    }
+
+                    is QRInteractorPartialState.Connected -> {
+                        setEffect {
+                            Effect.Navigation.SwitchScreen(PresentationScreens.CrossDeviceRequest.screenRoute)
                         }
                     }
                 }

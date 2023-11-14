@@ -20,10 +20,11 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.toDocumentTypeUi
+import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -34,21 +35,33 @@ sealed class DashboardInteractorPartialState {
 
 interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorPartialState>
+    fun loadSampleData()
     fun getUserName(): String
 }
 
 class DashboardInteractorImpl(
-    private val resourceProvider: ResourceProvider,
+    private val resourceProvider: ResourceProvider
 ) : DashboardInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
+
+    override fun loadSampleData() {
+//        val byteArray = Base64.getDecoder().decode(
+//            JSONObject(
+//                resourceProvider.getStringFromRaw(eu.europa.ec.resourceslogic.R.raw.sample_data)
+//            ).getString("Data")
+//        )
+//        // Add state check
+//        val result = EudiWallet.loadSampleData(byteArray)
+    }
+
     override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
-        delay(1_000L)
+        val documents = EudiWallet.getDocuments()
         emit(
             DashboardInteractorPartialState.Success(
-                documents = getFakeDocuments()
+                documents = mapToUi(documents)
             )
         )
     }.safeAsync {
@@ -61,104 +74,14 @@ class DashboardInteractorImpl(
         return "Jane"
     }
 
-    private fun getFakeDocuments(): List<DocumentUi> {
-        return listOf(
+    private fun mapToUi(documents: List<Document>): List<DocumentUi> {
+        return documents.map {
             DocumentUi(
-                documentId = 0,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
-            ),
-            DocumentUi(
-                documentId = 1,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
-            ),
-            DocumentUi(
-                documentId = 2,
-                documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
-            ),
-            DocumentUi(
-                documentId = 3,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4"
-            ),
-            DocumentUi(
-                documentId = 4,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
-            ),
-            DocumentUi(
-                documentId = 5,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
-            ),
-            DocumentUi(
-                documentId = 6,
-                documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
-            ),
-            DocumentUi(
-                documentId = 7,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4"
-            ),
-            DocumentUi(
-                documentId = 8,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
-            ),
-            DocumentUi(
-                documentId = 9,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
-            ),
-            DocumentUi(
-                documentId = 10,
-                documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
-            ),
-            DocumentUi(
-                documentId = 11,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4"
-            ),
-            DocumentUi(
-                documentId = 12,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1"
-            ),
-            DocumentUi(
-                documentId = 13,
-                documentType = DocumentTypeUi.DRIVING_LICENCE,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2"
-            ),
-            DocumentUi(
-                documentId = 14,
-                documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3"
-            ),
-            DocumentUi(
-                documentId = 15,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4"
+                documentId = it.id,
+                documentType = it.docType.toDocumentTypeUi(),
+                documentImage = "",
+                documentStatus = DocumentStatusUi.ACTIVE
             )
-        )
+        }
     }
 }

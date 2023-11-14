@@ -22,6 +22,8 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
 import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationDomain
+import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -45,8 +47,30 @@ class PresentationCrossDeviceInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
+    private var transferListener: TransferEvent.Listener? = null
+
     override fun getUserData(): Flow<PresentationCrossDeviceInteractorPartialState> =
         flow {
+
+            transferListener = TransferEvent.Listener { event ->
+                println("event is $event")
+                when (event) {
+                    TransferEvent.Disconnected -> {
+                        EudiWallet.removeTransferEventListener(transferListener!!)
+                    }
+                    is TransferEvent.QrEngagementReady -> {}
+                    is TransferEvent.Error -> {}
+                    TransferEvent.Connected -> {}
+                    is TransferEvent.RequestReceived -> {
+
+                    }
+                    TransferEvent.Connecting -> {}
+                    TransferEvent.ResponseSent -> {}
+                }
+            }
+
+            EudiWallet.addTransferEventListener(transferListener!!)
+
             delay(2_000L)
             emit(
                 PresentationCrossDeviceInteractorPartialState.Success(

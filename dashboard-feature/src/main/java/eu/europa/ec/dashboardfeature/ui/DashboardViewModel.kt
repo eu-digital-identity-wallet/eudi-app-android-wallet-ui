@@ -44,7 +44,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
-    data class NavigateToDocument(val documentId: Int) : Event()
+    data class NavigateToDocument(val documentId: String) : Event()
     sealed class Fab : Event() {
         data object PrimaryFabPressed : Fab()
         data object SecondaryFabPressed : Fab()
@@ -65,13 +65,18 @@ class DashboardViewModel(
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
 
-    override fun setInitialState(): State = State(
-        userName = dashboardInteractor.getUserName()
-    )
+    override fun setInitialState(): State {
+        return State(
+            userName = dashboardInteractor.getUserName()
+        )
+    }
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> getDocuments(event)
+            is Event.Init -> {
+                dashboardInteractor.loadSampleData()
+                getDocuments(event)
+            }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 

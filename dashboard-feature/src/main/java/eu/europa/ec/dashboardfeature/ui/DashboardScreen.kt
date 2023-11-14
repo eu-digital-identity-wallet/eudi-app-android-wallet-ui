@@ -43,11 +43,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
@@ -66,7 +64,7 @@ import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
@@ -110,10 +108,7 @@ fun DashboardScreen(
         )
     }
 
-    LifecycleEffect(
-        lifecycleOwner = LocalLifecycleOwner.current,
-        lifecycleEvent = Lifecycle.Event.ON_RESUME
-    ) {
+    OneTimeLaunchedEffect {
         viewModel.setEvent(Event.Init)
     }
 }
@@ -369,19 +364,19 @@ private fun DashboardScreenPreview() {
     PreviewTheme {
         val documents = listOf(
             DocumentUi(
-                documentId = 0,
+                documentId = "0",
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image1"
             ),
             DocumentUi(
-                documentId = 1,
+                documentId = "1",
                 documentType = DocumentTypeUi.DRIVING_LICENCE,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image2"
             ),
             DocumentUi(
-                documentId = 2,
+                documentId = "2",
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image3"
