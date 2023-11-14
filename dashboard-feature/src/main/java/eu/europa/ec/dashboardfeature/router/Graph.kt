@@ -26,9 +26,9 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
-import eu.europa.ec.dashboardfeature.ui.adddocument.AddDocumentScreen
 import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardScreen
-import eu.europa.ec.dashboardfeature.ui.details.DocumentDetailsScreen
+import eu.europa.ec.dashboardfeature.ui.document.add.AddDocumentScreen
+import eu.europa.ec.dashboardfeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel

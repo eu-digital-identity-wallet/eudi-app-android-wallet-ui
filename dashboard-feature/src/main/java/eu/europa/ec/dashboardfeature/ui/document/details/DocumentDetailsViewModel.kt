@@ -16,12 +16,14 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.ui.details
+package eu.europa.ec.dashboardfeature.ui.document.details
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
-import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorPartialState
+import eu.europa.ec.dashboardfeature.interactor.document.DocumentDetailsInteractor
+import eu.europa.ec.dashboardfeature.interactor.document.DocumentDetailsInteractorPartialState
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -35,7 +37,7 @@ data class State(
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val document: DocumentUi? = null,
-    val userName: String? = null
+    val headerData: HeaderData? = null
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -55,9 +57,7 @@ class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
     @InjectedParam private val documentId: String
 ) : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State(
-        userName = documentDetailsInteractor.getUserName()
-    )
+    override fun setInitialState(): State = State()
 
     override fun handleEvents(event: Event) = when (event) {
         is Event.Init -> getDocument(event)
@@ -81,7 +81,13 @@ class DocumentDetailsViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                document = response.document
+                                document = response.document,
+                                headerData = HeaderData(
+                                    title = response.document.documentType.title,
+                                    subtitle = response.userName,
+                                    AppIcons.User,
+                                    AppIcons.IdStroke
+                                )
                             )
                         }
                     }

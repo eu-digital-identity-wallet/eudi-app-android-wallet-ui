@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.interactor
+package eu.europa.ec.dashboardfeature.interactor.document
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
@@ -37,8 +37,6 @@ sealed class AddDocumentInteractorPartialState {
 
 interface AddDocumentInteractor {
     fun getAddDocumentOption(): Flow<AddDocumentInteractorPartialState>
-    fun getTitle(): String
-    fun getSubtitle(): String
 }
 
 class AddDocumentInteractorImpl(
@@ -72,8 +70,4 @@ class AddDocumentInteractorImpl(
             error = it.localizedMessage ?: genericErrorMsg
         )
     }
-
-    override fun getTitle(): String = resourceProvider.getString(R.string.add_document_title)
-
-    override fun getSubtitle(): String = resourceProvider.getString(R.string.add_document_subtitle)
 }

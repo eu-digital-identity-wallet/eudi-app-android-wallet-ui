@@ -18,48 +18,36 @@
 
 package eu.europa.ec.uilogic.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun ActionTopBar(
     contentColor: Color,
     iconColor: Color,
     iconData: IconData,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .background(color = contentColor)
-            .fillMaxWidth()
-            .padding(
-                start = SPACING_LARGE.dp,
-                end = SPACING_LARGE.dp,
-                top = SPACING_LARGE.dp,
-                bottom = SPACING_LARGE.dp
-            ),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        WrapIcon(
-            modifier = Modifier.clickable { onClick() },
-            iconData = iconData,
-            customTint = iconColor
-        )
-    }
+    TopAppBar(
+        title = {},
+        navigationIcon = {
+            WrapIconButton(
+                iconData = iconData,
+                onClick = { onClick.invoke() },
+                customTint = iconColor
+            )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = contentColor)
+    )
 }
 
 @ThemeModePreviews

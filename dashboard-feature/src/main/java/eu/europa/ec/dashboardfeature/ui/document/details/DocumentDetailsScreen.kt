@@ -16,13 +16,13 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.ui.details
+package eu.europa.ec.dashboardfeature.ui.document.details
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.model.DocumentItemUi
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
@@ -69,12 +70,18 @@ fun DocumentDetailsScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
         navigatableAction = ScreenNavigateAction.NONE,
-        onBack = { viewModel.setEvent(Event.Pop) }
+        onBack = { viewModel.setEvent(Event.Pop) },
+        topBar = {
+            ActionTopBar(
+                contentColor = MaterialTheme.colorScheme.primary,
+                iconColor = MaterialTheme.colorScheme.backgroundPaper,
+                iconData = AppIcons.Close
+            ) { viewModel.setEvent(Event.Pop) }
+        }
     ) { paddingValues ->
         Content(
             state = state,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController)
             },
@@ -103,54 +110,42 @@ private fun handleNavigationEffect(
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
-    onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues
 ) {
 
-    if (state.document != null) {
-        val headerData = HeaderData(
-            title = state.document.documentType.title,
-            subtitle = state.userName ?: "",
-            AppIcons.User,
-            AppIcons.IdStroke
-        )
-        val detailsData = state.document.documentItems.map {
-            InfoTextWithNameAndValueData(
-                infoName = it.title,
-                infoValue = it.value
-            )
-        }
-
+    safeLet(state.document, state.headerData) { documentUi, headerData ->
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxSize()
         ) {
-            ActionTopBar(
-                contentColor = MaterialTheme.colorScheme.primary,
-                iconColor = MaterialTheme.colorScheme.backgroundPaper,
-                iconData = AppIcons.Close
-            ) { onEventSend(Event.Pop) }
+
+            HeaderLarge(
+                data = headerData,
+                contentPadding = PaddingValues(
+                    start = SPACING_LARGE.dp,
+                    end = SPACING_LARGE.dp,
+                    bottom = SPACING_LARGE.dp,
+                    top = paddingValues.calculateTopPadding()
+                )
+            )
+
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                HeaderLarge(
-                    data = headerData,
-                    contentPadding = PaddingValues(
-                        start = SPACING_LARGE.dp,
-                        end = SPACING_LARGE.dp,
-                        bottom = SPACING_LARGE.dp,
-                    )
-                )
                 DetailsContent(
                     modifier = Modifier
                         .padding(
                             start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                             end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
                         ),
-                    data = detailsData
+                    data = documentUi.documentItems.map {
+                        InfoTextWithNameAndValueData(
+                            infoName = it.title,
+                            infoValue = it.value
+                        )
+                    }
                 )
             }
         }
@@ -180,14 +175,18 @@ private fun ContentPreview() {
                     DocumentItemUi("Name $it", "Value $it")
                 }
             ),
-            userName = "Jane Doe"
+            headerData = HeaderData(
+                title = "Title",
+                subtitle = "subtitle",
+                AppIcons.User,
+                AppIcons.IdStroke
+            )
         )
 
         Content(
             state = state,
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onNavigationRequested = {},
-            onEventSend = {},
             paddingValues = PaddingValues(32.dp)
         )
     }

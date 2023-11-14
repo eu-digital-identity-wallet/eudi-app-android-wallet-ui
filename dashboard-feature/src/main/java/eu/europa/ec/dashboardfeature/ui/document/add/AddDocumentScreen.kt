@@ -16,31 +16,26 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.ui.adddocument
+package eu.europa.ec.dashboardfeature.ui.document.add
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
-import eu.europa.ec.uilogic.component.ActionTopBar
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IssuanceButton
 import eu.europa.ec.uilogic.component.IssuanceButtonData
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -61,7 +56,7 @@ fun AddDocumentScreen(
 
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.NONE,
+        navigatableAction = ScreenNavigateAction.CANCELABLE,
         onBack = { viewModel.setEvent(Event.Pop) },
         contentErrorConfig = state.error
     ) { paddingValues ->
@@ -90,7 +85,7 @@ private fun handleNavigationEffect(
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> navController.popBackStack()
-        is Effect.Navigation.SwitchScreen -> TODO("Navigate to WebView or something")
+        is Effect.Navigation.SwitchScreen -> {}
     }
 }
 
@@ -102,54 +97,33 @@ fun Content(
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues
 ) {
-    Column {
-        ActionTopBar(
-            contentColor = MaterialTheme.colorScheme.backgroundPaper,
-            iconColor = MaterialTheme.colorScheme.primary,
-            iconData = AppIcons.Close
-        ) { onEventSend(Event.Pop) }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues),
+    ) {
 
-        Column(
-            modifier = Modifier.padding(
-                horizontal = paddingValues.calculateStartPadding(
-                    LayoutDirection.Ltr
+        ContentTitle(
+            title = state.title,
+            subtitle = state.subtitle
+        )
+
+        state.options.forEach { option ->
+            IssuanceButton(
+                data = IssuanceButtonData(
+                    text = option.text,
+                    icon = option.icon
                 )
-            )
-        ) {
-
-            Text(
-                text = state.title,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            VSpacer.Small()
-
-            Text(
-                text = state.subtitle,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.textSecondaryDark
-            )
-
-            VSpacer.ExtraLarge()
-
-            state.options.forEach { option ->
-                IssuanceButton(
-                    data = IssuanceButtonData(
-                        text = option.text,
-                        icon = option.icon
+            ) {
+                onEventSend(
+                    Event.NavigateToIssueDocument(
+                        url = option.issuanceUrl,
+                        type = option.type
                     )
-                ) {
-                    onEventSend(
-                        Event.NavigateToIssueDocument(
-                            url = option.issuanceUrl,
-                            type = option.type
-                        )
-                    )
-                }
-
-                VSpacer.Medium()
+                )
             }
+
+            VSpacer.Medium()
         }
     }
 

@@ -16,13 +16,15 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.ui.adddocument
+package eu.europa.ec.dashboardfeature.ui.document.add
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.dashboardfeature.interactor.AddDocumentInteractor
-import eu.europa.ec.dashboardfeature.interactor.AddDocumentInteractorPartialState
+import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentInteractor
+import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentInteractorPartialState
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -54,11 +56,12 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class AddDocumentViewModel(
-    private val addDocumentInteractor: AddDocumentInteractor
+    private val addDocumentInteractor: AddDocumentInteractor,
+    private val resourceProvider: ResourceProvider
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        title = addDocumentInteractor.getTitle(),
-        subtitle = addDocumentInteractor.getSubtitle()
+        title = resourceProvider.getString(R.string.add_document_title),
+        subtitle = resourceProvider.getString(R.string.add_document_subtitle)
     )
 
     override fun handleEvents(event: Event) = when (event) {

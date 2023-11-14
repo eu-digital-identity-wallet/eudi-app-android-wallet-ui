@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.dashboardfeature.interactor
+package eu.europa.ec.dashboardfeature.interactor.document
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentItemUi
@@ -29,13 +29,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class DocumentDetailsInteractorPartialState {
-    data class Success(val document: DocumentUi) : DocumentDetailsInteractorPartialState()
+    data class Success(val document: DocumentUi, val userName: String) :
+        DocumentDetailsInteractorPartialState()
+
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
 }
 
 interface DocumentDetailsInteractor {
     fun getDocument(documentId: String): Flow<DocumentDetailsInteractorPartialState>
-    fun getUserName(): String
 }
 
 class DocumentDetailsInteractorImpl(
@@ -45,27 +46,26 @@ class DocumentDetailsInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getDocument(documentId: String): Flow<DocumentDetailsInteractorPartialState> = flow {
-        delay(1_000L)
-        emit(
-            DocumentDetailsInteractorPartialState.Success(
-                document = DocumentUi(
-                    documentId = 0,
-                    documentType = DocumentTypeUi.DIGITAL_ID,
-                    documentStatus = DocumentStatusUi.ACTIVE,
-                    documentImage = "image",
-                    documentItems = (1..15).map {
-                        DocumentItemUi(title = "Title $it", value = "Value $it")
-                    }
+    override fun getDocument(documentId: String): Flow<DocumentDetailsInteractorPartialState> =
+        flow {
+            delay(1_000L)
+            emit(
+                DocumentDetailsInteractorPartialState.Success(
+                    document = DocumentUi(
+                        documentId = 0,
+                        documentType = DocumentTypeUi.DIGITAL_ID,
+                        documentStatus = DocumentStatusUi.ACTIVE,
+                        documentImage = "image",
+                        documentItems = (1..15).map {
+                            DocumentItemUi(title = "Title $it", value = "Value $it")
+                        },
+                    ),
+                    userName = "Jane"
                 )
             )
-        )
-    }.safeAsync {
-        DocumentDetailsInteractorPartialState.Failure(
-            error = it.localizedMessage ?: genericErrorMsg
-        )
-    }
-
-    override fun getUserName(): String = "Jane"
-
+        }.safeAsync {
+            DocumentDetailsInteractorPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
+            )
+        }
 }

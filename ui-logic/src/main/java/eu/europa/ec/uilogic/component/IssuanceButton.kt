@@ -66,7 +66,9 @@ fun IssuanceButton(
         ) {
 
             WrapIcon(
-                modifier = Modifier.width(40.dp).height(30.dp),
+                modifier = Modifier
+                    .width(40.dp)
+                    .height(30.dp),
                 iconData = data.icon,
                 customTint = MaterialTheme.colorScheme.primary
             )
