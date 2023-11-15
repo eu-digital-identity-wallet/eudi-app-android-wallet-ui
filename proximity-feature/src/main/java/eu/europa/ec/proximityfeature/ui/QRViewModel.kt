@@ -79,7 +79,7 @@ class QRViewModel(
             )
         }
         viewModelScope.launch {
-            interactor.startQrEngagement { response ->
+            interactor.startQrEngagement().collect { response ->
                 when (response) {
                     is QRInteractorPartialState.Failure -> {
                         setState {

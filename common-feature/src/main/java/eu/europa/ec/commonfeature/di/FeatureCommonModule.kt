@@ -25,10 +25,12 @@ import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.BiometricInteractorImpl
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorImpl
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
+import org.koin.core.annotation.Single
 
 @Module
 @ComponentScan("eu.europa.ec.commonfeature")
@@ -51,3 +53,6 @@ fun provideBiometricInteractor(
 ): BiometricInteractor {
     return BiometricInteractorImpl(prefKeys, biometricController, quickPinInteractor)
 }
+
+@Single
+fun provideEudiWallet(): EudiWallet = EudiWallet

@@ -52,6 +52,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
+import eu.europa.ec.uilogic.navigation.ProximityScreens
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -75,7 +76,11 @@ fun QRScreen(
             onNavigationRequested = { navigationEffect ->
                 when (navigationEffect) {
                     is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(navigationEffect.screenRoute)
+                        navController.navigate(navigationEffect.screenRoute) {
+                            popUpTo(ProximityScreens.QR.screenRoute) {
+                                inclusive = true
+                            }
+                        }
                     }
 
                     is Effect.Navigation.Pop -> {
@@ -90,6 +95,7 @@ fun QRScreen(
     OneTimeLaunchedEffect {
         viewModel.setEvent(Event.Init)
     }
+
 }
 
 @Composable

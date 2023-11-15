@@ -20,6 +20,8 @@ package eu.europa.ec.uilogic.navigation
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -61,11 +63,32 @@ class RouterHostImpl constructor(
         ) {
             builder(navController)
         }
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            destination.route?.let { route ->
-                analyticsController.logScreen(route)
+
+        DisposableEffect(key1 = navController) {
+            val destinationChangedListener =
+                NavController.OnDestinationChangedListener { _, destination, _ ->
+                    destination.route?.let { route ->
+                        println("Giannis $route")
+                        analyticsController.logScreen(route)
+                    }
+                }
+            navController.addOnDestinationChangedListener(destinationChangedListener)
+
+            onDispose {
+                navController.removeOnDestinationChangedListener(destinationChangedListener)
             }
         }
+
+        LaunchedEffect(key1 = navController) {
+            navController.currentBackStack.collect { entries ->
+                println("Giannis entries:")
+                entries.forEach { entry ->
+                    val arguments = entry.destination.arguments
+                    println("\tGiannis ${entry.destination.route} is ${entry.lifecycle.currentState} with args: $arguments")
+                }
+            }
+        }
+
     }
 
     override fun currentFlowIsAfterOnBoarding(): Boolean {

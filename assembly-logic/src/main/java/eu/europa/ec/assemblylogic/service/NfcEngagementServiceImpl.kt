@@ -16,10 +16,13 @@
  *
  */
 
-package eu.europa.ec.commonfeature.model
+package eu.europa.ec.assemblylogic.service
 
-import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
+import eu.europa.ec.eudi.iso18013.transfer.TransferManager
+import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
+import eu.europa.ec.eudi.wallet.EudiWallet
 
-class EUDIWListenerWrapper {
-    val tranfserEventListener: TransferEvent.Listener
+class NfcEngagementServiceImpl : NfcEngagementService() {
+    override val transferManager: TransferManager
+        get() = EudiWallet.transferManager
 }

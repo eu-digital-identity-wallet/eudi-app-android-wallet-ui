@@ -40,7 +40,8 @@ interface DashboardInteractor {
 }
 
 class DashboardInteractorImpl(
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    private val eudiWallet: EudiWallet,
 ) : DashboardInteractor {
 
     private val genericErrorMsg
@@ -54,11 +55,11 @@ class DashboardInteractorImpl(
 //            ).getString("Data")
 //        )
 //        // Add state check
-//        val result = EudiWallet.loadSampleData(byteArray)
+//        val result = eudiWallet.loadSampleData(byteArray)
     }
 
     override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
-        val documents = EudiWallet.getDocuments()
+        val documents = eudiWallet.getDocuments()
         emit(
             DashboardInteractorPartialState.Success(
                 documents = mapToUi(documents)

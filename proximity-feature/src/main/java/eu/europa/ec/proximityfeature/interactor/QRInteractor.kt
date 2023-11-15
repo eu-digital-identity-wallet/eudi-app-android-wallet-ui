@@ -18,11 +18,15 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
-import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
+import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.corewrapper.EUDIWListenerWrapper
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.cancellable
 
 sealed class QRInteractorPartialState {
     data class Success(val qRCode: String) : QRInteractorPartialState()
@@ -31,61 +35,36 @@ sealed class QRInteractorPartialState {
 }
 
 interface QRInteractor {
-    fun startQrEngagement(stateChanged: (QRInteractorPartialState) -> Unit)
+    fun startQrEngagement(): Flow<QRInteractorPartialState>
 }
 
 class QRInteractorImpl(
     private val resourceProvider: ResourceProvider,
+    private val eudiWallet: EudiWallet
 ) : QRInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    private var onStateChange: ((QRInteractorPartialState) -> Unit)? = null
-
-    private var transferListener: TransferEvent.Listener? = null
-
-    fun startQr(): Flow<QRInteractorPartialState> = callbackFlow {
-
-    }
-
-    override fun startQrEngagement(stateChanged: (QRInteractorPartialState) -> Unit) {
-        transferListener = TransferEvent.Listener { event ->
-            println("event is $event")
-            when (event) {
-                is TransferEvent.QrEngagementReady -> {
-                    onStateChange?.invoke(
-                        QRInteractorPartialState.Success(
-                            qRCode = event.qrCode.content
-                        )
-                    )
-                }
-
-                is TransferEvent.Error -> {
-                    onStateChange?.invoke(
-                        QRInteractorPartialState.Failure(
-                            error = event.error.message ?: genericErrorMsg
-                        )
-                    )
-                }
-
-                TransferEvent.Connected -> {
-                    EudiWallet.removeTransferEventListener(transferListener!!)
-                    onStateChange?.invoke(
-                        QRInteractorPartialState.Connected
-                    )
-                }
-
-                is TransferEvent.RequestReceived -> {}
-                TransferEvent.Connecting -> {}
-                TransferEvent.Disconnected -> {}
-                TransferEvent.ResponseSent -> {}
-            }
+    override fun startQrEngagement(): Flow<QRInteractorPartialState> = callbackFlow {
+        val callback = EUDIWListenerWrapper(
+            onConnected = {
+                trySendBlocking(QRInteractorPartialState.Connected)
+            },
+            onQrEngagementReady = {
+                trySendBlocking(QRInteractorPartialState.Success(it))
+            },
+            onError = {
+                trySendBlocking(QRInteractorPartialState.Failure(it))
+            },
+        )
+        eudiWallet.addTransferEventListener(callback)
+        eudiWallet.startQrEngagement()
+        awaitClose {
+            eudiWallet.removeTransferEventListener(callback)
+            eudiWallet.stopPresentation()
         }
-
-        EudiWallet.addTransferEventListener(transferListener!!)
-        EudiWallet.startQrEngagement()
-
-        onStateChange = stateChanged
-    }
+    }.safeAsync {
+        QRInteractorPartialState.Failure(error = it.localizedMessage ?: genericErrorMsg)
+    }.cancellable()
 }
