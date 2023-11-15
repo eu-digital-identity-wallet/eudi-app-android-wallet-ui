@@ -24,7 +24,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
-import eu.europa.ec.proximityfeature.ui.QRScreen
+import eu.europa.ec.proximityfeature.ui.loading.ProximityLoadingScreen
+import eu.europa.ec.proximityfeature.ui.qr.ProximityQRScreen
+import eu.europa.ec.proximityfeature.ui.request.ProximityRequestScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import org.koin.androidx.compose.koinViewModel
@@ -34,6 +36,7 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
         startDestination = ProximityScreens.QR.screenRoute,
         route = ModuleRoute.ProximityModule.route
     ) {
+        // QR
         composable(
             route = ProximityScreens.QR.screenRoute,
             deepLinks = listOf(
@@ -43,7 +46,36 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
                 }
             )
         ) {
-            QRScreen(navController, koinViewModel())
+            ProximityQRScreen(
+                navController,
+                koinViewModel()
+            )
+        }
+
+        // Request
+        composable(
+            route = ProximityScreens.Request.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + ProximityScreens.Request.screenRoute
+                }
+            )
+        ) {
+            ProximityRequestScreen(
+                navController,
+                koinViewModel()
+            )
+        }
+
+        // Loading
+        composable(
+            route = ProximityScreens.Loading.screenRoute,
+        ) {
+            ProximityLoadingScreen(
+                navController,
+                koinViewModel()
+            )
         }
     }
 }

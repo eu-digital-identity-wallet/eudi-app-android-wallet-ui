@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.proximityfeature.ui
+package eu.europa.ec.proximityfeature.ui.qr
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -46,20 +46,26 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.rememberQrBitmapPainter
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
+import eu.europa.ec.uilogic.navigation.ProximityScreens
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @Composable
-fun QRScreen(
+fun ProximityQRScreen(
     navController: NavController,
-    viewModel: QRViewModel
+    viewModel: ProximityQRViewModel
 ) {
     val state = viewModel.viewState.value
 
@@ -75,7 +81,11 @@ fun QRScreen(
             onNavigationRequested = { navigationEffect ->
                 when (navigationEffect) {
                     is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(navigationEffect.screenRoute)
+                        navController.navigate(navigationEffect.screenRoute) {
+                            popUpTo(ProximityScreens.QR.screenRoute) {
+                                inclusive = true
+                            }
+                        }
                     }
 
                     is Effect.Navigation.Pop -> {
@@ -107,8 +117,8 @@ private fun Content(
                 .padding(paddingValues)
         ) {
             ContentTitle(
-                title = stringResource(id = R.string.qr_title),
-                subtitle = stringResource(id = R.string.qr_subtitle)
+                title = stringResource(id = R.string.proximity_qr_title),
+                subtitle = stringResource(id = R.string.proximity_qr_subtitle)
             )
 
             Column(
@@ -150,7 +160,7 @@ private fun NFCSection() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = stringResource(id = R.string.qr_use_nfc),
+            text = stringResource(id = R.string.proximity_qr_use_nfc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.textSecondaryDark
         )
@@ -189,6 +199,23 @@ private fun QRCode(
                 secondaryPixelsColor = secondaryPixelsColor.toArgb()
             ),
             contentDescription = stringResource(id = R.string.content_description_qr_code)
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun ContentPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                isLoading = false,
+                error = null,
+                qrCode = "some qr code"
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp)
         )
     }
 }

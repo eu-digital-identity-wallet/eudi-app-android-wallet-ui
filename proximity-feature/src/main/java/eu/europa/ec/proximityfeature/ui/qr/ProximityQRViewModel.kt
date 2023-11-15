@@ -16,11 +16,11 @@
  *
  */
 
-package eu.europa.ec.proximityfeature.ui
+package eu.europa.ec.proximityfeature.ui.qr
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.proximityfeature.interactor.QRInteractor
-import eu.europa.ec.proximityfeature.interactor.QRInteractorPartialState
+import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
+import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractorPartialState
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -52,8 +52,8 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-class QRViewModel(
-    private val interactor: QRInteractor
+class ProximityQRViewModel(
+    private val interactor: ProximityQRInteractor
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State()
@@ -81,7 +81,7 @@ class QRViewModel(
         viewModelScope.launch {
             interactor.generateQRCode().collect { response ->
                 when (response) {
-                    is QRInteractorPartialState.Failure -> {
+                    is ProximityQRInteractorPartialState.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -94,7 +94,7 @@ class QRViewModel(
                         }
                     }
 
-                    is QRInteractorPartialState.Success -> {
+                    is ProximityQRInteractorPartialState.Success -> {
                         setState {
                             copy(
                                 isLoading = false,

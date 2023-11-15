@@ -18,8 +18,10 @@
 
 package eu.europa.ec.proximityfeature.di
 
-import eu.europa.ec.proximityfeature.interactor.QRInteractor
-import eu.europa.ec.proximityfeature.interactor.QRInteractorImpl
+import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
+import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractorImpl
+import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
+import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -30,6 +32,11 @@ import org.koin.core.annotation.Module
 class FeatureProximityModule
 
 @Factory
-fun provideQRInteractor(
+fun provideProximityQRInteractor(
     resourceProvider: ResourceProvider,
-): QRInteractor = QRInteractorImpl(resourceProvider)
+): ProximityQRInteractor = ProximityQRInteractorImpl(resourceProvider)
+
+@Factory
+fun provideProximityRequestInteractor(
+    resourceProvider: ResourceProvider,
+): ProximityRequestInteractor = ProximityRequestInteractorImpl(resourceProvider)

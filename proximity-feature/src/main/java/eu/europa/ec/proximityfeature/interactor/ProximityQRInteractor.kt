@@ -23,30 +23,30 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-sealed class QRInteractorPartialState {
-    data class Success(val qRCode: String) : QRInteractorPartialState()
-    data class Failure(val error: String) : QRInteractorPartialState()
+sealed class ProximityQRInteractorPartialState {
+    data class Success(val qRCode: String) : ProximityQRInteractorPartialState()
+    data class Failure(val error: String) : ProximityQRInteractorPartialState()
 }
 
-interface QRInteractor {
-    fun generateQRCode(): Flow<QRInteractorPartialState>
+interface ProximityQRInteractor {
+    fun generateQRCode(): Flow<ProximityQRInteractorPartialState>
 }
 
-class QRInteractorImpl(
+class ProximityQRInteractorImpl(
     private val resourceProvider: ResourceProvider,
-) : QRInteractor {
+) : ProximityQRInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun generateQRCode(): Flow<QRInteractorPartialState> = flow {
+    override fun generateQRCode(): Flow<ProximityQRInteractorPartialState> = flow {
         emit(
-            QRInteractorPartialState.Success(
+            ProximityQRInteractorPartialState.Success(
                 qRCode = "some text"
             )
         )
     }.safeAsync {
-        QRInteractorPartialState.Failure(
+        ProximityQRInteractorPartialState.Failure(
             error = it.localizedMessage ?: genericErrorMsg
         )
     }

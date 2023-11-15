@@ -60,6 +60,8 @@ sealed class PresentationScreens {
 
 sealed class ProximityScreens {
     data object QR : Screen(name = "PROXIMITY_QR")
+    data object Request : Screen(name = "PROXIMITY_REQUEST")
+    data object Loading : Screen(name = "PROXIMITY_LOADING")
 }
 
 sealed class ModuleRoute(val route: String) : NavigatableItem {

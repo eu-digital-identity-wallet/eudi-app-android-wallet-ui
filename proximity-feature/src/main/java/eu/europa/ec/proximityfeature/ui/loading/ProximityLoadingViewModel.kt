@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.samedevice.loading
+package eu.europa.ec.proximityfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
@@ -27,7 +27,7 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -37,13 +37,13 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class PresentationSameDeviceLoadingViewModel constructor(
+class ProximityLoadingViewModel constructor(
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider
 ) : LoadingViewModel() {
 
     override fun getTitle(): String {
-        return resourceProvider.getString(R.string.loading_title)
+        return resourceProvider.getString(R.string.proximity_loading_title)
     }
 
     override fun getSubtitle(): String {
@@ -51,11 +51,11 @@ class PresentationSameDeviceLoadingViewModel constructor(
     }
 
     override fun getPreviousScreen(): Screen {
-        return PresentationScreens.SameDeviceRequest
+        return ProximityScreens.Request
     }
 
     override fun getCallerScreen(): Screen {
-        return PresentationScreens.SameDeviceLoading
+        return ProximityScreens.Loading
     }
 
     override fun getNextScreen(): String {
@@ -79,7 +79,7 @@ class PresentationSameDeviceLoadingViewModel constructor(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
                     header = resourceProvider.getString(R.string.loading_success_config_title),
-                    content = resourceProvider.getString(R.string.loading_success_config_subtitle),
+                    content = resourceProvider.getString(R.string.proximity_loading_success_config_subtitle),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.DEFAULT
                     ),
