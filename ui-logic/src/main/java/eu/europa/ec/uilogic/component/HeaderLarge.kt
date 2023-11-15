@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,8 +40,8 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 data class HeaderData(
     val title: String,
     val subtitle: String,
-    val image: IconData,
-    val icon: IconData? = null
+    val image: IconData = AppIcons.User,
+    val icon: IconData = AppIcons.IdStroke
 )
 
 @Composable
@@ -51,14 +52,14 @@ fun HeaderLarge(
 ) {
     Column(
         modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
             .background(
                 color = MaterialTheme.colorScheme.primary,
                 shape = MaterialTheme.shapes.bottomCorneredShapeSmall
             )
             .padding(contentPadding)
     ) {
-
-        VSpacer.Large()
 
         Text(
             text = data.title,

@@ -129,7 +129,9 @@ fun ContentScreen(
         SnackbarHostState()
     }
 
-    val hasToolBar = contentErrorConfig != null || navigatableAction != ScreenNavigateAction.NONE
+    val hasToolBar = contentErrorConfig != null
+            || navigatableAction != ScreenNavigateAction.NONE
+            || topBar != null
     val topSpacing = if (hasToolBar) TopSpacing.WithToolbar else TopSpacing.WithoutToolbar
 
     Scaffold(

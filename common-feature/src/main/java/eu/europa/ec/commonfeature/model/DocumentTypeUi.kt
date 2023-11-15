@@ -23,12 +23,18 @@ data class DocumentUi(
     val documentType: DocumentTypeUi,
     val documentStatus: DocumentStatusUi,
     val documentImage: String,
+    val documentItems: List<DocumentItemUi>
+)
+
+data class DocumentItemUi(
+    val title: String,
+    val value: String
 )
 
 enum class DocumentTypeUi(
     val title: String
 ) {
-    DRIVING_LICENCE(title = "Driving Licence"),
+    DRIVING_LICENSE(title = "Driving License"),
     DIGITAL_ID(title = "Digital ID"),
     OTHER(title = "Other document")
 }

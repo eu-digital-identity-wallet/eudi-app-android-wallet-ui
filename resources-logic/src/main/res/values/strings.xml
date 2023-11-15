@@ -94,6 +94,10 @@
     <string name="dashboard_title">Welcome back</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
+    <string name="add_document_title">Add document</string>
+    <string name="add_document_subtitle">Select a document to add in your EUDI Wallet</string>
+    <string name="add_id">Digital ID</string>
+    <string name="add_driving_license">Driving License</string>
 
     <!-- QR -->
     <string name="qr_title">Show QR or Tap</string>

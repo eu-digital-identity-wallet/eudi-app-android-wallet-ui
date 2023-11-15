@@ -20,7 +20,9 @@ package eu.europa.ec.uilogic.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -64,6 +66,9 @@ fun IssuanceButton(
         ) {
 
             WrapIcon(
+                modifier = Modifier
+                    .width(40.dp)
+                    .height(30.dp),
                 iconData = data.icon,
                 customTint = MaterialTheme.colorScheme.primary
             )
