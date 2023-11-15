@@ -51,6 +51,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
@@ -132,7 +133,6 @@ private fun Content(
             ) {
                 QRCode(
                     qrCode = state.qrCode,
-                    modifier = Modifier.size(qrSize),
                     qrSize = qrSize
                 )
             }
@@ -160,7 +160,7 @@ private fun NFCSection() {
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
                 shape = MaterialTheme.shapes.topCorneredShapeSmall
             )
-            .padding(vertical = 48.dp, horizontal = SPACING_LARGE.dp),
+            .padding(vertical = SPACING_EXTRA_LARGE.dp, horizontal = SPACING_LARGE.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
