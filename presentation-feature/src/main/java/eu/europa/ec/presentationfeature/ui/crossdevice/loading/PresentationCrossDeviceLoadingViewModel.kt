@@ -43,11 +43,11 @@ class PresentationCrossDeviceLoadingViewModel constructor(
 ) : LoadingViewModel() {
 
     override fun getTitle(): String {
-        return resourceProvider.getString(R.string.presentation_loading_title)
+        return resourceProvider.getString(R.string.loading_title)
     }
 
     override fun getSubtitle(): String {
-        return resourceProvider.getString(R.string.presentation_loading_subtitle)
+        return resourceProvider.getString(R.string.loading_subtitle)
     }
 
     override fun getPreviousScreen(): Screen {
@@ -78,14 +78,14 @@ class PresentationCrossDeviceLoadingViewModel constructor(
         mapOf(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
-                    header = resourceProvider.getString(R.string.presentation_success_config_title),
-                    content = resourceProvider.getString(R.string.presentation_success_config_subtitle),
+                    header = resourceProvider.getString(R.string.loading_success_config_title),
+                    content = resourceProvider.getString(R.string.loading_success_config_subtitle),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.DEFAULT
                     ),
                     buttonConfig = listOf(
                         SuccessUIConfig.ButtonConfig(
-                            text = resourceProvider.getString(R.string.presentation_success_config_primary_button_text),
+                            text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = ConfigNavigation(
                                 navigationType = NavigationType.POP,

@@ -15,15 +15,20 @@
  *  * limitations under the License.
  *
  */
-plugins {
-    id("eudi.android.feature")
-}
 
-android {
-    namespace = "eu.europa.ec.proximityfeature"
-}
+package eu.europa.ec.proximityfeature.ui.loading
 
-dependencies {
-    implementation(project(":common-feature"))
-    implementation(libs.zxing)
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
+
+@Composable
+fun ProximityLoadingScreen(
+    navController: NavController,
+    viewModel: ProximityLoadingViewModel
+) {
+    LoadingScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
 }

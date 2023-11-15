@@ -16,22 +16,22 @@
  *
  */
 
-package eu.europa.ec.presentationfeature.ui.samedevice.request
+package eu.europa.ec.proximityfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
-import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractor
-import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractorPartialState
+import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
+import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -39,14 +39,14 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class PresentationSameDeviceRequestViewModel(
-    private val interactor: PresentationSameDeviceInteractor,
+class ProximityRequestViewModel(
+    private val interactor: ProximityRequestInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
 ) : RequestViewModel() {
 
     override fun getScreenTitle(): String {
-        return resourceProvider.getString(R.string.request_title)
+        return resourceProvider.getString(R.string.proximity_request_title)
     }
 
     override fun getScreenSubtitle(): String {
@@ -75,11 +75,11 @@ class PresentationSameDeviceRequestViewModel(
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PUSH,
-                                screenToNavigate = PresentationScreens.SameDeviceLoading
+                                screenToNavigate = ProximityScreens.Loading
                             ),
                             onBackNavigation = ConfigNavigation(
                                 navigationType = NavigationType.POP,
-                                screenToNavigate = PresentationScreens.SameDeviceRequest
+                                screenToNavigate = ProximityScreens.Request
                             )
                         ),
                         BiometricUiConfig.Parser
@@ -100,7 +100,7 @@ class PresentationSameDeviceRequestViewModel(
         viewModelScope.launch {
             interactor.getUserData().collect { response ->
                 when (response) {
-                    is PresentationSameDeviceInteractorPartialState.Failure -> {
+                    is ProximityRequestInteractorPartialState.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -113,7 +113,7 @@ class PresentationSameDeviceRequestViewModel(
                         }
                     }
 
-                    is PresentationSameDeviceInteractorPartialState.Success -> {
+                    is ProximityRequestInteractorPartialState.Success -> {
                         setState {
                             copy(
                                 isLoading = false,
