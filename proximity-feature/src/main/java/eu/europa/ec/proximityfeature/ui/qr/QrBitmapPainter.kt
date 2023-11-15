@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.proximityfeature.ui.qr
 
 import android.graphics.Bitmap
 import android.graphics.Color
