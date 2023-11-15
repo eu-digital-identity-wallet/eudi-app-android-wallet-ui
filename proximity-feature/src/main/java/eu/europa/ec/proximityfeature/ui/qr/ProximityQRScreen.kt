@@ -36,7 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.R
@@ -109,6 +111,9 @@ private fun Content(
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
     paddingValues: PaddingValues,
 ) {
+    val configuration = LocalConfiguration.current
+    val qrSize = (configuration.screenWidthDp / 1.5).dp
+
     Column(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -128,7 +133,8 @@ private fun Content(
             ) {
                 QRCode(
                     qrCode = state.qrCode,
-                    modifier = Modifier.size(192.dp)
+                    modifier = Modifier.size(qrSize),
+                    qrSize = qrSize
                 )
             }
         }
@@ -177,7 +183,9 @@ private fun NFCSection() {
 private fun QRCode(
     modifier: Modifier = Modifier,
     qrCode: String,
+    qrSize: Dp
 ) {
+
     val primaryPixelsColor = if (isSystemInDarkTheme()) {
         Color.Black
     } else {
@@ -196,7 +204,8 @@ private fun QRCode(
             painter = rememberQrBitmapPainter(
                 content = qrCode,
                 primaryPixelsColor = primaryPixelsColor.toArgb(),
-                secondaryPixelsColor = secondaryPixelsColor.toArgb()
+                secondaryPixelsColor = secondaryPixelsColor.toArgb(),
+                size = qrSize
             ),
             contentDescription = stringResource(id = R.string.content_description_qr_code)
         )
