@@ -41,6 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.proximityfeature.ui.qr.component.rememberQrBitmapPainter
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.topCorneredShapeSmall

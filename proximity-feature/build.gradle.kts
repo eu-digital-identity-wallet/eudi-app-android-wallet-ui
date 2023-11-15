@@ -25,6 +25,5 @@ android {
 
 dependencies {
     implementation(project(":common-feature"))
-
     implementation(libs.zxing)
 }

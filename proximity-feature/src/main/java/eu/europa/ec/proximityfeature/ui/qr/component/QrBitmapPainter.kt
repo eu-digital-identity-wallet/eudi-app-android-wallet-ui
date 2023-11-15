@@ -16,7 +16,7 @@
  *
  */
 
-package eu.europa.ec.proximityfeature.ui.qr
+package eu.europa.ec.proximityfeature.ui.qr.component
 
 import android.graphics.Bitmap
 import android.graphics.Color
