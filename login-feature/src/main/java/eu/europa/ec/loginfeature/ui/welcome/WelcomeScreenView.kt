@@ -84,7 +84,7 @@ fun WelcomeScreen(
 @Composable
 private fun Content(
     state: State,
-    effectFlow: Flow<Effect>?,
+    effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
@@ -150,11 +150,11 @@ private fun Content(
 
     LaunchedEffect(Unit) {
         showContent = true
-        effectFlow?.onEach { effect ->
+        effectFlow.onEach { effect ->
             when (effect) {
                 is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
             }
-        }?.collect()
+        }.collect()
     }
 }
 

@@ -30,6 +30,7 @@
     <string name="generic_ok">OK</string>
 
     <!-- Content Description -->
+    <string name="content_description_qr_code">QR Code</string>
     <string name="content_description_more_vert_icon">More Items Vertically</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
@@ -76,14 +77,14 @@
     <string name="request_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
     <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
 
-    <!-- Presentation Loading Screen -->
-    <string name="presentation_loading_title">EUDI Conference requests the following to register</string>
-    <string name="presentation_loading_subtitle">Please wait…</string>
-    <string name="presentation_success_config_title">@string/generic_success</string>
-    <string name="presentation_success_config_subtitle">You successfully shared information with the EUDI Conference</string>
-    <string name="presentation_success_config_primary_button_text">@string/generic_ok</string>
-    <string name="presentation_biometry_share_subtitle">Use your biometrics to share information</string>
-    <string name="presentation_quick_pin_share_subtitle">Type your quick pin to share information</string>
+    <!-- Loading Screen -->
+    <string name="loading_title">EUDI Conference requests the following to register</string>
+    <string name="loading_subtitle">Please wait…</string>
+    <string name="loading_success_config_title">@string/generic_success</string>
+    <string name="loading_success_config_subtitle">You successfully shared information with the EUDI Conference</string>
+    <string name="loading_success_config_primary_button_text">@string/generic_ok</string>
+    <string name="loading_biometry_share_subtitle">Use your biometrics to share information</string>
+    <string name="loading_quick_pin_share_subtitle">Type your quick pin to share information</string>
 
     <!-- Login -->
     <string name="welcome_login_button_title">LOGIN</string>
@@ -97,5 +98,17 @@
     <string name="add_document_subtitle">Select a document to add in your EUDI Wallet</string>
     <string name="add_id">Digital ID</string>
     <string name="add_driving_license">Driving License</string>
+
+    <!-- Proximity QR -->
+    <string name="proximity_qr_title">Show QR or Tap</string>
+    <string name="proximity_qr_subtitle">Show this QR code to access the necessary information for sharing</string>
+    <string name="proximity_qr_use_nfc">Or use the NFC</string>
+
+    <!-- Proximity Request Screen -->
+    <string name="proximity_request_title">The Police officer requests the following</string>
+
+    <!-- Proximity Loading Screen -->
+    <string name="proximity_loading_title">The Police officer requests the following</string>
+    <string name="proximity_loading_success_config_subtitle">You successfully shared information with the Police officer</string>
 
 </resources>

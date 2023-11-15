@@ -69,8 +69,8 @@ class PresentationCrossDeviceRequestViewModel(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
                             title = getScreenTitle(),
-                            subTitle = resourceProvider.getString(R.string.presentation_biometry_share_subtitle),
-                            quickPinOnlySubTitle = resourceProvider.getString(R.string.presentation_quick_pin_share_subtitle),
+                            subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
+                            quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(

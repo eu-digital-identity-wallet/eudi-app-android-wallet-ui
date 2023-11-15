@@ -16,7 +16,19 @@
  *
  */
 
-package com.niscy.eudi.proximityfeature
+package eu.europa.ec.proximityfeature.ui.loading
 
-class Dummy {
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
+
+@Composable
+fun ProximityLoadingScreen(
+    navController: NavController,
+    viewModel: ProximityLoadingViewModel
+) {
+    LoadingScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
 }
