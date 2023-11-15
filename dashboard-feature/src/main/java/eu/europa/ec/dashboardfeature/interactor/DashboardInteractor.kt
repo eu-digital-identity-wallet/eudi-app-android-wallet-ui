@@ -81,7 +81,8 @@ class DashboardInteractorImpl(
                 documentId = it.id,
                 documentType = it.docType.toDocumentTypeUi(),
                 documentImage = "",
-                documentStatus = DocumentStatusUi.ACTIVE
+                documentStatus = DocumentStatusUi.ACTIVE,
+                documentItems = emptyList()
             )
         }
     }

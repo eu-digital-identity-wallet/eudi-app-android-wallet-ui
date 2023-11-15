@@ -41,7 +41,7 @@ enum class DocumentTypeUi(
 
 fun String.toDocumentTypeUi(): DocumentTypeUi = when(this){
     "eu.europa.ec.eudiw.pid.1" -> DocumentTypeUi.DIGITAL_ID
-    "org.iso.18013.5.1.mDL" -> DocumentTypeUi.DRIVING_LICENCE
+    "org.iso.18013.5.1.mDL" -> DocumentTypeUi.DRIVING_LICENSE
     else -> DocumentTypeUi.OTHER
 }
 
