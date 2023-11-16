@@ -2,7 +2,7 @@
 # EUDI Wallet UI for Android
 ## Dependency License Report
 _2023-11-06 11:58:00 EET_
-## Apache License, Version 2.0
+## EUROPEAN UNION PUBLIC LICENCE v. 1.2
 
 **1** **Group:** `androidx.activity` **Name:** `activity-compose` **Version:** `1.7.2` 
 > - **POM Project URL**: [https://developer.android.com/jetpack/androidx/releases/activity#1.7.2](https://developer.android.com/jetpack/androidx/releases/activity#1.7.2)
