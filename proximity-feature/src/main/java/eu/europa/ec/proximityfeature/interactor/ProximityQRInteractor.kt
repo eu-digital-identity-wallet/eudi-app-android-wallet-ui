@@ -19,35 +19,52 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.corewrapper.EUDIWListenerWrapper
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.cancellable
 
 sealed class ProximityQRInteractorPartialState {
     data class Success(val qRCode: String) : ProximityQRInteractorPartialState()
+    data object Connected : ProximityQRInteractorPartialState()
     data class Failure(val error: String) : ProximityQRInteractorPartialState()
 }
 
 interface ProximityQRInteractor {
-    fun generateQRCode(): Flow<ProximityQRInteractorPartialState>
+    fun startQrEngagement(): Flow<ProximityQRInteractorPartialState>
 }
 
 class ProximityQRInteractorImpl(
     private val resourceProvider: ResourceProvider,
+    private val eudiWallet: EudiWallet,
 ) : ProximityQRInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun generateQRCode(): Flow<ProximityQRInteractorPartialState> = flow {
-        emit(
-            ProximityQRInteractorPartialState.Success(
-                qRCode = "some text"
-            )
+    override fun startQrEngagement(): Flow<ProximityQRInteractorPartialState> = callbackFlow {
+        val callback = EUDIWListenerWrapper(
+            onConnected = {
+                trySendBlocking(ProximityQRInteractorPartialState.Connected)
+            },
+            onQrEngagementReady = {
+                trySendBlocking(ProximityQRInteractorPartialState.Success(it))
+            },
+            onError = {
+                trySendBlocking(ProximityQRInteractorPartialState.Failure(it))
+            },
         )
+        eudiWallet.addTransferEventListener(callback)
+        eudiWallet.startQrEngagement()
+        awaitClose {
+            eudiWallet.removeTransferEventListener(callback)
+            eudiWallet.stopPresentation()
+        }
     }.safeAsync {
-        ProximityQRInteractorPartialState.Failure(
-            error = it.localizedMessage ?: genericErrorMsg
-        )
-    }
+        ProximityQRInteractorPartialState.Failure(error = it.localizedMessage ?: genericErrorMsg)
+    }.cancellable()
 }

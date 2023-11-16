@@ -167,7 +167,7 @@ private fun ContentPreview() {
 
         val state = State(
             document = DocumentUi(
-                documentId = 2,
+                documentId = "2",
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image3",

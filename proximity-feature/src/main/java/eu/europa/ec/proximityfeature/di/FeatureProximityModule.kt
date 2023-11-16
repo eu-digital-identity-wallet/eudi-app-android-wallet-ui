@@ -18,8 +18,7 @@
 
 package eu.europa.ec.proximityfeature.di
 
-import eu.europa.ec.proximityfeature.interactor.QRInteractor
-import eu.europa.ec.proximityfeature.interactor.QRInteractorImpl
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
@@ -36,7 +35,8 @@ class FeatureProximityModule
 @Factory
 fun provideProximityQRInteractor(
     resourceProvider: ResourceProvider,
-): ProximityQRInteractor = ProximityQRInteractorImpl(resourceProvider)
+    eudiWallet: EudiWallet
+): ProximityQRInteractor = ProximityQRInteractorImpl(resourceProvider, eudiWallet)
 
 @Factory
 fun provideProximityRequestInteractor(

@@ -16,22 +16,10 @@
  *
  */
 
-<<<<<<<< HEAD:assembly-logic/src/main/java/eu/europa/ec/assemblylogic/service/NfcEngagementServiceImpl.kt
-package eu.europa.ec.assemblylogic.service
-
-import eu.europa.ec.eudi.iso18013.transfer.TransferManager
-import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
-import eu.europa.ec.eudi.wallet.EudiWallet
-
-class NfcEngagementServiceImpl : NfcEngagementService() {
-    override val transferManager: TransferManager
-        get() = EudiWallet.transferManager
-========
-package eu.europa.ec.proximityfeature.ui.request
-
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.RequestScreen
+import eu.europa.ec.proximityfeature.ui.request.ProximityRequestViewModel
 
 @Composable
 fun ProximityRequestScreen(
@@ -42,5 +30,4 @@ fun ProximityRequestScreen(
         navController = navController,
         viewModel = viewModel
     )
->>>>>>>> develop:proximity-feature/src/main/java/eu/europa/ec/proximityfeature/ui/request/ProximityRequestScreen.kt
 }

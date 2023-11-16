@@ -52,7 +52,7 @@ class DocumentDetailsInteractorImpl(
             emit(
                 DocumentDetailsInteractorPartialState.Success(
                     document = DocumentUi(
-                        documentId = 0,
+                        documentId = "0",
                         documentType = DocumentTypeUi.DIGITAL_ID,
                         documentStatus = DocumentStatusUi.ACTIVE,
                         documentImage = "image",

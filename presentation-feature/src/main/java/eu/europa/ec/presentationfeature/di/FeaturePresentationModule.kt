@@ -18,6 +18,7 @@
 
 package eu.europa.ec.presentationfeature.di
 
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractorImpl
 import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractor
@@ -34,8 +35,9 @@ class FeaturePresentationModule
 @Factory
 fun providePresentationCrossDeviceInteractor(
     resourceProvider: ResourceProvider,
+    eudiWallet: EudiWallet
 ): PresentationCrossDeviceInteractor {
-    return PresentationCrossDeviceInteractorImpl(resourceProvider)
+    return PresentationCrossDeviceInteractorImpl(resourceProvider, eudiWallet)
 }
 
 @Factory

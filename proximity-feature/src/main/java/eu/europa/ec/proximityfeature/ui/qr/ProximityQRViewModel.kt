@@ -26,6 +26,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.PresentationScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -79,7 +80,7 @@ class ProximityQRViewModel(
         }
 
         viewModelScope.launch {
-            interactor.generateQRCode().collect { response ->
+            interactor.startQrEngagement().collect { response ->
                 when (response) {
                     is ProximityQRInteractorPartialState.Failure -> {
                         setState {
@@ -100,6 +101,14 @@ class ProximityQRViewModel(
                                 isLoading = false,
                                 error = null,
                                 qrCode = response.qRCode
+                            )
+                        }
+                    }
+
+                    is ProximityQRInteractorPartialState.Connected -> {
+                        setEffect {
+                            Effect.Navigation.SwitchScreen(
+                                PresentationScreens.CrossDeviceRequest.screenRoute
                             )
                         }
                     }
