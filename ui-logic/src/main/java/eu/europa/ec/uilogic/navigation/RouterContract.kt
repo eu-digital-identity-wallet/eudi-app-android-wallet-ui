@@ -42,6 +42,14 @@ sealed class DashboardScreens {
 sealed class LoginScreens {
     data object Welcome : Screen(name = "WELCOME")
     data object Faq : Screen(name = "FAQ")
+
+    data object QuickPin : Screen(name = "WIZARD_LOGIN_QUICK_PIN_SCREEN", parameters = "?payload={payload}")
+
+    data object Pin : Screen(name = "WIZARD_LOGIN_PIN_SCREEN", parameters = "?payload={payload}")
+
+    data object RePin :
+        Screen(name = "WIZARD_LOGIN_RE_PIN_SCREEN", parameters = "?payload={payload}")
+
 }
 
 sealed class PresentationScreens {

@@ -198,6 +198,10 @@ class BiometricViewModel constructor(
                         is QuickPinInteractorPinValidPartialState.Success -> {
                             authenticationSuccess()
                         }
+
+                        is QuickPinInteractorPinValidPartialState.SetActions -> {
+
+                        }
                     }
                 }
         }

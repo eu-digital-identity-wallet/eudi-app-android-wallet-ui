@@ -25,6 +25,6 @@ interface SplashInteractor {
 class SplashInteractorImpl : SplashInteractor {
 
     override fun getAfterSplashRoute(): String {
-        return LoginScreens.Welcome.screenRoute
+        return LoginScreens.QuickPin.screenRoute
     }
 }

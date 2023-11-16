@@ -23,6 +23,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.loginfeature.ui.faq.FaqScreen
+import eu.europa.ec.loginfeature.ui.pin.PinScreen
 import eu.europa.ec.loginfeature.ui.welcome.WelcomeScreen
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
@@ -30,18 +31,18 @@ import org.koin.androidx.compose.koinViewModel
 
 fun NavGraphBuilder.featureLoginGraph(navController: NavController) {
     navigation(
-        startDestination = LoginScreens.Welcome.screenRoute,
+        startDestination = LoginScreens.QuickPin.screenRoute,
         route = ModuleRoute.LoginModule.route
     ) {
         composable(
-            route = LoginScreens.Welcome.screenRoute,
+            route = LoginScreens.QuickPin.screenRoute,
             deepLinks = listOf(
                 navDeepLink {
-                    uriPattern = BuildConfig.DEEPLINK + LoginScreens.Welcome.screenRoute
+                    uriPattern = BuildConfig.DEEPLINK + LoginScreens.QuickPin.screenRoute
                 }
             )
         ) {
-            WelcomeScreen(navController, koinViewModel())
+            PinScreen(navController, koinViewModel())
         }
     }
 
