@@ -18,11 +18,15 @@
 
 package eu.europa.ec.loginfeature.ui.pin
 
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.Form
+import eu.europa.ec.businesslogic.validator.FormValidationResult
 import eu.europa.ec.businesslogic.validator.FormsValidationResult
 import eu.europa.ec.businesslogic.validator.Rule
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -58,11 +62,12 @@ data class State(
     val isBackable: Boolean = true,
     val showTextFieldError: Boolean = false,
     val quickPinError: String? = null,
-    val validationResult: FormsValidationResult = FormsValidationResult(false),
+    val validationResult: FormValidationResult = FormValidationResult(false),
     val actions: List<String> = listOf(),
-    val error: PinScreenViewError? = null,
-    val pin: String = ""
-) : ViewState
+    val pin: String = "",
+    val subtitle: String = "",
+
+    ) : ViewState
 
 sealed class Effect : ViewSideEffect {
 
@@ -76,9 +81,16 @@ sealed class Effect : ViewSideEffect {
 
 
 @KoinViewModel
-class PinViewModel(private val interactor: QuickPinInteractor) :
+class PinViewModel(
+    private val interactor: QuickPinInteractor,
+    private val resourceProvider: ResourceProvider
+) :
     MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State(isLoading = false, error = null)
+    override fun setInitialState(): State =
+        State(
+            isLoading = false,
+            subtitle = resourceProvider.getString(R.string.quick_pin_subtitle)
+        )
 
     override fun handleEvents(event: Event) {
         when (event) {
@@ -90,17 +102,14 @@ class PinViewModel(private val interactor: QuickPinInteractor) :
                 }
             }
 
-            is Event.EnableButton -> {
-                setState {
-                    copy(
-                        isButtonEnabled = event.enable
-                    )
-                }
+            is Event.OnQuickPinEntered -> {
+                validateForm(getListOfRules(event.quickPin))
             }
+
 
             is Event.NextButtonPressed -> {
                 setState {
-                    copy(isLoading = true, error = null)
+                    copy(isLoading = true, quickPinError = null)
                 }
 //                nextStep(
 //                    interactor,
@@ -139,12 +148,11 @@ class PinViewModel(private val interactor: QuickPinInteractor) :
                         pin = event.pin
                     )
                 }
-                validateForm(getListOfRules(event), event.pin)
             }
 
             is Event.CancelButtonPressed -> {
                 setState {
-                    copy(isLoading = true, error = null)
+                    copy(isLoading = true, quickPinError = null)
                 }
 //                cancelWizard(
 //                    interactor,
@@ -174,20 +182,33 @@ class PinViewModel(private val interactor: QuickPinInteractor) :
             }
 
 
-            is Event.OnErrorDismiss -> setState { copy(error = null) }
+            is Event.OnErrorDismiss -> setState { copy(quickPinError = null) }
             else -> {}
         }
 
     }
 
-    private fun getListOfRules(event: Event.ValidateForm): List<Form> =
-        listOf(Form(mapOf(event.rules to event.pin)))
+    private fun getListOfRules(pin: String): Form {
+        pin.isDigitsOnly()
+        return Form(
+            mapOf(
+                listOf(
+                    Rule.ValidateStringRange(4..4, ""),
+                    Rule.ValidateRegex("-?\\d+(\\.\\d+)?".toRegex(), "only numerical")
+                ) to pin
+            )
+        )
+    }
 
-    private fun validateForm(forms: List<Form>, pin: String) {
+    private fun validateForm(form: Form) {
         viewModelScope.launch {
-            interactor.validateForms(forms).collect {
+            interactor.validateForm(form).collect {
                 setState {
-                    copy(validationResult = it, isButtonEnabled = it.isValid && pin.length == 4)
+                    copy(
+                        validationResult = it,
+                        isButtonEnabled = it.isValid,
+                        quickPinError = it.message
+                    )
                 }
             }
         }

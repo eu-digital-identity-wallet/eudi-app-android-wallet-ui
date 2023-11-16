@@ -21,7 +21,6 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.uilogic.navigation.WizardFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -36,23 +35,6 @@ interface QuickPinInteractor : FormValidator {
     fun isCurrentPinValid(pin: String): Flow<QuickPinInteractorPinValidPartialState>
     fun parseActions(payload: String): Flow<QuickPinInteractorPinValidPartialState>
     fun parseBackable(payload: String): Flow<QuickPinInteractorPinValidPartialState>
-
-    // Basic Wizard functions
-    fun nextStep(
-        flow: WizardFlow,
-        payload: String,
-        //  requestWizardNext: RequestWizardNextStep
-    ): Flow<QuickPinInteractorPinValidPartialState>
-
-    fun previousStep(
-        flow: WizardFlow,
-        payload: String
-    ): Flow<QuickPinInteractorPinValidPartialState>
-
-    fun cancelWizard(
-        flow: WizardFlow,
-        payload: String
-    ): Flow<QuickPinInteractorPinValidPartialState>
 
 }
 
@@ -128,29 +110,10 @@ class QuickPinInteractorImpl constructor(
         TODO("Not yet implemented")
     }
 
-    override fun nextStep(
-        flow: WizardFlow,
-        payload: String
-    ): Flow<QuickPinInteractorPinValidPartialState> {
-        TODO("Not yet implemented")
-    }
-
-    override fun previousStep(
-        flow: WizardFlow,
-        payload: String
-    ): Flow<QuickPinInteractorPinValidPartialState> {
-        TODO("Not yet implemented")
-    }
-
-    override fun cancelWizard(
-        flow: WizardFlow,
-        payload: String
-    ): Flow<QuickPinInteractorPinValidPartialState> {
-        TODO("Not yet implemented")
-    }
 }
 
 sealed class QuickPinInteractorSetPinPartialState {
+
     data object Success : QuickPinInteractorSetPinPartialState()
     data class Failed(val errorMessage: String) : QuickPinInteractorSetPinPartialState()
 }

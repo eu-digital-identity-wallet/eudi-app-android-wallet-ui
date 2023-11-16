@@ -57,11 +57,11 @@ fun PinScreen(
     navController: NavController,
     viewModel: PinViewModel,
 
-) {
+    ) {
     val state = viewModel.viewState.value
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.BACKABLE,
+        navigatableAction = ScreenNavigateAction.NONE,
     ) { paddingValues ->
         Content(
             state = viewModel.viewState.value,
@@ -107,12 +107,9 @@ private fun Content(
         if (state.isButtonEnabled) {
             keyboardController?.hide()
         }
-        ContentTitle(stringResource(id = R.string.quick_pin_title))
-
-        Text(
-            text = stringResource(id = R.string.quick_pin_subtitle),
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Black
+        ContentTitle(
+            title = stringResource(id = R.string.quick_pin_title),
+            subtitle = stringResource(id = R.string.quick_pin_subtitle)
         )
 
         Box(
@@ -131,23 +128,18 @@ private fun Content(
                 }
             }
 
-            Box(modifier = Modifier.align(alignment = Alignment.BottomCenter)) {
-                Column(
-                    Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.End
-                ) {
-                    WrapPrimaryButton(enabled = state.isButtonEnabled, onClick = {
-                        onEventSent(
-                            Event.NextButtonPressed(
-                                pin = state.pin
-                            )
+            WrapPrimaryButton(modifier = Modifier
+                .align(alignment = Alignment.BottomCenter)
+                .fillMaxWidth(),
+                enabled = state.isButtonEnabled,
+                onClick = {
+                    onEventSent(
+                        Event.NextButtonPressed(
+                            pin = state.pin
                         )
-                    }) {
-
-                        Text(text = stringResource(id = R.string.quick_pin_next_btn))
-
-                    }
-                }
+                    )
+                }) {
+                Text(text = stringResource(id = R.string.quick_pin_next_btn))
             }
         }
     }
@@ -179,6 +171,7 @@ fun PinFieldLayout(
         pinWidth = 46.dp
     )
 }
+
 @Preview(showSystemUi = true)
 @Composable
 private fun PinScreenEmptyPreview() {
