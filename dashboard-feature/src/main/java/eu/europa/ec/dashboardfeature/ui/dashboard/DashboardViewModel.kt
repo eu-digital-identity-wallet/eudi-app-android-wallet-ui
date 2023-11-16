@@ -30,7 +30,6 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
-import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
@@ -94,7 +93,6 @@ class DashboardViewModel(
             }
 
             is Event.Fab.PrimaryFabPressed -> {
-                navigateTo(ProximityScreens.QR)
                 setEffect {
                     Effect.Navigation.SwitchScreen(
                         screenRoute = ProximityScreens.QR.screenRoute
@@ -147,14 +145,6 @@ class DashboardViewModel(
                     }
                 }
             }
-        }
-    }
-
-    private fun navigateTo(screen: Screen) {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = screen.screenRoute
-            )
         }
     }
 }

@@ -26,7 +26,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.ProximityScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -108,7 +108,7 @@ class ProximityQRViewModel(
                     is ProximityQRInteractorPartialState.Connected -> {
                         setEffect {
                             Effect.Navigation.SwitchScreen(
-                                PresentationScreens.CrossDeviceRequest.screenRoute
+                                ProximityScreens.Request.screenRoute
                             )
                         }
                     }

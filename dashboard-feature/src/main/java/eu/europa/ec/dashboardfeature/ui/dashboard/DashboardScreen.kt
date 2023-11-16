@@ -19,7 +19,6 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Context
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,7 +52,6 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.success
@@ -118,14 +116,6 @@ fun DashboardScreen(
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         viewModel.setEvent(Event.Init)
-        NfcEngagementService.enable(context as ComponentActivity)
-    }
-
-    LifecycleEffect(
-        lifecycleOwner = LocalLifecycleOwner.current,
-        lifecycleEvent = Lifecycle.Event.ON_PAUSE
-    ) {
-        NfcEngagementService.disable(context as ComponentActivity)
     }
 }
 
