@@ -116,10 +116,7 @@ fun Content(
                 )
             ) {
                 onEventSend(
-                    Event.NavigateToIssueDocument(
-                        url = option.issuanceUrl,
-                        type = option.type
-                    )
+                    Event.AddDocuments
                 )
             }
 

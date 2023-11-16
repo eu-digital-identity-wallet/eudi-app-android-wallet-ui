@@ -35,7 +35,6 @@ sealed class DashboardInteractorPartialState {
 
 interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorPartialState>
-    fun loadSampleData()
     fun getUserName(): String
 }
 
@@ -46,17 +45,6 @@ class DashboardInteractorImpl(
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
-
-
-    override fun loadSampleData() {
-//        val byteArray = Base64.getDecoder().decode(
-//            JSONObject(
-//                resourceProvider.getStringFromRaw(eu.europa.ec.resourceslogic.R.raw.sample_data)
-//            ).getString("Data")
-//        )
-//        // Add state check
-//        val result = eudiWallet.loadSampleData(byteArray)
-    }
 
     override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
         val documents = eudiWallet.getDocuments()
@@ -72,6 +60,7 @@ class DashboardInteractorImpl(
     }
 
     override fun getUserName(): String {
+        // TODO Get name from PID
         return "Jane"
     }
 

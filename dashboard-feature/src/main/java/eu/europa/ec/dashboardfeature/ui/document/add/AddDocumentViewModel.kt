@@ -22,7 +22,8 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentInteractor
-import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentInteractorPartialState
+import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentLoadData
+import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentOptions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -44,6 +45,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
+    data object AddDocuments : Event()
     data class NavigateToIssueDocument(val url: String, val type: DocumentTypeUi) : Event()
 }
 
@@ -67,8 +69,42 @@ class AddDocumentViewModel(
     override fun handleEvents(event: Event) = when (event) {
         Event.Init -> getOptions(event)
         Event.Pop -> setEffect { Effect.Navigation.Pop }
+        Event.AddDocuments -> loadSampleData(event)
         is Event.NavigateToIssueDocument -> {
             setEffect { Effect.Navigation.SwitchScreen("${event.url}, ${event.type}") }
+        }
+    }
+
+    private fun loadSampleData(event: Event) {
+        setState {
+            copy(
+                isLoading = true,
+                error = null
+            )
+        }
+
+        viewModelScope.launch {
+            addDocumentInteractor.addSampleData().collect { result ->
+                when (result) {
+                    is AddDocumentLoadData.Failure -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                options = emptyList(),
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(event) },
+                                    errorSubTitle = result.error,
+                                    onCancel = { setEvent(Event.Pop) }
+                                )
+                            )
+                        }
+                    }
+
+                    AddDocumentLoadData.Success -> {
+                        setEffect { Effect.Navigation.Pop }
+                    }
+                }
+            }
         }
     }
 
@@ -83,7 +119,7 @@ class AddDocumentViewModel(
         viewModelScope.launch {
             addDocumentInteractor.getAddDocumentOption().collect { response ->
                 when (response) {
-                    is AddDocumentInteractorPartialState.Success -> {
+                    is AddDocumentOptions.Success -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -93,7 +129,7 @@ class AddDocumentViewModel(
                         }
                     }
 
-                    is AddDocumentInteractorPartialState.Failure -> {
+                    is AddDocumentOptions.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,

@@ -48,4 +48,5 @@ fun provideDocumentDetailsInteractor(
 @Factory
 fun provideAddDocumentInteractor(
     resourceProvider: ResourceProvider,
-): AddDocumentInteractor = AddDocumentInteractorImpl(resourceProvider)
+    eudiWallet: EudiWallet
+): AddDocumentInteractor = AddDocumentInteractorImpl(resourceProvider, eudiWallet)
