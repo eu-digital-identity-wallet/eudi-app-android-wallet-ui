@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.document.add
+package eu.europa.ec.issuancefeature.ui.document.add
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,6 +39,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -55,7 +56,7 @@ fun AddDocumentScreen(
 
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.CANCELABLE,
+        navigatableAction = ScreenNavigateAction.NONE,
         onBack = { viewModel.setEvent(Event.Pop) },
         contentErrorConfig = state.error
     ) { paddingValues ->
@@ -64,7 +65,12 @@ fun AddDocumentScreen(
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController)
+                when (navigationEffect) {
+                    is Effect.Navigation.Pop -> navController.popBackStack()
+                    is Effect.Navigation.SwitchScreen -> {
+                        navController.navigate(navigationEffect.screenRoute)
+                    }
+                }
             },
             paddingValues = paddingValues
         )
@@ -75,16 +81,6 @@ fun AddDocumentScreen(
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         viewModel.setEvent(Event.Init)
-    }
-}
-
-private fun handleNavigationEffect(
-    navigationEffect: Effect.Navigation,
-    navController: NavController
-) {
-    when (navigationEffect) {
-        is Effect.Navigation.Pop -> navController.popBackStack()
-        is Effect.Navigation.SwitchScreen -> {}
     }
 }
 
@@ -114,15 +110,16 @@ fun Content(
                         data = IssuanceButtonData(
                             text = option.text,
                             icon = option.icon
-                        )
-                    ) {
-                        onEventSend(
-                            Event.NavigateToIssueDocument(
-                                url = option.issuanceUrl,
-                                type = option.type
+                        ),
+                        onClick = {
+                            onEventSend(
+                                Event.NavigateToIssueDocument(
+                                    url = option.issuanceUrl,
+                                    type = option.type
+                                )
                             )
-                        )
-                    }
+                        }
+                    )
 
                     VSpacer.Medium()
                 }
@@ -165,7 +162,7 @@ private fun AddDocumentScreenPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(all = 24.dp)
+            paddingValues = PaddingValues(all = SPACING_LARGE.dp)
         )
     }
 }

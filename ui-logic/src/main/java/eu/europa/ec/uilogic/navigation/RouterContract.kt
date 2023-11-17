@@ -62,6 +62,15 @@ sealed class ProximityScreens {
     data object Loading : Screen(name = "PROXIMITY_LOADING")
 }
 
+sealed class IssuanceScreens {
+    data object DocumentDetails : Screen(
+        name = "ISSUANCE_DOCUMENT_DETAILS",
+        parameters = "?documentId={documentId}"
+    )
+
+    data object AddDocument : Screen(name = "ISSUANCE_ADD_DOCUMENT")
+}
+
 sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object StartupModule : ModuleRoute("STARTUP_MODULE")
     data object CommonModule : ModuleRoute("COMMON_MODULE")
@@ -69,4 +78,5 @@ sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object DashboardModule : ModuleRoute("DASHBOARD_MODULE")
     data object PresentationModule : ModuleRoute("PRESENTATION_MODULE")
     data object ProximityModule : ModuleRoute("PROXIMITY_MODULE")
+    data object IssuanceModule : ModuleRoute("ISSUANCE_MODULE")
 }
