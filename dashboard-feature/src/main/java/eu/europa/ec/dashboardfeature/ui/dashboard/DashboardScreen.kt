@@ -273,7 +273,7 @@ private fun Title(
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.textSecondaryLight
+                    color = Color.White.copy(0.8F)
                 )
                 Text(
                     text = userName,

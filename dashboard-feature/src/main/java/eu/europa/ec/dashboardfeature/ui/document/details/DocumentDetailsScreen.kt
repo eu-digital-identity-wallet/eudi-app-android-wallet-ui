@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -72,7 +73,7 @@ fun DocumentDetailsScreen(
         topBar = {
             ActionTopBar(
                 contentColor = MaterialTheme.colorScheme.primary,
-                iconColor = MaterialTheme.colorScheme.backgroundPaper,
+                iconColor = Color.White,
                 iconData = AppIcons.Close
             ) { viewModel.setEvent(Event.Pop) }
         }

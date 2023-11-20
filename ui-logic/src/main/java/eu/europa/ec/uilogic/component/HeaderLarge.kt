@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
@@ -62,7 +63,7 @@ fun HeaderLarge(
         Text(
             text = data.title,
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.backgroundPaper
+            color = Color.White
         )
 
         VSpacer.Small()
@@ -70,7 +71,7 @@ fun HeaderLarge(
         Text(
             text = data.subtitle,
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.textSecondaryLight
+            color = Color.White.copy(0.8F)
         )
 
         VSpacer.Large()
