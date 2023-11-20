@@ -59,7 +59,8 @@ data class State(
     val config: BiometricUiConfig,
     val quickPinError: String? = null,
     val quickPin: String = "",
-    val userBiometricsAreEnabled: Boolean = false
+    val userBiometricsAreEnabled: Boolean = false,
+    val isCancellable: Boolean = false
 ) : ViewState
 
 sealed class Effect : ViewSideEffect {
@@ -91,14 +92,18 @@ class BiometricViewModel constructor(
     private val biometricUiConfig
         get() = viewState.value.config
 
-    override fun setInitialState(): State = State(
-        config = uiSerializer.fromBase64(
+    override fun setInitialState(): State {
+        val config = uiSerializer.fromBase64(
             biometricConfig,
             BiometricUiConfig::class.java,
             BiometricUiConfig.Parser
-        ) ?: throw RuntimeException("BiometricUiConfig:: is Missing or invalid"),
-        userBiometricsAreEnabled = biometricInteractor.getBiometricUserSelection()
-    )
+        ) ?: throw RuntimeException("BiometricUiConfig:: is Missing or invalid")
+        return State(
+            config = config,
+            userBiometricsAreEnabled = biometricInteractor.getBiometricUserSelection(),
+            isCancellable = config.onBackNavigation != null
+        )
+    }
 
     override fun handleEvents(event: Event) {
         when (event) {
@@ -151,10 +156,12 @@ class BiometricViewModel constructor(
 
             is Event.OnNavigateBack -> {
                 setState { copy(error = null) }
-                doNavigation(
-                    navigation = biometricUiConfig.onBackNavigation,
-                    flowSucceeded = false
-                )
+                biometricUiConfig.onBackNavigation?.let {
+                    doNavigation(
+                        navigation = it,
+                        flowSucceeded = false
+                    )
+                }
             }
 
             is Event.OnErrorDismiss -> setState {

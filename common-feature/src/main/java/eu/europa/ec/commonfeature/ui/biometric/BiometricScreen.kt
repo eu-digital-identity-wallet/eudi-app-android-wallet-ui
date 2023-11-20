@@ -66,7 +66,11 @@ fun BiometricScreen(
 
     ContentScreen(
         loadingType = state.isLoading,
-        navigatableAction = ScreenNavigateAction.CANCELABLE,
+        navigatableAction = if (state.isCancellable) {
+            ScreenNavigateAction.CANCELABLE
+        } else {
+            ScreenNavigateAction.NONE
+        },
         onBack = {
             viewModel.setEvent(Event.OnNavigateBack)
         },

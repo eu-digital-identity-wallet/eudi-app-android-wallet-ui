@@ -27,7 +27,7 @@ data class BiometricUiConfig(
     val isPreAuthorization: Boolean = false,
     val shouldInitializeBiometricAuthOnCreate: Boolean = true,
     val onSuccessNavigation: ConfigNavigation,
-    val onBackNavigation: ConfigNavigation
+    val onBackNavigation: ConfigNavigation?
 ) : UiSerializable {
 
     companion object Parser : UiSerializableParser {
