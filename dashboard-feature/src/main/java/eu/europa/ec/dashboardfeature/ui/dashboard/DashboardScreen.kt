@@ -55,7 +55,6 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.ScalableText

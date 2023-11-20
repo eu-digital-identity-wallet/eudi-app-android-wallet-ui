@@ -28,9 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryLight
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE

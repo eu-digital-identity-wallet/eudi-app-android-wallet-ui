@@ -39,7 +39,6 @@ import eu.europa.ec.commonfeature.model.DocumentItemUi
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.uilogic.component.ActionTopBar
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
