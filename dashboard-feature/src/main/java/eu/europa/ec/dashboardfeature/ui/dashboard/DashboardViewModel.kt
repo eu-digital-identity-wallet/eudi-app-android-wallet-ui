@@ -39,7 +39,7 @@ data class State(
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
 
-    val userName: String,
+    val userName: String = "",
     val documents: List<DocumentUi> = emptyList()
 ) : ViewState
 
@@ -68,9 +68,7 @@ class DashboardViewModel(
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State {
-        return State(
-            userName = dashboardInteractor.getUserName()
-        )
+        return State()
     }
 
     override fun handleEvents(event: Event) {
@@ -138,7 +136,8 @@ class DashboardViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                documents = response.documents
+                                documents = response.documents,
+                                userName = response.name
                             )
                         }
                         setEffect { Effect.Navigation.OpenDeepLinkAction }

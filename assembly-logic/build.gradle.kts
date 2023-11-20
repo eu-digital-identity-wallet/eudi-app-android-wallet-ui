@@ -19,6 +19,7 @@
 plugins {
     id("eudi.android.library")
     id("eudi.android.library.compose")
+    id("eudi.wallet.core")
 }
 
 android {

@@ -61,8 +61,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             dependencies {
                 add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
                 add("implementation", libs.findLibrary("kotlinx-coroutines-guava").get())
-                add("implementation", libs.findLibrary("eudi.wallet.core").get())
-                add("implementation", libs.findLibrary("cbor-tree").get())
+                add("implementation", libs.findLibrary("kotlinx.serialization.json").get())
             }
         }
     }

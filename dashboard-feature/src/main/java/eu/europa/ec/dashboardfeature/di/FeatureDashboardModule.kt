@@ -43,7 +43,8 @@ fun provideDashboardInteractor(
 @Factory
 fun provideDocumentDetailsInteractor(
     resourceProvider: ResourceProvider,
-): DocumentDetailsInteractor = DocumentDetailsInteractorImpl(resourceProvider)
+    eudiWallet: EudiWallet
+): DocumentDetailsInteractor = DocumentDetailsInteractorImpl(resourceProvider, eudiWallet)
 
 @Factory
 fun provideAddDocumentInteractor(

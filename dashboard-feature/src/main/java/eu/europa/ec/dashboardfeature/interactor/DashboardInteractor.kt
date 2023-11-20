@@ -23,19 +23,24 @@ import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.Constants
 import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.json.JSONException
+import org.json.JSONObject
 
 sealed class DashboardInteractorPartialState {
-    data class Success(val documents: List<DocumentUi>) : DashboardInteractorPartialState()
+    data class Success(val documents: List<DocumentUi>, val name: String) :
+        DashboardInteractorPartialState()
+
     data class Failure(val error: String) : DashboardInteractorPartialState()
 }
 
 interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorPartialState>
-    fun getUserName(): String
 }
 
 class DashboardInteractorImpl(
@@ -48,9 +53,11 @@ class DashboardInteractorImpl(
 
     override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
         val documents = eudiWallet.getDocuments()
+        val (documentsUi, name) = mapToUi(documents)
         emit(
             DashboardInteractorPartialState.Success(
-                documents = mapToUi(documents)
+                documents = documentsUi,
+                name = name
             )
         )
     }.safeAsync {
@@ -59,13 +66,18 @@ class DashboardInteractorImpl(
         )
     }
 
-    override fun getUserName(): String {
-        // TODO Get name from PID
-        return "Jane"
-    }
+    private fun mapToUi(documents: List<Document>): Pair<List<DocumentUi>, String> {
+        val nameKey = "given_name"
+        var name = ""
+        val documentsUi = documents.map {
+            extractJsonIDDocument(it)?.let { jsonDocument ->
+                if (name.isBlank()
+                    && jsonDocument.has(nameKey)
+                ) {
+                    name = jsonDocument.getString(nameKey)
+                }
+            }
 
-    private fun mapToUi(documents: List<Document>): List<DocumentUi> {
-        return documents.map {
             DocumentUi(
                 documentId = it.id,
                 documentType = it.docType.toDocumentTypeUi(),
@@ -74,5 +86,14 @@ class DashboardInteractorImpl(
                 documentItems = emptyList()
             )
         }
+
+        return Pair(documentsUi, name)
     }
+
+    private fun extractJsonIDDocument(document: Document): JSONObject? =
+        try {
+            document.nameSpacedDataJSONObject.getJSONObject(Constants.EU_PID_DOCTYPE)
+        } catch (ex: JSONException) {
+            null
+        }
 }
