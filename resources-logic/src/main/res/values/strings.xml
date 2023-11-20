@@ -60,14 +60,18 @@
 
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
-    <string name="quick_pin_title">Welcome to the EUDI Wallet</string>
-    <string name="quick_pin_subtitle">Set a quick pin for future logins</string>
     <string name="quick_pin_next_btn">NEXT</string>
-    <string name="quick_pin_reenter_subtitle">Re-enter the quick pin</string>
+    <string name="quick_pin_reenter_subtitle">Re-enter the new quick pin</string>
     <string name="quick_pin_confirm_btn">CONFIRM</string>
     <string name="quick_pin_success_title">Success</string>
     <string name="quick_pin_success_subtitle">You successfully set the quick pin</string>
     <string name="quick_pin_continue">CONTINUE</string>
+    <string name="quick_pin_non_match">The pin you entered is not matching</string>
+    <string name="quick_pin_setup_title">Welcome to the EUDI Wallet</string>
+    <string name="quick_pin_setup_subtitle">Welcome to the EUDI Wallet</string>
+    <string name="quick_pin_change_title">Change quick pin</string>
+    <string name="quick_pin_change_subtitle">Select a quick pin for future logins</string>
+    <string name="quick_pin_change_current_subtitle">Type your current pin</string>
 
     <!-- Request Screen -->
     <string name="request_title">EUDI Conference requests the following to register</string>

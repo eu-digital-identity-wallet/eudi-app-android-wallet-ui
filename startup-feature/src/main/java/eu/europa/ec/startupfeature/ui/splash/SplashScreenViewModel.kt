@@ -17,12 +17,15 @@
 package eu.europa.ec.startupfeature.ui.splash
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.model.PinFlows
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.ModuleRoute
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -59,7 +62,12 @@ class SplashScreenViewModel(
         viewModelScope.launch {
             delay((viewState.value.logoAnimationDuration + 500).toLong())
             setEffect {
-                Effect.Navigation.SwitchScreen(interactor.getAfterSplashRoute())
+                Effect.Navigation.SwitchScreen(
+                    generateComposableNavigationLink(
+                        screen = interactor.getAfterSplashRoute(),
+                        arguments = generateComposableArguments(mapOf("payload" to PinFlows.CREATE.type))
+                    )
+                )
             }
         }
     }

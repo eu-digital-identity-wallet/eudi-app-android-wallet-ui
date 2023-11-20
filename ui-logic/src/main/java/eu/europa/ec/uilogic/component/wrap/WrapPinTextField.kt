@@ -65,7 +65,8 @@ fun WrapPinTextField(
     hasError: Boolean = false,
     errorMessage: String? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    pinWidth: Dp? = null
+    pinWidth: Dp? = null,
+    clearCode: Boolean = false
 ) {
     // Text field range.
     val fieldsRange = 0 until length
@@ -91,6 +92,13 @@ fun WrapPinTextField(
             mutableState.value = otpCode[index].toString()
         }
         onPinUpdate.invoke(otpCode)
+    }
+
+    if (clearCode){
+        textFieldStateList.forEach{
+            it.value = ""
+            onPinUpdate.invoke("")
+        }
     }
 
     CompositionLocalProvider(
@@ -202,6 +210,7 @@ fun WrapPinTextField(
                     color = MaterialTheme.colorScheme.error
                 )
             }
+
         }
     }
 }

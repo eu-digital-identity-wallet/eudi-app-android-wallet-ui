@@ -108,8 +108,8 @@ private fun Content(
             keyboardController?.hide()
         }
         ContentTitle(
-            title = stringResource(id = R.string.quick_pin_title),
-            subtitle = stringResource(id = R.string.quick_pin_subtitle)
+            title = state.title,
+            subtitle = state.subtitle
         )
 
         Box(
@@ -168,7 +168,8 @@ fun PinFieldLayout(
         hasError = !state.quickPinError.isNullOrEmpty(),
         errorMessage = state.quickPinError,
         visualTransformation = PasswordVisualTransformation(),
-        pinWidth = 46.dp
+        pinWidth = 46.dp,
+        clearCode = state.resetPin
     )
 }
 
