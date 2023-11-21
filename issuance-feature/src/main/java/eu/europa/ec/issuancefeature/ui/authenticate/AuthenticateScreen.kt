@@ -14,33 +14,33 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.add
+package eu.europa.ec.issuancefeature.ui.authenticate
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IssuanceButton
-import eu.europa.ec.uilogic.component.IssuanceButtonData
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
-import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.openUrl
+import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -48,89 +48,79 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 
 @Composable
-fun AddDocumentScreen(
+fun AuthenticateScreen(
     navController: NavController,
-    viewModel: AddDocumentViewModel
+    viewModel: AuthenticateViewModel
 ) {
     val state = viewModel.viewState.value
+    val context = LocalContext.current
 
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.NONE,
-        onBack = { viewModel.setEvent(Event.Pop) },
-        contentErrorConfig = state.error
+        navigatableAction = ScreenNavigateAction.CANCELABLE,
+        onBack = { viewModel.setEvent(Event.GoBack) },
+        contentErrorConfig = state.error,
     ) { paddingValues ->
         Content(
-            state = state,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
                 when (navigationEffect) {
-                    is Effect.Navigation.Pop -> navController.popBackStack()
                     is Effect.Navigation.SwitchScreen -> {
                         navController.navigate(navigationEffect.screenRoute)
                     }
+
+                    is Effect.Navigation.Pop -> {
+                        navController.popBackStack()
+                    }
+
+                    is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
+                        handleDeepLinkAction(navController, it)
+                    }
                 }
             },
-            paddingValues = paddingValues
+            paddingValues = paddingValues,
+            docType = viewModel.docType,
         )
+    }
+
+    OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Init)
     }
 
     LifecycleEffect(
         lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
-        viewModel.setEvent(Event.Init)
+        viewModel.setEvent(Event.CheckIfUserWasRedirected)
     }
 }
 
 @Composable
-fun Content(
-    state: State,
+private fun Content(
     effectFlow: Flow<Effect>,
-    onEventSend: (Event) -> Unit,
-    onNavigationRequested: (Effect.Navigation) -> Unit,
-    paddingValues: PaddingValues
+    onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
+    paddingValues: PaddingValues,
+    docType: String,
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
+            .padding(paddingValues)
     ) {
 
         ContentTitle(
-            title = state.title,
-            subtitle = state.subtitle
+            title = stringResource(id = R.string.issuance_authenticate_title, docType),
+            subtitle = stringResource(id = R.string.issuance_authenticate_subtitle)
         )
-
-        LazyColumn {
-            state.options.forEach { option ->
-                item {
-                    IssuanceButton(
-                        data = IssuanceButtonData(
-                            text = option.text,
-                            icon = option.icon
-                        ),
-                        onClick = {
-                            onEventSend(
-                                Event.NavigateToAuthentication(
-                                    url = option.issuanceUrl,
-                                    type = option.type
-                                )
-                            )
-                        }
-                    )
-
-                    VSpacer.Medium()
-                }
-            }
-        }
     }
 
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
             when (effect) {
                 is Effect.Navigation -> onNavigationRequested(effect)
+                is Effect.OpenUrlExternally -> context.openUrl(effect.url)
             }
         }.collect()
     }
@@ -138,31 +128,13 @@ fun Content(
 
 @ThemeModePreviews
 @Composable
-private fun AddDocumentScreenPreview() {
+private fun ContentPreview() {
     PreviewTheme {
         Content(
-            state = State(
-                title = "Add document",
-                subtitle = "Select a document to add in your EUDI Wallet",
-                options = listOf(
-                    DocumentOptionItemUi(
-                        text = "Digital ID",
-                        icon = AppIcons.Id,
-                        type = DocumentTypeUi.DIGITAL_ID,
-                        issuanceUrl = "www.gov.gr"
-                    ),
-                    DocumentOptionItemUi(
-                        text = "Driving License",
-                        icon = AppIcons.Id,
-                        type = DocumentTypeUi.DRIVING_LICENSE,
-                        issuanceUrl = "www.gov-automotive.gr"
-                    )
-                )
-            ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(all = SPACING_LARGE.dp)
+            paddingValues = PaddingValues(SPACING_LARGE.dp),
+            docType = "Digital ID"
         )
     }
 }

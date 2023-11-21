@@ -24,6 +24,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.issuancefeature.ui.authenticate.AuthenticateScreen
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
@@ -48,6 +49,31 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
             )
         ) {
             AddDocumentScreen(navController, koinViewModel())
+        }
+
+        // Authenticate
+        composable(
+            route = IssuanceScreens.Authenticate.screenRoute,
+            arguments = listOf(
+                navArgument("authUrl") {
+                    type = NavType.StringType
+                },
+                navArgument("documentType") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            AuthenticateScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString("authUrl").orEmpty(),
+                            it.arguments?.getString("documentType").orEmpty()
+                        )
+                    }
+                )
+            )
         }
 
         // Issuance Document Details

@@ -69,6 +69,11 @@ sealed class IssuanceScreens {
     )
 
     data object AddDocument : Screen(name = "ISSUANCE_ADD_DOCUMENT")
+    data object Authenticate : Screen(
+        name = "ISSUANCE_AUTHENTICATE",
+        parameters = "?authUrl={authUrl}"
+                + "&documentType={documentType}"
+    )
 }
 
 sealed class ModuleRoute(val route: String) : NavigatableItem {

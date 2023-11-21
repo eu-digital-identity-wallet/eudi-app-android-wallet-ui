@@ -38,6 +38,13 @@ fun String.toUri(): Uri? = try {
     null
 }
 
+fun String.validateAndFormatUrl(): String {
+    if (isEmpty() || contains("http") || contains("https")) {
+        return this
+    }
+    return "https://${this.lowercase()}"
+}
+
 inline fun <reified T> String.parseFromJson(): T? {
     return try {
         Gson().fromJson(this, T::class.java)

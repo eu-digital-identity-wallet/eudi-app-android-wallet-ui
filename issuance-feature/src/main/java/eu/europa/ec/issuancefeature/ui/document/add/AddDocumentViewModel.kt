@@ -28,6 +28,9 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -42,7 +45,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
-    data class NavigateToIssueDocument(val url: String, val type: DocumentTypeUi) : Event()
+    data class NavigateToAuthentication(val url: String, val type: DocumentTypeUi) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -67,8 +70,20 @@ class AddDocumentViewModel(
 
         is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
-        is Event.NavigateToIssueDocument -> {
-            // TODO
+        is Event.NavigateToAuthentication -> {
+            setEffect {
+                Effect.Navigation.SwitchScreen(
+                    screenRoute = generateComposableNavigationLink(
+                        screen = IssuanceScreens.Authenticate,
+                        arguments = generateComposableArguments(
+                            mapOf(
+                                "documentType" to event.type.title,
+                                "authUrl" to event.url
+                            )
+                        )
+                    )
+                )
+            }
         }
     }
 

@@ -109,4 +109,8 @@
     <string name="proximity_loading_title">The Police officer requests the following</string>
     <string name="proximity_loading_success_config_subtitle">You successfully shared information with the Police officer</string>
 
+    <!-- Issuance Authenticate Screen -->
+    <string name="issuance_authenticate_title">Add %1$s</string>
+    <string name="issuance_authenticate_subtitle">Use your “National System” credentials to add the document in your EUDI Wallet</string>
+
 </resources>
