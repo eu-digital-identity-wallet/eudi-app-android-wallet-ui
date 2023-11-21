@@ -27,6 +27,7 @@ import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.issuancefeature.ui.authenticate.AuthenticateScreen
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
+import eu.europa.ec.issuancefeature.ui.success.SuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel
@@ -70,6 +71,27 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                         parametersOf(
                             it.arguments?.getString("authUrl").orEmpty(),
                             it.arguments?.getString("documentType").orEmpty()
+                        )
+                    }
+                )
+            )
+        }
+
+        // Authenticate
+        composable(
+            route = IssuanceScreens.Success.screenRoute,
+            arguments = listOf(
+                navArgument("documentType") {
+                    type = NavType.StringType
+                },
+            )
+        ) {
+            SuccessScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString("documentType").orEmpty(),
                         )
                     }
                 )

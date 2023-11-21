@@ -23,6 +23,9 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -81,6 +84,7 @@ class AuthenticateViewModel(
             is Event.CheckIfUserWasRedirected -> {
                 if (viewState.value.userWasRedirected) {
                     setState { copy(isLoading = false) }
+                    goToNextScreen()
                 }
             }
         }
@@ -97,6 +101,21 @@ class AuthenticateViewModel(
             setEffect { Effect.Navigation.OpenDeepLinkAction }
 
             setEffect { Effect.OpenUrlExternally(viewState.value.url) }
+        }
+    }
+
+    private fun goToNextScreen() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = IssuanceScreens.Success,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            "documentType" to docType
+                        )
+                    )
+                )
+            )
         }
     }
 

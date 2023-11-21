@@ -74,6 +74,11 @@ sealed class IssuanceScreens {
         parameters = "?authUrl={authUrl}"
                 + "&documentType={documentType}"
     )
+
+    data object Success : Screen(
+        name = "ISSUANCE_SUCCESS",
+        parameters = "?documentType={documentType}"
+    )
 }
 
 sealed class ModuleRoute(val route: String) : NavigatableItem {
