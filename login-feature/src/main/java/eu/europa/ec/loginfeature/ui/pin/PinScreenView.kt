@@ -46,6 +46,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.navigation.LoginScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -83,11 +84,16 @@ private fun handleNavigationEffect(
     navController: NavController
 ) {
     when (navigationEffect) {
-        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screen)
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screen) {
+                popUpTo(LoginScreens.QuickPin.screenRoute){
+                    inclusive = true
+                }
+            }
+        }
         is Effect.Navigation.SwitchModule -> navController.navigate(navigationEffect.moduleRoute.route)
     }
 }
-
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

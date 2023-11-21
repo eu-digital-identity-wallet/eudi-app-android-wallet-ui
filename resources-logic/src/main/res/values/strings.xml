@@ -68,9 +68,9 @@
     <string name="quick_pin_continue">CONTINUE</string>
     <string name="quick_pin_non_match">The pin you entered is not matching</string>
     <string name="quick_pin_setup_title">Welcome to the EUDI Wallet</string>
-    <string name="quick_pin_setup_subtitle">Welcome to the EUDI Wallet</string>
+    <string name="quick_pin_setup_subtitle">Set a quick pin for future logins</string>
     <string name="quick_pin_change_title">Change quick pin</string>
-    <string name="quick_pin_change_subtitle">Select a quick pin for future logins</string>
+    <string name="quick_pin_change_subtitle">Re-enter the quick pin</string>
     <string name="quick_pin_change_current_subtitle">Type your current pin</string>
 
     <!-- Request Screen -->

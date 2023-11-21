@@ -24,22 +24,30 @@ import eu.europa.ec.businesslogic.validator.Form
 import eu.europa.ec.businesslogic.validator.FormValidationResult
 import eu.europa.ec.businesslogic.validator.FormsValidationResult
 import eu.europa.ec.businesslogic.validator.Rule
+import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorSetPinPartialState
 import eu.europa.ec.commonfeature.model.PinFlows
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
+import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
-
 
 
 enum class PinValidationState {
@@ -87,6 +95,7 @@ sealed class Effect : ViewSideEffect {
 class PinViewModel(
     private val interactor: QuickPinInteractor,
     private val resourceProvider: ResourceProvider,
+    private val uiSerializer: UiSerializer,
     @InjectedParam private val pinFlows: String
 ) :
     MviViewModel<Event, State, Effect>() {
@@ -185,10 +194,9 @@ class PinViewModel(
                             }
 
                             is QuickPinInteractorSetPinPartialState.Success -> {
-                                setEffect { Effect.Navigation.SwitchScreen(DashboardScreens.Dashboard.screenRoute) }
+                                setEffect { Effect.Navigation.SwitchScreen(getBiometricsNextScreen()) }
                             }
                         }
-
                     }
                 }
             }
@@ -207,7 +215,6 @@ class PinViewModel(
 
             else -> {}
         }
-
     }
 
     private fun updatePin(state: State, event: Event.NextButtonPressed) {
@@ -257,7 +264,6 @@ class PinViewModel(
                     }
                 }
 
-
                 PinValidationState.COMPLETED -> {
                     interactor.isPinMatched(state.initialPin, state.pin).collect {
                         when (it) {
@@ -281,7 +287,11 @@ class PinViewModel(
                                         }
 
                                         is QuickPinInteractorSetPinPartialState.Success -> {
-                                            setEffect { Effect.Navigation.SwitchScreen(DashboardScreens.Dashboard.screenRoute) }
+                                            setEffect {
+                                                Effect.Navigation.SwitchScreen(
+                                                    DashboardScreens.Dashboard.screenRoute
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -295,5 +305,28 @@ class PinViewModel(
         }
     }
 
-
+    private fun getBiometricsNextScreen(): String {
+        return generateComposableNavigationLink(
+            screen = CommonScreens.Biometric,
+            arguments = generateComposableArguments(
+                mapOf(
+                    BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
+                        BiometricUiConfig(
+                            title = "Biometric Options",
+                            subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
+                            quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
+                            isPreAuthorization = false,
+                            shouldInitializeBiometricAuthOnCreate = true,
+                            onSuccessNavigation = ConfigNavigation(
+                                navigationType = NavigationType.PUSH,
+                                screenToNavigate = DashboardScreens.Dashboard //PresentationScreens.CrossDeviceLoading
+                            ),
+                            onBackNavigation = null
+                        ),
+                        BiometricUiConfig.Parser
+                    ).orEmpty()
+                )
+            )
+        )
+    }
 }
