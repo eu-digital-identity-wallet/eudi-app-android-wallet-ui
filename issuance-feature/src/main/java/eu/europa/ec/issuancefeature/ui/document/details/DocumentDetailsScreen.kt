@@ -21,14 +21,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -38,19 +41,22 @@ import eu.europa.ec.commonfeature.model.DocumentItemUi
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
-import eu.europa.ec.uilogic.component.ActionTopBar
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.HeaderLarge
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
+import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.details.DetailsContent
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -69,17 +75,11 @@ fun DocumentDetailsScreen(
         contentErrorConfig = state.error,
         navigatableAction = ScreenNavigateAction.NONE,
         onBack = { viewModel.setEvent(Event.Pop) },
-        topBar = {
-            ActionTopBar(
-                contentColor = MaterialTheme.colorScheme.primary,
-                iconColor = MaterialTheme.colorScheme.backgroundPaper,
-                iconData = AppIcons.Close
-            ) { viewModel.setEvent(Event.Pop) }
-        }
     ) { paddingValues ->
         Content(
             state = state,
             effectFlow = viewModel.effect,
+            onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController)
             },
@@ -100,6 +100,14 @@ private fun handleNavigationEffect(
     navController: NavController
 ) {
     when (navigationEffect) {
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screenRoute) {
+                popUpTo(IssuanceScreens.AddDocument.screenRoute) {
+                    inclusive = true
+                }
+            }
+        }
+
         is Effect.Navigation.Pop -> navController.popBackStack()
     }
 }
@@ -108,15 +116,17 @@ private fun handleNavigationEffect(
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
+    onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues
 ) {
-
     safeLet(state.document, state.headerData) { documentUi, headerData ->
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
-
+            // Header
             HeaderLarge(
                 data = headerData,
                 contentPadding = PaddingValues(
@@ -127,32 +137,59 @@ private fun Content(
                 )
             )
 
-            Column(
+            // Main Content
+            ContentGradient(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+                    .weight(1f),
+                gradientEdge = GradientEdge.BOTTOM
             ) {
-                DetailsContent(
+                Column(
                     modifier = Modifier
-                        .padding(
-                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                        ),
-                    data = documentUi.documentItems.map {
-                        InfoTextWithNameAndValueData(
-                            infoName = it.title,
-                            infoValue = it.value
-                        )
-                    }
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    DetailsContent(
+                        modifier = Modifier
+                            .padding(
+                                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                                end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+                            ),
+                        data = documentUi.documentItems.map {
+                            InfoTextWithNameAndValueData(
+                                infoName = it.title,
+                                infoValue = it.value
+                            )
+                        }
+                    )
+                }
+            }
+
+            // Sticky Button
+            WrapPrimaryButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+                    ),
+                onClick = {
+                    onEventSend(Event.PrimaryButtonPressed)
+                }
+            ) {
+                Text(
+                    text = stringResource(id = R.string.issuance_document_details_primary_button_text),
+                    style = MaterialTheme.typography.titleSmall
                 )
             }
+
         }
     }
 
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
             when (effect) {
-                is Effect.Navigation.Pop -> onNavigationRequested(effect)
+                is Effect.Navigation -> onNavigationRequested(effect)
             }
         }.collect()
     }
@@ -162,7 +199,6 @@ private fun Content(
 @Composable
 private fun ContentPreview() {
     PreviewTheme {
-
         val state = State(
             document = DocumentUi(
                 documentId = 2,
@@ -184,8 +220,9 @@ private fun ContentPreview() {
         Content(
             state = state,
             effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(32.dp)
+            paddingValues = PaddingValues(SPACING_LARGE.dp)
         )
     }
 }

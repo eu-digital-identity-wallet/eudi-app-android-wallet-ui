@@ -27,6 +27,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
@@ -41,12 +42,14 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
+    data object PrimaryButtonPressed : Event()
 }
 
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
+        data class SwitchScreen(val screenRoute: String) : Navigation()
     }
 }
 
@@ -57,13 +60,23 @@ class DocumentDetailsViewModel(
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State()
 
-    override fun handleEvents(event: Event) = when (event) {
-        is Event.Init -> getDocument(event)
-        is Event.Pop -> setEffect { Effect.Navigation.Pop }
+    override fun handleEvents(event: Event) {
+        when (event) {
+            is Event.Init -> getDocument(event)
+
+            is Event.Pop -> setEffect { Effect.Navigation.Pop }
+
+            is Event.PrimaryButtonPressed -> {
+                setEffect {
+                    Effect.Navigation.SwitchScreen(
+                        screenRoute = DashboardScreens.Dashboard.screenRoute
+                    )
+                }
+            }
+        }
     }
 
     private fun getDocument(event: Event) {
-
         setState {
             copy(
                 isLoading = document == null,

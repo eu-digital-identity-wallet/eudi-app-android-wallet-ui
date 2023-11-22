@@ -125,4 +125,7 @@
     <string name="issuance_success_bottom_sheet_cancel_primary_button_text">CONTINUE ISSUANCE</string>
     <string name="issuance_success_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
 
+    <!-- Issuance Documents Details Screen -->
+    <string name="issuance_document_details_primary_button_text">CONTINUE</string>
+
 </resources>
