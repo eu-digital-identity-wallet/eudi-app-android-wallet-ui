@@ -16,15 +16,31 @@
 
 package eu.europa.ec.startupfeature.interactor.splash
 
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.LoginScreens
+import eu.europa.ec.uilogic.navigation.Screen
 
 interface SplashInteractor {
     fun getAfterSplashRoute(): String
+    fun getAfterSplashRoute(): Screen
+    fun getBiometricsScreenRoute(): Screen
+    fun getDevicePin(): String
 }
 
-class SplashInteractorImpl : SplashInteractor {
+class SplashInteractorImpl(
+    private val prefKeys: PrefKeys,
+) : SplashInteractor {
 
     override fun getAfterSplashRoute(): String {
         return LoginScreens.QuickPin.screenRoute
+    }
+
+    override fun getBiometricsScreenRoute(): Screen {
+        return CommonScreens.Biometric
+    }
+
+    override fun getDevicePin(): String {
+        return prefKeys.getDevicePin()
     }
 }

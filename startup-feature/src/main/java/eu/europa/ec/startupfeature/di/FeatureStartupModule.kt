@@ -16,6 +16,7 @@
 
 package eu.europa.ec.startupfeature.di
 
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractorImpl
 import org.koin.core.annotation.ComponentScan
@@ -27,6 +28,6 @@ import org.koin.core.annotation.Module
 class FeatureStartupModule
 
 @Factory
-fun provideSplashInteractor(): SplashInteractor {
-    return SplashInteractorImpl()
-}
+fun provideSplashInteractor(
+    prefKeys: PrefKeys,
+): SplashInteractor = SplashInteractorImpl(prefKeys)

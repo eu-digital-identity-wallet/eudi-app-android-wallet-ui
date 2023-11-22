@@ -295,11 +295,9 @@ class PinViewModel(
                                         }
                                     }
                                 }
-
                             }
                         }
                     }
-
                 }
             }
         }
@@ -312,14 +310,14 @@ class PinViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = "Biometric Options",
-                            subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
+                            title = resourceProvider.getString(R.string.biometric_prompt_title),
+                            subTitle = resourceProvider.getString(R.string.biometric_prompt_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PUSH,
-                                screenToNavigate = DashboardScreens.Dashboard //PresentationScreens.CrossDeviceLoading
+                                screenToNavigate = DashboardScreens.Dashboard
                             ),
                             onBackNavigation = null
                         ),
