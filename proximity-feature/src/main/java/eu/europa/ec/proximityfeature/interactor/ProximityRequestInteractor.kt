@@ -21,6 +21,7 @@ package eu.europa.ec.proximityfeature.interactor
 import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
 import eu.europa.ec.commonfeature.interactor.TransferEventPartialState
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
+import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
 import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationDomain
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
@@ -30,7 +31,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityRequestInteractorPartialState {
-    data class Success(val userDataDomain: List<RequestDocument>) :
+    data class Success(val userDataDomain: UserDataDomain) :
         ProximityRequestInteractorPartialState()
 
     data class Failure(val error: String) : ProximityRequestInteractorPartialState()
@@ -55,7 +56,7 @@ class ProximityRequestInteractorImpl(
         eudiWalletInteractor.events.mapNotNull {
             when (it) {
                 is TransferEventPartialState.RequestReceived -> {
-                    ProximityRequestInteractorPartialState.Success(emptyList())
+                    ProximityRequestInteractorPartialState.Success(toDomain(it.requestDocuments.first()))
                 }
 
                 is TransferEventPartialState.Error -> {
@@ -76,6 +77,19 @@ class ProximityRequestInteractorImpl(
     }
 }
 
+private fun toDomain(data: RequestDocument): UserDataDomain {
+    return UserDataDomain(
+        documentTypeUi = data.docType.toDocumentTypeUi(),
+        optionalFields = data.docRequest.requestItems.map {
+            UserIdentificationDomain(
+                name = it.elementIdentifier,
+                value = null
+            )
+        },
+        requiredFieldsTitle = "Verification Data",
+        requiredFields = emptyList()
+    )
+}
 
 private fun getFakeUserData(): UserDataDomain {
     return UserDataDomain(
