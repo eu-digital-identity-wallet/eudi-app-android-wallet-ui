@@ -16,24 +16,23 @@
 
 package eu.europa.ec.issuancefeature.ui.success
 
-import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
-    val isLoading: Boolean = true,
-    val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
 
     val docType: String,
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data object Init : Event()
     data object GoBack : Event()
     data object PrimaryButtonPressed : Event()
     data object SecondaryButtonPressed : Event()
@@ -74,31 +73,51 @@ class SuccessViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> {
-
-            }
-
             is Event.GoBack -> setEffect { Effect.Navigation.Pop }
 
-            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
-
-            }
-
-            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
-
-            }
-
-            is Event.BottomSheet.UpdateBottomSheetState -> {
-
-            }
-
             is Event.PrimaryButtonPressed -> {
-
+                setEffect {
+                    Effect.Navigation.SwitchScreen(
+                        screenRoute = generateComposableNavigationLink(
+                            screen = IssuanceScreens.DocumentDetails,
+                            arguments = generateComposableArguments(
+                                arguments = mapOf("documentId" to "2")
+                            )
+                        )
+                    )
+                }
             }
 
             is Event.SecondaryButtonPressed -> {
-
+                showBottomSheet()
             }
+
+            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
+                hideBottomSheet()
+            }
+
+            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
+                hideBottomSheet()
+                setEvent(Event.GoBack)
+            }
+
+            is Event.BottomSheet.UpdateBottomSheetState -> {
+                setState {
+                    copy(isBottomSheetOpen = event.isOpen)
+                }
+            }
+        }
+    }
+
+    private fun showBottomSheet() {
+        setEffect {
+            Effect.ShowBottomSheet
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet
         }
     }
 }

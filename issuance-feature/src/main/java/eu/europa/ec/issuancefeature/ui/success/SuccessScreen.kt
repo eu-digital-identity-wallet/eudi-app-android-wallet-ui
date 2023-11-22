@@ -45,13 +45,13 @@ import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -74,9 +74,8 @@ fun SuccessScreen(
 
     ContentScreen(
         navigatableAction = ScreenNavigateAction.NONE,
-        isLoading = state.isLoading,
+        isLoading = false,
         onBack = { viewModel.setEvent(Event.GoBack) },
-        contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
             state = state,
@@ -84,9 +83,12 @@ fun SuccessScreen(
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
                 when (navigationEffect) {
-
                     is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(navigationEffect.screenRoute)
+                        navController.navigate(navigationEffect.screenRoute) {
+                            popUpTo(IssuanceScreens.Success.screenRoute) {
+                                inclusive = true
+                            }
+                        }
                     }
 
                     is Effect.Navigation.Pop -> {
@@ -118,10 +120,6 @@ fun SuccessScreen(
                 )
             }
         }
-    }
-
-    OneTimeLaunchedEffect {
-        viewModel.setEvent(Event.Init)
     }
 }
 
@@ -253,7 +251,6 @@ private fun StickyBottomSection(
 
         WrapPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading,
             onClick = { onEventSend(Event.PrimaryButtonPressed) }
         ) {
             Text(text = stringResource(id = R.string.issuance_success_primary_button_text))

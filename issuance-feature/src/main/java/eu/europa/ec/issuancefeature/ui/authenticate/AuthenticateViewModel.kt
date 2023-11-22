@@ -82,9 +82,13 @@ class AuthenticateViewModel(
             }
 
             is Event.CheckIfUserWasRedirected -> {
-                if (viewState.value.userWasRedirected) {
-                    setState { copy(isLoading = false) }
-                    goToNextScreen()
+                viewModelScope.launch {
+                    if (viewState.value.userWasRedirected) {
+                        setState { copy(isLoading = true) }
+                        delay(1500L)
+                        setState { copy(isLoading = false) }
+                        goToNextScreen()
+                    }
                 }
             }
         }

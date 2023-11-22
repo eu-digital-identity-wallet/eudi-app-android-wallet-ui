@@ -40,6 +40,7 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openUrl
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -66,7 +67,11 @@ fun AuthenticateScreen(
             onNavigationRequested = { navigationEffect ->
                 when (navigationEffect) {
                     is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(navigationEffect.screenRoute)
+                        navController.navigate(navigationEffect.screenRoute) {
+                            popUpTo(IssuanceScreens.Authenticate.screenRoute) {
+                                inclusive = true
+                            }
+                        }
                     }
 
                     is Effect.Navigation.Pop -> {
