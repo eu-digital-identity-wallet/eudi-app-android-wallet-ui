@@ -22,7 +22,6 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
-import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -97,7 +96,7 @@ class ProximityRequestViewModel(
             )
         }
 
-        viewModelScope.launch {
+        viewModelJob = viewModelScope.launch {
             interactor.getUserData().collect { response ->
                 when (response) {
                     is ProximityRequestInteractorPartialState.Failure -> {
@@ -118,14 +117,24 @@ class ProximityRequestViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                items = RequestTransformer.transformToUiItems(
-                                    userDataDomain = response.userDataDomain
-                                )
+//                                items = RequestTransformer.transformToUiItems(
+//                                    userDataDomain = response.userDataDomain
+//                                )
                             )
                         }
+                    }
+
+                    is ProximityRequestInteractorPartialState.Disconnect -> {
+                        unsubscribe()
+                        setEvent(Event.GoBack)
                     }
                 }
             }
         }
+    }
+
+    override fun cleanUp() {
+        super.cleanUp()
+        interactor.cancelTransfer()
     }
 }

@@ -19,22 +19,17 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.corewrapper.EUDIWListenerWrapper
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
 import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationDomain
-import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.trySendBlocking
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 
 sealed class PresentationCrossDeviceInteractorPartialState {
     data class Success(val userDataDomain: UserDataDomain) :
         PresentationCrossDeviceInteractorPartialState()
-
-    data object Disconnect : PresentationCrossDeviceInteractorPartialState()
 
     data class Failure(val error: String) : PresentationCrossDeviceInteractorPartialState()
 }
@@ -45,31 +40,24 @@ interface PresentationCrossDeviceInteractor {
 
 class PresentationCrossDeviceInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet,
 ) : PresentationCrossDeviceInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getUserData(): Flow<PresentationCrossDeviceInteractorPartialState> = callbackFlow {
-
-        val callback = EUDIWListenerWrapper(
-            onDisconnected = {
-                trySendBlocking(PresentationCrossDeviceInteractorPartialState.Disconnect)
-                channel.close()
-            },
-            onError = {
-                trySendBlocking(PresentationCrossDeviceInteractorPartialState.Failure(it))
-            },
-        )
-
-        eudiWallet.addTransferEventListener(callback)
-        awaitClose { eudiWallet.removeTransferEventListener(callback) }
-    }.safeAsync {
-        PresentationCrossDeviceInteractorPartialState.Failure(
-            error = it.localizedMessage ?: genericErrorMsg
-        )
-    }
+    override fun getUserData(): Flow<PresentationCrossDeviceInteractorPartialState> =
+        flow {
+            delay(2_000L)
+            emit(
+                PresentationCrossDeviceInteractorPartialState.Success(
+                    userDataDomain = getFakeUserData()
+                )
+            )
+        }.safeAsync {
+            PresentationCrossDeviceInteractorPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
+            )
+        }
 
     private fun getFakeUserData(): UserDataDomain {
         return UserDataDomain(

@@ -18,16 +18,17 @@
 
 package eu.europa.ec.commonfeature.corewrapper
 
+import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
 
 class EUDIWListenerWrapper(
-    private val onConnected: () -> Unit = {},
-    private val onConnecting: () -> Unit = {},
-    private val onDisconnected: () -> Unit = {},
-    private val onError: (String) -> Unit = {},
-    private val onQrEngagementReady: (String) -> Unit = {},
-    private val onRequestReceived: () -> Unit = {},
-    private val onResponseSent: () -> Unit = {},
+    private val onConnected: () -> Unit,
+    private val onConnecting: () -> Unit,
+    private val onDisconnected: () -> Unit,
+    private val onError: (String) -> Unit,
+    private val onQrEngagementReady: (String) -> Unit,
+    private val onRequestReceived: (List<RequestDocument>) -> Unit,
+    private val onResponseSent: () -> Unit,
 ) : TransferEvent.Listener {
     override fun onTransferEvent(event: TransferEvent) {
         when (event) {
@@ -36,7 +37,7 @@ class EUDIWListenerWrapper(
             is TransferEvent.Disconnected -> onDisconnected()
             is TransferEvent.Error -> onError(event.error.message ?: "")
             is TransferEvent.QrEngagementReady -> onQrEngagementReady(event.qrCode.content)
-            is TransferEvent.RequestReceived -> onRequestReceived()
+            is TransferEvent.RequestReceived -> onRequestReceived(event.request.documents)
             is TransferEvent.ResponseSent -> onResponseSent()
         }
     }

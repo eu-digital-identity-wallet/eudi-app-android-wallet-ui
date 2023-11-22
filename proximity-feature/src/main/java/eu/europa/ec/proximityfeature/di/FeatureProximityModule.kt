@@ -18,6 +18,8 @@
 
 package eu.europa.ec.proximityfeature.di
 
+import eu.europa.ec.commonfeature.di.PRESENTATION_SCOPE_ID
+import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractorImpl
@@ -27,6 +29,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
+import org.koin.core.annotation.ScopeId
 
 @Module
 @ComponentScan("eu.europa.ec.proximityfeature")
@@ -35,10 +38,15 @@ class FeatureProximityModule
 @Factory
 fun provideProximityQRInteractor(
     resourceProvider: ResourceProvider,
-    eudiWallet: EudiWallet
-): ProximityQRInteractor = ProximityQRInteractorImpl(resourceProvider, eudiWallet)
+    eudiWallet: EudiWallet,
+    @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
+): ProximityQRInteractor =
+    ProximityQRInteractorImpl(resourceProvider, eudiWallet, eudiWalletInteractor)
 
 @Factory
 fun provideProximityRequestInteractor(
     resourceProvider: ResourceProvider,
-): ProximityRequestInteractor = ProximityRequestInteractorImpl(resourceProvider)
+    eudiWallet: EudiWallet,
+    @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
+): ProximityRequestInteractor =
+    ProximityRequestInteractorImpl(resourceProvider, eudiWallet, eudiWalletInteractor)

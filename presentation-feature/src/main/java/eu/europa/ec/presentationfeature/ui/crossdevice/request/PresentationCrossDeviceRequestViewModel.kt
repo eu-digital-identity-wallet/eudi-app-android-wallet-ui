@@ -124,8 +124,6 @@ class PresentationCrossDeviceRequestViewModel(
                             )
                         }
                     }
-
-                    PresentationCrossDeviceInteractorPartialState.Disconnect -> {}
                 }
             }
         }

@@ -18,103 +18,120 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
-import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
+import eu.europa.ec.commonfeature.interactor.TransferEventPartialState
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
 import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationDomain
+import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityRequestInteractorPartialState {
-    data class Success(val userDataDomain: UserDataDomain) :
+    data class Success(val userDataDomain: List<RequestDocument>) :
         ProximityRequestInteractorPartialState()
 
     data class Failure(val error: String) : ProximityRequestInteractorPartialState()
+    data object Disconnect : ProximityRequestInteractorPartialState()
 }
 
 interface ProximityRequestInteractor {
     fun getUserData(): Flow<ProximityRequestInteractorPartialState>
+    fun cancelTransfer()
 }
 
 class ProximityRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
+    private val eudiWallet: EudiWallet,
+    private val eudiWalletInteractor: EudiWalletInteractor
 ) : ProximityRequestInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
     override fun getUserData(): Flow<ProximityRequestInteractorPartialState> =
-        flow {
-            delay(2_000L)
-            emit(
-                ProximityRequestInteractorPartialState.Success(
-                    userDataDomain = getFakeUserData()
-                )
-            )
-        }.safeAsync {
-            ProximityRequestInteractorPartialState.Failure(
-                error = it.localizedMessage ?: genericErrorMsg
-            )
+        eudiWalletInteractor.events.mapNotNull {
+            when (it) {
+                is TransferEventPartialState.RequestReceived -> {
+                    ProximityRequestInteractorPartialState.Success(emptyList())
+                }
+
+                is TransferEventPartialState.Error -> {
+                    ProximityRequestInteractorPartialState.Failure(error = it.error)
+                }
+
+                is TransferEventPartialState.Disconnected -> {
+                    ProximityRequestInteractorPartialState.Disconnect
+                }
+
+                else -> null
+            }
         }
 
-    private fun getFakeUserData(): UserDataDomain {
-        return UserDataDomain(
-            documentTypeUi = DocumentTypeUi.DRIVING_LICENSE,
-            optionalFields = listOf(
-                UserIdentificationDomain(
-                    name = "Family Name",
-                    value = "Doe"
-                ),
-                UserIdentificationDomain(
-                    name = "First Name",
-                    value = "Jane"
-                ),
-                UserIdentificationDomain(
-                    name = "Date of Birth",
-                    value = "21 Oct 1994"
-                ),
-                UserIdentificationDomain(
-                    name = "Portrait",
-                    value = "user_picture"
-                ),
-                UserIdentificationDomain(
-                    name = "Family Name",
-                    value = "Doe"
-                ),
-                UserIdentificationDomain(
-                    name = "First Name",
-                    value = "Jane"
-                ),
-                UserIdentificationDomain(
-                    name = "Date of Birth",
-                    value = "21 Oct 1994"
-                ),
-                UserIdentificationDomain(
-                    name = "Portrait",
-                    value = "user_picture"
-                )
+    override fun cancelTransfer() {
+        eudiWallet.stopPresentation()
+        eudiWalletInteractor.cancelScope()
+    }
+}
+
+
+private fun getFakeUserData(): UserDataDomain {
+    return UserDataDomain(
+        documentTypeUi = DocumentTypeUi.DRIVING_LICENSE,
+        optionalFields = listOf(
+            UserIdentificationDomain(
+                name = "Family Name",
+                value = "Doe"
             ),
-            requiredFieldsTitle = "Verification Data",
-            requiredFields = listOf(
-                UserIdentificationDomain(
-                    name = "Issuance date",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Expiration date",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Country of issuance",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Issuing authority",
-                    value = null
-                )
+            UserIdentificationDomain(
+                name = "First Name",
+                value = "Jane"
+            ),
+            UserIdentificationDomain(
+                name = "Date of Birth",
+                value = "21 Oct 1994"
+            ),
+            UserIdentificationDomain(
+                name = "Portrait",
+                value = "user_picture"
+            ),
+            UserIdentificationDomain(
+                name = "Family Name",
+                value = "Doe"
+            ),
+            UserIdentificationDomain(
+                name = "First Name",
+                value = "Jane"
+            ),
+            UserIdentificationDomain(
+                name = "Date of Birth",
+                value = "21 Oct 1994"
+            ),
+            UserIdentificationDomain(
+                name = "Portrait",
+                value = "user_picture"
+            )
+        ),
+        requiredFieldsTitle = "Verification Data",
+        requiredFields = listOf(
+            UserIdentificationDomain(
+                name = "Issuance date",
+                value = null
+            ),
+            UserIdentificationDomain(
+                name = "Expiration date",
+                value = null
+            ),
+            UserIdentificationDomain(
+                name = "Country of issuance",
+                value = null
+            ),
+            UserIdentificationDomain(
+                name = "Issuing authority",
+                value = null
             )
         )
-    }
+    )
 }

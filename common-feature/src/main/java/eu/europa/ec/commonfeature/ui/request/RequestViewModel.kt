@@ -18,6 +18,7 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
+import eu.europa.ec.commonfeature.di.getPresentationScope
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
@@ -25,6 +26,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import kotlinx.coroutines.Job
 
 data class State(
     val isLoading: Boolean = true,
@@ -87,12 +89,32 @@ enum class RequestBottomSheetContent {
 }
 
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
+    protected var viewModelJob: Job? = null
+
     abstract fun getScreenTitle(): String
     abstract fun getScreenSubtitle(): String
     abstract fun getScreenClickableSubtitle(): String?
     abstract fun getWarningText(): String
     abstract fun getNextScreen(): String
     abstract fun doWork()
+
+    /**
+     * Called during [NavigationType.POP].
+     *
+     * Kill presentation scope.
+     *
+     * Therefore kill [EudiWalletInteractor]
+     * */
+    open fun cleanUp() {
+        getPresentationScope().close()
+    }
+
+    /**
+     * Cancel interactor polling job
+     * */
+    open fun unsubscribe() {
+        viewModelJob?.cancel()
+    }
 
     override fun setInitialState(): State {
         return State(
@@ -175,6 +197,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             NavigationType.POP -> {
+                cleanUp()
                 setEffect { Effect.Navigation.Pop }
             }
 

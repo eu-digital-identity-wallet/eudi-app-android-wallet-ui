@@ -16,11 +16,9 @@
  *
  */
 
-plugins {
-    id("eudi.android.feature")
-    id("eudi.wallet.core")
-}
+package eu.europa.ec.commonfeature.extensions
 
-android {
-    namespace = "eu.europa.ec.commonfeature"
-}
+import org.koin.core.Koin
+import org.koin.mp.KoinPlatformTools
+
+fun getKoin(): Koin = KoinPlatformTools.defaultContext().get()

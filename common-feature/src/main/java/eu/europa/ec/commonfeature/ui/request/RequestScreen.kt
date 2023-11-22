@@ -38,6 +38,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.di.PRESENTATION_SCOPE_ID
+import eu.europa.ec.commonfeature.di.WalletPresentationScope
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
@@ -61,6 +63,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import org.koin.compose.getKoin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +72,7 @@ fun RequestScreen(
     viewModel: RequestViewModel,
 ) {
     val state = viewModel.viewState.value
+    val koinScope = getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
 
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
