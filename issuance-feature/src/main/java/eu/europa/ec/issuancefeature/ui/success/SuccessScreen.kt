@@ -45,6 +45,8 @@ import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
@@ -53,9 +55,11 @@ import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -209,26 +213,29 @@ private fun UserImageAndIcon(
     icon: IconData,
     username: String,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .background(
-                color = MaterialTheme.colorScheme.primary,
-                shape = MaterialTheme.shapes.allCorneredShapeSmall
+    Column(modifier = modifier) {
+        VSpacer.ExtraLarge()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = MaterialTheme.shapes.allCorneredShapeSmall
+                )
+                .padding(SPACING_LARGE.dp)
+        ) {
+            BigImageAndMediumIcon(
+                image = image,
+                icon = icon
             )
-            .padding(SPACING_LARGE.dp)
-    ) {
-        BigImageAndMediumIcon(
-            image = image,
-            icon = icon
-        )
-        VSpacer.Large()
-        Text(
-            text = username,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.backgroundPaper
-        )
+            VSpacer.Large()
+            Text(
+                text = username,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.backgroundPaper
+            )
+        }
     }
 }
 
@@ -263,5 +270,24 @@ private fun StickyBottomSection(
         ) {
             Text(text = stringResource(id = R.string.issuance_success_secondary_button_text))
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@ThemeModePreviews
+@Composable
+private fun ContentPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                docType = "dsada"
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(SPACING_LARGE.dp),
+            coroutineScope = rememberCoroutineScope(),
+            modalBottomSheetState = rememberModalBottomSheetState()
+        )
     }
 }
