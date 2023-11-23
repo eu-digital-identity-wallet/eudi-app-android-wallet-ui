@@ -39,8 +39,6 @@ sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
     data object DocumentDetails :
         Screen(name = "DOCUMENT_DETAILS", parameters = "?documentId={documentId}")
-
-    data object AddDocument : Screen(name = "ADD_DOCUMENT")
 }
 
 sealed class LoginScreens {
@@ -68,7 +66,11 @@ sealed class IssuanceScreens {
         parameters = "?documentId={documentId}"
     )
 
-    data object AddDocument : Screen(name = "ISSUANCE_ADD_DOCUMENT")
+    data object AddDocument : Screen(
+        name = "ISSUANCE_ADD_DOCUMENT",
+        parameters = "?flowType={flowType}"
+    )
+
     data object Authenticate : Screen(
         name = "ISSUANCE_AUTHENTICATE",
         parameters = "?authUrl={authUrl}"

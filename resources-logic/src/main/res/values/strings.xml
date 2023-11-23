@@ -93,10 +93,6 @@
     <string name="dashboard_title">Welcome back</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
-    <string name="add_document_title">Add document</string>
-    <string name="add_document_subtitle">Select a document to add in your EUDI Wallet</string>
-    <string name="add_id">Digital ID</string>
-    <string name="add_driving_license">Driving License</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Show QR or Tap</string>
@@ -109,6 +105,13 @@
     <!-- Proximity Loading Screen -->
     <string name="proximity_loading_title">The Police officer requests the following</string>
     <string name="proximity_loading_success_config_subtitle">You successfully shared information with the Police officer</string>
+
+    <!-- Issuance Add Document Screen -->
+    <string name="issuance_add_document">CONTINUE</string>
+    <string name="issuance_add_document_title">Add document</string>
+    <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
+    <string name="issuance_add_document_digital_id">Digital ID</string>
+    <string name="issuance_add_document_driving_license">Driving License</string>
 
     <!-- Issuance Authenticate Screen -->
     <string name="issuance_authenticate_title">Add %1$s</string>

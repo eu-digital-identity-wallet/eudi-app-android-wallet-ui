@@ -24,6 +24,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
 import eu.europa.ec.issuancefeature.ui.authenticate.AuthenticateScreen
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
@@ -31,7 +32,6 @@ import eu.europa.ec.issuancefeature.ui.success.SuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel
-import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
@@ -42,6 +42,11 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         // Issuance Add Document
         composable(
             route = IssuanceScreens.AddDocument.screenRoute,
+            arguments = listOf(
+                navArgument("flowType") {
+                    type = NavType.StringType
+                },
+            ),
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
@@ -49,7 +54,18 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 }
             )
         ) {
-            AddDocumentScreen(navController, koinViewModel())
+            AddDocumentScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            IssuanceFlowUiConfig.fromString(
+                                it.arguments?.getString("flowType").orEmpty()
+                            ),
+                        )
+                    }
+                )
+            )
         }
 
         // Authenticate

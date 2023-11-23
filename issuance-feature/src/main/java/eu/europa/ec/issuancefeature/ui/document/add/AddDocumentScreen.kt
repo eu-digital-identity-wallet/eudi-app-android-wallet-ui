@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.uilogic.component.AppIcons
@@ -56,7 +57,7 @@ fun AddDocumentScreen(
 
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.NONE,
+        navigatableAction = state.navigatableAction,
         onBack = { viewModel.setEvent(Event.Pop) },
         contentErrorConfig = state.error
     ) { paddingValues ->
@@ -142,6 +143,8 @@ private fun AddDocumentScreenPreview() {
     PreviewTheme {
         Content(
             state = State(
+                flowType = IssuanceFlowUiConfig.NO_DOCUMENT,
+                navigatableAction = ScreenNavigateAction.NONE,
                 title = "Add document",
                 subtitle = "Select a document to add in your EUDI Wallet",
                 options = listOf(

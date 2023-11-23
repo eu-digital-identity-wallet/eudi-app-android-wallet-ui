@@ -25,7 +25,6 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardScreen
-import eu.europa.ec.dashboardfeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.dashboardfeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
@@ -49,18 +48,6 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
         ) {
             DashboardScreen(navController, koinViewModel())
         }
-    }
-
-    composable(
-        route = DashboardScreens.AddDocument.screenRoute,
-        deepLinks = listOf(
-            navDeepLink {
-                uriPattern =
-                    BuildConfig.DEEPLINK + DashboardScreens.AddDocument.screenRoute
-            }
-        )
-    ) {
-        AddDocumentScreen(navController, koinViewModel())
     }
 
     composable(

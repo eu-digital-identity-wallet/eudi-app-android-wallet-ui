@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
@@ -96,7 +97,14 @@ class DashboardViewModel(
 
             is Event.Fab.SecondaryFabPressed -> {
                 setEffect {
-                    Effect.Navigation.SwitchScreen(DashboardScreens.AddDocument.screenRoute)
+                    Effect.Navigation.SwitchScreen(
+                        screenRoute = generateComposableNavigationLink(
+                            screen = IssuanceScreens.AddDocument,
+                            arguments = generateComposableArguments(
+                                mapOf("flowType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT)
+                            )
+                        )
+                    )
                 }
             }
         }

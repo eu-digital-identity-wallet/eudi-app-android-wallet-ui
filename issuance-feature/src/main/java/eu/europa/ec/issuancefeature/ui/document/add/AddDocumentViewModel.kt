@@ -17,6 +17,7 @@
 package eu.europa.ec.issuancefeature.ui.document.add
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
@@ -24,6 +25,7 @@ import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -33,8 +35,11 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.InjectedParam
 
 data class State(
+    val flowType: IssuanceFlowUiConfig,
+    val navigatableAction: ScreenNavigateAction,
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val title: String = "",
@@ -58,11 +63,14 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class AddDocumentViewModel(
     private val addDocumentInteractor: AddDocumentInteractor,
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    @InjectedParam private val flowType: IssuanceFlowUiConfig,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        title = resourceProvider.getString(R.string.add_document_title),
-        subtitle = resourceProvider.getString(R.string.add_document_subtitle)
+        flowType = flowType,
+        navigatableAction = getNavigatableAction(flowType),
+        title = resourceProvider.getString(R.string.issuance_add_document_title),
+        subtitle = resourceProvider.getString(R.string.issuance_add_document_subtitle)
     )
 
     override fun handleEvents(event: Event) = when (event) {
@@ -123,6 +131,13 @@ class AddDocumentViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun getNavigatableAction(flowType: IssuanceFlowUiConfig): ScreenNavigateAction {
+        return when (flowType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
         }
     }
 }
