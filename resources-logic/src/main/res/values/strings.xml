@@ -57,6 +57,9 @@
 
     <!-- Success Screen -->
     <string name="content_description_success_screen_icon">Success icon</string>
+    <string name="content_description_success_screen_title">Success</string>
+    <string name="content_description_success_screen_subtitle">You successfully set the quick pin</string>
+
 
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>

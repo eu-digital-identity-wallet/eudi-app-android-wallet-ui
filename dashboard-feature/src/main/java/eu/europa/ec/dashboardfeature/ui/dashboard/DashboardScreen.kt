@@ -73,6 +73,7 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.FabData
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
@@ -256,7 +257,8 @@ private fun Title(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
         ) {
             WrapImage(
                 iconData = image,
@@ -279,6 +281,10 @@ private fun Title(
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.White
                 )
+            }
+
+            WrapIconButton(iconData = AppIcons.VerticalMore, modifier = Modifier.weight(1f)) {
+
             }
         }
     }

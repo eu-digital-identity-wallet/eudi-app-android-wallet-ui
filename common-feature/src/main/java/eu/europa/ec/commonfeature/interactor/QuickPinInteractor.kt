@@ -65,7 +65,6 @@ class QuickPinInteractorImpl constructor(
                         emit(QuickPinInteractorSetPinPartialState.Success)
                     }
 
-                    else -> {}
                 }
             }
 
@@ -130,7 +129,6 @@ class QuickPinInteractorImpl constructor(
 }
 
 sealed class QuickPinInteractorSetPinPartialState {
-
     data object Success : QuickPinInteractorSetPinPartialState()
     data class Failed(val errorMessage: String) : QuickPinInteractorSetPinPartialState()
 }

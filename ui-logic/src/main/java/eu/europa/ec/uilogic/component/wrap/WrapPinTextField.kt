@@ -99,6 +99,7 @@ fun WrapPinTextField(
             it.value = ""
             onPinUpdate.invoke("")
         }
+        focusRequesters.first().requestFocus()
     }
 
     CompositionLocalProvider(

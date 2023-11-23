@@ -86,11 +86,12 @@ private fun handleNavigationEffect(
     when (navigationEffect) {
         is Effect.Navigation.SwitchScreen -> {
             navController.navigate(navigationEffect.screen) {
-                popUpTo(LoginScreens.QuickPin.screenRoute){
+                popUpTo(LoginScreens.QuickPin.screenRoute) {
                     inclusive = true
                 }
             }
         }
+
         is Effect.Navigation.SwitchModule -> navController.navigate(navigationEffect.moduleRoute.route)
     }
 }

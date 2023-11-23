@@ -22,9 +22,8 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.Form
 import eu.europa.ec.businesslogic.validator.FormValidationResult
-import eu.europa.ec.businesslogic.validator.FormsValidationResult
 import eu.europa.ec.businesslogic.validator.Rule
-import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorSetPinPartialState
@@ -39,9 +38,7 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -179,41 +176,37 @@ class PinViewModel(
 
     private fun createPin(state: State, event: Event.NextButtonPressed) {
 
-        when (state.pinState) {
-            PinValidationState.COMPLETED -> {
-                viewModelScope.launch {
-                    interactor.setPin(state.pin, state.initialPin).collect {
-                        when (it) {
-                            is QuickPinInteractorSetPinPartialState.Failed -> {
-                                setState {
-                                    copy(
-                                        quickPinError = it.errorMessage
-                                    )
-                                }
-
+        if (state.pinState == PinValidationState.COMPLETED) {
+            viewModelScope.launch {
+                interactor.setPin(state.pin, state.initialPin).collect {
+                    when (it) {
+                        is QuickPinInteractorSetPinPartialState.Failed -> {
+                            setState {
+                                copy(
+                                    quickPinError = it.errorMessage
+                                )
                             }
+                        }
 
-                            is QuickPinInteractorSetPinPartialState.Success -> {
-                                setEffect { Effect.Navigation.SwitchScreen(getBiometricsNextScreen()) }
+                        is QuickPinInteractorSetPinPartialState.Success -> {
+                            setEffect {
+                                Effect.Navigation.SwitchScreen(getSuccessConfig())
+
                             }
                         }
                     }
                 }
             }
-
-            PinValidationState.REENTER -> {
-                setState {
-                    copy(
-                        quickPinError = null,
-                        initialPin = event.pin,
-                        pinState = PinValidationState.COMPLETED,
-                        pin = "",
-                        resetPin = true
-                    )
-                }
+        } else if (state.pinState == PinValidationState.REENTER) {
+            setState {
+                copy(
+                    quickPinError = null,
+                    initialPin = event.pin,
+                    pinState = PinValidationState.COMPLETED,
+                    pin = "",
+                    resetPin = true
+                )
             }
-
-            else -> {}
         }
     }
 
@@ -244,7 +237,6 @@ class PinViewModel(
                                 }
                             }
 
-                            else -> {}
                         }
                     }
                 }
@@ -303,28 +295,38 @@ class PinViewModel(
         }
     }
 
-    private fun getBiometricsNextScreen(): String {
+    private fun getSuccessConfig(): String {
         return generateComposableNavigationLink(
-            screen = CommonScreens.Biometric,
+            screen = CommonScreens.Success,
             arguments = generateComposableArguments(
                 mapOf(
-                    BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
-                        BiometricUiConfig(
-                            title = resourceProvider.getString(R.string.biometric_prompt_title),
-                            subTitle = resourceProvider.getString(R.string.biometric_prompt_subtitle),
-                            quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
-                            isPreAuthorization = false,
-                            shouldInitializeBiometricAuthOnCreate = true,
-                            onSuccessNavigation = ConfigNavigation(
-                                navigationType = NavigationType.PUSH,
+                    SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
+                        SuccessUIConfig(
+                            header = resourceProvider.getString(R.string.content_description_success_screen_title),
+                            content = resourceProvider.getString(R.string.content_description_success_screen_subtitle),
+                            imageConfig = SuccessUIConfig.ImageConfig(
+                                type = SuccessUIConfig.ImageConfig.Type.DEFAULT
+                            ),
+                            buttonConfig = listOf(
+                                SuccessUIConfig.ButtonConfig(
+                                    text = resourceProvider.getString(R.string.quick_pin_continue),
+                                    style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                                    navigation = ConfigNavigation(
+                                        navigationType = NavigationType.PUSH,
+                                        screenToNavigate = DashboardScreens.Dashboard
+                                    )
+                                )
+                            ),
+                            onBackScreenToNavigate = ConfigNavigation(
+                                navigationType = NavigationType.POP,
                                 screenToNavigate = DashboardScreens.Dashboard
                             ),
-                            onBackNavigation = null
                         ),
-                        BiometricUiConfig.Parser
+                        SuccessUIConfig.Parser
                     ).orEmpty()
                 )
             )
         )
     }
+
 }

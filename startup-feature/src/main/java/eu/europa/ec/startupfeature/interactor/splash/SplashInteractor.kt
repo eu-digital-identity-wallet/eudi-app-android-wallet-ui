@@ -23,7 +23,6 @@ import eu.europa.ec.uilogic.navigation.Screen
 
 interface SplashInteractor {
     fun getAfterSplashRoute(): String
-    fun getAfterSplashRoute(): Screen
     fun getBiometricsScreenRoute(): Screen
     fun getDevicePin(): String
 }
