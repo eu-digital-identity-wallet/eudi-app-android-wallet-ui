@@ -211,12 +211,47 @@ private fun Content(
 
 @ThemeModePreviews
 @Composable
-private fun ContentPreview() {
+private fun IssuanceDocumentDetailsScreenPreview() {
     PreviewTheme {
         val state = State(
             navigatableAction = ScreenNavigateAction.NONE,
             shouldShowPrimaryButton = true,
             hasCustomTopBar = false,
+            document = DocumentUi(
+                documentId = 2,
+                documentType = DocumentTypeUi.DIGITAL_ID,
+                documentStatus = DocumentStatusUi.ACTIVE,
+                documentImage = "image3",
+                documentItems = (1..10).map {
+                    DocumentItemUi("Name $it", "Value $it")
+                }
+            ),
+            headerData = HeaderData(
+                title = "Title",
+                subtitle = "subtitle",
+                AppIcons.User,
+                AppIcons.IdStroke
+            )
+        )
+
+        Content(
+            state = state,
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(SPACING_LARGE.dp)
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun DashboardDocumentDetailsScreenPreview() {
+    PreviewTheme {
+        val state = State(
+            navigatableAction = ScreenNavigateAction.CANCELABLE,
+            shouldShowPrimaryButton = false,
+            hasCustomTopBar = true,
             document = DocumentUi(
                 documentId = 2,
                 documentType = DocumentTypeUi.DIGITAL_ID,

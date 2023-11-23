@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.uilogic.component.AppIcons
@@ -139,12 +138,43 @@ fun Content(
 
 @ThemeModePreviews
 @Composable
-private fun AddDocumentScreenPreview() {
+private fun IssuanceAddDocumentScreenPreview() {
     PreviewTheme {
         Content(
             state = State(
-                flowType = IssuanceFlowUiConfig.NO_DOCUMENT,
                 navigatableAction = ScreenNavigateAction.NONE,
+                title = "Add document",
+                subtitle = "Select a document to add in your EUDI Wallet",
+                options = listOf(
+                    DocumentOptionItemUi(
+                        text = "Digital ID",
+                        icon = AppIcons.Id,
+                        type = DocumentTypeUi.DIGITAL_ID,
+                        issuanceUrl = "www.gov.gr"
+                    ),
+                    DocumentOptionItemUi(
+                        text = "Driving License",
+                        icon = AppIcons.Id,
+                        type = DocumentTypeUi.DRIVING_LICENSE,
+                        issuanceUrl = "www.gov-automotive.gr"
+                    )
+                )
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(all = SPACING_LARGE.dp)
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun DashboardAddDocumentScreenPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                navigatableAction = ScreenNavigateAction.CANCELABLE,
                 title = "Add document",
                 subtitle = "Select a document to add in your EUDI Wallet",
                 options = listOf(

@@ -38,10 +38,11 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
-    val flowType: IssuanceFlowUiConfig,
     val navigatableAction: ScreenNavigateAction,
+
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
+
     val title: String = "",
     val subtitle: String = "",
     val options: List<DocumentOptionItemUi> = emptyList()
@@ -67,7 +68,6 @@ class AddDocumentViewModel(
     @InjectedParam private val flowType: IssuanceFlowUiConfig,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        flowType = flowType,
         navigatableAction = getNavigatableAction(flowType),
         title = resourceProvider.getString(R.string.issuance_add_document_title),
         subtitle = resourceProvider.getString(R.string.issuance_add_document_subtitle)
