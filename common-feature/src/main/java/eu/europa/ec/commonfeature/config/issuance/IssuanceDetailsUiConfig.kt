@@ -14,20 +14,26 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.di
+package eu.europa.ec.commonfeature.config.issuance
 
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Factory
-import org.koin.core.annotation.Module
+enum class IssuanceDetailsUiConfig {
+    NO_DOCUMENT, EXTRA_DOCUMENT;
 
-@Module
-@ComponentScan("eu.europa.ec.dashboardfeature")
-class FeatureDashboardModule
+    companion object {
+        fun fromIssuanceDetailsUiConfig(value: IssuanceDetailsUiConfig): String {
+            return try {
+                value.name
+            } catch (e: Exception) {
+                throw RuntimeException("Wrong IssuanceDetailsUiConfig")
+            }
+        }
 
-@Factory
-fun provideDashboardInteractor(
-    resourceProvider: ResourceProvider,
-): DashboardInteractor = DashboardInteractorImpl(resourceProvider)
+        fun fromString(value: String): IssuanceDetailsUiConfig {
+            return try {
+                IssuanceDetailsUiConfig.valueOf(value)
+            } catch (e: Exception) {
+                throw RuntimeException("Wrong IssuanceDetailsUiConfig")
+            }
+        }
+    }
+}

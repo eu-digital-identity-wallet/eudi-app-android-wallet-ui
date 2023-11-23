@@ -16,6 +16,7 @@
 
 package eu.europa.ec.issuancefeature.ui.success
 
+import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -34,7 +35,7 @@ data class State(
 
 sealed class Event : ViewEvent {
     data object GoBack : Event()
-    data object PrimaryButtonPressed : Event()
+    data class PrimaryButtonPressed(val documentId: String) : Event()
     data object SecondaryButtonPressed : Event()
 
     sealed class BottomSheet : Event() {
@@ -81,7 +82,10 @@ class SuccessViewModel(
                         screenRoute = generateComposableNavigationLink(
                             screen = IssuanceScreens.DocumentDetails,
                             arguments = generateComposableArguments(
-                                arguments = mapOf("documentId" to "2")
+                                mapOf(
+                                    "detailsType" to IssuanceDetailsUiConfig.NO_DOCUMENT,
+                                    "documentId" to event.documentId
+                                )
                             )
                         )
                     )

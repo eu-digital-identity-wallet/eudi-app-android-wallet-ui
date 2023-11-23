@@ -258,7 +258,7 @@ private fun StickyBottomSection(
 
         WrapPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { onEventSend(Event.PrimaryButtonPressed) }
+            onClick = { onEventSend(Event.PrimaryButtonPressed(documentId = "2")) }
         ) {
             Text(text = stringResource(id = R.string.issuance_success_primary_button_text))
         }

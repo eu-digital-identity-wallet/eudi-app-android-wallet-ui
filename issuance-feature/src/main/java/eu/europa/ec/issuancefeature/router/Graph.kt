@@ -24,6 +24,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
 import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
 import eu.europa.ec.issuancefeature.ui.authenticate.AuthenticateScreen
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
@@ -39,19 +40,19 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         startDestination = IssuanceScreens.AddDocument.screenRoute,
         route = ModuleRoute.IssuanceModule.route
     ) {
-        // Issuance Add Document
+        // Add Document
         composable(
             route = IssuanceScreens.AddDocument.screenRoute,
-            arguments = listOf(
-                navArgument("flowType") {
-                    type = NavType.StringType
-                },
-            ),
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
                         BuildConfig.DEEPLINK + IssuanceScreens.AddDocument.screenRoute
                 }
+            ),
+            arguments = listOf(
+                navArgument("flowType") {
+                    type = NavType.StringType
+                },
             )
         ) {
             AddDocumentScreen(
@@ -93,7 +94,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
             )
         }
 
-        // Authenticate
+        // Success
         composable(
             route = IssuanceScreens.Success.screenRoute,
             arguments = listOf(
@@ -114,7 +115,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
             )
         }
 
-        // Issuance Document Details
+        // Document Details
         composable(
             route = IssuanceScreens.DocumentDetails.screenRoute,
             deepLinks = listOf(
@@ -124,9 +125,12 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 }
             ),
             arguments = listOf(
+                navArgument("detailsType") {
+                    type = NavType.StringType
+                },
                 navArgument("documentId") {
                     type = NavType.StringType
-                }
+                },
             )
         ) {
             DocumentDetailsScreen(
@@ -134,7 +138,10 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 getViewModel(
                     parameters = {
                         parametersOf(
-                            it.arguments?.getString("documentId").orEmpty()
+                            IssuanceDetailsUiConfig.fromString(
+                                it.arguments?.getString("detailsType").orEmpty()
+                            ),
+                            it.arguments?.getString("documentId").orEmpty(),
                         )
                     }
                 )

@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
 import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
@@ -27,7 +28,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -80,8 +81,13 @@ class DashboardViewModel(
                 setEffect {
                     Effect.Navigation.SwitchScreen(
                         generateComposableNavigationLink(
-                            screen = DashboardScreens.DocumentDetails,
-                            arguments = generateComposableArguments(mapOf("documentId" to event.documentId))
+                            screen = IssuanceScreens.DocumentDetails,
+                            arguments = generateComposableArguments(
+                                mapOf(
+                                    "detailsType" to IssuanceDetailsUiConfig.EXTRA_DOCUMENT,
+                                    "documentId" to event.documentId
+                                )
+                            )
                         )
                     )
                 }

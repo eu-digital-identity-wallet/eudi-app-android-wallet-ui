@@ -17,12 +17,14 @@
 package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -33,8 +35,13 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
+    val navigatableAction: ScreenNavigateAction,
+    val shouldShowPrimaryButton: Boolean,
+    val hasCustomTopBar: Boolean,
+
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
+
     val document: DocumentUi? = null,
     val headerData: HeaderData? = null
 ) : ViewState
@@ -56,9 +63,14 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
+    @InjectedParam private val detailsType: IssuanceDetailsUiConfig,
     @InjectedParam private val documentId: String
 ) : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State()
+    override fun setInitialState(): State = State(
+        navigatableAction = getNavigatableAction(detailsType),
+        shouldShowPrimaryButton = shouldShowPrimaryButton(detailsType),
+        hasCustomTopBar = hasCustomTopBar(detailsType),
+    )
 
     override fun handleEvents(event: Event) {
         when (event) {
@@ -117,6 +129,27 @@ class DocumentDetailsViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun getNavigatableAction(detailsType: IssuanceDetailsUiConfig): ScreenNavigateAction {
+        return when (detailsType) {
+            IssuanceDetailsUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
+            IssuanceDetailsUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
+        }
+    }
+
+    private fun shouldShowPrimaryButton(detailsType: IssuanceDetailsUiConfig): Boolean {
+        return when (detailsType) {
+            IssuanceDetailsUiConfig.NO_DOCUMENT -> true
+            IssuanceDetailsUiConfig.EXTRA_DOCUMENT -> false
+        }
+    }
+
+    private fun hasCustomTopBar(detailsType: IssuanceDetailsUiConfig): Boolean {
+        return when (detailsType) {
+            IssuanceDetailsUiConfig.NO_DOCUMENT -> false
+            IssuanceDetailsUiConfig.EXTRA_DOCUMENT -> true
         }
     }
 }

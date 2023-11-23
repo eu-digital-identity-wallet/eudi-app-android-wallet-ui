@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
@@ -42,6 +43,7 @@ import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.ActionTopBar
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.HeaderLarge
@@ -73,8 +75,19 @@ fun DocumentDetailsScreen(
     ContentScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
-        navigatableAction = ScreenNavigateAction.NONE,
+        navigatableAction = state.navigatableAction,
         onBack = { viewModel.setEvent(Event.Pop) },
+        topBar = if (state.hasCustomTopBar) {
+            {
+                ActionTopBar(
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    iconColor = Color.White,
+                    iconData = AppIcons.Close
+                ) { viewModel.setEvent(Event.Pop) }
+            }
+        } else {
+            null
+        }
     ) { paddingValues ->
         Content(
             state = state,
@@ -83,7 +96,7 @@ fun DocumentDetailsScreen(
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController)
             },
-            paddingValues
+            paddingValues = paddingValues
         )
     }
 
@@ -166,23 +179,24 @@ private fun Content(
             }
 
             // Sticky Button
-            WrapPrimaryButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                        end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
-                    ),
-                onClick = {
-                    onEventSend(Event.PrimaryButtonPressed)
+            if (state.shouldShowPrimaryButton) {
+                WrapPrimaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                            end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+                        ),
+                    onClick = {
+                        onEventSend(Event.PrimaryButtonPressed)
+                    }
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.issuance_document_details_primary_button_text),
+                        style = MaterialTheme.typography.titleSmall
+                    )
                 }
-            ) {
-                Text(
-                    text = stringResource(id = R.string.issuance_document_details_primary_button_text),
-                    style = MaterialTheme.typography.titleSmall
-                )
             }
-
         }
     }
 
@@ -200,6 +214,9 @@ private fun Content(
 private fun ContentPreview() {
     PreviewTheme {
         val state = State(
+            navigatableAction = ScreenNavigateAction.NONE,
+            shouldShowPrimaryButton = true,
+            hasCustomTopBar = false,
             document = DocumentUi(
                 documentId = 2,
                 documentType = DocumentTypeUi.DIGITAL_ID,
