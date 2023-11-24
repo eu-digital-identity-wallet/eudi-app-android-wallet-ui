@@ -18,10 +18,6 @@ package eu.europa.ec.dashboardfeature.di
 
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
-import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentInteractor
-import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentInteractorImpl
-import eu.europa.ec.dashboardfeature.interactor.document.DocumentDetailsInteractor
-import eu.europa.ec.dashboardfeature.interactor.document.DocumentDetailsInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -35,13 +31,3 @@ class FeatureDashboardModule
 fun provideDashboardInteractor(
     resourceProvider: ResourceProvider,
 ): DashboardInteractor = DashboardInteractorImpl(resourceProvider)
-
-@Factory
-fun provideDocumentDetailsInteractor(
-    resourceProvider: ResourceProvider,
-): DocumentDetailsInteractor = DocumentDetailsInteractorImpl(resourceProvider)
-
-@Factory
-fun provideAddDocumentInteractor(
-    resourceProvider: ResourceProvider,
-): AddDocumentInteractor = AddDocumentInteractorImpl(resourceProvider)

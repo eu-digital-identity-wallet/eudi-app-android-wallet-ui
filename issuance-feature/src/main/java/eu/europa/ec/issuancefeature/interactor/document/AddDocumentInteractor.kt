@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.interactor.document
+package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
@@ -47,25 +47,29 @@ class AddDocumentInteractorImpl(
         delay(400L)
         emit(
             AddDocumentInteractorPartialState.Success(
-                options = listOf(
-                    DocumentOptionItemUi(
-                        text = resourceProvider.getString(R.string.add_id),
-                        icon = AppIcons.Id,
-                        type = DocumentTypeUi.DIGITAL_ID,
-                        issuanceUrl = "www.gov.gr"
-                    ),
-                    DocumentOptionItemUi(
-                        text = resourceProvider.getString(R.string.add_driving_license),
-                        icon = AppIcons.Id,
-                        type = DocumentTypeUi.DRIVING_LICENSE,
-                        issuanceUrl = "www.gov-automotive.gr"
-                    )
-                )
+                options = getFakeAddDocumentOptions()
             )
         )
     }.safeAsync {
         AddDocumentInteractorPartialState.Failure(
             error = it.localizedMessage ?: genericErrorMsg
+        )
+    }
+
+    private fun getFakeAddDocumentOptions(): List<DocumentOptionItemUi> {
+        return listOf(
+            DocumentOptionItemUi(
+                text = resourceProvider.getString(R.string.issuance_add_document_digital_id),
+                icon = AppIcons.Id,
+                type = DocumentTypeUi.DIGITAL_ID,
+                issuanceUrl = "www.gov.gr"
+            ),
+            DocumentOptionItemUi(
+                text = resourceProvider.getString(R.string.issuance_add_document_driving_license),
+                icon = AppIcons.Id,
+                type = DocumentTypeUi.DRIVING_LICENSE,
+                issuanceUrl = "www.gov-automotive.gr"
+            )
         )
     }
 }

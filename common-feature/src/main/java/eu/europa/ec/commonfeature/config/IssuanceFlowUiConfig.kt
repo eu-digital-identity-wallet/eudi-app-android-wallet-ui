@@ -14,7 +14,26 @@
  * governing permissions and limitations under the Licence.
  */
 
-package com.niscy.eudi.issuancefeature
+package eu.europa.ec.commonfeature.config
 
-class Dummy {
+enum class IssuanceFlowUiConfig {
+    NO_DOCUMENT, EXTRA_DOCUMENT;
+
+    companion object {
+        fun fromIssuanceFlowUiConfig(value: IssuanceFlowUiConfig): String {
+            return try {
+                value.name
+            } catch (e: Exception) {
+                throw RuntimeException("Wrong IssuanceFlowUiConfig")
+            }
+        }
+
+        fun fromString(value: String): IssuanceFlowUiConfig {
+            return try {
+                IssuanceFlowUiConfig.valueOf(value)
+            } catch (e: Exception) {
+                throw RuntimeException("Wrong IssuanceFlowUiConfig")
+            }
+        }
+    }
 }

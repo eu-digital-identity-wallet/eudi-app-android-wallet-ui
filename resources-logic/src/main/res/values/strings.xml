@@ -14,7 +14,7 @@
   ~ governing permissions and limitations under the Licence.
   -->
 
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <!-- Generic -->
     <string name="app_name">EUDI Wallet</string>
@@ -24,6 +24,7 @@
     <string name="generic_network_error_message">You are not connected to the internet</string>
     <string name="generic_error_retry">Please try again</string>
     <string name="generic_cancel">Cancel</string>
+    <string name="generic_cancel_capitalized">CANCEL</string>
     <string name="generic_success">Success</string>
     <string name="generic_ok">OK</string>
 
@@ -66,11 +67,11 @@
     <string name="request_subtitle_two"> Why we need your data?</string>
     <string name="request_warning_text">Your selection of data to be shared may impact the service</string>
     <string name="request_primary_button_text">SHARE</string>
-    <string name="request_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="request_secondary_button_text">@string/generic_cancel_capitalized</string>
     <string name="request_bottom_sheet_cancel_title">Cancel information sharing?</string>
     <string name="request_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the login without sharing any information</string>
     <string name="request_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
-    <string name="request_bottom_sheet_cancel_secondary_button_text" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="request_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
     <string name="request_bottom_sheet_subtitle_title">Why we need your data</string>
     <string name="request_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
     <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
@@ -92,10 +93,6 @@
     <string name="dashboard_title">Welcome back</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
-    <string name="add_document_title">Add document</string>
-    <string name="add_document_subtitle">Select a document to add in your EUDI Wallet</string>
-    <string name="add_id">Digital ID</string>
-    <string name="add_driving_license">Driving License</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Show QR or Tap</string>
@@ -108,5 +105,30 @@
     <!-- Proximity Loading Screen -->
     <string name="proximity_loading_title">The Police officer requests the following</string>
     <string name="proximity_loading_success_config_subtitle">You successfully shared information with the Police officer</string>
+
+    <!-- Issuance Add Document Screen -->
+    <string name="issuance_add_document">CONTINUE</string>
+    <string name="issuance_add_document_title">Add document</string>
+    <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
+    <string name="issuance_add_document_digital_id">Digital ID</string>
+    <string name="issuance_add_document_driving_license">Driving License</string>
+
+    <!-- Issuance Authenticate Screen -->
+    <string name="issuance_authenticate_title">Add %1$s</string>
+    <string name="issuance_authenticate_subtitle">Use your “National System” credentials to add the document in your EUDI Wallet</string>
+
+    <!-- Issuance Success Screen -->
+    <string name="issuance_success_title">@string/generic_success</string>
+    <string name="issuance_success_subtitle">You can now add your %1$s</string>
+    <string name="issuance_success_confirmation_message">Add %1$s?</string>
+    <string name="issuance_success_primary_button_text">ADD</string>
+    <string name="issuance_success_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <string name="issuance_success_bottom_sheet_cancel_title">Cancel %1$s issuance process?</string>
+    <string name="issuance_success_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the documents list without the %1$s</string>
+    <string name="issuance_success_bottom_sheet_cancel_primary_button_text">CONTINUE ISSUANCE</string>
+    <string name="issuance_success_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+
+    <!-- Issuance Documents Details Screen -->
+    <string name="issuance_document_details_primary_button_text">CONTINUE</string>
 
 </resources>

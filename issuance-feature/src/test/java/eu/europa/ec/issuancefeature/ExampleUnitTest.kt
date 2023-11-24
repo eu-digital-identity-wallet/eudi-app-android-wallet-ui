@@ -14,17 +14,19 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.startupfeature.interactor.splash
+package eu.europa.ec.issuancefeature
 
-import eu.europa.ec.uilogic.navigation.LoginScreens
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-interface SplashInteractor {
-    fun getAfterSplashRoute(): String
-}
-
-class SplashInteractorImpl : SplashInteractor {
-
-    override fun getAfterSplashRoute(): String {
-        return LoginScreens.Welcome.screenRoute
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
     }
 }

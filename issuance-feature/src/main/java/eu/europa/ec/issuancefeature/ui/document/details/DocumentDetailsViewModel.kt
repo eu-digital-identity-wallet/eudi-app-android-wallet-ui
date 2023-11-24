@@ -14,26 +14,37 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.document.details
+package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.dashboardfeature.interactor.document.DocumentDetailsInteractor
-import eu.europa.ec.dashboardfeature.interactor.document.DocumentDetailsInteractorPartialState
+import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
+import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
+    val detailsType: IssuanceFlowUiConfig,
+    val navigatableAction: ScreenNavigateAction,
+    val shouldShowPrimaryButton: Boolean,
+    val hasCustomTopBar: Boolean,
+    val hasBottomPadding: Boolean,
+    val detailsHaveBottomGradient: Boolean,
+
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
+
     val document: DocumentUi? = null,
     val headerData: HeaderData? = null
 ) : ViewState
@@ -41,29 +52,49 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
+    data object PrimaryButtonPressed : Event()
 }
 
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
+        data class SwitchScreen(val screenRoute: String) : Navigation()
     }
 }
 
 @KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
+    @InjectedParam private val detailsType: IssuanceFlowUiConfig,
     @InjectedParam private val documentId: String
 ) : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State()
+    override fun setInitialState(): State = State(
+        detailsType = detailsType,
+        navigatableAction = getNavigatableAction(detailsType),
+        shouldShowPrimaryButton = shouldShowPrimaryButton(detailsType),
+        hasCustomTopBar = hasCustomTopBar(detailsType),
+        hasBottomPadding = hasBottomPadding(detailsType),
+        detailsHaveBottomGradient = detailsHaveBottomGradient(detailsType),
+    )
 
-    override fun handleEvents(event: Event) = when (event) {
-        is Event.Init -> getDocument(event)
-        is Event.Pop -> setEffect { Effect.Navigation.Pop }
+    override fun handleEvents(event: Event) {
+        when (event) {
+            is Event.Init -> getDocument(event)
+
+            is Event.Pop -> setEffect { Effect.Navigation.Pop }
+
+            is Event.PrimaryButtonPressed -> {
+                setEffect {
+                    Effect.Navigation.SwitchScreen(
+                        screenRoute = DashboardScreens.Dashboard.screenRoute
+                    )
+                }
+            }
+        }
     }
 
     private fun getDocument(event: Event) {
-
         setState {
             copy(
                 isLoading = document == null,
@@ -83,8 +114,8 @@ class DocumentDetailsViewModel(
                                 headerData = HeaderData(
                                     title = response.document.documentType.title,
                                     subtitle = response.userName,
-                                    AppIcons.User,
-                                    AppIcons.IdStroke
+                                    image = AppIcons.User,
+                                    icon = AppIcons.IdStroke
                                 )
                             )
                         }
@@ -104,6 +135,41 @@ class DocumentDetailsViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun getNavigatableAction(detailsType: IssuanceFlowUiConfig): ScreenNavigateAction {
+        return when (detailsType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
+        }
+    }
+
+    private fun shouldShowPrimaryButton(detailsType: IssuanceFlowUiConfig): Boolean {
+        return when (detailsType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> true
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
+        }
+    }
+
+    private fun hasCustomTopBar(detailsType: IssuanceFlowUiConfig): Boolean {
+        return when (detailsType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> false
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> true
+        }
+    }
+
+    private fun hasBottomPadding(detailsType: IssuanceFlowUiConfig): Boolean {
+        return when (detailsType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> true
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
+        }
+    }
+
+    private fun detailsHaveBottomGradient(detailsType: IssuanceFlowUiConfig): Boolean {
+        return when (detailsType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> true
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
         }
     }
 }

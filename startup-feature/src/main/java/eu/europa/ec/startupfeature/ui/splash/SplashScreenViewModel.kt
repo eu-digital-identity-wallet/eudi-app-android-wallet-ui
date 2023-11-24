@@ -23,7 +23,6 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import eu.europa.ec.uilogic.navigation.Screen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -40,7 +39,7 @@ sealed class Effect : ViewSideEffect {
 
     sealed class Navigation : Effect() {
         data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
-        data class SwitchScreen(val screen: Screen) : Navigation()
+        data class SwitchScreen(val route: String) : Navigation()
     }
 }
 

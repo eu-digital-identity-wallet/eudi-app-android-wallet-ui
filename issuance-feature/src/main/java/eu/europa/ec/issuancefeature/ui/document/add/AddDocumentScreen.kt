@@ -14,12 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.document.add
+package eu.europa.ec.issuancefeature.ui.document.add
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -38,6 +39,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -54,7 +56,7 @@ fun AddDocumentScreen(
 
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.CANCELABLE,
+        navigatableAction = state.navigatableAction,
         onBack = { viewModel.setEvent(Event.Pop) },
         contentErrorConfig = state.error
     ) { paddingValues ->
@@ -63,9 +65,14 @@ fun AddDocumentScreen(
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController)
+                when (navigationEffect) {
+                    is Effect.Navigation.Pop -> navController.popBackStack()
+                    is Effect.Navigation.SwitchScreen -> {
+                        navController.navigate(navigationEffect.screenRoute)
+                    }
+                }
             },
-            paddingValues
+            paddingValues = paddingValues
         )
     }
 
@@ -74,16 +81,6 @@ fun AddDocumentScreen(
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         viewModel.setEvent(Event.Init)
-    }
-}
-
-private fun handleNavigationEffect(
-    navigationEffect: Effect.Navigation,
-    navController: NavController
-) {
-    when (navigationEffect) {
-        is Effect.Navigation.Pop -> navController.popBackStack()
-        is Effect.Navigation.SwitchScreen -> {}
     }
 }
 
@@ -106,30 +103,34 @@ fun Content(
             subtitle = state.subtitle
         )
 
-        state.options.forEach { option ->
-            IssuanceButton(
-                data = IssuanceButtonData(
-                    text = option.text,
-                    icon = option.icon
-                )
-            ) {
-                onEventSend(
-                    Event.NavigateToIssueDocument(
-                        url = option.issuanceUrl,
-                        type = option.type
+        LazyColumn {
+            state.options.forEach { option ->
+                item {
+                    IssuanceButton(
+                        data = IssuanceButtonData(
+                            text = option.text,
+                            icon = option.icon
+                        ),
+                        onClick = {
+                            onEventSend(
+                                Event.NavigateToAuthentication(
+                                    url = option.issuanceUrl,
+                                    type = option.type
+                                )
+                            )
+                        }
                     )
-                )
-            }
 
-            VSpacer.Medium()
+                    VSpacer.Medium()
+                }
+            }
         }
     }
 
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
             when (effect) {
-                is Effect.Navigation.Pop -> onNavigationRequested(effect)
-                is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
+                is Effect.Navigation -> onNavigationRequested(effect)
             }
         }.collect()
     }
@@ -137,10 +138,11 @@ fun Content(
 
 @ThemeModePreviews
 @Composable
-private fun AddDocumentScreenPreview() {
+private fun IssuanceAddDocumentScreenPreview() {
     PreviewTheme {
         Content(
             state = State(
+                navigatableAction = ScreenNavigateAction.NONE,
                 title = "Add document",
                 subtitle = "Select a document to add in your EUDI Wallet",
                 options = listOf(
@@ -161,7 +163,39 @@ private fun AddDocumentScreenPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(all = 24.dp)
+            paddingValues = PaddingValues(all = SPACING_LARGE.dp)
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun DashboardAddDocumentScreenPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                navigatableAction = ScreenNavigateAction.CANCELABLE,
+                title = "Add document",
+                subtitle = "Select a document to add in your EUDI Wallet",
+                options = listOf(
+                    DocumentOptionItemUi(
+                        text = "Digital ID",
+                        icon = AppIcons.Id,
+                        type = DocumentTypeUi.DIGITAL_ID,
+                        issuanceUrl = "www.gov.gr"
+                    ),
+                    DocumentOptionItemUi(
+                        text = "Driving License",
+                        icon = AppIcons.Id,
+                        type = DocumentTypeUi.DRIVING_LICENSE,
+                        issuanceUrl = "www.gov-automotive.gr"
+                    )
+                )
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(all = SPACING_LARGE.dp)
         )
     }
 }
