@@ -61,7 +61,7 @@ sealed class TransferEventPartialState {
 sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
     data object UserAuthenticationRequired : SendRequestedDocumentsPartialState()
-    data object RequestSend : SendRequestedDocumentsPartialState()
+    data object RequestSent : SendRequestedDocumentsPartialState()
 }
 
 interface EudiWalletInteractor {
@@ -164,7 +164,7 @@ class EudiWalletInteractorImpl(
                 is ResponseResult.Response -> {
                     val responseBytes = response.bytes
                     eudiWallet.sendResponse(responseBytes)
-                    emit(SendRequestedDocumentsPartialState.RequestSend)
+                    emit(SendRequestedDocumentsPartialState.RequestSent)
                 }
 
                 is ResponseResult.UserAuthRequired -> {

@@ -93,7 +93,7 @@ class ProximityLoadingViewModel constructor(
                         doNavigation(NavigationType.PUSH)
                     }
 
-                    ProximityLoadingCombinedPartialState.UserAuthenticationRequired -> {
+                    is ProximityLoadingCombinedPartialState.UserAuthenticationRequired -> {
                         // Provide implementation for Biometrics POP
                     }
                 }

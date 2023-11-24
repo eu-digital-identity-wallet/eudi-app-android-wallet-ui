@@ -35,7 +35,7 @@ interface ResourceProvider {
     fun getString(@StringRes resId: Int, vararg formatArgs: Any): String
     fun genericErrorMessage(): String
     fun genericNetworkErrorMessage(): String
-    fun getReadableElementIdentifier(nameSpace: String): String
+    fun getReadableElementIdentifier(elementIdentifier: String): String
 }
 
 class ResourceProviderImpl constructor(

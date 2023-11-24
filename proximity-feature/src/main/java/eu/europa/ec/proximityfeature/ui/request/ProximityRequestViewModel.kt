@@ -110,7 +110,6 @@ class ProximityRequestViewModel(
                     }
 
                     is ProximityRequestInteractorPartialState.Success -> {
-                        unsubscribe()
                         setState {
                             copy(
                                 isLoading = false,
@@ -123,7 +122,6 @@ class ProximityRequestViewModel(
                     }
 
                     is ProximityRequestInteractorPartialState.Disconnect -> {
-                        unsubscribe()
                         setEvent(Event.GoBack)
                     }
                 }

@@ -70,7 +70,7 @@ class ProximityLoadingInteractorImpl(
                     ProximityLoadingCombinedPartialState.Failure(sendResponseState.error)
                 }
 
-                createResponseState is SendRequestedDocumentsPartialState.RequestSend &&
+                createResponseState is SendRequestedDocumentsPartialState.RequestSent &&
                         sendResponseState !is ProximityLoadingPartialState.Success -> {
                     null
                 }
@@ -90,7 +90,7 @@ class ProximityLoadingInteractorImpl(
         return eudiWalletInteractor.events.mapNotNull { response ->
             when (response) {
 
-                // TODO This state should be fixed by Scytales
+                // This state should be fixed by Scytales. Right now verifier sends this error for success
                 is TransferEventPartialState.Error -> {
                     if (response.error == "Peer disconnected without proper session termination") {
                         ProximityLoadingPartialState.Success

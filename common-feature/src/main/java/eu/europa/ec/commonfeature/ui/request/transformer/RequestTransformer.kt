@@ -33,7 +33,7 @@ import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
-// TODO This is taken from SMB. Core should provide this information
+// This is taken from SMB. Core should provide this information
 private val mandatorySelectedData: List<String> = listOf(
     "issuance_date",
     "expiry_date",

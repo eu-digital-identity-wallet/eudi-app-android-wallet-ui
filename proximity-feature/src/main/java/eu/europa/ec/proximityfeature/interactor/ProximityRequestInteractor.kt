@@ -53,7 +53,7 @@ class ProximityRequestInteractorImpl(
         get() = resourceProvider.genericErrorMessage()
 
     override fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState> =
-        eudiWalletInteractor.events.mapNotNull { response ->
+            eudiWalletInteractor.events.mapNotNull { response ->
             when (response) {
                 is TransferEventPartialState.RequestReceived -> {
                     ProximityRequestInteractorPartialState.Success(

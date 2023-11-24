@@ -107,13 +107,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         getPresentationScope().close()
     }
 
-    /**
-     * Cancel interactor polling job
-     * */
-    open fun unsubscribe() {
-        viewModelJob?.cancel()
-    }
-
     open fun updateData(updatedItems: List<RequestDataUi<Event>>) {
         setState {
             copy(items = updatedItems)
@@ -198,10 +191,12 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     private fun doNavigation(navigationType: NavigationType) {
         when (navigationType) {
             NavigationType.PUSH -> {
+                unsubscribe()
                 setEffect { Effect.Navigation.SwitchScreen(getNextScreen()) }
             }
 
             NavigationType.POP -> {
+                unsubscribe()
                 cleanUp()
                 setEffect { Effect.Navigation.Pop }
             }
@@ -263,4 +258,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         }
     }
 
+    private fun unsubscribe() {
+        viewModelJob?.cancel()
+    }
 }
