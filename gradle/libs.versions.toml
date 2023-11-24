@@ -29,6 +29,8 @@ espresso-core = "3.5.1"
 androidx-navigation-safeargs = "2.5.3"
 navigation-fragment-ktx = "2.6.0"
 navigation-ui-ktx = "2.6.0"
+dependencycheck = "8.4.2"
+sonarqube = "4.4.1.3373"
 
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
@@ -65,3 +67,5 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidx-navigation-safeargs = { id= "androidx.navigation.safeargs", version.ref = "androidx-navigation-safeargs"}
 dokka = { id = "org.jetbrains.dokka", version.ref = "kotlin" }
 dependency-license-report = { id = "com.github.jk1.dependency-license-report", version.ref = "dependency-license-report" }
+dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "dependencycheck" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }

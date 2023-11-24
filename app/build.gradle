@@ -9,7 +9,11 @@ plugins {
     alias libs.plugins.androidx.navigation.safeargs
     id 'kotlin-kapt'
     alias libs.plugins.dependency.license.report
+    alias libs.plugins.dependencycheck
+    alias libs.plugins.sonarqube
 }
+
+apply from: '../jacoco.gradle'
 
 android {
     namespace 'eu.europa.ec.eudi.wallet.ui'
