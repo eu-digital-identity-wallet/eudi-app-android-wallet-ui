@@ -20,9 +20,14 @@ package eu.europa.ec.proximityfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.di.getPresentationScope
+import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingCombinedPartialState
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -32,14 +37,14 @@ import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
 class ProximityLoadingViewModel constructor(
     private val uiSerializer: UiSerializer,
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    private val interactor: ProximityLoadingInteractor,
 ) : LoadingViewModel() {
 
     override fun getTitle(): String {
@@ -69,8 +74,31 @@ class ProximityLoadingViewModel constructor(
 
     override fun doWork() {
         viewModelScope.launch {
-            delay(5000)
-            doNavigation(NavigationType.PUSH)
+
+            interactor.sendRequestedDocuments().collect {
+                when (it) {
+                    is ProximityLoadingCombinedPartialState.Failure -> {
+                        setState {
+                            copy(error = ContentErrorConfig(
+                                onRetry = { setEvent(Event.DoWork) },
+                                errorSubTitle = it.error,
+                                onCancel = { doNavigation(NavigationType.POP) }
+                            ))
+                        }
+                    }
+
+                    is ProximityLoadingCombinedPartialState.Success -> {
+                        interactor.stopPresentation()
+                        getPresentationScope().close()
+                        doNavigation(NavigationType.PUSH)
+                    }
+
+                    ProximityLoadingCombinedPartialState.UserAuthenticationRequired -> {
+                        // Provide implementation for Biometrics POP
+                    }
+                }
+            }
+
         }
     }
 

@@ -21,8 +21,12 @@ package eu.europa.ec.commonfeature.interactor
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.corewrapper.EUDIWListenerWrapper
 import eu.europa.ec.commonfeature.di.WalletPresentationScope
-import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
+import eu.europa.ec.eudi.iso18013.transfer.ResponseResult
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +38,7 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.shareIn
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
@@ -44,17 +49,29 @@ sealed class TransferEventPartialState {
     data object Disconnected : TransferEventPartialState()
     data class Error(val error: String) : TransferEventPartialState()
     data class QrEngagementReady(val qrCode: String) : TransferEventPartialState()
-    data class RequestReceived(val requestDocuments: List<RequestDocument>) :
+    data class RequestReceived(
+        val requestDataUi: List<RequestDataUi<Event>>,
+        val verifierName: String?
+    ) :
         TransferEventPartialState()
 
     data object ResponseSent : TransferEventPartialState()
 }
 
-interface EudiWalletInteractor {
+sealed class SendRequestedDocumentsPartialState {
+    data class Failure(val error: String) : SendRequestedDocumentsPartialState()
+    data object UserAuthenticationRequired : SendRequestedDocumentsPartialState()
+    data object RequestSend : SendRequestedDocumentsPartialState()
+}
 
+interface EudiWalletInteractor {
     val events: Flow<TransferEventPartialState>
-    fun cancelScope()
+    val requestDataUi: List<RequestDataUi<Event>>
+    val verifierName: String?
+    fun stopPresentation()
     fun startQrEngagement()
+    fun sendRequestedDocuments(): Flow<SendRequestedDocumentsPartialState>
+    fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
 }
 
 @Scope(WalletPresentationScope::class)
@@ -64,7 +81,12 @@ class EudiWalletInteractorImpl(
     private val resourceProvider: ResourceProvider,
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : EudiWalletInteractor {
+
     private val coroutineScope = CoroutineScope(dispatcher + SupervisorJob())
+    override var requestDataUi: List<RequestDataUi<Event>> = emptyList()
+        private set
+    override var verifierName: String? = null
+        private set
 
     override val events = callbackFlow {
         val eventListenerWrapper = EUDIWListenerWrapper(
@@ -94,8 +116,18 @@ class EudiWalletInteractorImpl(
                 )
             },
             onRequestReceived = { requestDocuments ->
+                requestDataUi = RequestTransformer.transformToUiItems(
+                    requestDocuments = requestDocuments,
+                    requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
+                    resourceProvider = resourceProvider
+                )
+                verifierName =
+                    requestDocuments.firstOrNull()?.docRequest?.readerAuth?.readerCommonName
                 trySendBlocking(
-                    TransferEventPartialState.RequestReceived(requestDocuments = requestDocuments)
+                    TransferEventPartialState.RequestReceived(
+                        requestDataUi = requestDataUi,
+                        verifierName = verifierName
+                    )
                 )
             },
             onResponseSent = {
@@ -121,7 +153,32 @@ class EudiWalletInteractorImpl(
         eudiWallet.startQrEngagement()
     }
 
-    override fun cancelScope() {
+    override fun sendRequestedDocuments() =
+        flow {
+            val disclosedDocuments = RequestTransformer.transformToDomainItems(requestDataUi)
+            when (val response = eudiWallet.createResponse(disclosedDocuments)) {
+                is ResponseResult.Failure -> {
+                    emit(SendRequestedDocumentsPartialState.Failure(resourceProvider.genericErrorMessage()))
+                }
+
+                is ResponseResult.Response -> {
+                    val responseBytes = response.bytes
+                    eudiWallet.sendResponse(responseBytes)
+                    emit(SendRequestedDocumentsPartialState.RequestSend)
+                }
+
+                is ResponseResult.UserAuthRequired -> {
+                    emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired)
+                }
+            }
+        }
+
+    override fun stopPresentation() {
+        eudiWallet.stopPresentation()
         coroutineScope.cancel()
+    }
+
+    override fun updateRequestedDocuments(items: List<RequestDataUi<Event>>) {
+        requestDataUi = items
     }
 }

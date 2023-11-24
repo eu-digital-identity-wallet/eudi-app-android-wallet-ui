@@ -18,9 +18,9 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
+import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
 import eu.europa.ec.commonfeature.interactor.TransferEventPartialState
-import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -40,7 +40,6 @@ interface ProximityQRInteractor {
 
 class ProximityQRInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet,
     private val eudiWalletInteractor: EudiWalletInteractor
 ) : ProximityQRInteractor {
 
@@ -48,7 +47,7 @@ class ProximityQRInteractorImpl(
         get() = resourceProvider.genericErrorMessage()
 
     override fun startQrEngagement(): Flow<ProximityQRPartialState> {
-        eudiWallet.startQrEngagement()
+        eudiWalletInteractor.startQrEngagement()
         return eudiWalletInteractor.events.mapNotNull {
             when (it) {
                 is TransferEventPartialState.Connected -> {
@@ -69,11 +68,12 @@ class ProximityQRInteractorImpl(
 
                 else -> null
             }
+        }.safeAsync {
+            ProximityQRPartialState.Error(error = it.localizedMessage ?: genericErrorMsg)
         }.cancellable()
     }
 
     override fun cancelTransfer() {
-        eudiWallet.stopPresentation()
-        eudiWalletInteractor.cancelScope()
+        eudiWalletInteractor.stopPresentation()
     }
 }

@@ -18,20 +18,20 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
+import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
 import eu.europa.ec.commonfeature.interactor.TransferEventPartialState
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.commonfeature.model.toDocumentTypeUi
-import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
-import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationDomain
-import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
-import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityRequestInteractorPartialState {
-    data class Success(val userDataDomain: UserDataDomain) :
+    data class Success(
+        val verifierName: String? = null,
+        val requestDocuments: List<RequestDataUi<Event>>
+    ) :
         ProximityRequestInteractorPartialState()
 
     data class Failure(val error: String) : ProximityRequestInteractorPartialState()
@@ -39,28 +39,31 @@ sealed class ProximityRequestInteractorPartialState {
 }
 
 interface ProximityRequestInteractor {
-    fun getUserData(): Flow<ProximityRequestInteractorPartialState>
-    fun cancelTransfer()
+    fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState>
+    fun stopPresentation()
+    fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
 }
 
 class ProximityRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet,
     private val eudiWalletInteractor: EudiWalletInteractor
 ) : ProximityRequestInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getUserData(): Flow<ProximityRequestInteractorPartialState> =
-        eudiWalletInteractor.events.mapNotNull {
-            when (it) {
+    override fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState> =
+        eudiWalletInteractor.events.mapNotNull { response ->
+            when (response) {
                 is TransferEventPartialState.RequestReceived -> {
-                    ProximityRequestInteractorPartialState.Success(toDomain(it.requestDocuments.first()))
+                    ProximityRequestInteractorPartialState.Success(
+                        verifierName = response.verifierName,
+                        requestDocuments = response.requestDataUi
+                    )
                 }
 
                 is TransferEventPartialState.Error -> {
-                    ProximityRequestInteractorPartialState.Failure(error = it.error)
+                    ProximityRequestInteractorPartialState.Failure(error = response.error)
                 }
 
                 is TransferEventPartialState.Disconnected -> {
@@ -69,83 +72,17 @@ class ProximityRequestInteractorImpl(
 
                 else -> null
             }
+        }.safeAsync {
+            ProximityRequestInteractorPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
+            )
         }
 
-    override fun cancelTransfer() {
-        eudiWallet.stopPresentation()
-        eudiWalletInteractor.cancelScope()
+    override fun stopPresentation() {
+        eudiWalletInteractor.stopPresentation()
     }
-}
 
-private fun toDomain(data: RequestDocument): UserDataDomain {
-    return UserDataDomain(
-        documentTypeUi = data.docType.toDocumentTypeUi(),
-        optionalFields = data.docRequest.requestItems.map {
-            UserIdentificationDomain(
-                name = it.elementIdentifier,
-                value = null
-            )
-        },
-        requiredFieldsTitle = "Verification Data",
-        requiredFields = emptyList()
-    )
-}
-
-private fun getFakeUserData(): UserDataDomain {
-    return UserDataDomain(
-        documentTypeUi = DocumentTypeUi.DRIVING_LICENSE,
-        optionalFields = listOf(
-            UserIdentificationDomain(
-                name = "Family Name",
-                value = "Doe"
-            ),
-            UserIdentificationDomain(
-                name = "First Name",
-                value = "Jane"
-            ),
-            UserIdentificationDomain(
-                name = "Date of Birth",
-                value = "21 Oct 1994"
-            ),
-            UserIdentificationDomain(
-                name = "Portrait",
-                value = "user_picture"
-            ),
-            UserIdentificationDomain(
-                name = "Family Name",
-                value = "Doe"
-            ),
-            UserIdentificationDomain(
-                name = "First Name",
-                value = "Jane"
-            ),
-            UserIdentificationDomain(
-                name = "Date of Birth",
-                value = "21 Oct 1994"
-            ),
-            UserIdentificationDomain(
-                name = "Portrait",
-                value = "user_picture"
-            )
-        ),
-        requiredFieldsTitle = "Verification Data",
-        requiredFields = listOf(
-            UserIdentificationDomain(
-                name = "Issuance date",
-                value = null
-            ),
-            UserIdentificationDomain(
-                name = "Expiration date",
-                value = null
-            ),
-            UserIdentificationDomain(
-                name = "Country of issuance",
-                value = null
-            ),
-            UserIdentificationDomain(
-                name = "Issuing authority",
-                value = null
-            )
-        )
-    )
+    override fun updateRequestedDocuments(items: List<RequestDataUi<Event>>) {
+        eudiWalletInteractor.updateRequestedDocuments(items)
+    }
 }

@@ -45,10 +45,6 @@ class PresentationSameDeviceRequestViewModel(
     private val uiSerializer: UiSerializer,
 ) : RequestViewModel() {
 
-    override fun getScreenTitle(): String {
-        return resourceProvider.getString(R.string.request_title)
-    }
-
     override fun getScreenSubtitle(): String {
         return resourceProvider.getString(R.string.request_subtitle_one)
     }
@@ -68,7 +64,7 @@ class PresentationSameDeviceRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = getScreenTitle(),
+                            title = viewState.value.screenTitle,
                             subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
@@ -119,7 +115,9 @@ class PresentationSameDeviceRequestViewModel(
                                 isLoading = false,
                                 error = null,
                                 items = RequestTransformer.transformToUiItems(
-                                    userDataDomain = response.userDataDomain
+                                    requestDocuments = response.requestDocuments,
+                                    requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
+                                    resourceProvider = resourceProvider
                                 )
                             )
                         }

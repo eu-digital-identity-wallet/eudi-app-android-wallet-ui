@@ -63,7 +63,8 @@
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
 
     <!-- Request Screen -->
-    <string name="request_title">EUDI Conference requests the following to register</string>
+    <string name="request_title">Verifier requests the following</string>
+    <string name="request_title_with_verifier_name">%1$s requests the following</string>
     <string name="request_subtitle_one">Please review carefully before sharing your data.</string>
     <string name="request_subtitle_two"> Why we need your data?</string>
     <string name="request_warning_text">Your selection of data to be shared may impact the service</string>
@@ -76,6 +77,7 @@
     <string name="request_bottom_sheet_subtitle_title">Why we need your data</string>
     <string name="request_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
     <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
+    <string name="request_required_fields_title">Verification Data</string>
 
     <!-- Loading Screen -->
     <string name="loading_title">EUDI Conference requests the following to register</string>
@@ -103,9 +105,6 @@
     <string name="proximity_qr_title">Show QR or Tap</string>
     <string name="proximity_qr_subtitle">Show this QR code to access the necessary information for sharing</string>
     <string name="proximity_qr_use_nfc">Or use the NFC</string>
-
-    <!-- Proximity Request Screen -->
-    <string name="proximity_request_title">The Police officer requests the following</string>
 
     <!-- Proximity Loading Screen -->
     <string name="proximity_loading_title">The Police officer requests the following</string>

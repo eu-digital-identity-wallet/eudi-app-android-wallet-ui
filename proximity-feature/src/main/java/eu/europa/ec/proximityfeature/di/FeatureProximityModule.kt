@@ -20,7 +20,8 @@ package eu.europa.ec.proximityfeature.di
 
 import eu.europa.ec.commonfeature.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
-import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
@@ -38,15 +39,20 @@ class FeatureProximityModule
 @Factory
 fun provideProximityQRInteractor(
     resourceProvider: ResourceProvider,
-    eudiWallet: EudiWallet,
     @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
 ): ProximityQRInteractor =
-    ProximityQRInteractorImpl(resourceProvider, eudiWallet, eudiWalletInteractor)
+    ProximityQRInteractorImpl(resourceProvider, eudiWalletInteractor)
 
 @Factory
 fun provideProximityRequestInteractor(
     resourceProvider: ResourceProvider,
-    eudiWallet: EudiWallet,
     @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
 ): ProximityRequestInteractor =
-    ProximityRequestInteractorImpl(resourceProvider, eudiWallet, eudiWalletInteractor)
+    ProximityRequestInteractorImpl(resourceProvider, eudiWalletInteractor)
+
+@Factory
+fun provideProximityLoadingInteractor(
+    resourceProvider: ResourceProvider,
+    @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
+): ProximityLoadingInteractor =
+    ProximityLoadingInteractorImpl(resourceProvider, eudiWalletInteractor)

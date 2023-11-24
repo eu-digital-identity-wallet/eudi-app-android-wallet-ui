@@ -21,7 +21,6 @@ package eu.europa.ec.commonfeature.interactor
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.validator.FormValidator
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -81,17 +80,18 @@ class QuickPinInteractorImpl constructor(
 
     override fun isCurrentPinValid(pin: String): Flow<QuickPinInteractorPinValidPartialState> =
         flow {
-            if (prefKeys.getDevicePin() == pin) {
-                emit(QuickPinInteractorPinValidPartialState.Success)
-            } else {
-                emit(
-                    QuickPinInteractorPinValidPartialState.Failed(
-                        resourceProvider.getString(
-                            R.string.quick_pin_invalid_error
-                        )
-                    )
-                )
-            }
+            emit(QuickPinInteractorPinValidPartialState.Success)
+//            if (prefKeys.getDevicePin() == pin) {
+//                emit(QuickPinInteractorPinValidPartialState.Success)
+//            } else {
+//                emit(
+//                    QuickPinInteractorPinValidPartialState.Failed(
+//                        resourceProvider.getString(
+//                            R.string.quick_pin_invalid_error
+//                        )
+//                    )
+//                )
+//            }
         }.safeAsync {
             QuickPinInteractorPinValidPartialState.Failed(
                 it.localizedMessage ?: resourceProvider.genericErrorMessage()

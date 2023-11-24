@@ -35,6 +35,7 @@ data class State(
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.SUBTITLE,
 
+    val verifierName: String? = null,
     val screenTitle: String,
     val screenSubtitle: String,
     val screenClickableSubtitle: String?,
@@ -48,10 +49,8 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
     data object GoBack : Event()
     data object ChangeContentVisibility : Event()
-    data object ExpandOrCollapseRequiredDataList : Event()
-    data class UserIdentificationClicked(
-        val itemId: Int
-    ) : Event()
+    data class ExpandOrCollapseRequiredDataList(val id: Int) : Event()
+    data class UserIdentificationClicked(val itemId: String) : Event()
 
     data object SubtitleClicked : Event()
     data object PrimaryButtonPressed : Event()
@@ -91,7 +90,6 @@ enum class RequestBottomSheetContent {
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     protected var viewModelJob: Job? = null
 
-    abstract fun getScreenTitle(): String
     abstract fun getScreenSubtitle(): String
     abstract fun getScreenClickableSubtitle(): String?
     abstract fun getWarningText(): String
@@ -116,13 +114,20 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         viewModelJob?.cancel()
     }
 
+    open fun updateData(updatedItems: List<RequestDataUi<Event>>) {
+        setState {
+            copy(items = updatedItems)
+        }
+    }
+
     override fun setInitialState(): State {
         return State(
-            screenTitle = getScreenTitle(),
+            screenTitle = "",
             screenSubtitle = getScreenSubtitle(),
             screenClickableSubtitle = getScreenClickableSubtitle(),
             warningText = getWarningText(),
-            error = null
+            error = null,
+            verifierName = null
         )
     }
 
@@ -150,7 +155,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.ExpandOrCollapseRequiredDataList -> {
-                expandOrCollapseRequiredDataList(items = viewState.value.items)
+                expandOrCollapseRequiredDataList(id = event.id)
             }
 
             is Event.UserIdentificationClicked -> {
@@ -205,9 +210,12 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         }
     }
 
-    private fun expandOrCollapseRequiredDataList(items: List<RequestDataUi<Event>>) {
+    private fun expandOrCollapseRequiredDataList(id: Int) {
+        val items = viewState.value.items
         val updatedItems = items.map { item ->
-            if (item is RequestDataUi.RequiredFields) {
+            if (item is RequestDataUi.RequiredFields
+                && id == item.requiredFieldsItemUi.id
+            ) {
                 item.copy(
                     requiredFieldsItemUi = item.requiredFieldsItemUi
                         .copy(expanded = !item.requiredFieldsItemUi.expanded)
@@ -216,32 +224,28 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 item
             }
         }
-        setState {
-            copy(items = updatedItems)
-        }
+        updateData(updatedItems)
     }
 
-    private fun updateUserIdentificationItem(id: Int) {
+    private fun updateUserIdentificationItem(id: String) {
         val items: List<RequestDataUi<Event>> = viewState.value.items
         val updatedList = items.map { item ->
             if (item is RequestDataUi.OptionalField
-                && id == item.optionalFieldItemUi.userIdentificationUi.id
+                && id == item.optionalFieldItemUi.requestDocumentItemUi.id
             ) {
-                val itemCurrentCheckedState = item.optionalFieldItemUi.userIdentificationUi.checked
-                val updatedUiItem = item.optionalFieldItemUi.userIdentificationUi.copy(
+                val itemCurrentCheckedState = item.optionalFieldItemUi.requestDocumentItemUi.checked
+                val updatedUiItem = item.optionalFieldItemUi.requestDocumentItemUi.copy(
                     checked = !itemCurrentCheckedState
                 )
                 item.copy(
                     optionalFieldItemUi = item.optionalFieldItemUi
-                        .copy(userIdentificationUi = updatedUiItem)
+                        .copy(requestDocumentItemUi = updatedUiItem)
                 )
             } else {
                 item
             }
         }
-        setState {
-            copy(items = updatedList)
-        }
+        updateData(updatedList)
     }
 
     private fun showBottomSheet(sheetContent: RequestBottomSheetContent) {
