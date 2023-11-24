@@ -35,6 +35,7 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
+    val detailsType: IssuanceDetailsUiConfig,
     val navigatableAction: ScreenNavigateAction,
     val shouldShowPrimaryButton: Boolean,
     val hasCustomTopBar: Boolean,
@@ -67,6 +68,7 @@ class DocumentDetailsViewModel(
     @InjectedParam private val documentId: String
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
+        detailsType = detailsType,
         navigatableAction = getNavigatableAction(detailsType),
         shouldShowPrimaryButton = shouldShowPrimaryButton(detailsType),
         hasCustomTopBar = hasCustomTopBar(detailsType),

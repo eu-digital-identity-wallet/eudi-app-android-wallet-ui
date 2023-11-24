@@ -78,8 +78,7 @@ fun SuccessScreen(
 
     ContentScreen(
         navigatableAction = ScreenNavigateAction.NONE,
-        isLoading = false,
-        onBack = { viewModel.setEvent(Event.GoBack) },
+        isLoading = false
     ) { paddingValues ->
         Content(
             state = state,

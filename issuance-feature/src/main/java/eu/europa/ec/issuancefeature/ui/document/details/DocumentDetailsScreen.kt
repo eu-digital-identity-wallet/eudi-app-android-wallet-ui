@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
+import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
 import eu.europa.ec.commonfeature.model.DocumentItemUi
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
@@ -76,7 +77,15 @@ fun DocumentDetailsScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
         navigatableAction = state.navigatableAction,
-        onBack = { viewModel.setEvent(Event.Pop) },
+        onBack = when (state.detailsType) {
+            IssuanceDetailsUiConfig.NO_DOCUMENT -> {
+                null
+            }
+
+            IssuanceDetailsUiConfig.EXTRA_DOCUMENT -> {
+                { viewModel.setEvent(Event.Pop) }
+            }
+        },
         topBar = if (state.hasCustomTopBar) {
             {
                 ActionTopBar(
@@ -214,6 +223,7 @@ private fun Content(
 private fun IssuanceDocumentDetailsScreenPreview() {
     PreviewTheme {
         val state = State(
+            detailsType = IssuanceDetailsUiConfig.NO_DOCUMENT,
             navigatableAction = ScreenNavigateAction.NONE,
             shouldShowPrimaryButton = true,
             hasCustomTopBar = false,
@@ -249,6 +259,7 @@ private fun IssuanceDocumentDetailsScreenPreview() {
 private fun DashboardDocumentDetailsScreenPreview() {
     PreviewTheme {
         val state = State(
+            detailsType = IssuanceDetailsUiConfig.EXTRA_DOCUMENT,
             navigatableAction = ScreenNavigateAction.CANCELABLE,
             shouldShowPrimaryButton = false,
             hasCustomTopBar = true,
