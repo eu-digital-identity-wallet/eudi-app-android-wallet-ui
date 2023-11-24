@@ -8,7 +8,11 @@ plugins {
     alias libs.plugins.kotlin.android
     alias libs.plugins.dokka
     alias libs.plugins.dependency.license.report
+    alias libs.plugins.dependencycheck
+    alias libs.plugins.sonarqube
 }
+
+apply from: '../jacoco.gradle'
 
 def meta = [
         namespace  : 'eu.europa.ec.eudi.web.lightIssuing',

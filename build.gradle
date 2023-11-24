@@ -16,7 +16,9 @@ plugins {
     alias libs.plugins.kotlin.android apply false
     alias libs.plugins.dokka apply false
     alias libs.plugins.dependency.license.report apply true
+    alias libs.plugins.dependencycheck apply false
     alias libs.plugins.androidx.navigation.safeargs apply false
+    alias libs.plugins.sonarqube apply false
 }
 
 licenseReport {
