@@ -24,8 +24,10 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.loginfeature.ui.faq.FaqScreen
 import eu.europa.ec.loginfeature.ui.pin.PinScreen
+import eu.europa.ec.loginfeature.ui.welcome.WelcomeScreen
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel
@@ -45,30 +47,45 @@ fun NavGraphBuilder.featureLoginGraph(navController: NavController) {
                 }
             ),
             arguments = listOf(
-                navArgument("payload") {
+                navArgument("pinFlow") {
                     type = NavType.StringType
                 }
             )
         ) {
             PinScreen(
                 navController,
-                getViewModel(parameters = {
-                    parametersOf(
-                        it.arguments?.getString("payload").orEmpty()
-                    )
-                })
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            PinFlow.valueOf(
+                                it.arguments?.getString("pinFlow").orEmpty()
+                            )
+                        )
+                    }
+                )
             )
         }
-    }
 
-    composable(
-        route = LoginScreens.Faq.screenRoute,
-        deepLinks = listOf(
-            navDeepLink {
-                uriPattern = BuildConfig.DEEPLINK + LoginScreens.Faq.screenRoute
-            }
-        )
-    ) {
-        FaqScreen(navController, koinViewModel())
+        composable(
+            route = LoginScreens.Welcome.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = BuildConfig.DEEPLINK + LoginScreens.Welcome.screenRoute
+                }
+            )
+        ) {
+            WelcomeScreen(navController, koinViewModel())
+        }
+
+        composable(
+            route = LoginScreens.Faq.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = BuildConfig.DEEPLINK + LoginScreens.Faq.screenRoute
+                }
+            )
+        ) {
+            FaqScreen(navController, koinViewModel())
+        }
     }
 }

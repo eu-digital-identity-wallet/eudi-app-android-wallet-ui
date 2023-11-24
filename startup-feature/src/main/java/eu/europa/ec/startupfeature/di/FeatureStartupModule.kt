@@ -17,8 +17,10 @@
 package eu.europa.ec.startupfeature.di
 
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractorImpl
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -30,4 +32,6 @@ class FeatureStartupModule
 @Factory
 fun provideSplashInteractor(
     prefKeys: PrefKeys,
-): SplashInteractor = SplashInteractorImpl(prefKeys)
+    uiSerializer: UiSerializer,
+    resourceProvider: ResourceProvider,
+): SplashInteractor = SplashInteractorImpl(prefKeys, uiSerializer, resourceProvider)

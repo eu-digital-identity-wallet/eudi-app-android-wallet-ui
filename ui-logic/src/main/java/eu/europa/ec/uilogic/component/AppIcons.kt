@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
 import eu.europa.ec.resourceslogic.R
@@ -70,9 +69,9 @@ object AppIcons {
     )
 
     val VerticalMore: IconData = IconData(
-        resourceId = null,
+        resourceId = R.drawable.ic_more,
         contentDescriptionId = R.string.content_description_more_vert_icon,
-        imageVector = Icons.Filled.MoreVert
+        imageVector = null
     )
 
     val Warning: IconData = IconData(
@@ -153,4 +152,9 @@ object AppIcons {
         imageVector = null
     )
 
+    val Edit: IconData = IconData(
+        resourceId = R.drawable.ic_edit,
+        contentDescriptionId = R.string.content_description_edit_icon,
+        imageVector = null
+    )
 }

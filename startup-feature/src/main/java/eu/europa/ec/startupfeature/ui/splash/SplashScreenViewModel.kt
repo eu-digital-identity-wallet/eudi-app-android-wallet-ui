@@ -17,23 +17,12 @@
 package eu.europa.ec.startupfeature.ui.splash
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.BiometricUiConfig
-import eu.europa.ec.commonfeature.model.PinFlows
-import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
-import eu.europa.ec.uilogic.config.ConfigNavigation
-import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
-import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
-import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -57,8 +46,6 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class SplashScreenViewModel(
     private val interactor: SplashInteractor,
-    private val resourceProvider: ResourceProvider,
-    private val uiSerializer: UiSerializer,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State()
 
@@ -71,46 +58,11 @@ class SplashScreenViewModel(
     private fun enterApplication() {
         viewModelScope.launch {
             delay((viewState.value.logoAnimationDuration + 500).toLong())
-            val hasBiometricsValue = interactor.getDevicePin()
 
-            if (hasBiometricsValue.isNullOrEmpty()) {
-                setEffect {
-                    Effect.Navigation.SwitchScreen(
-                        generateComposableNavigationLink(
-                            screen = interactor.getAfterSplashRoute(),
-                            arguments = generateComposableArguments(mapOf("payload" to PinFlows.CREATE.type))
-                        )
-                    )
-                }
-
-            } else {
-                setEffect { Effect.Navigation.SwitchScreen(getBiometricsNextScreen()) }
+            val screenRoute = interactor.getAfterSplashRoute()
+            setEffect {
+                Effect.Navigation.SwitchScreen(screenRoute)
             }
         }
-    }
-
-    private fun getBiometricsNextScreen(): String {
-        return generateComposableNavigationLink(
-            screen = CommonScreens.Biometric,
-            arguments = generateComposableArguments(
-                mapOf(
-                    BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
-                        BiometricUiConfig(
-                            title = resourceProvider.getString(R.string.biometric_prompt_title),
-                            subTitle = resourceProvider.getString(R.string.biometric_prompt_subtitle),
-                            quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
-                            isPreAuthorization = false,
-                            shouldInitializeBiometricAuthOnCreate = true,
-                            onSuccessNavigation = ConfigNavigation(
-                                navigationType = NavigationType.PUSH,
-                                screenToNavigate = DashboardScreens.Dashboard
-                            ),
-                            onBackNavigation = null
-                        ),
-                        BiometricUiConfig.Parser
-                    ).orEmpty()
-                )
-            )
-        )
     }
 }

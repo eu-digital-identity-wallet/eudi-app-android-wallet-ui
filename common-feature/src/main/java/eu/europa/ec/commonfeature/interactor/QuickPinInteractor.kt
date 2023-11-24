@@ -24,7 +24,6 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-
 interface QuickPinInteractor : FormValidator {
     fun setPin(newPin: String, initialPin: String): Flow<QuickPinInteractorSetPinPartialState>
     fun changePin(
@@ -45,6 +44,9 @@ class QuickPinInteractorImpl constructor(
     private val resourceProvider: ResourceProvider,
 ) : FormValidator by formValidator, QuickPinInteractor {
 
+    private val genericErrorMsg
+        get() = resourceProvider.genericErrorMessage()
+
     override fun setPin(
         newPin: String,
         initialPin: String
@@ -64,13 +66,11 @@ class QuickPinInteractorImpl constructor(
                         prefKeys.setDevicePin(newPin)
                         emit(QuickPinInteractorSetPinPartialState.Success)
                     }
-
                 }
             }
-
         }.safeAsync {
             QuickPinInteractorSetPinPartialState.Failed(
-                it.localizedMessage ?: resourceProvider.genericErrorMessage()
+                it.localizedMessage ?: genericErrorMsg
             )
         }
 
@@ -82,7 +82,7 @@ class QuickPinInteractorImpl constructor(
             emit(QuickPinInteractorSetPinPartialState.Success)
         }.safeAsync {
             QuickPinInteractorSetPinPartialState.Failed(
-                it.localizedMessage ?: resourceProvider.genericErrorMessage()
+                it.localizedMessage ?: genericErrorMsg
             )
         }
 
@@ -101,7 +101,7 @@ class QuickPinInteractorImpl constructor(
             }
         }.safeAsync {
             QuickPinInteractorPinValidPartialState.Failed(
-                it.localizedMessage ?: resourceProvider.genericErrorMessage()
+                it.localizedMessage ?: genericErrorMsg
             )
         }
 
@@ -123,7 +123,7 @@ class QuickPinInteractorImpl constructor(
             }
         }.safeAsync {
             QuickPinInteractorPinValidPartialState.Failed(
-                it.localizedMessage ?: resourceProvider.genericErrorMessage()
+                it.localizedMessage ?: genericErrorMsg
             )
         }
 }

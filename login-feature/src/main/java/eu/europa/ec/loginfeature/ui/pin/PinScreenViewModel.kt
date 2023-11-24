@@ -18,7 +18,6 @@
 
 package eu.europa.ec.loginfeature.ui.pin
 
-import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.Form
 import eu.europa.ec.businesslogic.validator.FormValidationResult
@@ -27,9 +26,10 @@ import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorSetPinPartialState
-import eu.europa.ec.commonfeature.model.PinFlows
+import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -42,95 +42,121 @@ import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
-
 enum class PinValidationState {
+    ENTER,
     REENTER,
-    VALIDATE,
-    COMPLETED
-}
-
-sealed class Event : ViewEvent {
-    data class NextButtonPressed(
-        val pin: String
-    ) : Event()
-
-    data class OnQuickPinEntered(val quickPin: String) : Event()
-    data object Init : Event()
+    VALIDATE
 }
 
 data class State(
+    private val pinFlow: PinFlow,
     val isLoading: Boolean = false,
     val isButtonEnabled: Boolean = false,
-    val isBackable: Boolean = true,
     val quickPinError: String? = null,
     val validationResult: FormValidationResult = FormValidationResult(false),
     val subtitle: String = "",
     val title: String = "",
     val pin: String = "",
-    val initialPin: String = "",
+    val enteredPin: String = "",
+    val buttonText: String = "",
     val resetPin: Boolean = false,
-    val pinState: PinValidationState = PinValidationState.REENTER,
+    val pinState: PinValidationState,
+    val isBottomSheetOpen: Boolean = false,
+) : ViewState {
+    val action: ScreenNavigateAction
+        get() {
+            return when (pinFlow) {
+                PinFlow.CREATE -> ScreenNavigateAction.NONE
+                PinFlow.UPDATE -> ScreenNavigateAction.CANCELABLE
+            }
+        }
 
-    ) : ViewState
+    val onBackEvent: Event?
+        get() {
+            return when (pinFlow) {
+                PinFlow.CREATE -> null
+                PinFlow.UPDATE -> {
+                    Event.CancelPressed
+                }
+            }
+        }
+}
 
-sealed class Effect : ViewSideEffect {
+sealed class Event : ViewEvent {
+    data class NextButtonPressed(val pin: String) : Event()
+    data class OnQuickPinEntered(val quickPin: String) : Event()
+    data object CancelPressed : Event()
 
-    data object InitializeQuickPinOnCreate : Effect()
+    sealed class BottomSheet : Event() {
+        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
 
-    sealed class Navigation : Effect() {
-        data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
-        data class SwitchScreen(val screen: String) : Navigation()
+        sealed class Cancel : BottomSheet() {
+            data object PrimaryButtonPressed : Cancel()
+            data object SecondaryButtonPressed : Cancel()
+        }
     }
 }
 
+sealed class Effect : ViewSideEffect {
+    sealed class Navigation : Effect() {
+        data class SwitchModule(val moduleRoute: ModuleRoute) : Navigation()
+        data class SwitchScreen(val screen: String) : Navigation()
+
+        data object Pop : Navigation()
+    }
+
+    data object ShowBottomSheet : Effect()
+    data object CloseBottomSheet : Effect()
+}
 
 @KoinViewModel
 class PinViewModel(
     private val interactor: QuickPinInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val pinFlows: String
-) :
-    MviViewModel<Event, State, Effect>() {
+    @InjectedParam private val pinFlow: PinFlow
+) : MviViewModel<Event, State, Effect>() {
+
     override fun setInitialState(): State {
+        val title: String
+        val subtitle: String
+        val pinState: PinValidationState
+        val buttonText: String
 
-        var title = ""
-        var subtitle = ""
-        var pinState = PinValidationState.REENTER
-
-        when (pinFlows) {
-            PinFlows.CREATE.type -> {
-                title = resourceProvider.getString(R.string.quick_pin_setup_title)
-                subtitle = resourceProvider.getString(R.string.quick_pin_setup_subtitle)
-                pinState = PinValidationState.REENTER
+        when (pinFlow) {
+            PinFlow.CREATE -> {
+                title = resourceProvider.getString(R.string.quick_pin_create_title)
+                subtitle = resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
+                pinState = PinValidationState.ENTER
+                buttonText = calculateButtonText(pinState)
             }
 
-            PinFlows.UPDATE.type -> {
+            PinFlow.UPDATE -> {
                 title = resourceProvider.getString(R.string.quick_pin_change_title)
-                subtitle = resourceProvider.getString(R.string.quick_pin_change_current_subtitle)
+                subtitle =
+                    resourceProvider.getString(R.string.quick_pin_change_validate_current_subtitle)
                 pinState = PinValidationState.VALIDATE
+                buttonText = calculateButtonText(pinState)
             }
         }
+
         return State(
             isLoading = false,
             title = title,
             subtitle = subtitle,
-            pinState = pinState
+            pinState = pinState,
+            buttonText = buttonText,
+            pinFlow = pinFlow
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> {
-                setEffect {
-                    Effect.InitializeQuickPinOnCreate
-                }
-            }
-
             is Event.OnQuickPinEntered -> {
                 validateForm(event.quickPin)
             }
@@ -138,21 +164,135 @@ class PinViewModel(
             is Event.NextButtonPressed -> {
                 val state = viewState.value
 
-                when (pinFlows) {
-                    PinFlows.CREATE.type -> createPin(state, event)
-                    PinFlows.UPDATE.type -> updatePin(state, event)
+                when (state.pinState) {
+                    PinValidationState.ENTER -> {
+                        // Set state for re-enter phase
+                        setupReenterPhase(enteredPin = event.pin)
+                    }
+
+                    PinValidationState.REENTER -> {
+                        // Save the new pin
+                        saveNewPin(newPin = state.pin, enteredPin = state.enteredPin)
+                    }
+
+                    PinValidationState.VALIDATE -> {
+                        validatePin(currentPin = state.pin)
+                    }
+                }
+            }
+
+            is Event.CancelPressed -> {
+                showBottomSheet()
+            }
+
+            is Event.BottomSheet.UpdateBottomSheetState -> {
+                setState {
+                    copy(isBottomSheetOpen = event.isOpen)
+                }
+            }
+
+            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
+                hideBottomSheet()
+            }
+
+            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
+                viewModelScope.launch {
+                    hideBottomSheet()
+                    delay(200L)
+                    setEffect { Effect.Navigation.Pop }
+                }
+            }
+        }
+    }
+
+    private fun validatePin(currentPin: String) {
+        viewModelScope.launch {
+            interactor.isCurrentPinValid(
+                pin = currentPin
+            ).collect {
+                when (it) {
+                    is QuickPinInteractorPinValidPartialState.Failed -> {
+                        setState {
+                            copy(
+                                quickPinError = it.errorMessage
+                            )
+                        }
+                    }
+
+                    QuickPinInteractorPinValidPartialState.Success -> {
+                        setupEnterPhase()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setupEnterPhase() {
+        val newPinState = PinValidationState.ENTER
+
+        setState {
+            copy(
+                quickPinError = null,
+                enteredPin = "",
+                pinState = newPinState,
+                buttonText = calculateButtonText(newPinState),
+                pin = "",
+                resetPin = true,
+                subtitle = calculateSubtitle(newPinState)
+            )
+        }
+    }
+
+    private fun setupReenterPhase(enteredPin: String) {
+        val newPinState = PinValidationState.REENTER
+
+        setState {
+            copy(
+                quickPinError = null,
+                enteredPin = enteredPin,
+                pinState = PinValidationState.REENTER,
+                buttonText = calculateButtonText(newPinState),
+                pin = "",
+                resetPin = true,
+                subtitle = calculateSubtitle(newPinState)
+            )
+        }
+    }
+
+    private fun saveNewPin(newPin: String, enteredPin: String) {
+        viewModelScope.launch {
+            interactor.setPin(
+                newPin = newPin,
+                initialPin = enteredPin
+            ).collect {
+                when (it) {
+                    is QuickPinInteractorSetPinPartialState.Failed -> {
+                        setState {
+                            copy(
+                                quickPinError = it.errorMessage
+                            )
+                        }
+                    }
+
+                    is QuickPinInteractorSetPinPartialState.Success -> {
+                        setEffect {
+                            Effect.Navigation.SwitchScreen(getNextScreenRoute())
+                        }
+                    }
                 }
             }
         }
     }
 
     private fun getListOfRules(pin: String): Form {
-        pin.isDigitsOnly()
         return Form(
             mapOf(
                 listOf(
                     Rule.ValidateStringRange(4..4, ""),
-                    Rule.ValidateRegex("-?\\d+(\\.\\d+)?".toRegex(), "only numerical")
+                    Rule.ValidateRegex(
+                        "-?\\d+(\\.\\d+)?".toRegex(),
+                        resourceProvider.getString(R.string.quick_pin_numerical_rule_invalid_error_message)
+                    )
                 ) to pin
             )
         )
@@ -174,153 +314,76 @@ class PinViewModel(
         }
     }
 
-    private fun createPin(state: State, event: Event.NextButtonPressed) {
-
-        if (state.pinState == PinValidationState.COMPLETED) {
-            viewModelScope.launch {
-                interactor.setPin(state.pin, state.initialPin).collect {
-                    when (it) {
-                        is QuickPinInteractorSetPinPartialState.Failed -> {
-                            setState {
-                                copy(
-                                    quickPinError = it.errorMessage
-                                )
-                            }
-                        }
-
-                        is QuickPinInteractorSetPinPartialState.Success -> {
-                            setEffect {
-                                Effect.Navigation.SwitchScreen(getSuccessConfig())
-
-                            }
-                        }
-                    }
+    private fun calculateSubtitle(pinState: PinValidationState): String {
+        return when (pinFlow) {
+            PinFlow.UPDATE -> {
+                when (pinState) {
+                    PinValidationState.ENTER -> resourceProvider.getString(R.string.quick_pin_change_enter_new_subtitle)
+                    PinValidationState.REENTER -> resourceProvider.getString(R.string.quick_pin_change_reenter_new_subtitle)
+                    PinValidationState.VALIDATE -> resourceProvider.getString(R.string.quick_pin_change_validate_current_subtitle)
                 }
             }
-        } else if (state.pinState == PinValidationState.REENTER) {
-            setState {
-                copy(
-                    quickPinError = null,
-                    initialPin = event.pin,
-                    pinState = PinValidationState.COMPLETED,
-                    pin = "",
-                    resetPin = true
-                )
-            }
-        }
-    }
 
-    private fun updatePin(state: State, event: Event.NextButtonPressed) {
-
-        viewModelScope.launch {
-            when (state.pinState) {
-                PinValidationState.VALIDATE -> {
-                    interactor.isCurrentPinValid(state.pin).collect {
-                        when (it) {
-                            is QuickPinInteractorPinValidPartialState.Failed -> {
-                                setState {
-                                    copy(
-                                        quickPinError = it.errorMessage
-                                    )
-                                }
-                            }
-
-                            is QuickPinInteractorPinValidPartialState.Success -> {
-                                setState {
-                                    copy(
-                                        quickPinError = null,
-                                        pinState = PinValidationState.REENTER,
-                                        pin = "",
-                                        resetPin = true,
-                                        subtitle = resourceProvider.getString(R.string.quick_pin_change_subtitle)
-                                    )
-                                }
-                            }
-
-                        }
-                    }
-                }
-
-                PinValidationState.REENTER -> {
-                    if (state.initialPin.isBlank()) {
-                        setState {
-                            copy(
-                                quickPinError = null,
-                                initialPin = event.pin,
-                                pinState = PinValidationState.COMPLETED,
-                                pin = "",
-                                resetPin = true,
-                                subtitle = resourceProvider.getString(R.string.quick_pin_reenter_subtitle)
-                            )
-                        }
-                    }
-                }
-
-                PinValidationState.COMPLETED -> {
-                    interactor.isPinMatched(state.initialPin, state.pin).collect {
-                        when (it) {
-                            is QuickPinInteractorPinValidPartialState.Failed -> {
-                                setState {
-                                    copy(
-                                        quickPinError = it.errorMessage
-                                    )
-                                }
-                            }
-
-                            QuickPinInteractorPinValidPartialState.Success -> {
-                                interactor.changePin(state.pin).collect {
-                                    when (it) {
-                                        is QuickPinInteractorSetPinPartialState.Failed -> {
-                                            setState {
-                                                copy(
-                                                    quickPinError = it.errorMessage
-                                                )
-                                            }
-                                        }
-
-                                        is QuickPinInteractorSetPinPartialState.Success -> {
-                                            setEffect {
-                                                Effect.Navigation.SwitchScreen(
-                                                    DashboardScreens.Dashboard.screenRoute
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+            PinFlow.CREATE -> {
+                when (pinState) {
+                    PinValidationState.ENTER -> resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
+                    PinValidationState.REENTER -> resourceProvider.getString(R.string.quick_pin_create_reenter_subtitle)
+                    PinValidationState.VALIDATE -> viewState.value.subtitle
                 }
             }
         }
     }
 
-    private fun getSuccessConfig(): String {
+    private fun calculateButtonText(pinState: PinValidationState): String {
+        return when (pinState) {
+            PinValidationState.ENTER -> resourceProvider.getString(R.string.generic_next_capitalized)
+            PinValidationState.REENTER -> resourceProvider.getString(R.string.generic_confirm_capitalized)
+            PinValidationState.VALIDATE -> resourceProvider.getString(R.string.generic_next_capitalized)
+        }
+    }
+
+    private fun getNextScreenRoute(): String {
+        val navigationAfterCreate = ConfigNavigation(
+            navigationType = NavigationType.PUSH,
+            screenToNavigate = DashboardScreens.Dashboard
+        )
+
+        val navigationAfterUpdate = ConfigNavigation(
+            navigationType = NavigationType.POP,
+            screenToNavigate = DashboardScreens.Dashboard
+        )
+
         return generateComposableNavigationLink(
             screen = CommonScreens.Success,
             arguments = generateComposableArguments(
                 mapOf(
                     SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                         SuccessUIConfig(
-                            header = resourceProvider.getString(R.string.content_description_success_screen_title),
-                            content = resourceProvider.getString(R.string.content_description_success_screen_subtitle),
+                            header = resourceProvider.getString(R.string.quick_pin_success_title),
+                            content = when (pinFlow) {
+                                PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_subtitle)
+                                PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_subtitle)
+                            },
                             imageConfig = SuccessUIConfig.ImageConfig(
                                 type = SuccessUIConfig.ImageConfig.Type.DEFAULT
                             ),
                             buttonConfig = listOf(
                                 SuccessUIConfig.ButtonConfig(
-                                    text = resourceProvider.getString(R.string.quick_pin_continue),
+                                    text = when (pinFlow) {
+                                        PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_btn)
+                                        PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_btn)
+                                    },
                                     style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                                    navigation = ConfigNavigation(
-                                        navigationType = NavigationType.PUSH,
-                                        screenToNavigate = DashboardScreens.Dashboard
-                                    )
+                                    navigation = when (pinFlow) {
+                                        PinFlow.CREATE -> navigationAfterCreate
+                                        PinFlow.UPDATE -> navigationAfterUpdate
+                                    }
                                 )
                             ),
-                            onBackScreenToNavigate = ConfigNavigation(
-                                navigationType = NavigationType.POP,
-                                screenToNavigate = DashboardScreens.Dashboard
-                            ),
+                            onBackScreenToNavigate = when (pinFlow) {
+                                PinFlow.CREATE -> navigationAfterCreate
+                                PinFlow.UPDATE -> navigationAfterUpdate
+                            },
                         ),
                         SuccessUIConfig.Parser
                     ).orEmpty()
@@ -329,4 +392,15 @@ class PinViewModel(
         )
     }
 
+    private fun showBottomSheet() {
+        setEffect {
+            Effect.ShowBottomSheet
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet
+        }
+    }
 }

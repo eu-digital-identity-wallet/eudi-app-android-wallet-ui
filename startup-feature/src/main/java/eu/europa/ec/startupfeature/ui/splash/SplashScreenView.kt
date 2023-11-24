@@ -75,7 +75,7 @@ fun SplashScreen(
 @Composable
 private fun Content(
     state: State,
-    effectFlow: Flow<Effect>?,
+    effectFlow: Flow<Effect>,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit
 ) {
     val visibilityState = remember {
@@ -104,11 +104,10 @@ private fun Content(
     }
 
     LaunchedEffect(Unit) {
-        effectFlow?.onEach { effect ->
+        effectFlow.onEach { effect ->
             when (effect) {
-                is Effect.Navigation.SwitchModule -> onNavigationRequested(effect)
-                is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
+                is Effect.Navigation -> onNavigationRequested(effect)
             }
-        }?.collect()
+        }.collect()
     }
 }

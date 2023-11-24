@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +75,29 @@ fun SheetContent(title: String, bodyContent: @Composable () -> Unit) {
             )
         )
         VSpacer.Small()
+        bodyContent()
+    }
+}
+
+@Composable
+fun SheetContent(
+    titleContent: @Composable () -> Unit,
+    bodyContent: @Composable () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .wrapContentHeight()
+            .background(color = MaterialTheme.colorScheme.background)
+            .fillMaxWidth()
+            .padding(
+                start = SPACING_LARGE.dp,
+                top = SPACING_LARGE.dp,
+                end = SPACING_LARGE.dp,
+                bottom = SPACING_EXTRA_LARGE.dp
+            )
+    ) {
+        titleContent()
+        VSpacer.Large()
         bodyContent()
     }
 }

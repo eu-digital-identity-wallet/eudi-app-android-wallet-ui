@@ -18,7 +18,7 @@
 
 package eu.europa.ec.commonfeature.model
 
-enum class PinFlows(val type: String) {
-    CREATE("create"),
-    UPDATE("update")
+enum class PinFlow {
+    CREATE,
+    UPDATE
 }

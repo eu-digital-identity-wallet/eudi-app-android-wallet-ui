@@ -18,64 +18,111 @@
 
 package eu.europa.ec.loginfeature.ui.pin
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
-import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
-import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.navigation.LoginScreens
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PinScreen(
     navController: NavController,
     viewModel: PinViewModel,
-
-    ) {
+) {
     val state = viewModel.viewState.value
+
+    val isBottomSheetOpen = state.isBottomSheetOpen
+    val scope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
+    )
+
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.NONE,
+        navigatableAction = state.action,
+        onBack = {
+            state.onBackEvent?.let { backEvent ->
+                viewModel.setEvent(backEvent)
+            }
+        },
+        stickyBottom = {
+            WrapPrimaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = state.isButtonEnabled,
+                onClick = {
+                    viewModel.setEvent(
+                        Event.NextButtonPressed(
+                            pin = state.pin
+                        )
+                    )
+                }
+            ) {
+                Text(text = state.buttonText)
+            }
+        }
     ) { paddingValues ->
         Content(
             state = viewModel.viewState.value,
             effectFlow = viewModel.effect,
-            onEventSent = { event -> viewModel.setEvent(event) },
+            onEventSend = { event -> viewModel.setEvent(event) },
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController)
             },
             paddingValues = paddingValues,
+            coroutineScope = scope,
+            modalBottomSheetState = bottomSheetState,
         )
-    }
-    OneTimeLaunchedEffect {
-        viewModel.setEvent(Event.Init)
+
+        if (isBottomSheetOpen) {
+            WrapModalBottomSheet(
+                onDismissRequest = {
+                    viewModel.setEvent(
+                        Event.BottomSheet.UpdateBottomSheetState(
+                            isOpen = false
+                        )
+                    )
+                },
+                sheetState = bottomSheetState
+            ) {
+                SheetContent(
+                    onEventSent = {
+                        viewModel.setEvent(it)
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -93,77 +140,85 @@ private fun handleNavigationEffect(
         }
 
         is Effect.Navigation.SwitchModule -> navController.navigate(navigationEffect.moduleRoute.route)
+
+        is Effect.Navigation.Pop -> navController.popBackStack()
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     state: State,
-    effectFlow: Flow<Effect>?,
-    onEventSent: ((Event) -> Unit),
+    effectFlow: Flow<Effect>,
+    onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues,
+    coroutineScope: CoroutineScope,
+    modalBottomSheetState: SheetState,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        val keyboardController = LocalSoftwareKeyboardController.current
-        if (state.isButtonEnabled) {
-            keyboardController?.hide()
-        }
         ContentTitle(
             title = state.title,
             subtitle = state.subtitle
         )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            Column(modifier = Modifier.align(alignment = Alignment.TopCenter)) {
+        VSpacer.Medium()
 
-                PinFieldLayout(state) { quickPin ->
-                    onEventSent(
-                        Event.OnQuickPinEntered(
-                            quickPin
-                        )
+        PinFieldLayout(
+            state = state,
+            onPinInput = { quickPin ->
+                onEventSend(
+                    Event.OnQuickPinEntered(
+                        quickPin
                     )
-                }
+                )
             }
-
-            WrapPrimaryButton(modifier = Modifier
-                .align(alignment = Alignment.BottomCenter)
-                .fillMaxWidth(),
-                enabled = state.isButtonEnabled,
-                onClick = {
-                    onEventSent(
-                        Event.NextButtonPressed(
-                            pin = state.pin
-                        )
-                    )
-                }) {
-                Text(text = stringResource(id = R.string.quick_pin_next_btn))
-            }
-        }
+        )
     }
 
     LaunchedEffect(Unit) {
-        effectFlow?.onEach { effect ->
+        effectFlow.onEach { effect ->
             when (effect) {
-                is Effect.Navigation.SwitchModule -> onNavigationRequested(effect)
-                is Effect.Navigation.SwitchScreen -> onNavigationRequested(effect)
-                else -> {}
+                is Effect.Navigation -> onNavigationRequested(effect)
+
+                is Effect.CloseBottomSheet -> {
+                    coroutineScope.launch {
+                        modalBottomSheetState.hide()
+                    }.invokeOnCompletion {
+                        if (!modalBottomSheetState.isVisible) {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                        }
+                    }
+                }
+
+                is Effect.ShowBottomSheet -> {
+                    onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+                }
             }
-        }?.collect()
+        }.collect()
     }
 }
 
 @Composable
-fun PinFieldLayout(
+private fun SheetContent(
+    onEventSent: (event: Event) -> Unit
+) {
+    DialogBottomSheet(
+        title = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_title),
+        message = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_subtitle),
+        positiveButtonText = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_primary_button_text),
+        negativeButtonText = stringResource(id = R.string.quick_pin_bottom_sheet_cancel_secondary_button_text),
+        onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
+        onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
+    )
+}
+
+@Composable
+private fun PinFieldLayout(
     state: State,
     onPinInput: (String) -> Unit,
 ) {
@@ -180,17 +235,32 @@ fun PinFieldLayout(
     )
 }
 
-@Preview(showSystemUi = true)
+@OptIn(ExperimentalMaterial3Api::class)
+@ThemeModePreviews
 @Composable
 private fun PinScreenEmptyPreview() {
-
     PreviewTheme {
         Content(
-            state = State(),
+            state = State(
+                pinFlow = PinFlow.CREATE,
+                pinState = PinValidationState.ENTER
+            ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSent = {},
+            onEventSend = {},
             onNavigationRequested = {},
             paddingValues = PaddingValues(10.dp),
+            coroutineScope = rememberCoroutineScope(),
+            modalBottomSheetState = rememberModalBottomSheetState(),
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun SheetContentCancelPreview() {
+    PreviewTheme {
+        SheetContent(
+            onEventSent = {}
         )
     }
 }

@@ -44,7 +44,7 @@ sealed class LoginScreens {
     data object Faq : Screen(name = "FAQ")
 
     data object QuickPin :
-        Screen(name = "WIZARD_LOGIN_QUICK_PIN_SCREEN", parameters = "?payload={payload}")
+        Screen(name = "QUICK_PIN_SCREEN", parameters = "?pinFlow={pinFlow}")
 }
 
 sealed class PresentationScreens {
