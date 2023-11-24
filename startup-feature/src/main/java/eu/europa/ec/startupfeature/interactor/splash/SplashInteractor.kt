@@ -17,15 +17,14 @@
 package eu.europa.ec.startupfeature.interactor.splash
 
 import eu.europa.ec.uilogic.navigation.LoginScreens
-import eu.europa.ec.uilogic.navigation.Screen
 
 interface SplashInteractor {
-    fun getAfterSplashRoute(): Screen
+    fun getAfterSplashRoute(): String
 }
 
 class SplashInteractorImpl : SplashInteractor {
 
-    override fun getAfterSplashRoute(): Screen {
-        return LoginScreens.Welcome
+    override fun getAfterSplashRoute(): String {
+        return LoginScreens.Welcome.screenRoute
     }
 }

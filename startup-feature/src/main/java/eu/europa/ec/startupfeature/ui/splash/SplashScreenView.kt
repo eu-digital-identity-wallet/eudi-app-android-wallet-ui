@@ -59,7 +59,7 @@ fun SplashScreen(
                 }
 
                 is Effect.Navigation.SwitchScreen -> {
-                    navController.navigate(it.screen.screenRoute) {
+                    navController.navigate(it.route) {
                         popUpTo(StartupScreens.Splash.screenRoute) { inclusive = true }
                     }
                 }
