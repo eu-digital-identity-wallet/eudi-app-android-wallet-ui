@@ -59,12 +59,6 @@ sealed class ProximityScreens {
 }
 
 sealed class IssuanceScreens {
-    data object DocumentDetails : Screen(
-        name = "ISSUANCE_DOCUMENT_DETAILS",
-        parameters = "?detailsType={detailsType}"
-                + "&documentId={documentId}"
-    )
-
     data object AddDocument : Screen(
         name = "ISSUANCE_ADD_DOCUMENT",
         parameters = "?flowType={flowType}"
@@ -72,13 +66,20 @@ sealed class IssuanceScreens {
 
     data object Authenticate : Screen(
         name = "ISSUANCE_AUTHENTICATE",
-        parameters = "?authUrl={authUrl}"
+        parameters = "?flowType={flowType}"
                 + "&documentType={documentType}"
     )
 
     data object Success : Screen(
         name = "ISSUANCE_SUCCESS",
-        parameters = "?documentType={documentType}"
+        parameters = "?flowType={flowType}"
+                + "&documentType={documentType}"
+    )
+
+    data object DocumentDetails : Screen(
+        name = "ISSUANCE_DOCUMENT_DETAILS",
+        parameters = "?detailsType={detailsType}"
+                + "&documentId={documentId}"
     )
 }
 

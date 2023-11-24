@@ -17,7 +17,7 @@
 package eu.europa.ec.issuancefeature.ui.document.add
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
@@ -85,8 +85,8 @@ class AddDocumentViewModel(
                         screen = IssuanceScreens.Authenticate,
                         arguments = generateComposableArguments(
                             mapOf(
+                                "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
                                 "documentType" to event.type.title,
-                                "authUrl" to event.url
                             )
                         )
                     )

@@ -17,6 +17,7 @@
 package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -29,16 +30,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
-import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentItemUi
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
@@ -78,11 +81,11 @@ fun DocumentDetailsScreen(
         contentErrorConfig = state.error,
         navigatableAction = state.navigatableAction,
         onBack = when (state.detailsType) {
-            IssuanceDetailsUiConfig.NO_DOCUMENT -> {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> {
                 null
             }
 
-            IssuanceDetailsUiConfig.EXTRA_DOCUMENT -> {
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
                 { viewModel.setEvent(Event.Pop) }
             }
         },
@@ -124,7 +127,7 @@ private fun handleNavigationEffect(
     when (navigationEffect) {
         is Effect.Navigation.SwitchScreen -> {
             navController.navigate(navigationEffect.screenRoute) {
-                popUpTo(IssuanceScreens.AddDocument.screenRoute) {
+                popUpTo(IssuanceScreens.DocumentDetails.screenRoute) {
                     inclusive = true
                 }
             }
@@ -146,7 +149,12 @@ private fun Content(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding())
+                .padding(
+                    bottom = rememberContentBottomPadding(
+                        hasBottomPadding = state.hasBottomPadding,
+                        paddingValues = paddingValues
+                    )
+                )
         ) {
             // Header
             HeaderLarge(
@@ -160,11 +168,8 @@ private fun Content(
             )
 
             // Main Content
-            ContentGradient(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                gradientEdge = GradientEdge.BOTTOM
+            MainContent(
+                detailsHaveBottomGradient = state.detailsHaveBottomGradient,
             ) {
                 Column(
                     modifier = Modifier
@@ -218,15 +223,50 @@ private fun Content(
     }
 }
 
+@Composable
+private fun ColumnScope.MainContent(
+    detailsHaveBottomGradient: Boolean,
+    content: @Composable () -> Unit
+) {
+    if (detailsHaveBottomGradient) {
+        ContentGradient(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            gradientEdge = GradientEdge.BOTTOM
+        ) {
+            content()
+        }
+    } else {
+        content()
+    }
+}
+
+@Composable
+private fun rememberContentBottomPadding(
+    hasBottomPadding: Boolean,
+    paddingValues: PaddingValues
+): Dp {
+    return remember(hasBottomPadding) {
+        if (hasBottomPadding) {
+            paddingValues.calculateBottomPadding()
+        } else {
+            0.dp
+        }
+    }
+}
+
 @ThemeModePreviews
 @Composable
 private fun IssuanceDocumentDetailsScreenPreview() {
     PreviewTheme {
         val state = State(
-            detailsType = IssuanceDetailsUiConfig.NO_DOCUMENT,
+            detailsType = IssuanceFlowUiConfig.NO_DOCUMENT,
             navigatableAction = ScreenNavigateAction.NONE,
             shouldShowPrimaryButton = true,
             hasCustomTopBar = false,
+            hasBottomPadding = true,
+            detailsHaveBottomGradient = true,
             document = DocumentUi(
                 documentId = 2,
                 documentType = DocumentTypeUi.DIGITAL_ID,
@@ -259,10 +299,12 @@ private fun IssuanceDocumentDetailsScreenPreview() {
 private fun DashboardDocumentDetailsScreenPreview() {
     PreviewTheme {
         val state = State(
-            detailsType = IssuanceDetailsUiConfig.EXTRA_DOCUMENT,
+            detailsType = IssuanceFlowUiConfig.EXTRA_DOCUMENT,
             navigatableAction = ScreenNavigateAction.CANCELABLE,
             shouldShowPrimaryButton = false,
             hasCustomTopBar = true,
+            hasBottomPadding = false,
+            detailsHaveBottomGradient = false,
             document = DocumentUi(
                 documentId = 2,
                 documentType = DocumentTypeUi.DIGITAL_ID,

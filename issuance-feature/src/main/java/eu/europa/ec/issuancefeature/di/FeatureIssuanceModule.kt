@@ -17,6 +17,8 @@
 package eu.europa.ec.issuancefeature.di
 
 
+import eu.europa.ec.issuancefeature.interactor.AuthenticateInteractor
+import eu.europa.ec.issuancefeature.interactor.AuthenticateInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
@@ -39,3 +41,6 @@ fun provideAddDocumentInteractor(
 fun provideDocumentDetailsInteractor(
     resourceProvider: ResourceProvider,
 ): DocumentDetailsInteractor = DocumentDetailsInteractorImpl(resourceProvider)
+
+@Factory
+fun provideAuthenticateInteractor(): AuthenticateInteractor = AuthenticateInteractorImpl()

@@ -88,7 +88,7 @@ fun SuccessScreen(
                 when (navigationEffect) {
                     is Effect.Navigation.SwitchScreen -> {
                         navController.navigate(navigationEffect.screenRoute) {
-                            popUpTo(IssuanceScreens.Success.screenRoute) {
+                            popUpTo(IssuanceScreens.AddDocument.screenRoute) {
                                 inclusive = true
                             }
                         }

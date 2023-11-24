@@ -14,25 +14,25 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.config.issuance
+package eu.europa.ec.commonfeature.config
 
-enum class IssuanceDetailsUiConfig {
+enum class IssuanceFlowUiConfig {
     NO_DOCUMENT, EXTRA_DOCUMENT;
 
     companion object {
-        fun fromIssuanceDetailsUiConfig(value: IssuanceDetailsUiConfig): String {
+        fun fromIssuanceFlowUiConfig(value: IssuanceFlowUiConfig): String {
             return try {
                 value.name
             } catch (e: Exception) {
-                throw RuntimeException("Wrong IssuanceDetailsUiConfig")
+                throw RuntimeException("Wrong IssuanceFlowUiConfig")
             }
         }
 
-        fun fromString(value: String): IssuanceDetailsUiConfig {
+        fun fromString(value: String): IssuanceFlowUiConfig {
             return try {
-                IssuanceDetailsUiConfig.valueOf(value)
+                IssuanceFlowUiConfig.valueOf(value)
             } catch (e: Exception) {
-                throw RuntimeException("Wrong IssuanceDetailsUiConfig")
+                throw RuntimeException("Wrong IssuanceFlowUiConfig")
             }
         }
     }

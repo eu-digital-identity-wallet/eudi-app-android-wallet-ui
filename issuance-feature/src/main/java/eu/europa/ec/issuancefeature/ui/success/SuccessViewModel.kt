@@ -16,7 +16,7 @@
 
 package eu.europa.ec.issuancefeature.ui.success
 
-import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -63,6 +63,7 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class SuccessViewModel(
+    @InjectedParam private val flowType: IssuanceFlowUiConfig,
     @InjectedParam private val docType: String,
 ) : MviViewModel<Event, State, Effect>() {
 
@@ -83,7 +84,9 @@ class SuccessViewModel(
                             screen = IssuanceScreens.DocumentDetails,
                             arguments = generateComposableArguments(
                                 mapOf(
-                                    "detailsType" to IssuanceDetailsUiConfig.NO_DOCUMENT,
+                                    "detailsType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(
+                                        flowType
+                                    ),
                                     "documentId" to event.documentId
                                 )
                             )

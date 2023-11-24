@@ -17,8 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
-import eu.europa.ec.commonfeature.config.issuance.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
@@ -84,7 +83,7 @@ class DashboardViewModel(
                             screen = IssuanceScreens.DocumentDetails,
                             arguments = generateComposableArguments(
                                 mapOf(
-                                    "detailsType" to IssuanceDetailsUiConfig.EXTRA_DOCUMENT,
+                                    "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
                                     "documentId" to event.documentId
                                 )
                             )

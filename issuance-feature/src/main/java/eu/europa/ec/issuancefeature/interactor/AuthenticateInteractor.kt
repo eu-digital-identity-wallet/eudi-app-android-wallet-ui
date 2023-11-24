@@ -14,26 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.config.issuance
+package eu.europa.ec.issuancefeature.interactor
 
-enum class IssuanceFlowUiConfig {
-    NO_DOCUMENT, EXTRA_DOCUMENT;
+interface AuthenticateInteractor {
+    fun getAuthenticateUrl(): String
+}
 
-    companion object {
-        fun fromIssuanceFlowUiConfig(value: IssuanceFlowUiConfig): String {
-            return try {
-                value.name
-            } catch (e: Exception) {
-                throw RuntimeException("Wrong IssuanceFlowUiConfig")
-            }
-        }
+class AuthenticateInteractorImpl() : AuthenticateInteractor {
 
-        fun fromString(value: String): IssuanceFlowUiConfig {
-            return try {
-                IssuanceFlowUiConfig.valueOf(value)
-            } catch (e: Exception) {
-                throw RuntimeException("Wrong IssuanceFlowUiConfig")
-            }
-        }
+    override fun getAuthenticateUrl(): String = getFakeAuthenticateUrl()
+
+    private fun getFakeAuthenticateUrl(): String {
+        return "www.gov.gr"
     }
 }

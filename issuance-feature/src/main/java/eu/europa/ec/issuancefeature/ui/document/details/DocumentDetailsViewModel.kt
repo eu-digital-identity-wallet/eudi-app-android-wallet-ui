@@ -17,7 +17,7 @@
 package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.issuance.IssuanceDetailsUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
@@ -35,10 +35,12 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
-    val detailsType: IssuanceDetailsUiConfig,
+    val detailsType: IssuanceFlowUiConfig,
     val navigatableAction: ScreenNavigateAction,
     val shouldShowPrimaryButton: Boolean,
     val hasCustomTopBar: Boolean,
+    val hasBottomPadding: Boolean,
+    val detailsHaveBottomGradient: Boolean,
 
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
@@ -64,7 +66,7 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
-    @InjectedParam private val detailsType: IssuanceDetailsUiConfig,
+    @InjectedParam private val detailsType: IssuanceFlowUiConfig,
     @InjectedParam private val documentId: String
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
@@ -72,6 +74,8 @@ class DocumentDetailsViewModel(
         navigatableAction = getNavigatableAction(detailsType),
         shouldShowPrimaryButton = shouldShowPrimaryButton(detailsType),
         hasCustomTopBar = hasCustomTopBar(detailsType),
+        hasBottomPadding = hasBottomPadding(detailsType),
+        detailsHaveBottomGradient = detailsHaveBottomGradient(detailsType),
     )
 
     override fun handleEvents(event: Event) {
@@ -134,24 +138,38 @@ class DocumentDetailsViewModel(
         }
     }
 
-    private fun getNavigatableAction(detailsType: IssuanceDetailsUiConfig): ScreenNavigateAction {
+    private fun getNavigatableAction(detailsType: IssuanceFlowUiConfig): ScreenNavigateAction {
         return when (detailsType) {
-            IssuanceDetailsUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
-            IssuanceDetailsUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
+            IssuanceFlowUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
         }
     }
 
-    private fun shouldShowPrimaryButton(detailsType: IssuanceDetailsUiConfig): Boolean {
+    private fun shouldShowPrimaryButton(detailsType: IssuanceFlowUiConfig): Boolean {
         return when (detailsType) {
-            IssuanceDetailsUiConfig.NO_DOCUMENT -> true
-            IssuanceDetailsUiConfig.EXTRA_DOCUMENT -> false
+            IssuanceFlowUiConfig.NO_DOCUMENT -> true
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
         }
     }
 
-    private fun hasCustomTopBar(detailsType: IssuanceDetailsUiConfig): Boolean {
+    private fun hasCustomTopBar(detailsType: IssuanceFlowUiConfig): Boolean {
         return when (detailsType) {
-            IssuanceDetailsUiConfig.NO_DOCUMENT -> false
-            IssuanceDetailsUiConfig.EXTRA_DOCUMENT -> true
+            IssuanceFlowUiConfig.NO_DOCUMENT -> false
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> true
+        }
+    }
+
+    private fun hasBottomPadding(detailsType: IssuanceFlowUiConfig): Boolean {
+        return when (detailsType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> true
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
+        }
+    }
+
+    private fun detailsHaveBottomGradient(detailsType: IssuanceFlowUiConfig): Boolean {
+        return when (detailsType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> true
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
         }
     }
 }

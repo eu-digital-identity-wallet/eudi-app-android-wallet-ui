@@ -18,6 +18,8 @@ package eu.europa.ec.issuancefeature.ui.authenticate
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.extension.validateAndFormatUrl
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.issuancefeature.interactor.AuthenticateInteractor
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -52,7 +54,6 @@ sealed class Effect : ViewSideEffect {
         ) : Navigation()
 
         data object Pop : Navigation()
-        data object OpenDeepLinkAction : Navigation()
     }
 
     data class OpenUrlExternally(val url: String) : Effect()
@@ -60,13 +61,14 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class AuthenticateViewModel(
-    @InjectedParam private val authUrl: String,
+    private val interactor: AuthenticateInteractor,
+    @InjectedParam private val flowType: IssuanceFlowUiConfig,
     @InjectedParam internal val docType: String,
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State {
         return State(
-            url = authUrl.validateAndFormatUrl(),
+            url = interactor.getAuthenticateUrl().validateAndFormatUrl(),
             userWasRedirected = false
         )
     }
@@ -86,7 +88,7 @@ class AuthenticateViewModel(
                     if (viewState.value.userWasRedirected) {
                         setState { copy(isLoading = true) }
                         delay(1500L)
-                        setState { copy(isLoading = false) }
+                        setState { copy(isLoading = false, userWasRedirected = false) }
                         goToNextScreen()
                     }
                 }
@@ -102,8 +104,6 @@ class AuthenticateViewModel(
                 copy(userWasRedirected = true)
             }
 
-            setEffect { Effect.Navigation.OpenDeepLinkAction }
-
             setEffect { Effect.OpenUrlExternally(viewState.value.url) }
         }
     }
@@ -115,6 +115,7 @@ class AuthenticateViewModel(
                     screen = IssuanceScreens.Success,
                     arguments = generateComposableArguments(
                         mapOf(
+                            "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
                             "documentType" to docType
                         )
                     )

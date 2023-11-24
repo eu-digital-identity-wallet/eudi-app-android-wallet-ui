@@ -38,10 +38,8 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
-import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
-import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -54,7 +52,6 @@ fun AuthenticateScreen(
     viewModel: AuthenticateViewModel
 ) {
     val state = viewModel.viewState.value
-    val context = LocalContext.current
 
     ContentScreen(
         isLoading = state.isLoading,
@@ -76,10 +73,6 @@ fun AuthenticateScreen(
 
                     is Effect.Navigation.Pop -> {
                         navController.popBackStack()
-                    }
-
-                    is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
-                        handleDeepLinkAction(navController, it)
                     }
                 }
             },
