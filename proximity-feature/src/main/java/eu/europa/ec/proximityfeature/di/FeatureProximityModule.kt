@@ -50,7 +50,6 @@ fun provideProximityRequestInteractor(
 
 @Factory
 fun provideProximityLoadingInteractor(
-    resourceProvider: ResourceProvider,
     @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
 ): ProximityLoadingInteractor =
-    ProximityLoadingInteractorImpl(resourceProvider, eudiWalletInteractor)
+    ProximityLoadingInteractorImpl(eudiWalletInteractor)

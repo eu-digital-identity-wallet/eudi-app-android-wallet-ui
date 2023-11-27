@@ -19,9 +19,9 @@ package eu.europa.ec.proximityfeature.ui.loading
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.di.getPresentationScope
+import eu.europa.ec.commonfeature.interactor.EudiWalletProximityPartialState
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
-import eu.europa.ec.proximityfeature.interactor.ProximityLoadingCombinedPartialState
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -73,9 +73,9 @@ class ProximityLoadingViewModel constructor(
     override fun doWork() {
         viewModelScope.launch {
 
-            interactor.sendRequestedDocuments().collect {
+            interactor.observeResponse().collect {
                 when (it) {
-                    is ProximityLoadingCombinedPartialState.Failure -> {
+                    is EudiWalletProximityPartialState.Failure -> {
                         setState {
                             copy(error = ContentErrorConfig(
                                 onRetry = { setEvent(Event.DoWork) },
@@ -85,13 +85,13 @@ class ProximityLoadingViewModel constructor(
                         }
                     }
 
-                    is ProximityLoadingCombinedPartialState.Success -> {
+                    is EudiWalletProximityPartialState.Success -> {
                         interactor.stopPresentation()
                         getPresentationScope().close()
                         doNavigation(NavigationType.PUSH)
                     }
 
-                    is ProximityLoadingCombinedPartialState.UserAuthenticationRequired -> {
+                    is EudiWalletProximityPartialState.UserAuthenticationRequired -> {
                         // Provide implementation for Biometrics POP
                     }
                 }
