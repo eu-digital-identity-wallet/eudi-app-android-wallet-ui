@@ -20,6 +20,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import eu.europa.ec.commonfeature.router.featureCommonGraph
 import eu.europa.ec.dashboardfeature.router.featureDashboardGraph
+import eu.europa.ec.issuancefeature.router.featureIssuanceGraph
 import eu.europa.ec.loginfeature.router.featureLoginGraph
 import eu.europa.ec.presentationfeature.router.presentationGraph
 import eu.europa.ec.proximityfeature.router.featureProximityGraph
@@ -39,6 +40,7 @@ class MainActivity : EudiComponentActivity() {
                 featureDashboardGraph(it)
                 presentationGraph(it)
                 featureProximityGraph(it)
+                featureIssuanceGraph(it)
             }
         }
     }

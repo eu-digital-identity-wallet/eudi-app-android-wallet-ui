@@ -14,25 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
-package com.niscy.eudi.issuancefeature
+package eu.europa.ec.issuancefeature.interactor
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.Assert.*
-import org.junit.Test
-import org.junit.runner.RunWith
+interface AuthenticateInteractor {
+    fun getAuthenticateUrl(): String
+}
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-@RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
-    @Test
-    fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.niscy.eudi.issuancefeature.test", appContext.packageName)
+class AuthenticateInteractorImpl() : AuthenticateInteractor {
+
+    override fun getAuthenticateUrl(): String = getFakeAuthenticateUrl()
+
+    private fun getFakeAuthenticateUrl(): String {
+        return "www.gov.gr"
     }
 }

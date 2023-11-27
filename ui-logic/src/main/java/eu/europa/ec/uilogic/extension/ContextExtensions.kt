@@ -58,3 +58,15 @@ fun Context.findActivity(): ComponentActivity {
 private fun Context.clearPendingDeepLink() {
     (this as? EudiComponentActivity)?.pendingDeepLink = null
 }
+
+/**
+ * Parses a string url and sends the Action View Intent.
+ *
+ * @param url the url to parse.
+ */
+fun Context.openUrl(url: String) {
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    } catch (_: Exception) {
+    }
+}

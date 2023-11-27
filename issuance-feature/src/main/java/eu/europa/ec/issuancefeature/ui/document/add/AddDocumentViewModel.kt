@@ -14,27 +14,36 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.document.add
+package eu.europa.ec.issuancefeature.ui.document.add
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentLoadData
-import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentOptions
+import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.InjectedParam
 
 data class State(
+    val navigatableAction: ScreenNavigateAction,
+
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
+
     val title: String = "",
     val subtitle: String = "",
     val options: List<DocumentOptionItemUi> = emptyList()
@@ -44,7 +53,7 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data object AddDocuments : Event()
-    data class NavigateToIssueDocument(val url: String, val type: DocumentTypeUi) : Event()
+    data class NavigateToAuthentication(val url: String, val type: DocumentTypeUi) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -57,19 +66,36 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class AddDocumentViewModel(
     private val addDocumentInteractor: AddDocumentInteractor,
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    @InjectedParam private val flowType: IssuanceFlowUiConfig,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        title = resourceProvider.getString(R.string.add_document_title),
-        subtitle = resourceProvider.getString(R.string.add_document_subtitle)
+        navigatableAction = getNavigatableAction(flowType),
+        title = resourceProvider.getString(R.string.issuance_add_document_title),
+        subtitle = resourceProvider.getString(R.string.issuance_add_document_subtitle)
     )
 
     override fun handleEvents(event: Event) = when (event) {
-        Event.Init -> getOptions(event)
-        Event.Pop -> setEffect { Effect.Navigation.Pop }
-        Event.AddDocuments -> loadSampleData(event)
-        is Event.NavigateToIssueDocument -> {
-            setEffect { Effect.Navigation.SwitchScreen("${event.url}, ${event.type}") }
+        is Event.Init -> getOptions(event)
+
+        is Event.Pop -> setEffect { Effect.Navigation.Pop }
+
+        is Event.AddDocuments -> loadSampleData(event)
+
+        is Event.NavigateToAuthentication -> {
+            setEffect {
+                Effect.Navigation.SwitchScreen(
+                    screenRoute = generateComposableNavigationLink(
+                        screen = IssuanceScreens.Authenticate,
+                        arguments = generateComposableArguments(
+                            mapOf(
+                                "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
+                                "documentType" to event.type.title,
+                            )
+                        )
+                    )
+                )
+            }
         }
     }
 
@@ -117,7 +143,7 @@ class AddDocumentViewModel(
         viewModelScope.launch {
             addDocumentInteractor.getAddDocumentOption().collect { response ->
                 when (response) {
-                    is AddDocumentOptions.Success -> {
+                    is AddDocumentInteractorPartialState.Success -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -127,7 +153,7 @@ class AddDocumentViewModel(
                         }
                     }
 
-                    is AddDocumentOptions.Failure -> {
+                    is AddDocumentInteractorPartialState.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -142,6 +168,13 @@ class AddDocumentViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun getNavigatableAction(flowType: IssuanceFlowUiConfig): ScreenNavigateAction {
+        return when (flowType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
         }
     }
 }

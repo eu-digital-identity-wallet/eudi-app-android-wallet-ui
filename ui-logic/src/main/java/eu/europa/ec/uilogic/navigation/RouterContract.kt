@@ -37,10 +37,6 @@ sealed class CommonScreens {
 
 sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
-    data object DocumentDetails :
-        Screen(name = "DOCUMENT_DETAILS", parameters = "?documentId={documentId}")
-
-    data object AddDocument : Screen(name = "ADD_DOCUMENT")
 }
 
 sealed class LoginScreens {
@@ -62,6 +58,31 @@ sealed class ProximityScreens {
     data object Loading : Screen(name = "PROXIMITY_LOADING")
 }
 
+sealed class IssuanceScreens {
+    data object AddDocument : Screen(
+        name = "ISSUANCE_ADD_DOCUMENT",
+        parameters = "?flowType={flowType}"
+    )
+
+    data object Authenticate : Screen(
+        name = "ISSUANCE_AUTHENTICATE",
+        parameters = "?flowType={flowType}"
+                + "&documentType={documentType}"
+    )
+
+    data object Success : Screen(
+        name = "ISSUANCE_SUCCESS",
+        parameters = "?flowType={flowType}"
+                + "&documentType={documentType}"
+    )
+
+    data object DocumentDetails : Screen(
+        name = "ISSUANCE_DOCUMENT_DETAILS",
+        parameters = "?detailsType={detailsType}"
+                + "&documentId={documentId}"
+    )
+}
+
 sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object StartupModule : ModuleRoute("STARTUP_MODULE")
     data object CommonModule : ModuleRoute("COMMON_MODULE")
@@ -69,4 +90,5 @@ sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object DashboardModule : ModuleRoute("DASHBOARD_MODULE")
     data object PresentationModule : ModuleRoute("PRESENTATION_MODULE")
     data object ProximityModule : ModuleRoute("PROXIMITY_MODULE")
+    data object IssuanceModule : ModuleRoute("ISSUANCE_MODULE")
 }

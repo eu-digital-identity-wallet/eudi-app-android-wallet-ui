@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.interactor.document
+package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
@@ -29,11 +29,11 @@ import kotlinx.coroutines.flow.flow
 import org.json.JSONObject
 import java.util.Base64
 
-sealed class AddDocumentOptions {
+sealed class AddDocumentInteractorPartialState {
     data class Success(val options: List<DocumentOptionItemUi>) :
-        AddDocumentOptions()
+        AddDocumentInteractorPartialState()
 
-    data class Failure(val error: String) : AddDocumentOptions()
+    data class Failure(val error: String) : AddDocumentInteractorPartialState()
 }
 
 sealed class AddDocumentLoadData {
@@ -57,7 +57,7 @@ class AddDocumentInteractorImpl(
 
     override fun getAddDocumentOption(): Flow<AddDocumentOptions> = flow {
         emit(
-            AddDocumentOptions.Success(
+            AddDocumentInteractorPartialState.Success(
                 options = listOf(
                     DocumentOptionItemUi(
                         text = resourceProvider.getString(R.string.add_id),
@@ -75,7 +75,7 @@ class AddDocumentInteractorImpl(
             )
         )
     }.safeAsync {
-        AddDocumentOptions.Failure(
+        AddDocumentInteractorPartialState.Failure(
             error = it.localizedMessage ?: genericErrorMsg
         )
     }
