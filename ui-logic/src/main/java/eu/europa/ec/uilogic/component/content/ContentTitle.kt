@@ -57,7 +57,7 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 fun ContentTitle(
     title: String? = null,
     titleStyle: TextStyle = MaterialTheme.typography.headlineSmall.copy(
-        color = MaterialTheme.colorScheme.primary
+        color = MaterialTheme.colorScheme.textPrimaryDark
     ),
     subtitle: String? = null,
     clickableSubtitle: String? = null,

@@ -29,12 +29,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
+import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.BigImageAndMediumIcon
 import eu.europa.ec.uilogic.component.IconData
@@ -105,6 +106,9 @@ private fun Content(
         // Screen Title.
         ContentTitle(
             title = stringResource(id = R.string.issuance_success_title),
+            titleStyle = MaterialTheme.typography.headlineSmall.copy(
+                color = MaterialTheme.colorScheme.success
+            ),
             subtitle = stringResource(id = R.string.issuance_success_subtitle, state.docType),
         )
 
@@ -146,7 +150,7 @@ private fun UserImageAndIcon(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .background(
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.secondary,
                     shape = MaterialTheme.shapes.allCorneredShapeSmall
                 )
                 .padding(SPACING_LARGE.dp)
@@ -159,7 +163,7 @@ private fun UserImageAndIcon(
             Text(
                 text = username,
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.backgroundPaper
+                color = Color.Black
             )
         }
     }

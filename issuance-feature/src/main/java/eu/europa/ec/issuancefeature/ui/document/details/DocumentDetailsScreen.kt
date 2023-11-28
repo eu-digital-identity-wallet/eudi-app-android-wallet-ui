@@ -75,6 +75,7 @@ fun DocumentDetailsScreen(
     viewModel: DocumentDetailsViewModel
 ) {
     val state = viewModel.viewState.value
+    val topBarColor = MaterialTheme.colorScheme.secondary
 
     ContentScreen(
         isLoading = state.isLoading,
@@ -92,8 +93,8 @@ fun DocumentDetailsScreen(
         topBar = if (state.hasCustomTopBar) {
             {
                 ActionTopBar(
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    iconColor = Color.White,
+                    contentColor = topBarColor,
+                    iconColor = MaterialTheme.colorScheme.primary,
                     iconData = AppIcons.Close
                 ) { viewModel.setEvent(Event.Pop) }
             }
@@ -108,7 +109,8 @@ fun DocumentDetailsScreen(
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController)
             },
-            paddingValues = paddingValues
+            paddingValues = paddingValues,
+            headerColor = topBarColor
         )
     }
 
@@ -143,7 +145,8 @@ private fun Content(
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    headerColor: Color,
 ) {
     safeLet(state.document, state.headerData) { documentUi, headerData ->
         Column(
@@ -159,6 +162,7 @@ private fun Content(
             // Header
             HeaderLarge(
                 data = headerData,
+                containerColor = headerColor,
                 contentPadding = PaddingValues(
                     start = SPACING_LARGE.dp,
                     end = SPACING_LARGE.dp,
@@ -289,7 +293,8 @@ private fun IssuanceDocumentDetailsScreenPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(SPACING_LARGE.dp)
+            paddingValues = PaddingValues(SPACING_LARGE.dp),
+            headerColor = MaterialTheme.colorScheme.secondary,
         )
     }
 }
@@ -327,7 +332,8 @@ private fun DashboardDocumentDetailsScreenPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(SPACING_LARGE.dp)
+            paddingValues = PaddingValues(SPACING_LARGE.dp),
+            headerColor = MaterialTheme.colorScheme.secondary,
         )
     }
 }
