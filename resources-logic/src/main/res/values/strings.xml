@@ -14,7 +14,7 @@
   ~ governing permissions and limitations under the Licence.
   -->
 
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Generic -->
     <string name="app_name">EUDI Wallet</string>
@@ -24,7 +24,10 @@
     <string name="generic_network_error_message">You are not connected to the internet</string>
     <string name="generic_error_retry">Please try again</string>
     <string name="generic_cancel">Cancel</string>
-    <string name="generic_cancel_capitalized">CANCEL</string>
+    <string name="generic_cancel_capitalized" tools:ignore="ButtonCase">CANCEL</string>
+    <string name="generic_next_capitalized" tools:ignore="ButtonCase">NEXT</string>
+    <string name="generic_confirm_capitalized" tools:ignore="ButtonCase">CONFIRM</string>
+    <string name="generic_continue_capitalized" tools:ignore="ButtonCase">CONTINUE</string>
     <string name="generic_success">Success</string>
     <string name="generic_ok">OK</string>
 
@@ -46,10 +49,14 @@
     <string name="content_description_visibility_icon">Show</string>
     <string name="content_description_visibility_off_icon">Hide</string>
     <string name="content_description_add_icon">Add</string>
+    <string name="content_description_edit_icon">Edit</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
     <string name="biometric_prompt_subtitle">Authenticate using your biometrics</string>
+    <string name="biometric_login_prompt_title">Login</string>
+    <string name="biometric_login_prompt_subtitle">Use your biometrics to login</string>
+    <string name="biometric_login_prompt_quickPinOnlySubTitle">Type your quick pin to login</string>
 
     <!-- Biometrics -->
     <string name="biometric_no_hardware">Your device does not support biometric authentication</string>
@@ -57,9 +64,34 @@
 
     <!-- Success Screen -->
     <string name="content_description_success_screen_icon">Success icon</string>
+    <string name="content_description_success_screen_title">Success</string>
+    <string name="content_description_success_screen_subtitle">You successfully set the quick pin</string>
 
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
+    <string name="quick_pin_numerical_rule_invalid_error_message">Only numerical values are allowed</string>
+    <string name="quick_pin_non_match">Pins do not match</string>
+
+    <string name="quick_pin_create_title">Welcome to the EUDI Wallet</string>
+    <string name="quick_pin_create_enter_subtitle">Set a quick pin for future logins</string>
+    <string name="quick_pin_create_reenter_subtitle">Re-enter the quick pin</string>
+
+    <string name="quick_pin_change_title">Change quick pin</string>
+    <string name="quick_pin_change_validate_current_subtitle">Type your current pin</string>
+    <string name="quick_pin_change_enter_new_subtitle">Select a quick pin for future logins</string>
+    <string name="quick_pin_change_reenter_new_subtitle">Re-enter the new quick pin</string>
+
+    <string name="quick_pin_success_title">@string/generic_success</string>
+    <string name="quick_pin_create_success_subtitle">You successfully set the quick pin</string>
+    <string name="quick_pin_create_success_btn">@string/generic_continue_capitalized</string>
+    <string name="quick_pin_change_success_subtitle">You successfully changed the quick pin</string>
+    <string name="quick_pin_change_success_btn">BACK TO HOME</string>
+
+    <string name="quick_pin_bottom_sheet_cancel_title">Cancel quick pin changing?</string>
+    <string name="quick_pin_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the home without changing the quick pin</string>
+    <string name="quick_pin_bottom_sheet_cancel_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="quick_pin_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+
 
     <!-- Request Screen -->
     <string name="request_title">EUDI Conference requests the following to register</string>
@@ -93,6 +125,8 @@
     <string name="dashboard_title">Welcome back</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
+    <string name="dashboard_bottom_sheet_title">More options</string>
+    <string name="dashboard_bottom_sheet_action_1">Change quick pin</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Show QR or Tap</string>
@@ -107,7 +141,7 @@
     <string name="proximity_loading_success_config_subtitle">You successfully shared information with the Police officer</string>
 
     <!-- Issuance Add Document Screen -->
-    <string name="issuance_add_document">CONTINUE</string>
+    <string name="issuance_add_document">@string/generic_continue_capitalized</string>
     <string name="issuance_add_document_title">Add document</string>
     <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
     <string name="issuance_add_document_digital_id">Digital ID</string>
@@ -129,6 +163,6 @@
     <string name="issuance_success_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
 
     <!-- Issuance Documents Details Screen -->
-    <string name="issuance_document_details_primary_button_text">CONTINUE</string>
+    <string name="issuance_document_details_primary_button_text">@string/generic_continue_capitalized</string>
 
 </resources>

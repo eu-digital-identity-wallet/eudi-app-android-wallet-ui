@@ -26,7 +26,9 @@ import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.commonfeature.ui.biometric.BiometricScreen
+import eu.europa.ec.commonfeature.ui.pin.PinScreen
 import eu.europa.ec.commonfeature.ui.success.SuccessScreen
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
@@ -83,6 +85,32 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(SuccessUIConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
+            )
+        }
+        composable(
+            route = CommonScreens.QuickPin.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = BuildConfig.DEEPLINK + CommonScreens.QuickPin.screenRoute
+                }
+            ),
+            arguments = listOf(
+                navArgument("pinFlow") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            PinScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            PinFlow.valueOf(
+                                it.arguments?.getString("pinFlow").orEmpty()
+                            )
                         )
                     }
                 )
