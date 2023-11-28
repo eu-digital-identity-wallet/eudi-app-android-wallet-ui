@@ -33,10 +33,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +56,7 @@ import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
@@ -64,26 +69,36 @@ import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.FabData
+import eu.europa.ec.uilogic.component.wrap.SheetContent
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapImage
+import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     navController: NavController,
@@ -91,6 +106,12 @@ fun DashboardScreen(
 ) {
     val state = viewModel.viewState.value
     val context = LocalContext.current
+
+    val isBottomSheetOpen = state.isBottomSheetOpen
+    val scope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
+    )
 
     ContentScreen(
         isLoading = state.isLoading,
@@ -105,8 +126,29 @@ fun DashboardScreen(
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController, context)
             },
-            paddingValues = paddingValues
+            paddingValues = paddingValues,
+            coroutineScope = scope,
+            modalBottomSheetState = bottomSheetState
         )
+
+        if (isBottomSheetOpen) {
+            WrapModalBottomSheet(
+                onDismissRequest = {
+                    viewModel.setEvent(
+                        Event.BottomSheet.UpdateBottomSheetState(
+                            isOpen = false
+                        )
+                    )
+                },
+                sheetState = bottomSheetState
+            ) {
+                DashboardSheetContent(
+                    onEventSent = {
+                        viewModel.setEvent(it)
+                    }
+                )
+            }
+        }
     }
 
     LifecycleEffect(
@@ -131,13 +173,16 @@ private fun handleNavigationEffect(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    coroutineScope: CoroutineScope,
+    modalBottomSheetState: SheetState,
 ) {
     Column(
         modifier = Modifier.fillMaxSize()
@@ -147,6 +192,7 @@ private fun Content(
             message = stringResource(id = R.string.dashboard_title),
             userName = state.userName,
             image = AppIcons.User,
+            onEventSend = onEventSend,
             paddingValues = paddingValues
         )
 
@@ -173,9 +219,73 @@ private fun Content(
         effectFlow.onEach { effect ->
             when (effect) {
                 is Effect.Navigation -> onNavigationRequested(effect)
+
+                is Effect.CloseBottomSheet -> {
+                    coroutineScope.launch {
+                        modalBottomSheetState.hide()
+                    }.invokeOnCompletion {
+                        if (!modalBottomSheetState.isVisible) {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                        }
+                    }
+                }
+
+                is Effect.ShowBottomSheet -> {
+                    onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+                }
             }
         }.collect()
     }
+}
+
+@Composable
+private fun DashboardSheetContent(
+    onEventSent: (event: Event) -> Unit
+) {
+    SheetContent(
+        titleContent = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(id = R.string.dashboard_bottom_sheet_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.textPrimaryDark
+                )
+                WrapIconButton(
+                    iconData = AppIcons.Close,
+                    customTint = MaterialTheme.colorScheme.primary,
+                    onClick = { onEventSent(Event.BottomSheet.Close) }
+                )
+            }
+        },
+        bodyContent = {
+            Row(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.allCorneredShapeSmall)
+                    .throttledClickable(
+                        onClick = { onEventSent(Event.BottomSheet.Options.OpenChangeQuickPin) }
+                    )
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                WrapIcon(
+                    iconData = AppIcons.Edit,
+                    customTint = MaterialTheme.colorScheme.primary
+                )
+                HSpacer.Medium()
+                Text(
+                    text = stringResource(id = R.string.dashboard_bottom_sheet_action_1),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.textPrimaryDark
+                )
+            }
+        }
+    )
 }
 
 @Composable
@@ -235,6 +345,7 @@ private fun Title(
     message: String,
     userName: String,
     image: IconData,
+    onEventSend: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
     Box(
@@ -256,7 +367,8 @@ private fun Title(
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
         ) {
             WrapImage(
                 iconData = image,
@@ -266,6 +378,7 @@ private fun Title(
             )
             Column(
                 modifier = Modifier
+                    .weight(1f)
                     .padding(start = SPACING_MEDIUM.dp),
                 horizontalAlignment = Alignment.Start
             ) {
@@ -280,6 +393,14 @@ private fun Title(
                     color = Color.White
                 )
             }
+
+            WrapIconButton(
+                iconData = AppIcons.VerticalMore,
+                customTint = Color.White,
+                onClick = {
+                    onEventSend(Event.OptionsPressed)
+                }
+            )
         }
     }
 }
@@ -360,6 +481,7 @@ private fun CardListItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @ThemeModePreviews
 @Composable
 private fun DashboardScreenPreview() {
@@ -397,7 +519,19 @@ private fun DashboardScreenPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(SPACING_MEDIUM.dp)
+            paddingValues = PaddingValues(SPACING_LARGE.dp),
+            coroutineScope = rememberCoroutineScope(),
+            modalBottomSheetState = rememberModalBottomSheetState()
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun SheetContentPreview() {
+    PreviewTheme {
+        DashboardSheetContent(
+            onEventSent = {}
         )
     }
 }

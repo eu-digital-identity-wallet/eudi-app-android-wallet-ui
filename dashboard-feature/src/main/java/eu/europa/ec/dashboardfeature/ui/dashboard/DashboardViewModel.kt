@@ -22,14 +22,15 @@ import eu.europa.ec.commonfeature.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.commonfeature.di.WalletPresentationScope
 import eu.europa.ec.commonfeature.extensions.getKoin
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
@@ -40,6 +41,7 @@ import org.koin.android.annotation.KoinViewModel
 data class State(
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
+    val isBottomSheetOpen: Boolean = false,
 
     val userName: String = "",
     val documents: List<DocumentUi> = emptyList()
@@ -49,9 +51,18 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data class NavigateToDocument(val documentId: String) : Event()
+    data object OptionsPressed : Event()
     sealed class Fab : Event() {
         data object PrimaryFabPressed : Fab()
         data object SecondaryFabPressed : Fab()
+    }
+
+    sealed class BottomSheet : Event() {
+        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
+        data object Close : BottomSheet()
+        sealed class Options : BottomSheet() {
+            data object OpenChangeQuickPin : Options()
+        }
     }
 }
 
@@ -61,12 +72,14 @@ sealed class Effect : ViewSideEffect {
         data class SwitchScreen(val screenRoute: String) : Navigation()
         data object OpenDeepLinkAction : Navigation()
     }
+
+    data object ShowBottomSheet : Effect()
+    data object CloseBottomSheet : Effect()
 }
 
 @KoinViewModel
 class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,
-    private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State()
@@ -93,6 +106,10 @@ class DashboardViewModel(
                 }
             }
 
+            is Event.OptionsPressed -> {
+                showBottomSheet()
+            }
+
             is Event.Fab.PrimaryFabPressed -> {
                 // Create Koin scope for presentation
                 getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
@@ -115,11 +132,25 @@ class DashboardViewModel(
                     )
                 }
             }
+
+            is Event.BottomSheet.UpdateBottomSheetState -> {
+                setState {
+                    copy(isBottomSheetOpen = event.isOpen)
+                }
+            }
+
+            is Event.BottomSheet.Close -> {
+                hideBottomSheet()
+            }
+
+            is Event.BottomSheet.Options.OpenChangeQuickPin -> {
+                hideBottomSheet()
+                navigateToChangeQuickPin()
+            }
         }
     }
 
     private fun getDocuments(event: Event) {
-
         setState {
             copy(
                 isLoading = documents.isEmpty(),
@@ -156,6 +187,31 @@ class DashboardViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun navigateToChangeQuickPin() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = CommonScreens.QuickPin,
+                    arguments = generateComposableArguments(
+                        mapOf("pinFlow" to PinFlow.UPDATE)
+                    )
+                )
+            )
+        }
+    }
+
+    private fun showBottomSheet() {
+        setEffect {
+            Effect.ShowBottomSheet
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet
         }
     }
 }

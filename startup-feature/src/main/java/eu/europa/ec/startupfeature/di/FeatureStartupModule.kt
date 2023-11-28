@@ -16,8 +16,11 @@
 
 package eu.europa.ec.startupfeature.di
 
+import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractorImpl
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -27,6 +30,8 @@ import org.koin.core.annotation.Module
 class FeatureStartupModule
 
 @Factory
-fun provideSplashInteractor(): SplashInteractor {
-    return SplashInteractorImpl()
-}
+fun provideSplashInteractor(
+    quickPinInteractor: QuickPinInteractor,
+    uiSerializer: UiSerializer,
+    resourceProvider: ResourceProvider,
+): SplashInteractor = SplashInteractorImpl(quickPinInteractor, uiSerializer, resourceProvider)

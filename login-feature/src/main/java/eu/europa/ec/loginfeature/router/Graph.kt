@@ -43,16 +43,16 @@ fun NavGraphBuilder.featureLoginGraph(navController: NavController) {
         ) {
             WelcomeScreen(navController, koinViewModel())
         }
-    }
 
-    composable(
-        route = LoginScreens.Faq.screenRoute,
-        deepLinks = listOf(
-            navDeepLink {
-                uriPattern = BuildConfig.DEEPLINK + LoginScreens.Faq.screenRoute
-            }
-        )
-    ) {
-        FaqScreen(navController, koinViewModel())
+        composable(
+            route = LoginScreens.Faq.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = BuildConfig.DEEPLINK + LoginScreens.Faq.screenRoute
+                }
+            )
+        ) {
+            FaqScreen(navController, koinViewModel())
+        }
     }
 }

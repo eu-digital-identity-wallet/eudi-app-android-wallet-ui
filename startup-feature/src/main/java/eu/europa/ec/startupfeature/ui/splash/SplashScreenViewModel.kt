@@ -45,7 +45,7 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class SplashScreenViewModel(
-    private val interactor: SplashInteractor
+    private val interactor: SplashInteractor,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State()
 
@@ -58,8 +58,10 @@ class SplashScreenViewModel(
     private fun enterApplication() {
         viewModelScope.launch {
             delay((viewState.value.logoAnimationDuration + 500).toLong())
+
+            val screenRoute = interactor.getAfterSplashRoute()
             setEffect {
-                Effect.Navigation.SwitchScreen(interactor.getAfterSplashRoute())
+                Effect.Navigation.SwitchScreen(screenRoute)
             }
         }
     }
