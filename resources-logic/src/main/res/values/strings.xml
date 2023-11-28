@@ -77,6 +77,9 @@
     <string name="request_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
     <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
     <string name="request_required_fields_title">Verification Data</string>
+    <string name="request_gender_male">Male</string>
+    <string name="request_gender_female">Female</string>
+    <string name="request_element_identifier_not_available">Not available</string>
 
     <!-- Loading Screen -->
     <string name="loading_title">EUDI Conference requests the following to register</string>

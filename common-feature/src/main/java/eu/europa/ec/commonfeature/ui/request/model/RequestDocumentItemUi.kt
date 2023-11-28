@@ -26,6 +26,7 @@ data class RequestDocumentItemUi<T>(
     val id: String,
     val domainPayload: DocumentItemDomainPayload,
     val readableName: String,
+    val value: String,
     val checked: Boolean,
     val enabled: Boolean,
     val docItem: DocItem,
@@ -57,6 +58,7 @@ fun <T> DocItem.toRequestDocumentItemUi(
     uID: String,
     docPayload: DocumentItemDomainPayload,
     readableName: String,
+    value: String,
     optional: Boolean,
     event: T?
 ): RequestDocumentItemUi<T> {
@@ -67,7 +69,8 @@ fun <T> DocItem.toRequestDocumentItemUi(
         enabled = optional,
         readableName = readableName,
         docItem = this,
-        event = event
+        event = event,
+        value = value
     )
 }
 

@@ -159,7 +159,7 @@ fun <T> OptionalField(
             InfoTextWithNameAndValue(
                 itemData = InfoTextWithNameAndValueData(
                     infoName = item.requestDocumentItemUi.readableName,
-                    infoValue = null,
+                    infoValue = item.requestDocumentItemUi.value,
                 ),
                 infoValueTextStyle = infoValueStyle
             )

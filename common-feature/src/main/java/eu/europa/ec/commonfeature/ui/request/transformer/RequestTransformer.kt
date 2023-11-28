@@ -29,7 +29,11 @@ import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import org.json.JSONObject
 
 // This is taken from SMB. Core should provide this information
 private val mandatorySelectedData: List<String> = listOf(
@@ -52,6 +56,7 @@ object RequestTransformer {
         requiredFieldsTitle: String
     ): List<RequestDataUi<Event>> {
         val items = mutableListOf<RequestDataUi<Event>>()
+        val storageDocuments = EudiWallet.getDocuments()
 
         requestDocuments.forEachIndexed { docIndex, requestDocument ->
             // Add document item.
@@ -63,10 +68,18 @@ object RequestTransformer {
             items += RequestDataUi.Space()
 
             val required = mutableListOf<RequestDocumentItemUi<Event>>()
+            val storageDocument = storageDocuments.first { it.docType == requestDocument.docType }
 
             // Add optional field items.
             requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
 
+                val value = try {
+                    val valueData =
+                        storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier].toString()
+                    getGenderValue(valueData, resourceProvider)
+                } catch (ex: Exception) {
+                    resourceProvider.getString(R.string.request_element_identifier_not_available)
+                }
                 if (mandatorySelectedData.contains(docItem.elementIdentifier)) {
                     required.add(
                         docItem.toRequestDocumentItemUi(
@@ -80,7 +93,8 @@ object RequestTransformer {
                             ),
                             optional = false,
                             event = null,
-                            readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier)
+                            readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                            value = value
                         )
                     )
                 } else {
@@ -100,7 +114,8 @@ object RequestTransformer {
                                 ),
                                 optional = true,
                                 event = Event.UserIdentificationClicked(itemId = uID),
-                                readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier)
+                                readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                                value = value
                             )
                         )
                     )
@@ -171,4 +186,23 @@ object RequestTransformer {
             }
         )
     }
+
+    // TODO Provide proper docType from Core
+    private fun JSONObject.getDocObject(docType: String): JSONObject =
+        this[docType.replace(".mDL", "")] as JSONObject
+
+    private fun getGenderValue(value: String, resourceProvider: ResourceProvider): String =
+        when (value) {
+            "1" -> {
+                resourceProvider.getString(R.string.request_gender_male)
+            }
+
+            "0" -> {
+                resourceProvider.getString(R.string.request_gender_female)
+            }
+
+            else -> {
+                value
+            }
+        }
 }
