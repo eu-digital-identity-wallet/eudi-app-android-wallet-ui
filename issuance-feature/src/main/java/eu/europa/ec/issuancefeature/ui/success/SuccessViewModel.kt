@@ -16,7 +16,10 @@
 
 package eu.europa.ec.issuancefeature.ui.success
 
+import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
+import eu.europa.ec.issuancefeature.interactor.SuccessPartialState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -24,6 +27,7 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
@@ -63,6 +67,7 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class SuccessViewModel(
+    private val interactor: SuccessInteractor,
     @InjectedParam private val flowType: IssuanceFlowUiConfig,
     @InjectedParam private val docType: String,
 ) : MviViewModel<Event, State, Effect>() {
@@ -78,20 +83,30 @@ class SuccessViewModel(
             is Event.GoBack -> setEffect { Effect.Navigation.Pop }
 
             is Event.PrimaryButtonPressed -> {
-                setEffect {
-                    Effect.Navigation.SwitchScreen(
-                        screenRoute = generateComposableNavigationLink(
-                            screen = IssuanceScreens.DocumentDetails,
-                            arguments = generateComposableArguments(
-                                mapOf(
-                                    "detailsType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(
-                                        flowType
-                                    ),
-                                    "documentId" to event.documentId
-                                )
-                            )
-                        )
-                    )
+                viewModelScope.launch {
+                    interactor.addData().collect {
+                        when (it) {
+                            is SuccessPartialState.Success -> {
+                                setEffect {
+                                    Effect.Navigation.SwitchScreen(
+                                        screenRoute = generateComposableNavigationLink(
+                                            screen = IssuanceScreens.DocumentDetails,
+                                            arguments = generateComposableArguments(
+                                                mapOf(
+                                                    "detailsType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(
+                                                        flowType
+                                                    ),
+                                                    "documentId" to event.documentId
+                                                )
+                                            )
+                                        )
+                                    )
+                                }
+                            }
+
+                            else -> {}
+                        }
+                    }
                 }
             }
 

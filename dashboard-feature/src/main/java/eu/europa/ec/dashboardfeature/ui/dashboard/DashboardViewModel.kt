@@ -17,10 +17,10 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.commonfeature.di.WalletPresentationScope
 import eu.europa.ec.commonfeature.extensions.getKoin
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
@@ -69,9 +69,7 @@ class DashboardViewModel(
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
 
-    override fun setInitialState(): State = State(
-        userName = dashboardInteractor.getUserName()
-    )
+    override fun setInitialState(): State = State()
 
     override fun handleEvents(event: Event) {
         when (event) {

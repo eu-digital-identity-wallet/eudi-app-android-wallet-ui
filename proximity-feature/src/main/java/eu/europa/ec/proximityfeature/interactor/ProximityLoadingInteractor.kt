@@ -23,6 +23,7 @@ import eu.europa.ec.commonfeature.interactor.EudiWalletProximityPartialState
 import kotlinx.coroutines.flow.Flow
 
 interface ProximityLoadingInteractor {
+    val verifierName: String?
     fun stopPresentation()
     fun observeResponse(): Flow<EudiWalletProximityPartialState>
 }
@@ -30,6 +31,8 @@ interface ProximityLoadingInteractor {
 class ProximityLoadingInteractorImpl(
     private val eudiWalletInteractor: EudiWalletInteractor
 ) : ProximityLoadingInteractor {
+
+    override val verifierName: String? = eudiWalletInteractor.verifierName
 
     override fun observeResponse(): Flow<EudiWalletProximityPartialState> =
         eudiWalletInteractor.observeSentDocumentsRequest()

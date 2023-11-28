@@ -46,7 +46,15 @@ class ProximityLoadingViewModel constructor(
 ) : LoadingViewModel() {
 
     override fun getTitle(): String {
-        return resourceProvider.getString(R.string.proximity_loading_title)
+        return if (interactor.verifierName.isNullOrBlank()) {
+            resourceProvider.getString(R.string.request_title)
+        } else {
+            resourceProvider.getString(
+                R.string.request_title_with_verifier_name,
+                interactor.verifierName
+                    ?: resourceProvider.getString(R.string.proximity_loading_success_config_verifier)
+            )
+        }
     }
 
     override fun getSubtitle(): String {
@@ -105,7 +113,11 @@ class ProximityLoadingViewModel constructor(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
                     header = resourceProvider.getString(R.string.loading_success_config_title),
-                    content = resourceProvider.getString(R.string.proximity_loading_success_config_subtitle),
+                    content = resourceProvider.getString(
+                        R.string.proximity_loading_success_config_subtitle,
+                        interactor.verifierName
+                            ?: resourceProvider.getString(R.string.proximity_loading_success_config_verifier)
+                    ),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.DEFAULT
                     ),

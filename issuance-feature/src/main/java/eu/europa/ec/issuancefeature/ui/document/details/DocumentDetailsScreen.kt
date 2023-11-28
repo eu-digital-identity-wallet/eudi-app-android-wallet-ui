@@ -268,7 +268,7 @@ private fun IssuanceDocumentDetailsScreenPreview() {
             hasBottomPadding = true,
             detailsHaveBottomGradient = true,
             document = DocumentUi(
-                documentId = 2,
+                documentId = "2",
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image3",
@@ -306,7 +306,7 @@ private fun DashboardDocumentDetailsScreenPreview() {
             hasBottomPadding = false,
             detailsHaveBottomGradient = false,
             document = DocumentUi(
-                documentId = 2,
+                documentId = "2",
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image3",

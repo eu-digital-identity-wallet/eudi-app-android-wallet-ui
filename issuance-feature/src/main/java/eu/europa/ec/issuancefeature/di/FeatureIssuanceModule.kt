@@ -17,8 +17,11 @@
 package eu.europa.ec.issuancefeature.di
 
 
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.issuancefeature.interactor.AuthenticateInteractor
 import eu.europa.ec.issuancefeature.interactor.AuthenticateInteractorImpl
+import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
+import eu.europa.ec.issuancefeature.interactor.SuccessInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
@@ -35,12 +38,20 @@ class FeatureIssuanceModule
 @Factory
 fun provideAddDocumentInteractor(
     resourceProvider: ResourceProvider,
-): AddDocumentInteractor = AddDocumentInteractorImpl(resourceProvider)
+    eudiWallet: EudiWallet
+): AddDocumentInteractor = AddDocumentInteractorImpl(resourceProvider, eudiWallet)
 
 @Factory
 fun provideDocumentDetailsInteractor(
     resourceProvider: ResourceProvider,
-): DocumentDetailsInteractor = DocumentDetailsInteractorImpl(resourceProvider)
+    eudiWallet: EudiWallet
+): DocumentDetailsInteractor = DocumentDetailsInteractorImpl(resourceProvider, eudiWallet)
+
+@Factory
+fun provideSuccessInteractor(
+    resourceProvider: ResourceProvider,
+    eudiWallet: EudiWallet
+): SuccessInteractor = SuccessInteractorImpl(resourceProvider, eudiWallet)
 
 @Factory
 fun provideAuthenticateInteractor(): AuthenticateInteractor = AuthenticateInteractorImpl()

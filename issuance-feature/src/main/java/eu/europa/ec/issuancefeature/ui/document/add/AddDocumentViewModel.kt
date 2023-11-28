@@ -20,8 +20,7 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentInteractor
-import eu.europa.ec.dashboardfeature.interactor.document.AddDocumentLoadData
+import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -52,7 +51,6 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
-    data object AddDocuments : Event()
     data class NavigateToAuthentication(val url: String, val type: DocumentTypeUi) : Event()
 }
 
@@ -80,8 +78,6 @@ class AddDocumentViewModel(
 
         is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
-        is Event.AddDocuments -> loadSampleData(event)
-
         is Event.NavigateToAuthentication -> {
             setEffect {
                 Effect.Navigation.SwitchScreen(
@@ -95,39 +91,6 @@ class AddDocumentViewModel(
                         )
                     )
                 )
-            }
-        }
-    }
-
-    private fun loadSampleData(event: Event) {
-        setState {
-            copy(
-                isLoading = true,
-                error = null
-            )
-        }
-
-        viewModelScope.launch {
-            addDocumentInteractor.addSampleData().collect { result ->
-                when (result) {
-                    is AddDocumentLoadData.Failure -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                options = emptyList(),
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = result.error,
-                                    onCancel = { setEvent(Event.Pop) }
-                                )
-                            )
-                        }
-                    }
-
-                    AddDocumentLoadData.Success -> {
-                        setEffect { Effect.Navigation.Pop }
-                    }
-                }
             }
         }
     }
