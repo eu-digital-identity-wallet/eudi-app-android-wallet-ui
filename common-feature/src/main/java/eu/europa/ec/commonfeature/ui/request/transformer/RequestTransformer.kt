@@ -51,12 +51,13 @@ private val mandatorySelectedData: List<String> = listOf(
 object RequestTransformer {
 
     fun transformToUiItems(
+        eudiWallet: EudiWallet = EudiWallet,
         resourceProvider: ResourceProvider,
         requestDocuments: List<RequestDocument>,
         requiredFieldsTitle: String
     ): List<RequestDataUi<Event>> {
         val items = mutableListOf<RequestDataUi<Event>>()
-        val storageDocuments = EudiWallet.getDocuments()
+        val storageDocuments = eudiWallet.getDocuments()
 
         requestDocuments.forEachIndexed { docIndex, requestDocument ->
             // Add document item.

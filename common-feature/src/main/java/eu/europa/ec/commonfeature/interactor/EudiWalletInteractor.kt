@@ -89,18 +89,22 @@ interface EudiWalletInteractor {
      * @return Hot Flow that emits the Core's status callback.
      * */
     val events: Flow<TransferEventPartialState>
+
     /**
      * User selection data for request step
      * */
     val requestDataUi: List<RequestDataUi<Event>>
+
     /**
      * Verifier name so it can be retrieve across screens
      * */
     val verifierName: String?
+
     /**
      * Terminates the presentation and kills the coroutine scope that [events] live in
      * */
     fun stopPresentation()
+
     /**
      * Starts QR engagement. This will trigger [events] emission.
      *
@@ -111,6 +115,7 @@ interface EudiWalletInteractor {
      * [TransferEventPartialState.Connected] -> Connected. We can proceed to the next screen
      * */
     fun startQrEngagement()
+
     /**
      * Transform UI models to Domain and create -> sent the request.
      *
@@ -118,15 +123,18 @@ interface EudiWalletInteractor {
      * The response of that request is emitted through [events]
      *  */
     fun sendRequestedDocuments(): Flow<SendRequestedDocumentsPartialState>
+
     /**
      * Updates the UI model
      * @param items User updated data through UI Events
      * */
     fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
+
     /**
      * @return flow that maps the state from [events] emission to what we consider as success state
      * */
     fun mappedCallbackStateFlow(): Flow<ResponseReceivedPartialState>
+
     /**
      * The main observation point for collecting state for the Request flow.
      * Exposes a single flow for two operations([sendRequestedDocuments] - [mappedCallbackStateFlow])
@@ -182,6 +190,7 @@ class EudiWalletInteractorImpl(
             },
             onRequestReceived = { requestDocuments ->
                 requestDataUi = RequestTransformer.transformToUiItems(
+                    eudiWallet = eudiWallet,
                     requestDocuments = requestDocuments,
                     requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
                     resourceProvider = resourceProvider
