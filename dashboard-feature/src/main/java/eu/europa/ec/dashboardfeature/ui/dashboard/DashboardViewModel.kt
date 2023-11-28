@@ -27,8 +27,8 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
-import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -190,7 +190,7 @@ class DashboardViewModel(
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = LoginScreens.QuickPin,
+                    screen = CommonScreens.QuickPin,
                     arguments = generateComposableArguments(
                         mapOf("pinFlow" to PinFlow.UPDATE)
                     )

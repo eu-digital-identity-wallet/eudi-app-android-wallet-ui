@@ -18,54 +18,21 @@ package eu.europa.ec.loginfeature.router
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
-import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.loginfeature.ui.faq.FaqScreen
-import eu.europa.ec.loginfeature.ui.pin.PinScreen
 import eu.europa.ec.loginfeature.ui.welcome.WelcomeScreen
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.featureLoginGraph(navController: NavController) {
     navigation(
-        startDestination = LoginScreens.QuickPin.screenRoute,
+        startDestination = LoginScreens.Welcome.screenRoute,
         route = ModuleRoute.LoginModule.route
     ) {
-        composable(
-            route = LoginScreens.QuickPin.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern = BuildConfig.DEEPLINK + LoginScreens.QuickPin.screenRoute
-                }
-            ),
-            arguments = listOf(
-                navArgument("pinFlow") {
-                    type = NavType.StringType
-                }
-            )
-        ) {
-            PinScreen(
-                navController,
-                getViewModel(
-                    parameters = {
-                        parametersOf(
-                            PinFlow.valueOf(
-                                it.arguments?.getString("pinFlow").orEmpty()
-                            )
-                        )
-                    }
-                )
-            )
-        }
-
         composable(
             route = LoginScreens.Welcome.screenRoute,
             deepLinks = listOf(

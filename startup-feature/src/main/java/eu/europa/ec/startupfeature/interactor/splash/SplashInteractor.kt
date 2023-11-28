@@ -25,7 +25,6 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.LoginScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -58,7 +57,7 @@ class SplashInteractorImpl(
 
     private fun getQuickPinConfig(): String {
         return generateComposableNavigationLink(
-            screen = LoginScreens.QuickPin,
+            screen = CommonScreens.QuickPin,
             arguments = generateComposableArguments(mapOf("pinFlow" to PinFlow.CREATE))
         )
     }

@@ -33,6 +33,8 @@ sealed class CommonScreens {
         name = "BIOMETRIC",
         parameters = "?biometricConfig={biometricConfig}"
     )
+    data object QuickPin :
+        Screen(name = "QUICK_PIN", parameters = "?pinFlow={pinFlow}")
 }
 
 sealed class DashboardScreens {
@@ -42,9 +44,6 @@ sealed class DashboardScreens {
 sealed class LoginScreens {
     data object Welcome : Screen(name = "WELCOME")
     data object Faq : Screen(name = "FAQ")
-
-    data object QuickPin :
-        Screen(name = "QUICK_PIN_SCREEN", parameters = "?pinFlow={pinFlow}")
 }
 
 sealed class PresentationScreens {
