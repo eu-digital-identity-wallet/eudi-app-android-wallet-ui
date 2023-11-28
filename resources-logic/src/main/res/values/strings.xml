@@ -70,7 +70,7 @@
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
     <string name="quick_pin_numerical_rule_invalid_error_message">Only numerical values are allowed</string>
-    <string name="quick_pin_non_match">The pin you entered is not matching</string>
+    <string name="quick_pin_non_match">Pins do not match</string>
 
     <string name="quick_pin_create_title">Welcome to the EUDI Wallet</string>
     <string name="quick_pin_create_enter_subtitle">Set a quick pin for future logins</string>

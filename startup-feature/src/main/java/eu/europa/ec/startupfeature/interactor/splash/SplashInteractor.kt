@@ -16,8 +16,9 @@
 
 package eu.europa.ec.startupfeature.interactor.splash
 
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -25,6 +26,7 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -34,25 +36,22 @@ interface SplashInteractor {
 }
 
 class SplashInteractorImpl(
-    private val prefKeys: PrefKeys,
+    private val quickPinInteractor: QuickPinInteractor,
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
 ) : SplashInteractor {
 
-    override fun getAfterSplashRoute(): String {
-        val alreadyHasPin = getDevicePin().isNotBlank()
+    // TODO - REPLACE ONCE CORE CAN RETURN DOCUMENTS FROM STORAGE
+    private val hasDocuments = true
 
-        val nextScreen = if (alreadyHasPin) {
+    override fun getAfterSplashRoute(): String = when (quickPinInteractor.hasPin()) {
+        true -> {
             getBiometricsConfig()
-        } else {
-            getQuickPinConfig()
         }
 
-        return nextScreen
-    }
-
-    private fun getDevicePin(): String {
-        return prefKeys.getDevicePin()
+        false -> {
+            getQuickPinConfig()
+        }
     }
 
     private fun getQuickPinConfig(): String {
@@ -72,11 +71,20 @@ class SplashInteractorImpl(
                             title = resourceProvider.getString(R.string.biometric_login_prompt_title),
                             subTitle = resourceProvider.getString(R.string.biometric_login_prompt_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.biometric_login_prompt_quickPinOnlySubTitle),
-                            isPreAuthorization = false,
+                            isPreAuthorization = true,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PUSH,
-                                screenToNavigate = DashboardScreens.Dashboard
+                                screenToNavigate = if (hasDocuments) {
+                                    DashboardScreens.Dashboard
+                                } else {
+                                    IssuanceScreens.AddDocument
+                                },
+                                arguments = if (!hasDocuments) {
+                                    mapOf("flowType" to IssuanceFlowUiConfig.NO_DOCUMENT.name)
+                                } else {
+                                    emptyMap()
+                                }
                             ),
                             onBackNavigation = null
                         ),

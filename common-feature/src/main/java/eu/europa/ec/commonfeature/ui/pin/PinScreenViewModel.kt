@@ -20,6 +20,7 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.Form
 import eu.europa.ec.businesslogic.validator.FormValidationResult
 import eu.europa.ec.businesslogic.validator.Rule
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
@@ -36,6 +37,7 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -341,9 +343,11 @@ class PinViewModel(
     }
 
     private fun getNextScreenRoute(): String {
+
         val navigationAfterCreate = ConfigNavigation(
             navigationType = NavigationType.PUSH,
-            screenToNavigate = DashboardScreens.Dashboard
+            screenToNavigate = IssuanceScreens.AddDocument,
+            arguments = mapOf("flowType" to IssuanceFlowUiConfig.NO_DOCUMENT.name)
         )
 
         val navigationAfterUpdate = ConfigNavigation(

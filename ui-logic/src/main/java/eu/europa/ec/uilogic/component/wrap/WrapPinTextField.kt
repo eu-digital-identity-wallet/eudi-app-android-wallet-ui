@@ -94,8 +94,8 @@ fun WrapPinTextField(
         onPinUpdate.invoke(otpCode)
     }
 
-    if (clearCode){
-        textFieldStateList.forEach{
+    if (clearCode) {
+        textFieldStateList.forEach {
             it.value = ""
             onPinUpdate.invoke("")
         }
