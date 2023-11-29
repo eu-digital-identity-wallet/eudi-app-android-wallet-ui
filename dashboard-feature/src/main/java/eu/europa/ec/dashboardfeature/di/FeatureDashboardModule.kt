@@ -16,9 +16,9 @@
 
 package eu.europa.ec.dashboardfeature.di
 
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
-import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -31,5 +31,5 @@ class FeatureDashboardModule
 @Factory
 fun provideDashboardInteractor(
     resourceProvider: ResourceProvider,
-    eudiWallet: EudiWallet
-): DashboardInteractor = DashboardInteractorImpl(resourceProvider, eudiWallet)
+    walletCoreDocumentsController: WalletCoreDocumentsController
+): DashboardInteractor = DashboardInteractorImpl(resourceProvider, walletCoreDocumentsController)

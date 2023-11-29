@@ -16,8 +16,9 @@
 
 package eu.europa.ec.proximityfeature.ui.qr
 
+import androidx.activity.ComponentActivity
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.di.getPresentationScope
+import eu.europa.ec.businesslogic.di.getPresentationScope
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityQRPartialState
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -40,6 +41,10 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object GoBack : Event()
+    data class NfcEngagement(
+        val componentActivity: ComponentActivity,
+        val enable: Boolean
+    ) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -70,6 +75,13 @@ class ProximityQRViewModel(
             is Event.GoBack -> {
                 cleanUp()
                 setEffect { Effect.Navigation.Pop }
+            }
+
+            is Event.NfcEngagement -> {
+                interactor.toggleNfcEngagement(
+                    event.componentActivity,
+                    event.enable
+                )
             }
         }
     }

@@ -17,9 +17,9 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
+import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
-import eu.europa.ec.commonfeature.di.PRESENTATION_SCOPE_ID
-import eu.europa.ec.commonfeature.di.WalletPresentationScope
 import eu.europa.ec.commonfeature.extensions.getKoin
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.PinFlow

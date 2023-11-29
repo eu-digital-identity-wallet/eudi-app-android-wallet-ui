@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
 import eu.europa.ec.proximityfeature.ui.qr.component.rememberQrBitmapPainter
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
@@ -113,14 +112,24 @@ fun ProximityQRScreen(
         lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
-        NfcEngagementService.enable(context as ComponentActivity)
+        viewModel.setEvent(
+            Event.NfcEngagement(
+                context as ComponentActivity,
+                true
+            )
+        )
     }
 
     LifecycleEffect(
         lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_PAUSE
     ) {
-        NfcEngagementService.disable(context as ComponentActivity)
+        viewModel.setEvent(
+            Event.NfcEngagement(
+                context as ComponentActivity,
+                false
+            )
+        )
     }
 }
 

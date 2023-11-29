@@ -1,32 +1,32 @@
 /*
+ * Copyright (c) 2023 European Commission
  *
- *  * Copyright (c) 2023 European Commission
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
+ * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
+ * except in compliance with the Licence.
  *
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/software/page/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the Licence is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the Licence for the specific language
+ * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.interactor
+package eu.europa.ec.businesslogic.controller.walletcore
 
+import android.content.Context
+import androidx.activity.ComponentActivity
+import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.corewrapper.EUDIWListenerWrapper
-import eu.europa.ec.commonfeature.di.WalletPresentationScope
-import eu.europa.ec.commonfeature.ui.request.Event
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
-import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
+import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
+import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
+import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.ResponseResult
+import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
 import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -53,7 +53,7 @@ sealed class TransferEventPartialState {
     data class Error(val error: String) : TransferEventPartialState()
     data class QrEngagementReady(val qrCode: String) : TransferEventPartialState()
     data class RequestReceived(
-        val requestDataUi: List<RequestDataUi<Event>>,
+        val requestData: List<RequestDocument>,
         val verifierName: String?
     ) :
         TransferEventPartialState()
@@ -72,16 +72,21 @@ sealed class ResponseReceivedPartialState {
     data class Failure(val error: String) : ResponseReceivedPartialState()
 }
 
-sealed class EudiWalletProximityPartialState {
-    data object UserAuthenticationRequired : EudiWalletProximityPartialState()
-    data class Failure(val error: String) : EudiWalletProximityPartialState()
-    data object Success : EudiWalletProximityPartialState()
+sealed class WalletCoreProximityPartialState {
+    data object UserAuthenticationRequired : WalletCoreProximityPartialState()
+    data class Failure(val error: String) : WalletCoreProximityPartialState()
+    data object Success : WalletCoreProximityPartialState()
+}
+
+sealed class LoadSampleDataPartialState {
+    data object Success : LoadSampleDataPartialState()
+    data class Failure(val error: String) : LoadSampleDataPartialState()
 }
 
 /**
  * Common scoped interactor that has all the complexity and required interaction with the EudiWallet Core.
  * */
-interface EudiWalletInteractor {
+interface WalletCorePresentationController {
     /**
      * On initialization it adds the core listener and remove it when scope is canceled.
      * When the scope is canceled so does the presentation
@@ -93,7 +98,7 @@ interface EudiWalletInteractor {
     /**
      * User selection data for request step
      * */
-    val requestDataUi: List<RequestDataUi<Event>>
+    val disclosedDocuments: DisclosedDocuments?
 
     /**
      * Verifier name so it can be retrieve across screens
@@ -117,6 +122,11 @@ interface EudiWalletInteractor {
     fun startQrEngagement()
 
     /**
+     * Enable/Disable NFC service
+     * */
+    fun toggleNfcEngagement(componentActivity: ComponentActivity, toggle: Boolean)
+
+    /**
      * Transform UI models to Domain and create -> sent the request.
      *
      * @return Flow that emits the creation state. On Success send the request.
@@ -128,7 +138,7 @@ interface EudiWalletInteractor {
      * Updates the UI model
      * @param items User updated data through UI Events
      * */
-    fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
+    fun updateRequestedDocuments(disclosedDocuments: DisclosedDocuments?)
 
     /**
      * @return flow that maps the state from [events] emission to what we consider as success state
@@ -141,28 +151,42 @@ interface EudiWalletInteractor {
      * and a single state
      * @return flow that emits the create, sent, receive states
      * */
-    fun observeSentDocumentsRequest(): Flow<EudiWalletProximityPartialState>
+    fun observeSentDocumentsRequest(): Flow<WalletCoreProximityPartialState>
+
+    companion object {
+        /**
+         * Initialize wallet core
+         * @param applicationContext Application Context
+         * @param config Config for Eudi Wallet Core
+         * */
+        fun initializeWalletCore(
+            applicationContext: Context,
+            config: EudiWalletConfig = EudiWalletConfig.Builder(applicationContext).build()
+        ) {
+            EudiWallet.init(applicationContext, config)
+        }
+    }
 }
 
 @Scope(WalletPresentationScope::class)
 @Scoped
-class EudiWalletInteractorImpl(
+class WalletCorePresentationControllerImpl(
     private val eudiWallet: EudiWallet,
     private val resourceProvider: ResourceProvider,
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
-) : EudiWalletInteractor {
+) : WalletCorePresentationController {
 
     private val genericErrorMessage = resourceProvider.genericErrorMessage()
 
     private val coroutineScope = CoroutineScope(dispatcher + SupervisorJob())
 
-    override var requestDataUi: List<RequestDataUi<Event>> = emptyList()
+    override var disclosedDocuments: DisclosedDocuments? = null
         private set
     override var verifierName: String? = null
         private set
 
     override val events = callbackFlow {
-        val eventListenerWrapper = EUDIWListenerWrapper(
+        val eventListenerWrapper = EudiWalletListenerWrapper(
             onQrEngagementReady = { qrCode ->
                 trySendBlocking(
                     TransferEventPartialState.QrEngagementReady(qrCode = qrCode)
@@ -189,17 +213,11 @@ class EudiWalletInteractorImpl(
                 )
             },
             onRequestReceived = { requestDocuments ->
-                requestDataUi = RequestTransformer.transformToUiItems(
-                    eudiWallet = eudiWallet,
-                    requestDocuments = requestDocuments,
-                    requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
-                    resourceProvider = resourceProvider
-                )
                 verifierName =
                     requestDocuments.firstOrNull()?.docRequest?.readerAuth?.readerCommonName
                 trySendBlocking(
                     TransferEventPartialState.RequestReceived(
-                        requestDataUi = requestDataUi,
+                        requestData = requestDocuments,
                         verifierName = verifierName
                     )
                 )
@@ -227,22 +245,31 @@ class EudiWalletInteractorImpl(
         eudiWallet.startQrEngagement()
     }
 
+    override fun toggleNfcEngagement(componentActivity: ComponentActivity, toggle: Boolean) {
+        if (toggle) {
+            NfcEngagementService.enable(componentActivity)
+        } else {
+            NfcEngagementService.disable(componentActivity)
+        }
+    }
+
     override fun sendRequestedDocuments() =
         flow {
-            val disclosedDocuments = RequestTransformer.transformToDomainItems(requestDataUi)
-            when (val response = eudiWallet.createResponse(disclosedDocuments)) {
-                is ResponseResult.Failure -> {
-                    emit(SendRequestedDocumentsPartialState.Failure(resourceProvider.genericErrorMessage()))
-                }
+            disclosedDocuments?.let { documents ->
+                when (val response = eudiWallet.createResponse(documents)) {
+                    is ResponseResult.Failure -> {
+                        emit(SendRequestedDocumentsPartialState.Failure(resourceProvider.genericErrorMessage()))
+                    }
 
-                is ResponseResult.Response -> {
-                    val responseBytes = response.bytes
-                    eudiWallet.sendResponse(responseBytes)
-                    emit(SendRequestedDocumentsPartialState.RequestSent)
-                }
+                    is ResponseResult.Response -> {
+                        val responseBytes = response.bytes
+                        eudiWallet.sendResponse(responseBytes)
+                        emit(SendRequestedDocumentsPartialState.RequestSent)
+                    }
 
-                is ResponseResult.UserAuthRequired -> {
-                    emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired)
+                    is ResponseResult.UserAuthRequired -> {
+                        emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired)
+                    }
                 }
             }
         }
@@ -269,19 +296,19 @@ class EudiWalletInteractorImpl(
         }
     }
 
-    override fun observeSentDocumentsRequest(): Flow<EudiWalletProximityPartialState> =
+    override fun observeSentDocumentsRequest(): Flow<WalletCoreProximityPartialState> =
         sendRequestedDocuments().zip(mappedCallbackStateFlow()) { createResponseState, sentResponseState ->
             when {
                 createResponseState is SendRequestedDocumentsPartialState.Failure -> {
-                    EudiWalletProximityPartialState.Failure(createResponseState.error)
+                    WalletCoreProximityPartialState.Failure(createResponseState.error)
                 }
 
                 createResponseState is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
-                    EudiWalletProximityPartialState.UserAuthenticationRequired
+                    WalletCoreProximityPartialState.UserAuthenticationRequired
                 }
 
                 sentResponseState is ResponseReceivedPartialState.Failure -> {
-                    EudiWalletProximityPartialState.Failure(sentResponseState.error)
+                    WalletCoreProximityPartialState.Failure(sentResponseState.error)
                 }
 
                 createResponseState is SendRequestedDocumentsPartialState.RequestSent &&
@@ -290,20 +317,22 @@ class EudiWalletInteractorImpl(
                 }
 
                 else -> {
-                    EudiWalletProximityPartialState.Success
+                    WalletCoreProximityPartialState.Success
                 }
             }
         }.filterNotNull()
             .safeAsync {
-                EudiWalletProximityPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
+                WalletCoreProximityPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
             }
 
-    override fun updateRequestedDocuments(items: List<RequestDataUi<Event>>) {
-        requestDataUi = items
+    override fun updateRequestedDocuments(disclosedDocuments: DisclosedDocuments?) {
+        this.disclosedDocuments = disclosedDocuments
     }
 
     override fun stopPresentation() {
         eudiWallet.stopPresentation()
         coroutineScope.cancel()
     }
+
+
 }

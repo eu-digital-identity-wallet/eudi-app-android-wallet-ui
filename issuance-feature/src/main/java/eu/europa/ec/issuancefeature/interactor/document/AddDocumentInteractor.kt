@@ -19,7 +19,6 @@ package eu.europa.ec.issuancefeature.interactor.document
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -39,7 +38,6 @@ interface AddDocumentInteractor {
 
 class AddDocumentInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet,
 ) : AddDocumentInteractor {
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()

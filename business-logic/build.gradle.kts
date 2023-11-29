@@ -18,6 +18,7 @@ import eu.europa.ec.euidi.addConfigField
 
 plugins {
     id("eudi.android.library")
+    id("eudi.wallet.core")
 }
 
 android {

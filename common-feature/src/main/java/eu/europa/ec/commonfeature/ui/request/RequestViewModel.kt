@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.commonfeature.di.getPresentationScope
+import eu.europa.ec.businesslogic.di.getPresentationScope
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType

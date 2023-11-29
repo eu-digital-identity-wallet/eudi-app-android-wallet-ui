@@ -16,7 +16,6 @@
 
 plugins {
     id("eudi.android.feature")
-    id("eudi.wallet.core")
 }
 
 android {

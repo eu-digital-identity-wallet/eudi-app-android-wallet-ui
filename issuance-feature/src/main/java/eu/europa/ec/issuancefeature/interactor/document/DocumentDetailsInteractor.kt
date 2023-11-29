@@ -21,7 +21,6 @@ import eu.europa.ec.commonfeature.model.DocumentItemUi
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +39,6 @@ interface DocumentDetailsInteractor {
 
 class DocumentDetailsInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet
 ) : DocumentDetailsInteractor {
 
     private val genericErrorMsg

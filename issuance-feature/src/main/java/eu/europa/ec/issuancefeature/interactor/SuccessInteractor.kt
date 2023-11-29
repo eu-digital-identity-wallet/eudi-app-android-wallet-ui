@@ -16,13 +16,12 @@
 
 package eu.europa.ec.issuancefeature.interactor
 
-import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.eudi.wallet.document.sample.LoadSampleResult
+import eu.europa.ec.businesslogic.controller.walletcore.LoadSampleDataPartialState
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import org.json.JSONObject
 import java.util.Base64
 
@@ -37,37 +36,21 @@ interface SuccessInteractor {
 
 class SuccessInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet
+    private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : SuccessInteractor {
 
-    private val genericErrorMsg
-        get() = resourceProvider.genericErrorMessage()
-
-    override fun addData(): Flow<SuccessPartialState> = flow {
+    override fun addData(): Flow<SuccessPartialState> {
         val byteArray = Base64.getDecoder().decode(
             JSONObject(
                 resourceProvider.getStringFromRaw(R.raw.sample_data)
             ).getString("Data")
         )
 
-        val result = eudiWallet.loadSampleData(byteArray)
-
-        emit(
-            when (result) {
-                is LoadSampleResult.Error -> {
-                    SuccessPartialState.Failure(
-                        error = result.message
-                    )
-                }
-
-                LoadSampleResult.Success -> {
-                    SuccessPartialState.Success
-                }
+        return walletCoreDocumentsController.loadSampleData(byteArray).map {
+            when (it) {
+                is LoadSampleDataPartialState.Failure -> SuccessPartialState.Failure(it.error)
+                is LoadSampleDataPartialState.Success -> SuccessPartialState.Success
             }
-        )
-    }.safeAsync {
-        SuccessPartialState.Failure(
-            error = it.message ?: genericErrorMsg
-        )
+        }
     }
 }

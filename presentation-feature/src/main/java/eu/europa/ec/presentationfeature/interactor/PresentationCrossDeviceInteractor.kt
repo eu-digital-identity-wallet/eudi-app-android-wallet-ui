@@ -17,14 +17,15 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class PresentationCrossDeviceInteractorPartialState {
-    data class Success(val requestDocuments: List<RequestDocument>) :
+    data class Success(val requestDocuments: List<RequestDataUi<Event>>) :
         PresentationCrossDeviceInteractorPartialState()
 
     data class Failure(val error: String) : PresentationCrossDeviceInteractorPartialState()

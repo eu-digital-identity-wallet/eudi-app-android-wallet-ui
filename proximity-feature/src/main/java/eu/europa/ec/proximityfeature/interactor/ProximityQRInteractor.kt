@@ -16,9 +16,10 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
+import androidx.activity.ComponentActivity
+import eu.europa.ec.businesslogic.controller.walletcore.TransferEventPartialState
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
-import eu.europa.ec.commonfeature.interactor.TransferEventPartialState
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -33,20 +34,25 @@ sealed class ProximityQRPartialState {
 
 interface ProximityQRInteractor {
     fun startQrEngagement(): Flow<ProximityQRPartialState>
+    fun toggleNfcEngagement(
+        componentActivity: ComponentActivity,
+        toggle: Boolean
+    )
+
     fun cancelTransfer()
 }
 
 class ProximityQRInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWalletInteractor: EudiWalletInteractor
+    private val walletCorePresentationController: WalletCorePresentationController
 ) : ProximityQRInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
     override fun startQrEngagement(): Flow<ProximityQRPartialState> {
-        eudiWalletInteractor.startQrEngagement()
-        return eudiWalletInteractor.events.mapNotNull {
+        walletCorePresentationController.startQrEngagement()
+        return walletCorePresentationController.events.mapNotNull {
             when (it) {
                 is TransferEventPartialState.Connected -> {
                     ProximityQRPartialState.Connected
@@ -71,7 +77,14 @@ class ProximityQRInteractorImpl(
         }.cancellable()
     }
 
+    override fun toggleNfcEngagement(
+        componentActivity: ComponentActivity,
+        toggle: Boolean
+    ) {
+        walletCorePresentationController.toggleNfcEngagement(componentActivity, toggle)
+    }
+
     override fun cancelTransfer() {
-        eudiWalletInteractor.stopPresentation()
+        walletCorePresentationController.stopPresentation()
     }
 }

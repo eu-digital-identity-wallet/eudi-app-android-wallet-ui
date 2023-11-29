@@ -20,7 +20,6 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
-import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -111,12 +110,7 @@ class PresentationSameDeviceRequestViewModel(
                         setState {
                             copy(
                                 isLoading = false,
-                                error = null,
-                                items = RequestTransformer.transformToUiItems(
-                                    requestDocuments = response.requestDocuments,
-                                    requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
-                                    resourceProvider = resourceProvider
-                                )
+                                error = null
                             )
                         }
                     }

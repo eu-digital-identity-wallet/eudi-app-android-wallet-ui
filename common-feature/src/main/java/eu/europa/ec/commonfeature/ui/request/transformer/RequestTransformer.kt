@@ -29,7 +29,7 @@ import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
-import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -51,13 +51,12 @@ private val mandatorySelectedData: List<String> = listOf(
 object RequestTransformer {
 
     fun transformToUiItems(
-        eudiWallet: EudiWallet = EudiWallet,
+        storageDocuments: List<Document> = emptyList(),
         resourceProvider: ResourceProvider,
         requestDocuments: List<RequestDocument>,
         requiredFieldsTitle: String
     ): List<RequestDataUi<Event>> {
         val items = mutableListOf<RequestDataUi<Event>>()
-        val storageDocuments = eudiWallet.getDocuments()
 
         requestDocuments.forEachIndexed { docIndex, requestDocument ->
             // Add document item.

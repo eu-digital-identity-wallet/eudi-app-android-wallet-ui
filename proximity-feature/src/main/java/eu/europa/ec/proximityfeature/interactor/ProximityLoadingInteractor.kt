@@ -18,26 +18,26 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
-import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
-import eu.europa.ec.commonfeature.interactor.EudiWalletProximityPartialState
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreProximityPartialState
 import kotlinx.coroutines.flow.Flow
 
 interface ProximityLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
-    fun observeResponse(): Flow<EudiWalletProximityPartialState>
+    fun observeResponse(): Flow<WalletCoreProximityPartialState>
 }
 
 class ProximityLoadingInteractorImpl(
-    private val eudiWalletInteractor: EudiWalletInteractor
+    private val walletCorePresentationController: WalletCorePresentationController
 ) : ProximityLoadingInteractor {
 
-    override val verifierName: String? = eudiWalletInteractor.verifierName
+    override val verifierName: String? = walletCorePresentationController.verifierName
 
-    override fun observeResponse(): Flow<EudiWalletProximityPartialState> =
-        eudiWalletInteractor.observeSentDocumentsRequest()
+    override fun observeResponse(): Flow<WalletCoreProximityPartialState> =
+        walletCorePresentationController.observeSentDocumentsRequest()
 
     override fun stopPresentation() {
-        eudiWalletInteractor.stopPresentation()
+        walletCorePresentationController.stopPresentation()
     }
 }

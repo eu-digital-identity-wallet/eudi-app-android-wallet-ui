@@ -16,11 +16,14 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
+import eu.europa.ec.businesslogic.controller.walletcore.TransferEventPartialState
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
-import eu.europa.ec.commonfeature.interactor.TransferEventPartialState
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -44,19 +47,26 @@ interface ProximityRequestInteractor {
 
 class ProximityRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWalletInteractor: EudiWalletInteractor
+    private val walletCorePresentationController: WalletCorePresentationController,
+    private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : ProximityRequestInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
     override fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState> =
-            eudiWalletInteractor.events.mapNotNull { response ->
+        walletCorePresentationController.events.mapNotNull { response ->
             when (response) {
                 is TransferEventPartialState.RequestReceived -> {
+                    val requestDataUi = RequestTransformer.transformToUiItems(
+                        storageDocuments = walletCoreDocumentsController.getSampleDocuments(),
+                        requestDocuments = response.requestData,
+                        requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
+                        resourceProvider = resourceProvider
+                    )
                     ProximityRequestInteractorPartialState.Success(
                         verifierName = response.verifierName,
-                        requestDocuments = response.requestDataUi
+                        requestDocuments = requestDataUi
                     )
                 }
 
@@ -77,10 +87,11 @@ class ProximityRequestInteractorImpl(
         }
 
     override fun stopPresentation() {
-        eudiWalletInteractor.stopPresentation()
+        walletCorePresentationController.stopPresentation()
     }
 
     override fun updateRequestedDocuments(items: List<RequestDataUi<Event>>) {
-        eudiWalletInteractor.updateRequestedDocuments(items)
+        val disclosedDocuments = RequestTransformer.transformToDomainItems(items)
+        walletCorePresentationController.updateRequestedDocuments(disclosedDocuments)
     }
 }

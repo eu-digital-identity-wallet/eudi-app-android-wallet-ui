@@ -16,8 +16,9 @@
 
 package eu.europa.ec.proximityfeature.di
 
-import eu.europa.ec.commonfeature.di.PRESENTATION_SCOPE_ID
-import eu.europa.ec.commonfeature.interactor.EudiWalletInteractor
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
+import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
@@ -37,19 +38,24 @@ class FeatureProximityModule
 @Factory
 fun provideProximityQRInteractor(
     resourceProvider: ResourceProvider,
-    @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
 ): ProximityQRInteractor =
-    ProximityQRInteractorImpl(resourceProvider, eudiWalletInteractor)
+    ProximityQRInteractorImpl(resourceProvider, walletCorePresentationController)
 
 @Factory
 fun provideProximityRequestInteractor(
     resourceProvider: ResourceProvider,
-    @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
 ): ProximityRequestInteractor =
-    ProximityRequestInteractorImpl(resourceProvider, eudiWalletInteractor)
+    ProximityRequestInteractorImpl(
+        resourceProvider,
+        walletCorePresentationController,
+        walletCoreDocumentsController
+    )
 
 @Factory
 fun provideProximityLoadingInteractor(
-    @ScopeId(name = PRESENTATION_SCOPE_ID) eudiWalletInteractor: EudiWalletInteractor
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
 ): ProximityLoadingInteractor =
-    ProximityLoadingInteractorImpl(eudiWalletInteractor)
+    ProximityLoadingInteractorImpl(walletCorePresentationController)

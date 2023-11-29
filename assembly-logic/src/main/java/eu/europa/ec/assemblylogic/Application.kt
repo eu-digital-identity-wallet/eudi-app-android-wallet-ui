@@ -21,8 +21,7 @@ import android.os.StrictMode
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
-import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.eudi.wallet.EudiWalletConfig
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -63,8 +62,7 @@ class Application : Application() {
     }
 
     private fun initializeEudiWallet() {
-        val config = EudiWalletConfig.Builder(applicationContext).build()
-        EudiWallet.init(applicationContext, config)
+        WalletCorePresentationController.initializeWalletCore(applicationContext)
     }
 
     private fun handleStrictMode() {
