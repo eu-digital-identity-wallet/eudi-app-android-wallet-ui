@@ -17,10 +17,15 @@
 package eu.europa.ec.proximityfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreProximityPartialState
+import eu.europa.ec.businesslogic.di.getPresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -30,18 +35,26 @@ import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
 class ProximityLoadingViewModel constructor(
     private val uiSerializer: UiSerializer,
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    private val interactor: ProximityLoadingInteractor,
 ) : LoadingViewModel() {
 
     override fun getTitle(): String {
-        return resourceProvider.getString(R.string.proximity_loading_title)
+        return if (interactor.verifierName.isNullOrBlank()) {
+            resourceProvider.getString(R.string.request_title)
+        } else {
+            resourceProvider.getString(
+                R.string.request_title_with_verifier_name,
+                interactor.verifierName
+                    ?: resourceProvider.getString(R.string.proximity_loading_success_config_verifier)
+            )
+        }
     }
 
     override fun getSubtitle(): String {
@@ -67,8 +80,31 @@ class ProximityLoadingViewModel constructor(
 
     override fun doWork() {
         viewModelScope.launch {
-            delay(5000)
-            doNavigation(NavigationType.PUSH)
+
+            interactor.observeResponse().collect {
+                when (it) {
+                    is WalletCoreProximityPartialState.Failure -> {
+                        setState {
+                            copy(error = ContentErrorConfig(
+                                onRetry = { setEvent(Event.DoWork) },
+                                errorSubTitle = it.error,
+                                onCancel = { doNavigation(NavigationType.POP) }
+                            ))
+                        }
+                    }
+
+                    is WalletCoreProximityPartialState.Success -> {
+                        interactor.stopPresentation()
+                        getPresentationScope().close()
+                        doNavigation(NavigationType.PUSH)
+                    }
+
+                    is WalletCoreProximityPartialState.UserAuthenticationRequired -> {
+                        // Provide implementation for Biometrics POP
+                    }
+                }
+            }
+
         }
     }
 
@@ -77,7 +113,11 @@ class ProximityLoadingViewModel constructor(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
                     header = resourceProvider.getString(R.string.loading_success_config_title),
-                    content = resourceProvider.getString(R.string.proximity_loading_success_config_subtitle),
+                    content = resourceProvider.getString(
+                        R.string.proximity_loading_success_config_subtitle,
+                        interactor.verifierName
+                            ?: resourceProvider.getString(R.string.proximity_loading_success_config_verifier)
+                    ),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.DEFAULT
                     ),

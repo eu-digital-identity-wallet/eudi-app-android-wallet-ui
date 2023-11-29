@@ -14,38 +14,3 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.request.model
-
-data class UserIdentificationUi<T>(
-    val id: Int,
-    val checked: Boolean,
-    val enabled: Boolean,
-    val userIdentificationDomain: UserIdentificationDomain,
-    val event: T? = null
-)
-
-fun <T> UserIdentificationDomain.toUserIdentificationUi(
-    id: Int,
-    optional: Boolean,
-    event: T?
-): UserIdentificationUi<T> {
-    return UserIdentificationUi(
-        id = id,
-        checked = true,
-        enabled = optional,
-        userIdentificationDomain = UserIdentificationDomain(
-            name = this.name,
-            value = this.value
-        ),
-        event = event
-    )
-}
-
-fun <T> List<UserIdentificationDomain>.toUserIdentificationsUi(
-    optional: Boolean,
-    event: T?
-): List<UserIdentificationUi<T>> {
-    return this.mapIndexed { index, item ->
-        item.toUserIdentificationUi(id = index, optional = optional, event = event)
-    }
-}

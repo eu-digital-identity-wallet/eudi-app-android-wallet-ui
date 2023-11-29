@@ -20,7 +20,7 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
-import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -43,10 +43,6 @@ class ProximityRequestViewModel(
     private val uiSerializer: UiSerializer,
 ) : RequestViewModel() {
 
-    override fun getScreenTitle(): String {
-        return resourceProvider.getString(R.string.proximity_request_title)
-    }
-
     override fun getScreenSubtitle(): String {
         return resourceProvider.getString(R.string.request_subtitle_one)
     }
@@ -66,7 +62,7 @@ class ProximityRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = getScreenTitle(),
+                            title = viewState.value.screenTitle,
                             subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
@@ -95,8 +91,8 @@ class ProximityRequestViewModel(
             )
         }
 
-        viewModelScope.launch {
-            interactor.getUserData().collect { response ->
+        viewModelJob = viewModelScope.launch {
+            interactor.getRequestDocuments().collect { response ->
                 when (response) {
                     is ProximityRequestInteractorPartialState.Failure -> {
                         setState {
@@ -116,14 +112,36 @@ class ProximityRequestViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                items = RequestTransformer.transformToUiItems(
-                                    userDataDomain = response.userDataDomain
-                                )
+                                verifierName = response.verifierName,
+                                screenTitle = getScreenTitle(verifierName),
+                                items = response.requestDocuments
                             )
                         }
                     }
+
+                    is ProximityRequestInteractorPartialState.Disconnect -> {
+                        setEvent(Event.GoBack)
+                    }
                 }
             }
+        }
+    }
+
+    override fun updateData(updatedItems: List<RequestDataUi<Event>>) {
+        super.updateData(updatedItems)
+        interactor.updateRequestedDocuments(updatedItems)
+    }
+
+    override fun cleanUp() {
+        super.cleanUp()
+        interactor.stopPresentation()
+    }
+
+    private fun getScreenTitle(verifierName: String?): String {
+        return if (verifierName.isNullOrBlank()) {
+            resourceProvider.getString(R.string.request_title)
+        } else {
+            resourceProvider.getString(R.string.request_title_with_verifier_name, verifierName)
         }
     }
 }

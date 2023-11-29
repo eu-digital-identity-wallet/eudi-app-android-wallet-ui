@@ -141,16 +141,16 @@ fun <T> OptionalField(
     CheckboxWithContent(
         modifier = Modifier.fillMaxWidth(),
         checkboxData = CheckboxData(
-            isChecked = item.userIdentificationUi.checked,
-            enabled = item.userIdentificationUi.enabled,
+            isChecked = item.requestDocumentItemUi.checked,
+            enabled = item.requestDocumentItemUi.enabled,
             onCheckedChange = {
-                item.userIdentificationUi.event?.let { event ->
+                item.requestDocumentItemUi.event?.let { event ->
                     onEventSend(event)
                 }
             }
         )
     ) {
-        val infoValueStyle = if (item.userIdentificationUi.checked) {
+        val infoValueStyle = if (item.requestDocumentItemUi.checked) {
             MaterialTheme.typography.titleMedium
         } else {
             MaterialTheme.typography.bodyLarge
@@ -158,14 +158,14 @@ fun <T> OptionalField(
         if (showFullDetails) {
             InfoTextWithNameAndValue(
                 itemData = InfoTextWithNameAndValueData(
-                    infoName = item.userIdentificationUi.userIdentificationDomain.name,
-                    infoValue = item.userIdentificationUi.userIdentificationDomain.value,
+                    infoName = item.requestDocumentItemUi.readableName,
+                    infoValue = item.requestDocumentItemUi.value,
                 ),
                 infoValueTextStyle = infoValueStyle
             )
         } else {
             Text(
-                text = item.userIdentificationUi.userIdentificationDomain.name,
+                text = item.requestDocumentItemUi.readableName,
                 style = infoValueStyle
             )
         }
@@ -209,7 +209,7 @@ fun <T> RequiredFields(
         },
         cardTitlePadding = requiredFieldsTitlePadding,
         cardContent = {
-            item.userIdentificationsUi.forEach { requiredUserIdentificationUi ->
+            item.requestDocumentItemsUi.forEach { requiredUserIdentificationUi ->
                 val checkboxData = CheckboxData(
                     isChecked = requiredUserIdentificationUi.checked,
                     enabled = requiredUserIdentificationUi.enabled,
@@ -220,7 +220,7 @@ fun <T> RequiredFields(
                     checkboxData = checkboxData
                 ) {
                     Text(
-                        text = requiredUserIdentificationUi.userIdentificationDomain.name,
+                        text = requiredUserIdentificationUi.readableName,
                         style = requiredFieldsTextStyle
                     )
                 }

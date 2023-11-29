@@ -16,6 +16,7 @@
 
 package eu.europa.ec.proximityfeature.router
 
+import ProximityRequestScreen
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -24,7 +25,6 @@ import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.proximityfeature.ui.loading.ProximityLoadingScreen
 import eu.europa.ec.proximityfeature.ui.qr.ProximityQRScreen
-import eu.europa.ec.proximityfeature.ui.request.ProximityRequestScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import org.koin.androidx.compose.koinViewModel

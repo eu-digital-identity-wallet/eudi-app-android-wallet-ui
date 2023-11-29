@@ -243,7 +243,7 @@ fun StickyBottomSection(
         AnimatedVisibility(
             visible = state.items.any {
                 it is RequestDataUi.OptionalField
-                        && !it.optionalFieldItemUi.userIdentificationUi.checked
+                        && !it.optionalFieldItemUi.requestDocumentItemUi.checked
             }
         ) {
             Column {

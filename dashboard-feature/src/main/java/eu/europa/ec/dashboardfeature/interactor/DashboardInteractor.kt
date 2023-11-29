@@ -16,163 +16,54 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class DashboardInteractorPartialState {
-    data class Success(val documents: List<DocumentUi>) : DashboardInteractorPartialState()
+    data class Success(val documents: List<DocumentUi>, val name: String) :
+        DashboardInteractorPartialState()
+
     data class Failure(val error: String) : DashboardInteractorPartialState()
 }
 
 interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorPartialState>
-    fun getUserName(): String
 }
 
 class DashboardInteractorImpl(
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    private val walletCoreDocumentsController: WalletCoreDocumentsController,
 ) : DashboardInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
     override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
-        delay(1_000L)
+        val documents = walletCoreDocumentsController.getSampleDocuments()
+        val (documentsUi, name) = documents.map {
+            DocumentUi(
+                documentId = it.id,
+                documentType = it.docType.toDocumentTypeUi(),
+                documentImage = "",
+                documentStatus = DocumentStatusUi.ACTIVE,
+                documentItems = emptyList()
+            )
+        } to "Jane Doe"
         emit(
             DashboardInteractorPartialState.Success(
-                documents = getFakeDocuments()
+                documents = documentsUi,
+                name = name
             )
         )
     }.safeAsync {
         DashboardInteractorPartialState.Failure(
             error = it.localizedMessage ?: genericErrorMsg
-        )
-    }
-
-    override fun getUserName(): String {
-        return "Jane"
-    }
-
-    private fun getFakeDocuments(): List<DocumentUi> {
-        return listOf(
-            DocumentUi(
-                documentId = 0,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 1,
-                documentType = DocumentTypeUi.DRIVING_LICENSE,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 2,
-                documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 3,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 4,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 5,
-                documentType = DocumentTypeUi.DRIVING_LICENSE,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 6,
-                documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 7,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 8,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 9,
-                documentType = DocumentTypeUi.DRIVING_LICENSE,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 10,
-                documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 11,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 12,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image1",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 13,
-                documentType = DocumentTypeUi.DRIVING_LICENSE,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image2",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 14,
-                documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
-                documentImage = "image3",
-                documentItems = emptyList()
-            ),
-            DocumentUi(
-                documentId = 15,
-                documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.INACTIVE,
-                documentImage = "image4",
-                documentItems = emptyList()
-            )
         )
     }
 }

@@ -16,103 +16,82 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
+import eu.europa.ec.businesslogic.controller.walletcore.TransferEventPartialState
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
-import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationDomain
+import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityRequestInteractorPartialState {
-    data class Success(val userDataDomain: UserDataDomain) :
+    data class Success(
+        val verifierName: String? = null,
+        val requestDocuments: List<RequestDataUi<Event>>
+    ) :
         ProximityRequestInteractorPartialState()
 
     data class Failure(val error: String) : ProximityRequestInteractorPartialState()
+    data object Disconnect : ProximityRequestInteractorPartialState()
 }
 
 interface ProximityRequestInteractor {
-    fun getUserData(): Flow<ProximityRequestInteractorPartialState>
+    fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState>
+    fun stopPresentation()
+    fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
 }
 
 class ProximityRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
+    private val walletCorePresentationController: WalletCorePresentationController,
+    private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : ProximityRequestInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getUserData(): Flow<ProximityRequestInteractorPartialState> =
-        flow {
-            delay(2_000L)
-            emit(
-                ProximityRequestInteractorPartialState.Success(
-                    userDataDomain = getFakeUserData()
-                )
-            )
+    override fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState> =
+        walletCorePresentationController.events.mapNotNull { response ->
+            when (response) {
+                is TransferEventPartialState.RequestReceived -> {
+                    val requestDataUi = RequestTransformer.transformToUiItems(
+                        storageDocuments = walletCoreDocumentsController.getSampleDocuments(),
+                        requestDocuments = response.requestData,
+                        requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
+                        resourceProvider = resourceProvider
+                    )
+                    ProximityRequestInteractorPartialState.Success(
+                        verifierName = response.verifierName,
+                        requestDocuments = requestDataUi
+                    )
+                }
+
+                is TransferEventPartialState.Error -> {
+                    ProximityRequestInteractorPartialState.Failure(error = response.error)
+                }
+
+                is TransferEventPartialState.Disconnected -> {
+                    ProximityRequestInteractorPartialState.Disconnect
+                }
+
+                else -> null
+            }
         }.safeAsync {
             ProximityRequestInteractorPartialState.Failure(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }
 
-    private fun getFakeUserData(): UserDataDomain {
-        return UserDataDomain(
-            documentTypeUi = DocumentTypeUi.DRIVING_LICENSE,
-            optionalFields = listOf(
-                UserIdentificationDomain(
-                    name = "Family Name",
-                    value = "Doe"
-                ),
-                UserIdentificationDomain(
-                    name = "First Name",
-                    value = "Jane"
-                ),
-                UserIdentificationDomain(
-                    name = "Date of Birth",
-                    value = "21 Oct 1994"
-                ),
-                UserIdentificationDomain(
-                    name = "Portrait",
-                    value = "user_picture"
-                ),
-                UserIdentificationDomain(
-                    name = "Family Name",
-                    value = "Doe"
-                ),
-                UserIdentificationDomain(
-                    name = "First Name",
-                    value = "Jane"
-                ),
-                UserIdentificationDomain(
-                    name = "Date of Birth",
-                    value = "21 Oct 1994"
-                ),
-                UserIdentificationDomain(
-                    name = "Portrait",
-                    value = "user_picture"
-                )
-            ),
-            requiredFieldsTitle = "Verification Data",
-            requiredFields = listOf(
-                UserIdentificationDomain(
-                    name = "Issuance date",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Expiration date",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Country of issuance",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Issuing authority",
-                    value = null
-                )
-            )
-        )
+    override fun stopPresentation() {
+        walletCorePresentationController.stopPresentation()
+    }
+
+    override fun updateRequestedDocuments(items: List<RequestDataUi<Event>>) {
+        val disclosedDocuments = RequestTransformer.transformToDomainItems(items)
+        walletCorePresentationController.updateRequestedDocuments(disclosedDocuments)
     }
 }

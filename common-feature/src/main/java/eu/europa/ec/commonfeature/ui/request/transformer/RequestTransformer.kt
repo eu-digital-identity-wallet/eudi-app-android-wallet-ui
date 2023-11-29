@@ -17,66 +17,192 @@
 package eu.europa.ec.commonfeature.ui.request.transformer
 
 import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
-import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
-import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationUi
-import eu.europa.ec.commonfeature.ui.request.model.toUserIdentificationUi
-import eu.europa.ec.commonfeature.ui.request.model.toUserIdentificationsUi
+import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
+import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
+import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocument
+import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
+import eu.europa.ec.eudi.iso18013.transfer.DocItem
+import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import org.json.JSONObject
+
+// This is taken from SMB. Core should provide this information
+private val mandatorySelectedData: List<String> = listOf(
+    "issuance_date",
+    "expiry_date",
+    "issuing_authority",
+    "document_number",
+    "administrative_number",
+    "issuing_country",
+    "issuing_jurisdiction",
+    "portrait",
+    "portrait_capture_date"
+)
 
 object RequestTransformer {
 
     fun transformToUiItems(
-        userDataDomain: UserDataDomain,
+        storageDocuments: List<Document> = emptyList(),
+        resourceProvider: ResourceProvider,
+        requestDocuments: List<RequestDocument>,
+        requiredFieldsTitle: String
     ): List<RequestDataUi<Event>> {
         val items = mutableListOf<RequestDataUi<Event>>()
 
-        // Add document item.
-        items += RequestDataUi.Document(
-            documentItemUi = DocumentItemUi(
-                title = userDataDomain.documentTypeUi.title
-            )
-        )
-        items += RequestDataUi.Space()
-
-        // Add optional field items.
-        userDataDomain.optionalFields.forEachIndexed { itemIndex, userIdentificationDomain ->
-            items += RequestDataUi.OptionalField(
-                optionalFieldItemUi = OptionalFieldItemUi(
-                    userIdentificationUi = userIdentificationDomain.toUserIdentificationUi(
-                        id = itemIndex,
-                        optional = true,
-                        event = Event.UserIdentificationClicked(itemId = itemIndex)
-                    )
+        requestDocuments.forEachIndexed { docIndex, requestDocument ->
+            // Add document item.
+            items += RequestDataUi.Document(
+                documentItemUi = DocumentItemUi(
+                    title = requestDocument.docName
                 )
             )
+            items += RequestDataUi.Space()
 
-            if (itemIndex != userDataDomain.optionalFields.lastIndex) {
-                items += RequestDataUi.Space()
-                items += RequestDataUi.Divider()
+            val required = mutableListOf<RequestDocumentItemUi<Event>>()
+            val storageDocument = storageDocuments.first { it.docType == requestDocument.docType }
+
+            // Add optional field items.
+            requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
+
+                val value = try {
+                    val valueData =
+                        storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier].toString()
+                    getGenderValue(valueData, resourceProvider)
+                } catch (ex: Exception) {
+                    resourceProvider.getString(R.string.request_element_identifier_not_available)
+                }
+                if (mandatorySelectedData.contains(docItem.elementIdentifier)) {
+                    required.add(
+                        docItem.toRequestDocumentItemUi(
+                            uID = requestDocument.docRequest.produceDocUID(docItem.elementIdentifier),
+                            docPayload = DocumentItemDomainPayload(
+                                docId = requestDocument.documentId,
+                                docRequest = requestDocument.docRequest,
+                                docType = requestDocument.docType,
+                                namespace = docItem.namespace,
+                                elementIdentifier = docItem.elementIdentifier,
+                            ),
+                            optional = false,
+                            event = null,
+                            readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                            value = value
+                        )
+                    )
+                } else {
+                    val uID = requestDocument.docRequest.produceDocUID(docItem.elementIdentifier)
+
+                    items += RequestDataUi.Space()
+                    items += RequestDataUi.OptionalField(
+                        optionalFieldItemUi = OptionalFieldItemUi(
+                            requestDocumentItemUi = docItem.toRequestDocumentItemUi(
+                                uID = uID,
+                                docPayload = DocumentItemDomainPayload(
+                                    docId = requestDocument.documentId,
+                                    docRequest = requestDocument.docRequest,
+                                    docType = requestDocument.docType,
+                                    namespace = docItem.namespace,
+                                    elementIdentifier = docItem.elementIdentifier,
+                                ),
+                                optional = true,
+                                event = Event.UserIdentificationClicked(itemId = uID),
+                                readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                                value = value
+                            )
+                        )
+                    )
+
+                    if (itemIndex != requestDocument.docRequest.requestItems.lastIndex) {
+                        items += RequestDataUi.Space()
+                        items += RequestDataUi.Divider()
+                    }
+                }
             }
 
             items += RequestDataUi.Space()
-        }
 
-        // Add required fields item.
-        val requiredFieldsUi: List<UserIdentificationUi<Event>> =
-            userDataDomain.requiredFields.toUserIdentificationsUi(
-                optional = false,
-                event = null
+            // Add required fields item.
+            items += RequestDataUi.RequiredFields(
+                requiredFieldsItemUi = RequiredFieldsItemUi(
+                    id = docIndex,
+                    requestDocumentItemsUi = required,
+                    expanded = false,
+                    title = requiredFieldsTitle,
+                    event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
+                )
             )
-        items += RequestDataUi.RequiredFields(
-            requiredFieldsItemUi = RequiredFieldsItemUi(
-                userIdentificationsUi = requiredFieldsUi,
-                expanded = false,
-                title = userDataDomain.requiredFieldsTitle,
-                event = Event.ExpandOrCollapseRequiredDataList
-            )
-        )
-        items += RequestDataUi.Space()
+            items += RequestDataUi.Space()
+        }
 
         return items
     }
+
+    fun transformToDomainItems(uiItems: List<RequestDataUi<Event>>): DisclosedDocuments {
+        val selectedUiItems = uiItems
+            .flatMap {
+                when (it) {
+                    is RequestDataUi.RequiredFields -> {
+                        it.requiredFieldsItemUi.requestDocumentItemsUi
+                    }
+
+                    is RequestDataUi.OptionalField -> {
+                        listOf(it.optionalFieldItemUi.requestDocumentItemUi)
+                    }
+
+                    else -> {
+                        emptyList()
+                    }
+                }
+            }
+            // Get selected
+            .filter { it.checked }
+            // Create a Map with document as a key
+            .groupBy {
+                it.domainPayload
+            }
+
+        return DisclosedDocuments(
+            selectedUiItems.map { entry ->
+                val (document, selectedDocumentItems) = entry
+                DisclosedDocument(
+                    documentId = document.docId,
+                    docType = document.docType,
+                    selectedDocItems = selectedDocumentItems.map {
+                        DocItem(
+                            it.domainPayload.namespace,
+                            it.domainPayload.elementIdentifier
+                        )
+                    },
+                    docRequest = document.docRequest
+                )
+            }
+        )
+    }
+
+    // TODO Provide proper docType from Core
+    private fun JSONObject.getDocObject(docType: String): JSONObject =
+        this[docType.replace(".mDL", "")] as JSONObject
+
+    private fun getGenderValue(value: String, resourceProvider: ResourceProvider): String =
+        when (value) {
+            "1" -> {
+                resourceProvider.getString(R.string.request_gender_male)
+            }
+
+            "0" -> {
+                resourceProvider.getString(R.string.request_gender_female)
+            }
+
+            else -> {
+                value
+            }
+        }
 }

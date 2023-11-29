@@ -18,8 +18,10 @@ package eu.europa.ec.uilogic.extension
 
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.ComponentActivity
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 
 fun Context.openDeepLink(deepLink: Uri) {
@@ -42,6 +44,15 @@ fun Context.getPendingDeepLink(): Uri? {
 
 fun Context.finish() {
     (this as? EudiComponentActivity)?.finish()
+}
+
+fun Context.findActivity(): ComponentActivity {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is ComponentActivity) return context
+        context = context.baseContext
+    }
+    throw IllegalStateException("No Activity found.")
 }
 
 private fun Context.clearPendingDeepLink() {

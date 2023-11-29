@@ -20,7 +20,6 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
-import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -43,10 +42,6 @@ class PresentationSameDeviceRequestViewModel(
     private val uiSerializer: UiSerializer,
 ) : RequestViewModel() {
 
-    override fun getScreenTitle(): String {
-        return resourceProvider.getString(R.string.request_title)
-    }
-
     override fun getScreenSubtitle(): String {
         return resourceProvider.getString(R.string.request_subtitle_one)
     }
@@ -66,7 +61,7 @@ class PresentationSameDeviceRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = getScreenTitle(),
+                            title = viewState.value.screenTitle,
                             subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
@@ -115,10 +110,7 @@ class PresentationSameDeviceRequestViewModel(
                         setState {
                             copy(
                                 isLoading = false,
-                                error = null,
-                                items = RequestTransformer.transformToUiItems(
-                                    userDataDomain = response.userDataDomain
-                                )
+                                error = null
                             )
                         }
                     }

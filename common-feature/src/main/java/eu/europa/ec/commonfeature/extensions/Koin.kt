@@ -14,12 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.request.model
+package eu.europa.ec.commonfeature.extensions
 
-data class RequiredFieldsItemUi<T>(
-    val id: Int,
-    val requestDocumentItemsUi: List<RequestDocumentItemUi<T>>,
-    val expanded: Boolean = false,
-    val title: String,
-    val event: T
-)
+import org.koin.core.Koin
+import org.koin.mp.KoinPlatformTools
+
+fun getKoin(): Koin = KoinPlatformTools.defaultContext().get()

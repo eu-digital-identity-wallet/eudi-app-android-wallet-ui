@@ -16,6 +16,11 @@
 
 package eu.europa.ec.proximityfeature.di
 
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
+import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
@@ -24,6 +29,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
+import org.koin.core.annotation.ScopeId
 
 @Module
 @ComponentScan("eu.europa.ec.proximityfeature")
@@ -32,9 +38,24 @@ class FeatureProximityModule
 @Factory
 fun provideProximityQRInteractor(
     resourceProvider: ResourceProvider,
-): ProximityQRInteractor = ProximityQRInteractorImpl(resourceProvider)
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
+): ProximityQRInteractor =
+    ProximityQRInteractorImpl(resourceProvider, walletCorePresentationController)
 
 @Factory
 fun provideProximityRequestInteractor(
     resourceProvider: ResourceProvider,
-): ProximityRequestInteractor = ProximityRequestInteractorImpl(resourceProvider)
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
+): ProximityRequestInteractor =
+    ProximityRequestInteractorImpl(
+        resourceProvider,
+        walletCorePresentationController,
+        walletCoreDocumentsController
+    )
+
+@Factory
+fun provideProximityLoadingInteractor(
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
+): ProximityLoadingInteractor =
+    ProximityLoadingInteractorImpl(walletCorePresentationController)

@@ -17,5 +17,5 @@
 package eu.europa.ec.commonfeature.ui.request.model
 
 data class OptionalFieldItemUi<T>(
-    val userIdentificationUi: UserIdentificationUi<T>
+    val requestDocumentItemUi: RequestDocumentItemUi<T>
 )

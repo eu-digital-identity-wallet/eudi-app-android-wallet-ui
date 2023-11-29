@@ -22,7 +22,6 @@ import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -38,38 +37,33 @@ interface AddDocumentInteractor {
 }
 
 class AddDocumentInteractorImpl(
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
 ) : AddDocumentInteractor {
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
     override fun getAddDocumentOption(): Flow<AddDocumentInteractorPartialState> = flow {
-        delay(400L)
         emit(
             AddDocumentInteractorPartialState.Success(
-                options = getFakeAddDocumentOptions()
+                options = listOf(
+                    DocumentOptionItemUi(
+                        text = resourceProvider.getString(R.string.issuance_add_document_digital_id),
+                        icon = AppIcons.Id,
+                        type = DocumentTypeUi.DIGITAL_ID,
+                        issuanceUrl = "www.gov.gr"
+                    ),
+                    DocumentOptionItemUi(
+                        text = resourceProvider.getString(R.string.issuance_add_document_driving_license),
+                        icon = AppIcons.Id,
+                        type = DocumentTypeUi.DRIVING_LICENSE,
+                        issuanceUrl = "www.gov-automotive.gr"
+                    )
+                )
             )
         )
     }.safeAsync {
         AddDocumentInteractorPartialState.Failure(
             error = it.localizedMessage ?: genericErrorMsg
-        )
-    }
-
-    private fun getFakeAddDocumentOptions(): List<DocumentOptionItemUi> {
-        return listOf(
-            DocumentOptionItemUi(
-                text = resourceProvider.getString(R.string.issuance_add_document_digital_id),
-                icon = AppIcons.Id,
-                type = DocumentTypeUi.DIGITAL_ID,
-                issuanceUrl = "www.gov.gr"
-            ),
-            DocumentOptionItemUi(
-                text = resourceProvider.getString(R.string.issuance_add_document_driving_license),
-                icon = AppIcons.Id,
-                type = DocumentTypeUi.DRIVING_LICENSE,
-                issuanceUrl = "www.gov-automotive.gr"
-            )
         )
     }
 }

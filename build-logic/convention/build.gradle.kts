@@ -99,5 +99,9 @@ gradlePlugin {
             id = "eudi.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
         }
+        register("eudiWalletCore") {
+            id = "eudi.wallet.core"
+            implementationClass = "EudiWalletCorePlugin"
+        }
     }
 }

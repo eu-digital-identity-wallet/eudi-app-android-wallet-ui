@@ -38,6 +38,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 apply("eudi.android.koin")
                 apply("org.jetbrains.kotlin.android")
                 apply("jacoco")
+                apply("kotlinx-serialization")
                 apply("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
             }
 
@@ -58,6 +59,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             dependencies {
                 add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
                 add("implementation", libs.findLibrary("kotlinx-coroutines-guava").get())
+                add("implementation", libs.findLibrary("kotlinx.serialization.json").get())
             }
         }
     }

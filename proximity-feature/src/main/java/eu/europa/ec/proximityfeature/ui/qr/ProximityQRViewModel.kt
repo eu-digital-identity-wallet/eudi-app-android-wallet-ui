@@ -16,14 +16,18 @@
 
 package eu.europa.ec.proximityfeature.ui.qr
 
+import androidx.activity.ComponentActivity
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.di.getPresentationScope
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
-import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractorPartialState
+import eu.europa.ec.proximityfeature.interactor.ProximityQRPartialState
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.ProximityScreens
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -37,6 +41,10 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object GoBack : Event()
+    data class NfcEngagement(
+        val componentActivity: ComponentActivity,
+        val enable: Boolean
+    ) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -54,6 +62,8 @@ class ProximityQRViewModel(
     private val interactor: ProximityQRInteractor
 ) : MviViewModel<Event, State, Effect>() {
 
+    private var interactorJob: Job? = null
+
     override fun setInitialState(): State = State()
 
     override fun handleEvents(event: Event) {
@@ -63,7 +73,15 @@ class ProximityQRViewModel(
             }
 
             is Event.GoBack -> {
+                cleanUp()
                 setEffect { Effect.Navigation.Pop }
+            }
+
+            is Event.NfcEngagement -> {
+                interactor.toggleNfcEngagement(
+                    event.componentActivity,
+                    event.enable
+                )
             }
         }
     }
@@ -76,10 +94,10 @@ class ProximityQRViewModel(
             )
         }
 
-        viewModelScope.launch {
-            interactor.generateQRCode().collect { response ->
+        interactorJob = viewModelScope.launch {
+            interactor.startQrEngagement().collect { response ->
                 when (response) {
-                    is ProximityQRInteractorPartialState.Failure -> {
+                    is ProximityQRPartialState.Error -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -92,17 +110,47 @@ class ProximityQRViewModel(
                         }
                     }
 
-                    is ProximityQRInteractorPartialState.Success -> {
+                    is ProximityQRPartialState.QrReady -> {
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                qrCode = response.qRCode
+                                qrCode = response.qrCode
                             )
                         }
+                    }
+
+                    is ProximityQRPartialState.Connected -> {
+                        unsubscribe()
+                        setEffect {
+                            Effect.Navigation.SwitchScreen(
+                                ProximityScreens.Request.screenRoute
+                            )
+                        }
+                    }
+
+                    is ProximityQRPartialState.Disconnected -> {
+                        unsubscribe()
+                        setEvent(Event.GoBack)
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Required in order to stop receiving emissions from interactor Flow
+     * */
+    private fun unsubscribe() {
+        interactorJob?.cancel()
+    }
+
+    /**
+     * Stop presentation and remove scope/listeners
+     * */
+    private fun cleanUp() {
+        unsubscribe()
+        getPresentationScope().close()
+        interactor.cancelTransfer()
     }
 }

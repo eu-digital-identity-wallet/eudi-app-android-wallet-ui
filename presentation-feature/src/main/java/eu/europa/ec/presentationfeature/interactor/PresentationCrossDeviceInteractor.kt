@@ -17,16 +17,15 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.commonfeature.ui.request.model.UserDataDomain
-import eu.europa.ec.commonfeature.ui.request.model.UserIdentificationDomain
+import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class PresentationCrossDeviceInteractorPartialState {
-    data class Success(val userDataDomain: UserDataDomain) :
+    data class Success(val requestDocuments: List<RequestDataUi<Event>>) :
         PresentationCrossDeviceInteractorPartialState()
 
     data class Failure(val error: String) : PresentationCrossDeviceInteractorPartialState()
@@ -48,7 +47,7 @@ class PresentationCrossDeviceInteractorImpl(
             delay(2_000L)
             emit(
                 PresentationCrossDeviceInteractorPartialState.Success(
-                    userDataDomain = getFakeUserData()
+                    requestDocuments = emptyList()
                 )
             )
         }.safeAsync {
@@ -56,71 +55,4 @@ class PresentationCrossDeviceInteractorImpl(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }
-
-    private fun getFakeUserData(): UserDataDomain {
-        return UserDataDomain(
-            documentTypeUi = DocumentTypeUi.DIGITAL_ID,
-            optionalFields = listOf(
-                UserIdentificationDomain(
-                    name = "Registration ID",
-                    value = "EUDI123456"
-                ),
-                UserIdentificationDomain(
-                    name = "Family Name",
-                    value = "Doe"
-                ),
-                UserIdentificationDomain(
-                    name = "First Name",
-                    value = "Jane"
-                ),
-                UserIdentificationDomain(
-                    name = "Room Number",
-                    value = "A2"
-                ),
-                UserIdentificationDomain(
-                    name = "Seat Number",
-                    value = "128"
-                ),
-                UserIdentificationDomain(
-                    name = "Registration ID",
-                    value = "EUDI123456"
-                ),
-                UserIdentificationDomain(
-                    name = "Family Name",
-                    value = "Doe"
-                ),
-                UserIdentificationDomain(
-                    name = "First Name",
-                    value = "Jane"
-                ),
-                UserIdentificationDomain(
-                    name = "Room Number",
-                    value = "A2"
-                ),
-                UserIdentificationDomain(
-                    name = "Seat Number",
-                    value = "128"
-                )
-            ),
-            requiredFieldsTitle = "Verification Data",
-            requiredFields = listOf(
-                UserIdentificationDomain(
-                    name = "Issuance date",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Expiration date",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Country of issuance",
-                    value = null
-                ),
-                UserIdentificationDomain(
-                    name = "Issuing authority",
-                    value = null
-                )
-            )
-        )
-    }
 }

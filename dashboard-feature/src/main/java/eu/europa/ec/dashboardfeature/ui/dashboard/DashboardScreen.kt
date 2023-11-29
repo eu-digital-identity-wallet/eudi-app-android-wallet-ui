@@ -488,25 +488,25 @@ private fun DashboardScreenPreview() {
     PreviewTheme {
         val documents = listOf(
             DocumentUi(
-                documentId = 0,
+                documentId = "0",
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image1",
-                documentItems = emptyList()
+                documentItems = emptyList(),
             ),
             DocumentUi(
-                documentId = 1,
+                documentId = "1",
                 documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image2",
-                documentItems = emptyList()
+                documentItems = emptyList(),
             ),
             DocumentUi(
-                documentId = 2,
+                documentId = "2",
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image3",
-                documentItems = emptyList()
+                documentItems = emptyList(),
             )
         )
         Content(

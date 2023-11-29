@@ -38,7 +38,7 @@ interface DocumentDetailsInteractor {
 }
 
 class DocumentDetailsInteractorImpl(
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
 ) : DocumentDetailsInteractor {
 
     private val genericErrorMsg
@@ -50,7 +50,7 @@ class DocumentDetailsInteractorImpl(
             emit(
                 DocumentDetailsInteractorPartialState.Success(
                     document = DocumentUi(
-                        documentId = 0,
+                        documentId = "0",
                         documentType = DocumentTypeUi.DIGITAL_ID,
                         documentStatus = DocumentStatusUi.ACTIVE,
                         documentImage = "image",

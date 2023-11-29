@@ -31,7 +31,7 @@ class FeaturePresentationModule
 
 @Factory
 fun providePresentationCrossDeviceInteractor(
-    resourceProvider: ResourceProvider,
+    resourceProvider: ResourceProvider
 ): PresentationCrossDeviceInteractor {
     return PresentationCrossDeviceInteractorImpl(resourceProvider)
 }

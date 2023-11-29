@@ -14,18 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.request.model
+package eu.europa.ec.assemblylogic.service
 
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
+import eu.europa.ec.eudi.iso18013.transfer.TransferManager
+import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
+import eu.europa.ec.eudi.wallet.EudiWallet
 
-data class UserDataDomain(
-    val documentTypeUi: DocumentTypeUi,
-    val optionalFields: List<UserIdentificationDomain>,
-    val requiredFieldsTitle: String,
-    val requiredFields: List<UserIdentificationDomain>,
-)
-
-data class UserIdentificationDomain(
-    val name: String,
-    val value: String?,
-)
+class NfcEngagementServiceImpl : NfcEngagementService() {
+    override val transferManager: TransferManager
+        get() = EudiWallet.transferManager
+}

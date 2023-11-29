@@ -30,6 +30,19 @@
         android:theme="@style/Theme.EUDIWallet"
         tools:targetApi="34">
 
+        <service android:exported="true" android:label="@string/nfc_engagement_service_desc"
+            android:name=".service.NfcEngagementServiceImpl"
+            android:permission="android.permission.BIND_NFC_SERVICE">
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE" />
+            </intent-filter>
+
+            <!-- the following "@xml/nfc_engagement_apdu_service" in meta-data is provided by the library -->
+            <meta-data android:name="android.nfc.cardemulation.host_apdu_service"
+                android:resource="@xml/nfc_engagement_apdu_service" />
+        </service>
+
         <activity
             android:name=".ui.MainActivity"
             android:exported="true"
@@ -53,5 +66,9 @@
         </activity>
 
     </application>
+
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-feature android:name="android.hardware.nfc" android:required="true" />
 
 </manifest>

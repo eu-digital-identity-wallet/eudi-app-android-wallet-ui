@@ -18,13 +18,14 @@ import eu.europa.ec.euidi.addConfigField
 
 plugins {
     id("eudi.android.library")
+    id("eudi.wallet.core")
 }
 
 android {
     namespace = "eu.europa.ec.businesslogic"
 
     defaultConfig {
-        addConfigField("DEEPLINK", "eudi-wallet://")
+        addConfigField("DEEPLINK", "mdoc-openid4vp://")
     }
 }
 

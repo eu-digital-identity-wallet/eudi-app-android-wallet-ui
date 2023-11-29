@@ -17,7 +17,10 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
+import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.extensions.getKoin
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
@@ -40,14 +43,14 @@ data class State(
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
 
-    val userName: String,
+    val userName: String = "",
     val documents: List<DocumentUi> = emptyList()
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
-    data class NavigateToDocument(val documentId: Int) : Event()
+    data class NavigateToDocument(val documentId: String) : Event()
     data object OptionsPressed : Event()
     sealed class Fab : Event() {
         data object PrimaryFabPressed : Fab()
@@ -79,9 +82,7 @@ class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,
 ) : MviViewModel<Event, State, Effect>() {
 
-    override fun setInitialState(): State = State(
-        userName = dashboardInteractor.getUserName()
-    )
+    override fun setInitialState(): State = State()
 
     override fun handleEvents(event: Event) {
         when (event) {
@@ -110,6 +111,8 @@ class DashboardViewModel(
             }
 
             is Event.Fab.PrimaryFabPressed -> {
+                // Create Koin scope for presentation
+                getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
                 setEffect {
                     Effect.Navigation.SwitchScreen(
                         screenRoute = ProximityScreens.QR.screenRoute
@@ -176,7 +179,8 @@ class DashboardViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                documents = response.documents
+                                documents = response.documents,
+                                userName = response.name
                             )
                         }
                         setEffect { Effect.Navigation.OpenDeepLinkAction }
