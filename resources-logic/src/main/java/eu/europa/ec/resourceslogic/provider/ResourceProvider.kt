@@ -84,7 +84,8 @@ class ResourceProviderImpl constructor(
         }
 
     override fun getReadableElementIdentifier(elementIdentifier: String): String {
-        val identifier = context.resources.getIdentifier(elementIdentifier, "string", context.packageName)
+        val identifier =
+            context.resources.getIdentifier(elementIdentifier, "string", context.packageName)
         return if (identifier != 0) context.getString(identifier) else elementIdentifier
     }
 }

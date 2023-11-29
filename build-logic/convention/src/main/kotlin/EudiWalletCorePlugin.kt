@@ -21,7 +21,7 @@ import org.gradle.kotlin.dsl.dependencies
  *
  */
 
-class EudiWalletCorePlugin: Plugin<Project> {
+class EudiWalletCorePlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {

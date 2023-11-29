@@ -49,7 +49,7 @@ fun Context.finish() {
 fun Context.findActivity(): ComponentActivity {
     var context = this
     while (context is ContextWrapper) {
-        if (context is  ComponentActivity) return context
+        if (context is ComponentActivity) return context
         context = context.baseContext
     }
     throw IllegalStateException("No Activity found.")
