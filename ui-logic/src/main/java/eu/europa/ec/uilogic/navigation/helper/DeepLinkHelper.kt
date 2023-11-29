@@ -76,7 +76,7 @@ fun generateNewTaskDeepLink(
 
 fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
     return deepLinkUri?.let { uri ->
-        DeepLinkType.parse(uri.host)?.let {
+        DeepLinkType.parse(uri)?.let {
             DeepLinkAction(link = uri, type = it)
         }
     }
@@ -85,7 +85,7 @@ fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
 fun handleDeepLinkAction(navController: NavController, uri: Uri) {
     hasDeepLink(uri)?.let {
         val screen: Screen = when (it.type) {
-            DeepLinkType.AUTHORIZATION -> PresentationScreens.SameDeviceRequest
+            DeepLinkType.OPENID4VP -> PresentationScreens.SameDeviceRequest
         }
         navController.navigate(screen.screenRoute) {
             popUpTo(screen.screenRoute) { inclusive = true }
@@ -94,10 +94,11 @@ fun handleDeepLinkAction(navController: NavController, uri: Uri) {
 }
 
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
-enum class DeepLinkType(val type: String) {
-    AUTHORIZATION("authorization");
+enum class DeepLinkType(val params: Set<String>) {
+    OPENID4VP(params = setOf("client_id", "request_uri"));
 
     companion object {
-        fun parse(type: String?): DeepLinkType? = entries.firstOrNull { it.type == type }
+        fun parse(uri: Uri): DeepLinkType? =
+            entries.firstOrNull { it.params == uri.queryParameterNames }
     }
 }
