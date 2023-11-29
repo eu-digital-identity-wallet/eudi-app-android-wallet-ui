@@ -33,7 +33,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply("eudi.android.application.flavors")
                 apply("eudi.android.application.jacoco")
                 apply("eudi.android.koin")
-                apply("eudi.android.application.firebase")
                 apply("eudi.android.lint")
             }
 
