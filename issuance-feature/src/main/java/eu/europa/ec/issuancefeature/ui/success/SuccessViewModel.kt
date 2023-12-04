@@ -40,16 +40,6 @@ data class State(
 sealed class Event : ViewEvent {
     data object GoBack : Event()
     data class PrimaryButtonPressed(val documentId: String) : Event()
-    data object SecondaryButtonPressed : Event()
-
-    sealed class BottomSheet : Event() {
-        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-
-        sealed class Cancel : BottomSheet() {
-            data object PrimaryButtonPressed : Cancel()
-            data object SecondaryButtonPressed : Cancel()
-        }
-    }
 }
 
 sealed class Effect : ViewSideEffect {
@@ -60,9 +50,6 @@ sealed class Effect : ViewSideEffect {
 
         data object Pop : Navigation()
     }
-
-    data object ShowBottomSheet : Effect()
-    data object CloseBottomSheet : Effect()
 }
 
 @KoinViewModel
@@ -109,37 +96,6 @@ class SuccessViewModel(
                     }
                 }
             }
-
-            is Event.SecondaryButtonPressed -> {
-                showBottomSheet()
-            }
-
-            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
-                hideBottomSheet()
-                setEvent(Event.GoBack)
-            }
-
-            is Event.BottomSheet.UpdateBottomSheetState -> {
-                setState {
-                    copy(isBottomSheetOpen = event.isOpen)
-                }
-            }
-        }
-    }
-
-    private fun showBottomSheet() {
-        setEffect {
-            Effect.ShowBottomSheet
-        }
-    }
-
-    private fun hideBottomSheet() {
-        setEffect {
-            Effect.CloseBottomSheet
         }
     }
 }

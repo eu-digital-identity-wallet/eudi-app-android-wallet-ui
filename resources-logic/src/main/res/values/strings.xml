@@ -157,13 +157,7 @@
     <!-- Issuance Success Screen -->
     <string name="issuance_success_title">@string/generic_success</string>
     <string name="issuance_success_subtitle">You can now add your %1$s</string>
-    <string name="issuance_success_confirmation_message">Add %1$s?</string>
-    <string name="issuance_success_primary_button_text">ADD</string>
-    <string name="issuance_success_secondary_button_text">@string/generic_cancel_capitalized</string>
-    <string name="issuance_success_bottom_sheet_cancel_title">Cancel %1$s issuance process?</string>
-    <string name="issuance_success_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the documents list without the %1$s</string>
-    <string name="issuance_success_bottom_sheet_cancel_primary_button_text">CONTINUE ISSUANCE</string>
-    <string name="issuance_success_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <string name="issuance_success_primary_button_text">NEXT</string>
 
     <!-- Issuance Documents Details Screen -->
     <string name="issuance_document_details_primary_button_text">@string/generic_continue_capitalized</string>
