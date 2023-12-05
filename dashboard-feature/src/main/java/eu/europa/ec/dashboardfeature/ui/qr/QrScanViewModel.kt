@@ -56,8 +56,6 @@ class QrScanViewModel : MviViewModel<Event, State, Effect>() {
                     qrCode = event.resultQr
                 )
             }
-
-
         }
     }
 
@@ -68,6 +66,5 @@ class QrScanViewModel : MviViewModel<Event, State, Effect>() {
                 error = null
             )
         }
-
     }
 }
