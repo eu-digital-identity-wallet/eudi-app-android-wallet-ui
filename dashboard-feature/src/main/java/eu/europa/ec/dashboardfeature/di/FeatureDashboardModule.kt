@@ -33,3 +33,4 @@ fun provideDashboardInteractor(
     resourceProvider: ResourceProvider,
     walletCoreDocumentsController: WalletCoreDocumentsController
 ): DashboardInteractor = DashboardInteractorImpl(resourceProvider, walletCoreDocumentsController)
+

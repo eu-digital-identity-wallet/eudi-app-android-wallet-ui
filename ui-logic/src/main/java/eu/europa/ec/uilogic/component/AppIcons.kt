@@ -157,4 +157,10 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_edit_icon,
         imageVector = null
     )
+
+    val QrSmall: IconData = IconData(
+        resourceId = R.drawable.ic_qr_small,
+        contentDescriptionId = R.string.content_description_qr_icon,
+        imageVector = null
+    )
 }

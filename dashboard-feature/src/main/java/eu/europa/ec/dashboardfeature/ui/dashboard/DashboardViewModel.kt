@@ -31,6 +31,7 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
@@ -62,6 +63,8 @@ sealed class Event : ViewEvent {
         data object Close : BottomSheet()
         sealed class Options : BottomSheet() {
             data object OpenChangeQuickPin : Options()
+            data object OpenScanQr : Options()
+
         }
     }
 }
@@ -147,6 +150,11 @@ class DashboardViewModel(
                 hideBottomSheet()
                 navigateToChangeQuickPin()
             }
+
+            is Event.BottomSheet.Options.OpenScanQr -> {
+                hideBottomSheet()
+                navigateToScanQr()
+            }
         }
     }
 
@@ -199,6 +207,14 @@ class DashboardViewModel(
                         mapOf("pinFlow" to PinFlow.UPDATE)
                     )
                 )
+            )
+        }
+    }
+
+    private fun navigateToScanQr() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = DashboardScreens.Scan.screenRoute,
             )
         }
     }

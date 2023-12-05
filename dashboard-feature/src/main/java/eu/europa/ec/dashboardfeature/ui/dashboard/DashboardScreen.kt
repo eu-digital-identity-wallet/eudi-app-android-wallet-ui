@@ -284,6 +284,28 @@ private fun DashboardSheetContent(
                     color = MaterialTheme.colorScheme.textPrimaryDark
                 )
             }
+            Row(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.allCorneredShapeSmall)
+                    .throttledClickable(
+                        onClick = { onEventSent(Event.BottomSheet.Options.OpenScanQr) }
+                    )
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                WrapIcon(
+                    iconData = AppIcons.QrSmall,
+                    customTint = MaterialTheme.colorScheme.primary
+                )
+                HSpacer.Medium()
+                Text(
+                    text = stringResource(id = R.string.dashboard_bottom_sheet_action_2),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.textPrimaryDark
+                )
+            }
         }
     )
 }

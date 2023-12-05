@@ -69,6 +69,7 @@ googlePhoneNumber = "8.13.23"
 zxing = "3.5.2"
 eudiWalletCore = "0.2.0-SNAPSHOT"
 cborTree = "0.01.02"
+cameraCore = "1.3.0"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -172,6 +173,10 @@ secrets-gradlePlugin = { group = "com.google.android.libraries.mapsplatform.secr
 work-testing = { group = "androidx.work", name = "work-testing", version = "2.8.1" }
 junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }
+androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraCore" }
+androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraCore" }
+androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "cameraCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
