@@ -44,5 +44,6 @@ captures/
 # Sign key
 sign
 
-#fastlane env files
+#fastlane
 .env.demo
+fastlane/report.xml
