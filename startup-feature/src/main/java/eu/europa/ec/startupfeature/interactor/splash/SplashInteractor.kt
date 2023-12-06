@@ -16,6 +16,7 @@
 
 package eu.europa.ec.startupfeature.interactor.splash
 
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
@@ -39,10 +40,11 @@ class SplashInteractorImpl(
     private val quickPinInteractor: QuickPinInteractor,
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
+    private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : SplashInteractor {
 
-    // TODO - REPLACE ONCE CORE CAN RETURN DOCUMENTS FROM STORAGE
-    private val hasDocuments = true
+    private val hasDocuments: Boolean
+        get() = walletCoreDocumentsController.getSampleDocuments().isNotEmpty()
 
     override fun getAfterSplashRoute(): String = when (quickPinInteractor.hasPin()) {
         true -> {
