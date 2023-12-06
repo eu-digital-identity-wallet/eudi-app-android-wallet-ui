@@ -1,0 +1,149 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc "Build Wallet and upload it to appcenter"
+
+  lane :demo do
+    git_pull
+
+    buildVersion = version_name
+    appcenter_build_number = latest_appcenter_release(
+      appName: ENV["APP_CENTER_APP_NAME"],
+      appVersion: buildVersion,
+      appToken: ENV["APP_CENTER_APP_TOKEN"],
+      ownerName: ENV["APP_CENTER_ACCOUNT"],
+    )
+    buildNumber = build_number(versionNumber: appcenter_build_number)
+
+    fullVersion = full_version(
+      buildName: buildVersion,
+      buildNumber: buildNumber,
+    )
+    tagVersion = tag_name(
+      buildName: buildVersion,
+      buildNumber: buildNumber,
+      brand: ENV["APP_TAG"],
+      buildType: ENV["APP_BUILD_TYPE"],
+    )
+
+    increment_version_code(
+      app_folder_name: "app",
+      version_code: buildNumber,
+    )
+
+    gradle(task: "clean")
+    gradle(task: "assemble#{ENV["APP_BUILD_TYPE"]}Release")
+
+    upload_to_appcenter(
+      appName: ENV["APP_CENTER_APP_NAME"],
+      path: ENV["APP_BUILD_TYPE"],
+      appToken: ENV["APP_CENTER_APP_TOKEN"],
+      ownerName: ENV["APP_CENTER_ACCOUNT"],
+      groups: ENV["APP_CENTER_GROUPS"],
+    )
+
+    clean_build_artifacts
+    reset_versioncode
+
+    add_git_tag(
+      tag: tagVersion,
+    )
+
+    push_git_tags
+  end
+
+  desc "Upload to AppCenter"
+  lane :upload_to_appcenter do |values|
+    appName = values[:appName]
+    path = values[:path]
+    appToken = values[:appToken]
+    ownerName = values[:ownerName]
+    groups = values[:groups]
+    appcenter_upload(
+      api_token: appToken,
+      owner_name: ownerName,
+      app_name: appName,
+      file: "app/build/outputs/apk/#{path}/release/app-#{path}-release.apk",
+      notify_testers: true,
+      destinations: groups
+    )
+  end
+
+  desc "Get Release version From AppCenter"
+  lane :latest_appcenter_release do |values|
+    appName = values[:appName]
+    appVersion = values[:appVersion]
+    appToken = values[:appToken]
+    ownerName = values[:ownerName]
+    version = "1"
+    begin
+      version = appcenter_fetch_version_number(
+        api_token: appToken,
+        owner_name: ownerName,
+        app_name: appName,
+        version: appVersion,
+      )["build_number"]
+    rescue => ex
+    end
+    puts "AppCenter Version: #{version}"
+    version
+  end
+
+  desc "Build Number"
+  lane :build_number do |values|
+    number = values[:versionNumber].to_i + 1
+    puts "Build Number: #{number}"
+    number
+  end
+
+  desc "Build Full version"
+  lane :full_version do |values|
+    buildName = values[:buildName]
+    buildNumber = values[:buildNumber]
+    version = "[BUILD_VERSION=#{buildName} BUILD_NUMBER=#{buildNumber}]"
+    puts "Full version: #{version}"
+    version
+  end
+
+  desc "Build Tag Name"
+  lane :tag_name do |values|
+    buildName = values[:buildName]
+    buildNumber = values[:buildNumber]
+    brand = values[:brand]
+    buildType = values[:buildType]
+    name = "#{brand}/#{buildType}_Version=#{buildName}_Build=#{buildNumber}"
+    puts "Tag Name: #{name}"
+    name
+  end
+
+  desc "Get version version From Project"
+  lane :version_name do
+    get_version_name(
+      gradle_file_path: "version.properties",
+      ext_constant_name: "VERSION_NAME",
+    ).sub("VERSION_NAME=", "")
+  end
+
+  desc "Set versionCode back to default 1"
+  lane :reset_versioncode do
+    increment_version_code(
+      app_folder_name: "app",
+      version_code: 1,
+    )
+  end
+end

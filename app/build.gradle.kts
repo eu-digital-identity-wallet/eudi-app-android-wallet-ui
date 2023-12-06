@@ -40,7 +40,7 @@ android {
     defaultConfig {
         applicationId = "eu.europa.ec.euidi"
         versionCode = 1
-        versionName = "0.0.1"
+        versionName = getProperty("VERSION_NAME", "version.properties")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -54,15 +54,12 @@ android {
             isMinifyEnabled = false
             applicationIdSuffix = EudiBuildType.DEBUG.applicationIdSuffix
         }
-        val release by getting {
+        release {
             isDebuggable = false
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             applicationIdSuffix = EudiBuildType.RELEASE.applicationIdSuffix
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
             signingConfig = signingConfigs.getByName("release")
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
     namespace = "eu.europa.ec.euidi"

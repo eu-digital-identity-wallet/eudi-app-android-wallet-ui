@@ -29,7 +29,7 @@ enum class FlavorDimension {
 @Suppress("EnumEntryName")
 enum class EudiFlavor(val dimension: FlavorDimension, val applicationIdSuffix: String? = null) {
     dev(FlavorDimension.contentType, applicationIdSuffix = ".dev"),
-    prod(FlavorDimension.contentType)
+    demo(FlavorDimension.contentType)
 }
 
 fun configureFlavors(

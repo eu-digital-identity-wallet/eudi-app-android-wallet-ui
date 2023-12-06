@@ -43,3 +43,6 @@ captures/
 
 # Sign key
 sign
+
+#fastlane env files
+.env.demo
