@@ -117,7 +117,7 @@ object AppIcons {
     )
 
     val Logo: IconData = IconData(
-        resourceId = R.drawable.ic_logo_192,
+        resourceId = R.drawable.ic_logo,
         contentDescriptionId = R.string.content_description_logo_icon,
         imageVector = null
     )

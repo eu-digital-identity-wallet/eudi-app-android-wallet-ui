@@ -295,7 +295,6 @@ private fun FabContent(
     paddingValues: PaddingValues
 ) {
     val titleSmallTextStyle = MaterialTheme.typography.titleSmall
-        .copy(color = MaterialTheme.colorScheme.textPrimaryDark)
 
     val secondaryFabData = FabData(
         text = {
@@ -352,7 +351,7 @@ private fun Title(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.primary,
+                color = MaterialTheme.colorScheme.secondary,
                 shape = MaterialTheme.shapes.bottomCorneredShapeSmall
             )
             .padding(
@@ -385,18 +384,18 @@ private fun Title(
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(0.8F)
+                    color = Color.Black
                 )
                 Text(
                     text = userName,
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White
+                    color = Color.Black
                 )
             }
 
             WrapIconButton(
                 iconData = AppIcons.VerticalMore,
-                customTint = Color.White,
+                customTint = MaterialTheme.colorScheme.primary,
                 onClick = {
                     onEventSend(Event.OptionsPressed)
                 }

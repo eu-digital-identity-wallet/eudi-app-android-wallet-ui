@@ -45,6 +45,7 @@ data class HeaderData(
 fun HeaderLarge(
     modifier: Modifier = Modifier,
     data: HeaderData,
+    containerColor: Color,
     contentPadding: PaddingValues = PaddingValues(all = SPACING_LARGE.dp)
 ) {
     Column(
@@ -52,7 +53,7 @@ fun HeaderLarge(
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = MaterialTheme.colorScheme.primary,
+                color = containerColor,
                 shape = MaterialTheme.shapes.bottomCorneredShapeSmall
             )
             .padding(contentPadding)
@@ -61,7 +62,7 @@ fun HeaderLarge(
         Text(
             text = data.title,
             style = MaterialTheme.typography.headlineSmall,
-            color = Color.White
+            color = Color.Black
         )
 
         VSpacer.Small()
@@ -69,7 +70,7 @@ fun HeaderLarge(
         Text(
             text = data.subtitle,
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.White.copy(0.8F)
+            color = Color.Black
         )
 
         VSpacer.Large()
@@ -92,7 +93,8 @@ private fun HeaderLargePreview() {
                 subtitle = "Jane Doe",
                 image = AppIcons.User,
                 icon = AppIcons.IdStroke
-            )
+            ),
+            containerColor = MaterialTheme.colorScheme.secondary,
         )
     }
 }

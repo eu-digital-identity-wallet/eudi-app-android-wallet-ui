@@ -17,6 +17,7 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
@@ -27,16 +28,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.dividerDark
 import eu.europa.ec.resourceslogic.theme.values.textDisabledDark
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
-import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
+import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 private val buttonsHeight: Modifier = Modifier.height(48.dp)
-private val buttonsShape: RoundedCornerShape = RoundedCornerShape(16.dp)
-private val buttonsContentPadding: PaddingValues =
-    PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+private val buttonsShape: RoundedCornerShape = RoundedCornerShape(SIZE_MEDIUM.dp)
+private val buttonsContentPadding: PaddingValues = PaddingValues(SPACING_MEDIUM.dp)
 
 @Composable
 fun WrapPrimaryButton(
@@ -45,15 +48,21 @@ fun WrapPrimaryButton(
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit
 ) {
+    val textColor = if (isSystemInDarkTheme()) {
+        Color.White
+    } else {
+        MaterialTheme.colorScheme.backgroundPaper
+    }
+
     Button(
         modifier = buttonsHeight.then(modifier),
         enabled = enabled,
         onClick = onClick,
         shape = buttonsShape,
         colors = ButtonDefaults.textButtonColors(
-            containerColor = MaterialTheme.colorScheme.secondary,
-            contentColor = MaterialTheme.colorScheme.textPrimaryDark,
-            disabledContainerColor = MaterialTheme.colorScheme.secondary.copy(alpha = ALPHA_DISABLED),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = textColor,
+            disabledContainerColor = MaterialTheme.colorScheme.secondary,
             disabledContentColor = MaterialTheme.colorScheme.textDisabledDark,
         ),
         contentPadding = buttonsContentPadding,
@@ -73,8 +82,10 @@ fun WrapSecondaryButton(
         enabled = enabled,
         onClick = onClick,
         shape = buttonsShape,
-        colors = ButtonDefaults.textButtonColors(
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = MaterialTheme.colorScheme.backgroundPaper,
             contentColor = MaterialTheme.colorScheme.textPrimaryDark,
+            disabledContainerColor = MaterialTheme.colorScheme.backgroundPaper,
             disabledContentColor = MaterialTheme.colorScheme.textDisabledDark,
         ),
         border = BorderStroke(

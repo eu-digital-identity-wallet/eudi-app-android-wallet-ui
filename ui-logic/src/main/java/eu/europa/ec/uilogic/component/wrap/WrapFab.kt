@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -34,13 +35,21 @@ private val fabShape: Shape
     @Composable get() = MaterialTheme.shapes.allCorneredShapeLarge
 
 private val primaryFabContainerColor: Color
-    @Composable get() = MaterialTheme.colorScheme.secondary
+    @Composable get() = MaterialTheme.colorScheme.primary
 
 private val primaryFabContentColor: Color
-    @Composable get() = MaterialTheme.colorScheme.textPrimaryDark
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color.White
+    } else {
+        MaterialTheme.colorScheme.backgroundPaper
+    }
 
 private val secondaryFabContainerColor: Color
-    @Composable get() = MaterialTheme.colorScheme.backgroundPaper
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color.DarkGray
+    } else {
+        MaterialTheme.colorScheme.backgroundPaper
+    }
 
 private val secondaryFabContentColor: Color
     @Composable get() = MaterialTheme.colorScheme.textPrimaryDark
