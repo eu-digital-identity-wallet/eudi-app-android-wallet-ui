@@ -32,6 +32,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
+import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -60,18 +62,21 @@ fun WrapModalBottomSheet(
 }
 
 @Composable
-fun SheetContent(title: String, bodyContent: @Composable () -> Unit) {
+fun SheetContent(
+    title: String,
+    bodyContent: @Composable () -> Unit
+) {
     Column(
         modifier = Modifier
             .wrapContentHeight()
-            .background(color = MaterialTheme.colorScheme.background)
+            .background(color = MaterialTheme.colorScheme.backgroundPaper)
             .fillMaxWidth()
             .padding(horizontal = 32.dp, vertical = 48.dp)
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineSmall.copy(
-                color = MaterialTheme.colorScheme.primary
+            style = MaterialTheme.typography.titleLarge.copy(
+                color = MaterialTheme.colorScheme.textPrimaryDark
             )
         )
         VSpacer.Small()
@@ -87,7 +92,7 @@ fun SheetContent(
     Column(
         modifier = Modifier
             .wrapContentHeight()
-            .background(color = MaterialTheme.colorScheme.background)
+            .background(color = MaterialTheme.colorScheme.backgroundPaper)
             .fillMaxWidth()
             .padding(
                 start = SPACING_LARGE.dp,

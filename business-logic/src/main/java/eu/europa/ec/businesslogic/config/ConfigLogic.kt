@@ -54,7 +54,7 @@ abstract class EnvironmentConfig {
         get() {
             return when (AppBuildType.getType()) {
                 AppBuildType.DEBUG -> ServerConfig.Dev
-                AppBuildType.RELEASE -> ServerConfig.Production
+                AppBuildType.RELEASE -> ServerConfig.Demo
             }
         }
 
@@ -64,6 +64,6 @@ abstract class EnvironmentConfig {
     abstract fun getServerHost(): String
     sealed class ServerConfig {
         data object Dev : ServerConfig()
-        data object Production : ServerConfig()
+        data object Demo : ServerConfig()
     }
 }

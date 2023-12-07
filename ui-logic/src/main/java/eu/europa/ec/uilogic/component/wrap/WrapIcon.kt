@@ -58,7 +58,7 @@ fun WrapIcon(
     customTint: Color? = null,
     contentAlpha: Float = ALPHA_ENABLED,
 ) {
-    val iconTint = customTint?.copy(alpha = contentAlpha) ?: LocalContentColor.current
+    val iconTint = (customTint ?: LocalContentColor.current).copy(alpha = contentAlpha)
     val iconContentDescription = stringResource(id = iconData.contentDescriptionId)
 
     iconData.resourceId?.let { resId ->

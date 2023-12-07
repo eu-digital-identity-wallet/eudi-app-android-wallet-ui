@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
-import eu.europa.ec.resourceslogic.theme.values.primaryDark
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -115,7 +114,7 @@ fun DocumentCard(
             Text(
                 text = cardText,
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primaryDark
+                color = MaterialTheme.colorScheme.textPrimaryDark
             )
         },
         icon = {
@@ -126,7 +125,7 @@ fun DocumentCard(
             )
         },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryDark.copy(alpha = 0.12f),
+            containerColor = MaterialTheme.colorScheme.secondary,
         ),
         contentPadding = PaddingValues(horizontal = SPACING_MEDIUM.dp)
     )

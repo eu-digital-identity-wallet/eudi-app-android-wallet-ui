@@ -43,3 +43,7 @@ captures/
 
 # Sign key
 sign
+
+#fastlane
+.env.demo
+fastlane/report.xml

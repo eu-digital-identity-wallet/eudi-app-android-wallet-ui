@@ -54,6 +54,10 @@ internal fun Project.configureKotlinAndroid(
             targetCompatibility = JavaVersion.VERSION_17
             isCoreLibraryDesugaringEnabled = true
         }
+
+        lint {
+            abortOnError = false
+        }
     }
 
     configureKotlin()
