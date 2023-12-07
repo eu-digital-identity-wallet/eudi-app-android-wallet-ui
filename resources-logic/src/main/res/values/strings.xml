@@ -132,6 +132,7 @@
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
     <string name="dashboard_bottom_sheet_title">More options</string>
     <string name="dashboard_bottom_sheet_action_1">Change quick pin</string>
+    <string name="dashboard_bottom_sheet_action_2">Scan a QR code</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Show QR or Tap</string>

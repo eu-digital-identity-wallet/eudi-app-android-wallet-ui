@@ -89,6 +89,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.throttledClickable
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -155,7 +156,13 @@ fun DashboardScreen(
         lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
-        viewModel.setEvent(Event.Init)
+        viewModel.setEvent(
+            Event.Init(
+                navController.currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.remove<String>(DashboardScreens.Scanner.screenName)
+            )
+        )
     }
 }
 
@@ -262,6 +269,7 @@ private fun DashboardSheetContent(
             }
         },
         bodyContent = {
+
             Row(
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.allCorneredShapeSmall)
@@ -280,6 +288,31 @@ private fun DashboardSheetContent(
                 HSpacer.Medium()
                 Text(
                     text = stringResource(id = R.string.dashboard_bottom_sheet_action_1),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.textPrimaryDark
+                )
+            }
+
+            VSpacer.Medium()
+
+            Row(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.allCorneredShapeSmall)
+                    .throttledClickable(
+                        onClick = { onEventSent(Event.BottomSheet.Options.OpenScanQr) }
+                    )
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
+                WrapIcon(
+                    iconData = AppIcons.QrSmall,
+                    customTint = MaterialTheme.colorScheme.primary
+                )
+                HSpacer.Medium()
+                Text(
+                    text = stringResource(id = R.string.dashboard_bottom_sheet_action_2),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.textPrimaryDark
                 )

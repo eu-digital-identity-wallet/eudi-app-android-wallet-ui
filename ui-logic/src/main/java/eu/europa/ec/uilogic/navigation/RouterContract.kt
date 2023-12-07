@@ -40,6 +40,7 @@ sealed class CommonScreens {
 
 sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
+    data object Scanner : Screen(name = "DASHBOARD_SCAN")
 }
 
 sealed class LoginScreens {

@@ -31,6 +31,7 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
@@ -48,7 +49,7 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data object Init : Event()
+    data class Init(val qrResult: String?) : Event()
     data object Pop : Event()
     data class NavigateToDocument(val documentId: String) : Event()
     data object OptionsPressed : Event()
@@ -62,6 +63,7 @@ sealed class Event : ViewEvent {
         data object Close : BottomSheet()
         sealed class Options : BottomSheet() {
             data object OpenChangeQuickPin : Options()
+            data object OpenScanQr : Options()
         }
     }
 }
@@ -86,7 +88,13 @@ class DashboardViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> getDocuments(event)
+            is Event.Init -> {
+                getDocuments(event)
+                event.qrResult?.let {
+                    print(it)
+                    // TODO HANDLE OPENID4VP FROM QR
+                }
+            }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
@@ -147,6 +155,11 @@ class DashboardViewModel(
                 hideBottomSheet()
                 navigateToChangeQuickPin()
             }
+
+            is Event.BottomSheet.Options.OpenScanQr -> {
+                hideBottomSheet()
+                navigateToScanQr()
+            }
         }
     }
 
@@ -199,6 +212,14 @@ class DashboardViewModel(
                         mapOf("pinFlow" to PinFlow.UPDATE)
                     )
                 )
+            )
+        }
+    }
+
+    private fun navigateToScanQr() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = DashboardScreens.Scanner.screenRoute,
             )
         }
     }
