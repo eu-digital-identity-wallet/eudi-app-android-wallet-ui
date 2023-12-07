@@ -23,7 +23,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardScreen
-import eu.europa.ec.dashboardfeature.ui.qr.QrScanScreen
+import eu.europa.ec.dashboardfeature.ui.scanner.QrScanScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.koinViewModel
@@ -45,11 +45,11 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
             DashboardScreen(navController, koinViewModel())
         }
         composable(
-            route = DashboardScreens.Scan.screenRoute,
+            route = DashboardScreens.Scanner.screenRoute,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                        BuildConfig.DEEPLINK + DashboardScreens.Scan.screenRoute
+                        BuildConfig.DEEPLINK + DashboardScreens.Scanner.screenRoute
                 }
             )
         ) {

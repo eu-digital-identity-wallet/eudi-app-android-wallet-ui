@@ -136,7 +136,8 @@ class TestQuickPinInteractor {
         coroutineRule.runTest {
             // Given
             getDevicePinInterceptor()
-            Mockito.`when`(resourceProvider.getString(ArgumentMatchers.anyInt())).thenReturn(mockedInvalidPinMessage)
+            Mockito.`when`(resourceProvider.getString(ArgumentMatchers.anyInt()))
+                .thenReturn(mockedInvalidPinMessage)
 
             // When
             quickPinInteractor.changePin(
@@ -200,7 +201,8 @@ class TestQuickPinInteractor {
         coroutineRule.runTest {
             // Given
             getDevicePinInterceptor()
-            Mockito.`when`(resourceProvider.getString(ArgumentMatchers.anyInt())).thenReturn(mockedInvalidPinMessage)
+            Mockito.`when`(resourceProvider.getString(ArgumentMatchers.anyInt()))
+                .thenReturn(mockedInvalidPinMessage)
 
             // When
             quickPinInteractor.isCurrentPinValid(

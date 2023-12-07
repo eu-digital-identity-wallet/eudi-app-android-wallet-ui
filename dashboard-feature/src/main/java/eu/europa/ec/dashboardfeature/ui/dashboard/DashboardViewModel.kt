@@ -49,7 +49,7 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data object Init : Event()
+    data class Init(val qrResult: String?) : Event()
     data object Pop : Event()
     data class NavigateToDocument(val documentId: String) : Event()
     data object OptionsPressed : Event()
@@ -64,7 +64,6 @@ sealed class Event : ViewEvent {
         sealed class Options : BottomSheet() {
             data object OpenChangeQuickPin : Options()
             data object OpenScanQr : Options()
-
         }
     }
 }
@@ -89,7 +88,13 @@ class DashboardViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> getDocuments(event)
+            is Event.Init -> {
+                getDocuments(event)
+                event.qrResult?.let {
+                    print(it)
+                    // TODO HANDLE OPENID4VP FROM QR
+                }
+            }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
@@ -214,7 +219,7 @@ class DashboardViewModel(
     private fun navigateToScanQr() {
         setEffect {
             Effect.Navigation.SwitchScreen(
-                screenRoute = DashboardScreens.Scan.screenRoute,
+                screenRoute = DashboardScreens.Scanner.screenRoute,
             )
         }
     }

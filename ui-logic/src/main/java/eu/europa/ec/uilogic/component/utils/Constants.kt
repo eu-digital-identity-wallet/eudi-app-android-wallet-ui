@@ -49,3 +49,4 @@ const val SIZE_SMALL = 8
 const val SIZE_MEDIUM = 16
 const val SIZE_LARGE = 24
 const val SIZE_EXTRA_LARGE = 48
+const val SIZE_XX_LARGE = 62

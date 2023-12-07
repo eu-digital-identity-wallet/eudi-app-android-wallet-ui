@@ -14,57 +14,36 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.qr
+package eu.europa.ec.dashboardfeature.ui.scanner
 
-import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import org.koin.android.annotation.KoinViewModel
 
-data class State(
-    val isLoading: Boolean = true,
-    val error: ContentErrorConfig? = null,
-    val qrCode: String = "",
-) : ViewState
+data object State : ViewState
 
 sealed class Event : ViewEvent {
-    data object Init : Event()
     data object GoBack : Event()
-    data class OnQrScanned( val resultQr: String): Event()
+    data class OnQrScanned(val resultQr: String) : Event()
 
 }
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
-        data object Pop : Navigation()
-        data class SwitchScreen(val screenRoute: String) : Navigation()
+        data class Pop(val result: String? = null) : Navigation()
     }
 }
 
 @KoinViewModel
 class QrScanViewModel : MviViewModel<Event, State, Effect>() {
 
-    override fun setInitialState(): State = State()
+    override fun setInitialState(): State = State
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> openQrScanner()
-            is Event.GoBack -> setEffect { Effect.Navigation.Pop }
-            is Event.OnQrScanned -> setState {
-                copy(
-                    qrCode = event.resultQr
-                )
-            }
-        }
-    }
-
-    private fun openQrScanner() {
-        setState {
-            copy(
-                isLoading = false,
-                error = null
-            )
+            is Event.GoBack -> setEffect { Effect.Navigation.Pop() }
+            is Event.OnQrScanned -> setEffect { Effect.Navigation.Pop(event.resultQr) }
         }
     }
 }
