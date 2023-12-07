@@ -51,7 +51,11 @@ data class State(
 sealed class Event : ViewEvent {
     data class Init(val qrResult: String?) : Event()
     data object Pop : Event()
-    data class NavigateToDocument(val documentId: String) : Event()
+    data class NavigateToDocument(
+        val documentId: String,
+        val documentType: String,
+    ) : Event()
+
     data object OptionsPressed : Event()
     sealed class Fab : Event() {
         data object PrimaryFabPressed : Fab()
@@ -106,7 +110,8 @@ class DashboardViewModel(
                             arguments = generateComposableArguments(
                                 mapOf(
                                     "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
-                                    "documentId" to event.documentId
+                                    "documentId" to event.documentId,
+                                    "documentType" to event.documentType,
                                 )
                             )
                         )

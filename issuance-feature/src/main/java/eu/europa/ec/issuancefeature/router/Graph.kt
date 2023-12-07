@@ -138,6 +138,9 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 navArgument("documentId") {
                     type = NavType.StringType
                 },
+                navArgument("documentType") {
+                    type = NavType.StringType
+                },
             )
         ) {
             DocumentDetailsScreen(
@@ -149,6 +152,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                                 it.arguments?.getString("detailsType").orEmpty()
                             ),
                             it.arguments?.getString("documentId").orEmpty(),
+                            it.arguments?.getString("documentType").orEmpty(),
                         )
                     }
                 )

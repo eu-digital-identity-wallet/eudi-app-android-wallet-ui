@@ -14,31 +14,30 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.extension
+package eu.europa.ec.businesslogic.util
 
-import android.util.Base64
-
-/**
- * Converts Byte Array to encoded Pem base64 String
- *
- * @receiver Byte Array object
- * @return String object
- */
-fun ByteArray.encodeToPemBase64String(): String? {
-    val encodedString = Base64.encodeToString(this, Base64.NO_WRAP) ?: return null
-    return encodedString.splitToLines(64)
-}
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 
 /**
- * Attempts to decode a [Base64] encoded String.
- * @return A [ByteArray] with the encoded bytes if it succeeds,
- * empty if it fails.
+ * Converts given [JSONArray] to a [List]
  */
-fun decodeFromBase64(base64EncodedString: String, flag: Int = Base64.DEFAULT): ByteArray {
-    return try {
-        Base64.decode(base64EncodedString, flag)
-    } catch (e: Exception) {
-        ByteArray(size = 0)
+fun JSONArray.toList(): List<Any> {
+    return (0 until this.length()).map {
+        this.get(it)
     }
 }
 
+/**
+ * Attempts to get the given [key] from the [JSONObject]
+ * @return its [String] value if it succeeds,
+ * empty string if it fails.
+ */
+fun JSONObject.getStringFromJsonKeyOrEmpty(key: String): String {
+    return try {
+        this.getString(key)
+    } catch (e: JSONException) {
+        ""
+    }
+}

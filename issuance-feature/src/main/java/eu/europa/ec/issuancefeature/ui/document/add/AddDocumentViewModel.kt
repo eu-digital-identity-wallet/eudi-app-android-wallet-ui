@@ -86,7 +86,7 @@ class AddDocumentViewModel(
                         arguments = generateComposableArguments(
                             mapOf(
                                 "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
-                                "documentType" to event.type.title,
+                                "documentType" to event.type,
                             )
                         )
                     )

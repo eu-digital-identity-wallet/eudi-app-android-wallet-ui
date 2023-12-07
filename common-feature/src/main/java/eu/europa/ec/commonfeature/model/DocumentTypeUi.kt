@@ -16,30 +16,31 @@
 
 package eu.europa.ec.commonfeature.model
 
+import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
+
 data class DocumentUi(
     val documentId: String,
+    val documentName: String,
     val documentType: DocumentTypeUi,
     val documentStatus: DocumentStatusUi,
     val documentImage: String,
-    val documentItems: List<DocumentItemUi>
-)
-
-data class DocumentItemUi(
-    val title: String,
-    val value: String
+    val documentDetails: List<DocumentDetailsUi>,
+    val documentUsername: String? = null,
 )
 
 enum class DocumentTypeUi(
-    val title: String
+    val codeName: String
 ) {
-    DRIVING_LICENSE(title = "Driving License"),
-    DIGITAL_ID(title = "Digital ID"),
-    OTHER(title = "Other document")
+    DRIVING_LICENSE(codeName = "org.iso.18013.5.1"),
+    DIGITAL_ID(codeName = "eu.europa.ec.eudiw.pid.1"),
+    CONFERENCE_BADGE(codeName = "com.example.conference.badge"),
+    OTHER(codeName = "")
 }
 
 fun String.toDocumentTypeUi(): DocumentTypeUi = when (this) {
     "eu.europa.ec.eudiw.pid.1" -> DocumentTypeUi.DIGITAL_ID
     "org.iso.18013.5.1.mDL" -> DocumentTypeUi.DRIVING_LICENSE
+    "com.example.conference.badge" -> DocumentTypeUi.CONFERENCE_BADGE
     else -> DocumentTypeUi.OTHER
 }
 

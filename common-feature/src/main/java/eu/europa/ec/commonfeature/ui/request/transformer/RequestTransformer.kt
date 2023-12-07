@@ -191,7 +191,7 @@ object RequestTransformer {
     private fun JSONObject.getDocObject(docType: String): JSONObject =
         this[docType.replace(".mDL", "")] as JSONObject
 
-    private fun getGenderValue(value: String, resourceProvider: ResourceProvider): String =
+    fun getGenderValue(value: String, resourceProvider: ResourceProvider): String =
         when (value) {
             "1" -> {
                 resourceProvider.getString(R.string.request_gender_male)

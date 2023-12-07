@@ -49,10 +49,11 @@ class DashboardInteractorImpl(
         val (documentsUi, name) = documents.map {
             DocumentUi(
                 documentId = it.id,
+                documentName = it.name,
                 documentType = it.docType.toDocumentTypeUi(),
                 documentImage = "",
                 documentStatus = DocumentStatusUi.ACTIVE,
-                documentItems = emptyList()
+                documentDetails = emptyList()
             )
         } to "Jane Doe"
         emit(

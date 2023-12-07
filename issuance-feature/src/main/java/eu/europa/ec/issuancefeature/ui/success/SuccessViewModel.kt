@@ -39,7 +39,10 @@ data class State(
 
 sealed class Event : ViewEvent {
     data object GoBack : Event()
-    data class PrimaryButtonPressed(val documentId: String) : Event()
+    data class PrimaryButtonPressed(
+        val documentId: String,
+        val documentType: String,
+    ) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -83,7 +86,8 @@ class SuccessViewModel(
                                                     "detailsType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(
                                                         flowType
                                                     ),
-                                                    "documentId" to event.documentId
+                                                    "documentId" to event.documentId,
+                                                    "documentType" to event.documentType,
                                                 )
                                             )
                                         )
