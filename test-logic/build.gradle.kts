@@ -21,8 +21,3 @@ plugins {
 android {
     namespace = "eu.europa.ec.testlogic"
 }
-dependencies {
-    implementation(project(mapOf("path" to ":business-logic")))
-    implementation(project(mapOf("path" to ":common-feature")))
-    implementation(project(mapOf("path" to ":resources-logic")))
-}
