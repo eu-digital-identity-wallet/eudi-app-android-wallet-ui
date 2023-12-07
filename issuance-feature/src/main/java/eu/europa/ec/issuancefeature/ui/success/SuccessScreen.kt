@@ -117,7 +117,7 @@ private fun Content(
         // Screen Main Content.
         UserImageAndIcon(
             modifier = Modifier.weight(1f),
-            image = AppIcons.User,
+            base64Image = "",
             icon = AppIcons.IdStroke,
             username = "Jane Doe"
         )
@@ -140,7 +140,7 @@ private fun Content(
 @Composable
 private fun UserImageAndIcon(
     modifier: Modifier = Modifier,
-    image: IconData,
+    base64Image: String,
     icon: IconData,
     username: String,
 ) {
@@ -156,7 +156,7 @@ private fun UserImageAndIcon(
                 .padding(SPACING_LARGE.dp)
         ) {
             BigImageAndMediumIcon(
-                image = image,
+                base64Image = base64Image,
                 icon = icon
             )
             VSpacer.Large()
@@ -174,7 +174,14 @@ private fun StickyBottomSection(onEventSend: (Event) -> Unit) {
     Column {
         WrapPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { onEventSend(Event.PrimaryButtonPressed(documentId = "2")) }
+            onClick = {
+                onEventSend(
+                    Event.PrimaryButtonPressed(
+                        documentId = "a094c6df-4416-4b30-9176-14754904ea0d",
+                        documentType = "eu.europa.ec.eudiw.pid.1"
+                    ) // TODO: Replace above hardcoded values when integration with core is completed for this screen.
+                )
+            }
         ) {
             Text(text = stringResource(id = R.string.issuance_success_primary_button_text))
         }

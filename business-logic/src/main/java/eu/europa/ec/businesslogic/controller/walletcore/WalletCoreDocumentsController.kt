@@ -37,6 +37,8 @@ interface WalletCoreDocumentsController {
      * @return Sample documents from Database
      * */
     fun getSampleDocuments(): List<Document>
+
+    fun getDocumentById(id: String): Document?
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -58,4 +60,8 @@ class WalletCoreDocumentsControllerImpl(
         }
 
     override fun getSampleDocuments(): List<Document> = eudiWallet.getDocuments()
+
+    override fun getDocumentById(id: String): Document? {
+        return eudiWallet.getDocumentById(documentId = id)
+    }
 }

@@ -56,9 +56,9 @@ private fun DetailsContentPreview() {
     PreviewTheme {
         DetailsContent(
             data = (1..10).map {
-                InfoTextWithNameAndValueData(
-                    infoName = "Name $it",
-                    infoValue = "Value $it"
+                InfoTextWithNameAndValueData.create(
+                    title = "Name $it",
+                    "Value $it"
                 )
             }
         )

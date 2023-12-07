@@ -37,7 +37,7 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 data class HeaderData(
     val title: String,
     val subtitle: String,
-    val image: IconData = AppIcons.User,
+    val base64Image: String,
     val icon: IconData = AppIcons.IdStroke
 )
 
@@ -76,7 +76,7 @@ fun HeaderLarge(
         VSpacer.Large()
 
         BigImageAndMediumIcon(
-            image = data.image,
+            base64Image = data.base64Image,
             icon = data.icon
         )
     }
@@ -91,7 +91,7 @@ private fun HeaderLargePreview() {
             data = HeaderData(
                 title = "Digital ID",
                 subtitle = "Jane Doe",
-                image = AppIcons.User,
+                base64Image = "",
                 icon = AppIcons.IdStroke
             ),
             containerColor = MaterialTheme.colorScheme.secondary,

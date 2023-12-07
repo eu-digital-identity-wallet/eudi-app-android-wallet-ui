@@ -30,10 +30,19 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.VSpacer
 
-data class InfoTextWithNameAndValueData(
-    val infoName: String,
-    val infoValue: String?,
-)
+class InfoTextWithNameAndValueData private constructor(
+    val title: String,
+    val infoValues: List<String>?,
+) {
+    companion object {
+        fun create(title: String, vararg infoValues: String): InfoTextWithNameAndValueData {
+            return InfoTextWithNameAndValueData(
+                title = title,
+                infoValues = infoValues.toList()
+            )
+        }
+    }
+}
 
 @Composable
 fun InfoTextWithNameAndValue(
@@ -52,17 +61,21 @@ fun InfoTextWithNameAndValue(
         horizontalAlignment = Alignment.Start
     ) {
         Text(
-            text = itemData.infoName,
+            text = itemData.title,
             style = infoNameTextStyle
         )
 
-        itemData.infoValue?.let {
-            VSpacer.ExtraSmall()
+        itemData.infoValues?.let { infoValues ->
+            Column {
+                infoValues.forEach { infoValue ->
+                    VSpacer.ExtraSmall()
 
-            Text(
-                text = itemData.infoValue,
-                style = infoValueTextStyle
-            )
+                    Text(
+                        text = infoValue,
+                        style = infoValueTextStyle
+                    )
+                }
+            }
         }
     }
 }
@@ -70,9 +83,9 @@ fun InfoTextWithNameAndValue(
 @ThemeModePreviews
 @Composable
 private fun InfoTextWithNameAndValuePreview() {
-    val infoItemData = InfoTextWithNameAndValueData(
-        infoName = "Name:",
-        infoValue = "John Smith"
+    val infoItemData = InfoTextWithNameAndValueData.create(
+        title = "Name:",
+        "John Smith"
     )
 
     PreviewTheme {

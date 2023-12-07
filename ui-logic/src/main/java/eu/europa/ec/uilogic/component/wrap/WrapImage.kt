@@ -19,6 +19,7 @@ package eu.europa.ec.uilogic.component.wrap
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -62,4 +63,21 @@ fun WrapImage(
         contentDescription = contentDescription,
         contentScale = contentScale ?: ContentScale.FillBounds,
     )
+}
+
+@Composable
+fun WrapImage(
+    modifier: Modifier = Modifier,
+    bitmap: ImageBitmap?,
+    contentDescription: String,
+    contentScale: ContentScale? = null,
+) {
+    bitmap?.let {
+        Image(
+            modifier = modifier,
+            bitmap = it,
+            contentDescription = contentDescription,
+            contentScale = contentScale ?: ContentScale.FillBounds,
+        )
+    }
 }

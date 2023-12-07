@@ -42,10 +42,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
-import eu.europa.ec.commonfeature.model.DocumentItemUi
 import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ActionTopBar
 import eu.europa.ec.uilogic.component.AppIcons
@@ -186,11 +186,21 @@ private fun Content(
                                 start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                                 end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
                             ),
-                        data = documentUi.documentItems.map {
-                            InfoTextWithNameAndValueData(
-                                infoName = it.title,
-                                infoValue = it.value
-                            )
+                        data = documentUi.documentDetails.mapNotNull { documentDetailsUi ->
+                            when (documentDetailsUi) {
+                                is DocumentDetailsUi.DefaultItem -> {
+                                    documentDetailsUi.infoText.infoValues
+                                        ?.toTypedArray()
+                                        ?.let { infoValues ->
+                                            InfoTextWithNameAndValueData.create(
+                                                title = documentDetailsUi.infoText.title,
+                                                *infoValues
+                                            )
+                                        }
+                                }
+
+                                DocumentDetailsUi.Unknown -> null
+                            }
                         }
                     )
                 }
@@ -273,18 +283,17 @@ private fun IssuanceDocumentDetailsScreenPreview() {
             detailsHaveBottomGradient = true,
             document = DocumentUi(
                 documentId = "2",
+                documentName = "Digital Id",
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image3",
-                documentItems = (1..10).map {
-                    DocumentItemUi("Name $it", "Value $it")
-                }
+                documentDetails = emptyList()
             ),
             headerData = HeaderData(
                 title = "Title",
                 subtitle = "subtitle",
-                AppIcons.User,
-                AppIcons.IdStroke
+                base64Image = "",
+                icon = AppIcons.IdStroke
             )
         )
 
@@ -312,18 +321,17 @@ private fun DashboardDocumentDetailsScreenPreview() {
             detailsHaveBottomGradient = false,
             document = DocumentUi(
                 documentId = "2",
+                documentName = "Digital Id",
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image3",
-                documentItems = (1..10).map {
-                    DocumentItemUi("Name $it", "Value $it")
-                }
+                documentDetails = emptyList()
             ),
             headerData = HeaderData(
                 title = "Title",
                 subtitle = "subtitle",
-                AppIcons.User,
-                AppIcons.IdStroke
+                base64Image = "",
+                icon = AppIcons.IdStroke
             )
         )
 

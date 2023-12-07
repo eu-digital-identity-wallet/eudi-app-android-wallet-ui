@@ -67,7 +67,8 @@ sealed class Effect : ViewSideEffect {
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
     @InjectedParam private val detailsType: IssuanceFlowUiConfig,
-    @InjectedParam private val documentId: String
+    @InjectedParam private val documentId: String,
+    @InjectedParam private val documentType: String,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
         detailsType = detailsType,
@@ -80,9 +81,12 @@ class DocumentDetailsViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> getDocument(event)
+            is Event.Init -> getDocumentDetails(event)
 
-            is Event.Pop -> setEffect { Effect.Navigation.Pop }
+            is Event.Pop -> {
+                setState { copy(error = null) }
+                setEffect { Effect.Navigation.Pop }
+            }
 
             is Event.PrimaryButtonPressed -> {
                 setEffect {
@@ -94,7 +98,7 @@ class DocumentDetailsViewModel(
         }
     }
 
-    private fun getDocument(event: Event) {
+    private fun getDocumentDetails(event: Event) {
         setState {
             copy(
                 isLoading = document == null,
@@ -103,18 +107,22 @@ class DocumentDetailsViewModel(
         }
 
         viewModelScope.launch {
-            documentDetailsInteractor.getDocument(documentId).collect { response ->
+            documentDetailsInteractor.getDocumentDetails(
+                documentId = documentId,
+                documentType = documentType
+            ).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
+                        val documentUi = response.documentUi
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                document = response.document,
+                                document = documentUi,
                                 headerData = HeaderData(
-                                    title = response.document.documentType.title,
-                                    subtitle = response.userName,
-                                    image = AppIcons.User,
+                                    title = documentUi.documentName,
+                                    subtitle = documentUi.documentUsername.orEmpty(),
+                                    base64Image = documentUi.documentImage,
                                     icon = AppIcons.IdStroke
                                 )
                             )

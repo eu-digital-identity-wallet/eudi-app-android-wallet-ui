@@ -22,8 +22,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -31,21 +33,31 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 @Composable
 fun BigImageAndMediumIcon(
-    image: IconData,
+    base64Image: String,
     icon: IconData?,
 ) {
     ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
         val (bigImage, mediumIcon) = createRefs()
         val verticalGuideline = createGuidelineFromStart(0.50f)
-        WrapImage(
-            modifier = Modifier
-                .size(width = 160.dp, height = 160.dp)
-                .clip(RoundedCornerShape(SIZE_SMALL.dp))
-                .constrainAs(bigImage) {
-                    start.linkTo(parent.start)
-                },
-            iconData = image
-        )
+        val imageModifier = Modifier
+            .size(width = 160.dp, height = 160.dp)
+            .clip(RoundedCornerShape(SIZE_SMALL.dp))
+            .constrainAs(bigImage) {
+                start.linkTo(parent.start)
+            }
+
+        if (base64Image.isNotBlank()) {
+            WrapImage(
+                bitmap = rememberBase64DecodedBitmap(base64Image = base64Image),
+                modifier = imageModifier,
+                contentDescription = stringResource(id = R.string.content_description_user_image)
+            )
+        } else {
+            WrapImage(
+                iconData = AppIcons.User,
+                modifier = imageModifier,
+            )
+        }
         if (icon != null) {
             WrapImage(
                 modifier = Modifier
@@ -68,7 +80,7 @@ fun BigImageAndMediumIcon(
 private fun BigImageAndMediumIconPreview() {
     PreviewTheme {
         BigImageAndMediumIcon(
-            image = AppIcons.User,
+            base64Image = "",
             icon = AppIcons.IdStroke
         )
     }

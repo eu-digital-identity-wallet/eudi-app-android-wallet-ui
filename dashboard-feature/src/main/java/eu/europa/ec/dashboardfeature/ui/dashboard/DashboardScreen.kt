@@ -484,7 +484,14 @@ private fun CardListItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(148.dp),
-        onClick = { onEventSend(Event.NavigateToDocument(documentId = dataItem.documentId)) },
+        onClick = {
+            onEventSend(
+                Event.NavigateToDocument(
+                    documentId = dataItem.documentId,
+                    documentType = dataItem.documentType.codeName,
+                )
+            )
+        },
         throttleClicks = true,
     ) {
         Column(
@@ -497,7 +504,7 @@ private fun CardListItem(
                 customTint = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = dataItem.documentType.title,
+                text = dataItem.documentName,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.textPrimaryDark
             )
@@ -521,24 +528,27 @@ private fun DashboardScreenPreview() {
         val documents = listOf(
             DocumentUi(
                 documentId = "0",
+                documentName = "Digital Id",
                 documentType = DocumentTypeUi.DIGITAL_ID,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image1",
-                documentItems = emptyList(),
+                documentDetails = emptyList(),
             ),
             DocumentUi(
                 documentId = "1",
+                documentName = "Driving License",
                 documentType = DocumentTypeUi.DRIVING_LICENSE,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image2",
-                documentItems = emptyList(),
+                documentDetails = emptyList(),
             ),
             DocumentUi(
                 documentId = "2",
+                documentName = "Other",
                 documentType = DocumentTypeUi.OTHER,
                 documentStatus = DocumentStatusUi.ACTIVE,
                 documentImage = "image3",
-                documentItems = emptyList(),
+                documentDetails = emptyList(),
             )
         )
         Content(

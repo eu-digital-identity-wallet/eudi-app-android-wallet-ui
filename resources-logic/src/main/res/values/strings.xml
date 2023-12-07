@@ -32,6 +32,7 @@
     <string name="generic_ok">OK</string>
 
     <!-- Content Description -->
+    <string name="content_description_user_image">User image</string>
     <string name="content_description_qr_code">QR Code</string>
     <string name="content_description_more_vert_icon">More Items Vertically</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
@@ -133,6 +134,10 @@
     <string name="dashboard_bottom_sheet_title">More options</string>
     <string name="dashboard_bottom_sheet_action_1">Change quick pin</string>
     <string name="dashboard_bottom_sheet_action_2">Scan a QR code</string>
+
+    <!-- Document Details -->
+    <string name="document_details_base64_item_readable_identifier">Shown above</string>
+    <string name="document_details_vehicle_category_code_readable_identifier">Vehicle category code</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Show QR or Tap</string>

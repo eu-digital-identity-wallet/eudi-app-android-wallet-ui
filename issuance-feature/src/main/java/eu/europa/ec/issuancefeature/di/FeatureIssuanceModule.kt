@@ -42,8 +42,10 @@ fun provideAddDocumentInteractor(
 
 @Factory
 fun provideDocumentDetailsInteractor(
+    walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider
-): DocumentDetailsInteractor = DocumentDetailsInteractorImpl(resourceProvider)
+): DocumentDetailsInteractor =
+    DocumentDetailsInteractorImpl(walletCoreDocumentsController, resourceProvider)
 
 @Factory
 fun provideSuccessInteractor(

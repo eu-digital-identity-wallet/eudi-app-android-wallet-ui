@@ -156,9 +156,9 @@ fun <T> OptionalField(
         }
         if (showFullDetails) {
             InfoTextWithNameAndValue(
-                itemData = InfoTextWithNameAndValueData(
-                    infoName = item.requestDocumentItemUi.readableName,
-                    infoValue = item.requestDocumentItemUi.value,
+                itemData = InfoTextWithNameAndValueData.create(
+                    title = item.requestDocumentItemUi.readableName,
+                    item.requestDocumentItemUi.value,
                 ),
                 infoValueTextStyle = infoValueStyle
             )
