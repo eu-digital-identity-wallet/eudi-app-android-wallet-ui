@@ -60,9 +60,6 @@ internal fun Project.configureAndroidCompose(
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.testManifest").get())
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())
             add("testImplementation", libs.findLibrary("robolectric").get())
-
-            add("implementation", libs.findLibrary("zxing").get())
-
         }
 
         testOptions {

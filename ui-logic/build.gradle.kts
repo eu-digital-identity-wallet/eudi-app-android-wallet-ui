@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":resources-logic"))
     implementation(project(":business-logic"))
 
+    implementation(libs.zxing)
     implementation(libs.gson)
 
     debugImplementation(libs.chucker.android)
