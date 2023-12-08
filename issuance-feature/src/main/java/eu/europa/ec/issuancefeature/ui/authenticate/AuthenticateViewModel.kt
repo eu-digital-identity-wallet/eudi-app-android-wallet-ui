@@ -38,13 +38,11 @@ data class State(
     val error: ContentErrorConfig? = null,
 
     val url: String,
-    val userWasRedirected: Boolean,
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object GoBack : Event()
-    data object CheckIfUserWasRedirected : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -69,7 +67,6 @@ class AuthenticateViewModel(
     override fun setInitialState(): State {
         return State(
             url = interactor.getAuthenticateUrl().validateAndFormatUrl(),
-            userWasRedirected = false
         )
     }
 
@@ -82,29 +79,17 @@ class AuthenticateViewModel(
             is Event.GoBack -> {
                 setEffect { Effect.Navigation.Pop }
             }
-
-            is Event.CheckIfUserWasRedirected -> {
-                viewModelScope.launch {
-                    if (viewState.value.userWasRedirected) {
-                        setState { copy(isLoading = true) }
-                        delay(1500L)
-                        setState { copy(isLoading = false, userWasRedirected = false) }
-                        goToNextScreen()
-                    }
-                }
-            }
         }
     }
 
     private fun init() {
         viewModelScope.launch {
+            setState { copy(isLoading = true) }
             delay(1500L)
+            setState { copy(isLoading = false) }
+            goToNextScreen()
 
-            setState {
-                copy(userWasRedirected = true)
-            }
-
-            setEffect { Effect.OpenUrlExternally(viewState.value.url) }
+            //setEffect { Effect.OpenUrlExternally(viewState.value.url) }
         }
     }
 

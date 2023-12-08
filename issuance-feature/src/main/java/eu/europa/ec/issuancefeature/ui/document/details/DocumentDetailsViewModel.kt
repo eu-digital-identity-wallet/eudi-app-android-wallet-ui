@@ -121,7 +121,7 @@ class DocumentDetailsViewModel(
                                 document = documentUi,
                                 headerData = HeaderData(
                                     title = documentUi.documentName,
-                                    subtitle = documentUi.documentUsername.orEmpty(),
+                                    subtitle = documentUi.userFullName.orEmpty(),
                                     base64Image = documentUi.documentImage,
                                     icon = AppIcons.IdStroke
                                 )

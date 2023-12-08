@@ -18,8 +18,9 @@ package eu.europa.ec.issuancefeature.ui.success
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.issuancefeature.interactor.SuccessFetchRandomDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
-import eu.europa.ec.issuancefeature.interactor.SuccessPartialState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -27,22 +28,21 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
-    val isBottomSheetOpen: Boolean = false,
-
     val docType: String,
+    val document: Document? = null,
+    val userFullName: String = "",
 ) : ViewState
 
 sealed class Event : ViewEvent {
+    data object Init : Event()
     data object GoBack : Event()
-    data class PrimaryButtonPressed(
-        val documentId: String,
-        val documentType: String,
-    ) : Event()
+    data object PrimaryButtonPressed : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -70,33 +70,44 @@ class SuccessViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.GoBack -> setEffect { Effect.Navigation.Pop }
-
-            is Event.PrimaryButtonPressed -> {
+            is Event.Init -> {
                 viewModelScope.launch {
-                    interactor.addData().collect {
-                        when (it) {
-                            is SuccessPartialState.Success -> {
-                                setEffect {
-                                    Effect.Navigation.SwitchScreen(
-                                        screenRoute = generateComposableNavigationLink(
-                                            screen = IssuanceScreens.DocumentDetails,
-                                            arguments = generateComposableArguments(
-                                                mapOf(
-                                                    "detailsType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(
-                                                        flowType
-                                                    ),
-                                                    "documentId" to event.documentId,
-                                                    "documentType" to event.documentType,
-                                                )
-                                            )
-                                        )
+                    interactor.addData().collect()
+                    interactor.fetchRandomDocument().collect { response ->
+                        when (response) {
+                            is SuccessFetchRandomDocumentPartialState.Failure -> {}
+                            is SuccessFetchRandomDocumentPartialState.Success -> {
+                                setState {
+                                    copy(
+                                        document = response.document,
+                                        userFullName = response.fullName
                                     )
                                 }
                             }
-
-                            else -> {}
                         }
+                    }
+                }
+            }
+
+            is Event.GoBack -> setEffect { Effect.Navigation.Pop }
+
+            is Event.PrimaryButtonPressed -> {
+                viewState.value.document?.let { document ->
+                    setEffect {
+                        Effect.Navigation.SwitchScreen(
+                            screenRoute = generateComposableNavigationLink(
+                                screen = IssuanceScreens.DocumentDetails,
+                                arguments = generateComposableArguments(
+                                    mapOf(
+                                        "detailsType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(
+                                            flowType
+                                        ),
+                                        "documentId" to document.id,
+                                        "documentType" to document.docType,
+                                    )
+                                )
+                            )
+                        )
                     }
                 }
             }

@@ -18,16 +18,22 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.model.DocumentStatusUi
+import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
+import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
+import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class DashboardInteractorPartialState {
-    data class Success(val documents: List<DocumentUi>, val name: String) :
-        DashboardInteractorPartialState()
+    data class Success(
+        val documents: List<DocumentUi>,
+        val userFirstName: String,
+        val userBase64Image: String,
+    ) : DashboardInteractorPartialState()
 
     data class Failure(val error: String) : DashboardInteractorPartialState()
 }
@@ -45,21 +51,49 @@ class DashboardInteractorImpl(
         get() = resourceProvider.genericErrorMessage()
 
     override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
+        var userFirstName = ""
+        var userImage = ""
         val documents = walletCoreDocumentsController.getSampleDocuments()
-        val (documentsUi, name) = documents.map {
-            DocumentUi(
-                documentId = it.id,
-                documentName = it.name,
-                documentType = it.docType.toDocumentTypeUi(),
+        val documentsUi = documents.map { document ->
+
+            var documentExpirationDate = extractValueFromDocumentOrEmpty(
+                document = document,
+                key = DocumentJsonKeys.EXPIRY_DATE
+            )
+            documentExpirationDate = if (documentExpirationDate.isNotBlank()) {
+                documentExpirationDate.toDateFormatted().toString()
+            } else {
+                resourceProvider.getString(R.string.dashboard_document_no_expiration_found)
+            }
+
+            if (userFirstName.isBlank()) {
+                userFirstName = extractValueFromDocumentOrEmpty(
+                    document = document,
+                    key = DocumentJsonKeys.FIRST_NAME
+                )
+            }
+
+            if (userImage.isBlank()) {
+                userImage = extractValueFromDocumentOrEmpty(
+                    document = document,
+                    key = DocumentJsonKeys.PORTRAIT
+                )
+            }
+
+            return@map DocumentUi(
+                documentId = document.id,
+                documentName = document.name,
+                documentType = document.docType.toDocumentTypeUi(),
                 documentImage = "",
-                documentStatus = DocumentStatusUi.ACTIVE,
+                documentExpirationDateFormatted = documentExpirationDate,
                 documentDetails = emptyList()
             )
-        } to "Jane Doe"
+        }
         emit(
             DashboardInteractorPartialState.Success(
                 documents = documentsUi,
-                name = name
+                userFirstName = userFirstName,
+                userBase64Image = userImage
             )
         )
     }.safeAsync {

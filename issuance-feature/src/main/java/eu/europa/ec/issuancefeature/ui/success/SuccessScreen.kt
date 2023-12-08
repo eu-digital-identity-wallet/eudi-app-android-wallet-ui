@@ -44,6 +44,7 @@ import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
@@ -87,6 +88,10 @@ fun SuccessScreen(
             paddingValues = paddingValues
         )
     }
+
+    OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Init)
+    }
 }
 
 @Composable
@@ -117,9 +122,9 @@ private fun Content(
         // Screen Main Content.
         UserImageAndIcon(
             modifier = Modifier.weight(1f),
-            base64Image = "",
+            base64Image = "", //TODO Add support for displaying document Image, if exists.
             icon = AppIcons.IdStroke,
-            username = "Jane Doe"
+            username = state.userFullName
         )
 
         // Sticky Bottom Section.
@@ -174,14 +179,7 @@ private fun StickyBottomSection(onEventSend: (Event) -> Unit) {
     Column {
         WrapPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = {
-                onEventSend(
-                    Event.PrimaryButtonPressed(
-                        documentId = "a094c6df-4416-4b30-9176-14754904ea0d",
-                        documentType = "eu.europa.ec.eudiw.pid.1"
-                    ) // TODO: Replace above hardcoded values when integration with core is completed for this screen.
-                )
-            }
+            onClick = { onEventSend(Event.PrimaryButtonPressed) }
         ) {
             Text(text = stringResource(id = R.string.issuance_success_primary_button_text))
         }

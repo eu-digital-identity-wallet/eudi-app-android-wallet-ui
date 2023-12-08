@@ -27,9 +27,9 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,16 +52,14 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
+import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.ScalableText
 import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -69,11 +67,13 @@ import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.rememberBase64DecodedBitmap
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -197,8 +197,8 @@ private fun Content(
         // Title section.
         Title(
             message = stringResource(id = R.string.dashboard_title),
-            userName = state.userName,
-            image = AppIcons.User,
+            userFirstName = state.userFirstName,
+            userBase64Image = state.userBase64Image,
             onEventSend = onEventSend,
             paddingValues = paddingValues
         )
@@ -272,12 +272,12 @@ private fun DashboardSheetContent(
 
             Row(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .clip(MaterialTheme.shapes.allCorneredShapeSmall)
                     .throttledClickable(
                         onClick = { onEventSent(Event.BottomSheet.Options.OpenChangeQuickPin) }
                     )
-                    .fillMaxWidth()
-                    .padding(vertical = SPACING_SMALL.dp),
+                    .padding(vertical = SPACING_SMALL.dp, horizontal = SPACING_EXTRA_SMALL.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
@@ -297,12 +297,12 @@ private fun DashboardSheetContent(
 
             Row(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .clip(MaterialTheme.shapes.allCorneredShapeSmall)
                     .throttledClickable(
                         onClick = { onEventSent(Event.BottomSheet.Options.OpenScanQr) }
                     )
-                    .fillMaxWidth()
-                    .padding(vertical = SPACING_SMALL.dp),
+                    .padding(vertical = SPACING_SMALL.dp, horizontal = SPACING_EXTRA_SMALL.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Start
             ) {
@@ -375,8 +375,8 @@ private fun FabContent(
 @Composable
 private fun Title(
     message: String,
-    userName: String,
-    image: IconData,
+    userFirstName: String,
+    userBase64Image: String,
     onEventSend: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
@@ -402,12 +402,15 @@ private fun Title(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            WrapImage(
-                iconData = image,
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(SIZE_SMALL.dp))
-            )
+            if (userBase64Image.isNotBlank()) {
+                WrapImage(
+                    bitmap = rememberBase64DecodedBitmap(base64Image = userBase64Image),
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(SIZE_SMALL.dp)),
+                    contentDescription = stringResource(id = R.string.content_description_user_image)
+                )
+            }
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -420,7 +423,7 @@ private fun Title(
                     color = Color.Black
                 )
                 Text(
-                    text = userName,
+                    text = userFirstName,
                     style = MaterialTheme.typography.headlineSmall,
                     color = Color.Black
                 )
@@ -483,7 +486,7 @@ private fun CardListItem(
     WrapCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(148.dp),
+            .wrapContentHeight(),
         onClick = {
             onEventSend(
                 Event.NavigateToDocument(
@@ -495,7 +498,9 @@ private fun CardListItem(
         throttleClicks = true,
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(SPACING_MEDIUM.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -508,15 +513,24 @@ private fun CardListItem(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.textPrimaryDark
             )
-            Text(
-                text = dataItem.documentStatus.title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = when (dataItem.documentStatus) {
-                    DocumentStatusUi.ACTIVE -> MaterialTheme.colorScheme.success
-                    DocumentStatusUi.INACTIVE -> MaterialTheme.colorScheme.error
-                }
-            )
+            VSpacer.Small()
+            ExpiryDate(expirationDate = dataItem.documentExpirationDateFormatted)
         }
+    }
+}
+
+@Composable
+private fun ExpiryDate(
+    expirationDate: String
+) {
+    val textStyle = MaterialTheme.typography.bodySmall
+        .copy(color = MaterialTheme.colorScheme.textSecondaryDark)
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = stringResource(id = R.string.dashboard_document_expiration), style = textStyle)
+        Text(text = expirationDate, style = textStyle)
     }
 }
 
@@ -530,7 +544,7 @@ private fun DashboardScreenPreview() {
                 documentId = "0",
                 documentName = "Digital Id",
                 documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
+                documentExpirationDateFormatted = "30 Mar 2050",
                 documentImage = "image1",
                 documentDetails = emptyList(),
             ),
@@ -538,7 +552,7 @@ private fun DashboardScreenPreview() {
                 documentId = "1",
                 documentName = "Driving License",
                 documentType = DocumentTypeUi.DRIVING_LICENSE,
-                documentStatus = DocumentStatusUi.ACTIVE,
+                documentExpirationDateFormatted = "25 Dec 2050",
                 documentImage = "image2",
                 documentDetails = emptyList(),
             ),
@@ -546,7 +560,7 @@ private fun DashboardScreenPreview() {
                 documentId = "2",
                 documentName = "Other",
                 documentType = DocumentTypeUi.OTHER,
-                documentStatus = DocumentStatusUi.ACTIVE,
+                documentExpirationDateFormatted = "01 Jun 2030",
                 documentImage = "image3",
                 documentDetails = emptyList(),
             )
@@ -555,7 +569,7 @@ private fun DashboardScreenPreview() {
             state = State(
                 isLoading = false,
                 error = null,
-                userName = "Jane",
+                userFirstName = "Jane",
                 documents = documents + documents
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),

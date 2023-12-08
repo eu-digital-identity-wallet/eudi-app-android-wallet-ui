@@ -44,7 +44,8 @@ data class State(
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
 
-    val userName: String = "",
+    val userFirstName: String = "",
+    val userBase64Image: String = "",
     val documents: List<DocumentUi> = emptyList()
 ) : ViewState
 
@@ -198,7 +199,8 @@ class DashboardViewModel(
                                 isLoading = false,
                                 error = null,
                                 documents = response.documents,
-                                userName = response.name
+                                userFirstName = response.userFirstName,
+                                userBase64Image = response.userBase64Image
                             )
                         }
                         setEffect { Effect.Navigation.OpenDeepLinkAction }

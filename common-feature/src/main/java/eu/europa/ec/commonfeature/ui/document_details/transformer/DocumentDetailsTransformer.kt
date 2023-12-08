@@ -16,15 +16,15 @@
 
 package eu.europa.ec.commonfeature.ui.document_details.transformer
 
-import eu.europa.ec.businesslogic.util.getStringFromJsonKeyOrEmpty
+import eu.europa.ec.businesslogic.util.getStringFromJsonOrEmpty
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.businesslogic.util.toList
-import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer.getGenderValue
+import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
@@ -72,14 +72,14 @@ object DocumentDetailsTransformer {
             documentId = document.id,
             documentName = document.name,
             documentType = document.docType.toDocumentTypeUi(),
-            documentStatus = DocumentStatusUi.ACTIVE,
-            documentImage = documentJson.getStringFromJsonKeyOrEmpty(
+            documentExpirationDateFormatted = documentJson.getStringFromJsonOrEmpty(
+                key = DocumentJsonKeys.EXPIRY_DATE
+            ).toDateFormatted().toString(),
+            documentImage = documentJson.getStringFromJsonOrEmpty(
                 key = DocumentJsonKeys.PORTRAIT
             ),
             documentDetails = detailsItems,
-            documentUsername = documentJson.getStringFromJsonKeyOrEmpty(
-                key = DocumentJsonKeys.SHORT_NAME
-            )
+            userFullName = extractFullNameFromDocumentOrEmpty(document)
         )
     }
 
@@ -100,11 +100,11 @@ private fun transformToDocumentDetailsUi(
                     val expiryDateKey = DocumentJsonKeys.EXPIRY_DATE
 
                     val categoryCodeValue =
-                        it.getStringFromJsonKeyOrEmpty(categoryCodeKey)
+                        it.getStringFromJsonOrEmpty(categoryCodeKey)
                     val issueDateValueFormatted =
-                        it.getStringFromJsonKeyOrEmpty(issueDateKey).toDateFormatted()
+                        it.getStringFromJsonOrEmpty(issueDateKey).toDateFormatted()
                     val expiryDateValueFormatted =
-                        it.getStringFromJsonKeyOrEmpty(expiryDateKey).toDateFormatted()
+                        it.getStringFromJsonOrEmpty(expiryDateKey).toDateFormatted()
 
                     listOf(
                         "${resourceProvider.getString(R.string.document_details_vehicle_category_code_readable_identifier)}: $categoryCodeValue",
