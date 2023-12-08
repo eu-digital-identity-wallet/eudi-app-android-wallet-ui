@@ -34,7 +34,7 @@ fun JSONArray.toList(): List<Any> {
  * @return its [String] value if it succeeds,
  * empty string if it fails.
  */
-fun JSONObject.getStringFromJsonKeyOrEmpty(key: String): String {
+fun JSONObject.getStringFromJsonOrEmpty(key: String): String {
     return try {
         this.getString(key)
     } catch (e: JSONException) {

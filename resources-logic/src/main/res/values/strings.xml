@@ -30,6 +30,7 @@
     <string name="generic_continue_capitalized" tools:ignore="ButtonCase">CONTINUE</string>
     <string name="generic_success">Success</string>
     <string name="generic_ok">OK</string>
+    <string name="generic_dash">-</string>
 
     <!-- Content Description -->
     <string name="content_description_user_image">User image</string>
@@ -129,6 +130,8 @@
 
     <!-- Dashboard -->
     <string name="dashboard_title">Welcome back</string>
+    <string name="dashboard_document_expiration">Valid until</string>
+    <string name="dashboard_document_no_expiration_found">@string/generic_dash</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
     <string name="dashboard_bottom_sheet_title">More options</string>

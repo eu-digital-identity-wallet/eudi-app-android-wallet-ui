@@ -42,7 +42,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
-import eu.europa.ec.commonfeature.model.DocumentStatusUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
@@ -285,7 +284,7 @@ private fun IssuanceDocumentDetailsScreenPreview() {
                 documentId = "2",
                 documentName = "Digital Id",
                 documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
+                documentExpirationDateFormatted = "30 Mar 2050",
                 documentImage = "image3",
                 documentDetails = emptyList()
             ),
@@ -323,7 +322,7 @@ private fun DashboardDocumentDetailsScreenPreview() {
                 documentId = "2",
                 documentName = "Digital Id",
                 documentType = DocumentTypeUi.DIGITAL_ID,
-                documentStatus = DocumentStatusUi.ACTIVE,
+                documentExpirationDateFormatted = "30 Mar 2050",
                 documentImage = "image3",
                 documentDetails = emptyList()
             ),

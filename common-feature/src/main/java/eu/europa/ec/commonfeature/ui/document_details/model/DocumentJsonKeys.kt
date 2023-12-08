@@ -17,7 +17,8 @@
 package eu.europa.ec.commonfeature.ui.document_details.model
 
 object DocumentJsonKeys {
-    const val SHORT_NAME = "given_name"
+    const val FIRST_NAME = "given_name"
+    const val LAST_NAME = "family_name"
     const val PORTRAIT = "portrait"
     const val SIGNATURE = "signature_usual_mark"
     const val VEHICLE_CATEGORY = "vehicle_category_code"

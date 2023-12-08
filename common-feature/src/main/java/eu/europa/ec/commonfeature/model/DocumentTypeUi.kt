@@ -22,10 +22,10 @@ data class DocumentUi(
     val documentId: String,
     val documentName: String,
     val documentType: DocumentTypeUi,
-    val documentStatus: DocumentStatusUi,
+    val documentExpirationDateFormatted: String,
     val documentImage: String,
     val documentDetails: List<DocumentDetailsUi>,
-    val documentUsername: String? = null,
+    val userFullName: String? = null,
 )
 
 enum class DocumentTypeUi(
@@ -42,11 +42,4 @@ fun String.toDocumentTypeUi(): DocumentTypeUi = when (this) {
     "org.iso.18013.5.1.mDL" -> DocumentTypeUi.DRIVING_LICENSE
     "com.example.conference.badge" -> DocumentTypeUi.CONFERENCE_BADGE
     else -> DocumentTypeUi.OTHER
-}
-
-enum class DocumentStatusUi(
-    val title: String
-) {
-    ACTIVE(title = "Active"),
-    INACTIVE(title = "Inactive")
 }
