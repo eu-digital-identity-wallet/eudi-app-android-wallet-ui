@@ -47,7 +47,7 @@ class ProximityRequestViewModel(
         return resourceProvider.getString(R.string.request_subtitle_one)
     }
 
-    override fun getScreenClickableSubtitle(): String? {
+    override fun getScreenClickableSubtitle(): String {
         return resourceProvider.getString(R.string.request_subtitle_two)
     }
 
