@@ -23,21 +23,10 @@ internal class ConfigWalletCoreImpl(private val context: Context) : ConfigWallet
 
     companion object {
         const val VERIFIER_API_URI = "https://verifier-1.demo.eudiw.dev"
-        const val TIMEOUT_MILLIS = 30_000L
     }
 
     override val config: EudiWalletConfig
         get() = EudiWalletConfig.Builder(context)
-            .bleTransferMode(
-                EudiWalletConfig.BLE_SERVER_PERIPHERAL_MODE,
-                EudiWalletConfig.BLE_CLIENT_CENTRAL_MODE
-            )
-            .trustedReaderCertificates(listOf())
-            .documentsStorageDir(context.filesDir)
-            .encryptDocumentsInStorage(true)
-            .userAuthenticationRequired(false)
-            .userAuthenticationTimeOut(TIMEOUT_MILLIS)
-            .useHardwareToStoreKeys(true)
             .openId4VpVerifierApiUri(VERIFIER_API_URI)
             .build()
 }
