@@ -18,7 +18,7 @@ default_platform(:android)
 platform :android do
   desc "Build Wallet and upload it to appcenter"
 
-  lane :demo do
+  lane :deploy do
     git_pull
 
     buildVersion = version_name
