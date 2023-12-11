@@ -18,6 +18,7 @@ package eu.europa.ec.issuancefeature.ui.success
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.issuancefeature.interactor.SuccessFetchRandomDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
@@ -103,7 +104,7 @@ class SuccessViewModel(
                                             flowType
                                         ),
                                         "documentId" to document.id,
-                                        "documentType" to document.docType,
+                                        "documentType" to document.docType.toDocumentTypeUi().codeName,
                                     )
                                 )
                             )
