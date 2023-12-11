@@ -108,6 +108,7 @@ class ProximityRequestViewModel(
                     }
 
                     is ProximityRequestInteractorPartialState.Success -> {
+                        updateData(response.requestDocuments)
                         setState {
                             copy(
                                 isLoading = false,
