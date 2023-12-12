@@ -158,9 +158,9 @@ object AppIcons {
         imageVector = null
     )
 
-    val QrSmall: IconData = IconData(
-        resourceId = R.drawable.ic_qr_small,
-        contentDescriptionId = R.string.content_description_qr_icon,
+    val QrScanner: IconData = IconData(
+        resourceId = R.drawable.ic_qr_scanner,
+        contentDescriptionId = R.string.content_description_qr_scanner_icon,
         imageVector = null
     )
 }

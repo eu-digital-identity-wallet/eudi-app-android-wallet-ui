@@ -330,7 +330,7 @@ private fun DashboardSheetContent(
                         horizontalArrangement = Arrangement.Start
                     ) {
                         WrapIcon(
-                            iconData = AppIcons.QrSmall,
+                            iconData = AppIcons.QrScanner,
                             customTint = MaterialTheme.colorScheme.primary
                         )
                         HSpacer.Medium()

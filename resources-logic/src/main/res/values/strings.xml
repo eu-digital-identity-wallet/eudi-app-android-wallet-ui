@@ -42,6 +42,7 @@
     <string name="content_description_warning_icon">Warning</string>
     <string name="content_description_touch_id_icon">Touch id</string>
     <string name="content_description_qr_icon">QR</string>
+    <string name="content_description_qr_scanner_icon">QR Scanner</string>
     <string name="content_description_nfc_icon">NFC</string>
     <string name="content_description_user_icon">User</string>
     <string name="content_description_id_icon">Id</string>
@@ -147,6 +148,8 @@
     <!-- Document Details -->
     <string name="document_details_base64_item_readable_identifier">Shown above</string>
     <string name="document_details_vehicle_category_code_readable_identifier">Vehicle category code</string>
+    <string name="document_details_boolean_item_true_readable_value">yes</string>
+    <string name="document_details_boolean_item_false_readable_value">no</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Show QR or Tap</string>
