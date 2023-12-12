@@ -124,12 +124,30 @@ private fun transformToDocumentDetailsUi(
             )
         }
 
-        // Item is a primitive Object. (String, Boolean, etc.)
+        // Item is Boolean.
+        is Boolean -> {
+            val infoValue = resourceProvider.getString(
+                if (item) {
+                    R.string.document_details_boolean_item_true_readable_value
+                } else {
+                    R.string.document_details_boolean_item_false_readable_value
+                }
+            )
+
+            DocumentDetailsUi.DefaultItem(
+                infoText = InfoTextWithNameAndValueData.create(
+                    title = resourceProvider.getReadableElementIdentifier(key),
+                    infoValues = arrayOf(infoValue)
+                )
+            )
+        }
+
+        // Item is String, Int, etc.
         else -> {
             // Try to parse it as a Date.
             val date: String? = (item as? String)?.toDateFormatted()
 
-            val infoValues = when {
+            val infoValue = when {
                 keyIsBase64(key) -> {
                     resourceProvider.getString(R.string.document_details_base64_item_readable_identifier)
                 }
@@ -150,7 +168,7 @@ private fun transformToDocumentDetailsUi(
             DocumentDetailsUi.DefaultItem(
                 infoText = InfoTextWithNameAndValueData.create(
                     title = resourceProvider.getReadableElementIdentifier(key),
-                    infoValues
+                    infoValues = arrayOf(infoValue)
                 )
             )
         }
