@@ -43,6 +43,10 @@ data class State(
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
+    val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.OPTIONS,
+
+    val hasBluetoothPermission: Boolean = false,
+    val isBluetoothEnabled: Boolean = false,
 
     val userFirstName: String = "",
     val userBase64Image: String = "",
@@ -58,17 +62,26 @@ sealed class Event : ViewEvent {
     ) : Event()
 
     data object OptionsPressed : Event()
+    data class UpdateBluetoothConnectivity(val newValue: Boolean) : Event()
+    data class UpdateHasBlePermission(val newValue: Boolean) : Event()
+    data object StartProximityFlow : Event()
     sealed class Fab : Event() {
-        data object PrimaryFabPressed : Fab()
+        data class PrimaryFabPressed(val hasBluetoothPermission: Boolean) : Fab()
         data object SecondaryFabPressed : Fab()
     }
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
         data object Close : BottomSheet()
+
         sealed class Options : BottomSheet() {
             data object OpenChangeQuickPin : Options()
             data object OpenScanQr : Options()
+        }
+
+        sealed class Bluetooth : BottomSheet() {
+            data object PrimaryButtonPressed : Bluetooth()
+            data object SecondaryButtonPressed : Bluetooth()
         }
     }
 }
@@ -82,6 +95,12 @@ sealed class Effect : ViewSideEffect {
 
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
+
+    data object CheckBluetoothConnectivity : Effect()
+}
+
+enum class DashboardBottomSheetContent {
+    OPTIONS, BLUETOOTH
 }
 
 @KoinViewModel
@@ -121,17 +140,24 @@ class DashboardViewModel(
             }
 
             is Event.OptionsPressed -> {
-                showBottomSheet()
+                showBottomSheet(sheetContent = DashboardBottomSheetContent.OPTIONS)
+            }
+
+            is Event.UpdateBluetoothConnectivity -> {
+                setState { copy(isBluetoothEnabled = event.newValue) }
+            }
+
+            is Event.UpdateHasBlePermission -> {
+                setState { copy(hasBluetoothPermission = event.newValue) }
+            }
+
+            // TODO: Emit this event when all requirements are met
+            is Event.StartProximityFlow -> {
+                startProximityFlow()
             }
 
             is Event.Fab.PrimaryFabPressed -> {
-                // Create Koin scope for presentation
-                getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
-                setEffect {
-                    Effect.Navigation.SwitchScreen(
-                        screenRoute = ProximityScreens.QR.screenRoute
-                    )
-                }
+                checkIfBluetoothIsEnabled()
             }
 
             is Event.Fab.SecondaryFabPressed -> {
@@ -166,7 +192,21 @@ class DashboardViewModel(
                 hideBottomSheet()
                 navigateToScanQr()
             }
+
+            is Event.BottomSheet.Bluetooth.PrimaryButtonPressed -> {
+                hideBottomSheet()
+                checkIfBluetoothIsEnabled()
+                //TODO enableBluetooth()
+            }
+
+            is Event.BottomSheet.Bluetooth.SecondaryButtonPressed -> {
+                hideBottomSheet()
+            }
         }
+    }
+
+    private fun checkIfBluetoothIsEnabled() {
+        setEffect { Effect.CheckBluetoothConnectivity }
     }
 
     private fun getDocuments(event: Event) {
@@ -223,6 +263,16 @@ class DashboardViewModel(
         }
     }
 
+    private fun startProximityFlow() {
+        // Create Koin scope for presentation
+        getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = ProximityScreens.QR.screenRoute
+            )
+        }
+    }
+
     private fun navigateToScanQr() {
         setEffect {
             Effect.Navigation.SwitchScreen(
@@ -231,7 +281,10 @@ class DashboardViewModel(
         }
     }
 
-    private fun showBottomSheet() {
+    private fun showBottomSheet(sheetContent: DashboardBottomSheetContent) {
+        setState {
+            copy(sheetContent = sheetContent)
+        }
         setEffect {
             Effect.ShowBottomSheet
         }

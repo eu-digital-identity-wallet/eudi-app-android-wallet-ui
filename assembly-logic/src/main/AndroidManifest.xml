@@ -17,6 +17,50 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.NFC" />
+    <!--is added again down below-->
+    <!--<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />-->
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="true" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Request legacy Bluetooth permissions for devices on API 29,30. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+
+    <!--already in core-->
+    <!--<uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="30" />-->
+
+    <uses-permission
+        android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
+        android:maxSdkVersion="30" />
+
+    <!-- Request Bluetooth permissions for devices on API 31,32. -->
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+
+    <!-- Needed only if your app communicates with already-paired Bluetooth
+             devices. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- Since Bluetooth is a basic requirement for our app -->
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="true" />
+
     <application
         android:name=".Application"
         android:allowBackup="true"
@@ -30,8 +74,10 @@
         android:theme="@style/Theme.EUDIWallet"
         tools:targetApi="34">
 
-        <service android:exported="true" android:label="@string/nfc_engagement_service_desc"
+        <service
             android:name=".service.NfcEngagementServiceImpl"
+            android:exported="true"
+            android:label="@string/nfc_engagement_service_desc"
             android:permission="android.permission.BIND_NFC_SERVICE">
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
@@ -39,7 +85,8 @@
             </intent-filter>
 
             <!-- the following "@xml/nfc_engagement_apdu_service" in meta-data is provided by the library -->
-            <meta-data android:name="android.nfc.cardemulation.host_apdu_service"
+            <meta-data
+                android:name="android.nfc.cardemulation.host_apdu_service"
                 android:resource="@xml/nfc_engagement_apdu_service" />
         </service>
 
@@ -66,10 +113,5 @@
         </activity>
 
     </application>
-
-    <uses-permission android:name="android.permission.NFC" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-feature android:name="android.hardware.nfc" android:required="true" />
-    <uses-permission android:name="android.permission.CAMERA" />
 
 </manifest>

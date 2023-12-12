@@ -28,6 +28,7 @@
     <string name="generic_next_capitalized" tools:ignore="ButtonCase">NEXT</string>
     <string name="generic_confirm_capitalized" tools:ignore="ButtonCase">CONFIRM</string>
     <string name="generic_continue_capitalized" tools:ignore="ButtonCase">CONTINUE</string>
+    <string name="generic_enable_capitalized" tools:ignore="ButtonCase">ENABLE</string>
     <string name="generic_success">Success</string>
     <string name="generic_ok">OK</string>
     <string name="generic_dash">-</string>
@@ -134,9 +135,14 @@
     <string name="dashboard_document_no_expiration_found">@string/generic_dash</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
-    <string name="dashboard_bottom_sheet_title">More options</string>
-    <string name="dashboard_bottom_sheet_action_1">Change quick pin</string>
-    <string name="dashboard_bottom_sheet_action_2">Scan a QR code</string>
+    <string name="dashboard_bottom_sheet_options_title">More options</string>
+    <string name="dashboard_bottom_sheet_options_action_1">Change quick pin</string>
+    <string name="dashboard_bottom_sheet_options_action_2">Scan a QR code</string>
+
+    <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
+    <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the QR/TAP option</string>
+    <string name="dashboard_bottom_sheet_bluetooth_primary_button_text">@string/generic_enable_capitalized</string>
+    <string name="dashboard_bottom_sheet_bluetooth_secondary_button_text">@string/generic_cancel_capitalized</string>
 
     <!-- Document Details -->
     <string name="document_details_base64_item_readable_identifier">Shown above</string>

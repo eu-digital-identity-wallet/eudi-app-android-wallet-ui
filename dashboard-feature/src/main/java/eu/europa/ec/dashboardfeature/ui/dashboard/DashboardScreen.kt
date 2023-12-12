@@ -16,7 +16,18 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
+import android.Manifest
+import android.app.Activity
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,7 +51,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +65,8 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
@@ -78,6 +95,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.FabData
 import eu.europa.ec.uilogic.component.wrap.SheetContent
 import eu.europa.ec.uilogic.component.wrap.WrapCard
@@ -144,6 +162,7 @@ fun DashboardScreen(
                 sheetState = bottomSheetState
             ) {
                 DashboardSheetContent(
+                    sheetContent = state.sheetContent,
                     onEventSent = {
                         viewModel.setEvent(it)
                     }
@@ -191,6 +210,8 @@ private fun Content(
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -218,9 +239,13 @@ private fun Content(
 
         FabContent(
             paddingValues = paddingValues,
-            onEventSend = onEventSend
+            onEventSend = onEventSend,
+            hasBluetoothPermission = state.hasBluetoothPermission
         )
     }
+
+    // TODO: Change this to happen on button click.
+    askForBlePermission(context)
 
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
@@ -240,91 +265,174 @@ private fun Content(
                 is Effect.ShowBottomSheet -> {
                     onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                 }
+
+                is Effect.CheckBluetoothConnectivity -> {
+                    //TODO: This is the way to check if Bluetooth is enabled or disabled.
+                    // Maybe should move to the interactor level.
+                    val bluetoothManager: BluetoothManager? =
+                        getSystemService(context, BluetoothManager::class.java)
+                    val bluetoothAdapter: BluetoothAdapter? = bluetoothManager?.adapter
+
+                    if (bluetoothAdapter == null) {
+                        // Device doesn't support Bluetooth
+                        onEventSend(Event.UpdateBluetoothConnectivity(newValue = false))
+                    } else {
+                        if (bluetoothAdapter.isEnabled) {
+                            onEventSend(Event.UpdateBluetoothConnectivity(newValue = true))
+                        } else {
+                            onEventSend(Event.UpdateBluetoothConnectivity(newValue = false))
+                        }
+                    }
+                }
             }
         }.collect()
     }
 }
 
 @Composable
-private fun DashboardSheetContent(
-    onEventSent: (event: Event) -> Unit
-) {
-    SheetContent(
-        titleContent = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(id = R.string.dashboard_bottom_sheet_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.textPrimaryDark
-                )
-                WrapIconButton(
-                    iconData = AppIcons.Close,
-                    customTint = MaterialTheme.colorScheme.primary,
-                    onClick = { onEventSent(Event.BottomSheet.Close) }
-                )
-            }
-        },
-        bodyContent = {
+fun askForBlePermission(context: Context): Boolean {
+    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        Manifest.permission.BLUETOOTH_CONNECT
+    } else {
+        Manifest.permission.BLUETOOTH
+    }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.allCorneredShapeSmall)
-                    .throttledClickable(
-                        onClick = { onEventSent(Event.BottomSheet.Options.OpenChangeQuickPin) }
-                    )
-                    .padding(vertical = SPACING_SMALL.dp, horizontal = SPACING_EXTRA_SMALL.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                WrapIcon(
-                    iconData = AppIcons.Edit,
-                    customTint = MaterialTheme.colorScheme.primary
-                )
-                HSpacer.Medium()
-                Text(
-                    text = stringResource(id = R.string.dashboard_bottom_sheet_action_1),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.textPrimaryDark
-                )
-            }
+    var hasPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
 
-            VSpacer.Medium()
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.allCorneredShapeSmall)
-                    .throttledClickable(
-                        onClick = { onEventSent(Event.BottomSheet.Options.OpenScanQr) }
-                    )
-                    .padding(vertical = SPACING_SMALL.dp, horizontal = SPACING_EXTRA_SMALL.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                WrapIcon(
-                    iconData = AppIcons.QrSmall,
-                    customTint = MaterialTheme.colorScheme.primary
-                )
-                HSpacer.Medium()
-                Text(
-                    text = stringResource(id = R.string.dashboard_bottom_sheet_action_2),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.textPrimaryDark
-                )
-            }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            hasPermission = granted
         }
     )
+
+    LaunchedEffect(Unit) {
+        if (!hasPermission) {
+            launcher.launch(permission)
+        }
+    }
+
+    return hasPermission
+}
+
+//TODO: Do we need this?
+fun Activity.goToAppSetting() {
+    val i = Intent(
+        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+        Uri.fromParts("package", packageName, null)
+    )
+    startActivity(i)
+}
+
+@Composable
+private fun DashboardSheetContent(
+    sheetContent: DashboardBottomSheetContent,
+    onEventSent: (event: Event) -> Unit
+) {
+    when (sheetContent) {
+        DashboardBottomSheetContent.OPTIONS -> {
+            SheetContent(
+                titleContent = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.dashboard_bottom_sheet_options_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.textPrimaryDark
+                        )
+                        WrapIconButton(
+                            iconData = AppIcons.Close,
+                            customTint = MaterialTheme.colorScheme.primary,
+                            onClick = { onEventSent(Event.BottomSheet.Close) }
+                        )
+                    }
+                },
+                bodyContent = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.allCorneredShapeSmall)
+                            .throttledClickable(
+                                onClick = { onEventSent(Event.BottomSheet.Options.OpenChangeQuickPin) }
+                            )
+                            .padding(
+                                vertical = SPACING_SMALL.dp,
+                                horizontal = SPACING_EXTRA_SMALL.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        WrapIcon(
+                            iconData = AppIcons.Edit,
+                            customTint = MaterialTheme.colorScheme.primary
+                        )
+                        HSpacer.Medium()
+                        Text(
+                            text = stringResource(id = R.string.dashboard_bottom_sheet_options_action_1),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.textPrimaryDark
+                        )
+                    }
+
+                    VSpacer.Medium()
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.allCorneredShapeSmall)
+                            .throttledClickable(
+                                onClick = { onEventSent(Event.BottomSheet.Options.OpenScanQr) }
+                            )
+                            .padding(
+                                vertical = SPACING_SMALL.dp,
+                                horizontal = SPACING_EXTRA_SMALL.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        WrapIcon(
+                            iconData = AppIcons.QrSmall,
+                            customTint = MaterialTheme.colorScheme.primary
+                        )
+                        HSpacer.Medium()
+                        Text(
+                            text = stringResource(id = R.string.dashboard_bottom_sheet_options_action_2),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.textPrimaryDark
+                        )
+                    }
+                }
+            )
+        }
+
+        DashboardBottomSheetContent.BLUETOOTH -> {
+            DialogBottomSheet(
+                title = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_title),
+                message = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_subtitle),
+                positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_primary_button_text),
+                negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_secondary_button_text),
+                onPositiveClick = { onEventSent(Event.BottomSheet.Bluetooth.PrimaryButtonPressed) },
+                onNegativeClick = { onEventSent(Event.BottomSheet.Bluetooth.SecondaryButtonPressed) }
+            )
+        }
+    }
 }
 
 @Composable
 private fun FabContent(
     modifier: Modifier = Modifier,
     onEventSend: (Event) -> Unit,
+    hasBluetoothPermission: Boolean,
     paddingValues: PaddingValues
 ) {
     val titleSmallTextStyle = MaterialTheme.typography.titleSmall
@@ -353,7 +461,7 @@ private fun FabContent(
                 iconData = AppIcons.NFC
             )
         },
-        onClick = { onEventSend(Event.Fab.PrimaryFabPressed) },
+        onClick = { onEventSend(Event.Fab.PrimaryFabPressed(hasBluetoothPermission = hasBluetoothPermission)) },
     )
 
     Row(
@@ -587,6 +695,7 @@ private fun DashboardScreenPreview() {
 private fun SheetContentPreview() {
     PreviewTheme {
         DashboardSheetContent(
+            sheetContent = DashboardBottomSheetContent.OPTIONS,
             onEventSent = {}
         )
     }
