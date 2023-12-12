@@ -16,6 +16,8 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import android.bluetooth.BluetoothAdapter
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
@@ -40,15 +42,23 @@ sealed class DashboardInteractorPartialState {
 
 interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorPartialState>
+    fun isBleAvailable(): Boolean
+    fun isBleCentralClientModeEnabled(): Boolean
 }
 
 class DashboardInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val walletCoreConfig: WalletCoreConfig
 ) : DashboardInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
+
+    override fun isBleAvailable(): Boolean = BluetoothAdapter.getDefaultAdapter()?.isEnabled == true
+
+    override fun isBleCentralClientModeEnabled(): Boolean =
+        walletCoreConfig.config.bleCentralClientModeEnabled
 
     override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
         var userFirstName = ""

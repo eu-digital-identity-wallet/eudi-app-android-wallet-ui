@@ -40,6 +40,8 @@ import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.controller.storage.PrefKeysImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
 import eu.europa.ec.businesslogic.controller.storage.PrefsControllerImpl
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreConfig
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreConfigImpl
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsControllerImpl
 import eu.europa.ec.businesslogic.validator.FormValidator
@@ -144,6 +146,11 @@ fun provideWalletCoreDocumentsController(
         resourceProvider,
         eudiWallet
     )
+
+@Factory
+fun provideWalletCoreConfig(
+    eudiWallet: EudiWallet,
+): WalletCoreConfig = WalletCoreConfigImpl(eudiWallet)
 
 /**
  * Koin scope that lives for all the document presentation flow. It is manually handled from the

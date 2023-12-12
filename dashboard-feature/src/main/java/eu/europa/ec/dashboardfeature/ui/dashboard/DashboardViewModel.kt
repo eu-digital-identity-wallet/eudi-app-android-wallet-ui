@@ -39,14 +39,18 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
+enum class BleAvailability {
+    AVAILABLE, NO_PERMISSION, DISABLED, UNKNOWN
+}
+
 data class State(
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.OPTIONS,
 
-    val hasBluetoothPermission: Boolean = false,
-    val isBluetoothEnabled: Boolean = false,
+    val bleAvailability: BleAvailability = BleAvailability.UNKNOWN,
+    val isBleCentralClientModeEnabled: Boolean = false,
 
     val userFirstName: String = "",
     val userBase64Image: String = "",
@@ -62,11 +66,9 @@ sealed class Event : ViewEvent {
     ) : Event()
 
     data object OptionsPressed : Event()
-    data class UpdateBluetoothConnectivity(val newValue: Boolean) : Event()
-    data class UpdateHasBlePermission(val newValue: Boolean) : Event()
     data object StartProximityFlow : Event()
     sealed class Fab : Event() {
-        data class PrimaryFabPressed(val hasBluetoothPermission: Boolean) : Fab()
+        data object PrimaryFabPressed : Fab()
         data object SecondaryFabPressed : Fab()
     }
 
@@ -80,10 +82,13 @@ sealed class Event : ViewEvent {
         }
 
         sealed class Bluetooth : BottomSheet() {
-            data object PrimaryButtonPressed : Bluetooth()
+            data class PrimaryButtonPressed(val availability: BleAvailability) : Bluetooth()
             data object SecondaryButtonPressed : Bluetooth()
         }
     }
+
+    data object OnShowPermissionsRational : Event()
+    data class OnPermissionStateChanged(val availability: BleAvailability) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -91,16 +96,19 @@ sealed class Effect : ViewSideEffect {
         data object Pop : Navigation()
         data class SwitchScreen(val screenRoute: String) : Navigation()
         data object OpenDeepLinkAction : Navigation()
+
+        data object OnAppSettings : Navigation()
+        data object OnSystemSettings : Navigation()
     }
 
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
-
-    data object CheckBluetoothConnectivity : Effect()
 }
 
-enum class DashboardBottomSheetContent {
-    OPTIONS, BLUETOOTH
+sealed class DashboardBottomSheetContent {
+    data object OPTIONS : DashboardBottomSheetContent()
+
+    data class BLUETOOTH(val availability: BleAvailability) : DashboardBottomSheetContent()
 }
 
 @KoinViewModel
@@ -108,7 +116,9 @@ class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,
 ) : MviViewModel<Event, State, Effect>() {
 
-    override fun setInitialState(): State = State()
+    override fun setInitialState(): State = State(
+        isBleCentralClientModeEnabled = dashboardInteractor.isBleCentralClientModeEnabled()
+    )
 
     override fun handleEvents(event: Event) {
         when (event) {
@@ -143,15 +153,6 @@ class DashboardViewModel(
                 showBottomSheet(sheetContent = DashboardBottomSheetContent.OPTIONS)
             }
 
-            is Event.UpdateBluetoothConnectivity -> {
-                setState { copy(isBluetoothEnabled = event.newValue) }
-            }
-
-            is Event.UpdateHasBlePermission -> {
-                setState { copy(hasBluetoothPermission = event.newValue) }
-            }
-
-            // TODO: Emit this event when all requirements are met
             is Event.StartProximityFlow -> {
                 startProximityFlow()
             }
@@ -195,18 +196,46 @@ class DashboardViewModel(
 
             is Event.BottomSheet.Bluetooth.PrimaryButtonPressed -> {
                 hideBottomSheet()
-                checkIfBluetoothIsEnabled()
-                //TODO enableBluetooth()
+                onBleUserAction(event.availability)
             }
 
             is Event.BottomSheet.Bluetooth.SecondaryButtonPressed -> {
                 hideBottomSheet()
             }
+
+            is Event.OnShowPermissionsRational -> {
+                setState { copy(bleAvailability = BleAvailability.UNKNOWN) }
+                showBottomSheet(sheetContent = DashboardBottomSheetContent.BLUETOOTH(BleAvailability.NO_PERMISSION))
+            }
+
+            is Event.OnPermissionStateChanged -> {
+                setState { copy(bleAvailability = event.availability) }
+            }
+        }
+    }
+
+    private fun onBleUserAction(availability: BleAvailability) {
+        when (availability) {
+
+            BleAvailability.NO_PERMISSION -> {
+                setEffect { Effect.Navigation.OnAppSettings }
+            }
+
+            BleAvailability.DISABLED -> {
+                setEffect { Effect.Navigation.OnSystemSettings }
+            }
+
+            else -> {}
         }
     }
 
     private fun checkIfBluetoothIsEnabled() {
-        setEffect { Effect.CheckBluetoothConnectivity }
+        if (dashboardInteractor.isBleAvailable()) {
+            setState { copy(bleAvailability = BleAvailability.NO_PERMISSION) }
+        } else {
+            setState { copy(bleAvailability = BleAvailability.DISABLED) }
+            showBottomSheet(sheetContent = DashboardBottomSheetContent.BLUETOOTH(BleAvailability.DISABLED))
+        }
     }
 
     private fun getDocuments(event: Event) {
@@ -264,6 +293,7 @@ class DashboardViewModel(
     }
 
     private fun startProximityFlow() {
+        setState { copy(bleAvailability = BleAvailability.AVAILABLE) }
         // Create Koin scope for presentation
         getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
         setEffect {

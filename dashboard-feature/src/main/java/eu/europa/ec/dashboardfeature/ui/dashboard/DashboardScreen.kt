@@ -17,17 +17,8 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.Manifest
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,11 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -65,10 +52,10 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.resourceslogic.R
@@ -106,6 +93,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.openAppSettings
+import eu.europa.ec.uilogic.extension.openBleSettings
 import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
@@ -196,6 +185,9 @@ private fun handleNavigationEffect(
         is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
             handleDeepLinkAction(navController, it)
         }
+
+        is Effect.Navigation.OnAppSettings -> context.openAppSettings()
+        is Effect.Navigation.OnSystemSettings -> context.openBleSettings()
     }
 }
 
@@ -210,8 +202,6 @@ private fun Content(
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
 ) {
-    val context = LocalContext.current
-
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -239,13 +229,13 @@ private fun Content(
 
         FabContent(
             paddingValues = paddingValues,
-            onEventSend = onEventSend,
-            hasBluetoothPermission = state.hasBluetoothPermission
+            onEventSend = onEventSend
         )
     }
 
-    // TODO: Change this to happen on button click.
-    askForBlePermission(context)
+    if (state.bleAvailability == BleAvailability.NO_PERMISSION) {
+        RequiredPermissionsAsk(state, onEventSend)
+    }
 
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
@@ -265,70 +255,9 @@ private fun Content(
                 is Effect.ShowBottomSheet -> {
                     onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                 }
-
-                is Effect.CheckBluetoothConnectivity -> {
-                    //TODO: This is the way to check if Bluetooth is enabled or disabled.
-                    // Maybe should move to the interactor level.
-                    val bluetoothManager: BluetoothManager? =
-                        getSystemService(context, BluetoothManager::class.java)
-                    val bluetoothAdapter: BluetoothAdapter? = bluetoothManager?.adapter
-
-                    if (bluetoothAdapter == null) {
-                        // Device doesn't support Bluetooth
-                        onEventSend(Event.UpdateBluetoothConnectivity(newValue = false))
-                    } else {
-                        if (bluetoothAdapter.isEnabled) {
-                            onEventSend(Event.UpdateBluetoothConnectivity(newValue = true))
-                        } else {
-                            onEventSend(Event.UpdateBluetoothConnectivity(newValue = false))
-                        }
-                    }
-                }
             }
         }.collect()
     }
-}
-
-@Composable
-fun askForBlePermission(context: Context): Boolean {
-    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        Manifest.permission.BLUETOOTH_CONNECT
-    } else {
-        Manifest.permission.BLUETOOTH
-    }
-
-    var hasPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                permission
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            hasPermission = granted
-        }
-    )
-
-    LaunchedEffect(Unit) {
-        if (!hasPermission) {
-            launcher.launch(permission)
-        }
-    }
-
-    return hasPermission
-}
-
-//TODO: Do we need this?
-fun Activity.goToAppSetting() {
-    val i = Intent(
-        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-        Uri.fromParts("package", packageName, null)
-    )
-    startActivity(i)
 }
 
 @Composable
@@ -337,7 +266,7 @@ private fun DashboardSheetContent(
     onEventSent: (event: Event) -> Unit
 ) {
     when (sheetContent) {
-        DashboardBottomSheetContent.OPTIONS -> {
+        is DashboardBottomSheetContent.OPTIONS -> {
             SheetContent(
                 titleContent = {
                     Row(
@@ -415,13 +344,19 @@ private fun DashboardSheetContent(
             )
         }
 
-        DashboardBottomSheetContent.BLUETOOTH -> {
+        is DashboardBottomSheetContent.BLUETOOTH -> {
             DialogBottomSheet(
                 title = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_title),
                 message = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_subtitle),
                 positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_primary_button_text),
                 negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_secondary_button_text),
-                onPositiveClick = { onEventSent(Event.BottomSheet.Bluetooth.PrimaryButtonPressed) },
+                onPositiveClick = {
+                    onEventSent(
+                        Event.BottomSheet.Bluetooth.PrimaryButtonPressed(
+                            sheetContent.availability
+                        )
+                    )
+                },
                 onNegativeClick = { onEventSent(Event.BottomSheet.Bluetooth.SecondaryButtonPressed) }
             )
         }
@@ -432,7 +367,6 @@ private fun DashboardSheetContent(
 private fun FabContent(
     modifier: Modifier = Modifier,
     onEventSend: (Event) -> Unit,
-    hasBluetoothPermission: Boolean,
     paddingValues: PaddingValues
 ) {
     val titleSmallTextStyle = MaterialTheme.typography.titleSmall
@@ -461,7 +395,7 @@ private fun FabContent(
                 iconData = AppIcons.NFC
             )
         },
-        onClick = { onEventSend(Event.Fab.PrimaryFabPressed(hasBluetoothPermission = hasBluetoothPermission)) },
+        onClick = { onEventSend(Event.Fab.PrimaryFabPressed) },
     )
 
     Row(
@@ -687,6 +621,42 @@ private fun DashboardScreenPreview() {
             coroutineScope = rememberCoroutineScope(),
             modalBottomSheetState = rememberModalBottomSheetState()
         )
+    }
+}
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun RequiredPermissionsAsk(
+    state: State,
+    onEventSend: (Event) -> Unit
+) {
+
+    val permissions: MutableList<String> = mutableListOf()
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+        permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+        permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+    }
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2 && state.isBleCentralClientModeEnabled) {
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+    }
+
+    val permissionsState = rememberMultiplePermissionsState(permissions = permissions)
+
+    when {
+        permissionsState.allPermissionsGranted -> onEventSend(Event.StartProximityFlow)
+        !permissionsState.allPermissionsGranted && permissionsState.shouldShowRationale -> {
+            onEventSend(Event.OnShowPermissionsRational)
+        }
+
+        else -> {
+            onEventSend(Event.OnPermissionStateChanged(BleAvailability.UNKNOWN))
+            LaunchedEffect(Unit) {
+                permissionsState.launchMultiplePermissionRequest()
+            }
+        }
     }
 }
 
