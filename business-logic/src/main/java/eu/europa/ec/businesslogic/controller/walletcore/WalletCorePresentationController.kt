@@ -246,10 +246,14 @@ class WalletCorePresentationControllerImpl(
     }
 
     override fun toggleNfcEngagement(componentActivity: ComponentActivity, toggle: Boolean) {
-        if (toggle) {
-            NfcEngagementService.enable(componentActivity)
-        } else {
-            NfcEngagementService.disable(componentActivity)
+        // This needs to be in try/catch because it crashes on Emulators.
+        try {
+            if (toggle) {
+                NfcEngagementService.enable(componentActivity)
+            } else {
+                NfcEngagementService.disable(componentActivity)
+            }
+        } catch (_: Exception) {
         }
     }
 

@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.di
 
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
@@ -31,5 +32,7 @@ class FeatureDashboardModule
 @Factory
 fun provideDashboardInteractor(
     resourceProvider: ResourceProvider,
-    walletCoreDocumentsController: WalletCoreDocumentsController
-): DashboardInteractor = DashboardInteractorImpl(resourceProvider, walletCoreDocumentsController)
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    walletCoreConfig: WalletCoreConfig
+): DashboardInteractor =
+    DashboardInteractorImpl(resourceProvider, walletCoreDocumentsController, walletCoreConfig)

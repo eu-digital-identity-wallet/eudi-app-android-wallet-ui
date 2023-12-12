@@ -16,7 +16,9 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
+import android.Manifest
 import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,6 +54,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.resourceslogic.R
@@ -78,6 +82,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.FabData
 import eu.europa.ec.uilogic.component.wrap.SheetContent
 import eu.europa.ec.uilogic.component.wrap.WrapCard
@@ -88,6 +93,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.openAppSettings
+import eu.europa.ec.uilogic.extension.openBleSettings
 import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
@@ -144,6 +151,7 @@ fun DashboardScreen(
                 sheetState = bottomSheetState
             ) {
                 DashboardSheetContent(
+                    sheetContent = state.sheetContent,
                     onEventSent = {
                         viewModel.setEvent(it)
                     }
@@ -177,6 +185,9 @@ private fun handleNavigationEffect(
         is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
             handleDeepLinkAction(navController, it)
         }
+
+        is Effect.Navigation.OnAppSettings -> context.openAppSettings()
+        is Effect.Navigation.OnSystemSettings -> context.openBleSettings()
     }
 }
 
@@ -222,6 +233,10 @@ private fun Content(
         )
     }
 
+    if (state.bleAvailability == BleAvailability.NO_PERMISSION) {
+        RequiredPermissionsAsk(state, onEventSend)
+    }
+
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
             when (effect) {
@@ -247,78 +262,105 @@ private fun Content(
 
 @Composable
 private fun DashboardSheetContent(
+    sheetContent: DashboardBottomSheetContent,
     onEventSent: (event: Event) -> Unit
 ) {
-    SheetContent(
-        titleContent = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(id = R.string.dashboard_bottom_sheet_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.textPrimaryDark
-                )
-                WrapIconButton(
-                    iconData = AppIcons.Close,
-                    customTint = MaterialTheme.colorScheme.primary,
-                    onClick = { onEventSent(Event.BottomSheet.Close) }
-                )
-            }
-        },
-        bodyContent = {
+    when (sheetContent) {
+        is DashboardBottomSheetContent.OPTIONS -> {
+            SheetContent(
+                titleContent = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.dashboard_bottom_sheet_options_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.textPrimaryDark
+                        )
+                        WrapIconButton(
+                            iconData = AppIcons.Close,
+                            customTint = MaterialTheme.colorScheme.primary,
+                            onClick = { onEventSent(Event.BottomSheet.Close) }
+                        )
+                    }
+                },
+                bodyContent = {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.allCorneredShapeSmall)
+                            .throttledClickable(
+                                onClick = { onEventSent(Event.BottomSheet.Options.OpenChangeQuickPin) }
+                            )
+                            .padding(
+                                vertical = SPACING_SMALL.dp,
+                                horizontal = SPACING_EXTRA_SMALL.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        WrapIcon(
+                            iconData = AppIcons.Edit,
+                            customTint = MaterialTheme.colorScheme.primary
+                        )
+                        HSpacer.Medium()
+                        Text(
+                            text = stringResource(id = R.string.dashboard_bottom_sheet_options_action_1),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.textPrimaryDark
+                        )
+                    }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.allCorneredShapeSmall)
-                    .throttledClickable(
-                        onClick = { onEventSent(Event.BottomSheet.Options.OpenChangeQuickPin) }
-                    )
-                    .padding(vertical = SPACING_SMALL.dp, horizontal = SPACING_EXTRA_SMALL.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                WrapIcon(
-                    iconData = AppIcons.Edit,
-                    customTint = MaterialTheme.colorScheme.primary
-                )
-                HSpacer.Medium()
-                Text(
-                    text = stringResource(id = R.string.dashboard_bottom_sheet_action_1),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.textPrimaryDark
-                )
-            }
+                    VSpacer.Medium()
 
-            VSpacer.Medium()
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.allCorneredShapeSmall)
-                    .throttledClickable(
-                        onClick = { onEventSent(Event.BottomSheet.Options.OpenScanQr) }
-                    )
-                    .padding(vertical = SPACING_SMALL.dp, horizontal = SPACING_EXTRA_SMALL.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
-            ) {
-                WrapIcon(
-                    iconData = AppIcons.QrScanner,
-                    customTint = MaterialTheme.colorScheme.primary
-                )
-                HSpacer.Medium()
-                Text(
-                    text = stringResource(id = R.string.dashboard_bottom_sheet_action_2),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.textPrimaryDark
-                )
-            }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.allCorneredShapeSmall)
+                            .throttledClickable(
+                                onClick = { onEventSent(Event.BottomSheet.Options.OpenScanQr) }
+                            )
+                            .padding(
+                                vertical = SPACING_SMALL.dp,
+                                horizontal = SPACING_EXTRA_SMALL.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        WrapIcon(
+                            iconData = AppIcons.QrScanner,
+                            customTint = MaterialTheme.colorScheme.primary
+                        )
+                        HSpacer.Medium()
+                        Text(
+                            text = stringResource(id = R.string.dashboard_bottom_sheet_options_action_2),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.textPrimaryDark
+                        )
+                    }
+                }
+            )
         }
-    )
+
+        is DashboardBottomSheetContent.BLUETOOTH -> {
+            DialogBottomSheet(
+                title = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_title),
+                message = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_subtitle),
+                positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_primary_button_text),
+                negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_secondary_button_text),
+                onPositiveClick = {
+                    onEventSent(
+                        Event.BottomSheet.Bluetooth.PrimaryButtonPressed(
+                            sheetContent.availability
+                        )
+                    )
+                },
+                onNegativeClick = { onEventSent(Event.BottomSheet.Bluetooth.SecondaryButtonPressed) }
+            )
+        }
+    }
 }
 
 @Composable
@@ -582,11 +624,48 @@ private fun DashboardScreenPreview() {
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun RequiredPermissionsAsk(
+    state: State,
+    onEventSend: (Event) -> Unit
+) {
+
+    val permissions: MutableList<String> = mutableListOf()
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+        permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+        permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+    }
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2 && state.isBleCentralClientModeEnabled) {
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+    }
+
+    val permissionsState = rememberMultiplePermissionsState(permissions = permissions)
+
+    when {
+        permissionsState.allPermissionsGranted -> onEventSend(Event.StartProximityFlow)
+        !permissionsState.allPermissionsGranted && permissionsState.shouldShowRationale -> {
+            onEventSend(Event.OnShowPermissionsRational)
+        }
+
+        else -> {
+            onEventSend(Event.OnPermissionStateChanged(BleAvailability.UNKNOWN))
+            LaunchedEffect(Unit) {
+                permissionsState.launchMultiplePermissionRequest()
+            }
+        }
+    }
+}
+
 @ThemeModePreviews
 @Composable
 private fun SheetContentPreview() {
     PreviewTheme {
         DashboardSheetContent(
+            sheetContent = DashboardBottomSheetContent.OPTIONS,
             onEventSent = {}
         )
     }
