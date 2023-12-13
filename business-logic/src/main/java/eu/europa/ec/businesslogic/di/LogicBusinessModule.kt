@@ -16,6 +16,7 @@
 
 package eu.europa.ec.businesslogic.di
 
+import android.content.Context
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.ConfigLogicImpl
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
@@ -148,9 +149,10 @@ fun provideWalletCoreDocumentsController(
     )
 
 @Factory
-fun provideWalletCoreConfig(
-    eudiWallet: EudiWallet,
-): WalletCoreConfig = WalletCoreConfigImpl(eudiWallet)
+fun provideConfigWalletCore(
+    context: Context
+): ConfigWalletCore =
+    ConfigWalletCoreImpl(context)
 
 /**
  * Koin scope that lives for all the document presentation flow. It is manually handled from the
