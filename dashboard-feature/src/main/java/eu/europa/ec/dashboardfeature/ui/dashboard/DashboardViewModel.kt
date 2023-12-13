@@ -275,7 +275,7 @@ class DashboardViewModel(
                                 error = null,
                                 documents = response.documents,
                                 userFirstName = response.userFirstName,
-                                userBase64Image = response.userBase64Image
+                                userBase64Image = response.userBase64Portrait
                             )
                         }
                         viewState.value.deepLinkUri?.let { uri ->

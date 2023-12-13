@@ -154,14 +154,22 @@ fun <T> OptionalField(
         } else {
             MaterialTheme.typography.bodyLarge
         }
+
         if (showFullDetails) {
-            InfoTextWithNameAndValue(
-                itemData = InfoTextWithNameAndValueData.create(
-                    title = item.requestDocumentItemUi.readableName,
-                    item.requestDocumentItemUi.value,
-                ),
-                infoValueTextStyle = infoValueStyle
-            )
+            if (item.requestDocumentItemUi.valueIsBase64) {
+                WrapIcon(
+                    iconData = AppIcons.User,
+                    modifier = Modifier.size(20.dp)
+                )
+            } else {
+                InfoTextWithNameAndValue(
+                    itemData = InfoTextWithNameAndValueData.create(
+                        title = item.requestDocumentItemUi.readableName,
+                        item.requestDocumentItemUi.value,
+                    ),
+                    infoValueTextStyle = infoValueStyle
+                )
+            }
         } else {
             Text(
                 text = item.requestDocumentItemUi.readableName,

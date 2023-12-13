@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
+import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.DocRequest
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
@@ -29,7 +30,12 @@ data class RequestDocumentItemUi<T>(
     val enabled: Boolean,
     val docItem: DocItem,
     val event: T? = null
-)
+) {
+    val valueIsBase64: Boolean
+        get() {
+            return keyIsBase64(docItem.elementIdentifier)
+        }
+}
 
 data class DocumentItemDomainPayload(
     val docId: String,

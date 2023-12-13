@@ -25,6 +25,7 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
 import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
+import eu.europa.ec.commonfeature.util.getKeyValueUi
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
@@ -73,13 +74,18 @@ object RequestTransformer {
             // Add optional field items.
             requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
 
-                val value = try {
-                    val valueData =
-                        storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier].toString()
-                    getGenderValue(valueData, resourceProvider)
+                val value: String = try {
+                    val keyValueUi = getKeyValueUi(
+                        item = storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier],
+                        key = docItem.elementIdentifier,
+                        resourceProvider = resourceProvider,
+                    )
+
+                    keyValueUi.value
                 } catch (ex: Exception) {
                     resourceProvider.getString(R.string.request_element_identifier_not_available)
                 }
+
                 if (mandatorySelectedData.contains(docItem.elementIdentifier)) {
                     required.add(
                         docItem.toRequestDocumentItemUi(
@@ -190,19 +196,4 @@ object RequestTransformer {
     // TODO Provide proper docType from Core
     private fun JSONObject.getDocObject(docType: String): JSONObject =
         this[docType.replace(".mDL", "")] as JSONObject
-
-    fun getGenderValue(value: String, resourceProvider: ResourceProvider): String =
-        when (value) {
-            "1" -> {
-                resourceProvider.getString(R.string.request_gender_male)
-            }
-
-            "0" -> {
-                resourceProvider.getString(R.string.request_gender_female)
-            }
-
-            else -> {
-                value
-            }
-        }
 }

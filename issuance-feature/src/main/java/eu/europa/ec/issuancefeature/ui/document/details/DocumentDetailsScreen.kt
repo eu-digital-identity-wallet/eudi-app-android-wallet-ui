@@ -44,18 +44,16 @@ import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
+import eu.europa.ec.commonfeature.ui.document_details.DetailsContent
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ActionTopBar
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.HeaderLarge
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.details.DetailsContent
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
@@ -185,22 +183,7 @@ private fun Content(
                                 start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                                 end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
                             ),
-                        data = documentUi.documentDetails.mapNotNull { documentDetailsUi ->
-                            when (documentDetailsUi) {
-                                is DocumentDetailsUi.DefaultItem -> {
-                                    documentDetailsUi.infoText.infoValues
-                                        ?.toTypedArray()
-                                        ?.let { infoValues ->
-                                            InfoTextWithNameAndValueData.create(
-                                                title = documentDetailsUi.infoText.title,
-                                                *infoValues
-                                            )
-                                        }
-                                }
-
-                                DocumentDetailsUi.Unknown -> null
-                            }
-                        }
+                        data = documentUi.documentDetails
                     )
                 }
             }

@@ -34,7 +34,7 @@ sealed class DashboardInteractorPartialState {
     data class Success(
         val documents: List<DocumentUi>,
         val userFirstName: String,
-        val userBase64Image: String,
+        val userBase64Portrait: String,
     ) : DashboardInteractorPartialState()
 
     data class Failure(val error: String) : DashboardInteractorPartialState()
@@ -103,7 +103,7 @@ class DashboardInteractorImpl(
             DashboardInteractorPartialState.Success(
                 documents = documentsUi,
                 userFirstName = userFirstName,
-                userBase64Image = userImage
+                userBase64Portrait = userImage
             )
         )
     }.safeAsync {

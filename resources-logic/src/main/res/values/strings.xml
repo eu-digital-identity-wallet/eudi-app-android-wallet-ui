@@ -35,6 +35,7 @@
 
     <!-- Content Description -->
     <string name="content_description_user_image">User image</string>
+    <string name="content_description_user_signature">User signature</string>
     <string name="content_description_qr_code">QR Code</string>
     <string name="content_description_more_vert_icon">More Items Vertically</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
@@ -144,7 +145,7 @@
     <string name="dashboard_bottom_sheet_bluetooth_secondary_button_text">@string/generic_cancel_capitalized</string>
 
     <!-- Document Details -->
-    <string name="document_details_base64_item_readable_identifier">Shown above</string>
+    <string name="document_details_portrait_readable_identifier">Shown above</string>
     <string name="document_details_vehicle_category_code_readable_identifier">Vehicle category code</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
