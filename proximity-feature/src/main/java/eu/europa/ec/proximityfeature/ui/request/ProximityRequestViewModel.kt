@@ -18,6 +18,7 @@ package eu.europa.ec.proximityfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
@@ -35,12 +36,14 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.InjectedParam
 
 @KoinViewModel
 class ProximityRequestViewModel(
     private val interactor: ProximityRequestInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
+    @InjectedParam private val requestUriConfig: String,
 ) : RequestViewModel() {
 
     override fun getScreenSubtitle(): String {
@@ -90,6 +93,14 @@ class ProximityRequestViewModel(
                 error = null
             )
         }
+
+        val config = uiSerializer.fromBase64(
+            requestUriConfig,
+            RequestUriConfig::class.java,
+            RequestUriConfig.Parser
+        ) ?: throw RuntimeException("RequestUriConfig:: is Missing or invalid")
+
+        println(config.uri)
 
         viewModelJob = viewModelScope.launch {
             interactor.getRequestDocuments().collect { response ->

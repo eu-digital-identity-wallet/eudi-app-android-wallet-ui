@@ -54,7 +54,6 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
-import eu.europa.ec.uilogic.navigation.DashboardScreens
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -85,12 +84,11 @@ private fun handleNavigationEffect(
     navController: NavController
 ) {
     when (navigationEffect) {
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screenRoute)
+        }
+
         is Effect.Navigation.Pop -> {
-            navigationEffect.result?.let { result ->
-                navController.previousBackStackEntry
-                    ?.savedStateHandle
-                    ?.set(DashboardScreens.Scanner.screenName, result)
-            }
             navController.popBackStack()
         }
     }

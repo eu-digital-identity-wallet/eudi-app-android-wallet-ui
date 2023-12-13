@@ -61,7 +61,9 @@ class QrCodeAnalyzer(
                         )
                     )
                 }.decode(binaryBmp)
-                onQrCodeScanned(result.text)
+//                onQrCodeScanned(result.text)
+                val testResult = "https://eudi.netcompany-intrasoft.com?client_id=Verifier&request_uri=https://eudi.netcompany-intrasoft.com/wallet/request.jwt/BgllfWXRhKjnntZTpruAK3MIuLJwqBe_65QwtjWpaNBIUrxWZWhIbo6THEEPyB2AcouRkjl9GjNAP8mqONuI5A"
+                onQrCodeScanned(testResult)
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
