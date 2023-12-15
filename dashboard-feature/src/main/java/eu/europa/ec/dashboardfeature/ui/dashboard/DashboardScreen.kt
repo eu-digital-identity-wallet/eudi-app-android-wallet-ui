@@ -166,9 +166,10 @@ fun DashboardScreen(
     ) {
         viewModel.setEvent(
             Event.Init(
-                navController.currentBackStackEntry
+                qrResult = navController.currentBackStackEntry
                     ?.savedStateHandle
-                    ?.remove<String>(DashboardScreens.Scanner.screenName)
+                    ?.remove<String>(DashboardScreens.Scanner.screenName),
+                deepLinkUri = context.getPendingDeepLink()
             )
         )
     }
@@ -182,8 +183,12 @@ private fun handleNavigationEffect(
     when (navigationEffect) {
         is Effect.Navigation.Pop -> navController.popBackStack()
         is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute)
-        is Effect.Navigation.OpenDeepLinkAction -> context.getPendingDeepLink()?.let {
-            handleDeepLinkAction(navController, it)
+        is Effect.Navigation.OpenDeepLinkAction -> {
+            handleDeepLinkAction(
+                navController,
+                navigationEffect.deepLinkUri,
+                navigationEffect.navigationLink
+            )
         }
 
         is Effect.Navigation.OnAppSettings -> context.openAppSettings()

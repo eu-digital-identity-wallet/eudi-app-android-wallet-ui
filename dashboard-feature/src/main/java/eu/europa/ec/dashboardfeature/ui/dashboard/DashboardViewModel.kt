@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
@@ -61,7 +62,7 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data class Init(val qrResult: String?) : Event()
+    data class Init(val qrResult: String?, val deepLinkUri: Uri?) : Event()
     data object Pop : Event()
     data class NavigateToDocument(
         val documentId: String,
@@ -98,7 +99,8 @@ sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
         data class SwitchScreen(val screenRoute: String) : Navigation()
-        data object OpenDeepLinkAction : Navigation()
+        data class OpenDeepLinkAction(val navigationLink: String, val deepLinkUri: Uri) :
+            Navigation()
 
         data object OnAppSettings : Navigation()
         data object OnSystemSettings : Navigation()
@@ -120,6 +122,8 @@ class DashboardViewModel(
     private val uiSerializer: UiSerializer
 ) : MviViewModel<Event, State, Effect>() {
 
+    private var deepLinkUri: Uri? = null
+
     override fun setInitialState(): State = State(
         isBleCentralClientModeEnabled = dashboardInteractor.isBleCentralClientModeEnabled()
     )
@@ -127,6 +131,7 @@ class DashboardViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
+                deepLinkUri = event.deepLinkUri
                 getDocuments(event)
                 event.qrResult?.let {
                     print(it)
@@ -276,7 +281,27 @@ class DashboardViewModel(
                                 userBase64Image = response.userBase64Image
                             )
                         }
-                        setEffect { Effect.Navigation.OpenDeepLinkAction }
+                        deepLinkUri?.let { uri ->
+                            getKoin().getOrCreateScope<WalletPresentationScope>(
+                                PRESENTATION_SCOPE_ID
+                            )
+                            setEffect {
+                                Effect.Navigation.OpenDeepLinkAction(
+                                    navigationLink = generateComposableNavigationLink(
+                                        screen = ProximityScreens.Request,
+                                        arguments = generateComposableArguments(
+                                            mapOf(
+                                                RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                                    RequestUriConfig(PresentationMode.OpenId4Vp(uri.toString())),
+                                                    RequestUriConfig
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    deepLinkUri = uri
+                                )
+                            }
+                        }
                     }
                 }
             }
