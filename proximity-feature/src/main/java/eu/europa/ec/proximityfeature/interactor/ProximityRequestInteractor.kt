@@ -20,6 +20,8 @@ import eu.europa.ec.businesslogic.controller.walletcore.TransferEventPartialStat
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
@@ -43,6 +45,7 @@ interface ProximityRequestInteractor {
     fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState>
     fun stopPresentation()
     fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
+    fun setConfig(config: RequestUriConfig)
 }
 
 class ProximityRequestInteractorImpl(
@@ -53,6 +56,10 @@ class ProximityRequestInteractorImpl(
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
+
+    override fun setConfig(config: RequestUriConfig) {
+        walletCorePresentationController.setConfig(config.toDomainConfig())
+    }
 
     override fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState> =
         walletCorePresentationController.events.mapNotNull { response ->

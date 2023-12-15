@@ -18,6 +18,6 @@ package eu.europa.ec.businesslogic.config
 
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 
-interface ConfigWalletCore {
+interface WalletCoreConfig {
     val config: EudiWalletConfig
 }

@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.di
 
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreConfig
+import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl

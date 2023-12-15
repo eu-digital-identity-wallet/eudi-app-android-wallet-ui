@@ -43,7 +43,7 @@ class ProximityRequestViewModel(
     private val interactor: ProximityRequestInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val requestUriConfig: String,
+    @InjectedParam private val requestUriConfigRaw: String
 ) : RequestViewModel() {
 
     override fun getScreenSubtitle(): String {
@@ -94,13 +94,13 @@ class ProximityRequestViewModel(
             )
         }
 
-        val config = uiSerializer.fromBase64(
-            requestUriConfig,
+        val requestUriConfig = uiSerializer.fromBase64(
+            requestUriConfigRaw,
             RequestUriConfig::class.java,
             RequestUriConfig.Parser
         ) ?: throw RuntimeException("RequestUriConfig:: is Missing or invalid")
 
-        println(config.uri)
+        interactor.setConfig(requestUriConfig)
 
         viewModelJob = viewModelScope.launch {
             interactor.getRequestDocuments().collect { response ->

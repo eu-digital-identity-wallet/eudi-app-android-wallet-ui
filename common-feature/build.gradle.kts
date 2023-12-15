@@ -21,3 +21,7 @@ plugins {
 android {
     namespace = "eu.europa.ec.commonfeature"
 }
+
+dependencies {
+    implementation(libs.gson)
+}

@@ -21,6 +21,8 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.ConfigLogicImpl
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogicImpl
+import eu.europa.ec.businesslogic.config.WalletCoreConfig
+import eu.europa.ec.businesslogic.config.WalletCoreConfigImpl
 import eu.europa.ec.businesslogic.controller.biometry.BiometricController
 import eu.europa.ec.businesslogic.controller.biometry.BiometricControllerImpl
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
@@ -41,8 +43,6 @@ import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.controller.storage.PrefKeysImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
 import eu.europa.ec.businesslogic.controller.storage.PrefsControllerImpl
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreConfig
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreConfigImpl
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsControllerImpl
 import eu.europa.ec.businesslogic.validator.FormValidator
@@ -151,8 +151,8 @@ fun provideWalletCoreDocumentsController(
 @Factory
 fun provideConfigWalletCore(
     context: Context
-): ConfigWalletCore =
-    ConfigWalletCoreImpl(context)
+): WalletCoreConfig =
+    WalletCoreConfigImpl(context)
 
 /**
  * Koin scope that lives for all the document presentation flow. It is manually handled from the

@@ -16,14 +16,37 @@
 
 package eu.europa.ec.commonfeature.config
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import eu.europa.ec.businesslogic.controller.walletcore.PresentationControllerConfig
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
+import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
+
+sealed interface PresentationMode {
+    data class OpenId4Vp(val uri: String) : PresentationMode
+    data object Ble : PresentationMode
+}
 
 data class RequestUriConfig(
-    val uri: String
+    val mode: PresentationMode
 ) : UiSerializable {
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "requestUriConfig"
+
+        override fun provideParser(): Gson {
+            return GsonBuilder().registerTypeAdapter(
+                PresentationMode::class.java,
+                SerializableTypeAdapter<PresentationMode>()
+            ).create()
+        }
+    }
+}
+
+fun RequestUriConfig.toDomainConfig(): PresentationControllerConfig {
+    return when (mode) {
+        is PresentationMode.Ble -> PresentationControllerConfig.Ble
+        is PresentationMode.OpenId4Vp -> PresentationControllerConfig.OpenId4VP(mode.uri)
     }
 }

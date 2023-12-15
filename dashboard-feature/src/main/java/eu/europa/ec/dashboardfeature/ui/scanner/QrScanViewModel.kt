@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.ui.scanner
 
 import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
+import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.extensions.getKoin
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -62,7 +63,7 @@ class QrScanViewModel(private val uiSerializer: UiSerializer) :
                             arguments = generateComposableArguments(
                                 mapOf(
                                     RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
-                                        RequestUriConfig(event.resultQr),
+                                        RequestUriConfig(PresentationMode.OpenId4Vp(event.resultQr)),
                                         RequestUriConfig.Parser
                                     )
                                 )

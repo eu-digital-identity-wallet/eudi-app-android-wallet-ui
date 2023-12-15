@@ -19,14 +19,23 @@ package eu.europa.ec.businesslogic.config
 import android.content.Context
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 
-internal class ConfigWalletCoreImpl(private val context: Context) : ConfigWalletCore {
+internal class WalletCoreConfigImpl(
+    private val context: Context
+) : WalletCoreConfig {
 
     companion object {
-        const val VERIFIER_API_URI = "https://verifier-1.demo.eudiw.dev"
+        const val VERIFIER_API_URI = "https://eudi.netcompany-intrasoft.com"
     }
 
+    private var _config: EudiWalletConfig? = null
+
     override val config: EudiWalletConfig
-        get() = EudiWalletConfig.Builder(context)
-            .openId4VpVerifierApiUri(VERIFIER_API_URI)
-            .build()
+        get() {
+            if (_config == null) {
+                _config = EudiWalletConfig.Builder(context)
+                    .openId4VpVerifierApiUri(VERIFIER_API_URI)
+                    .build()
+            }
+            return _config!!
+        }
 }

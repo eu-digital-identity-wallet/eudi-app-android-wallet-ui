@@ -20,7 +20,7 @@ import android.app.Application
 import android.os.StrictMode
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
-import eu.europa.ec.businesslogic.config.ConfigWalletCore
+import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.theme.ThemeManager
@@ -33,7 +33,7 @@ import org.koin.android.ext.android.inject
 class Application : Application() {
 
     private val logController: LogController by inject()
-    private val configWalletCore: ConfigWalletCore by inject()
+    private val configWalletCore: WalletCoreConfig by inject()
     private val configSecurityLogic: ConfigSecurityLogic by inject()
 
     override fun onCreate() {

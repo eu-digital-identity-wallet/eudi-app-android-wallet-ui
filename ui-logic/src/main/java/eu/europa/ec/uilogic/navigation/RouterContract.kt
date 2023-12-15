@@ -58,7 +58,11 @@ sealed class PresentationScreens {
 }
 
 sealed class ProximityScreens {
-    data object QR : Screen(name = "PROXIMITY_QR")
+    data object QR : Screen(
+        name = "PROXIMITY_QR",
+        parameters = "?requestUriConfig={requestUriConfig}"
+    )
+
     data object Request : Screen(
         name = "PROXIMITY_REQUEST",
         parameters = "?requestUriConfig={requestUriConfig}"

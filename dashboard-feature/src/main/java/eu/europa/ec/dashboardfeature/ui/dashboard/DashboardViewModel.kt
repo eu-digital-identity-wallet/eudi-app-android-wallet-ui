@@ -20,6 +20,8 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.PresentationMode
+import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.extensions.getKoin
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.PinFlow
@@ -36,6 +38,7 @@ import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -114,6 +117,7 @@ sealed class DashboardBottomSheetContent {
 @KoinViewModel
 class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,
+    private val uiSerializer: UiSerializer
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State(
@@ -298,7 +302,17 @@ class DashboardViewModel(
         getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
         setEffect {
             Effect.Navigation.SwitchScreen(
-                screenRoute = ProximityScreens.QR.screenRoute
+                screenRoute = generateComposableNavigationLink(
+                    screen = ProximityScreens.QR,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                RequestUriConfig(PresentationMode.Ble),
+                                RequestUriConfig
+                            )
+                        )
+                    )
+                )
             )
         }
     }

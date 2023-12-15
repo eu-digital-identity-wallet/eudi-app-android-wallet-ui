@@ -16,16 +16,7 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
-import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.eudi.wallet.EudiWalletConfig
-
-interface WalletCoreConfig {
-    val config: EudiWalletConfig
-}
-
-class WalletCoreConfigImpl(
-    private val eudiWallet: EudiWallet
-) : WalletCoreConfig {
-    override val config: EudiWalletConfig
-        get() = eudiWallet.config
+sealed class PresentationControllerConfig {
+    data class OpenId4VP(val uri: String) : PresentationControllerConfig()
+    data object Ble : PresentationControllerConfig()
 }

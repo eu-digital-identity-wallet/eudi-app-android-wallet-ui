@@ -47,11 +47,22 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
                     uriPattern =
                         BuildConfig.DEEPLINK + ProximityScreens.QR.screenRoute
                 }
+            ),
+            arguments = listOf(
+                navArgument(RequestUriConfig.serializedKeyName) {
+                    type = NavType.StringType
+                },
             )
         ) {
             ProximityQRScreen(
                 navController,
-                koinViewModel()
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(RequestUriConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
             )
         }
 
