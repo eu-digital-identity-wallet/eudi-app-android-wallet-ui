@@ -156,10 +156,10 @@
     <string name="proximity_qr_subtitle">Show this QR code to access the necessary information for sharing</string>
     <string name="proximity_qr_use_nfc">Or use the NFC</string>
 
-    <!-- Proximity Loading Screen -->
-    <string name="proximity_loading_title">The Police officer requests the following</string>
-    <string name="proximity_loading_success_config_subtitle">You successfully shared information with %1$s</string>
-    <string name="proximity_loading_success_config_verifier">Verifier</string>
+    <!-- Presentation Loading Screen -->
+    <string name="presentation_loading_title">The Police officer requests the following</string>
+    <string name="presentation_loading_success_config_subtitle">You successfully shared information with %1$s</string>
+    <string name="presentation_loading_success_config_verifier">Verifier</string>
 
     <!-- Issuance Add Document Screen -->
     <string name="issuance_add_document">@string/generic_continue_capitalized</string>

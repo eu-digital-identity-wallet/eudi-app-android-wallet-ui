@@ -23,7 +23,7 @@ import androidx.core.net.toUri
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
-import eu.europa.ec.uilogic.navigation.ProximityScreens
+import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.Screen
 
 fun <T> generateComposableArguments(arguments: Map<String, T>): String {
@@ -85,7 +85,7 @@ fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
 fun handleDeepLinkAction(navController: NavController, uri: Uri, navigationLink: String) {
     hasDeepLink(uri)?.let {
         val screen: Screen = when (it.type) {
-            DeepLinkType.OPENID4VP -> ProximityScreens.Request
+            DeepLinkType.OPENID4VP -> PresentationScreens.PresentationRequest
         }
         navController.navigate(navigationLink) {
             popUpTo(screen.screenRoute) { inclusive = true }

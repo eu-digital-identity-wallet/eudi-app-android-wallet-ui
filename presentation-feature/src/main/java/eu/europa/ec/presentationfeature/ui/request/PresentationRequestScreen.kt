@@ -14,18 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.presentationfeature.ui.samedevice.loading
+package eu.europa.ec.presentationfeature.ui.request
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
+import eu.europa.ec.commonfeature.ui.request.RequestScreen
 
 @Composable
-fun PresentationSameDeviceLoadingScreen(
+fun PresentationRequestScreen(
     navController: NavController,
-    viewModel: PresentationSameDeviceLoadingViewModel
+    viewModel: PresentationRequestViewModel
 ) {
-    LoadingScreen(
+    RequestScreen(
         navController = navController,
         viewModel = viewModel
     )

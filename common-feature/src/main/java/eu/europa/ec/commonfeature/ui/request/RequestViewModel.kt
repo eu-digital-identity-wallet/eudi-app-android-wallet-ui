@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.businesslogic.di.getPresentationScope
+import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
@@ -102,7 +102,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
      * Therefore kill [EudiWalletInteractor]
      * */
     open fun cleanUp() {
-        getPresentationScope().close()
+        getOrCreatePresentationScope().close()
     }
 
     open fun updateData(updatedItems: List<RequestDataUi<Event>>) {

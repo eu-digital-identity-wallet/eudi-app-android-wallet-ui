@@ -18,69 +18,57 @@ package eu.europa.ec.presentationfeature.router
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
-import eu.europa.ec.presentationfeature.ui.crossdevice.loading.PresentationCrossDeviceLoadingScreen
-import eu.europa.ec.presentationfeature.ui.crossdevice.request.PresentationCrossDeviceRequestScreen
-import eu.europa.ec.presentationfeature.ui.samedevice.loading.PresentationSameDeviceLoadingScreen
-import eu.europa.ec.presentationfeature.ui.samedevice.request.PresentationSameDeviceRequestScreen
+import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.presentationfeature.ui.loading.PresentationLoadingScreen
+import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.PresentationScreens
+import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.presentationGraph(navController: NavController) {
     navigation(
-        startDestination = PresentationScreens.CrossDeviceRequest.screenRoute,
+        startDestination = PresentationScreens.PresentationRequest.screenRoute,
         route = ModuleRoute.PresentationModule.route
     ) {
 
-        // Cross Device
         composable(
-            route = PresentationScreens.CrossDeviceRequest.screenRoute,
+            route = PresentationScreens.PresentationRequest.screenRoute,
             deepLinks = listOf(
                 navDeepLink {
                     uriPattern =
-                        BuildConfig.DEEPLINK + PresentationScreens.CrossDeviceRequest.screenRoute
+                        BuildConfig.DEEPLINK + PresentationScreens.PresentationRequest.screenRoute
                 }
+            ),
+            arguments = listOf(
+                navArgument(RequestUriConfig.serializedKeyName) {
+                    type = NavType.StringType
+                },
             )
         ) {
-            PresentationCrossDeviceRequestScreen(
+            PresentationRequestScreen(
                 navController,
-                koinViewModel()
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(RequestUriConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
             )
         }
 
         composable(
-            route = PresentationScreens.CrossDeviceLoading.screenRoute,
+            route = PresentationScreens.PresentationLoading.screenRoute,
         ) {
-            PresentationCrossDeviceLoadingScreen(
-                navController,
-                koinViewModel()
-            )
-        }
-
-        // Same Device
-        composable(
-            route = PresentationScreens.SameDeviceRequest.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + PresentationScreens.SameDeviceRequest.screenRoute
-                }
-            )
-        ) {
-            PresentationSameDeviceRequestScreen(
-                navController,
-                koinViewModel()
-            )
-        }
-
-        composable(
-            route = PresentationScreens.SameDeviceLoading.screenRoute,
-        ) {
-            PresentationSameDeviceLoadingScreen(
+            PresentationLoadingScreen(
                 navController,
                 koinViewModel()
             )

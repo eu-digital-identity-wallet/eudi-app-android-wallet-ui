@@ -16,16 +16,14 @@
 
 package eu.europa.ec.dashboardfeature.ui.scanner
 
-import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
-import eu.europa.ec.businesslogic.di.WalletPresentationScope
+import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.extensions.getKoin
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.ProximityScreens
+import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -56,10 +54,10 @@ class QrScanViewModel(private val uiSerializer: UiSerializer) :
             is Event.GoBack -> setEffect { Effect.Navigation.Pop }
             is Event.OnQrScanned -> setEffect {
                 event.resultQr.isNotBlank().let {
-                    getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
+                    getOrCreatePresentationScope()
                     Effect.Navigation.SwitchScreen(
                         screenRoute = generateComposableNavigationLink(
-                            screen = ProximityScreens.Request,
+                            screen = PresentationScreens.PresentationRequest,
                             arguments = generateComposableArguments(
                                 mapOf(
                                     RequestUriConfig.serializedKeyName to uiSerializer.toBase64(

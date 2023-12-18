@@ -72,10 +72,10 @@ sealed class ResponseReceivedPartialState {
     data class Failure(val error: String) : ResponseReceivedPartialState()
 }
 
-sealed class WalletCoreProximityPartialState {
-    data object UserAuthenticationRequired : WalletCoreProximityPartialState()
-    data class Failure(val error: String) : WalletCoreProximityPartialState()
-    data object Success : WalletCoreProximityPartialState()
+sealed class WalletCorePartialState {
+    data object UserAuthenticationRequired : WalletCorePartialState()
+    data class Failure(val error: String) : WalletCorePartialState()
+    data object Success : WalletCorePartialState()
 }
 
 sealed class LoadSampleDataPartialState {
@@ -153,7 +153,7 @@ interface WalletCorePresentationController {
      * and a single state
      * @return flow that emits the create, sent, receive states
      * */
-    fun observeSentDocumentsRequest(): Flow<WalletCoreProximityPartialState>
+    fun observeSentDocumentsRequest(): Flow<WalletCorePartialState>
 
     companion object {
         /**
@@ -274,8 +274,7 @@ class WalletCorePresentationControllerImpl(
                     }
 
                     is ResponseResult.Response -> {
-                        val responseBytes = response.bytes
-                        eudiWallet.openId4vpManager.sendResponse(responseBytes)
+                        sendResponse(response.bytes)
                         emit(SendRequestedDocumentsPartialState.RequestSent)
                     }
 
@@ -300,7 +299,9 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 is TransferEventPartialState.Disconnected -> {
-                    ResponseReceivedPartialState.Success
+                    if (_config is PresentationControllerConfig.OpenId4VP) {
+                        ResponseReceivedPartialState.Success
+                    } else null
                 }
 
                 else -> null
@@ -312,19 +313,19 @@ class WalletCorePresentationControllerImpl(
         }
     }
 
-    override fun observeSentDocumentsRequest(): Flow<WalletCoreProximityPartialState> =
+    override fun observeSentDocumentsRequest(): Flow<WalletCorePartialState> =
         sendRequestedDocuments().zip(mappedCallbackStateFlow()) { createResponseState, sentResponseState ->
             when {
                 createResponseState is SendRequestedDocumentsPartialState.Failure -> {
-                    WalletCoreProximityPartialState.Failure(createResponseState.error)
+                    WalletCorePartialState.Failure(createResponseState.error)
                 }
 
                 createResponseState is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
-                    WalletCoreProximityPartialState.UserAuthenticationRequired
+                    WalletCorePartialState.UserAuthenticationRequired
                 }
 
                 sentResponseState is ResponseReceivedPartialState.Failure -> {
-                    WalletCoreProximityPartialState.Failure(sentResponseState.error)
+                    WalletCorePartialState.Failure(sentResponseState.error)
                 }
 
                 createResponseState is SendRequestedDocumentsPartialState.RequestSent &&
@@ -333,12 +334,12 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 else -> {
-                    WalletCoreProximityPartialState.Success
+                    WalletCorePartialState.Success
                 }
             }
         }.filterNotNull()
             .safeAsync {
-                WalletCoreProximityPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
+                WalletCorePartialState.Failure(it.localizedMessage ?: genericErrorMessage)
             }
 
     override fun updateRequestedDocuments(disclosedDocuments: DisclosedDocuments?) {
@@ -380,5 +381,17 @@ class WalletCorePresentationControllerImpl(
             throw IllegalStateException("setConfig() must be called before using the WalletCorePresentationController")
         }
         return block()
+    }
+
+    private fun sendResponse(responseBytes: ByteArray) {
+        when (_config) {
+            is PresentationControllerConfig.OpenId4VP -> {
+                eudiWallet.openId4vpManager.sendResponse(responseBytes)
+            }
+
+            is PresentationControllerConfig.Ble -> {
+                eudiWallet.sendResponse(responseBytes)
+            }
+        }
     }
 }

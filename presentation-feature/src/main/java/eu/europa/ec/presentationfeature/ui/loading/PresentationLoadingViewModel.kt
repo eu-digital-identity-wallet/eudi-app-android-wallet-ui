@@ -14,13 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.presentationfeature.ui.crossdevice.loading
+package eu.europa.ec.presentationfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
+import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
+import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -30,18 +35,26 @@ import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class PresentationCrossDeviceLoadingViewModel constructor(
+class PresentationLoadingViewModel constructor(
     private val uiSerializer: UiSerializer,
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    private val interactor: PresentationLoadingInteractor,
 ) : LoadingViewModel() {
 
     override fun getTitle(): String {
-        return resourceProvider.getString(R.string.loading_title)
+        return if (interactor.verifierName.isNullOrBlank()) {
+            resourceProvider.getString(R.string.request_title)
+        } else {
+            resourceProvider.getString(
+                R.string.request_title_with_verifier_name,
+                interactor.verifierName
+                    ?: resourceProvider.getString(R.string.presentation_loading_success_config_verifier)
+            )
+        }
     }
 
     override fun getSubtitle(): String {
@@ -49,11 +62,11 @@ class PresentationCrossDeviceLoadingViewModel constructor(
     }
 
     override fun getPreviousScreen(): Screen {
-        return PresentationScreens.CrossDeviceRequest
+        return PresentationScreens.PresentationRequest
     }
 
     override fun getCallerScreen(): Screen {
-        return PresentationScreens.CrossDeviceLoading
+        return PresentationScreens.PresentationLoading
     }
 
     override fun getNextScreen(): String {
@@ -67,8 +80,31 @@ class PresentationCrossDeviceLoadingViewModel constructor(
 
     override fun doWork() {
         viewModelScope.launch {
-            delay(5000)
-            doNavigation(NavigationType.PUSH)
+
+            interactor.observeResponse().collect {
+                when (it) {
+                    is WalletCorePartialState.Failure -> {
+                        setState {
+                            copy(error = ContentErrorConfig(
+                                onRetry = { setEvent(Event.DoWork) },
+                                errorSubTitle = it.error,
+                                onCancel = { doNavigation(NavigationType.POP) }
+                            ))
+                        }
+                    }
+
+                    is WalletCorePartialState.Success -> {
+                        interactor.stopPresentation()
+                        getOrCreatePresentationScope().close()
+                        doNavigation(NavigationType.PUSH)
+                    }
+
+                    is WalletCorePartialState.UserAuthenticationRequired -> {
+                        // Provide implementation for Biometrics POP
+                    }
+                }
+            }
+
         }
     }
 
@@ -77,7 +113,11 @@ class PresentationCrossDeviceLoadingViewModel constructor(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
                     header = resourceProvider.getString(R.string.loading_success_config_title),
-                    content = resourceProvider.getString(R.string.loading_success_config_subtitle),
+                    content = resourceProvider.getString(
+                        R.string.presentation_loading_success_config_subtitle,
+                        interactor.verifierName
+                            ?: resourceProvider.getString(R.string.presentation_loading_success_config_verifier)
+                    ),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.DEFAULT
                     ),

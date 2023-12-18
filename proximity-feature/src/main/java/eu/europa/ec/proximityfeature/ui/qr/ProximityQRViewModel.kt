@@ -18,7 +18,7 @@ package eu.europa.ec.proximityfeature.ui.qr
 
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.di.getPresentationScope
+import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
@@ -179,7 +179,7 @@ class ProximityQRViewModel(
      * */
     private fun cleanUp() {
         unsubscribe()
-        getPresentationScope().close()
+        getOrCreatePresentationScope().close()
         interactor.cancelTransfer()
     }
 }

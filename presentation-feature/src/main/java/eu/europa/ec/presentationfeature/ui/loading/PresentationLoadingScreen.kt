@@ -14,16 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.presentationfeature.ui.crossdevice.loading
+package eu.europa.ec.presentationfeature.ui.loading
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
 
 @Composable
-fun PresentationCrossDeviceLoadingScreen(
+fun PresentationLoadingScreen(
     navController: NavController,
-    viewModel: PresentationCrossDeviceLoadingViewModel
+    viewModel: PresentationLoadingViewModel
 ) {
     LoadingScreen(
         navController = navController,

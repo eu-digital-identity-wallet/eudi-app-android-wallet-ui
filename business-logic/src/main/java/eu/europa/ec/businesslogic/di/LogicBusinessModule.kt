@@ -164,5 +164,5 @@ class WalletPresentationScope
 /**
  * Get Koin scope that lives during document presentation flow
  * */
-fun getPresentationScope(): org.koin.core.scope.Scope =
+fun getOrCreatePresentationScope(): org.koin.core.scope.Scope =
     getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
