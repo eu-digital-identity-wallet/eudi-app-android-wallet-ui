@@ -50,11 +50,11 @@ sealed class LoginScreens {
 
 sealed class PresentationScreens {
     data object PresentationRequest : Screen(
-        name = "PRESENTATION_CROSS_DEVICE_REQUEST",
+        name = "PRESENTATION_REQUEST",
         parameters = "?requestUriConfig={requestUriConfig}"
     )
 
-    data object PresentationLoading : Screen(name = "PRESENTATION_CROSS_DEVICE_LOADING")
+    data object PresentationLoading : Screen(name = "PRESENTATION_LOADING")
 
 }
 

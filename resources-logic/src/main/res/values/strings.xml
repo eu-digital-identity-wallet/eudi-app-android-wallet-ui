@@ -118,10 +118,8 @@
     <string name="request_element_identifier_not_available">Not available</string>
 
     <!-- Loading Screen -->
-    <string name="loading_title">EUDI Conference requests the following to register</string>
     <string name="loading_subtitle">Please wait…</string>
     <string name="loading_success_config_title">@string/generic_success</string>
-    <string name="loading_success_config_subtitle">You successfully shared information with the EUDI Conference</string>
     <string name="loading_success_config_primary_button_text">@string/generic_ok</string>
     <string name="loading_biometry_share_subtitle">Use your biometrics to share information</string>
     <string name="loading_quick_pin_share_subtitle">Type your quick pin to share information</string>
@@ -157,7 +155,6 @@
     <string name="proximity_qr_use_nfc">Or use the NFC</string>
 
     <!-- Presentation Loading Screen -->
-    <string name="presentation_loading_title">The Police officer requests the following</string>
     <string name="presentation_loading_success_config_subtitle">You successfully shared information with %1$s</string>
     <string name="presentation_loading_success_config_verifier">Verifier</string>
 

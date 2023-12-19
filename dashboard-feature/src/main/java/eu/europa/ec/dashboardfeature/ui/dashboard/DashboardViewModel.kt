@@ -57,11 +57,13 @@ data class State(
 
     val userFirstName: String = "",
     val userBase64Image: String = "",
-    val documents: List<DocumentUi> = emptyList()
+    val documents: List<DocumentUi> = emptyList(),
+
+    val deepLinkUri: Uri? = null,
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data class Init(val qrResult: String?, val deepLinkUri: Uri?) : Event()
+    data class Init(val deepLinkUri: Uri?) : Event()
     data object Pop : Event()
     data class NavigateToDocument(
         val documentId: String,
@@ -121,8 +123,6 @@ class DashboardViewModel(
     private val uiSerializer: UiSerializer
 ) : MviViewModel<Event, State, Effect>() {
 
-    private var deepLinkUri: Uri? = null
-
     override fun setInitialState(): State = State(
         isBleCentralClientModeEnabled = dashboardInteractor.isBleCentralClientModeEnabled()
     )
@@ -130,12 +130,10 @@ class DashboardViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                deepLinkUri = event.deepLinkUri
-                getDocuments(event)
-                event.qrResult?.let {
-                    print(it)
-                    // TODO HANDLE OPENID4VP FROM QR
+                setState {
+                    copy(deepLinkUri = event.deepLinkUri)
                 }
+                getDocuments(event)
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
@@ -280,7 +278,7 @@ class DashboardViewModel(
                                 userBase64Image = response.userBase64Image
                             )
                         }
-                        deepLinkUri?.let { uri ->
+                        viewState.value.deepLinkUri?.let { uri ->
                             getOrCreatePresentationScope()
                             setEffect {
                                 Effect.Navigation.OpenDeepLinkAction(
@@ -290,7 +288,7 @@ class DashboardViewModel(
                                             mapOf(
                                                 RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
                                                     RequestUriConfig(PresentationMode.OpenId4Vp(uri.toString())),
-                                                    RequestUriConfig
+                                                    RequestUriConfig.Parser
                                                 )
                                             )
                                         )
@@ -330,7 +328,7 @@ class DashboardViewModel(
                         mapOf(
                             RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
                                 RequestUriConfig(PresentationMode.Ble),
-                                RequestUriConfig
+                                RequestUriConfig.Parser
                             )
                         )
                     )

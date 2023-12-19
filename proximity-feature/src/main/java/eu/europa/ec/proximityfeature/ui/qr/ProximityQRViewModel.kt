@@ -149,7 +149,7 @@ class ProximityQRViewModel(
                                         mapOf(
                                             RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
                                                 RequestUriConfig(PresentationMode.Ble),
-                                                RequestUriConfig
+                                                RequestUriConfig.Parser
                                             )
                                         )
                                     )

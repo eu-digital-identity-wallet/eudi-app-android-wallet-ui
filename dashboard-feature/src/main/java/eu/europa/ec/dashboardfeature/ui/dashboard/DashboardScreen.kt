@@ -96,7 +96,6 @@ import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.extension.openBleSettings
 import eu.europa.ec.uilogic.extension.throttledClickable
-import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -166,9 +165,6 @@ fun DashboardScreen(
     ) {
         viewModel.setEvent(
             Event.Init(
-                qrResult = navController.currentBackStackEntry
-                    ?.savedStateHandle
-                    ?.remove<String>(DashboardScreens.Scanner.screenName),
                 deepLinkUri = context.getPendingDeepLink()
             )
         )
