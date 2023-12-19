@@ -16,7 +16,6 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -26,7 +25,6 @@ import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.ResponseResult
 import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
 import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -154,20 +152,6 @@ interface WalletCorePresentationController {
      * @return flow that emits the create, sent, receive states
      * */
     fun observeSentDocumentsRequest(): Flow<WalletCorePartialState>
-
-    companion object {
-        /**
-         * Initialize wallet core
-         * @param applicationContext Application Context
-         * @param config Config for Eudi Wallet Core
-         * */
-        fun initializeWalletCore(
-            applicationContext: Context,
-            config: EudiWalletConfig = EudiWalletConfig.Builder(applicationContext).build()
-        ) {
-            EudiWallet.init(applicationContext, config)
-        }
-    }
 }
 
 @Scope(WalletPresentationScope::class)
