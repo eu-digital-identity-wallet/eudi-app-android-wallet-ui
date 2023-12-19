@@ -17,7 +17,7 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import android.bluetooth.BluetoothAdapter
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreConfig
+import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted

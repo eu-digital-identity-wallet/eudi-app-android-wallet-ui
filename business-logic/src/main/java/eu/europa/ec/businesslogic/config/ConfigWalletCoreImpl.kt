@@ -14,19 +14,28 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.presentationfeature.ui.samedevice.request
+package eu.europa.ec.businesslogic.config
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.request.RequestScreen
+import android.content.Context
+import eu.europa.ec.eudi.wallet.EudiWalletConfig
 
-@Composable
-fun PresentationSameDeviceRequestScreen(
-    navController: NavController,
-    viewModel: PresentationSameDeviceRequestViewModel
-) {
-    RequestScreen(
-        navController = navController,
-        viewModel = viewModel
-    )
+internal class WalletCoreConfigImpl(
+    private val context: Context
+) : WalletCoreConfig {
+
+    companion object {
+        const val VERIFIER_API_URI = "https://eudi.netcompany-intrasoft.com"
+    }
+
+    private var _config: EudiWalletConfig? = null
+
+    override val config: EudiWalletConfig
+        get() {
+            if (_config == null) {
+                _config = EudiWalletConfig.Builder(context)
+                    .openId4VpVerifierApiUri(VERIFIER_API_URI)
+                    .build()
+            }
+            return _config!!
+        }
 }

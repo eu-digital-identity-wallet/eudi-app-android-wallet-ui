@@ -14,9 +14,19 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.extensions
+package eu.europa.ec.presentationfeature.ui.loading
 
-import org.koin.core.Koin
-import org.koin.mp.KoinPlatformTools
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
 
-fun getKoin(): Koin = KoinPlatformTools.defaultContext().get()
+@Composable
+fun PresentationLoadingScreen(
+    navController: NavController,
+    viewModel: PresentationLoadingViewModel
+) {
+    LoadingScreen(
+        navController = navController,
+        viewModel = viewModel
+    )
+}

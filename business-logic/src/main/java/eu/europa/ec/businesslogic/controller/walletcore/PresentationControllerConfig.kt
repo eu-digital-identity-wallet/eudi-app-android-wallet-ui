@@ -14,19 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.presentationfeature.ui.crossdevice.loading
+package eu.europa.ec.businesslogic.controller.walletcore
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.loading.LoadingScreen
-
-@Composable
-fun PresentationCrossDeviceLoadingScreen(
-    navController: NavController,
-    viewModel: PresentationCrossDeviceLoadingViewModel
-) {
-    LoadingScreen(
-        navController = navController,
-        viewModel = viewModel
-    )
+sealed class PresentationControllerConfig {
+    data class OpenId4VP(val uri: String) : PresentationControllerConfig()
+    data object Ble : PresentationControllerConfig()
 }

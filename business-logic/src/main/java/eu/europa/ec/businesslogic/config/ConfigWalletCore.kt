@@ -14,19 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.presentationfeature.ui.crossdevice.request
+package eu.europa.ec.businesslogic.config
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.request.RequestScreen
+import eu.europa.ec.eudi.wallet.EudiWalletConfig
 
-@Composable
-fun PresentationCrossDeviceRequestScreen(
-    navController: NavController,
-    viewModel: PresentationCrossDeviceRequestViewModel
-) {
-    RequestScreen(
-        navController = navController,
-        viewModel = viewModel
-    )
+interface WalletCoreConfig {
+    val config: EudiWalletConfig
 }

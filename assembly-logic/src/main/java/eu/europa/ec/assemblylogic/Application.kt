@@ -20,8 +20,9 @@ import android.app.Application
 import android.os.StrictMode
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
+import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.log.LogController
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -32,6 +33,7 @@ import org.koin.android.ext.android.inject
 class Application : Application() {
 
     private val logController: LogController by inject()
+    private val configWalletCore: WalletCoreConfig by inject()
     private val configSecurityLogic: ConfigSecurityLogic by inject()
 
     override fun onCreate() {
@@ -62,7 +64,10 @@ class Application : Application() {
     }
 
     private fun initializeEudiWallet() {
-        WalletCorePresentationController.initializeWalletCore(applicationContext)
+        EudiWallet.init(
+            applicationContext,
+            configWalletCore.config
+        )
     }
 
     private fun handleStrictMode() {

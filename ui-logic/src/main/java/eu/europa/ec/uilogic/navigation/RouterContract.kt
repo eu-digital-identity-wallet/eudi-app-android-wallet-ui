@@ -49,16 +49,26 @@ sealed class LoginScreens {
 }
 
 sealed class PresentationScreens {
-    data object CrossDeviceRequest : Screen(name = "PRESENTATION_CROSS_DEVICE_REQUEST")
-    data object CrossDeviceLoading : Screen(name = "PRESENTATION_CROSS_DEVICE_LOADING")
+    data object PresentationRequest : Screen(
+        name = "PRESENTATION_REQUEST",
+        parameters = "?requestUriConfig={requestUriConfig}"
+    )
 
-    data object SameDeviceRequest : Screen(name = "PRESENTATION_SAME_DEVICE_REQUEST")
-    data object SameDeviceLoading : Screen(name = "PRESENTATION_SAME_DEVICE_LOADING")
+    data object PresentationLoading : Screen(name = "PRESENTATION_LOADING")
+
 }
 
 sealed class ProximityScreens {
-    data object QR : Screen(name = "PROXIMITY_QR")
-    data object Request : Screen(name = "PROXIMITY_REQUEST")
+    data object QR : Screen(
+        name = "PROXIMITY_QR",
+        parameters = "?requestUriConfig={requestUriConfig}"
+    )
+
+    data object Request : Screen(
+        name = "PROXIMITY_REQUEST",
+        parameters = "?requestUriConfig={requestUriConfig}"
+    )
+
     data object Loading : Screen(name = "PROXIMITY_LOADING")
 }
 

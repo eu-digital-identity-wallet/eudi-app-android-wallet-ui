@@ -17,8 +17,8 @@
 package eu.europa.ec.proximityfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreProximityPartialState
-import eu.europa.ec.businesslogic.di.getPresentationScope
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
+import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
@@ -52,7 +52,7 @@ class ProximityLoadingViewModel constructor(
             resourceProvider.getString(
                 R.string.request_title_with_verifier_name,
                 interactor.verifierName
-                    ?: resourceProvider.getString(R.string.proximity_loading_success_config_verifier)
+                    ?: resourceProvider.getString(R.string.presentation_loading_success_config_verifier)
             )
         }
     }
@@ -80,10 +80,9 @@ class ProximityLoadingViewModel constructor(
 
     override fun doWork() {
         viewModelScope.launch {
-
             interactor.observeResponse().collect {
                 when (it) {
-                    is WalletCoreProximityPartialState.Failure -> {
+                    is WalletCorePartialState.Failure -> {
                         setState {
                             copy(error = ContentErrorConfig(
                                 onRetry = { setEvent(Event.DoWork) },
@@ -93,13 +92,13 @@ class ProximityLoadingViewModel constructor(
                         }
                     }
 
-                    is WalletCoreProximityPartialState.Success -> {
+                    is WalletCorePartialState.Success -> {
                         interactor.stopPresentation()
-                        getPresentationScope().close()
+                        getOrCreatePresentationScope().close()
                         doNavigation(NavigationType.PUSH)
                     }
 
-                    is WalletCoreProximityPartialState.UserAuthenticationRequired -> {
+                    is WalletCorePartialState.UserAuthenticationRequired -> {
                         // Provide implementation for Biometrics POP
                     }
                 }
@@ -114,9 +113,9 @@ class ProximityLoadingViewModel constructor(
                 SuccessUIConfig(
                     header = resourceProvider.getString(R.string.loading_success_config_title),
                     content = resourceProvider.getString(
-                        R.string.proximity_loading_success_config_subtitle,
+                        R.string.presentation_loading_success_config_subtitle,
                         interactor.verifierName
-                            ?: resourceProvider.getString(R.string.proximity_loading_success_config_verifier)
+                            ?: resourceProvider.getString(R.string.presentation_loading_success_config_verifier)
                     ),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.DEFAULT

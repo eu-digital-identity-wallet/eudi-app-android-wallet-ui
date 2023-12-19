@@ -20,6 +20,8 @@ import androidx.activity.ComponentActivity
 import eu.europa.ec.businesslogic.controller.walletcore.TransferEventPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -40,6 +42,7 @@ interface ProximityQRInteractor {
     )
 
     fun cancelTransfer()
+    fun setConfig(config: RequestUriConfig)
 }
 
 class ProximityQRInteractorImpl(
@@ -49,6 +52,10 @@ class ProximityQRInteractorImpl(
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
+
+    override fun setConfig(config: RequestUriConfig) {
+        walletCorePresentationController.setConfig(config.toDomainConfig())
+    }
 
     override fun startQrEngagement(): Flow<ProximityQRPartialState> {
         walletCorePresentationController.startQrEngagement()

@@ -16,7 +16,6 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
-import android.content.Context
 import androidx.activity.ComponentActivity
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -26,7 +25,6 @@ import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.ResponseResult
 import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
 import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -72,10 +70,10 @@ sealed class ResponseReceivedPartialState {
     data class Failure(val error: String) : ResponseReceivedPartialState()
 }
 
-sealed class WalletCoreProximityPartialState {
-    data object UserAuthenticationRequired : WalletCoreProximityPartialState()
-    data class Failure(val error: String) : WalletCoreProximityPartialState()
-    data object Success : WalletCoreProximityPartialState()
+sealed class WalletCorePartialState {
+    data object UserAuthenticationRequired : WalletCorePartialState()
+    data class Failure(val error: String) : WalletCorePartialState()
+    data object Success : WalletCorePartialState()
 }
 
 sealed class LoadSampleDataPartialState {
@@ -104,6 +102,8 @@ interface WalletCorePresentationController {
      * Verifier name so it can be retrieve across screens
      * */
     val verifierName: String?
+
+    fun setConfig(config: PresentationControllerConfig)
 
     /**
      * Terminates the presentation and kills the coroutine scope that [events] live in
@@ -151,21 +151,7 @@ interface WalletCorePresentationController {
      * and a single state
      * @return flow that emits the create, sent, receive states
      * */
-    fun observeSentDocumentsRequest(): Flow<WalletCoreProximityPartialState>
-
-    companion object {
-        /**
-         * Initialize wallet core
-         * @param applicationContext Application Context
-         * @param config Config for Eudi Wallet Core
-         * */
-        fun initializeWalletCore(
-            applicationContext: Context,
-            config: EudiWalletConfig = EudiWalletConfig.Builder(applicationContext).build()
-        ) {
-            EudiWallet.init(applicationContext, config)
-        }
-    }
+    fun observeSentDocumentsRequest(): Flow<WalletCorePartialState>
 }
 
 @Scope(WalletPresentationScope::class)
@@ -180,10 +166,16 @@ class WalletCorePresentationControllerImpl(
 
     private val coroutineScope = CoroutineScope(dispatcher + SupervisorJob())
 
+    private lateinit var _config: PresentationControllerConfig
+
     override var disclosedDocuments: DisclosedDocuments? = null
         private set
     override var verifierName: String? = null
         private set
+
+    override fun setConfig(config: PresentationControllerConfig) {
+        _config = config
+    }
 
     override val events = callbackFlow {
         val eventListenerWrapper = EudiWalletListenerWrapper(
@@ -229,9 +221,9 @@ class WalletCorePresentationControllerImpl(
             }
         )
 
-        eudiWallet.addTransferEventListener(eventListenerWrapper)
+        addListener(eventListenerWrapper)
         awaitClose {
-            eudiWallet.removeTransferEventListener(eventListenerWrapper)
+            removeListener(eventListenerWrapper)
             eudiWallet.stopPresentation()
         }
     }.shareIn(coroutineScope, SharingStarted.Lazily, 1)
@@ -266,8 +258,7 @@ class WalletCorePresentationControllerImpl(
                     }
 
                     is ResponseResult.Response -> {
-                        val responseBytes = response.bytes
-                        eudiWallet.sendResponse(responseBytes)
+                        sendResponse(response.bytes)
                         emit(SendRequestedDocumentsPartialState.RequestSent)
                     }
 
@@ -291,6 +282,12 @@ class WalletCorePresentationControllerImpl(
                     }
                 }
 
+                is TransferEventPartialState.Disconnected -> {
+                    if (_config is PresentationControllerConfig.OpenId4VP) {
+                        ResponseReceivedPartialState.Success
+                    } else null
+                }
+
                 else -> null
             }
         }.safeAsync {
@@ -300,19 +297,19 @@ class WalletCorePresentationControllerImpl(
         }
     }
 
-    override fun observeSentDocumentsRequest(): Flow<WalletCoreProximityPartialState> =
+    override fun observeSentDocumentsRequest(): Flow<WalletCorePartialState> =
         sendRequestedDocuments().zip(mappedCallbackStateFlow()) { createResponseState, sentResponseState ->
             when {
                 createResponseState is SendRequestedDocumentsPartialState.Failure -> {
-                    WalletCoreProximityPartialState.Failure(createResponseState.error)
+                    WalletCorePartialState.Failure(createResponseState.error)
                 }
 
                 createResponseState is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
-                    WalletCoreProximityPartialState.UserAuthenticationRequired
+                    WalletCorePartialState.UserAuthenticationRequired
                 }
 
                 sentResponseState is ResponseReceivedPartialState.Failure -> {
-                    WalletCoreProximityPartialState.Failure(sentResponseState.error)
+                    WalletCorePartialState.Failure(sentResponseState.error)
                 }
 
                 createResponseState is SendRequestedDocumentsPartialState.RequestSent &&
@@ -321,12 +318,12 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 else -> {
-                    WalletCoreProximityPartialState.Success
+                    WalletCorePartialState.Success
                 }
             }
         }.filterNotNull()
             .safeAsync {
-                WalletCoreProximityPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
+                WalletCorePartialState.Failure(it.localizedMessage ?: genericErrorMessage)
             }
 
     override fun updateRequestedDocuments(disclosedDocuments: DisclosedDocuments?) {
@@ -338,5 +335,47 @@ class WalletCorePresentationControllerImpl(
         coroutineScope.cancel()
     }
 
+    private fun addListener(listener: EudiWalletListenerWrapper) {
+        when (val config = requireInit { _config }) {
+            is PresentationControllerConfig.OpenId4VP -> {
+                eudiWallet.openId4vpManager.addTransferEventListener(listener)
+                eudiWallet.openId4vpManager.resolveRequestUri(config.uri)
+            }
 
+            PresentationControllerConfig.Ble -> {
+                eudiWallet.addTransferEventListener(listener)
+            }
+        }
+    }
+
+    private fun removeListener(listener: EudiWalletListenerWrapper) {
+        when (requireInit { _config }) {
+            is PresentationControllerConfig.OpenId4VP -> {
+                eudiWallet.openId4vpManager.removeTransferEventListener(listener)
+            }
+
+            PresentationControllerConfig.Ble -> {
+                eudiWallet.removeTransferEventListener(listener)
+            }
+        }
+    }
+
+    private fun <T> requireInit(block: () -> T): T {
+        if (!::_config.isInitialized) {
+            throw IllegalStateException("setConfig() must be called before using the WalletCorePresentationController")
+        }
+        return block()
+    }
+
+    private fun sendResponse(responseBytes: ByteArray) {
+        when (_config) {
+            is PresentationControllerConfig.OpenId4VP -> {
+                eudiWallet.openId4vpManager.sendResponse(responseBytes)
+            }
+
+            is PresentationControllerConfig.Ble -> {
+                eudiWallet.sendResponse(responseBytes)
+            }
+        }
+    }
 }

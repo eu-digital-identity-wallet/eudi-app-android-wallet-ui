@@ -16,11 +16,12 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
-import eu.europa.ec.businesslogic.di.WalletPresentationScope
+import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
-import eu.europa.ec.commonfeature.extensions.getKoin
+import eu.europa.ec.commonfeature.config.PresentationMode
+import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
@@ -33,9 +34,11 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -54,11 +57,13 @@ data class State(
 
     val userFirstName: String = "",
     val userBase64Image: String = "",
-    val documents: List<DocumentUi> = emptyList()
+    val documents: List<DocumentUi> = emptyList(),
+
+    val deepLinkUri: Uri? = null,
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data class Init(val qrResult: String?) : Event()
+    data class Init(val deepLinkUri: Uri?) : Event()
     data object Pop : Event()
     data class NavigateToDocument(
         val documentId: String,
@@ -95,7 +100,8 @@ sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
         data class SwitchScreen(val screenRoute: String) : Navigation()
-        data object OpenDeepLinkAction : Navigation()
+        data class OpenDeepLinkAction(val navigationLink: String, val deepLinkUri: Uri) :
+            Navigation()
 
         data object OnAppSettings : Navigation()
         data object OnSystemSettings : Navigation()
@@ -114,6 +120,7 @@ sealed class DashboardBottomSheetContent {
 @KoinViewModel
 class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,
+    private val uiSerializer: UiSerializer
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State(
@@ -123,11 +130,10 @@ class DashboardViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                getDocuments(event)
-                event.qrResult?.let {
-                    print(it)
-                    // TODO HANDLE OPENID4VP FROM QR
+                setState {
+                    copy(deepLinkUri = event.deepLinkUri)
                 }
+                getDocuments(event)
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
@@ -272,7 +278,25 @@ class DashboardViewModel(
                                 userBase64Image = response.userBase64Image
                             )
                         }
-                        setEffect { Effect.Navigation.OpenDeepLinkAction }
+                        viewState.value.deepLinkUri?.let { uri ->
+                            getOrCreatePresentationScope()
+                            setEffect {
+                                Effect.Navigation.OpenDeepLinkAction(
+                                    navigationLink = generateComposableNavigationLink(
+                                        screen = PresentationScreens.PresentationRequest,
+                                        arguments = generateComposableArguments(
+                                            mapOf(
+                                                RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                                    RequestUriConfig(PresentationMode.OpenId4Vp(uri.toString())),
+                                                    RequestUriConfig.Parser
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    deepLinkUri = uri
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -295,10 +319,20 @@ class DashboardViewModel(
     private fun startProximityFlow() {
         setState { copy(bleAvailability = BleAvailability.AVAILABLE) }
         // Create Koin scope for presentation
-        getKoin().getOrCreateScope<WalletPresentationScope>(PRESENTATION_SCOPE_ID)
+        getOrCreatePresentationScope()
         setEffect {
             Effect.Navigation.SwitchScreen(
-                screenRoute = ProximityScreens.QR.screenRoute
+                screenRoute = generateComposableNavigationLink(
+                    screen = ProximityScreens.QR,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                RequestUriConfig(PresentationMode.Ble),
+                                RequestUriConfig.Parser
+                            )
+                        )
+                    )
+                )
             )
         }
     }

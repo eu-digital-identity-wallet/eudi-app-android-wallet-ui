@@ -82,12 +82,12 @@ fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
     }
 }
 
-fun handleDeepLinkAction(navController: NavController, uri: Uri) {
+fun handleDeepLinkAction(navController: NavController, uri: Uri, navigationLink: String) {
     hasDeepLink(uri)?.let {
         val screen: Screen = when (it.type) {
-            DeepLinkType.OPENID4VP -> PresentationScreens.SameDeviceRequest
+            DeepLinkType.OPENID4VP -> PresentationScreens.PresentationRequest
         }
-        navController.navigate(screen.screenRoute) {
+        navController.navigate(navigationLink) {
             popUpTo(screen.screenRoute) { inclusive = true }
         }
     }

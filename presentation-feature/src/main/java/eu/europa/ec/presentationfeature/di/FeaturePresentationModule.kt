@@ -16,29 +16,39 @@
 
 package eu.europa.ec.presentationfeature.di
 
-import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractor
-import eu.europa.ec.presentationfeature.interactor.PresentationCrossDeviceInteractorImpl
-import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractor
-import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractorImpl
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
+import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
+import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractorImpl
+import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
+import org.koin.core.annotation.ScopeId
 
 @Module
 @ComponentScan("eu.europa.ec.presentationfeature")
 class FeaturePresentationModule
 
 @Factory
-fun providePresentationCrossDeviceInteractor(
-    resourceProvider: ResourceProvider
-): PresentationCrossDeviceInteractor {
-    return PresentationCrossDeviceInteractorImpl(resourceProvider)
+fun providePresentationRequestInteractor(
+    resourceProvider: ResourceProvider,
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
+): PresentationRequestInteractor {
+    return PresentationRequestInteractorImpl(
+        resourceProvider,
+        walletCorePresentationController,
+        walletCoreDocumentsController
+    )
 }
 
 @Factory
-fun providePresentationSameDeviceInteractor(
-    resourceProvider: ResourceProvider,
-): PresentationSameDeviceInteractor {
-    return PresentationSameDeviceInteractorImpl(resourceProvider)
+fun providePresentationLoadingInteractor(
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
+): PresentationLoadingInteractor {
+    return PresentationLoadingInteractorImpl(walletCorePresentationController)
 }

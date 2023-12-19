@@ -19,15 +19,20 @@ package eu.europa.ec.proximityfeature.router
 import ProximityRequestScreen
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.proximityfeature.ui.loading.ProximityLoadingScreen
 import eu.europa.ec.proximityfeature.ui.qr.ProximityQRScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.ProximityScreens
+import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
     navigation(
@@ -42,11 +47,22 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
                     uriPattern =
                         BuildConfig.DEEPLINK + ProximityScreens.QR.screenRoute
                 }
+            ),
+            arguments = listOf(
+                navArgument(RequestUriConfig.serializedKeyName) {
+                    type = NavType.StringType
+                },
             )
         ) {
             ProximityQRScreen(
                 navController,
-                koinViewModel()
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(RequestUriConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
             )
         }
 
@@ -58,11 +74,22 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
                     uriPattern =
                         BuildConfig.DEEPLINK + ProximityScreens.Request.screenRoute
                 }
+            ),
+            arguments = listOf(
+                navArgument(RequestUriConfig.serializedKeyName) {
+                    type = NavType.StringType
+                },
             )
         ) {
             ProximityRequestScreen(
                 navController,
-                koinViewModel()
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(RequestUriConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
             )
         }
 

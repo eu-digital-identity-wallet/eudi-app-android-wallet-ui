@@ -14,14 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.presentationfeature.ui.samedevice.request
+package eu.europa.ec.presentationfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
-import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractor
-import eu.europa.ec.presentationfeature.interactor.PresentationSameDeviceInteractorPartialState
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -34,19 +36,21 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.InjectedParam
 
 @KoinViewModel
-class PresentationSameDeviceRequestViewModel(
-    private val interactor: PresentationSameDeviceInteractor,
+class PresentationRequestViewModel(
+    private val interactor: PresentationRequestInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
+    @InjectedParam private val requestUriConfigRaw: String
 ) : RequestViewModel() {
 
     override fun getScreenSubtitle(): String {
         return resourceProvider.getString(R.string.request_subtitle_one)
     }
 
-    override fun getScreenClickableSubtitle(): String? {
+    override fun getScreenClickableSubtitle(): String {
         return resourceProvider.getString(R.string.request_subtitle_two)
     }
 
@@ -68,11 +72,11 @@ class PresentationSameDeviceRequestViewModel(
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PUSH,
-                                screenToNavigate = PresentationScreens.SameDeviceLoading
+                                screenToNavigate = PresentationScreens.PresentationLoading
                             ),
                             onBackNavigation = ConfigNavigation(
                                 navigationType = NavigationType.POP,
-                                screenToNavigate = PresentationScreens.SameDeviceRequest
+                                screenToNavigate = PresentationScreens.PresentationRequest
                             )
                         ),
                         BiometricUiConfig.Parser
@@ -90,10 +94,18 @@ class PresentationSameDeviceRequestViewModel(
             )
         }
 
-        viewModelScope.launch {
-            interactor.getUserData().collect { response ->
+        val requestUriConfig = uiSerializer.fromBase64(
+            requestUriConfigRaw,
+            RequestUriConfig::class.java,
+            RequestUriConfig.Parser
+        ) ?: throw RuntimeException("RequestUriConfig:: is Missing or invalid")
+
+        interactor.setConfig(requestUriConfig)
+
+        viewModelJob = viewModelScope.launch {
+            interactor.getRequestDocuments().collect { response ->
                 when (response) {
-                    is PresentationSameDeviceInteractorPartialState.Failure -> {
+                    is PresentationRequestInteractorPartialState.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -106,16 +118,42 @@ class PresentationSameDeviceRequestViewModel(
                         }
                     }
 
-                    is PresentationSameDeviceInteractorPartialState.Success -> {
+                    is PresentationRequestInteractorPartialState.Success -> {
+                        updateData(response.requestDocuments)
                         setState {
                             copy(
                                 isLoading = false,
-                                error = null
+                                error = null,
+                                verifierName = response.verifierName,
+                                screenTitle = getScreenTitle(verifierName),
+                                items = response.requestDocuments
                             )
                         }
                     }
+
+                    is PresentationRequestInteractorPartialState.Disconnect -> {
+                        setEvent(Event.GoBack)
+                    }
                 }
             }
+        }
+    }
+
+    override fun updateData(updatedItems: List<RequestDataUi<Event>>) {
+        super.updateData(updatedItems)
+        interactor.updateRequestedDocuments(updatedItems)
+    }
+
+    override fun cleanUp() {
+        super.cleanUp()
+        interactor.stopPresentation()
+    }
+
+    private fun getScreenTitle(verifierName: String?): String {
+        return if (verifierName.isNullOrBlank()) {
+            resourceProvider.getString(R.string.request_title)
+        } else {
+            resourceProvider.getString(R.string.request_title_with_verifier_name, verifierName)
         }
     }
 }

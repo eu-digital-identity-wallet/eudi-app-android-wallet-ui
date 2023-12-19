@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.proximityfeature.interactor
+package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.controller.walletcore.TransferEventPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
@@ -30,29 +30,29 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
-sealed class ProximityRequestInteractorPartialState {
+sealed class PresentationRequestInteractorPartialState {
     data class Success(
         val verifierName: String? = null,
         val requestDocuments: List<RequestDataUi<Event>>
     ) :
-        ProximityRequestInteractorPartialState()
+        PresentationRequestInteractorPartialState()
 
-    data class Failure(val error: String) : ProximityRequestInteractorPartialState()
-    data object Disconnect : ProximityRequestInteractorPartialState()
+    data class Failure(val error: String) : PresentationRequestInteractorPartialState()
+    data object Disconnect : PresentationRequestInteractorPartialState()
 }
 
-interface ProximityRequestInteractor {
-    fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState>
+interface PresentationRequestInteractor {
+    fun getRequestDocuments(): Flow<PresentationRequestInteractorPartialState>
     fun stopPresentation()
     fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
     fun setConfig(config: RequestUriConfig)
 }
 
-class ProximityRequestInteractorImpl(
+class PresentationRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCorePresentationController: WalletCorePresentationController,
     private val walletCoreDocumentsController: WalletCoreDocumentsController
-) : ProximityRequestInteractor {
+) : PresentationRequestInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
@@ -61,7 +61,7 @@ class ProximityRequestInteractorImpl(
         walletCorePresentationController.setConfig(config.toDomainConfig())
     }
 
-    override fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState> =
+    override fun getRequestDocuments(): Flow<PresentationRequestInteractorPartialState> =
         walletCorePresentationController.events.mapNotNull { response ->
             when (response) {
                 is TransferEventPartialState.RequestReceived -> {
@@ -71,24 +71,24 @@ class ProximityRequestInteractorImpl(
                         requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
                         resourceProvider = resourceProvider
                     )
-                    ProximityRequestInteractorPartialState.Success(
+                    PresentationRequestInteractorPartialState.Success(
                         verifierName = response.verifierName,
                         requestDocuments = requestDataUi
                     )
                 }
 
                 is TransferEventPartialState.Error -> {
-                    ProximityRequestInteractorPartialState.Failure(error = response.error)
+                    PresentationRequestInteractorPartialState.Failure(error = response.error)
                 }
 
                 is TransferEventPartialState.Disconnected -> {
-                    ProximityRequestInteractorPartialState.Disconnect
+                    PresentationRequestInteractorPartialState.Disconnect
                 }
 
                 else -> null
             }
         }.safeAsync {
-            ProximityRequestInteractorPartialState.Failure(
+            PresentationRequestInteractorPartialState.Failure(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }

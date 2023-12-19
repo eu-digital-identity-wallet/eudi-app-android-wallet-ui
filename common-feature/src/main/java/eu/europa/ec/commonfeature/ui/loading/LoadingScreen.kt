@@ -41,7 +41,7 @@ fun LoadingScreen(
     val state = viewModel.viewState.value
 
     ContentScreen(
-        isLoading = true,
+        isLoading = state.error != null,
         navigatableAction = ScreenNavigateAction.CANCELABLE,
         onBack = { viewModel.setEvent(Event.GoBack) },
         contentErrorConfig = state.error

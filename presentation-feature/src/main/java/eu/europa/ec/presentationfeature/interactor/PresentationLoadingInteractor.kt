@@ -14,21 +14,21 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.proximityfeature.interactor
+package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import kotlinx.coroutines.flow.Flow
 
-interface ProximityLoadingInteractor {
+interface PresentationLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
     fun observeResponse(): Flow<WalletCorePartialState>
 }
 
-class ProximityLoadingInteractorImpl(
+class PresentationLoadingInteractorImpl(
     private val walletCorePresentationController: WalletCorePresentationController
-) : ProximityLoadingInteractor {
+) : PresentationLoadingInteractor {
 
     override val verifierName: String? = walletCorePresentationController.verifierName
 
