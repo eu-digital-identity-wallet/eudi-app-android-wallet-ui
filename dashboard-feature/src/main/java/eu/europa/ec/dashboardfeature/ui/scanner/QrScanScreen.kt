@@ -29,14 +29,19 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +59,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
+import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.wrap.WrapTextField
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -124,7 +131,7 @@ private fun Content(
         launcher.launch(Manifest.permission.CAMERA)
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
@@ -132,71 +139,79 @@ private fun Content(
 
         if (hasPermission) {
 
-            AndroidView(
-                factory = { context ->
-
-                    val previewView = PreviewView(context)
-                    val preview = Preview.Builder().build()
-
-                    val selector = CameraSelector.Builder()
-                        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                        .build()
-
-                    preview.setSurfaceProvider(previewView.surfaceProvider)
-
-                    val imageAnalysis = ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build()
-
-                    imageAnalysis.setAnalyzer(
-                        ContextCompat.getMainExecutor(context),
-                        QrCodeAnalyzer { result ->
-                            onEventSend(Event.OnQrScanned(result))
-                        }
-                    )
-                    try {
-                        cameraProviderFuture.get().bindToLifecycle(
-                            lifecycleOwner,
-                            selector,
-                            preview,
-                            imageAnalysis
-                        )
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                    previewView
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .fillMaxHeight(0.5f)
-                    .align(Alignment.Center)
+            ActionTopBar(
+                contentColor = Color.Transparent,
+                iconColor = Color.White,
+                iconData = AppIcons.Close
             ) {
-                Canvas(
-                    modifier = Modifier.matchParentSize()
-                ) {
-                    qrBorderCanvas(
-                        curve = SIZE_LARGE.dp,
-                        strokeWidth = SIZE_EXTRA_SMALL.dp,
-                        capSize = SIZE_XX_LARGE.dp,
-                        gapAngle = SIZE_LARGE
-                    )
-                }
+                onEventSend(Event.GoBack)
             }
 
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.8f)) {
+                AndroidView(
+                    factory = { context ->
+
+                        val previewView = PreviewView(context)
+                        val preview = Preview.Builder().build()
+
+                        val selector = CameraSelector.Builder()
+                            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                            .build()
+
+                        preview.setSurfaceProvider(previewView.surfaceProvider)
+
+                        val imageAnalysis = ImageAnalysis.Builder()
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+
+                        imageAnalysis.setAnalyzer(
+                            ContextCompat.getMainExecutor(context),
+                            QrCodeAnalyzer { result ->
+                                onEventSend(Event.OnQrScanned(result))
+                            }
+                        )
+                        try {
+                            cameraProviderFuture.get().bindToLifecycle(
+                                lifecycleOwner,
+                                selector,
+                                preview,
+                                imageAnalysis
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                        previewView
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .fillMaxHeight(0.5f)
+                        .align(Alignment.Center)
+                ) {
+                    Canvas(
+                        modifier = Modifier.matchParentSize()
+                    ) {
+                        qrBorderCanvas(
+                            curve = SIZE_LARGE.dp,
+                            strokeWidth = SIZE_EXTRA_SMALL.dp,
+                            capSize = SIZE_XX_LARGE.dp,
+                            gapAngle = SIZE_LARGE
+                        )
+                    }
+                }
+            }
         }
 
-        ActionTopBar(
-            contentColor = Color.Transparent,
-            iconColor = Color.White,
-            iconData = AppIcons.Close
-        ) {
-            onEventSend(Event.GoBack)
-        }
+        // TODO delete this once QR code link is generated successfully from Front-End.
+        TestQrSection(onEventSend)
     }
+
 
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
@@ -204,5 +219,37 @@ private fun Content(
                 is Effect.Navigation -> onNavigationRequested(effect)
             }
         }.collect()
+    }
+}
+
+@Composable
+private fun TestQrSection(
+    onEventSend: (Event) -> Unit,
+) {
+    var qrCode by rememberSaveable {
+        mutableStateOf("")
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 200.dp)
+    ) {
+        WrapTextField(
+            modifier = Modifier.fillMaxWidth(0.6f),
+            value = qrCode,
+            onValueChange = {
+                qrCode = it
+            }
+        )
+        WrapPrimaryButton(
+            onClick = { onEventSend(Event.OnQrScanned(qrCode)) }
+        ) {
+            Text(
+                modifier = Modifier.fillMaxWidth(0.4f),
+                text = "Test QR link",
+                maxLines = 3
+            )
+        }
     }
 }
