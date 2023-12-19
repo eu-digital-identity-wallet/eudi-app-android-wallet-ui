@@ -42,6 +42,7 @@ import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.CardWithIconAndText
 import eu.europa.ec.uilogic.component.CheckboxWithContent
+import eu.europa.ec.uilogic.component.InfoTextWithNameAndIconData
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -157,9 +158,10 @@ fun <T> OptionalField(
 
         if (showFullDetails) {
             if (item.requestDocumentItemUi.valueIsBase64) {
-                WrapIcon(
-                    iconData = AppIcons.User,
-                    modifier = Modifier.size(20.dp)
+                InfoTextWithNameAndIconData(
+                    title = item.requestDocumentItemUi.readableName,
+                    icon = AppIcons.User,
+                    iconModifier = Modifier.size(20.dp)
                 )
             } else {
                 InfoTextWithNameAndValue(

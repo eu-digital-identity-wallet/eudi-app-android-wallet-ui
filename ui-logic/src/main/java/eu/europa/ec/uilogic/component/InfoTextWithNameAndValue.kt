@@ -124,6 +124,33 @@ fun InfoTextWithNameAndImage(
     }
 }
 
+@Composable
+fun InfoTextWithNameAndIconData(
+    title: String,
+    icon: IconData,
+    modifier: Modifier = Modifier,
+    iconModifier: Modifier = Modifier,
+    infoNameTextStyle: TextStyle = defaultInfoNameTextStyle,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.Start
+    ) {
+        Text(
+            text = title,
+            style = infoNameTextStyle
+        )
+
+        VSpacer.ExtraSmall()
+
+        WrapImage(
+            modifier = iconModifier,
+            iconData = icon
+        )
+    }
+}
+
 @ThemeModePreviews
 @Composable
 private fun InfoTextWithNameAndValuePreview() {
