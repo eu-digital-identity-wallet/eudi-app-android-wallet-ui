@@ -90,17 +90,14 @@ private fun transformToDocumentDetailsUi(
     item: Any,
     resourceProvider: ResourceProvider
 ): DocumentDetailsUi {
-    val keyValueUi = getKeyValueUi(item, key, resourceProvider)
-
-    val infoKey = keyValueUi.key
-    val infoValue = keyValueUi.value
+    val (keyUi, valueUi) = getKeyValueUi(item, key, resourceProvider)
 
     return when (key) {
         DocumentJsonKeys.SIGNATURE -> {
             DocumentDetailsUi.SignatureItem(
                 itemData = InfoTextWithNameAndImageData(
-                    title = infoKey,
-                    base64Image = infoValue
+                    title = keyUi,
+                    base64Image = valueUi
                 )
             )
         }
@@ -108,7 +105,7 @@ private fun transformToDocumentDetailsUi(
         DocumentJsonKeys.PORTRAIT -> {
             DocumentDetailsUi.DefaultItem(
                 itemData = InfoTextWithNameAndValueData.create(
-                    title = infoKey,
+                    title = keyUi,
                     infoValues = arrayOf(resourceProvider.getString(R.string.document_details_portrait_readable_identifier))
                 )
             )
@@ -117,8 +114,8 @@ private fun transformToDocumentDetailsUi(
         else -> {
             DocumentDetailsUi.DefaultItem(
                 itemData = InfoTextWithNameAndValueData.create(
-                    title = infoKey,
-                    infoValues = arrayOf(infoValue)
+                    title = keyUi,
+                    infoValues = arrayOf(valueUi)
                 )
             )
         }

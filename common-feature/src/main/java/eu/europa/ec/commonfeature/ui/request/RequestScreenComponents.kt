@@ -150,6 +150,7 @@ fun <T> OptionalField(
             }
         )
     ) {
+        val infoName = item.requestDocumentItemUi.readableName
         val infoValueStyle = if (item.requestDocumentItemUi.checked) {
             MaterialTheme.typography.titleMedium
         } else {
@@ -157,16 +158,16 @@ fun <T> OptionalField(
         }
 
         if (showFullDetails) {
-            if (item.requestDocumentItemUi.valueIsBase64) {
+            if (item.requestDocumentItemUi.keyIsBase64) {
                 InfoTextWithNameAndIconData(
-                    title = item.requestDocumentItemUi.readableName,
+                    title = infoName,
                     icon = AppIcons.User,
                     iconModifier = Modifier.size(20.dp)
                 )
             } else {
                 InfoTextWithNameAndValue(
                     itemData = InfoTextWithNameAndValueData.create(
-                        title = item.requestDocumentItemUi.readableName,
+                        title = infoName,
                         item.requestDocumentItemUi.value,
                     ),
                     infoValueTextStyle = infoValueStyle
@@ -174,7 +175,7 @@ fun <T> OptionalField(
             }
         } else {
             Text(
-                text = item.requestDocumentItemUi.readableName,
+                text = infoName,
                 style = infoValueStyle
             )
         }

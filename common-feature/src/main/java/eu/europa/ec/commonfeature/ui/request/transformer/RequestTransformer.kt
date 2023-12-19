@@ -75,13 +75,13 @@ object RequestTransformer {
             requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
 
                 val value: String = try {
-                    val keyValueUi = getKeyValueUi(
+                    val (keyUi, valueUi) = getKeyValueUi(
                         item = storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier],
                         key = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                     )
 
-                    keyValueUi.value
+                    valueUi
                 } catch (ex: Exception) {
                     resourceProvider.getString(R.string.request_element_identifier_not_available)
                 }

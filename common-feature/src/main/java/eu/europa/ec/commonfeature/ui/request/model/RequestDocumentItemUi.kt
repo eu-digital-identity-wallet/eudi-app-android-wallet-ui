@@ -31,7 +31,7 @@ data class RequestDocumentItemUi<T>(
     val docItem: DocItem,
     val event: T? = null
 ) {
-    val valueIsBase64: Boolean
+    val keyIsBase64: Boolean
         get() {
             return keyIsBase64(docItem.elementIdentifier)
         }

@@ -75,16 +75,11 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
-data class KeyValueUi(
-    val key: String,
-    val value: String
-)
-
 fun getKeyValueUi(
     item: Any,
     key: String,
     resourceProvider: ResourceProvider,
-): KeyValueUi {
+): Pair<String, String> {
     val uiKey = resourceProvider.getReadableElementIdentifier(key)
     val uiValue: String =
         when (item) {
@@ -162,5 +157,5 @@ fun getKeyValueUi(
             }
         }
 
-    return KeyValueUi(key = uiKey, value = uiValue)
+    return Pair(uiKey, uiValue)
 }

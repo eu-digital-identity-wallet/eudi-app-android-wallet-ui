@@ -18,6 +18,7 @@ package eu.europa.ec.uilogic.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
@@ -176,6 +178,18 @@ private fun InfoTextWithNameAndImagePreview() {
         InfoTextWithNameAndImage(
             itemData = itemData,
             contentDescription = stringResource(id = R.string.content_description_user_signature)
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun InfoTextWithNameAndIconDataPreview() {
+    PreviewTheme {
+        InfoTextWithNameAndIconData(
+            title = "Portrait",
+            icon = AppIcons.User,
+            iconModifier = Modifier.size(20.dp),
         )
     }
 }
