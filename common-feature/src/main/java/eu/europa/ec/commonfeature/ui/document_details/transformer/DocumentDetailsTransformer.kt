@@ -23,14 +23,14 @@ import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
-import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer.getGenderValue
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
+import eu.europa.ec.commonfeature.util.getKeyValueUi
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.InfoTextWithNameAndImageData
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
-import org.json.JSONArray
 import org.json.JSONObject
 
 object DocumentDetailsTransformer {
@@ -90,100 +90,34 @@ private fun transformToDocumentDetailsUi(
     item: Any,
     resourceProvider: ResourceProvider
 ): DocumentDetailsUi {
-    return when (item) {
-        // Item is a JSON Array with other JSON Objects within it.
-        is JSONArray -> {
-            val infoValues = item.toList().flatMap {
-                if (it is JSONObject) {
-                    val categoryCodeKey = DocumentJsonKeys.VEHICLE_CATEGORY
-                    val issueDateKey = DocumentJsonKeys.ISSUE_DATE
-                    val expiryDateKey = DocumentJsonKeys.EXPIRY_DATE
+    val (keyUi, valueUi) = getKeyValueUi(item, key, resourceProvider)
 
-                    val categoryCodeValue =
-                        it.getStringFromJsonOrEmpty(categoryCodeKey)
-                    val issueDateValueFormatted =
-                        it.getStringFromJsonOrEmpty(issueDateKey).toDateFormatted()
-                    val expiryDateValueFormatted =
-                        it.getStringFromJsonOrEmpty(expiryDateKey).toDateFormatted()
-
-                    listOf(
-                        "${resourceProvider.getString(R.string.document_details_vehicle_category_code_readable_identifier)}: $categoryCodeValue",
-                        "${resourceProvider.getReadableElementIdentifier(issueDateKey)}: $issueDateValueFormatted",
-                        "${resourceProvider.getReadableElementIdentifier(expiryDateKey)}: $expiryDateValueFormatted",
-                    )
-                } else {
-                    listOf()
-                }
-            }.toTypedArray()
-
-            DocumentDetailsUi.DefaultItem(
-                infoText = InfoTextWithNameAndValueData.create(
-                    title = resourceProvider.getReadableElementIdentifier(key),
-                    infoValues = infoValues
+    return when (key) {
+        DocumentJsonKeys.SIGNATURE -> {
+            DocumentDetailsUi.SignatureItem(
+                itemData = InfoTextWithNameAndImageData(
+                    title = keyUi,
+                    base64Image = valueUi
                 )
             )
         }
 
-        // Item is Boolean.
-        is Boolean -> {
-            val infoValue = resourceProvider.getString(
-                if (item) {
-                    R.string.document_details_boolean_item_true_readable_value
-                } else {
-                    R.string.document_details_boolean_item_false_readable_value
-                }
-            )
-
+        DocumentJsonKeys.PORTRAIT -> {
             DocumentDetailsUi.DefaultItem(
-                infoText = InfoTextWithNameAndValueData.create(
-                    title = resourceProvider.getReadableElementIdentifier(key),
-                    infoValues = arrayOf(infoValue)
+                itemData = InfoTextWithNameAndValueData.create(
+                    title = keyUi,
+                    infoValues = arrayOf(resourceProvider.getString(R.string.document_details_portrait_readable_identifier))
                 )
             )
         }
 
-        // Item is String, Int, etc.
         else -> {
-            // Try to parse it as a Date.
-            val date: String? = (item as? String)?.toDateFormatted()
-
-            val infoValue = when {
-                keyIsBase64(key) -> {
-                    resourceProvider.getString(R.string.document_details_base64_item_readable_identifier)
-                }
-
-                keyIsGender(key) -> {
-                    getGenderValue(item.toString(), resourceProvider)
-                }
-
-                date != null -> {
-                    date
-                }
-
-                else -> {
-                    item.toString()
-                }
-            }
-
             DocumentDetailsUi.DefaultItem(
-                infoText = InfoTextWithNameAndValueData.create(
-                    title = resourceProvider.getReadableElementIdentifier(key),
-                    infoValues = arrayOf(infoValue)
+                itemData = InfoTextWithNameAndValueData.create(
+                    title = keyUi,
+                    infoValues = arrayOf(valueUi)
                 )
             )
         }
     }
-}
-
-private fun keyIsBase64(key: String): Boolean {
-    val listOfBase64Keys = listOf(
-        DocumentJsonKeys.PORTRAIT,
-        DocumentJsonKeys.SIGNATURE
-    )
-    return listOfBase64Keys.contains(key)
-}
-
-private fun keyIsGender(key: String): Boolean {
-    val listOfGenderKeys = DocumentJsonKeys.GENDER
-    return listOfGenderKeys.contains(key)
 }

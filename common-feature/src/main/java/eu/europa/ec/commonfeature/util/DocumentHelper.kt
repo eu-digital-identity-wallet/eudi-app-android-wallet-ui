@@ -17,10 +17,15 @@
 package eu.europa.ec.commonfeature.util
 
 import eu.europa.ec.businesslogic.util.getStringFromJsonOrEmpty
+import eu.europa.ec.businesslogic.util.toDateFormatted
+import eu.europa.ec.businesslogic.util.toList
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import org.json.JSONArray
 import org.json.JSONObject
 
 fun extractValueFromDocumentOrEmpty(
@@ -43,4 +48,114 @@ fun extractFullNameFromDocumentOrEmpty(document: Document): String {
         key = DocumentJsonKeys.LAST_NAME
     )
     return "$firstName $lastName"
+}
+
+fun keyIsBase64(key: String): Boolean {
+    val listOfBase64Keys = DocumentJsonKeys.BASE64_IMAGE_KEYS
+    return listOfBase64Keys.contains(key)
+}
+
+private fun keyIsGender(key: String): Boolean {
+    val listOfGenderKeys = DocumentJsonKeys.GENDER_KEYS
+    return listOfGenderKeys.contains(key)
+}
+
+private fun getGenderValue(value: String, resourceProvider: ResourceProvider): String =
+    when (value) {
+        "1" -> {
+            resourceProvider.getString(R.string.request_gender_male)
+        }
+
+        "0" -> {
+            resourceProvider.getString(R.string.request_gender_female)
+        }
+
+        else -> {
+            value
+        }
+    }
+
+fun getKeyValueUi(
+    item: Any,
+    key: String,
+    resourceProvider: ResourceProvider,
+): Pair<String, String> {
+    val uiKey = resourceProvider.getReadableElementIdentifier(key)
+    val uiValue: String =
+        when (item) {
+
+            // Item is a JSON Array with other JSON Objects within it.
+            is JSONArray -> {
+                val allItems = item.toList().flatMap {
+                    if (it is JSONObject) {
+                        val categoryCodeKey = DocumentJsonKeys.VEHICLE_CATEGORY
+                        val issueDateKey = DocumentJsonKeys.ISSUE_DATE
+                        val expiryDateKey = DocumentJsonKeys.EXPIRY_DATE
+
+                        val categoryCodeValue =
+                            it.getStringFromJsonOrEmpty(categoryCodeKey)
+                        val issueDateValueFormatted =
+                            it.getStringFromJsonOrEmpty(issueDateKey).toDateFormatted()
+                        val expiryDateValueFormatted =
+                            it.getStringFromJsonOrEmpty(expiryDateKey).toDateFormatted()
+
+                        listOf(
+                            "${resourceProvider.getString(R.string.document_details_vehicle_category_code_readable_identifier)}: $categoryCodeValue",
+                            "${resourceProvider.getReadableElementIdentifier(issueDateKey)}: $issueDateValueFormatted",
+                            "${resourceProvider.getReadableElementIdentifier(expiryDateKey)}: $expiryDateValueFormatted"
+                        )
+                    } else {
+                        emptyList()
+                    }
+                }
+
+                var result = ""
+                allItems.forEachIndexed { index, s ->
+                    result += s
+                    if (index != allItems.lastIndex) {
+                        result += "\n"
+                    }
+                }
+
+                result
+            }
+
+            // Item is Boolean.
+            is Boolean -> {
+                val infoValue = resourceProvider.getString(
+                    if (item) {
+                        R.string.document_details_boolean_item_true_readable_value
+                    } else {
+                        R.string.document_details_boolean_item_false_readable_value
+                    }
+                )
+
+                infoValue
+            }
+
+            // Item is String, Int, etc.
+            else -> {
+                // Try to parse it as a Date.
+                val date: String? = (item as? String)?.toDateFormatted()
+
+                val infoValue = when {
+
+                    keyIsGender(key) -> {
+                        getGenderValue(item.toString(), resourceProvider)
+                    }
+
+                    date != null -> {
+                        date
+                    }
+
+                    else -> {
+                        item.toString()
+                    }
+                }
+
+                infoValue
+            }
+        }
+
+    return Pair(uiKey, uiValue)
 }

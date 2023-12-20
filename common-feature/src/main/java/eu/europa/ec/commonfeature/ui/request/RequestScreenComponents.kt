@@ -42,6 +42,7 @@ import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.CardWithIconAndText
 import eu.europa.ec.uilogic.component.CheckboxWithContent
+import eu.europa.ec.uilogic.component.InfoTextWithNameAndIconData
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -149,22 +150,32 @@ fun <T> OptionalField(
             }
         )
     ) {
+        val infoName = item.requestDocumentItemUi.readableName
         val infoValueStyle = if (item.requestDocumentItemUi.checked) {
             MaterialTheme.typography.titleMedium
         } else {
             MaterialTheme.typography.bodyLarge
         }
+
         if (showFullDetails) {
-            InfoTextWithNameAndValue(
-                itemData = InfoTextWithNameAndValueData.create(
-                    title = item.requestDocumentItemUi.readableName,
-                    item.requestDocumentItemUi.value,
-                ),
-                infoValueTextStyle = infoValueStyle
-            )
+            if (item.requestDocumentItemUi.keyIsBase64) {
+                InfoTextWithNameAndIconData(
+                    title = infoName,
+                    icon = AppIcons.User,
+                    iconModifier = Modifier.size(20.dp)
+                )
+            } else {
+                InfoTextWithNameAndValue(
+                    itemData = InfoTextWithNameAndValueData.create(
+                        title = infoName,
+                        item.requestDocumentItemUi.value,
+                    ),
+                    infoValueTextStyle = infoValueStyle
+                )
+            }
         } else {
             Text(
-                text = item.requestDocumentItemUi.readableName,
+                text = infoName,
                 style = infoValueStyle
             )
         }

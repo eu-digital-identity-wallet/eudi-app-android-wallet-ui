@@ -16,12 +16,17 @@
 
 package eu.europa.ec.commonfeature.ui.document_details.model
 
+import eu.europa.ec.uilogic.component.InfoTextWithNameAndImageData
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 
 sealed interface DocumentDetailsUi {
 
     data class DefaultItem(
-        val infoText: InfoTextWithNameAndValueData
+        val itemData: InfoTextWithNameAndValueData
+    ) : DocumentDetailsUi
+
+    data class SignatureItem(
+        val itemData: InfoTextWithNameAndImageData
     ) : DocumentDetailsUi
 
     data object Unknown : DocumentDetailsUi
