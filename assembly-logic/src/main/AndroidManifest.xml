@@ -82,6 +82,7 @@
             android:name=".ui.MainActivity"
             android:exported="true"
             android:launchMode="singleTask"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.EUDIWallet"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
