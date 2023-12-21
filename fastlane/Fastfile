@@ -42,7 +42,7 @@ platform :android do
     )
 
     increment_version_code(
-      app_folder_name: "app",
+      gradle_file_path: "app/build.gradle.kts",
       version_code: buildNumber,
     )
 
@@ -142,7 +142,7 @@ platform :android do
   desc "Set versionCode back to default 1"
   lane :reset_versioncode do
     increment_version_code(
-      app_folder_name: "app",
+      gradle_file_path: "app/build.gradle.kts",
       version_code: 1,
     )
   end
