@@ -29,6 +29,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 @Composable
@@ -36,11 +37,17 @@ fun BigImageAndMediumIcon(
     base64Image: String,
     icon: IconData?,
 ) {
+    val bigImageWidth = 160.dp
+    val bigImageHeight = 160.dp
+    val smallIconWidth = 96.dp
+    val smallIconHeight = 72.dp
+    val smallIconStartOffset = bigImageWidth + SPACING_MEDIUM.dp
+
     ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
         val (bigImage, mediumIcon) = createRefs()
-        val verticalGuideline = createGuidelineFromStart(0.50f)
+        val verticalGuideline = createGuidelineFromStart(smallIconStartOffset)
         val imageModifier = Modifier
-            .size(width = 160.dp, height = 160.dp)
+            .size(width = bigImageWidth, height = bigImageHeight)
             .clip(RoundedCornerShape(SIZE_SMALL.dp))
             .constrainAs(bigImage) {
                 start.linkTo(parent.start)
@@ -61,7 +68,7 @@ fun BigImageAndMediumIcon(
         if (icon != null) {
             WrapImage(
                 modifier = Modifier
-                    .size(width = 96.dp, height = 72.dp)
+                    .size(width = smallIconWidth, height = smallIconHeight)
                     .clip(RoundedCornerShape(SIZE_SMALL.dp))
                     .constrainAs(mediumIcon) {
                         start.linkTo(verticalGuideline)
