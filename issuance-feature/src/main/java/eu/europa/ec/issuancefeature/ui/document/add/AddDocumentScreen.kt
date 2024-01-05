@@ -42,6 +42,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -69,7 +70,11 @@ fun AddDocumentScreen(
                 when (navigationEffect) {
                     is Effect.Navigation.Pop -> navController.popBackStack()
                     is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(navigationEffect.screenRoute)
+                        navController.navigate(navigationEffect.screenRoute) {
+                            popUpTo(IssuanceScreens.AddDocument.screenRoute) {
+                                inclusive = navigationEffect.inclusive
+                            }
+                        }
                     }
                 }
             },

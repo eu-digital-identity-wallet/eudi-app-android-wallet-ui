@@ -28,6 +28,9 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import org.json.JSONObject
+import java.util.Base64
 
 enum class IssuanceMethod {
     OPENID4VCI
@@ -43,6 +46,11 @@ sealed class OpenId4VCIIssueDocumentPartialState {
     data class Failure(val errorMessage: String) : OpenId4VCIIssueDocumentPartialState()
 }
 
+sealed class AddSampleDataPartialState {
+    data object Success : AddSampleDataPartialState()
+    data class Failure(val error: String) : AddSampleDataPartialState()
+}
+
 /**
  * Controller for interacting with internal local storage of Core for CRUD operations on documents
  * */
@@ -51,6 +59,11 @@ interface WalletCoreDocumentsController {
      * Load sample document data taken from raw.xml
      * */
     fun loadSampleData(sampleDataByteArray: ByteArray): Flow<LoadSampleDataPartialState>
+
+    /**
+     * Adds the sample data into the Database.
+     * */
+    fun addSampleData(): Flow<AddSampleDataPartialState>
 
     /**
      * @return All the documents from the Database.
@@ -82,6 +95,26 @@ class WalletCoreDocumentsControllerImpl(
         }.safeAsync {
             LoadSampleDataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
         }
+
+    override fun addSampleData(): Flow<AddSampleDataPartialState> = flow {
+
+        val byteArray = Base64.getDecoder().decode(
+            JSONObject(
+                resourceProvider.getStringFromRaw(R.raw.sample_data)
+            ).getString("Data")
+        )
+
+        loadSampleData(byteArray).map {
+            when (it) {
+                is LoadSampleDataPartialState.Failure -> AddSampleDataPartialState.Failure(it.error)
+                is LoadSampleDataPartialState.Success -> AddSampleDataPartialState.Success
+            }
+        }.collect {
+            emit(it)
+        }
+    }.safeAsync {
+        AddSampleDataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
+    }
 
     override fun getAllDocuments(): List<Document> = eudiWallet.getDocuments()
 

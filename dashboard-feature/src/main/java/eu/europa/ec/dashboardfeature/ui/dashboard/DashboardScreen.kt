@@ -423,6 +423,10 @@ private fun Title(
     onEventSend: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
+    val imageModifier = Modifier
+        .size(64.dp)
+        .clip(RoundedCornerShape(SIZE_SMALL.dp))
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -448,10 +452,13 @@ private fun Title(
             if (userBase64Image.isNotBlank()) {
                 WrapImage(
                     bitmap = rememberBase64DecodedBitmap(base64Image = userBase64Image),
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(SIZE_SMALL.dp)),
+                    modifier = imageModifier,
                     contentDescription = stringResource(id = R.string.content_description_user_image)
+                )
+            } else {
+                WrapImage(
+                    iconData = AppIcons.User,
+                    modifier = imageModifier,
                 )
             }
             Column(

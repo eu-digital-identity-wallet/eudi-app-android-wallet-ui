@@ -17,10 +17,12 @@
 package eu.europa.ec.issuancefeature.ui.document.add
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -31,6 +33,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -59,7 +62,7 @@ sealed class Event : ViewEvent {
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
-        data class SwitchScreen(val screenRoute: String) : Navigation()
+        data class SwitchScreen(val screenRoute: String, val inclusive: Boolean) : Navigation()
     }
 }
 
@@ -86,11 +89,15 @@ class AddDocumentViewModel(
             }
 
             is Event.IssueDocument -> {
-                issueDocument(
-                    event = event,
-                    issuanceMethod = event.issuanceMethod,
-                    docType = event.documentType
-                )
+                if (event.documentType != DocumentTypeUi.SAMPLE_DOCUMENTS.codeName) {
+                    issueDocument(
+                        event = event,
+                        issuanceMethod = event.issuanceMethod,
+                        docType = event.documentType
+                    )
+                } else {
+                    loadSampleData(event)
+                }
             }
         }
     }
@@ -103,7 +110,7 @@ class AddDocumentViewModel(
         }
 
         viewModelScope.launch {
-            addDocumentInteractor.getAddDocumentOption().collect { response ->
+            addDocumentInteractor.getAddDocumentOption(flowType).collect { response ->
                 when (response) {
                     is AddDocumentInteractorPartialState.Success -> {
                         setState {
@@ -175,6 +182,43 @@ class AddDocumentViewModel(
         }
     }
 
+    private fun loadSampleData(event: Event) {
+        setState {
+            copy(
+                isLoading = true
+            )
+        }
+
+        viewModelScope.launch {
+            addDocumentInteractor.addSampleData().collect { response ->
+                when (response) {
+                    is AddSampleDataPartialState.Failure -> {
+                        setState {
+                            copy(
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(event) },
+                                    errorSubTitle = response.error,
+                                    onCancel = { setEvent(Event.DismissError) }
+                                ),
+                                isLoading = false
+                            )
+                        }
+                    }
+
+                    is AddSampleDataPartialState.Success -> {
+                        setState {
+                            copy(
+                                error = null,
+                                isLoading = false
+                            )
+                        }
+                        navigateToDashboardScreen()
+                    }
+                }
+            }
+        }
+    }
+
     private fun navigateToSuccessScreen(documentId: String) {
         setEffect {
             Effect.Navigation.SwitchScreen(
@@ -186,7 +230,17 @@ class AddDocumentViewModel(
                             "documentId" to documentId,
                         )
                     )
-                )
+                ),
+                inclusive = false
+            )
+        }
+    }
+
+    private fun navigateToDashboardScreen() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = DashboardScreens.Dashboard.screenRoute,
+                inclusive = true
             )
         }
     }

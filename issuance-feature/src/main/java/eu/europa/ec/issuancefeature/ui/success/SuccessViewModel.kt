@@ -29,8 +29,6 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
@@ -71,24 +69,22 @@ class SuccessViewModel(
         when (event) {
             is Event.Init -> {
                 viewModelScope.launch {
-                    interactor.addSampleData().onCompletion {
-                        interactor.fetchDocumentById(id = documentId).collect { response ->
-                            when (response) {
-                                is SuccessFetchDocumentByIdPartialState.Failure -> {
+                    interactor.fetchDocumentById(id = documentId).collect { response ->
+                        when (response) {
+                            is SuccessFetchDocumentByIdPartialState.Failure -> {
 
-                                }
+                            }
 
-                                is SuccessFetchDocumentByIdPartialState.Success -> {
-                                    setState {
-                                        copy(
-                                            document = response.document,
-                                            userFullName = response.fullName
-                                        )
-                                    }
+                            is SuccessFetchDocumentByIdPartialState.Success -> {
+                                setState {
+                                    copy(
+                                        document = response.document,
+                                        userFullName = response.fullName
+                                    )
                                 }
                             }
                         }
-                    }.collect()
+                    }
                 }
             }
 
