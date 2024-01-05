@@ -17,9 +17,10 @@
 package eu.europa.ec.issuancefeature.ui.document.add
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
+import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -51,7 +52,8 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
-    data class NavigateToAuthentication(val url: String, val type: DocumentTypeUi) : Event()
+    data object DismissError : Event()
+    data class IssueDocument(val issuanceMethod: IssuanceMethod, val documentType: String) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -73,23 +75,21 @@ class AddDocumentViewModel(
         subtitle = resourceProvider.getString(R.string.issuance_add_document_subtitle)
     )
 
-    override fun handleEvents(event: Event) = when (event) {
-        is Event.Init -> getOptions(event)
+    override fun handleEvents(event: Event) {
+        when (event) {
+            is Event.Init -> getOptions(event)
 
-        is Event.Pop -> setEffect { Effect.Navigation.Pop }
+            is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
-        is Event.NavigateToAuthentication -> {
-            setEffect {
-                Effect.Navigation.SwitchScreen(
-                    screenRoute = generateComposableNavigationLink(
-                        screen = IssuanceScreens.Authenticate,
-                        arguments = generateComposableArguments(
-                            mapOf(
-                                "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
-                                "documentType" to event.type,
-                            )
-                        )
-                    )
+            is Event.DismissError -> {
+                setState { copy(error = null) }
+            }
+
+            is Event.IssueDocument -> {
+                issueDocument(
+                    event = event,
+                    issuanceMethod = event.issuanceMethod,
+                    docType = event.documentType
                 )
             }
         }
@@ -98,8 +98,7 @@ class AddDocumentViewModel(
     private fun getOptions(event: Event) {
         setState {
             copy(
-                isLoading = true,
-                error = null
+                isLoading = true
             )
         }
 
@@ -109,9 +108,9 @@ class AddDocumentViewModel(
                     is AddDocumentInteractorPartialState.Success -> {
                         setState {
                             copy(
-                                isLoading = false,
+                                error = null,
                                 options = response.options,
-                                error = null
+                                isLoading = false
                             )
                         }
                     }
@@ -119,18 +118,76 @@ class AddDocumentViewModel(
                     is AddDocumentInteractorPartialState.Failure -> {
                         setState {
                             copy(
-                                isLoading = false,
-                                options = emptyList(),
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(event) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.Pop) }
-                                )
+                                    onCancel = { setEvent(Event.DismissError) }
+                                ),
+                                options = emptyList(),
+                                isLoading = false
                             )
                         }
                     }
                 }
             }
+        }
+    }
+
+    private fun issueDocument(event: Event, issuanceMethod: IssuanceMethod, docType: String) {
+        setState {
+            copy(
+                isLoading = true
+            )
+        }
+
+        viewModelScope.launch {
+            addDocumentInteractor.issueDocument(
+                issuanceMethod = issuanceMethod,
+                documentType = docType
+            ).collect { response ->
+                when (response) {
+                    is IssueDocumentPartialState.Failure -> {
+                        setState {
+                            copy(
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(event) },
+                                    errorSubTitle = response.errorMessage,
+                                    onCancel = { setEvent(Event.DismissError) }
+                                ),
+                                isLoading = false
+                            )
+                        }
+                    }
+
+                    is IssueDocumentPartialState.Success -> {
+                        setState {
+                            copy(
+                                error = null,
+                                isLoading = false
+                            )
+                        }
+                        navigateToSuccessScreen(
+                            documentId = response.documentId
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun navigateToSuccessScreen(documentId: String) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = IssuanceScreens.Success,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
+                            "documentId" to documentId,
+                        )
+                    )
+                )
+            )
         }
     }
 

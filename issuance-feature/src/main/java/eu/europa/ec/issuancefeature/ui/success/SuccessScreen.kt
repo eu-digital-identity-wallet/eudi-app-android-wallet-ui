@@ -114,7 +114,12 @@ private fun Content(
             titleStyle = MaterialTheme.typography.headlineSmall.copy(
                 color = MaterialTheme.colorScheme.success
             ),
-            subtitle = stringResource(id = R.string.issuance_success_subtitle, state.docType),
+            subtitle = state.document?.let { document ->
+                stringResource(
+                    id = R.string.issuance_success_subtitle,
+                    document.name
+                )
+            }
         )
 
         VSpacer.Large()
@@ -191,9 +196,7 @@ private fun StickyBottomSection(onEventSend: (Event) -> Unit) {
 private fun ContentPreview() {
     PreviewTheme {
         Content(
-            state = State(
-                docType = "dsada"
-            ),
+            state = State(),
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},

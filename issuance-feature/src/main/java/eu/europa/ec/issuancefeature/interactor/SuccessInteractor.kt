@@ -34,18 +34,19 @@ sealed class SuccessPartialState {
     data class Failure(val error: String) : SuccessPartialState()
 }
 
-sealed class SuccessFetchRandomDocumentPartialState {
+sealed class SuccessFetchDocumentByIdPartialState {
     data class Success(
         val document: Document,
         val fullName: String
-    ) : SuccessFetchRandomDocumentPartialState()
+    ) : SuccessFetchDocumentByIdPartialState()
 
-    data class Failure(val error: String) : SuccessFetchRandomDocumentPartialState()
+    data class Failure(val error: String) : SuccessFetchDocumentByIdPartialState()
 }
 
 interface SuccessInteractor {
-    fun addData(): Flow<SuccessPartialState>
-    fun fetchRandomDocument(): Flow<SuccessFetchRandomDocumentPartialState>
+    fun addSampleData(): Flow<SuccessPartialState>
+
+    fun fetchDocumentById(id: String): Flow<SuccessFetchDocumentByIdPartialState>
 }
 
 class SuccessInteractorImpl(
@@ -56,43 +57,44 @@ class SuccessInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun addData(): Flow<SuccessPartialState> = flow {
+    override fun addSampleData(): Flow<SuccessPartialState> = flow {
+        // Iff user just added their first document, i.e. if it is their first time opening the app,
+        // then also add the sample documents.
+        if (walletCoreDocumentsController.getAllDocuments().size == 1) {
+            val byteArray = Base64.getDecoder().decode(
+                JSONObject(
+                    resourceProvider.getStringFromRaw(R.raw.sample_data)
+                ).getString("Data")
+            )
 
-        if (walletCoreDocumentsController.getSampleDocuments().isNotEmpty()) {
+            walletCoreDocumentsController.loadSampleData(byteArray).map {
+                when (it) {
+                    is LoadSampleDataPartialState.Failure -> SuccessPartialState.Failure(it.error)
+                    is LoadSampleDataPartialState.Success -> SuccessPartialState.Success
+                }
+            }.collect {
+                emit(it)
+            }
+        } else {
             emit(SuccessPartialState.Success)
             return@flow
-        }
-
-        val byteArray = Base64.getDecoder().decode(
-            JSONObject(
-                resourceProvider.getStringFromRaw(R.raw.sample_data)
-            ).getString("Data")
-        )
-
-        walletCoreDocumentsController.loadSampleData(byteArray).map {
-            when (it) {
-                is LoadSampleDataPartialState.Failure -> SuccessPartialState.Failure(it.error)
-                is LoadSampleDataPartialState.Success -> SuccessPartialState.Success
-            }
-        }.collect {
-            emit(it)
         }
     }.safeAsync {
         SuccessPartialState.Failure(it.localizedMessage ?: genericErrorMsg)
     }
 
-    override fun fetchRandomDocument(): Flow<SuccessFetchRandomDocumentPartialState> = flow {
-        val document = walletCoreDocumentsController.getSampleDocuments().firstOrNull()
+    override fun fetchDocumentById(id: String): Flow<SuccessFetchDocumentByIdPartialState> = flow {
+        val document = walletCoreDocumentsController.getDocumentById(id = id)
         document?.let {
             emit(
-                SuccessFetchRandomDocumentPartialState.Success(
+                SuccessFetchDocumentByIdPartialState.Success(
                     document = it,
                     fullName = extractFullNameFromDocumentOrEmpty(it)
                 )
             )
-        } ?: emit(SuccessFetchRandomDocumentPartialState.Failure(genericErrorMsg))
+        } ?: emit(SuccessFetchDocumentByIdPartialState.Failure(genericErrorMsg))
     }.safeAsync {
-        SuccessFetchRandomDocumentPartialState.Failure(
+        SuccessFetchDocumentByIdPartialState.Failure(
             error = it.localizedMessage ?: genericErrorMsg
         )
     }

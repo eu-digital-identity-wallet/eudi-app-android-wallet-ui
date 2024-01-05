@@ -63,7 +63,7 @@ class DashboardInteractorImpl(
     override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
         var userFirstName = ""
         var userImage = ""
-        val documents = walletCoreDocumentsController.getSampleDocuments()
+        val documents = walletCoreDocumentsController.getAllDocuments()
         val documentsUi = documents.map { document ->
 
             var documentExpirationDate = extractValueFromDocumentOrEmpty(

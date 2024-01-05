@@ -78,16 +78,10 @@ sealed class IssuanceScreens {
         parameters = "?flowType={flowType}"
     )
 
-    data object Authenticate : Screen(
-        name = "ISSUANCE_AUTHENTICATE",
-        parameters = "?flowType={flowType}"
-                + "&documentType={documentType}"
-    )
-
     data object Success : Screen(
         name = "ISSUANCE_SUCCESS",
         parameters = "?flowType={flowType}"
-                + "&documentType={documentType}"
+                + "&documentId={documentId}"
     )
 
     data object DocumentDetails : Screen(

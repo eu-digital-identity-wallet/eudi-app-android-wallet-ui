@@ -29,12 +29,13 @@ data class DocumentUi(
 )
 
 enum class DocumentTypeUi(
-    val codeName: String
+    val codeName: String,
+    val uiName: String,
 ) {
-    DRIVING_LICENSE(codeName = "org.iso.18013.5.1"),
-    DIGITAL_ID(codeName = "eu.europa.ec.eudiw.pid.1"),
-    CONFERENCE_BADGE(codeName = "com.example.conference.badge"),
-    OTHER(codeName = "")
+    DIGITAL_ID(codeName = "eu.europa.ec.eudiw.pid.1", uiName = "Digital ID"),
+    DRIVING_LICENSE(codeName = "org.iso.18013.5.1", uiName = "Driving License"),
+    CONFERENCE_BADGE(codeName = "com.example.conference.badge", uiName = "Conference Badge"),
+    OTHER(codeName = "", uiName = "")
 }
 
 fun String.toDocumentTypeUi(): DocumentTypeUi = when (this) {

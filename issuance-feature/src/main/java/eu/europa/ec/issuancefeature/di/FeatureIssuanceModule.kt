@@ -37,8 +37,10 @@ class FeatureIssuanceModule
 
 @Factory
 fun provideAddDocumentInteractor(
+    walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider
-): AddDocumentInteractor = AddDocumentInteractorImpl(resourceProvider)
+): AddDocumentInteractor =
+    AddDocumentInteractorImpl(walletCoreDocumentsController, resourceProvider)
 
 @Factory
 fun provideDocumentDetailsInteractor(

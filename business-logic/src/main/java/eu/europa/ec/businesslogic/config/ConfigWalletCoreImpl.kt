@@ -25,6 +25,8 @@ internal class WalletCoreConfigImpl(
 
     companion object {
         const val VERIFIER_API_URI = "https://eudi.netcompany-intrasoft.com"
+        const val VCI_ISSUER_URL = "https://eudi.netcompany-intrasoft.com/pid-issuer"
+        const val VCI_CLIENT_ID = "wallet-dev"
     }
 
     private var _config: EudiWalletConfig? = null
@@ -34,6 +36,10 @@ internal class WalletCoreConfigImpl(
             if (_config == null) {
                 _config = EudiWalletConfig.Builder(context)
                     .openId4VpVerifierApiUri(VERIFIER_API_URI)
+                    .openId4VciConfig {
+                        withIssuerUrl(issuerUrl = VCI_ISSUER_URL)
+                        withClientId(clientId = VCI_CLIENT_ID)
+                    }
                     .build()
             }
             return _config!!

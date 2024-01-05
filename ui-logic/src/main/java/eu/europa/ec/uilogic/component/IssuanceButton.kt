@@ -30,10 +30,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
+import eu.europa.ec.resourceslogic.theme.values.textDisabledDark
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
+import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapCard
@@ -48,10 +51,12 @@ data class IssuanceButtonData(
 fun IssuanceButton(
     modifier: Modifier = Modifier,
     data: IssuanceButtonData,
+    enabled: Boolean,
     onClick: (() -> Unit),
 ) {
     WrapCard(
         modifier = modifier,
+        enabled = enabled,
         onClick = onClick,
         throttleClicks = true,
         colors = CardDefaults.cardColors(
@@ -63,12 +68,19 @@ fun IssuanceButton(
             verticalAlignment = Alignment.CenterVertically
         ) {
 
+            val iconsColor = MaterialTheme.colorScheme.primary
+            val iconsAlpha = if (enabled) ALPHA_ENABLED else ALPHA_DISABLED
+
+            val textColor = if (enabled) MaterialTheme.colorScheme.textPrimaryDark
+            else MaterialTheme.colorScheme.textDisabledDark
+
             WrapIcon(
                 modifier = Modifier
                     .width(40.dp)
                     .height(30.dp),
                 iconData = data.icon,
-                customTint = MaterialTheme.colorScheme.primary
+                customTint = iconsColor,
+                contentAlpha = iconsAlpha
             )
 
             HSpacer.Medium()
@@ -77,12 +89,13 @@ fun IssuanceButton(
                 modifier = Modifier.weight(1f),
                 text = data.text,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.textPrimaryDark
+                color = textColor
             )
 
             WrapIcon(
                 iconData = AppIcons.Add,
-                customTint = MaterialTheme.colorScheme.primary
+                customTint = iconsColor,
+                contentAlpha = iconsAlpha
             )
         }
     }
@@ -90,7 +103,7 @@ fun IssuanceButton(
 
 @ThemeModePreviews
 @Composable
-private fun IssuanceButtonsPreview(
+private fun IssuanceButtonEnabledPreview(
     @PreviewParameter(TextLengthPreviewProvider::class) text: String
 ) {
     PreviewTheme {
@@ -99,7 +112,27 @@ private fun IssuanceButtonsPreview(
             data = IssuanceButtonData(
                 text = text,
                 icon = AppIcons.Id
-            )
-        ) {}
+            ),
+            enabled = true,
+            onClick = {}
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun IssuanceButtonDisabledPreview(
+    @PreviewParameter(TextLengthPreviewProvider::class) text: String
+) {
+    PreviewTheme {
+        IssuanceButton(
+            modifier = Modifier.fillMaxWidth(),
+            data = IssuanceButtonData(
+                text = text,
+                icon = AppIcons.Id
+            ),
+            enabled = false,
+            onClick = {}
+        )
     }
 }
