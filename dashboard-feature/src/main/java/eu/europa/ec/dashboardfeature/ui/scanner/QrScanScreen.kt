@@ -150,7 +150,8 @@ private fun Content(
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.8f)) {
+                    .fillMaxHeight(0.8f)
+            ) {
                 AndroidView(
                     factory = { context ->
 
