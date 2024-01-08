@@ -65,13 +65,13 @@ import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ScalableText
+import eu.europa.ec.uilogic.component.UserImageOrPlaceholder
 import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.rememberBase64DecodedBitmap
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
@@ -88,7 +88,6 @@ import eu.europa.ec.uilogic.component.wrap.SheetContent
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
-import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
@@ -423,10 +422,6 @@ private fun Title(
     onEventSend: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
-    val imageModifier = Modifier
-        .size(64.dp)
-        .clip(RoundedCornerShape(SIZE_SMALL.dp))
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -449,18 +444,12 @@ private fun Title(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            if (userBase64Image.isNotBlank()) {
-                WrapImage(
-                    bitmap = rememberBase64DecodedBitmap(base64Image = userBase64Image),
-                    modifier = imageModifier,
-                    contentDescription = stringResource(id = R.string.content_description_user_image)
-                )
-            } else {
-                WrapImage(
-                    iconData = AppIcons.User,
-                    modifier = imageModifier,
-                )
-            }
+            UserImageOrPlaceholder(
+                userBase64Image = userBase64Image,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(SIZE_SMALL.dp))
+            )
             Column(
                 modifier = Modifier
                     .weight(1f)

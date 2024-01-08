@@ -22,10 +22,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -53,18 +51,11 @@ fun BigImageAndMediumIcon(
                 start.linkTo(parent.start)
             }
 
-        if (base64Image.isNotBlank()) {
-            WrapImage(
-                bitmap = rememberBase64DecodedBitmap(base64Image = base64Image),
-                modifier = imageModifier,
-                contentDescription = stringResource(id = R.string.content_description_user_image)
-            )
-        } else {
-            WrapImage(
-                iconData = AppIcons.User,
-                modifier = imageModifier,
-            )
-        }
+        UserImageOrPlaceholder(
+            userBase64Image = base64Image,
+            modifier = imageModifier
+        )
+
         if (icon != null) {
             WrapImage(
                 modifier = Modifier
