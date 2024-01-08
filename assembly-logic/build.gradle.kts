@@ -23,7 +23,8 @@ android {
     namespace = "eu.europa.ec.assemblylogic"
 
     defaultConfig {
-        manifestPlaceholders["deepLinkScheme"] = "mdoc-openid4vp"
+        manifestPlaceholders["deepLinkScheme"] = "eudi-wallet"
+        manifestPlaceholders["openid4vpScheme"] = "eudi-openid4vp"
         manifestPlaceholders["deepLinkHost"] = "*"
     }
 }

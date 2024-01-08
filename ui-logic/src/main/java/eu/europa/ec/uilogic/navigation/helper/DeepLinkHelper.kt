@@ -82,11 +82,20 @@ fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
     }
 }
 
-fun handleDeepLinkAction(navController: NavController, uri: Uri, navigationLink: String) {
+fun handleDeepLinkAction(navController: NavController, uri: Uri, arguments: String? = null) {
     hasDeepLink(uri)?.let {
+
         val screen: Screen = when (it.type) {
             DeepLinkType.OPENID4VP -> PresentationScreens.PresentationRequest
         }
+
+        val navigationLink = arguments?.let {
+            generateComposableNavigationLink(
+                screen = screen,
+                arguments = arguments
+            )
+        } ?: screen.screenRoute
+
         navController.navigate(navigationLink) {
             popUpTo(screen.screenRoute) { inclusive = true }
         }
@@ -94,11 +103,16 @@ fun handleDeepLinkAction(navController: NavController, uri: Uri, navigationLink:
 }
 
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
-enum class DeepLinkType(val params: Set<String>) {
-    OPENID4VP(params = setOf("client_id", "request_uri"));
+enum class DeepLinkType {
+    OPENID4VP;
 
     companion object {
-        fun parse(uri: Uri): DeepLinkType? =
-            entries.firstOrNull { it.params == uri.queryParameterNames }
+        fun parse(uri: Uri): DeepLinkType? = when {
+            uri.scheme?.contains(OPENID4VP.name.lowercase()) == true -> {
+                OPENID4VP
+            }
+
+            else -> null
+        }
     }
 }

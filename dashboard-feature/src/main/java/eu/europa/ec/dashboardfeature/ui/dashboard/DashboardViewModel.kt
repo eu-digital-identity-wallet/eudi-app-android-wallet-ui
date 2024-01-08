@@ -34,7 +34,6 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
-import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -100,7 +99,7 @@ sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
         data class SwitchScreen(val screenRoute: String) : Navigation()
-        data class OpenDeepLinkAction(val navigationLink: String, val deepLinkUri: Uri) :
+        data class OpenDeepLinkAction(val deepLinkUri: Uri, val arguments: String) :
             Navigation()
 
         data object OnAppSettings : Navigation()
@@ -282,18 +281,15 @@ class DashboardViewModel(
                             getOrCreatePresentationScope()
                             setEffect {
                                 Effect.Navigation.OpenDeepLinkAction(
-                                    navigationLink = generateComposableNavigationLink(
-                                        screen = PresentationScreens.PresentationRequest,
-                                        arguments = generateComposableArguments(
-                                            mapOf(
-                                                RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
-                                                    RequestUriConfig(PresentationMode.OpenId4Vp(uri.toString())),
-                                                    RequestUriConfig.Parser
-                                                )
+                                    deepLinkUri = uri,
+                                    arguments = generateComposableArguments(
+                                        mapOf(
+                                            RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                                RequestUriConfig(PresentationMode.OpenId4Vp(uri.toString())),
+                                                RequestUriConfig.Parser
                                             )
                                         )
-                                    ),
-                                    deepLinkUri = uri
+                                    )
                                 )
                             }
                         }

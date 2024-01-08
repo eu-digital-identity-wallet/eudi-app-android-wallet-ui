@@ -31,7 +31,7 @@ interface ConfigLogic {
     val environmentConfig: EnvironmentConfig
 
     /**
-     * Deeplink Schema.
+     * Deeplink Wallet Schema.
      */
     val deepLink: String get() = BuildConfig.DEEPLINK
 }

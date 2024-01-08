@@ -25,7 +25,7 @@ android {
     namespace = "eu.europa.ec.businesslogic"
 
     defaultConfig {
-        addConfigField("DEEPLINK", "mdoc-openid4vp://")
+        addConfigField("DEEPLINK", "eudi-wallet://")
     }
 }
 

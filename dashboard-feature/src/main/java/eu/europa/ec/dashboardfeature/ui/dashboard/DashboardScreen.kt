@@ -182,7 +182,7 @@ private fun handleNavigationEffect(
             handleDeepLinkAction(
                 navController,
                 navigationEffect.deepLinkUri,
-                navigationEffect.navigationLink
+                navigationEffect.arguments
             )
         }
 

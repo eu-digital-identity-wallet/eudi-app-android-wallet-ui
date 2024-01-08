@@ -36,6 +36,7 @@ import com.chuckerteam.chucker.api.Chucker
 import eu.europa.ec.businesslogic.controller.security.SecurityController
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.navigation.RouterHost
+import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -101,9 +102,12 @@ open class EudiComponentActivity : FragmentActivity() {
     }
 
     private fun handleDeepLink(intent: Intent?) {
-        cacheDeepLink(intent)
-        if (routerHost.currentFlowIsAfterOnBoarding()) {
-            routerHost.popToLandingScreen()
+        hasDeepLink(intent?.data)?.let {
+            cacheDeepLink(intent)
+            if (routerHost.currentFlowIsAfterOnBoarding()) {
+                routerHost.popToLandingScreen()
+            }
+            setIntent(Intent())
         }
     }
 
