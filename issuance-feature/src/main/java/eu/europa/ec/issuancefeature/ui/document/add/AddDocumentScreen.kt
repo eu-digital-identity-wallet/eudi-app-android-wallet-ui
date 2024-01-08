@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.uilogic.component.AppIcons
@@ -41,6 +42,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -68,7 +70,11 @@ fun AddDocumentScreen(
                 when (navigationEffect) {
                     is Effect.Navigation.Pop -> navController.popBackStack()
                     is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(navigationEffect.screenRoute)
+                        navController.navigate(navigationEffect.screenRoute) {
+                            popUpTo(IssuanceScreens.AddDocument.screenRoute) {
+                                inclusive = navigationEffect.inclusive
+                            }
+                        }
                     }
                 }
             },
@@ -111,11 +117,12 @@ fun Content(
                             text = option.text,
                             icon = option.icon
                         ),
+                        enabled = option.available,
                         onClick = {
                             onEventSend(
-                                Event.NavigateToAuthentication(
-                                    url = option.issuanceUrl,
-                                    type = option.type
+                                Event.IssueDocument(
+                                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                                    documentType = option.type.codeName
                                 )
                             )
                         }
@@ -147,16 +154,16 @@ private fun IssuanceAddDocumentScreenPreview() {
                 subtitle = "Select a document to add in your EUDI Wallet",
                 options = listOf(
                     DocumentOptionItemUi(
-                        text = "Digital ID",
+                        text = DocumentTypeUi.DIGITAL_ID.uiName,
                         icon = AppIcons.Id,
                         type = DocumentTypeUi.DIGITAL_ID,
-                        issuanceUrl = "www.gov.gr"
+                        available = true,
                     ),
                     DocumentOptionItemUi(
-                        text = "Driving License",
+                        text = DocumentTypeUi.DRIVING_LICENSE.uiName,
                         icon = AppIcons.Id,
                         type = DocumentTypeUi.DRIVING_LICENSE,
-                        issuanceUrl = "www.gov-automotive.gr"
+                        available = false,
                     )
                 )
             ),
@@ -179,16 +186,16 @@ private fun DashboardAddDocumentScreenPreview() {
                 subtitle = "Select a document to add in your EUDI Wallet",
                 options = listOf(
                     DocumentOptionItemUi(
-                        text = "Digital ID",
+                        text = DocumentTypeUi.DIGITAL_ID.uiName,
                         icon = AppIcons.Id,
                         type = DocumentTypeUi.DIGITAL_ID,
-                        issuanceUrl = "www.gov.gr"
+                        available = true,
                     ),
                     DocumentOptionItemUi(
-                        text = "Driving License",
+                        text = DocumentTypeUi.DRIVING_LICENSE.uiName,
                         icon = AppIcons.Id,
                         type = DocumentTypeUi.DRIVING_LICENSE,
-                        issuanceUrl = "www.gov-automotive.gr"
+                        available = false,
                     )
                 )
             ),

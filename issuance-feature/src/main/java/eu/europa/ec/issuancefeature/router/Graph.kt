@@ -25,7 +25,6 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
-import eu.europa.ec.issuancefeature.ui.authenticate.AuthenticateScreen
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.issuancefeature.ui.success.SuccessScreen
@@ -68,33 +67,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
             )
         }
 
-        // Authenticate
-        composable(
-            route = IssuanceScreens.Authenticate.screenRoute,
-            arguments = listOf(
-                navArgument("flowType") {
-                    type = NavType.StringType
-                },
-                navArgument("documentType") {
-                    type = NavType.StringType
-                },
-            )
-        ) {
-            AuthenticateScreen(
-                navController,
-                getViewModel(
-                    parameters = {
-                        parametersOf(
-                            IssuanceFlowUiConfig.fromString(
-                                it.arguments?.getString("flowType").orEmpty()
-                            ),
-                            it.arguments?.getString("documentType").orEmpty(),
-                        )
-                    }
-                )
-            )
-        }
-
         // Success
         composable(
             route = IssuanceScreens.Success.screenRoute,
@@ -102,7 +74,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 navArgument("flowType") {
                     type = NavType.StringType
                 },
-                navArgument("documentType") {
+                navArgument("documentId") {
                     type = NavType.StringType
                 },
             )
@@ -115,7 +87,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                             IssuanceFlowUiConfig.fromString(
                                 it.arguments?.getString("flowType").orEmpty()
                             ),
-                            it.arguments?.getString("documentType").orEmpty(),
+                            it.arguments?.getString("documentId").orEmpty(),
                         )
                     }
                 )

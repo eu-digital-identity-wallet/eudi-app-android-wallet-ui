@@ -22,5 +22,5 @@ data class DocumentOptionItemUi(
     val text: String,
     val icon: IconData,
     val type: DocumentTypeUi,
-    val issuanceUrl: String
+    val available: Boolean,
 )

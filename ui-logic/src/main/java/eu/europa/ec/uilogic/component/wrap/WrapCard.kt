@@ -37,6 +37,7 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 @Composable
 fun WrapCard(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onClick: (() -> Unit)? = null,
     throttleClicks: Boolean = true,
     shape: Shape? = null,
@@ -51,7 +52,7 @@ fun WrapCard(
         .clip(cardShape)
         .then(modifier)
         .then(
-            if (onClick != null) {
+            if (enabled && onClick != null) {
                 when (throttleClicks) {
                     true -> Modifier.throttledClickable {
                         onClick()
@@ -61,7 +62,7 @@ fun WrapCard(
                         onClick()
                     }
                 }
-            } else Modifier
+            } else Modifier.clickable(enabled = false, onClick = {})
         )
 
     Card(

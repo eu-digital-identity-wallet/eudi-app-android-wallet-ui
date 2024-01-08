@@ -163,12 +163,7 @@
     <string name="issuance_add_document">@string/generic_continue_capitalized</string>
     <string name="issuance_add_document_title">Add document</string>
     <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
-    <string name="issuance_add_document_digital_id">Digital ID</string>
-    <string name="issuance_add_document_driving_license">Driving License</string>
-
-    <!-- Issuance Authenticate Screen -->
-    <string name="issuance_authenticate_title">Add %1$s</string>
-    <string name="issuance_authenticate_subtitle">Use your “National System” credentials to add the document in your EUDI Wallet</string>
+    <string name="issuance_add_document_user_auth_required">User authentication is required</string>
 
     <!-- Issuance Success Screen -->
     <string name="issuance_success_title">@string/generic_success</string>

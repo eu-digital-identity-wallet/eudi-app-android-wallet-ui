@@ -20,7 +20,7 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.eudi.wallet.document.Document
-import eu.europa.ec.issuancefeature.interactor.SuccessFetchRandomDocumentPartialState
+import eu.europa.ec.issuancefeature.interactor.SuccessFetchDocumentByIdPartialState
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -29,13 +29,11 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
-    val docType: String,
     val document: Document? = null,
     val userFullName: String = "",
 ) : ViewState
@@ -60,24 +58,24 @@ sealed class Effect : ViewSideEffect {
 class SuccessViewModel(
     private val interactor: SuccessInteractor,
     @InjectedParam private val flowType: IssuanceFlowUiConfig,
-    @InjectedParam private val docType: String,
+    @InjectedParam private val documentId: String,
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State {
-        return State(
-            docType = docType
-        )
+        return State()
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
                 viewModelScope.launch {
-                    interactor.addData().collect()
-                    interactor.fetchRandomDocument().collect { response ->
+                    interactor.fetchDocumentById(id = documentId).collect { response ->
                         when (response) {
-                            is SuccessFetchRandomDocumentPartialState.Failure -> {}
-                            is SuccessFetchRandomDocumentPartialState.Success -> {
+                            is SuccessFetchDocumentByIdPartialState.Failure -> {
+
+                            }
+
+                            is SuccessFetchDocumentByIdPartialState.Success -> {
                                 setState {
                                     copy(
                                         document = response.document,

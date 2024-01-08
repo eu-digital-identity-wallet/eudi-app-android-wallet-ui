@@ -16,10 +16,14 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
+import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
+import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
+import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import kotlinx.coroutines.flow.Flow
@@ -33,37 +37,70 @@ sealed class AddDocumentInteractorPartialState {
 }
 
 interface AddDocumentInteractor {
-    fun getAddDocumentOption(): Flow<AddDocumentInteractorPartialState>
+    fun getAddDocumentOption(flowType: IssuanceFlowUiConfig): Flow<AddDocumentInteractorPartialState>
+
+    fun issueDocument(
+        issuanceMethod: IssuanceMethod,
+        documentType: String
+    ): Flow<IssueDocumentPartialState>
+
+    fun addSampleData(): Flow<AddSampleDataPartialState>
 }
 
 class AddDocumentInteractorImpl(
+    private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
 ) : AddDocumentInteractor {
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getAddDocumentOption(): Flow<AddDocumentInteractorPartialState> = flow {
-        emit(
-            AddDocumentInteractorPartialState.Success(
-                options = listOf(
-                    DocumentOptionItemUi(
-                        text = resourceProvider.getString(R.string.issuance_add_document_digital_id),
-                        icon = AppIcons.Id,
-                        type = DocumentTypeUi.DIGITAL_ID,
-                        issuanceUrl = "www.gov.gr"
-                    ),
-                    DocumentOptionItemUi(
-                        text = resourceProvider.getString(R.string.issuance_add_document_driving_license),
-                        icon = AppIcons.Id,
-                        type = DocumentTypeUi.DRIVING_LICENSE,
-                        issuanceUrl = "www.gov-automotive.gr"
-                    )
+    override fun getAddDocumentOption(flowType: IssuanceFlowUiConfig): Flow<AddDocumentInteractorPartialState> =
+        flow {
+            val options = mutableListOf(
+                DocumentOptionItemUi(
+                    text = DocumentTypeUi.DIGITAL_ID.uiName,
+                    icon = AppIcons.Id,
+                    type = DocumentTypeUi.DIGITAL_ID,
+                    available = true
+                ),
+                DocumentOptionItemUi(
+                    text = DocumentTypeUi.DRIVING_LICENSE.uiName,
+                    icon = AppIcons.Id,
+                    type = DocumentTypeUi.DRIVING_LICENSE,
+                    available = false
                 )
             )
+            if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
+                options.add(
+                    DocumentOptionItemUi(
+                        text = DocumentTypeUi.SAMPLE_DOCUMENTS.uiName,
+                        icon = AppIcons.Id,
+                        type = DocumentTypeUi.SAMPLE_DOCUMENTS,
+                        available = true
+                    )
+                )
+            }
+
+            emit(
+                AddDocumentInteractorPartialState.Success(
+                    options = options
+                )
+            )
+        }.safeAsync {
+            AddDocumentInteractorPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
+            )
+        }
+
+    override fun issueDocument(
+        issuanceMethod: IssuanceMethod,
+        documentType: String
+    ): Flow<IssueDocumentPartialState> =
+        walletCoreDocumentsController.issueDocument(
+            issuanceMethod = issuanceMethod,
+            documentType = documentType
         )
-    }.safeAsync {
-        AddDocumentInteractorPartialState.Failure(
-            error = it.localizedMessage ?: genericErrorMsg
-        )
-    }
+
+    override fun addSampleData(): Flow<AddSampleDataPartialState> =
+        walletCoreDocumentsController.addSampleData()
 }
