@@ -91,6 +91,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
+import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.extension.openBleSettings
@@ -176,7 +177,7 @@ private fun handleNavigationEffect(
     context: Context
 ) {
     when (navigationEffect) {
-        is Effect.Navigation.Pop -> navController.popBackStack()
+        is Effect.Navigation.Pop -> context.finish()
         is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute)
         is Effect.Navigation.OpenDeepLinkAction -> {
             handleDeepLinkAction(
