@@ -16,6 +16,8 @@
 
 package eu.europa.ec.commonfeature.ui.request.transformer
 
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
+import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
@@ -36,18 +38,25 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.json.JSONObject
 
-// This is taken from SMB. Core should provide this information
-private val mandatorySelectedData: List<String> = listOf(
-    "issuance_date",
-    "expiry_date",
-    "issuing_authority",
-    "document_number",
-    "administrative_number",
-    "issuing_country",
-    "issuing_jurisdiction",
-    "portrait",
-    "portrait_capture_date"
-)
+private fun getMandatoryFields(docType: DocumentTypeUi): List<String> = when (docType) {
+    DocumentTypeUi.DRIVING_LICENSE -> listOf(
+        "issuance_date",
+        "expiry_date",
+        "issuing_authority",
+        "document_number",
+        "administrative_number",
+        "issuing_country",
+        "issuing_jurisdiction",
+        "portrait",
+        "portrait_capture_date"
+    )
+
+    DocumentTypeUi.DIGITAL_ID -> listOf(
+        "age_over_18"
+    )
+
+    else -> emptyList()
+}
 
 object RequestTransformer {
 
@@ -75,7 +84,7 @@ object RequestTransformer {
             requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
 
                 val value: String = try {
-                    val (keyUi, valueUi) = getKeyValueUi(
+                    val (_, valueUi) = getKeyValueUi(
                         item = storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier],
                         key = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
@@ -86,7 +95,7 @@ object RequestTransformer {
                     resourceProvider.getString(R.string.request_element_identifier_not_available)
                 }
 
-                if (mandatorySelectedData.contains(docItem.elementIdentifier)) {
+                if (getMandatoryFields(requestDocument.docType.toDocumentTypeUi()).contains(docItem.elementIdentifier)) {
                     required.add(
                         docItem.toRequestDocumentItemUi(
                             uID = requestDocument.docRequest.produceDocUID(docItem.elementIdentifier),
@@ -136,16 +145,18 @@ object RequestTransformer {
             items += RequestDataUi.Space()
 
             // Add required fields item.
-            items += RequestDataUi.RequiredFields(
-                requiredFieldsItemUi = RequiredFieldsItemUi(
-                    id = docIndex,
-                    requestDocumentItemsUi = required,
-                    expanded = false,
-                    title = requiredFieldsTitle,
-                    event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
+            if (required.isNotEmpty()) {
+                items += RequestDataUi.RequiredFields(
+                    requiredFieldsItemUi = RequiredFieldsItemUi(
+                        id = docIndex,
+                        requestDocumentItemsUi = required,
+                        expanded = false,
+                        title = requiredFieldsTitle,
+                        event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
+                    )
                 )
-            )
-            items += RequestDataUi.Space()
+                items += RequestDataUi.Space()
+            }
         }
 
         return items

@@ -29,7 +29,7 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.android.annotation.KoinViewModel
 
-data object State : ViewState
+data class State(val finishedScanning: Boolean = false) : ViewState
 
 sealed class Event : ViewEvent {
     data object GoBack : Event()
@@ -48,12 +48,18 @@ sealed class Effect : ViewSideEffect {
 class QrScanViewModel(private val uiSerializer: UiSerializer) :
     MviViewModel<Event, State, Effect>() {
 
-    override fun setInitialState(): State = State
+    override fun setInitialState(): State = State()
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.GoBack -> setEffect { Effect.Navigation.Pop }
-            is Event.OnQrScanned -> setEffect {
-                event.resultQr.isNotBlank().let {
+            is Event.OnQrScanned -> {
+                if (viewState.value.finishedScanning) {
+                    return
+                }
+                setState {
+                    copy(finishedScanning = true)
+                }
+                setEffect {
                     getOrCreatePresentationScope()
                     Effect.Navigation.SwitchScreen(
                         screenRoute = generateComposableNavigationLink(
