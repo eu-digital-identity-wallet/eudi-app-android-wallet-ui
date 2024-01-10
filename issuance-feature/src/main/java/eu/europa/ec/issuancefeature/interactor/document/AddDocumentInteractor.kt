@@ -24,6 +24,7 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
+import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import kotlinx.coroutines.flow.Flow
@@ -61,7 +62,7 @@ class AddDocumentInteractorImpl(
                     text = DocumentTypeUi.DIGITAL_ID.uiName,
                     icon = AppIcons.Id,
                     type = DocumentTypeUi.DIGITAL_ID,
-                    available = true
+                    available = !hasDocument(DocumentTypeUi.DIGITAL_ID)
                 ),
                 DocumentOptionItemUi(
                     text = DocumentTypeUi.DRIVING_LICENSE.uiName,
@@ -103,4 +104,13 @@ class AddDocumentInteractorImpl(
 
     override fun addSampleData(): Flow<AddSampleDataPartialState> =
         walletCoreDocumentsController.addSampleData()
+
+    private fun hasDocument(documentTypeUi: DocumentTypeUi): Boolean {
+        val documents = walletCoreDocumentsController.getAllDocuments()
+        return if (documents.isNotEmpty()) {
+            documents.any { it.docType.toDocumentTypeUi() == documentTypeUi }
+        } else {
+            false
+        }
+    }
 }
