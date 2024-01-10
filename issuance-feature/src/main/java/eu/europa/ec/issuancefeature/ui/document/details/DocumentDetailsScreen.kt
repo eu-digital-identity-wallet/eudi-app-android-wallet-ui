@@ -265,8 +265,8 @@ private fun IssuanceDocumentDetailsScreenPreview() {
             detailsHaveBottomGradient = true,
             document = DocumentUi(
                 documentId = "2",
-                documentName = "Digital Id",
-                documentType = DocumentTypeUi.DIGITAL_ID,
+                documentName = "National ID",
+                documentType = DocumentTypeUi.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentImage = "image3",
                 documentDetails = emptyList()
@@ -303,8 +303,8 @@ private fun DashboardDocumentDetailsScreenPreview() {
             detailsHaveBottomGradient = false,
             document = DocumentUi(
                 documentId = "2",
-                documentName = "Digital Id",
-                documentType = DocumentTypeUi.DIGITAL_ID,
+                documentName = "National ID",
+                documentType = DocumentTypeUi.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentImage = "image3",
                 documentDetails = emptyList()

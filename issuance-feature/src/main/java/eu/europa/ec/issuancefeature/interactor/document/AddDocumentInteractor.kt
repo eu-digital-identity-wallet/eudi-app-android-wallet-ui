@@ -25,6 +25,7 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
+import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import kotlinx.coroutines.flow.Flow
@@ -59,22 +60,22 @@ class AddDocumentInteractorImpl(
         flow {
             val options = mutableListOf(
                 DocumentOptionItemUi(
-                    text = DocumentTypeUi.DIGITAL_ID.uiName,
+                    text = DocumentTypeUi.PID.toUiName(resourceProvider),
                     icon = AppIcons.Id,
-                    type = DocumentTypeUi.DIGITAL_ID,
-                    available = !hasDocument(DocumentTypeUi.DIGITAL_ID)
+                    type = DocumentTypeUi.PID,
+                    available = !hasDocument(DocumentTypeUi.PID)
                 ),
                 DocumentOptionItemUi(
-                    text = DocumentTypeUi.DRIVING_LICENSE.uiName,
+                    text = DocumentTypeUi.MDL.toUiName(resourceProvider),
                     icon = AppIcons.Id,
-                    type = DocumentTypeUi.DRIVING_LICENSE,
+                    type = DocumentTypeUi.MDL,
                     available = false
                 )
             )
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
                 options.add(
                     DocumentOptionItemUi(
-                        text = DocumentTypeUi.SAMPLE_DOCUMENTS.uiName,
+                        text = DocumentTypeUi.SAMPLE_DOCUMENTS.toUiName(resourceProvider),
                         icon = AppIcons.Id,
                         type = DocumentTypeUi.SAMPLE_DOCUMENTS,
                         available = true

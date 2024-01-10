@@ -154,15 +154,15 @@ private fun IssuanceAddDocumentScreenPreview() {
                 subtitle = "Select a document to add in your EUDI Wallet",
                 options = listOf(
                     DocumentOptionItemUi(
-                        text = DocumentTypeUi.DIGITAL_ID.uiName,
+                        text = "National ID",
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.DIGITAL_ID,
+                        type = DocumentTypeUi.PID,
                         available = true,
                     ),
                     DocumentOptionItemUi(
-                        text = DocumentTypeUi.DRIVING_LICENSE.uiName,
+                        text = "Driving License",
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.DRIVING_LICENSE,
+                        type = DocumentTypeUi.MDL,
                         available = false,
                     )
                 )
@@ -186,15 +186,15 @@ private fun DashboardAddDocumentScreenPreview() {
                 subtitle = "Select a document to add in your EUDI Wallet",
                 options = listOf(
                     DocumentOptionItemUi(
-                        text = DocumentTypeUi.DIGITAL_ID.uiName,
+                        text = "National ID",
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.DIGITAL_ID,
+                        type = DocumentTypeUi.PID,
                         available = true,
                     ),
                     DocumentOptionItemUi(
-                        text = DocumentTypeUi.DRIVING_LICENSE.uiName,
+                        text = "Driving License",
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.DRIVING_LICENSE,
+                        type = DocumentTypeUi.MDL,
                         available = false,
                     )
                 )
