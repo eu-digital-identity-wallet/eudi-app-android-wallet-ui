@@ -89,7 +89,7 @@ private fun HeaderLargePreview() {
         HeaderLarge(
             modifier = Modifier.fillMaxWidth(),
             data = HeaderData(
-                title = "Digital ID",
+                title = "National ID",
                 subtitle = "Jane Doe",
                 base64Image = "",
                 icon = AppIcons.IdStroke

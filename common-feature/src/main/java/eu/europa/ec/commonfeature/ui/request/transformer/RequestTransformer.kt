@@ -18,6 +18,7 @@ package eu.europa.ec.commonfeature.ui.request.transformer
 
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
+import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
@@ -39,7 +40,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.json.JSONObject
 
 private fun getMandatoryFields(docType: DocumentTypeUi): List<String> = when (docType) {
-    DocumentTypeUi.DRIVING_LICENSE -> listOf(
+    DocumentTypeUi.MDL -> listOf(
         "issuance_date",
         "expiry_date",
         "issuing_authority",
@@ -51,7 +52,7 @@ private fun getMandatoryFields(docType: DocumentTypeUi): List<String> = when (do
         "portrait_capture_date"
     )
 
-    DocumentTypeUi.DIGITAL_ID -> listOf(
+    DocumentTypeUi.PID -> listOf(
         "age_over_18"
     )
 
@@ -72,7 +73,7 @@ object RequestTransformer {
             // Add document item.
             items += RequestDataUi.Document(
                 documentItemUi = DocumentItemUi(
-                    title = requestDocument.docName
+                    title = requestDocument.docType.toDocumentTypeUi().toUiName(resourceProvider)
                 )
             )
             items += RequestDataUi.Space()

@@ -17,6 +17,8 @@
 package eu.europa.ec.commonfeature.model
 
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 data class DocumentUi(
     val documentId: String,
@@ -29,19 +31,28 @@ data class DocumentUi(
 )
 
 enum class DocumentTypeUi(
-    val codeName: String,
-    val uiName: String,
+    val codeName: String
 ) {
-    DIGITAL_ID(codeName = "eu.europa.ec.eudiw.pid.1", uiName = "Digital ID"),
-    DRIVING_LICENSE(codeName = "org.iso.18013.5.1", uiName = "Driving License"),
-    CONFERENCE_BADGE(codeName = "com.example.conference.badge", uiName = "Conference Badge"),
-    SAMPLE_DOCUMENTS(codeName = "load_sample_documents", uiName = "Load Sample Documents"),
-    OTHER(codeName = "", uiName = "")
+    PID(codeName = "eu.europa.ec.eudiw.pid.1"),
+    MDL(codeName = "org.iso.18013.5.1"),
+    CONFERENCE_BADGE(codeName = "com.example.conference.badge"),
+    SAMPLE_DOCUMENTS(codeName = "load_sample_documents"),
+    OTHER(codeName = "")
+}
+
+fun DocumentTypeUi.toUiName(resourceProvider: ResourceProvider): String {
+    return when (this) {
+        DocumentTypeUi.PID -> resourceProvider.getString(R.string.pid)
+        DocumentTypeUi.MDL -> resourceProvider.getString(R.string.mdl)
+        DocumentTypeUi.CONFERENCE_BADGE -> resourceProvider.getString(R.string.conference_badge)
+        DocumentTypeUi.SAMPLE_DOCUMENTS -> resourceProvider.getString(R.string.load_sample_data)
+        DocumentTypeUi.OTHER -> ""
+    }
 }
 
 fun String.toDocumentTypeUi(): DocumentTypeUi = when (this) {
-    "eu.europa.ec.eudiw.pid.1" -> DocumentTypeUi.DIGITAL_ID
-    "org.iso.18013.5.1.mDL" -> DocumentTypeUi.DRIVING_LICENSE
+    "eu.europa.ec.eudiw.pid.1" -> DocumentTypeUi.PID
+    "org.iso.18013.5.1.mDL" -> DocumentTypeUi.MDL
     "com.example.conference.badge" -> DocumentTypeUi.CONFERENCE_BADGE
     "load_sample_documents" -> DocumentTypeUi.SAMPLE_DOCUMENTS
     else -> DocumentTypeUi.OTHER

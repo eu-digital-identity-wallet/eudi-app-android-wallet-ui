@@ -582,8 +582,8 @@ private fun DashboardScreenPreview() {
         val documents = listOf(
             DocumentUi(
                 documentId = "0",
-                documentName = "Digital Id",
-                documentType = DocumentTypeUi.DIGITAL_ID,
+                documentName = "National ID",
+                documentType = DocumentTypeUi.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentImage = "image1",
                 documentDetails = emptyList(),
@@ -591,7 +591,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "1",
                 documentName = "Driving License",
-                documentType = DocumentTypeUi.DRIVING_LICENSE,
+                documentType = DocumentTypeUi.MDL,
                 documentExpirationDateFormatted = "25 Dec 2050",
                 documentImage = "image2",
                 documentDetails = emptyList(),

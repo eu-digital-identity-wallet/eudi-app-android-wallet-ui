@@ -23,6 +23,7 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
+import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.resourceslogic.R
@@ -92,7 +93,7 @@ class DashboardInteractorImpl(
 
             return@map DocumentUi(
                 documentId = document.id,
-                documentName = document.name,
+                documentName = document.docType.toDocumentTypeUi().toUiName(resourceProvider),
                 documentType = document.docType.toDocumentTypeUi(),
                 documentImage = "",
                 documentExpirationDateFormatted = documentExpirationDate,

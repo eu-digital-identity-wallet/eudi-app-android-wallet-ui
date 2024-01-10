@@ -19,8 +19,10 @@ package eu.europa.ec.issuancefeature.ui.document.details
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -66,6 +68,7 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
+    private val resourceProvider: ResourceProvider,
     @InjectedParam private val detailsType: IssuanceFlowUiConfig,
     @InjectedParam private val documentId: String,
     @InjectedParam private val documentType: String,
@@ -120,7 +123,7 @@ class DocumentDetailsViewModel(
                                 error = null,
                                 document = documentUi,
                                 headerData = HeaderData(
-                                    title = documentUi.documentName,
+                                    title = documentUi.documentType.toUiName(resourceProvider),
                                     subtitle = documentUi.userFullName.orEmpty(),
                                     base64Image = documentUi.documentImage,
                                     icon = AppIcons.IdStroke

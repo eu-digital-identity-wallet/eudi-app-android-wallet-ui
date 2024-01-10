@@ -56,6 +56,12 @@
     <string name="content_description_add_icon">Add</string>
     <string name="content_description_edit_icon">Edit</string>
 
+    <!-- Document Types -->
+    <string name="pid">National ID</string>
+    <string name="mdl">Driving License</string>
+    <string name="conference_badge">EUDI Conference Badge</string>
+    <string name="load_sample_data">Load Sample Documents</string>
+
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
     <string name="biometric_prompt_subtitle">Authenticate using your biometrics</string>
