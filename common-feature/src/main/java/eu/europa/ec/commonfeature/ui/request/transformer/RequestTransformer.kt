@@ -41,19 +41,24 @@ import org.json.JSONObject
 
 private fun getMandatoryFields(docType: DocumentTypeUi): List<String> = when (docType) {
     DocumentTypeUi.MDL -> listOf(
-        "issuance_date",
+        "family_name",
+        "given_name",
+        "birth_date",
+        "issue_date",
         "expiry_date",
+        "issuing_country",
         "issuing_authority",
         "document_number",
-        "administrative_number",
-        "issuing_country",
-        "issuing_jurisdiction",
         "portrait",
-        "portrait_capture_date"
+        "driving_privileges",
+        "un_distinguishing_sign",
     )
 
     DocumentTypeUi.PID -> listOf(
-        "age_over_18"
+        "age_over_18",
+        "family_name",
+        "given_name",
+        "birth_date",
     )
 
     else -> emptyList()
@@ -96,7 +101,10 @@ object RequestTransformer {
                     resourceProvider.getString(R.string.request_element_identifier_not_available)
                 }
 
-                if (getMandatoryFields(requestDocument.docType.toDocumentTypeUi()).contains(docItem.elementIdentifier)) {
+                if (
+                    getMandatoryFields(docType = requestDocument.docType.toDocumentTypeUi())
+                        .contains(docItem.elementIdentifier)
+                ) {
                     required.add(
                         docItem.toRequestDocumentItemUi(
                             uID = requestDocument.docRequest.produceDocUID(docItem.elementIdentifier),
@@ -146,18 +154,16 @@ object RequestTransformer {
             items += RequestDataUi.Space()
 
             // Add required fields item.
-            if (required.isNotEmpty()) {
-                items += RequestDataUi.RequiredFields(
-                    requiredFieldsItemUi = RequiredFieldsItemUi(
-                        id = docIndex,
-                        requestDocumentItemsUi = required,
-                        expanded = false,
-                        title = requiredFieldsTitle,
-                        event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
-                    )
+            items += RequestDataUi.RequiredFields(
+                requiredFieldsItemUi = RequiredFieldsItemUi(
+                    id = docIndex,
+                    requestDocumentItemsUi = required,
+                    expanded = false,
+                    title = requiredFieldsTitle,
+                    event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
                 )
-                items += RequestDataUi.Space()
-            }
+            )
+            items += RequestDataUi.Space()
         }
 
         return items
