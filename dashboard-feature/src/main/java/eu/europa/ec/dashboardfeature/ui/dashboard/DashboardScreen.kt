@@ -548,10 +548,11 @@ private fun CardListItem(
                 iconData = AppIcons.Id,
                 customTint = MaterialTheme.colorScheme.primary
             )
-            Text(
+            ScalableText(
                 text = dataItem.documentName,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.textPrimaryDark
+                textStyle = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.textPrimaryDark
+                )
             )
             VSpacer.Small()
             ExpiryDate(expirationDate = dataItem.documentExpirationDateFormatted)
