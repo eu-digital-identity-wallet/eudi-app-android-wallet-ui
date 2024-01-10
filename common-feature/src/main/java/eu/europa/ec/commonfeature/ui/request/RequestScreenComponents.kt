@@ -194,53 +194,55 @@ fun <T> RequiredFields(
         vertical = contentPadding.calculateBottomPadding()
     )
 
-    WrapExpandableCard(
-        modifier = Modifier.fillMaxWidth(),
-        cardTitleContent = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = item.title,
-                    style = requiredFieldsTextStyle
-                )
-                val icon = if (item.expanded) {
-                    AppIcons.KeyboardArrowUp
-                } else {
-                    AppIcons.KeyboardArrowDown
-                }
-                WrapIcon(
-                    iconData = icon,
-                    customTint = MaterialTheme.colorScheme.primary
-                )
-            }
-        },
-        cardTitlePadding = requiredFieldsTitlePadding,
-        cardContent = {
-            item.requestDocumentItemsUi.forEach { requiredUserIdentificationUi ->
-                val checkboxData = CheckboxData(
-                    isChecked = requiredUserIdentificationUi.checked,
-                    enabled = requiredUserIdentificationUi.enabled,
-                    onCheckedChange = null
-                )
-                CheckboxWithContent(
+    if (item.requestDocumentItemsUi.isNotEmpty()) {
+        WrapExpandableCard(
+            modifier = Modifier.fillMaxWidth(),
+            cardTitleContent = {
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    checkboxData = checkboxData
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = requiredUserIdentificationUi.readableName,
+                        text = item.title,
                         style = requiredFieldsTextStyle
                     )
+                    val icon = if (item.expanded) {
+                        AppIcons.KeyboardArrowUp
+                    } else {
+                        AppIcons.KeyboardArrowDown
+                    }
+                    WrapIcon(
+                        iconData = icon,
+                        customTint = MaterialTheme.colorScheme.primary
+                    )
                 }
-            }
-        },
-        cardContentPadding = PaddingValues(all = SPACING_SMALL.dp),
-        onCardClick = { onEventSend(item.event) },
-        throttleClicks = false,
-        expandCard = item.expanded,
-    )
+            },
+            cardTitlePadding = requiredFieldsTitlePadding,
+            cardContent = {
+                item.requestDocumentItemsUi.forEach { requiredUserIdentificationUi ->
+                    val checkboxData = CheckboxData(
+                        isChecked = requiredUserIdentificationUi.checked,
+                        enabled = requiredUserIdentificationUi.enabled,
+                        onCheckedChange = null
+                    )
+                    CheckboxWithContent(
+                        modifier = Modifier.fillMaxWidth(),
+                        checkboxData = checkboxData
+                    ) {
+                        Text(
+                            text = requiredUserIdentificationUi.readableName,
+                            style = requiredFieldsTextStyle
+                        )
+                    }
+                }
+            },
+            cardContentPadding = PaddingValues(all = SPACING_SMALL.dp),
+            onCardClick = { onEventSend(item.event) },
+            throttleClicks = false,
+            expandCard = item.expanded,
+        )
+    }
 }
 
 @Composable
