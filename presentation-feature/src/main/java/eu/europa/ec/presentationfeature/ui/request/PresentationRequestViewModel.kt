@@ -134,6 +134,18 @@ class PresentationRequestViewModel(
                     is PresentationRequestInteractorPartialState.Disconnect -> {
                         setEvent(Event.GoBack)
                     }
+
+                    is PresentationRequestInteractorPartialState.NoData -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = null,
+                                verifierName = response.verifierName,
+                                screenTitle = getScreenTitle(verifierName),
+                                noItems = true,
+                            )
+                        }
+                    }
                 }
             }
         }

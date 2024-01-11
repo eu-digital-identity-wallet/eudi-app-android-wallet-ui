@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.ui.request
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -32,12 +33,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
+import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.CardWithIconAndText
@@ -59,47 +65,55 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 fun <T> Request(
     modifier: Modifier = Modifier,
     items: List<RequestDataUi<T>>,
+    noData: Boolean,
     isShowingFullUserInfo: Boolean,
     onEventSend: (T) -> Unit,
     listState: LazyListState,
     contentPadding: PaddingValues = PaddingValues(all = 0.dp),
 ) {
-    LazyColumn(
-        modifier = modifier,
-        state = listState,
-        verticalArrangement = Arrangement.Top
-    ) {
+    if (noData) {
+        NoData(
+            informativeText = stringResource(id = R.string.request_no_data),
+            modifier = modifier
+        )
+    } else {
+        LazyColumn(
+            modifier = modifier,
+            state = listState,
+            verticalArrangement = Arrangement.Top
+        ) {
 
-        items(items) { item ->
-            when (item) {
-                is RequestDataUi.Divider -> {
-                    Divider()
-                }
+            items(items) { item ->
+                when (item) {
+                    is RequestDataUi.Divider -> {
+                        Divider()
+                    }
 
-                is RequestDataUi.Document -> {
-                    DocumentCard(
-                        cardText = item.documentItemUi.title,
-                    )
-                }
+                    is RequestDataUi.Document -> {
+                        DocumentCard(
+                            cardText = item.documentItemUi.title,
+                        )
+                    }
 
-                is RequestDataUi.OptionalField -> {
-                    OptionalField(
-                        item = item.optionalFieldItemUi,
-                        showFullDetails = isShowingFullUserInfo,
-                        onEventSend = onEventSend,
-                    )
-                }
+                    is RequestDataUi.OptionalField -> {
+                        OptionalField(
+                            item = item.optionalFieldItemUi,
+                            showFullDetails = isShowingFullUserInfo,
+                            onEventSend = onEventSend,
+                        )
+                    }
 
-                is RequestDataUi.RequiredFields -> {
-                    RequiredFields(
-                        item = item.requiredFieldsItemUi,
-                        onEventSend = onEventSend,
-                        contentPadding = contentPadding,
-                    )
-                }
+                    is RequestDataUi.RequiredFields -> {
+                        RequiredFields(
+                            item = item.requiredFieldsItemUi,
+                            onEventSend = onEventSend,
+                            contentPadding = contentPadding,
+                        )
+                    }
 
-                is RequestDataUi.Space -> {
-                    VSpacer.Custom(space = item.space)
+                    is RequestDataUi.Space -> {
+                        VSpacer.Custom(space = item.space)
+                    }
                 }
             }
         }
@@ -269,12 +283,49 @@ fun WarningCard(warningText: String) {
     )
 }
 
+@Composable
+fun NoData(informativeText: String, modifier: Modifier) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp
+    val errorIconSize = (screenWidth / 4).dp
+    val contentColor = MaterialTheme.colorScheme.textSecondaryDark
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        WrapIcon(
+            iconData = AppIcons.Error,
+            modifier = Modifier.size(errorIconSize),
+            customTint = contentColor,
+            contentAlpha = 0.4f
+        )
+        Text(
+            text = informativeText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = contentColor,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
 @ThemeModePreviews
 @Composable
 private fun IdentificationPartyCardPreview() {
     PreviewTheme {
         DocumentCard(
             cardText = "Warning",
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun NoDataPreview() {
+    PreviewTheme {
+        NoData(
+            informativeText = "No data available",
+            modifier = Modifier
         )
     }
 }

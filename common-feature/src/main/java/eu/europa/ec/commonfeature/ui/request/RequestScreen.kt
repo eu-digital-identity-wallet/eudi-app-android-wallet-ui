@@ -168,6 +168,7 @@ private fun Content(
         Request(
             modifier = Modifier.weight(1f),
             items = state.items,
+            noData = state.noItems,
             isShowingFullUserInfo = state.isShowingFullUserInfo,
             onEventSend = onEventSend,
             listState = rememberLazyListState(),
@@ -254,7 +255,7 @@ fun StickyBottomSection(
 
         WrapPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading,
+            enabled = !state.isLoading && !state.noItems,
             onClick = { onEventSend(Event.PrimaryButtonPressed) }
         ) {
             Text(text = stringResource(id = R.string.request_primary_button_text))

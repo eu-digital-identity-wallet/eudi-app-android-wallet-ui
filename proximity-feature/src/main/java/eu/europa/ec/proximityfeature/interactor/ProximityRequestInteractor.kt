@@ -34,8 +34,9 @@ sealed class ProximityRequestInteractorPartialState {
     data class Success(
         val verifierName: String? = null,
         val requestDocuments: List<RequestDataUi<Event>>
-    ) :
-        ProximityRequestInteractorPartialState()
+    ) : ProximityRequestInteractorPartialState()
+
+    data class NoData(val verifierName: String? = null) : ProximityRequestInteractorPartialState()
 
     data class Failure(val error: String) : ProximityRequestInteractorPartialState()
     data object Disconnect : ProximityRequestInteractorPartialState()
@@ -65,16 +66,22 @@ class ProximityRequestInteractorImpl(
         walletCorePresentationController.events.mapNotNull { response ->
             when (response) {
                 is TransferEventPartialState.RequestReceived -> {
-                    val requestDataUi = RequestTransformer.transformToUiItems(
-                        storageDocuments = walletCoreDocumentsController.getAllDocuments(),
-                        requestDocuments = response.requestData,
-                        requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
-                        resourceProvider = resourceProvider
-                    )
-                    ProximityRequestInteractorPartialState.Success(
-                        verifierName = response.verifierName,
-                        requestDocuments = requestDataUi
-                    )
+                    if (response.requestData.all { it.docRequest.requestItems.isEmpty() }) {
+                        ProximityRequestInteractorPartialState.NoData(
+                            verifierName = response.verifierName
+                        )
+                    } else {
+                        val requestDataUi = RequestTransformer.transformToUiItems(
+                            storageDocuments = walletCoreDocumentsController.getAllDocuments(),
+                            requestDocuments = response.requestData,
+                            requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
+                            resourceProvider = resourceProvider
+                        )
+                        ProximityRequestInteractorPartialState.Success(
+                            verifierName = response.verifierName,
+                            requestDocuments = requestDataUi
+                        )
+                    }
                 }
 
                 is TransferEventPartialState.Error -> {

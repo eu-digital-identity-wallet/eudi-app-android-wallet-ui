@@ -34,7 +34,9 @@ sealed class PresentationRequestInteractorPartialState {
     data class Success(
         val verifierName: String? = null,
         val requestDocuments: List<RequestDataUi<Event>>
-    ) :
+    ) : PresentationRequestInteractorPartialState()
+
+    data class NoData(val verifierName: String? = null) :
         PresentationRequestInteractorPartialState()
 
     data class Failure(val error: String) : PresentationRequestInteractorPartialState()
@@ -65,16 +67,22 @@ class PresentationRequestInteractorImpl(
         walletCorePresentationController.events.mapNotNull { response ->
             when (response) {
                 is TransferEventPartialState.RequestReceived -> {
-                    val requestDataUi = RequestTransformer.transformToUiItems(
-                        storageDocuments = walletCoreDocumentsController.getAllDocuments(),
-                        requestDocuments = response.requestData,
-                        requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
-                        resourceProvider = resourceProvider
-                    )
-                    PresentationRequestInteractorPartialState.Success(
-                        verifierName = response.verifierName,
-                        requestDocuments = requestDataUi
-                    )
+                    if (response.requestData.all { it.docRequest.requestItems.isEmpty() }) {
+                        PresentationRequestInteractorPartialState.NoData(
+                            verifierName = response.verifierName
+                        )
+                    } else {
+                        val requestDataUi = RequestTransformer.transformToUiItems(
+                            storageDocuments = walletCoreDocumentsController.getAllDocuments(),
+                            requestDocuments = response.requestData,
+                            requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
+                            resourceProvider = resourceProvider
+                        )
+                        PresentationRequestInteractorPartialState.Success(
+                            verifierName = response.verifierName,
+                            requestDocuments = requestDataUi
+                        )
+                    }
                 }
 
                 is TransferEventPartialState.Error -> {
