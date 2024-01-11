@@ -35,6 +35,7 @@ import org.koin.core.annotation.InjectedParam
 
 data class State(
     val document: Document? = null,
+    val documentName: String = "",
     val userFullName: String = "",
 ) : ViewState
 
@@ -79,6 +80,7 @@ class SuccessViewModel(
                                 setState {
                                     copy(
                                         document = response.document,
+                                        documentName = response.documentName,
                                         userFullName = response.fullName
                                     )
                                 }
