@@ -41,6 +41,7 @@
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
     <string name="content_description_warning_icon">Warning</string>
+    <string name="content_description_error_icon">Error</string>
     <string name="content_description_touch_id_icon">Touch id</string>
     <string name="content_description_qr_icon">QR</string>
     <string name="content_description_qr_scanner_icon">QR Scanner</string>
@@ -107,6 +108,8 @@
     <!-- Request Screen -->
     <string name="request_title">Verifier requests the following</string>
     <string name="request_title_with_verifier_name">%1$s requests the following</string>
+    <string name="request_no_data">The requested document is not available in your EUDI Wallet.
+        Please contact the authorised issuer for further information.</string>
     <string name="request_subtitle_one">Please review carefully before sharing your data.</string>
     <string name="request_subtitle_two"> Why we need your data?</string>
     <string name="request_warning_text">Your selection of data to be shared may impact the service</string>

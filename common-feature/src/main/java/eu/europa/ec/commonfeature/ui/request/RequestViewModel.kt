@@ -40,6 +40,7 @@ data class State(
     val warningText: String,
 
     val items: List<RequestDataUi<Event>> = emptyList(),
+    val noItems: Boolean = false,
 ) : ViewState
 
 sealed class Event : ViewEvent {

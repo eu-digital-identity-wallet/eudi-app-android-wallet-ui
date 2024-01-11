@@ -134,6 +134,18 @@ class ProximityRequestViewModel(
                     is ProximityRequestInteractorPartialState.Disconnect -> {
                         setEvent(Event.GoBack)
                     }
+
+                    is ProximityRequestInteractorPartialState.NoData -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = null,
+                                verifierName = response.verifierName,
+                                screenTitle = getScreenTitle(verifierName),
+                                noItems = true,
+                            )
+                        }
+                    }
                 }
             }
         }
