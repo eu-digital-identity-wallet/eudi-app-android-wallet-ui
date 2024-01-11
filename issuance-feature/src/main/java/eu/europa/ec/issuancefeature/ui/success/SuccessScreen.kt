@@ -114,10 +114,10 @@ private fun Content(
             titleStyle = MaterialTheme.typography.headlineSmall.copy(
                 color = MaterialTheme.colorScheme.success
             ),
-            subtitle = state.document?.let { document ->
+            subtitle = state.document?.let { _ ->
                 stringResource(
                     id = R.string.issuance_success_subtitle,
-                    document.name
+                    state.documentName
                 )
             }
         )
