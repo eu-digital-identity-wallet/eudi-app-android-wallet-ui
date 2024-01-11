@@ -26,6 +26,11 @@ android {
         manifestPlaceholders["deepLinkScheme"] = "eudi-wallet"
         manifestPlaceholders["openid4vpScheme"] = "eudi-openid4vp"
         manifestPlaceholders["deepLinkHost"] = "*"
+
+        // Manifest placeholders used by the Core's VCI
+        manifestPlaceholders["openid4vciAuthorizeHost"] = "authorize"
+        manifestPlaceholders["openid4vciAuthorizePath"] = ""
+        manifestPlaceholders["openid4vciAuthorizeScheme"] = "eudi-openid4ci"
     }
 }
 
