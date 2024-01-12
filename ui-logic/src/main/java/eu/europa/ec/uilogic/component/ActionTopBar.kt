@@ -23,6 +23,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
+import eu.europa.ec.uilogic.component.content.ToolBarActions
+import eu.europa.ec.uilogic.component.content.ToolbarAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
@@ -33,6 +35,7 @@ fun ActionTopBar(
     contentColor: Color,
     iconColor: Color,
     iconData: IconData,
+    toolbarActions: List<ToolbarAction>? = null,
     onClick: () -> Unit
 ) {
     TopAppBar(
@@ -43,6 +46,9 @@ fun ActionTopBar(
                 onClick = { onClick.invoke() },
                 customTint = iconColor
             )
+        },
+        actions = {
+            ToolBarActions(toolBarActions = toolbarActions)
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = contentColor)
     )

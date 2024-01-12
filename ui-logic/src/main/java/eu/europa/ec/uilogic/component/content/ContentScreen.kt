@@ -201,9 +201,6 @@ private fun DefaultToolBar(
     keyboardController: SoftwareKeyboardController?,
     toolbarConfig: ToolbarConfig?,
 ) {
-    var dropDownMenuExpanded by remember {
-        mutableStateOf(false)
-    }
 
     TopAppBar(
         title = {
@@ -232,64 +229,73 @@ private fun DefaultToolBar(
         },
         // Add toolbar actions.
         actions = {
-            // Show first [MAX_TOOLBAR_ACTIONS] actions.
-            toolbarConfig?.actions?.let { actions ->
+            ToolBarActions(toolBarActions = toolbarConfig?.actions)
+        }
+    )
+}
 
-                actions
-                    .sortedByDescending { it.order }
-                    .take(MAX_TOOLBAR_ACTIONS)
-                    .map { visibleToolbarAction ->
-                        WrapIconButton(
-                            iconData = visibleToolbarAction.icon,
-                            onClick = visibleToolbarAction.onClick,
-                            enabled = visibleToolbarAction.enabled,
-                            customTint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+@Composable
+internal fun ToolBarActions(toolBarActions: List<ToolbarAction>?) {
+    toolBarActions?.let { actions ->
 
-                // Check if there are more actions to show.
-                if (actions.size > MAX_TOOLBAR_ACTIONS) {
-                    Box {
-                        val iconMore = AppIcons.VerticalMore
-                        WrapIconButton(
-                            onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
-                            iconData = iconMore,
-                            enabled = true,
-                            customTint = MaterialTheme.colorScheme.primary
-                        )
-                        DropdownMenu(
-                            expanded = dropDownMenuExpanded,
-                            onDismissRequest = { dropDownMenuExpanded = false }
-                        ) {
-                            actions
-                                .sortedByDescending { it.order }
-                                .drop(MAX_TOOLBAR_ACTIONS)
-                                .map { dropDownMenuToolbarAction ->
-                                    val dropDownMenuToolbarActionIcon =
-                                        dropDownMenuToolbarAction.icon
-                                    DropdownMenuItem(
-                                        onClick = dropDownMenuToolbarAction.onClick,
-                                        enabled = dropDownMenuToolbarAction.enabled,
-                                        text = {
-                                            Text(text = stringResource(id = dropDownMenuToolbarActionIcon.contentDescriptionId))
-                                        },
-                                        trailingIcon = {
-                                            WrapIcon(
-                                                iconData = dropDownMenuToolbarActionIcon,
-                                                customTint = MaterialTheme.colorScheme.primary,
-                                                contentAlpha = if (dropDownMenuToolbarAction.enabled) {
-                                                    ALPHA_ENABLED
-                                                } else {
-                                                    ALPHA_DISABLED
-                                                }
-                                            )
+        var dropDownMenuExpanded by remember {
+            mutableStateOf(false)
+        }
+
+        // Show first [MAX_TOOLBAR_ACTIONS] actions.
+        actions
+            .sortedByDescending { it.order }
+            .take(MAX_TOOLBAR_ACTIONS)
+            .map { visibleToolbarAction ->
+                WrapIconButton(
+                    iconData = visibleToolbarAction.icon,
+                    onClick = visibleToolbarAction.onClick,
+                    enabled = visibleToolbarAction.enabled,
+                    customTint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+        // Check if there are more actions to show.
+        if (actions.size > MAX_TOOLBAR_ACTIONS) {
+            Box {
+                val iconMore = AppIcons.VerticalMore
+                WrapIconButton(
+                    onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
+                    iconData = iconMore,
+                    enabled = true,
+                    customTint = MaterialTheme.colorScheme.primary
+                )
+                DropdownMenu(
+                    expanded = dropDownMenuExpanded,
+                    onDismissRequest = { dropDownMenuExpanded = false }
+                ) {
+                    actions
+                        .sortedByDescending { it.order }
+                        .drop(MAX_TOOLBAR_ACTIONS)
+                        .map { dropDownMenuToolbarAction ->
+                            val dropDownMenuToolbarActionIcon =
+                                dropDownMenuToolbarAction.icon
+                            DropdownMenuItem(
+                                onClick = dropDownMenuToolbarAction.onClick,
+                                enabled = dropDownMenuToolbarAction.enabled,
+                                text = {
+                                    Text(text = stringResource(id = dropDownMenuToolbarActionIcon.contentDescriptionId))
+                                },
+                                trailingIcon = {
+                                    WrapIcon(
+                                        iconData = dropDownMenuToolbarActionIcon,
+                                        customTint = MaterialTheme.colorScheme.primary,
+                                        contentAlpha = if (dropDownMenuToolbarAction.enabled) {
+                                            ALPHA_ENABLED
+                                        } else {
+                                            ALPHA_DISABLED
                                         }
                                     )
                                 }
+                            )
                         }
-                    }
                 }
             }
         }
-    )
+    }
 }
