@@ -69,7 +69,7 @@ class AddDocumentInteractorImpl(
                     text = DocumentTypeUi.MDL.toUiName(resourceProvider),
                     icon = AppIcons.Id,
                     type = DocumentTypeUi.MDL,
-                    available = false
+                    available = canCreateMdl(flowType)
                 )
             )
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
@@ -111,6 +111,16 @@ class AddDocumentInteractorImpl(
         return if (documents.isNotEmpty()) {
             documents.any { it.docType.toDocumentTypeUi() == documentTypeUi }
         } else {
+            false
+        }
+    }
+
+    private fun canCreateMdl(flowType: IssuanceFlowUiConfig): Boolean {
+        return if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
+            false
+        } else {
+            // When MDL issuing is ready replace with this:
+            // hasDocument(DocumentTypeUi.MDL)
             false
         }
     }
