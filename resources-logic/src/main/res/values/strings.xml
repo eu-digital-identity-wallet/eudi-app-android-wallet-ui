@@ -42,6 +42,7 @@
     <string name="content_description_close_icon">Close</string>
     <string name="content_description_warning_icon">Warning</string>
     <string name="content_description_error_icon">Error</string>
+    <string name="content_description_delete_icon">Delete</string>
     <string name="content_description_touch_id_icon">Touch id</string>
     <string name="content_description_qr_icon">QR</string>
     <string name="content_description_qr_scanner_icon">QR Scanner</string>
@@ -158,6 +159,11 @@
     <string name="document_details_vehicle_category_code_readable_identifier">Vehicle category code</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
+
+    <string name="document_details_bottom_sheet_delete_title">Delete %1$s?</string>
+    <string name="document_details_bottom_sheet_delete_subtitle">You will not be able to use your %1$s for future verifications</string>
+    <string name="document_details_bottom_sheet_delete_primary_button_text">yes</string>
+    <string name="document_details_bottom_sheet_delete_secondary_button_text">no</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Show QR or Tap</string>

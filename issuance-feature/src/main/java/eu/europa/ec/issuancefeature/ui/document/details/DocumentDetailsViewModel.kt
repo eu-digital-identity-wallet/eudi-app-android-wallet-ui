@@ -21,6 +21,7 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
+import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -32,6 +33,8 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
@@ -46,8 +49,10 @@ data class State(
 
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
+    val isBottomSheetOpen: Boolean = false,
 
     val document: DocumentUi? = null,
+    val documentTypeUiName: String = "",
     val headerData: HeaderData? = null
 ) : ViewState
 
@@ -55,14 +60,31 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data object PrimaryButtonPressed : Event()
+    data object DeleteDocumentPressed : Event()
+
+    sealed class BottomSheet : Event() {
+        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
+
+        sealed class Delete : BottomSheet() {
+            data object PrimaryButtonPressed : Delete()
+            data object SecondaryButtonPressed : Delete()
+        }
+    }
 }
 
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
-        data class SwitchScreen(val screenRoute: String) : Navigation()
+        data class SwitchScreen(
+            val screenRoute: String,
+            val popUpToScreenRoute: String,
+            val inclusive: Boolean
+        ) : Navigation()
     }
+
+    data object ShowBottomSheet : Effect()
+    data object CloseBottomSheet : Effect()
 }
 
 @KoinViewModel
@@ -94,9 +116,30 @@ class DocumentDetailsViewModel(
             is Event.PrimaryButtonPressed -> {
                 setEffect {
                     Effect.Navigation.SwitchScreen(
-                        screenRoute = DashboardScreens.Dashboard.screenRoute
+                        screenRoute = DashboardScreens.Dashboard.screenRoute,
+                        popUpToScreenRoute = IssuanceScreens.DocumentDetails.screenRoute,
+                        inclusive = true
                     )
                 }
+            }
+
+            is Event.DeleteDocumentPressed -> {
+                showBottomSheet()
+            }
+
+            is Event.BottomSheet.UpdateBottomSheetState -> {
+                setState {
+                    copy(isBottomSheetOpen = event.isOpen)
+                }
+            }
+
+            is Event.BottomSheet.Delete.PrimaryButtonPressed -> {
+                hideBottomSheet()
+                deleteDocument(event)
+            }
+
+            is Event.BottomSheet.Delete.SecondaryButtonPressed -> {
+                hideBottomSheet()
             }
         }
     }
@@ -117,13 +160,15 @@ class DocumentDetailsViewModel(
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
                         val documentUi = response.documentUi
+                        val documentTypeUiName = documentUi.documentType.toUiName(resourceProvider)
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
                                 document = documentUi,
+                                documentTypeUiName = documentTypeUiName,
                                 headerData = HeaderData(
-                                    title = documentUi.documentType.toUiName(resourceProvider),
+                                    title = documentTypeUiName,
                                     subtitle = documentUi.userFullName.orEmpty(),
                                     base64Image = documentUi.documentImage,
                                     icon = AppIcons.IdStroke
@@ -146,6 +191,80 @@ class DocumentDetailsViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun deleteDocument(event: Event) {
+        setState {
+            copy(
+                isLoading = true,
+                error = null
+            )
+        }
+
+        viewModelScope.launch {
+            documentDetailsInteractor.deleteDocument(
+                documentId = documentId,
+                documentType = documentType
+            ).collect { response ->
+                when (response) {
+                    is DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+
+                        setEffect {
+                            Effect.Navigation.SwitchScreen(
+                                screenRoute = StartupScreens.Splash.screenRoute,
+                                popUpToScreenRoute = DashboardScreens.Dashboard.screenRoute,
+                                inclusive = true
+                            )
+                        }
+                    }
+
+                    is DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = null
+                            )
+                        }
+
+                        setEffect {
+                            Effect.Navigation.Pop
+                        }
+                    }
+
+                    is DocumentDetailsInteractorDeleteDocumentPartialState.Failure -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(event) },
+                                    errorSubTitle = response.errorMessage,
+                                    onCancel = { setEvent(Event.Pop) }
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    private fun showBottomSheet() {
+        setEffect {
+            Effect.ShowBottomSheet
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet
         }
     }
 
