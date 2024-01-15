@@ -16,17 +16,29 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
+import eu.europa.ec.businesslogic.controller.walletcore.DeleteAllDocumentsPartialState
+import eu.europa.ec.businesslogic.controller.walletcore.DeleteDocumentPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 sealed class DocumentDetailsInteractorPartialState {
     data class Success(val documentUi: DocumentUi) : DocumentDetailsInteractorPartialState()
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
+}
+
+sealed class DocumentDetailsInteractorDeleteDocumentPartialState {
+    data object SingleDocumentDeleted : DocumentDetailsInteractorDeleteDocumentPartialState()
+    data object AllDocumentsDeleted : DocumentDetailsInteractorDeleteDocumentPartialState()
+    data class Failure(val errorMessage: String) :
+        DocumentDetailsInteractorDeleteDocumentPartialState()
 }
 
 interface DocumentDetailsInteractor {
@@ -34,6 +46,11 @@ interface DocumentDetailsInteractor {
         documentId: String,
         documentType: String,
     ): Flow<DocumentDetailsInteractorPartialState>
+
+    fun deleteDocument(
+        documentId: String,
+        documentType: String
+    ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState>
 }
 
 class DocumentDetailsInteractorImpl(
@@ -67,6 +84,40 @@ class DocumentDetailsInteractorImpl(
         }.safeAsync {
             DocumentDetailsInteractorPartialState.Failure(
                 error = it.localizedMessage ?: genericErrorMsg
+            )
+        }
+
+    override fun deleteDocument(
+        documentId: String,
+        documentType: String
+    ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState> =
+        flow {
+            if (documentType.toDocumentTypeUi() == DocumentTypeUi.PID) {
+                walletCoreDocumentsController.deleteAllDocuments(PID_documentId = documentId).map {
+                    when (it) {
+                        is DeleteAllDocumentsPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
+                            errorMessage = it.errorMessage
+                        )
+
+                        is DeleteAllDocumentsPartialState.Success -> DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted
+                    }
+                }
+            } else {
+                walletCoreDocumentsController.deleteDocument(documentId = documentId).map {
+                    when (it) {
+                        is DeleteDocumentPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
+                            errorMessage = it.errorMessage
+                        )
+
+                        is DeleteDocumentPartialState.Success -> DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted
+                    }
+                }
+            }.collect {
+                emit(it)
+            }
+        }.safeAsync {
+            DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
+                errorMessage = it.localizedMessage ?: genericErrorMsg
             )
         }
 }

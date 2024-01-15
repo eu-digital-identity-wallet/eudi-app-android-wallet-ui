@@ -86,6 +86,12 @@ object AppIcons {
         imageVector = null
     )
 
+    val Delete: IconData = IconData(
+        resourceId = R.drawable.ic_delete,
+        contentDescriptionId = R.string.content_description_delete_icon,
+        imageVector = null
+    )
+
     val TouchId: IconData = IconData(
         resourceId = R.drawable.ic_touch_id,
         contentDescriptionId = R.string.content_description_touch_id_icon,

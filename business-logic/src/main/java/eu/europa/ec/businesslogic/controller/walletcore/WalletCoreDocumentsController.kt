@@ -18,6 +18,7 @@ package eu.europa.ec.businesslogic.controller.walletcore
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.issue.IssueDocumentResult
 import eu.europa.ec.eudi.wallet.document.sample.LoadSampleResult
@@ -51,6 +52,16 @@ sealed class AddSampleDataPartialState {
     data class Failure(val error: String) : AddSampleDataPartialState()
 }
 
+sealed class DeleteDocumentPartialState {
+    data object Success : DeleteDocumentPartialState()
+    data class Failure(val errorMessage: String) : DeleteDocumentPartialState()
+}
+
+sealed class DeleteAllDocumentsPartialState {
+    data object Success : DeleteAllDocumentsPartialState()
+    data class Failure(val errorMessage: String) : DeleteAllDocumentsPartialState()
+}
+
 /**
  * Controller for interacting with internal local storage of Core for CRUD operations on documents
  * */
@@ -76,6 +87,12 @@ interface WalletCoreDocumentsController {
         issuanceMethod: IssuanceMethod,
         documentType: String
     ): Flow<IssueDocumentPartialState>
+
+    fun deleteDocument(
+        documentId: String
+    ): Flow<DeleteDocumentPartialState>
+
+    fun deleteAllDocuments(PID_documentId: String): Flow<DeleteAllDocumentsPartialState>
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -149,6 +166,85 @@ class WalletCoreDocumentsControllerImpl(
     }.safeAsync {
         IssueDocumentPartialState.Failure(errorMessage = it.localizedMessage ?: genericErrorMessage)
     }
+
+    override fun deleteDocument(documentId: String): Flow<DeleteDocumentPartialState> = flow {
+        when (val deleteResult = eudiWallet.deleteDocumentById(documentId = documentId)) {
+            is DeleteDocumentResult.Failure -> {
+                emit(
+                    DeleteDocumentPartialState.Failure(
+                        errorMessage = deleteResult.throwable.localizedMessage
+                            ?: genericErrorMessage
+                    )
+                )
+            }
+
+            is DeleteDocumentResult.Success -> {
+                emit(DeleteDocumentPartialState.Success)
+            }
+        }
+    }.safeAsync {
+        DeleteDocumentPartialState.Failure(
+            errorMessage = it.localizedMessage ?: genericErrorMessage
+        )
+    }
+
+    override fun deleteAllDocuments(PID_documentId: String): Flow<DeleteAllDocumentsPartialState> =
+        flow {
+            val allDocuments = eudiWallet.getDocuments()
+            val PID_document = allDocuments.find { it.id == PID_documentId }
+
+            PID_document?.let {
+                val restNonPID_Documents = allDocuments.minusElement(it)
+
+                var allNonPidDocsDeleted = true
+                var allNonPidDocsDeletedFailureReason = ""
+
+                restNonPID_Documents.forEach { document ->
+
+                    deleteDocument(
+                        documentId = document.id
+                    ).collect { deleteNonPID_documentsPartialState ->
+                        when (deleteNonPID_documentsPartialState) {
+                            is DeleteDocumentPartialState.Failure -> {
+                                allNonPidDocsDeleted = false
+                                allNonPidDocsDeletedFailureReason =
+                                    deleteNonPID_documentsPartialState.errorMessage
+                            }
+
+                            is DeleteDocumentPartialState.Success -> {}
+                        }
+                    }
+                }
+
+                if (allNonPidDocsDeleted) {
+                    deleteDocument(
+                        documentId = PID_documentId
+                    ).collect { deletePID_documentPartialState ->
+                        when (deletePID_documentPartialState) {
+                            is DeleteDocumentPartialState.Failure -> emit(
+                                DeleteAllDocumentsPartialState.Failure(
+                                    errorMessage = deletePID_documentPartialState.errorMessage
+                                )
+                            )
+
+                            is DeleteDocumentPartialState.Success -> emit(
+                                DeleteAllDocumentsPartialState.Success
+                            )
+                        }
+                    }
+                } else {
+                    emit(DeleteAllDocumentsPartialState.Failure(errorMessage = allNonPidDocsDeletedFailureReason))
+                }
+            } ?: emit(
+                DeleteAllDocumentsPartialState.Failure(
+                    errorMessage = genericErrorMessage
+                )
+            )
+        }.safeAsync {
+            DeleteAllDocumentsPartialState.Failure(
+                errorMessage = it.localizedMessage ?: genericErrorMessage
+            )
+        }
 
     private fun issueDocumentWithOpenId4VCI(documentType: String): Flow<OpenId4VCIIssueDocumentPartialState> =
         callbackFlow {
