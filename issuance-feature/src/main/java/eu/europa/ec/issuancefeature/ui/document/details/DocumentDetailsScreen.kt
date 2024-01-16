@@ -93,15 +93,7 @@ fun DocumentDetailsScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
         navigatableAction = state.navigatableAction,
-        onBack = when (state.detailsType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> {
-                null
-            }
-
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
-                { viewModel.setEvent(Event.Pop) }
-            }
-        },
+        onBack = state.onBackAction,
         topBar = if (state.hasCustomTopBar) {
             {
                 ActionTopBar(

@@ -43,6 +43,7 @@ import org.koin.core.annotation.InjectedParam
 
 data class State(
     val navigatableAction: ScreenNavigateAction,
+    val onBackAction: (() -> Unit)? = null,
 
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
@@ -74,6 +75,7 @@ class AddDocumentViewModel(
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
         navigatableAction = getNavigatableAction(flowType),
+        onBackAction = getOnBackAction(flowType),
         title = resourceProvider.getString(R.string.issuance_add_document_title),
         subtitle = resourceProvider.getString(R.string.issuance_add_document_subtitle)
     )
@@ -249,6 +251,15 @@ class AddDocumentViewModel(
         return when (flowType) {
             IssuanceFlowUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
             IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
+        }
+    }
+
+    private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit)? {
+        return when (flowType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> null
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
+                { setEvent(Event.Pop) }
+            }
         }
     }
 }

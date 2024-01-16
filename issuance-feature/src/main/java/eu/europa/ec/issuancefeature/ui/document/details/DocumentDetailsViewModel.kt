@@ -42,6 +42,7 @@ import org.koin.core.annotation.InjectedParam
 data class State(
     val detailsType: IssuanceFlowUiConfig,
     val navigatableAction: ScreenNavigateAction,
+    val onBackAction: (() -> Unit)? = null,
     val shouldShowPrimaryButton: Boolean,
     val hasCustomTopBar: Boolean,
     val hasBottomPadding: Boolean,
@@ -98,6 +99,7 @@ class DocumentDetailsViewModel(
     override fun setInitialState(): State = State(
         detailsType = detailsType,
         navigatableAction = getNavigatableAction(detailsType),
+        onBackAction = getOnBackAction(detailsType),
         shouldShowPrimaryButton = shouldShowPrimaryButton(detailsType),
         hasCustomTopBar = hasCustomTopBar(detailsType),
         hasBottomPadding = hasBottomPadding(detailsType),
@@ -300,6 +302,15 @@ class DocumentDetailsViewModel(
         return when (detailsType) {
             IssuanceFlowUiConfig.NO_DOCUMENT -> true
             IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
+        }
+    }
+
+    private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit)? {
+        return when (flowType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> null
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
+                { setEvent(Event.Pop) }
+            }
         }
     }
 }

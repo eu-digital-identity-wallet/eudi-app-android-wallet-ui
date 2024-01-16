@@ -59,7 +59,7 @@ fun AddDocumentScreen(
     ContentScreen(
         isLoading = state.isLoading,
         navigatableAction = state.navigatableAction,
-        onBack = { viewModel.setEvent(Event.Pop) },
+        onBack = state.onBackAction,
         contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
