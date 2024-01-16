@@ -134,7 +134,7 @@ fun ContentScreen(
 
     Scaffold(
         topBar = {
-            if (topBar != null) topBar.invoke()
+            if (topBar != null && contentErrorConfig == null) topBar.invoke()
             else if (hasToolBar) {
                 DefaultToolBar(
                     navigatableAction = contentErrorConfig?.let {

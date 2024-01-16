@@ -29,9 +29,11 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -504,7 +506,10 @@ private fun DocumentsList(
             VSpacer.Large()
         }
 
-        items(documents.size) { index ->
+        items(
+            documents.size,
+            key = { documents[it].documentId }
+        ) { index ->
             CardListItem(
                 dataItem = documents[index],
                 onEventSend = onEventSend
@@ -548,12 +553,19 @@ private fun CardListItem(
                 iconData = AppIcons.Id,
                 customTint = MaterialTheme.colorScheme.primary
             )
-            ScalableText(
-                text = dataItem.documentName,
-                textStyle = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.textPrimaryDark
+            Box(
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .height(28.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                ScalableText(
+                    text = dataItem.documentName,
+                    textStyle = MaterialTheme.typography.titleMedium.copy(
+                        color = MaterialTheme.colorScheme.textPrimaryDark
+                    )
                 )
-            )
+            }
             VSpacer.Small()
             ExpiryDate(expirationDate = dataItem.documentExpirationDateFormatted)
         }

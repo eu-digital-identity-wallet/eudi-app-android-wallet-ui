@@ -63,6 +63,8 @@ sealed class Event : ViewEvent {
     data object PrimaryButtonPressed : Event()
     data object DeleteDocumentPressed : Event()
 
+    data object DismissError : Event()
+
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
 
@@ -143,6 +145,8 @@ class DocumentDetailsViewModel(
             is Event.BottomSheet.Delete.SecondaryButtonPressed -> {
                 hideBottomSheet()
             }
+
+            is Event.DismissError -> setState { copy(error = null) }
         }
     }
 
@@ -247,7 +251,7 @@ class DocumentDetailsViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(event) },
                                     errorSubTitle = response.errorMessage,
-                                    onCancel = { setEvent(Event.Pop) }
+                                    onCancel = { setEvent(Event.DismissError) }
                                 )
                             )
                         }

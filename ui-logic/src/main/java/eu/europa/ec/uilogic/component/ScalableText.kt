@@ -45,11 +45,14 @@ fun ScalableText(
     var readyToDraw by remember { mutableStateOf(false) }
 
     Text(
-        modifier = modifier.drawWithContent {
-            if (readyToDraw) {
-                drawContent()
-            }
-        },
+        modifier = modifier.then(
+            Modifier
+                .drawWithContent {
+                    if (readyToDraw) {
+                        drawContent()
+                    }
+                }
+        ),
         text = text,
         style = style,
         maxLines = maxLines,

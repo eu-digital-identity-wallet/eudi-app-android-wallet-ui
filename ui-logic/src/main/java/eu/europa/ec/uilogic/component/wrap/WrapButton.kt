@@ -37,7 +37,6 @@ import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
-private val buttonsHeight: Modifier = Modifier.height(48.dp)
 private val buttonsShape: RoundedCornerShape = RoundedCornerShape(SIZE_MEDIUM.dp)
 private val buttonsContentPadding: PaddingValues = PaddingValues(SPACING_MEDIUM.dp)
 
@@ -55,7 +54,7 @@ fun WrapPrimaryButton(
     }
 
     Button(
-        modifier = buttonsHeight.then(modifier),
+        modifier = modifier,
         enabled = enabled,
         onClick = onClick,
         shape = buttonsShape,
@@ -78,7 +77,7 @@ fun WrapSecondaryButton(
     content: @Composable RowScope.() -> Unit
 ) {
     OutlinedButton(
-        modifier = buttonsHeight.then(modifier),
+        modifier = modifier,
         enabled = enabled,
         onClick = onClick,
         shape = buttonsShape,
