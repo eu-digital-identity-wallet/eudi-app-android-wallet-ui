@@ -104,5 +104,9 @@ gradlePlugin {
             id = "eudi.wallet.core"
             implementationClass = "EudiWalletCorePlugin"
         }
+        register("owaspDependencyCheck") {
+            id = "eudi.owasp.dependency.check"
+            implementationClass = "OwaspDependencyCheckPlugin"
+        }
     }
 }

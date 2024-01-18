@@ -34,7 +34,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply("eudi.android.application.jacoco")
                 apply("eudi.android.koin")
                 apply("eudi.android.lint")
-                apply("org.owasp.dependencycheck")
+                apply("eudi.owasp.dependency.check")
             }
 
             extensions.configure<ApplicationExtension> {
