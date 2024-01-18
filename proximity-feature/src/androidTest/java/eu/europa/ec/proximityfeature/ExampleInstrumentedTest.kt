@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package com.niscy.eudi.proximityfeature
+package eu.europa.ec.proximityfeature
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -33,6 +33,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.niscy.eudi.proximityfeature.test", appContext.packageName)
+        assertEquals("eu.europa.ec.proximityfeature.test", appContext.packageName)
     }
 }

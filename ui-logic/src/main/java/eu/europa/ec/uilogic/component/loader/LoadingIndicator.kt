@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import eu.europa.ec.uilogic.component.utils.Z_LOADING
+import eu.europa.ec.uilogic.extension.clickableNoRipple
 
 @Composable
 fun LoadingIndicator() {
@@ -33,6 +34,7 @@ fun LoadingIndicator() {
         modifier = Modifier
             .fillMaxSize()
             .zIndex(Z_LOADING)
+            .clickableNoRipple { }
     ) {
         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
