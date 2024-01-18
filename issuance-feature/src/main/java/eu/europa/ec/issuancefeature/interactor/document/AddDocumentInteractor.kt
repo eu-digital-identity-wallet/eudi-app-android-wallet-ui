@@ -119,9 +119,7 @@ class AddDocumentInteractorImpl(
         return if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
             false
         } else {
-            // When MDL issuing is ready replace with this:
-            // hasDocument(DocumentTypeUi.MDL)
-            false
+            !hasDocument(DocumentTypeUi.MDL)
         }
     }
 }
