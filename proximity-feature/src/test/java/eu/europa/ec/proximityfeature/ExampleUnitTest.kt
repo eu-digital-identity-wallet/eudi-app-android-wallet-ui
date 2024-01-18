@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package com.niscy.eudi.proximityfeature
+package eu.europa.ec.proximityfeature
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
