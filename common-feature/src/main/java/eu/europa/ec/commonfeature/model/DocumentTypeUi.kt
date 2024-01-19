@@ -31,13 +31,26 @@ data class DocumentUi(
 )
 
 enum class DocumentTypeUi(
-    val codeName: String
+    val codeName: String,
+    val docType: String
 ) {
-    PID(codeName = "eu.europa.ec.eudiw.pid.1"),
-    MDL(codeName = "org.iso.18013.5.1"),
-    CONFERENCE_BADGE(codeName = "com.example.conference.badge"),
-    SAMPLE_DOCUMENTS(codeName = "load_sample_documents"),
-    OTHER(codeName = "")
+    PID(
+        codeName = "eu.europa.ec.eudiw.pid.1",
+        docType = "eu.europa.ec.eudiw.pid.1"
+    ),
+    MDL(
+        codeName = "org.iso.18013.5.1",
+        docType = "org.iso.18013.5.1.mDL"
+    ),
+    CONFERENCE_BADGE(
+        codeName = "com.example.conference.badge",
+        docType = "com.example.conference.badge"
+    ),
+    SAMPLE_DOCUMENTS(
+        codeName = "load_sample_documents",
+        docType = "load_sample_documents"
+    ),
+    OTHER(codeName = "", docType = "")
 }
 
 fun DocumentTypeUi.toUiName(resourceProvider: ResourceProvider): String {

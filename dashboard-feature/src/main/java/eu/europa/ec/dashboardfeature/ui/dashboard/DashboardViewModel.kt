@@ -261,7 +261,10 @@ class DashboardViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(event) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.Pop) }
+                                    onCancel = {
+                                        setState { copy(error = null) }
+                                        setEvent(Event.Pop)
+                                    }
                                 )
                             )
                         }

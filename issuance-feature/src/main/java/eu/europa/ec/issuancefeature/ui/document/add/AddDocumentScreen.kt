@@ -122,7 +122,7 @@ fun Content(
                             onEventSend(
                                 Event.IssueDocument(
                                     issuanceMethod = IssuanceMethod.OPENID4VCI,
-                                    documentType = option.type.codeName
+                                    documentType = option.type.docType
                                 )
                             )
                         }
