@@ -44,6 +44,7 @@ fun WrapExpandableCard(
     onCardClick: (() -> Unit)? = null,
     throttleClicks: Boolean = true,
     cardColors: CardColors? = null,
+    enabled: Boolean = true,
     expandCard: Boolean,
 ) {
     WrapCard(
@@ -52,7 +53,8 @@ fun WrapExpandableCard(
         throttleClicks = throttleClicks,
         colors = cardColors ?: CardDefaults.cardColors(
             contentColor = MaterialTheme.colorScheme.textPrimaryDark
-        )
+        ),
+        enabled = enabled
     ) {
         Column(
             modifier = Modifier

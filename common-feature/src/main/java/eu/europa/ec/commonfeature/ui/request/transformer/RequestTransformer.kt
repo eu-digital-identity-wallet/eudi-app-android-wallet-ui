@@ -89,16 +89,16 @@ object RequestTransformer {
             // Add optional field items.
             requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
 
-                val value: String = try {
+                val (value, isAvailable) = try {
                     val (_, valueUi) = getKeyValueUi(
                         item = storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier],
                         key = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                     )
 
-                    valueUi
+                    (valueUi to true)
                 } catch (ex: Exception) {
-                    resourceProvider.getString(R.string.request_element_identifier_not_available)
+                    (resourceProvider.getString(R.string.request_element_identifier_not_available) to false)
                 }
 
                 if (
@@ -136,7 +136,7 @@ object RequestTransformer {
                                     namespace = docItem.namespace,
                                     elementIdentifier = docItem.elementIdentifier,
                                 ),
-                                optional = true,
+                                optional = isAvailable,
                                 event = Event.UserIdentificationClicked(itemId = uID),
                                 readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
                                 value = value
