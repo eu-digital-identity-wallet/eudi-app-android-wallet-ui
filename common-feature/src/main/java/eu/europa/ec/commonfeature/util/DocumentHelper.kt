@@ -88,13 +88,31 @@ fun getKeyValueUi(
 
                 val allItems: MutableList<String> = mutableListOf()
 
-                for (i in 0 until item.length()) {
-                    item.optJSONObject(i)?.let { row ->
+                for (index in 0 until item.length()) {
+                    item.optJSONObject(index)?.let { row ->
                         row.keys().forEach { objKey ->
-                            row.opt(objKey)?.toString()?.let { value ->
+                            row.opt(objKey)?.let { value ->
+
+                                val formatted = when (value) {
+                                    is JSONArray -> {
+                                        StringBuilder().apply {
+                                            for (internalIndex in 0 until value.length()) {
+                                                if (internalIndex > 0) {
+                                                    append(" ")
+                                                }
+                                                append(value.optString(internalIndex))
+                                            }
+                                        }.toString()
+                                    }
+
+                                    else -> {
+                                        value.toString()
+                                    }
+                                }
+
                                 allItems.add(
                                     "${resourceProvider.getReadableElementIdentifier(objKey)}:" +
-                                            " ${value.toDateFormatted() ?: value}"
+                                            " ${formatted.toDateFormatted() ?: formatted}"
                                 )
                             }
                         }
