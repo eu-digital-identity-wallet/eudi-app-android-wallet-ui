@@ -156,7 +156,7 @@
 
     <!-- Document Details -->
     <string name="document_details_portrait_readable_identifier">Shown above</string>
-    <string name="document_details_vehicle_category_code_readable_identifier">Vehicle category code</string>
+    <string name="vehicle_category_code">Vehicle category code</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
 

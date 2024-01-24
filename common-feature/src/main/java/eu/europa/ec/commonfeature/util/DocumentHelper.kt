@@ -18,7 +18,6 @@ package eu.europa.ec.commonfeature.util
 
 import eu.europa.ec.businesslogic.util.getStringFromJsonOrEmpty
 import eu.europa.ec.businesslogic.util.toDateFormatted
-import eu.europa.ec.businesslogic.util.toList
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.eudi.wallet.document.Document
@@ -86,26 +85,19 @@ fun getKeyValueUi(
 
             // Item is a JSON Array with other JSON Objects within it.
             is JSONArray -> {
-                val allItems = item.toList().flatMap {
-                    if (it is JSONObject) {
-                        val categoryCodeKey = DocumentJsonKeys.VEHICLE_CATEGORY
-                        val issueDateKey = DocumentJsonKeys.ISSUE_DATE
-                        val expiryDateKey = DocumentJsonKeys.EXPIRY_DATE
 
-                        val categoryCodeValue =
-                            it.getStringFromJsonOrEmpty(categoryCodeKey)
-                        val issueDateValueFormatted =
-                            it.getStringFromJsonOrEmpty(issueDateKey).toDateFormatted()
-                        val expiryDateValueFormatted =
-                            it.getStringFromJsonOrEmpty(expiryDateKey).toDateFormatted()
+                val allItems: MutableList<String> = mutableListOf()
 
-                        listOf(
-                            "${resourceProvider.getString(R.string.document_details_vehicle_category_code_readable_identifier)}: $categoryCodeValue",
-                            "${resourceProvider.getReadableElementIdentifier(issueDateKey)}: $issueDateValueFormatted",
-                            "${resourceProvider.getReadableElementIdentifier(expiryDateKey)}: $expiryDateValueFormatted"
-                        )
-                    } else {
-                        emptyList()
+                for (i in 0 until item.length()) {
+                    item.optJSONObject(i)?.let { row ->
+                        row.keys().forEach { objKey ->
+                            row.opt(objKey)?.toString()?.let { value ->
+                                allItems.add(
+                                    "${resourceProvider.getReadableElementIdentifier(objKey)}:" +
+                                            " ${value.toDateFormatted() ?: value}"
+                                )
+                            }
+                        }
                     }
                 }
 
