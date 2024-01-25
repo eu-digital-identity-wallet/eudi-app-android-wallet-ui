@@ -47,6 +47,7 @@ data class State(
 
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
+    val isInitialised: Boolean = false,
 
     val title: String = "",
     val subtitle: String = "",
@@ -82,7 +83,14 @@ class AddDocumentViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> getOptions(event)
+            is Event.Init -> {
+                if (viewState.value.isInitialised) {
+                    setState { copy(isLoading = false) }
+                }
+                if (viewState.value.options.isEmpty()) {
+                    getOptions(event)
+                }
+            }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
@@ -119,6 +127,7 @@ class AddDocumentViewModel(
                             copy(
                                 error = null,
                                 options = response.options,
+                                isInitialised = true,
                                 isLoading = false
                             )
                         }
@@ -133,6 +142,7 @@ class AddDocumentViewModel(
                                     onCancel = { setEvent(Event.DismissError) }
                                 ),
                                 options = emptyList(),
+                                isInitialised = true,
                                 isLoading = false
                             )
                         }
