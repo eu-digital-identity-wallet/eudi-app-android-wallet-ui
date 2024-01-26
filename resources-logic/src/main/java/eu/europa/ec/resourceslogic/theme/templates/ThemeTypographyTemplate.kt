@@ -20,6 +20,7 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import eu.europa.ec.resourceslogic.theme.templates.ThemeTextStyle.Companion.toTextStyle
@@ -144,7 +145,7 @@ data class ThemeTextStyle(
                 letterSpacing = mLetterSpacing,
                 background = mBackground,
                 textDecoration = textDecoration?.toTextDecoration(),
-                textAlign = textAlign?.toTextAlign()
+                textAlign = textAlign?.toTextAlign() ?: TextAlign.Unspecified
             )
         }
     }
