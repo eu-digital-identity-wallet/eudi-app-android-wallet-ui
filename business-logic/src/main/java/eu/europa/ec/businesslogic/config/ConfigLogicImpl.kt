@@ -23,7 +23,7 @@ class ConfigLogicImpl : ConfigLogic {
 
 private class WalletEnvironmentConfig : EnvironmentConfig() {
     override fun getServerHost(): String = when (environment) {
-        ServerConfig.Dev -> "http://10.0.2.2:8080/"
-        ServerConfig.Demo -> "https://eudi.netcompany-intrasoft.com/"
+        ServerConfig.Dev -> ""
+        ServerConfig.Demo -> ""
     }
 }

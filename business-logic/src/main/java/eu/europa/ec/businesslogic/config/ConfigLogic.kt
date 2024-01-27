@@ -29,11 +29,6 @@ interface ConfigLogic {
      * Server Environment Configuration.
      */
     val environmentConfig: EnvironmentConfig
-
-    /**
-     * Deeplink Wallet Schema.
-     */
-    val deepLink: String get() = BuildConfig.DEEPLINK
 }
 
 enum class AppBuildType {

@@ -30,7 +30,7 @@ interface FormValidator {
     fun validateForms(forms: List<Form>): Flow<FormsValidationResult>
 }
 
-class FormValidatorImpl constructor(
+class FormValidatorImpl(
     private val logController: LogController
 ) : FormValidator {
 

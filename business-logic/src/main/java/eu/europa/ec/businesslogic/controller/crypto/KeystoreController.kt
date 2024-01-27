@@ -29,7 +29,7 @@ interface KeystoreController {
     fun retrieveOrGenerateBiometricSecretKey(): SecretKey?
 }
 
-class KeystoreControllerImpl constructor(
+class KeystoreControllerImpl(
     private val prefKeys: PrefKeys,
     private val logController: LogController,
 ) : KeystoreController {

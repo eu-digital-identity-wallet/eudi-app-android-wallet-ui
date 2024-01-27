@@ -53,7 +53,7 @@ interface BiometricController {
     fun launchBiometricSystemScreen()
 }
 
-class BiometricControllerImpl constructor(
+class BiometricControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val cryptoController: CryptoController,
     private val prefsKeys: PrefKeys

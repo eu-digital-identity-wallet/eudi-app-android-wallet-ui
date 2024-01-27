@@ -37,7 +37,7 @@ interface SecurityController {
     fun isApplicationSecure(): Flow<SecurityValidation>
 }
 
-class SecurityControllerImpl constructor(
+class SecurityControllerImpl(
     private val configLogic: ConfigLogic,
     private val configSecurityLogic: ConfigSecurityLogic,
     private val rootController: RootController,

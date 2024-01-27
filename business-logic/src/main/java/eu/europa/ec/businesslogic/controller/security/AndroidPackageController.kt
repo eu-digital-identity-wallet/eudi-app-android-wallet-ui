@@ -38,7 +38,7 @@ interface AndroidPackageController {
     fun getSmsHashCodes(): List<String>
 }
 
-class AndroidPackageControllerImpl constructor(
+class AndroidPackageControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val logController: LogController
 ) : AndroidPackageController {

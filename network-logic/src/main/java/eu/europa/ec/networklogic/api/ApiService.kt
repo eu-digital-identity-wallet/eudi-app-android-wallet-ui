@@ -35,7 +35,7 @@ interface ApiClient {
     ): Response<DummyResponse>
 }
 
-class ApiClientImpl constructor(private val apiService: Api) : ApiClient {
+class ApiClientImpl(private val apiService: Api) : ApiClient {
     override suspend fun test(body: DummyRequest): Response<DummyResponse> {
         return apiService.test(body)
     }

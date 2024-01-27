@@ -19,7 +19,7 @@ package eu.europa.ec.uilogic.component
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -59,7 +59,7 @@ object AppIcons {
     val ArrowBack: IconData = IconData(
         resourceId = null,
         contentDescriptionId = R.string.content_description_arrow_back_icon,
-        imageVector = Icons.Filled.ArrowBack,
+        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
     )
 
     val Close: IconData = IconData(

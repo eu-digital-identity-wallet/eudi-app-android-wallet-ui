@@ -132,7 +132,7 @@ interface PrefsController {
  * Controller used to manipulate data stored in device [SharedPreferences]. Data are encrypted so
  * you are strongly advised to used this controller to set or get values.
  */
-class PrefsControllerImpl constructor(
+class PrefsControllerImpl(
     private val resourceProvider: ResourceProvider
 ) : PrefsController {
 
@@ -320,7 +320,7 @@ interface PrefKeys {
     fun setDevicePin(pin: String)
 }
 
-class PrefKeysImpl constructor(
+class PrefKeysImpl(
     private val prefsController: PrefsController
 ) : PrefKeys {
 

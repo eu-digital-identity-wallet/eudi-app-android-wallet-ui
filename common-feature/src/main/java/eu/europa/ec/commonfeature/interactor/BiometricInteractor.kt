@@ -36,7 +36,7 @@ interface BiometricInteractor {
     fun isPinValid(pin: String): Flow<QuickPinInteractorPinValidPartialState>
 }
 
-class BiometricInteractorImpl constructor(
+class BiometricInteractorImpl(
     private val prefKeys: PrefKeys,
     private val biometricController: BiometricController,
     private val quickPinInteractor: QuickPinInteractor,

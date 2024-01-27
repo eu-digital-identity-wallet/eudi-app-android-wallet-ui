@@ -83,7 +83,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-class BiometricViewModel constructor(
+class BiometricViewModel(
     private val biometricInteractor: BiometricInteractor,
     private val uiSerializer: UiSerializer,
     private val biometricConfig: String

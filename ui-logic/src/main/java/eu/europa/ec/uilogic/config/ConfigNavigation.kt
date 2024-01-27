@@ -35,8 +35,7 @@ data class ConfigNavigation(
         if (screenToNavigate.screenRoute != other.screenToNavigate.screenRoute) return false
         if (arguments != other.arguments) return false
         if (flags != other.flags) return false
-        if (indicateFlowCompletion != other.indicateFlowCompletion) return false
-        return true
+        return indicateFlowCompletion == other.indicateFlowCompletion
     }
 
     override fun hashCode(): Int {

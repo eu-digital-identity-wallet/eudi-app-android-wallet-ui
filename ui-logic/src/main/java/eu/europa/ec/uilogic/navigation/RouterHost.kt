@@ -38,7 +38,7 @@ interface RouterHost {
     fun StartFlow(builder: NavGraphBuilder.(NavController) -> Unit)
 }
 
-class RouterHostImpl constructor(
+class RouterHostImpl(
     private val configUILogic: ConfigUILogic,
     private val analyticsController: AnalyticsController
 ) : RouterHost {

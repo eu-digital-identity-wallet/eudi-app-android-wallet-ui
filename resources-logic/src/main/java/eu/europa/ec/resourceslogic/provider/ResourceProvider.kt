@@ -36,7 +36,7 @@ interface ResourceProvider {
     fun getReadableElementIdentifier(elementIdentifier: String): String
 }
 
-class ResourceProviderImpl constructor(
+class ResourceProviderImpl(
     private val context: Context
 ) : ResourceProvider {
 

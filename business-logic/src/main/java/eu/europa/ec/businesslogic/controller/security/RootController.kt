@@ -24,7 +24,7 @@ interface RootController {
     fun areRootCloakingAppsInstalled(): Boolean
 }
 
-class RootControllerImpl constructor(
+class RootControllerImpl(
     resourceProvider: ResourceProvider
 ) : RootController {
 

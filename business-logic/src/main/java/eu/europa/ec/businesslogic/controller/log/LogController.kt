@@ -35,7 +35,7 @@ interface LogController {
     fun w(message: () -> String)
 }
 
-class LogControllerImpl constructor(
+class LogControllerImpl(
     configLogic: ConfigLogic
 ) : LogController {
 

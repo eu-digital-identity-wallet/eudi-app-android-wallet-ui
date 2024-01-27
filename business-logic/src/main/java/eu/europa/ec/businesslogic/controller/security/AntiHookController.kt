@@ -28,7 +28,7 @@ interface AntiHookController {
     fun isMemoryHooked(): Boolean
 }
 
-class AntiHookControllerImpl constructor(
+class AntiHookControllerImpl(
     private val logController: LogController
 ) : AntiHookController {
 
@@ -40,7 +40,7 @@ class AntiHookControllerImpl constructor(
             e.stackTrace.forEach { element ->
                 when {
                     "com.android.internal.os.ZygoteInit" == element.className -> {
-                        zygoteInitCallCount++;
+                        zygoteInitCallCount++
                         if (zygoteInitCallCount == 2) {
                             logController.d(this.javaClass.simpleName) {
                                 "Substrate is active on the device."

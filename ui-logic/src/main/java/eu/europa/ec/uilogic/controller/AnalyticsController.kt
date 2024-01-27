@@ -23,7 +23,7 @@ interface AnalyticsController {
     fun logEvent(eventName: String, parameters: Map<String, String> = emptyMap())
 }
 
-class AnalyticsControllerImpl constructor(
+class AnalyticsControllerImpl(
     private val configUiLogic: ConfigUILogic,
 ) : AnalyticsController {
 

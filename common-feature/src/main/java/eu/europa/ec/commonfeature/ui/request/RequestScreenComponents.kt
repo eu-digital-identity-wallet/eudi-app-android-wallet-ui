@@ -27,7 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -87,7 +87,7 @@ fun <T> Request(
             items(items) { item ->
                 when (item) {
                     is RequestDataUi.Divider -> {
-                        Divider()
+                        HorizontalDivider()
                     }
 
                     is RequestDataUi.Document -> {

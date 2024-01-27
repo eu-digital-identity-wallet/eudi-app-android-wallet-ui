@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class PresentationLoadingViewModel constructor(
+class PresentationLoadingViewModel(
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
     private val interactor: PresentationLoadingInteractor,

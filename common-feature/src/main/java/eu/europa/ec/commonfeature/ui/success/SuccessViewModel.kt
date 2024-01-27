@@ -59,7 +59,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-class SuccessViewModel constructor(
+class SuccessViewModel(
     private val uiSerializer: UiSerializer,
     @InjectedParam private val successConfig: String
 ) : MviViewModel<Event, State, Effect>() {

@@ -43,7 +43,7 @@ interface CryptoController {
     fun encryptDecryptBiometric(cipher: Cipher?, byteArray: ByteArray): ByteArray
 }
 
-class CryptoControllerImpl constructor(
+class CryptoControllerImpl(
     private val keystoreController: KeystoreController
 ) : CryptoController {
 

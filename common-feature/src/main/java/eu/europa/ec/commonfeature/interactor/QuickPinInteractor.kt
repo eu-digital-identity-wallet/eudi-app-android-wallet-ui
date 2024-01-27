@@ -39,7 +39,7 @@ interface QuickPinInteractor : FormValidator {
     fun hasPin(): Boolean
 }
 
-class QuickPinInteractorImpl constructor(
+class QuickPinInteractorImpl(
     private val formValidator: FormValidator,
     private val prefKeys: PrefKeys,
     private val resourceProvider: ResourceProvider,

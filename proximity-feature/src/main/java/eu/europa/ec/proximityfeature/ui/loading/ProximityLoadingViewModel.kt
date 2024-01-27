@@ -39,7 +39,7 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 @KoinViewModel
-class ProximityLoadingViewModel constructor(
+class ProximityLoadingViewModel(
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
     private val interactor: ProximityLoadingInteractor,
