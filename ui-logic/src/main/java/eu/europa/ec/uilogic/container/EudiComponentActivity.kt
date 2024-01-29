@@ -17,6 +17,7 @@
 package eu.europa.ec.uilogic.container
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -117,6 +118,10 @@ open class EudiComponentActivity : FragmentActivity() {
                 WindowManager.LayoutParams.FLAG_SECURE,
                 WindowManager.LayoutParams.FLAG_SECURE
             )
+        }
+        @SuppressLint("MissingPermission", "NewApi")
+        if (securityController.blockOverlayWindow()) {
+            window.setHideOverlayWindows(true)
         }
     }
 

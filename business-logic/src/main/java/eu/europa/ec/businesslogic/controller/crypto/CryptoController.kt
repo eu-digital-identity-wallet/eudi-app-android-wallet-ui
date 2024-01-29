@@ -48,7 +48,7 @@ class CryptoControllerImpl(
 ) : CryptoController {
 
     companion object {
-        private const val AES_7_EXTERNAL_TRANSFORMATION = "AES/CBC/PKCS7Padding"
+        private const val AES_EXTERNAL_TRANSFORMATION = "AES/GCM/NoPadding"
         const val MAX_GUID_LENGTH = 64
     }
 
@@ -62,7 +62,7 @@ class CryptoControllerImpl(
 
     override fun getBiometricCipher(encrypt: Boolean, ivBytes: ByteArray?): Cipher? =
         try {
-            Cipher.getInstance(AES_7_EXTERNAL_TRANSFORMATION).apply {
+            Cipher.getInstance(AES_EXTERNAL_TRANSFORMATION).apply {
                 if (encrypt) {
                     init(
                         Cipher.ENCRYPT_MODE,

@@ -66,4 +66,9 @@ interface ConfigSecurityLogic {
      * Use network logger for debug builds.
      */
     val useNetworkLogger: Boolean get() = false
+
+    /**
+     * Block overlay windows for release builds.
+     */
+    val blockOverlayWindow: Boolean get() = false
 }

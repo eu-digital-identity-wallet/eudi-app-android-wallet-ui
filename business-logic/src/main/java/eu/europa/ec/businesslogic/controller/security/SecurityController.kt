@@ -34,6 +34,7 @@ interface SecurityController {
     fun areRootCloakingAppsInstalled(): Boolean
     fun isHookDetected(): Boolean
     fun blockScreenCapture(): Boolean
+    fun blockOverlayWindow(): Boolean
     fun isApplicationSecure(): Flow<SecurityValidation>
 }
 
@@ -143,6 +144,12 @@ class SecurityControllerImpl(
 
     override fun blockScreenCapture(): Boolean {
         return configSecurityLogic.blockScreenCapture && configLogic.appBuildType == AppBuildType.RELEASE
+    }
+
+    override fun blockOverlayWindow(): Boolean {
+        return configSecurityLogic.blockOverlayWindow
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && configLogic.appBuildType == AppBuildType.RELEASE
     }
 }
 
