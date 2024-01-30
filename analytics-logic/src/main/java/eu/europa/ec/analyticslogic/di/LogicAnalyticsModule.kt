@@ -33,7 +33,8 @@ fun provideAnalyticsConfig(): AnalyticsConfig {
         val impl = Class.forName("eu.europa.ec.analyticslogic.config.AnalyticsConfigImpl")
         return impl.getDeclaredConstructor().newInstance() as AnalyticsConfig
     } catch (_: Exception) {
-        object : AnalyticsConfig {}
+        val impl = object : AnalyticsConfig {}
+        impl
     }
 }
 
