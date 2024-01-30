@@ -108,5 +108,9 @@ gradlePlugin {
             id = "eudi.owasp.dependency.check"
             implementationClass = "OwaspDependencyCheckPlugin"
         }
+        register("appCenter") {
+            id = "eudi.appcenter"
+            implementationClass = "AppCenterPlugin"
+        }
     }
 }

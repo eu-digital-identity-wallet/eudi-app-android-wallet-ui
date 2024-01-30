@@ -14,12 +14,11 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.config
+plugins {
+    id("eudi.android.library")
+    id("eudi.appcenter")
+}
 
-import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.Screen
-
-class ConfigUILogicImpl : ConfigUILogic {
-    override val landingScreenIdentifier: Screen
-        get() = DashboardScreens.Dashboard
+android {
+    namespace = "eu.europa.ec.analyticslogic"
 }

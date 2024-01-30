@@ -72,6 +72,8 @@ cborTree = "0.01.02"
 cameraCore = "1.3.1"
 owaspDependencyCheck = "9.0.9"
 material3 = "1.2.0-rc01"
+workTesting = "2.9.0"
+appCenter = "5.0.4"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -164,6 +166,9 @@ google-phonenumber = { group = "com.googlecode.libphonenumber", name = "libphone
 zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 eudi-wallet-core = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-wallet-core", version.ref = "eudiWalletCore" }
 cbor-tree = { group = "com.google.iot.cbor", name = "cbor", version.ref = "cborTree" }
+appcenter-analytics = { group = "com.microsoft.appcenter", name = "appcenter-analytics", version.ref = "appCenter" }
+appcenter-crashes = { group = "com.microsoft.appcenter", name = "appcenter-crashes", version.ref = "appCenter" }
+appcenter-distribute = { group = "com.microsoft.appcenter", name = "appcenter-distribute", version.ref = "appCenter" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -172,7 +177,7 @@ firebase-performance-gradlePlugin = { group = "com.google.firebase", name = "per
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 secrets-gradlePlugin = { group = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", name = "secrets-gradle-plugin", version.ref = "secrets" }
-work-testing = { group = "androidx.work", name = "work-testing", version = "2.8.1" }
+work-testing = { group = "androidx.work", name = "work-testing", version.ref = "workTesting" }
 junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }

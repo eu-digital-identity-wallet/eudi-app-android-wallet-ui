@@ -24,8 +24,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import eu.europa.ec.analyticslogic.controller.AnalyticsController
+import eu.europa.ec.businesslogic.extension.firstPart
+import eu.europa.ec.businesslogic.extension.toMap
 import eu.europa.ec.uilogic.config.ConfigUILogic
-import eu.europa.ec.uilogic.controller.AnalyticsController
 
 interface RouterHost {
     fun getNavController(): NavHostController
@@ -59,9 +61,9 @@ class RouterHostImpl(
         ) {
             builder(navController)
         }
-        navController.addOnDestinationChangedListener { _, destination, _ ->
+        navController.addOnDestinationChangedListener { _, destination, args ->
             destination.route?.let { route ->
-                analyticsController.logScreen(route)
+                analyticsController.logScreen(route.firstPart("?"), args.toMap())
             }
         }
     }

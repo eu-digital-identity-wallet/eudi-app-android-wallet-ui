@@ -14,12 +14,19 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.config
+import eu.europa.ec.euidi.libs
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.dependencies
 
-import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.Screen
-
-class ConfigUILogicImpl : ConfigUILogic {
-    override val landingScreenIdentifier: Screen
-        get() = DashboardScreens.Dashboard
+class AppCenterPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            dependencies {
+                add("implementation", libs.findLibrary("appcenter.analytics").get())
+                add("implementation", libs.findLibrary("appcenter.crashes").get())
+                add("implementation", libs.findLibrary("appcenter.distribute").get())
+            }
+        }
+    }
 }

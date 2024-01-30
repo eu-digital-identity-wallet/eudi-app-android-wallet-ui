@@ -14,12 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.config
+package eu.europa.ec.businesslogic.extension
 
-import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.Screen
+import android.os.Bundle
 
-class ConfigUILogicImpl : ConfigUILogic {
-    override val landingScreenIdentifier: Screen
-        get() = DashboardScreens.Dashboard
+fun Bundle?.toMap(): Map<String, String> {
+    return this?.let { bundle ->
+        mutableMapOf<String, String>().apply {
+            bundle.keySet().forEach {
+                put(it, bundle.getString(it, ""))
+            }
+        }
+    } ?: emptyMap()
 }
