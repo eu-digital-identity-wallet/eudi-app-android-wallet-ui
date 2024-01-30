@@ -18,7 +18,7 @@ package eu.europa.ec.businesslogic.extension
 
 import android.os.Bundle
 
-fun Bundle?.toMap(): Map<String, String> {
+fun Bundle?.toMapOrEmpty(): Map<String, String> {
     return this?.let { bundle ->
         mutableMapOf<String, String>().apply {
             bundle.keySet().forEach {

@@ -26,7 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.businesslogic.extension.firstPart
-import eu.europa.ec.businesslogic.extension.toMap
+import eu.europa.ec.businesslogic.extension.toMapOrEmpty
 import eu.europa.ec.uilogic.config.ConfigUILogic
 
 interface RouterHost {
@@ -63,7 +63,7 @@ class RouterHostImpl(
         }
         navController.addOnDestinationChangedListener { _, destination, args ->
             destination.route?.let { route ->
-                analyticsController.logScreen(route.firstPart("?"), args.toMap())
+                analyticsController.logScreen(route.firstPart("?"), args.toMapOrEmpty())
             }
         }
     }
