@@ -1,0 +1,49 @@
+/*
+ * Copyright (c) 2023 European Commission
+ *
+ * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
+ * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
+ * except in compliance with the Licence.
+ *
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/software/page/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the Licence is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the Licence for the specific language
+ * governing permissions and limitations under the Licence.
+ */
+
+package eu.europa.ec.analyticslogic.provider
+
+import android.app.Application
+import com.microsoft.appcenter.AppCenter
+import com.microsoft.appcenter.analytics.Analytics
+import com.microsoft.appcenter.crashes.Crashes
+import com.microsoft.appcenter.distribute.Distribute
+import com.microsoft.appcenter.distribute.UpdateTrack
+
+object AppCenterAnalyticsProvider : AnalyticsProvider {
+    override fun initialize(context: Application, key: String) {
+        Distribute.setUpdateTrack(UpdateTrack.PRIVATE)
+        AppCenter.start(
+            context,
+            key,
+            Analytics::class.java,
+            Crashes::class.java,
+            Distribute::class.java
+        )
+    }
+
+    override fun logScreen(name: String) {
+        if (Analytics.isEnabled().get()) {
+            Analytics.trackEvent(name)
+        }
+    }
+
+    override fun logEvent(event: String, arguments: Map<String, String>) {
+        if (Analytics.isEnabled().get()) {
+            Analytics.trackEvent(event, arguments)
+        }
+    }
+}

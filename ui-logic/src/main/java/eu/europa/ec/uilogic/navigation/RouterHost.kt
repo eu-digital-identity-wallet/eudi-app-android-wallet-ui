@@ -24,8 +24,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.uilogic.config.ConfigUILogic
-import eu.europa.ec.uilogic.controller.AnalyticsController
 
 interface RouterHost {
     fun getNavController(): NavHostController

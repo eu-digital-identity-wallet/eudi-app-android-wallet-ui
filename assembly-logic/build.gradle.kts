@@ -41,6 +41,7 @@ dependencies {
     api(project(":business-logic"))
     api(project(":ui-logic"))
     api(project(":network-logic"))
+    api(project(":analytics-logic"))
 
     // Feature Modules
     api(project(":common-feature"))

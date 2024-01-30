@@ -26,6 +26,7 @@ android {
 dependencies {
     implementation(project(":resources-logic"))
     implementation(project(":business-logic"))
+    implementation(project(":analytics-logic"))
 
     implementation(libs.zxing)
     implementation(libs.gson)

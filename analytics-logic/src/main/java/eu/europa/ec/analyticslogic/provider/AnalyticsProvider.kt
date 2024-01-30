@@ -14,12 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.config
+package eu.europa.ec.analyticslogic.provider
 
-import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.Screen
+import android.app.Application
 
-class ConfigUILogicImpl : ConfigUILogic {
-    override val landingScreenIdentifier: Screen
-        get() = DashboardScreens.Dashboard
+interface AnalyticsProvider {
+    fun initialize(context: Application, key: String)
+    fun logScreen(name: String)
+    fun logEvent(event: String, arguments: Map<String, String>)
 }

@@ -14,28 +14,36 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.controller
+package eu.europa.ec.analyticslogic.controller
 
-import eu.europa.ec.uilogic.config.ConfigUILogic
+import android.app.Application
+import eu.europa.ec.analyticslogic.config.AnalyticsConfig
 
 interface AnalyticsController {
+    fun initialize(context: Application)
     fun logScreen(name: String)
     fun logEvent(eventName: String, parameters: Map<String, String> = emptyMap())
 }
 
 class AnalyticsControllerImpl(
-    private val configUiLogic: ConfigUILogic,
+    private val analyticsConfig: AnalyticsConfig,
 ) : AnalyticsController {
 
+    override fun initialize(context: Application) {
+        analyticsConfig.analyticsProviders.forEach { (key, analyticProvider) ->
+            analyticProvider.initialize(context, key)
+        }
+    }
+
     override fun logScreen(name: String) {
-        configUiLogic.analyticsProviders.forEach { analyticProvider ->
-            analyticProvider.logScreen(name)
+        analyticsConfig.analyticsProviders.values.forEach {
+            it.logScreen(name)
         }
     }
 
     override fun logEvent(eventName: String, parameters: Map<String, String>) {
-        configUiLogic.analyticsProviders.forEach { analyticProvider ->
-            analyticProvider.logEvent(eventName, parameters)
+        analyticsConfig.analyticsProviders.values.forEach {
+            it.logEvent(eventName, parameters)
         }
     }
 }

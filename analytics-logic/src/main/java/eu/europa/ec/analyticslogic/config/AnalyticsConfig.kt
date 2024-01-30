@@ -14,9 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.analytics
+package eu.europa.ec.analyticslogic.config
 
-interface AnalyticsProvider {
-    fun logScreen(name: String)
-    fun logEvent(event: String, arguments: Map<String, String>)
+import eu.europa.ec.analyticslogic.provider.AnalyticsProvider
+
+interface AnalyticsConfig {
+    val analyticsProviders: Map<String, AnalyticsProvider>
+        get() = emptyMap()
+
 }

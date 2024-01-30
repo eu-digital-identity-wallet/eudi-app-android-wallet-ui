@@ -18,6 +18,7 @@ package eu.europa.ec.assemblylogic
 
 import android.app.Application
 import android.os.StrictMode
+import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
 import eu.europa.ec.businesslogic.config.WalletCoreConfig
@@ -35,14 +36,20 @@ class Application : Application() {
     private val logController: LogController by inject()
     private val configWalletCore: WalletCoreConfig by inject()
     private val configSecurityLogic: ConfigSecurityLogic by inject()
+    private val analyticsController: AnalyticsController by inject()
 
     override fun onCreate() {
         super.onCreate()
         setupKoin()
+        initializeReporting()
         initializeEudiWallet()
         initializeLogging()
         initializeTheme()
         handleStrictMode()
+    }
+
+    private fun initializeReporting() {
+        analyticsController.initialize(this)
     }
 
     private fun initializeLogging() {

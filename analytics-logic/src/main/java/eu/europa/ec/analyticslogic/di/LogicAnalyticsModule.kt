@@ -14,33 +14,29 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.di
+package eu.europa.ec.analyticslogic.di
 
+import eu.europa.ec.analyticslogic.config.AnalyticsConfig
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
-import eu.europa.ec.uilogic.config.ConfigUILogic
-import eu.europa.ec.uilogic.config.ConfigUILogicImpl
-import eu.europa.ec.uilogic.navigation.RouterHost
-import eu.europa.ec.uilogic.navigation.RouterHostImpl
-import eu.europa.ec.uilogic.serializer.UiSerializer
-import eu.europa.ec.uilogic.serializer.UiSerializerImpl
+import eu.europa.ec.analyticslogic.controller.AnalyticsControllerImpl
 import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
 @Module
-@ComponentScan("eu.europa.ec.uilogic")
-class LogicUiModule
+@ComponentScan("eu.europa.ec.analyticslogic")
+class LogicAnalyticsModule
 
 @Single
-fun provideRouterHost(
-    configUILogic: ConfigUILogic,
-    analyticsController: AnalyticsController
-): RouterHost = RouterHostImpl(configUILogic, analyticsController)
-
-@Factory
-fun provideUiSerializer(): UiSerializer = UiSerializerImpl()
+fun provideAnalyticsConfig(): AnalyticsConfig {
+    return try {
+        val impl = Class.forName("eu.europa.ec.analyticslogic.config.AnalyticsConfigImpl")
+        return impl.getDeclaredConstructor().newInstance() as AnalyticsConfig
+    } catch (_: Exception) {
+        object : AnalyticsConfig {}
+    }
+}
 
 @Single
-fun provideConfigUILogic(): ConfigUILogic = ConfigUILogicImpl()
-
+fun provideAnalyticsController(analyticsConfig: AnalyticsConfig): AnalyticsController =
+    AnalyticsControllerImpl(analyticsConfig)

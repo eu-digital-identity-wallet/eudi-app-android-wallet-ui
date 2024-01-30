@@ -41,6 +41,7 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 add("implementation", project(":ui-logic"))
                 add("implementation", project(":network-logic"))
                 add("implementation", project(":resources-logic"))
+                add("implementation", project(":analytics-logic"))
                 add("testImplementation", project(":test-feature"))
                 add("androidTestImplementation", project(":test-feature"))
             }

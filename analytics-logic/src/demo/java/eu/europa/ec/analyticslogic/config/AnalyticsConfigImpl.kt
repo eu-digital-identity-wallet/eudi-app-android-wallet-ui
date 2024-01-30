@@ -14,12 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.config
+package eu.europa.ec.analyticslogic.config
 
-import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.Screen
+import eu.europa.ec.analyticslogic.provider.AnalyticsProvider
+import eu.europa.ec.analyticslogic.provider.AppCenterAnalyticsProvider
 
-class ConfigUILogicImpl : ConfigUILogic {
-    override val landingScreenIdentifier: Screen
-        get() = DashboardScreens.Dashboard
+class AnalyticsConfigImpl : AnalyticsConfig {
+    override val analyticsProviders: Map<String, AnalyticsProvider>
+        get() = mapOf("3b5b2c99-e1a2-48cf-a40d-2bdb69f62a71" to AppCenterAnalyticsProvider)
+
 }

@@ -58,7 +58,6 @@ class SplashScreenViewModel(
     private fun enterApplication() {
         viewModelScope.launch {
             delay((viewState.value.logoAnimationDuration + 500).toLong())
-
             val screenRoute = interactor.getAfterSplashRoute()
             setEffect {
                 Effect.Navigation.SwitchScreen(screenRoute)
