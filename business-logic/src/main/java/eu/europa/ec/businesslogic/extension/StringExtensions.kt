@@ -84,3 +84,5 @@ fun String.splitToLines(lineLength: Int): String {
         result
     }
 }
+
+fun String.firstPart(separator: String): String = this.split(separator).firstOrNull() ?: this

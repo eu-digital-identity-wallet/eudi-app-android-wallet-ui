@@ -14,12 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.analyticslogic.provider
+package eu.europa.ec.businesslogic.extension
 
-import android.app.Application
+import android.os.Bundle
 
-interface AnalyticsProvider {
-    fun initialize(context: Application, key: String)
-    fun logScreen(name: String, arguments: Map<String, String> = emptyMap())
-    fun logEvent(event: String, arguments: Map<String, String>)
+fun Bundle?.toMap(): Map<String, String> {
+    return this?.let { bundle ->
+        mutableMapOf<String, String>().apply {
+            bundle.keySet().forEach {
+                put(it, bundle.getString(it, ""))
+            }
+        }
+    } ?: emptyMap()
 }
