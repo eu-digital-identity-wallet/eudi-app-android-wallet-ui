@@ -48,7 +48,7 @@ data class State(
     val hasBottomPadding: Boolean,
     val detailsHaveBottomGradient: Boolean,
 
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
 

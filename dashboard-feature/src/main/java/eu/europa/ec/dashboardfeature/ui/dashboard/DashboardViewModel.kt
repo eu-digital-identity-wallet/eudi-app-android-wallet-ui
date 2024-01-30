@@ -46,7 +46,7 @@ enum class BleAvailability {
 }
 
 data class State(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.OPTIONS,
