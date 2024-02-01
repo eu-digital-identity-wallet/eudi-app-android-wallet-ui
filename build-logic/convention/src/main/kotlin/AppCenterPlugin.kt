@@ -25,7 +25,6 @@ class AppCenterPlugin : Plugin<Project> {
             dependencies {
                 add("implementation", libs.findLibrary("appcenter.analytics").get())
                 add("implementation", libs.findLibrary("appcenter.crashes").get())
-                add("implementation", libs.findLibrary("appcenter.distribute").get())
             }
         }
     }
