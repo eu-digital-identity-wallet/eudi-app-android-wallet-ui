@@ -69,7 +69,7 @@ class ProximityLoadingViewModel(
         return ProximityScreens.Loading
     }
 
-    override fun getNextScreen(): String {
+    private fun getNextScreen(): String {
         return generateComposableNavigationLink(
             screen = CommonScreens.Success,
             arguments = generateComposableArguments(
@@ -90,7 +90,7 @@ class ProximityLoadingViewModel(
                                     errorSubTitle = it.error,
                                     onCancel = {
                                         setEvent(Event.DismissError)
-                                        doNavigation(NavigationType.POP)
+                                        doNavigation(NavigationType.PopTo(getPreviousScreen()))
                                     }
                                 )
                             )
@@ -105,7 +105,7 @@ class ProximityLoadingViewModel(
                         }
                         interactor.stopPresentation()
                         getOrCreatePresentationScope().close()
-                        doNavigation(NavigationType.PUSH)
+                        doNavigation(NavigationType.PushRoute(getNextScreen()))
                     }
 
                     is ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
@@ -135,14 +135,12 @@ class ProximityLoadingViewModel(
                             text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = ConfigNavigation(
-                                navigationType = NavigationType.POP,
-                                screenToNavigate = DashboardScreens.Dashboard
+                                navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
                             )
                         )
                     ),
                     onBackScreenToNavigate = ConfigNavigation(
-                        navigationType = NavigationType.POP,
-                        screenToNavigate = DashboardScreens.Dashboard
+                        navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
                     ),
                 ),
                 SuccessUIConfig.Parser

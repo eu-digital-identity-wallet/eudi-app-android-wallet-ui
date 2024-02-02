@@ -345,14 +345,14 @@ class PinViewModel(
     private fun getNextScreenRoute(): String {
 
         val navigationAfterCreate = ConfigNavigation(
-            navigationType = NavigationType.PUSH,
-            screenToNavigate = IssuanceScreens.AddDocument,
-            arguments = mapOf("flowType" to IssuanceFlowUiConfig.NO_DOCUMENT.name)
+            navigationType = NavigationType.Push(
+                IssuanceScreens.AddDocument,
+                mapOf("flowType" to IssuanceFlowUiConfig.NO_DOCUMENT.name)
+            ),
         )
 
         val navigationAfterUpdate = ConfigNavigation(
-            navigationType = NavigationType.POP,
-            screenToNavigate = DashboardScreens.Dashboard
+            navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
         )
 
         return generateComposableNavigationLink(

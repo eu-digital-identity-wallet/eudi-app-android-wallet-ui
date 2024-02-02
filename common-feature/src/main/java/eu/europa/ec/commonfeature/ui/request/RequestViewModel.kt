@@ -76,6 +76,9 @@ sealed class Effect : ViewSideEffect {
         ) : Navigation()
 
         data object Pop : Navigation()
+        data class PopTo(
+            val screenRoute: String
+        ) : Navigation()
     }
 
     data object ShowBottomSheet : Effect()
@@ -96,7 +99,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     abstract fun doWork()
 
     /**
-     * Called during [NavigationType.POP].
+     * Called during [NavigationType.Pop].
      *
      * Kill presentation scope.
      *
@@ -137,7 +140,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 setState {
                     copy(error = null)
                 }
-                doNavigation(NavigationType.POP)
+                doNavigation(NavigationType.Pop)
             }
 
             is Event.ChangeContentVisibility -> {
@@ -159,7 +162,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.PrimaryButtonPressed -> {
-                doNavigation(NavigationType.PUSH)
+                doNavigation(NavigationType.PushRoute(getNextScreen()))
             }
 
             is Event.SecondaryButtonPressed -> {
@@ -178,7 +181,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
             is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
                 hideBottomSheet()
-                doNavigation(NavigationType.POP)
+                doNavigation(NavigationType.Pop)
             }
 
             is Event.BottomSheet.Subtitle.PrimaryButtonPressed -> {
@@ -189,18 +192,29 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     private fun doNavigation(navigationType: NavigationType) {
         when (navigationType) {
-            NavigationType.PUSH -> {
+            is NavigationType.Push -> {
                 unsubscribe()
-                setEffect { Effect.Navigation.SwitchScreen(getNextScreen()) }
+                setEffect { Effect.Navigation.SwitchScreen(navigationType.screen.screenRoute) }
             }
 
-            NavigationType.POP -> {
+            is NavigationType.Pop -> {
                 unsubscribe()
                 cleanUp()
                 setEffect { Effect.Navigation.Pop }
             }
 
-            NavigationType.DEEPLINK -> {}
+            is NavigationType.Deeplink -> {}
+
+            is NavigationType.PopTo -> {
+                unsubscribe()
+                cleanUp()
+                setEffect { Effect.Navigation.PopTo(navigationType.screen.screenRoute) }
+            }
+
+            is NavigationType.PushRoute -> {
+                unsubscribe()
+                setEffect { Effect.Navigation.SwitchScreen(navigationType.route) }
+            }
         }
     }
 

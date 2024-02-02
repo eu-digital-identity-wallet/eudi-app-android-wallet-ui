@@ -51,9 +51,10 @@ import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.StartupScreens
-import eu.europa.ec.uilogic.navigation.helper.generateNewTaskDeepLink
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -94,15 +95,14 @@ fun SuccessScreen(
                     }
 
                     is Effect.Navigation.DeepLink -> {
-                        navController.handleDeepLink(
-                            generateNewTaskDeepLink(
-                                context,
-                                navigationEffect.screen,
-                                navigationEffect.arguments,
-                                navigationEffect.flags
-                            )
+                        context.cacheDeepLink(navigationEffect.link)
+                        navController.popBackStack(
+                            route = DashboardScreens.Dashboard.screenRoute,
+                            inclusive = false
                         )
                     }
+
+                    is Effect.Navigation.Pop -> navController.popBackStack()
                 }
             },
             paddingValues = paddingValues
@@ -239,14 +239,12 @@ private fun SuccessPreview() {
                             text = "back",
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = ConfigNavigation(
-                                navigationType = NavigationType.POP,
-                                screenToNavigate = StartupScreens.Splash
+                                navigationType = NavigationType.PopTo(StartupScreens.Splash),
                             )
                         )
                     ),
                     onBackScreenToNavigate = ConfigNavigation(
-                        navigationType = NavigationType.POP,
-                        screenToNavigate = StartupScreens.Splash
+                        navigationType = NavigationType.PopTo(StartupScreens.Splash),
                     ),
                 )
             ),

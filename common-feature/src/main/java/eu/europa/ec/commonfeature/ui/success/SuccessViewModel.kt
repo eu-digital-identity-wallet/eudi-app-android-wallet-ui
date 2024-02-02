@@ -16,6 +16,8 @@
 
 package eu.europa.ec.commonfeature.ui.success
 
+import android.net.Uri
+import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -23,7 +25,6 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -50,10 +51,10 @@ sealed class Effect : ViewSideEffect {
             val inclusive: Boolean
         ) : Navigation()
 
+        data object Pop : Navigation()
+
         data class DeepLink(
-            val screen: Screen,
-            val arguments: String,
-            val flags: Int = 0
+            val link: Uri
         ) : Navigation()
     }
 }
@@ -89,28 +90,30 @@ class SuccessViewModel(
 
     private fun doNavigation(navigation: ConfigNavigation) {
 
-        val navigationEffect: Effect.Navigation = when (navigation.navigationType) {
-            NavigationType.POP -> {
+        val navigationEffect: Effect.Navigation = when (val nav = navigation.navigationType) {
+            is NavigationType.PopTo -> {
                 Effect.Navigation.PopBackStackUpTo(
-                    screenRoute = navigation.screenToNavigate.screenRoute,
+                    screenRoute = nav.screen.screenRoute,
                     inclusive = false
                 )
             }
 
-            NavigationType.PUSH -> {
+            is NavigationType.Push -> {
                 Effect.Navigation.SwitchScreen(
                     generateComposableNavigationLink(
-                        screen = navigation.screenToNavigate,
-                        arguments = generateComposableArguments(navigation.arguments),
+                        screen = nav.screen,
+                        arguments = generateComposableArguments(nav.arguments),
                     )
                 )
             }
 
-            NavigationType.DEEPLINK -> Effect.Navigation.DeepLink(
-                screen = navigation.screenToNavigate,
-                arguments = generateComposableArguments(navigation.arguments),
-                flags = navigation.flags,
+            is NavigationType.Deeplink -> Effect.Navigation.DeepLink(
+                nav.link.toUri()
             )
+
+            is NavigationType.Pop -> Effect.Navigation.Pop
+
+            is NavigationType.PushRoute -> Effect.Navigation.SwitchScreen(nav.route)
         }
 
         setEffect {

@@ -37,6 +37,7 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import java.net.URI
 
 @KoinViewModel
 class PresentationLoadingViewModel(
@@ -69,18 +70,17 @@ class PresentationLoadingViewModel(
         return PresentationScreens.PresentationLoading
     }
 
-    override fun getNextScreen(): String {
+    private fun getNextScreen(uri: URI? = null): String {
         return generateComposableNavigationLink(
             screen = CommonScreens.Success,
             arguments = generateComposableArguments(
-                getSuccessConfig()
+                getSuccessConfig(uri)
             )
         )
     }
 
     override fun doWork() {
         viewModelScope.launch {
-
             interactor.observeResponse().collect {
                 when (it) {
                     is PresentationLoadingObserveResponsePartialState.Failure -> {
@@ -91,7 +91,7 @@ class PresentationLoadingViewModel(
                                     errorSubTitle = it.error,
                                     onCancel = {
                                         setEvent(Event.DismissError)
-                                        doNavigation(NavigationType.POP)
+                                        doNavigation(NavigationType.Pop)
                                     }
                                 )
                             )
@@ -99,14 +99,7 @@ class PresentationLoadingViewModel(
                     }
 
                     is PresentationLoadingObserveResponsePartialState.Success -> {
-                        setState {
-                            copy(
-                                error = null
-                            )
-                        }
-                        interactor.stopPresentation()
-                        getOrCreatePresentationScope().close()
-                        doNavigation(NavigationType.PUSH)
+                        onSuccess()
                     }
 
                     is PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
@@ -114,23 +107,25 @@ class PresentationLoadingViewModel(
                     }
 
                     is PresentationLoadingObserveResponsePartialState.Redirect -> {
-                        println(it.uri)
-                        /*setState {
-                            copy(
-                                error = null
-                            )
-                        }
-                        interactor.stopPresentation()
-                        getOrCreatePresentationScope().close()
-                        doNavigation(NavigationType.PUSH)*/
+                        onSuccess(it.uri)
                     }
                 }
             }
-
         }
     }
 
-    private fun getSuccessConfig(): Map<String, String> =
+    private fun onSuccess(uri: URI? = null) {
+        setState {
+            copy(
+                error = null
+            )
+        }
+        interactor.stopPresentation()
+        getOrCreatePresentationScope().close()
+        doNavigation(NavigationType.PushRoute(getNextScreen(uri)))
+    }
+
+    private fun getSuccessConfig(uri: URI?): Map<String, String> =
         mapOf(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
@@ -148,14 +143,14 @@ class PresentationLoadingViewModel(
                             text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = ConfigNavigation(
-                                navigationType = NavigationType.POP,
-                                screenToNavigate = DashboardScreens.Dashboard
+                                navigationType = uri?.let {
+                                    NavigationType.Deeplink(it.toString())
+                                } ?: NavigationType.PopTo(DashboardScreens.Dashboard)
                             )
                         )
                     ),
                     onBackScreenToNavigate = ConfigNavigation(
-                        navigationType = NavigationType.POP,
-                        screenToNavigate = DashboardScreens.Dashboard
+                        navigationType = NavigationType.PopTo(DashboardScreens.Dashboard)
                     ),
                 ),
                 SuccessUIConfig.Parser

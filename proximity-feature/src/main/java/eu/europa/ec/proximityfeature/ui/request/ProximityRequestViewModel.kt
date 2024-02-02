@@ -71,12 +71,10 @@ class ProximityRequestViewModel(
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
-                                navigationType = NavigationType.PUSH,
-                                screenToNavigate = ProximityScreens.Loading
+                                navigationType = NavigationType.Push(ProximityScreens.Loading)
                             ),
                             onBackNavigation = ConfigNavigation(
-                                navigationType = NavigationType.POP,
-                                screenToNavigate = ProximityScreens.Request
+                                navigationType = NavigationType.PopTo(ProximityScreens.Request),
                             )
                         ),
                         BiometricUiConfig.Parser

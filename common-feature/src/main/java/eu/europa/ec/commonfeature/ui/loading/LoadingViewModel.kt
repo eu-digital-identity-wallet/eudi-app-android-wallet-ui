@@ -66,12 +66,6 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
     abstract fun getPreviousScreen(): Screen
 
     /**
-     * The [Screen] (with its possible arguments) which will be opened
-     * when the [LoadingScreen] finishes successfully.
-     */
-    abstract fun getNextScreen(): String
-
-    /**
      * The [Screen] which opened the re-usable [LoadingScreen] .
      * It will be erased from the back-stack when user successfully moves to the next step [Screen].
      */
@@ -100,7 +94,7 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
                 setState {
                     copy(error = null)
                 }
-                doNavigation(NavigationType.POP)
+                doNavigation(NavigationType.Pop)
             }
 
             is Event.DismissError -> {
@@ -125,13 +119,13 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
 
     protected fun doNavigation(navigationType: NavigationType) {
         when (navigationType) {
-            NavigationType.PUSH -> {
+            is NavigationType.Push -> {
                 setEffect {
-                    Effect.Navigation.SwitchScreen(getNextScreen())
+                    Effect.Navigation.SwitchScreen(navigationType.screen.screenRoute)
                 }
             }
 
-            NavigationType.POP -> {
+            is NavigationType.Pop -> {
                 setEffect {
                     Effect.Navigation.PopBackStackUpTo(
                         screenRoute = getPreviousScreen().screenRoute,
@@ -140,7 +134,20 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            NavigationType.DEEPLINK -> {}
+            is NavigationType.PopTo -> {
+                setEffect {
+                    Effect.Navigation.PopBackStackUpTo(
+                        screenRoute = navigationType.screen.screenRoute,
+                        inclusive = false
+                    )
+                }
+            }
+
+            is NavigationType.Deeplink -> {}
+
+            is NavigationType.PushRoute -> setEffect {
+                Effect.Navigation.SwitchScreen(navigationType.route)
+            }
         }
     }
 }

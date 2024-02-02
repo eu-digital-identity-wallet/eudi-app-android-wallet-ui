@@ -94,6 +94,13 @@ fun RequestScreen(
                     is Effect.Navigation.Pop -> {
                         navController.popBackStack()
                     }
+
+                    is Effect.Navigation.PopTo -> {
+                        navController.popBackStack(
+                            route = navigationEffect.screenRoute,
+                            inclusive = false
+                        )
+                    }
                 }
             },
             paddingValues = paddingValues,
