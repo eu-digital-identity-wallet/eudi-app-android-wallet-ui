@@ -22,8 +22,6 @@ import android.content.Context
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedDocUiNameMdl
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedDocUiNamePid
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedFullDocumentsUi
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedMdlUiWithNoExpirationDate
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedMdlUiWithNoUserNameAndNoUserImage
@@ -35,6 +33,7 @@ import eu.europa.ec.commonfeature.util.TestsConstants.mockedUserFirstName
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.testfeature.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullDocuments
@@ -204,7 +203,7 @@ class TestDashboardInteractor {
     fun `Given Case 1, When getDocuments is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall()
+            mockGetStringForDocumentsCall(resourceProvider)
 
             `when`(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(mockedFullDocuments)
@@ -238,7 +237,7 @@ class TestDashboardInteractor {
     fun `Given Case 2, When getDocuments is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall()
+            mockGetStringForDocumentsCall(resourceProvider)
 
             `when`(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedMdlWithNoUserNameAndNoUserImage))
@@ -271,7 +270,7 @@ class TestDashboardInteractor {
     fun `Given Case 3, When getDocuments is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall()
+            mockGetStringForDocumentsCall(resourceProvider)
 
             `when`(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedMdlWithNoExpirationDate))
@@ -364,12 +363,8 @@ class TestDashboardInteractor {
         shadowBluetoothAdapter.setState(newBluetoothAdapterState)
     }
 
-    private fun mockGetStringForDocumentsCall() {
-        `when`(resourceProvider.getString(R.string.pid))
-            .thenReturn(mockedDocUiNamePid)
-
-        `when`(resourceProvider.getString(R.string.mdl))
-            .thenReturn(mockedDocUiNameMdl)
+    private fun mockGetStringForDocumentsCall(resourceProvider: ResourceProvider) {
+        mockDocumentTypeUiToUiNameCall(resourceProvider)
 
         `when`(resourceProvider.getString(R.string.dashboard_document_no_expiration_found))
             .thenReturn(mockedNoExpirationDateFound)
