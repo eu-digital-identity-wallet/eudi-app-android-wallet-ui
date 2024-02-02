@@ -119,7 +119,7 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
 
     protected fun doNavigation(navigationType: NavigationType) {
         when (navigationType) {
-            is NavigationType.Push -> {
+            is NavigationType.PushScreen -> {
                 setEffect {
                     Effect.Navigation.SwitchScreen(navigationType.screen.screenRoute)
                 }

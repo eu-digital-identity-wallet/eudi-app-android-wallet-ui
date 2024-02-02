@@ -261,10 +261,10 @@ private fun PreviewBiometricScreen() {
                     quickPinOnlySubTitle = "Quick Pin Subtitle",
                     isPreAuthorization = true,
                     onSuccessNavigation = ConfigNavigation(
-                        navigationType = NavigationType.Push(CommonScreens.Biometric)
+                        navigationType = NavigationType.PushScreen(CommonScreens.Biometric)
                     ),
                     onBackNavigation = ConfigNavigation(
-                        navigationType = NavigationType.Push(CommonScreens.Biometric),
+                        navigationType = NavigationType.PushScreen(CommonScreens.Biometric),
                     )
                 )
             ),

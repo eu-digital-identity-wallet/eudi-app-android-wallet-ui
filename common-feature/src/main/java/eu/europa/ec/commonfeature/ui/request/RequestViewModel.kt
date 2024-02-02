@@ -192,7 +192,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     private fun doNavigation(navigationType: NavigationType) {
         when (navigationType) {
-            is NavigationType.Push -> {
+            is NavigationType.PushScreen -> {
                 unsubscribe()
                 setEffect { Effect.Navigation.SwitchScreen(navigationType.screen.screenRoute) }
             }

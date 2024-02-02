@@ -345,7 +345,7 @@ class PinViewModel(
     private fun getNextScreenRoute(): String {
 
         val navigationAfterCreate = ConfigNavigation(
-            navigationType = NavigationType.Push(
+            navigationType = NavigationType.PushScreen(
                 IssuanceScreens.AddDocument,
                 mapOf("flowType" to IssuanceFlowUiConfig.NO_DOCUMENT.name)
             ),

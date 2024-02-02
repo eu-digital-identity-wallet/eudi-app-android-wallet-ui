@@ -76,7 +76,7 @@ class SplashInteractorImpl(
                             isPreAuthorization = true,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
-                                navigationType = NavigationType.Push(
+                                navigationType = NavigationType.PushScreen(
                                     screen = if (hasDocuments) {
                                         DashboardScreens.Dashboard
                                     } else {

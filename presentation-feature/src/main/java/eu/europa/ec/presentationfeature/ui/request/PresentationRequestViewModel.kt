@@ -71,7 +71,7 @@ class PresentationRequestViewModel(
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
-                                navigationType = NavigationType.Push(PresentationScreens.PresentationLoading),
+                                navigationType = NavigationType.PushScreen(PresentationScreens.PresentationLoading),
                             ),
                             onBackNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PopTo(PresentationScreens.PresentationRequest),

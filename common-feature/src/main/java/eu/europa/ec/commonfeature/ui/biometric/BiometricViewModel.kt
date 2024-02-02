@@ -251,7 +251,7 @@ class BiometricViewModel(
                 )
             }
 
-            is NavigationType.Push -> {
+            is NavigationType.PushScreen -> {
                 Effect.Navigation.SwitchScreen(
                     generateComposableNavigationLink(
                         screen = nav.screen,

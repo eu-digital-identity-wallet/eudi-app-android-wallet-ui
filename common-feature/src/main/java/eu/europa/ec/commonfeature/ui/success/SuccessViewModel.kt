@@ -98,7 +98,7 @@ class SuccessViewModel(
                 )
             }
 
-            is NavigationType.Push -> {
+            is NavigationType.PushScreen -> {
                 Effect.Navigation.SwitchScreen(
                     generateComposableNavigationLink(
                         screen = nav.screen,
