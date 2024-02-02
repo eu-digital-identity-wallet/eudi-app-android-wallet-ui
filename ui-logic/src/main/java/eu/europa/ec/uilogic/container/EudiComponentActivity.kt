@@ -53,7 +53,7 @@ open class EudiComponentActivity : FragmentActivity() {
 
     internal var pendingDeepLink: Uri? = null
 
-    private fun cacheDeepLink(intent: Intent?) {
+    internal fun cacheDeepLink(intent: Intent?) {
         pendingDeepLink = intent?.data
     }
 

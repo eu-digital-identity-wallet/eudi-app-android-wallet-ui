@@ -18,6 +18,7 @@ package eu.europa.ec.businesslogic.util
 
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
+import java.net.URI
 
 class EudiWalletListenerWrapper(
     private val onConnected: () -> Unit,
@@ -27,6 +28,7 @@ class EudiWalletListenerWrapper(
     private val onQrEngagementReady: (String) -> Unit,
     private val onRequestReceived: (List<RequestDocument>) -> Unit,
     private val onResponseSent: () -> Unit,
+    private val onRedirect: (URI) -> Unit,
 ) : TransferEvent.Listener {
     override fun onTransferEvent(event: TransferEvent) {
         when (event) {
@@ -37,6 +39,7 @@ class EudiWalletListenerWrapper(
             is TransferEvent.QrEngagementReady -> onQrEngagementReady(event.qrCode.content)
             is TransferEvent.RequestReceived -> onRequestReceived(event.request.documents)
             is TransferEvent.ResponseSent -> onResponseSent()
+            is TransferEvent.Redirect -> onRedirect(event.redirectUri)
         }
     }
 }

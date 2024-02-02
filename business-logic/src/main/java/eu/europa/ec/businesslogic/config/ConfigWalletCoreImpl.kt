@@ -18,13 +18,17 @@ package eu.europa.ec.businesslogic.config
 
 import android.content.Context
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
+import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
+import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
+import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionMethod
+import eu.europa.ec.eudi.wallet.transfer.openid4vp.PreregisteredVerifier
 
 internal class WalletCoreConfigImpl(
     private val context: Context
 ) : WalletCoreConfig {
 
     companion object {
-        const val VERIFIER_API_URI = "https://eudi.netcompany-intrasoft.com"
+        const val VERIFIER_API_URI = "https://eudi.netcompany-intrasoft.com/san-dns"
         const val VCI_ISSUER_URL = "https://preprod.issuer.eudiw.dev/oidc"
         const val VCI_CLIENT_ID = "wallet-dev"
     }
@@ -35,7 +39,24 @@ internal class WalletCoreConfigImpl(
         get() {
             if (_config == null) {
                 _config = EudiWalletConfig.Builder(context)
-                    .openId4VpVerifierApiUri(VERIFIER_API_URI)
+                    .openId4VpConfig {
+                        withEncryptionAlgorithms(listOf(EncryptionAlgorithm.ECDH_ES))
+                        withEncryptionMethods(listOf(EncryptionMethod.A128CBC_HS256))
+
+                        withClientIdSchemes(
+                            listOf(
+                                ClientIdScheme.X509SanDns,
+                                ClientIdScheme.Preregistered(
+                                    listOf(
+                                        PreregisteredVerifier(
+                                            "Verifier",
+                                            VERIFIER_API_URI
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    }
                     .openId4VciConfig {
                         withIssuerUrl(issuerUrl = VCI_ISSUER_URL)
                         withClientId(clientId = VCI_CLIENT_ID)

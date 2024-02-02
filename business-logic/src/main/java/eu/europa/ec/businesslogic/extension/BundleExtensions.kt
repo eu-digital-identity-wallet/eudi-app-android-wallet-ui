@@ -22,7 +22,9 @@ fun Bundle?.toMapOrEmpty(): Map<String, String> {
     return this?.let { bundle ->
         mutableMapOf<String, String>().apply {
             bundle.keySet().forEach {
-                put(it, bundle.getString(it, ""))
+                bundle.getString(it)?.let { value ->
+                    put(it, value)
+                }
             }
         }
     } ?: emptyMap()

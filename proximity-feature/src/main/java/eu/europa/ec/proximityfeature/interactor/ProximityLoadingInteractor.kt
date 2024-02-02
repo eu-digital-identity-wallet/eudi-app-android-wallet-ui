@@ -19,11 +19,18 @@ package eu.europa.ec.proximityfeature.interactor
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapNotNull
+
+sealed class ProximityLoadingObserveResponsePartialState {
+    data object UserAuthenticationRequired : ProximityLoadingObserveResponsePartialState()
+    data class Failure(val error: String) : ProximityLoadingObserveResponsePartialState()
+    data object Success : ProximityLoadingObserveResponsePartialState()
+}
 
 interface ProximityLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
-    fun observeResponse(): Flow<WalletCorePartialState>
+    fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState>
 }
 
 class ProximityLoadingInteractorImpl(
@@ -32,8 +39,19 @@ class ProximityLoadingInteractorImpl(
 
     override val verifierName: String? = walletCorePresentationController.verifierName
 
-    override fun observeResponse(): Flow<WalletCorePartialState> =
-        walletCorePresentationController.observeSentDocumentsRequest()
+    override fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState> =
+        walletCorePresentationController.observeSentDocumentsRequest().mapNotNull { response ->
+            when (response) {
+                is WalletCorePartialState.Failure -> ProximityLoadingObserveResponsePartialState.Failure(
+                    error = response.error
+                )
+
+                is WalletCorePartialState.Redirect -> null
+
+                is WalletCorePartialState.Success -> ProximityLoadingObserveResponsePartialState.Success
+                is WalletCorePartialState.UserAuthenticationRequired -> ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired
+            }
+        }
 
     override fun stopPresentation() {
         walletCorePresentationController.stopPresentation()

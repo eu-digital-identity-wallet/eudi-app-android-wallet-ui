@@ -17,12 +17,12 @@
 package eu.europa.ec.presentationfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationLoadingObserveResponsePartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -37,6 +37,7 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import java.net.URI
 
 @KoinViewModel
 class PresentationLoadingViewModel(
@@ -69,46 +70,62 @@ class PresentationLoadingViewModel(
         return PresentationScreens.PresentationLoading
     }
 
-    override fun getNextScreen(): String {
+    private fun getNextScreen(uri: URI? = null): String {
         return generateComposableNavigationLink(
             screen = CommonScreens.Success,
             arguments = generateComposableArguments(
-                getSuccessConfig()
+                getSuccessConfig(uri)
             )
         )
     }
 
     override fun doWork() {
         viewModelScope.launch {
-
             interactor.observeResponse().collect {
                 when (it) {
-                    is WalletCorePartialState.Failure -> {
+                    is PresentationLoadingObserveResponsePartialState.Failure -> {
                         setState {
-                            copy(error = ContentErrorConfig(
-                                onRetry = { setEvent(Event.DoWork) },
-                                errorSubTitle = it.error,
-                                onCancel = { doNavigation(NavigationType.POP) }
-                            ))
+                            copy(
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(Event.DoWork) },
+                                    errorSubTitle = it.error,
+                                    onCancel = {
+                                        setEvent(Event.DismissError)
+                                        doNavigation(NavigationType.Pop)
+                                    }
+                                )
+                            )
                         }
                     }
 
-                    is WalletCorePartialState.Success -> {
-                        interactor.stopPresentation()
-                        getOrCreatePresentationScope().close()
-                        doNavigation(NavigationType.PUSH)
+                    is PresentationLoadingObserveResponsePartialState.Success -> {
+                        onSuccess()
                     }
 
-                    is WalletCorePartialState.UserAuthenticationRequired -> {
+                    is PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
                         // Provide implementation for Biometrics POP
+                    }
+
+                    is PresentationLoadingObserveResponsePartialState.Redirect -> {
+                        onSuccess(it.uri)
                     }
                 }
             }
-
         }
     }
 
-    private fun getSuccessConfig(): Map<String, String> =
+    private fun onSuccess(uri: URI? = null) {
+        setState {
+            copy(
+                error = null
+            )
+        }
+        interactor.stopPresentation()
+        getOrCreatePresentationScope().close()
+        doNavigation(NavigationType.PushRoute(getNextScreen(uri)))
+    }
+
+    private fun getSuccessConfig(uri: URI?): Map<String, String> =
         mapOf(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
@@ -126,14 +143,14 @@ class PresentationLoadingViewModel(
                             text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = ConfigNavigation(
-                                navigationType = NavigationType.POP,
-                                screenToNavigate = DashboardScreens.Dashboard
+                                navigationType = uri?.let {
+                                    NavigationType.Deeplink(it.toString())
+                                } ?: NavigationType.PopTo(DashboardScreens.Dashboard)
                             )
                         )
                     ),
                     onBackScreenToNavigate = ConfigNavigation(
-                        navigationType = NavigationType.POP,
-                        screenToNavigate = DashboardScreens.Dashboard
+                        navigationType = NavigationType.PopTo(DashboardScreens.Dashboard)
                     ),
                 ),
                 SuccessUIConfig.Parser

@@ -45,11 +45,12 @@ import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.extension.resetBackStack
 import eu.europa.ec.uilogic.extension.setBackStackFlowCancelled
 import eu.europa.ec.uilogic.extension.setBackStackFlowSuccess
 import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.helper.generateNewTaskDeepLink
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -119,13 +120,22 @@ fun BiometricScreen(
                     }
 
                     is Effect.Navigation.Deeplink -> {
-                        navController.handleDeepLink(
-                            generateNewTaskDeepLink(
-                                context,
-                                navigationEffect.screen
+
+                        context.cacheDeepLink(navigationEffect.link)
+
+                        if (navigationEffect.isPreAuthorization) {
+                            navController.navigate(DashboardScreens.Dashboard.screenRoute) {
+                                popUpTo(CommonScreens.Biometric.screenRoute) { inclusive = true }
+                            }
+                        } else {
+                            navController.popBackStack(
+                                route = DashboardScreens.Dashboard.screenRoute,
+                                inclusive = false
                             )
-                        )
+                        }
                     }
+
+                    is Effect.Navigation.Pop -> navController.popBackStack()
                 }
             },
             padding = it
@@ -251,12 +261,10 @@ private fun PreviewBiometricScreen() {
                     quickPinOnlySubTitle = "Quick Pin Subtitle",
                     isPreAuthorization = true,
                     onSuccessNavigation = ConfigNavigation(
-                        navigationType = NavigationType.PUSH,
-                        screenToNavigate = CommonScreens.Biometric
+                        navigationType = NavigationType.Push(CommonScreens.Biometric)
                     ),
                     onBackNavigation = ConfigNavigation(
-                        navigationType = NavigationType.PUSH,
-                        screenToNavigate = CommonScreens.Biometric
+                        navigationType = NavigationType.Push(CommonScreens.Biometric),
                     )
                 )
             ),

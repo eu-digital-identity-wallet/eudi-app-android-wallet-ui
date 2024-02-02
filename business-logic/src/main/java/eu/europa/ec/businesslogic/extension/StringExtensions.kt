@@ -32,10 +32,10 @@ fun String.decodeFromBase64(): String = Base64.decode(
 
 fun String.urlEncode(): String = URLEncoder.encode(this, "UTF-8")
 
-fun String.toUri(): Uri? = try {
+fun String.toUri(): Uri = try {
     Uri.parse(this)
 } catch (e: Exception) {
-    null
+    Uri.EMPTY
 }
 
 fun String.validateAndFormatUrl(): String {

@@ -23,6 +23,7 @@ import androidx.core.net.toUri
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
+import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.Screen
 
@@ -76,43 +77,48 @@ fun generateNewTaskDeepLink(
 
 fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
     return deepLinkUri?.let { uri ->
-        DeepLinkType.parse(uri)?.let {
-            DeepLinkAction(link = uri, type = it)
-        }
+        DeepLinkAction(link = uri, type = DeepLinkType.parse(uri))
     }
 }
 
 fun handleDeepLinkAction(navController: NavController, uri: Uri, arguments: String? = null) {
-    hasDeepLink(uri)?.let {
+    hasDeepLink(uri)?.let { action ->
 
-        val screen: Screen = when (it.type) {
+        val screen = when (action.type) {
             DeepLinkType.OPENID4VP -> PresentationScreens.PresentationRequest
+            DeepLinkType.EXTERNAL -> null
         }
 
-        val navigationLink = arguments?.let {
-            generateComposableNavigationLink(
-                screen = screen,
-                arguments = arguments
-            )
-        } ?: screen.screenRoute
+        screen?.let {
 
-        navController.navigate(navigationLink) {
-            popUpTo(screen.screenRoute) { inclusive = true }
-        }
+            val navigationLink = arguments?.let {
+                generateComposableNavigationLink(
+                    screen = screen,
+                    arguments = arguments
+                )
+            } ?: screen.screenRoute
+
+            navController.navigate(navigationLink) {
+                popUpTo(screen.screenRoute) { inclusive = true }
+            }
+
+        } ?: navController.context.openUrl(action.link)
     }
 }
 
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
 enum class DeepLinkType {
-    OPENID4VP;
+
+    OPENID4VP,
+    EXTERNAL;
 
     companion object {
-        fun parse(uri: Uri): DeepLinkType? = when {
+        fun parse(uri: Uri): DeepLinkType = when {
             uri.scheme?.contains(OPENID4VP.name.lowercase()) == true -> {
                 OPENID4VP
             }
 
-            else -> null
+            else -> EXTERNAL
         }
     }
 }

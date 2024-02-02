@@ -43,6 +43,13 @@ fun Context.getPendingDeepLink(): Uri? {
     }
 }
 
+fun Context.cacheDeepLink(uri: Uri) {
+    val intent = Intent().apply {
+        data = uri
+    }
+    (this as? EudiComponentActivity)?.cacheDeepLink(intent)
+}
+
 fun Context.finish() {
     (this as? EudiComponentActivity)?.finish()
 }
@@ -63,11 +70,11 @@ private fun Context.clearPendingDeepLink() {
 /**
  * Parses a string url and sends the Action View Intent.
  *
- * @param url the url to parse.
+ * @param uri the url to parse.
  */
-fun Context.openUrl(url: String) {
+fun Context.openUrl(uri: Uri) {
     try {
-        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        startActivity(Intent(Intent.ACTION_VIEW, uri))
     } catch (_: Exception) {
     }
 }

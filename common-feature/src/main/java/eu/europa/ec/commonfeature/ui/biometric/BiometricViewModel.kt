@@ -17,9 +17,11 @@
 package eu.europa.ec.commonfeature.ui.biometric
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAuthenticate
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
@@ -33,7 +35,6 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -78,7 +79,8 @@ sealed class Effect : ViewSideEffect {
         ) : Navigation()
 
         data object LaunchBiometricsSystemScreen : Navigation()
-        data class Deeplink(val screen: Screen) : Navigation()
+        data class Deeplink(val link: Uri, val isPreAuthorization: Boolean) : Navigation()
+        data object Pop : Navigation()
     }
 }
 
@@ -235,10 +237,11 @@ class BiometricViewModel(
         screenRoute: String = CommonScreens.Biometric.screenRoute,
         flowSucceeded: Boolean
     ) {
-        val navigationEffect: Effect.Navigation = when (navigation.navigationType) {
-            NavigationType.POP -> {
+        val navigationEffect: Effect.Navigation = when (val nav = navigation.navigationType) {
+
+            is NavigationType.PopTo -> {
                 Effect.Navigation.PopBackStackUpTo(
-                    screenRoute = navigation.screenToNavigate.screenRoute,
+                    screenRoute = nav.screen.screenRoute,
                     inclusive = false,
                     indicateFlowCompletion = when (navigation.indicateFlowCompletion) {
                         FlowCompletion.CANCEL -> if (!flowSucceeded) FlowCompletion.CANCEL else FlowCompletion.NONE
@@ -248,17 +251,29 @@ class BiometricViewModel(
                 )
             }
 
-            NavigationType.PUSH -> {
+            is NavigationType.Push -> {
                 Effect.Navigation.SwitchScreen(
                     generateComposableNavigationLink(
-                        screen = navigation.screenToNavigate,
-                        arguments = generateComposableArguments(navigation.arguments)
+                        screen = nav.screen,
+                        arguments = generateComposableArguments(nav.arguments)
                     ),
                     screenPopUpTo = screenRoute
                 )
             }
 
-            NavigationType.DEEPLINK -> Effect.Navigation.Deeplink(navigation.screenToNavigate)
+            is NavigationType.PushRoute -> {
+                Effect.Navigation.SwitchScreen(
+                    nav.route,
+                    screenPopUpTo = screenRoute
+                )
+            }
+
+            is NavigationType.Deeplink -> Effect.Navigation.Deeplink(
+                nav.link.toUri(),
+                viewState.value.config.isPreAuthorization
+            )
+
+            is NavigationType.Pop -> Effect.Navigation.Pop
         }
 
         setEffect {

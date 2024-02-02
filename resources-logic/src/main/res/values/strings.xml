@@ -131,7 +131,7 @@
     <!-- Loading Screen -->
     <string name="loading_subtitle">Please wait…</string>
     <string name="loading_success_config_title">@string/generic_success</string>
-    <string name="loading_success_config_primary_button_text">@string/generic_ok</string>
+    <string name="loading_success_config_primary_button_text">@string/generic_continue_capitalized</string>
     <string name="loading_biometry_share_subtitle">Use your biometrics to share information</string>
     <string name="loading_quick_pin_share_subtitle">Type your quick pin to share information</string>
 

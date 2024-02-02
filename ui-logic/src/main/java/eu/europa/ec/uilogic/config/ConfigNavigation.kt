@@ -20,38 +20,21 @@ import eu.europa.ec.uilogic.navigation.Screen
 
 data class ConfigNavigation(
     val navigationType: NavigationType,
-    val screenToNavigate: Screen,
-    val arguments: Map<String, String> = emptyMap(),
     val flags: Int = 0,
     val indicateFlowCompletion: FlowCompletion = FlowCompletion.NONE
-) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+)
 
-        other as ConfigNavigation
+sealed interface NavigationType {
+    data object Pop : NavigationType
+    data class Push(
+        val screen: Screen,
+        val arguments: Map<String, String> = emptyMap()
+    ) : NavigationType
 
-        if (navigationType != other.navigationType) return false
-        if (screenToNavigate.screenRoute != other.screenToNavigate.screenRoute) return false
-        if (arguments != other.arguments) return false
-        if (flags != other.flags) return false
-        return indicateFlowCompletion == other.indicateFlowCompletion
-    }
+    data class PushRoute(val route: String) : NavigationType
 
-    override fun hashCode(): Int {
-        var result = navigationType.hashCode()
-        result = 31 * result + screenToNavigate.screenRoute.hashCode()
-        result = 31 * result + arguments.hashCode()
-        result = 31 * result + flags.hashCode()
-        result = 31 * result + indicateFlowCompletion.hashCode()
-        return result
-    }
-}
-
-enum class NavigationType {
-    POP,
-    PUSH,
-    DEEPLINK
+    data class PopTo(val screen: Screen) : NavigationType
+    data class Deeplink(val link: String) : NavigationType
 }
 
 enum class FlowCompletion {
