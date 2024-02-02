@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.zip
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
+import java.net.URI
 
 sealed class TransferEventPartialState {
     data object Connected : TransferEventPartialState()
@@ -57,6 +58,7 @@ sealed class TransferEventPartialState {
         TransferEventPartialState()
 
     data object ResponseSent : TransferEventPartialState()
+    data class Redirect(val uri: URI) : TransferEventPartialState()
 }
 
 sealed class SendRequestedDocumentsPartialState {
@@ -67,6 +69,7 @@ sealed class SendRequestedDocumentsPartialState {
 
 sealed class ResponseReceivedPartialState {
     data object Success : ResponseReceivedPartialState()
+    data class Redirect(val uri: URI) : ResponseReceivedPartialState()
     data class Failure(val error: String) : ResponseReceivedPartialState()
 }
 
@@ -74,6 +77,7 @@ sealed class WalletCorePartialState {
     data object UserAuthenticationRequired : WalletCorePartialState()
     data class Failure(val error: String) : WalletCorePartialState()
     data object Success : WalletCorePartialState()
+    data class Redirect(val uri: URI) : WalletCorePartialState()
 }
 
 sealed class LoadSampleDataPartialState {
@@ -136,7 +140,7 @@ interface WalletCorePresentationController {
 
     /**
      * Updates the UI model
-     * @param items User updated data through UI Events
+     * @param disclosedDocuments User updated data through UI Events
      * */
     fun updateRequestedDocuments(disclosedDocuments: DisclosedDocuments?)
 
@@ -218,6 +222,13 @@ class WalletCorePresentationControllerImpl(
                 trySendBlocking(
                     TransferEventPartialState.ResponseSent
                 )
+            },
+            onRedirect = { uri ->
+                trySendBlocking(
+                    TransferEventPartialState.Redirect(
+                        uri = uri
+                    )
+                )
             }
         )
 
@@ -254,7 +265,7 @@ class WalletCorePresentationControllerImpl(
             disclosedDocuments?.let { documents ->
                 when (val response = eudiWallet.createResponse(documents)) {
                     is ResponseResult.Failure -> {
-                        emit(SendRequestedDocumentsPartialState.Failure(resourceProvider.genericErrorMessage()))
+                        emit(SendRequestedDocumentsPartialState.Failure(genericErrorMessage))
                     }
 
                     is ResponseResult.Response -> {
@@ -267,6 +278,10 @@ class WalletCorePresentationControllerImpl(
                     }
                 }
             }
+        }.safeAsync {
+            SendRequestedDocumentsPartialState.Failure(
+                it.localizedMessage ?: genericErrorMessage
+            )
         }
 
     override fun mappedCallbackStateFlow(): Flow<ResponseReceivedPartialState> {
@@ -286,6 +301,10 @@ class WalletCorePresentationControllerImpl(
                     if (_config is PresentationControllerConfig.OpenId4VP) {
                         ResponseReceivedPartialState.Success
                     } else null
+                }
+
+                is TransferEventPartialState.Redirect -> {
+                    ResponseReceivedPartialState.Redirect(uri = response.uri)
                 }
 
                 else -> null
@@ -310,6 +329,12 @@ class WalletCorePresentationControllerImpl(
 
                 sentResponseState is ResponseReceivedPartialState.Failure -> {
                     WalletCorePartialState.Failure(sentResponseState.error)
+                }
+
+                sentResponseState is ResponseReceivedPartialState.Redirect -> {
+                    WalletCorePartialState.Redirect(
+                        uri = sentResponseState.uri
+                    )
                 }
 
                 createResponseState is SendRequestedDocumentsPartialState.RequestSent &&

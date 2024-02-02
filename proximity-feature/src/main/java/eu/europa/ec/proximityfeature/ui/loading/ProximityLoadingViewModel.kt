@@ -17,12 +17,12 @@
 package eu.europa.ec.proximityfeature.ui.loading
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingObserveResponsePartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -82,23 +82,33 @@ class ProximityLoadingViewModel(
         viewModelScope.launch {
             interactor.observeResponse().collect {
                 when (it) {
-                    is WalletCorePartialState.Failure -> {
+                    is ProximityLoadingObserveResponsePartialState.Failure -> {
                         setState {
-                            copy(error = ContentErrorConfig(
-                                onRetry = { setEvent(Event.DoWork) },
-                                errorSubTitle = it.error,
-                                onCancel = { doNavigation(NavigationType.POP) }
-                            ))
+                            copy(
+                                error = ContentErrorConfig(
+                                    onRetry = { setEvent(Event.DoWork) },
+                                    errorSubTitle = it.error,
+                                    onCancel = {
+                                        setEvent(Event.DismissError)
+                                        doNavigation(NavigationType.POP)
+                                    }
+                                )
+                            )
                         }
                     }
 
-                    is WalletCorePartialState.Success -> {
+                    is ProximityLoadingObserveResponsePartialState.Success -> {
+                        setState {
+                            copy(
+                                error = null
+                            )
+                        }
                         interactor.stopPresentation()
                         getOrCreatePresentationScope().close()
                         doNavigation(NavigationType.PUSH)
                     }
 
-                    is WalletCorePartialState.UserAuthenticationRequired -> {
+                    is ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
                         // Provide implementation for Biometrics POP
                     }
                 }

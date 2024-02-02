@@ -19,11 +19,20 @@ package eu.europa.ec.presentationfeature.interactor
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapNotNull
+import java.net.URI
+
+sealed class PresentationLoadingObserveResponsePartialState {
+    data object UserAuthenticationRequired : PresentationLoadingObserveResponsePartialState()
+    data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
+    data object Success : PresentationLoadingObserveResponsePartialState()
+    data class Redirect(val uri: URI) : PresentationLoadingObserveResponsePartialState()
+}
 
 interface PresentationLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
-    fun observeResponse(): Flow<WalletCorePartialState>
+    fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
 }
 
 class PresentationLoadingInteractorImpl(
@@ -32,8 +41,21 @@ class PresentationLoadingInteractorImpl(
 
     override val verifierName: String? = walletCorePresentationController.verifierName
 
-    override fun observeResponse(): Flow<WalletCorePartialState> =
-        walletCorePresentationController.observeSentDocumentsRequest()
+    override fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState> =
+        walletCorePresentationController.observeSentDocumentsRequest().mapNotNull { response ->
+            when (response) {
+                is WalletCorePartialState.Failure -> PresentationLoadingObserveResponsePartialState.Failure(
+                    error = response.error
+                )
+
+                is WalletCorePartialState.Redirect -> PresentationLoadingObserveResponsePartialState.Redirect(
+                    uri = response.uri
+                )
+
+                is WalletCorePartialState.Success -> PresentationLoadingObserveResponsePartialState.Success
+                is WalletCorePartialState.UserAuthenticationRequired -> PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired
+            }
+        }
 
     override fun stopPresentation() {
         walletCorePresentationController.stopPresentation()
