@@ -16,7 +16,8 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -56,7 +57,11 @@ class DashboardInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun isBleAvailable(): Boolean = BluetoothAdapter.getDefaultAdapter()?.isEnabled == true
+    override fun isBleAvailable(): Boolean {
+        val bluetoothManager: BluetoothManager? = resourceProvider.provideContext()
+            .getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        return bluetoothManager?.adapter?.isEnabled == true
+    }
 
     override fun isBleCentralClientModeEnabled(): Boolean =
         walletCoreConfig.config.bleCentralClientModeEnabled
