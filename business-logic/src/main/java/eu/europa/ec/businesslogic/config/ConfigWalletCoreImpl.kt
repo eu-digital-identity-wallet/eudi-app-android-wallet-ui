@@ -28,7 +28,7 @@ internal class WalletCoreConfigImpl(
 ) : WalletCoreConfig {
 
     companion object {
-        const val VERIFIER_API_URI = "https://eudi.netcompany-intrasoft.com/san-dns"
+        const val VERIFIER_API_URI = "https://dev.verifier.eudiw.dev"
         const val VCI_ISSUER_URL = "https://preprod.issuer.eudiw.dev/oidc"
         const val VCI_CLIENT_ID = "wallet-dev"
     }
