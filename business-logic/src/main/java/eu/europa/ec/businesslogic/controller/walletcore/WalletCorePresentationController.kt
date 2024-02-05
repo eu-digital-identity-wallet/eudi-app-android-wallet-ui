@@ -249,7 +249,6 @@ class WalletCorePresentationControllerImpl(
     }
 
     override fun toggleNfcEngagement(componentActivity: ComponentActivity, toggle: Boolean) {
-        // This needs to be in try/catch because it crashes on Emulators.
         try {
             if (toggle) {
                 NfcEngagementService.enable(componentActivity)
@@ -288,7 +287,7 @@ class WalletCorePresentationControllerImpl(
         return events.mapNotNull { response ->
             when (response) {
 
-                // This state should be fixed by Scytales. Right now verifier sends this error for success
+                // Fix: Wallet core should return Success state here
                 is TransferEventPartialState.Error -> {
                     if (response.error == "Peer disconnected without proper session termination") {
                         ResponseReceivedPartialState.Success
@@ -298,7 +297,7 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 is TransferEventPartialState.Disconnected -> {
-                    if (_config is PresentationControllerConfig.OpenId4VP) {
+                    if (requireInit { _config } is PresentationControllerConfig.OpenId4VP) {
                         ResponseReceivedPartialState.Success
                     } else null
                 }
@@ -393,7 +392,7 @@ class WalletCorePresentationControllerImpl(
     }
 
     private fun sendResponse(responseBytes: ByteArray) {
-        when (_config) {
+        when (requireInit { _config }) {
             is PresentationControllerConfig.OpenId4VP -> {
                 eudiWallet.openId4vpManager.sendResponse(responseBytes)
             }
