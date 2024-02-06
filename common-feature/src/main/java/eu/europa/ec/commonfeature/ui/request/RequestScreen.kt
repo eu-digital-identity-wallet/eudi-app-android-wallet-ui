@@ -42,6 +42,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.content.TitleWithBadge
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
@@ -153,7 +154,12 @@ private fun Content(
     ) {
         // Screen Title.
         ContentTitle(
-            title = state.screenTitle,
+            titleWithBadge = state.screenTitle,
+            onTitleWithBadgeClick = if (state.screenTitle.isTrusted) {
+                { onEventSend(Event.BadgeClicked) }
+            } else {
+                null
+            },
             subtitle = state.screenSubtitle,
             clickableSubtitle = state.screenClickableSubtitle,
             onSubtitleClick = { onEventSend(Event.SubtitleClicked) },
@@ -218,6 +224,15 @@ private fun SheetContent(
     onEventSent: (event: Event) -> Unit
 ) {
     when (sheetContent) {
+        RequestBottomSheetContent.BADGE -> {
+            DialogBottomSheet(
+                title = stringResource(id = R.string.request_bottom_sheet_badge_title),
+                message = stringResource(id = R.string.request_bottom_sheet_badge_subtitle),
+                positiveButtonText = stringResource(id = R.string.request_bottom_sheet_badge_primary_button_text),
+                onPositiveClick = { onEventSent(Event.BottomSheet.Badge.PrimaryButtonPressed) },
+            )
+        }
+
         RequestBottomSheetContent.SUBTITLE -> {
             DialogBottomSheet(
                 title = stringResource(id = R.string.request_bottom_sheet_subtitle_title),
@@ -285,7 +300,7 @@ private fun ContentPreview() {
     PreviewTheme {
         Content(
             state = State(
-                screenTitle = "Title",
+                screenTitle = TitleWithBadge(isTrusted = false),
                 screenSubtitle = "Subtitle ",
                 screenClickableSubtitle = "clickable subtitle",
                 warningText = "Warning",
@@ -328,7 +343,7 @@ private fun StickyBottomSectionPreview() {
     PreviewTheme {
         StickyBottomSection(
             state = State(
-                screenTitle = "Title",
+                screenTitle = TitleWithBadge(isTrusted = false),
                 screenSubtitle = "Subtitle ",
                 screenClickableSubtitle = "clickable subtitle",
                 warningText = "Warning",

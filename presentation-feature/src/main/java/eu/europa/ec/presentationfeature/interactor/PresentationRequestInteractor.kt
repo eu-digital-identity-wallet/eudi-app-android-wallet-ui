@@ -33,11 +33,14 @@ import kotlinx.coroutines.flow.mapNotNull
 sealed class PresentationRequestInteractorPartialState {
     data class Success(
         val verifierName: String? = null,
+        val verifierIsTrusted: Boolean,
         val requestDocuments: List<RequestDataUi<Event>>
     ) : PresentationRequestInteractorPartialState()
 
-    data class NoData(val verifierName: String? = null) :
-        PresentationRequestInteractorPartialState()
+    data class NoData(
+        val verifierName: String? = null,
+        val verifierIsTrusted: Boolean,
+    ) : PresentationRequestInteractorPartialState()
 
     data class Failure(val error: String) : PresentationRequestInteractorPartialState()
     data object Disconnect : PresentationRequestInteractorPartialState()
@@ -69,7 +72,8 @@ class PresentationRequestInteractorImpl(
                 is TransferEventPartialState.RequestReceived -> {
                     if (response.requestData.all { it.docRequest.requestItems.isEmpty() }) {
                         PresentationRequestInteractorPartialState.NoData(
-                            verifierName = response.verifierName
+                            verifierName = response.verifierName,
+                            verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
                         val requestDataUi = RequestTransformer.transformToUiItems(
@@ -80,6 +84,7 @@ class PresentationRequestInteractorImpl(
                         )
                         PresentationRequestInteractorPartialState.Success(
                             verifierName = response.verifierName,
+                            verifierIsTrusted = response.verifierIsTrusted,
                             requestDocuments = requestDataUi
                         )
                     }

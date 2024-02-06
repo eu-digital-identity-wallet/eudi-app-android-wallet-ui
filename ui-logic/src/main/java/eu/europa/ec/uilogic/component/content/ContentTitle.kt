@@ -26,22 +26,31 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.extension.clickableNoRipple
 import eu.europa.ec.uilogic.extension.throttledClickable
 
 /**
@@ -56,6 +65,8 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 @Composable
 fun ContentTitle(
     title: String? = null,
+    titleWithBadge: TitleWithBadge? = null,
+    onTitleWithBadgeClick: (() -> Unit)? = null,
     titleStyle: TextStyle = MaterialTheme.typography.headlineSmall.copy(
         color = MaterialTheme.colorScheme.textPrimaryDark
     ),
@@ -92,7 +103,29 @@ fun ContentTitle(
         Column(
             horizontalAlignment = Alignment.Start
         ) {
-            if (!title.isNullOrEmpty()) {
+            if (titleWithBadge != null) {
+                val inlineContentMap = mapOf(
+                    "badgeIconId" to InlineTextContent(
+                        Placeholder(20.sp, 20.sp, PlaceholderVerticalAlign.TextCenter)
+                    ) {
+                        WrapIcon(
+                            iconData = AppIcons.Verified,
+                            customTint = Color.Green
+                        )
+                    }
+                )
+
+                Text(
+                    modifier = onTitleWithBadgeClick?.let {
+                        Modifier.clickableNoRipple(
+                            onClick = it
+                        )
+                    } ?: Modifier,
+                    text = titleWithBadge.annotatedString,
+                    style = titleStyle,
+                    inlineContent = inlineContentMap,
+                )
+            } else if (!title.isNullOrEmpty()) {
                 Text(
                     text = title,
                     style = titleStyle,
@@ -170,4 +203,33 @@ fun ContentTitle(
             )
         }
     }
+}
+
+data class TitleWithBadge(
+    private val textBeforeBadge: String? = null,
+    private val textAfterBadge: String? = null,
+    val isTrusted: Boolean
+) {
+    val annotatedString = buildAnnotatedString {
+        if (!textBeforeBadge.isNullOrEmpty()) {
+            append(textBeforeBadge)
+        }
+        if (isTrusted) {
+            append(" ")
+            appendInlineContent(id = "badgeIconId")
+        }
+        if (!textAfterBadge.isNullOrEmpty()) {
+            append(textAfterBadge)
+        }
+    }
+
+    val plainText: String
+        get() = buildString {
+            if (!textBeforeBadge.isNullOrEmpty()) {
+                append(textBeforeBadge)
+            }
+            if (!textAfterBadge.isNullOrEmpty()) {
+                append(textAfterBadge)
+            }
+        }
 }

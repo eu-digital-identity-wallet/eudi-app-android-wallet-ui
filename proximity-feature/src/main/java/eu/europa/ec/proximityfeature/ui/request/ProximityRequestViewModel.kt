@@ -27,6 +27,7 @@ import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartia
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.TitleWithBadge
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -65,7 +66,7 @@ class ProximityRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = viewState.value.screenTitle,
+                            title = viewState.value.screenTitle.plainText,
                             subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
@@ -123,7 +124,10 @@ class ProximityRequestViewModel(
                                 isLoading = false,
                                 error = null,
                                 verifierName = response.verifierName,
-                                screenTitle = getScreenTitle(verifierName),
+                                screenTitle = getScreenTitle(
+                                    verifierName = response.verifierName,
+                                    verifierIsTrusted = response.verifierIsTrusted
+                                ),
                                 items = response.requestDocuments
                             )
                         }
@@ -139,7 +143,10 @@ class ProximityRequestViewModel(
                                 isLoading = false,
                                 error = null,
                                 verifierName = response.verifierName,
-                                screenTitle = getScreenTitle(verifierName),
+                                screenTitle = getScreenTitle(
+                                    verifierName = response.verifierName,
+                                    verifierIsTrusted = response.verifierIsTrusted
+                                ),
                                 noItems = true,
                             )
                         }
@@ -159,11 +166,19 @@ class ProximityRequestViewModel(
         interactor.stopPresentation()
     }
 
-    private fun getScreenTitle(verifierName: String?): String {
-        return if (verifierName.isNullOrBlank()) {
-            resourceProvider.getString(R.string.request_title)
+    private fun getScreenTitle(verifierName: String?, verifierIsTrusted: Boolean): TitleWithBadge {
+        val textBeforeBadge = if (verifierName.isNullOrBlank()) {
+            resourceProvider.getString(R.string.request_title_before_badge)
         } else {
-            resourceProvider.getString(R.string.request_title_with_verifier_name, verifierName)
+            verifierName
         }
+
+        val textAfterBadge = resourceProvider.getString(R.string.request_title_after_badge)
+
+        return TitleWithBadge(
+            textBeforeBadge = textBeforeBadge,
+            textAfterBadge = textAfterBadge,
+            isTrusted = verifierIsTrusted
+        )
     }
 }
