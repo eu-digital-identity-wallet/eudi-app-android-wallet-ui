@@ -29,6 +29,11 @@ interface ConfigLogic {
      * Server Environment Configuration.
      */
     val environmentConfig: EnvironmentConfig
+
+    /**
+     * Application version.
+     */
+    val appVersion: String get() = BuildConfig.APP_VERSION
 }
 
 enum class AppBuildType {
