@@ -53,9 +53,9 @@ sealed class TransferEventPartialState {
     data class QrEngagementReady(val qrCode: String) : TransferEventPartialState()
     data class RequestReceived(
         val requestData: List<RequestDocument>,
-        val verifierName: String?
-    ) :
-        TransferEventPartialState()
+        val verifierName: String?,
+        val verifierIsTrusted: Boolean,
+    ) : TransferEventPartialState()
 
     data object ResponseSent : TransferEventPartialState()
     data class Redirect(val uri: URI) : TransferEventPartialState()
@@ -211,10 +211,13 @@ class WalletCorePresentationControllerImpl(
             onRequestReceived = { requestDocuments ->
                 verifierName =
                     requestDocuments.firstOrNull()?.docRequest?.readerAuth?.readerCommonName
+                val verifierIsTrusted =
+                    requestDocuments.firstOrNull()?.docRequest?.readerAuth?.readerSignIsValid == true
                 trySendBlocking(
                     TransferEventPartialState.RequestReceived(
                         requestData = requestDocuments,
-                        verifierName = verifierName
+                        verifierName = verifierName,
+                        verifierIsTrusted = verifierIsTrusted
                     )
                 )
             },
