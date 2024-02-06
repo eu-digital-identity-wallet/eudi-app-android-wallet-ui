@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -153,6 +154,7 @@ fun DashboardScreen(
             ) {
                 DashboardSheetContent(
                     sheetContent = state.sheetContent,
+                    state = state,
                     onEventSent = {
                         viewModel.setEvent(it)
                     }
@@ -266,6 +268,7 @@ private fun Content(
 @Composable
 private fun DashboardSheetContent(
     sheetContent: DashboardBottomSheetContent,
+    state: State,
     onEventSent: (event: Event) -> Unit
 ) {
     when (sheetContent) {
@@ -343,6 +346,16 @@ private fun DashboardSheetContent(
                             color = MaterialTheme.colorScheme.textPrimaryDark
                         )
                     }
+
+                    VSpacer.Medium()
+
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = state.appVersion,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.textSecondaryDark,
+                        textAlign = TextAlign.Center
+                    )
                 }
             )
         }
@@ -677,6 +690,7 @@ private fun SheetContentPreview() {
     PreviewTheme {
         DashboardSheetContent(
             sheetContent = DashboardBottomSheetContent.OPTIONS,
+            state = State(),
             onEventSent = {}
         )
     }

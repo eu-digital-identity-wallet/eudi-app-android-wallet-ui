@@ -59,6 +59,7 @@ data class State(
     val documents: List<DocumentUi> = emptyList(),
 
     val deepLinkUri: Uri? = null,
+    val appVersion: String = ""
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -123,7 +124,8 @@ class DashboardViewModel(
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State(
-        isBleCentralClientModeEnabled = dashboardInteractor.isBleCentralClientModeEnabled()
+        isBleCentralClientModeEnabled = dashboardInteractor.isBleCentralClientModeEnabled(),
+        appVersion = dashboardInteractor.getAppVersion()
     )
 
     override fun handleEvents(event: Event) {

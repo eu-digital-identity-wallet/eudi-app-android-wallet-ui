@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -46,12 +47,14 @@ interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorPartialState>
     fun isBleAvailable(): Boolean
     fun isBleCentralClientModeEnabled(): Boolean
+    fun getAppVersion(): String
 }
 
 class DashboardInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val walletCoreConfig: WalletCoreConfig
+    private val walletCoreConfig: WalletCoreConfig,
+    private val configLogic: ConfigLogic
 ) : DashboardInteractor {
 
     private val genericErrorMsg
@@ -117,4 +120,6 @@ class DashboardInteractorImpl(
             error = it.localizedMessage ?: genericErrorMsg
         )
     }
+
+    override fun getAppVersion(): String = configLogic.appVersion
 }

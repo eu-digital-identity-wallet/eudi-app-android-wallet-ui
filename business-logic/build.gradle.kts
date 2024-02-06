@@ -15,6 +15,7 @@
  */
 
 import eu.europa.ec.euidi.addConfigField
+import eu.europa.ec.euidi.getProperty
 
 plugins {
     id("eudi.android.library")
@@ -26,6 +27,10 @@ android {
 
     defaultConfig {
         addConfigField("DEEPLINK", "eudi-wallet://")
+        addConfigField(
+            "APP_VERSION",
+            getProperty("VERSION_NAME", "version.properties") ?: ""
+        )
     }
 }
 
