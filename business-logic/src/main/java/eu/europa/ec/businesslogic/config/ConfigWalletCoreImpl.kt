@@ -30,7 +30,7 @@ internal class WalletCoreConfigImpl(
     companion object {
         const val VERIFIER_API_URI = "https://dev.verifier.eudiw.dev"
         const val VERIFIER_CLIENT_ID = "Verifier"
-        const val VCI_ISSUER_URL = "https://preprod.issuer.eudiw.dev/oidc"
+        const val VCI_ISSUER_URL = "https://issuer.eudiw.dev/oidc"
         const val VCI_CLIENT_ID = "wallet-dev"
     }
 
