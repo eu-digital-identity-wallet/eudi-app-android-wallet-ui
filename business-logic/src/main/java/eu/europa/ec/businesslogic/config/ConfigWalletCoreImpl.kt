@@ -22,6 +22,7 @@ import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionMethod
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.PreregisteredVerifier
+import eu.europa.ec.resourceslogic.R
 
 internal class WalletCoreConfigImpl(
     private val context: Context
@@ -30,7 +31,7 @@ internal class WalletCoreConfigImpl(
     companion object {
         const val VERIFIER_API_URI = "https://dev.verifier.eudiw.dev"
         const val VERIFIER_CLIENT_ID = "Verifier"
-        const val VCI_ISSUER_URL = "https://preprod.issuer.eudiw.dev/oidc"
+        const val VCI_ISSUER_URL = "https://issuer.eudiw.dev/oidc"
         const val VCI_CLIENT_ID = "wallet-dev"
     }
 
@@ -62,6 +63,7 @@ internal class WalletCoreConfigImpl(
                         withIssuerUrl(issuerUrl = VCI_ISSUER_URL)
                         withClientId(clientId = VCI_CLIENT_ID)
                     }
+                    .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
                     .build()
             }
             return _config!!
