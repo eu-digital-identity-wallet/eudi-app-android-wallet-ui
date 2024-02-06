@@ -83,6 +83,7 @@ class ProximityQRViewModel(
 
             is Event.GoBack -> {
                 cleanUp()
+                setState { copy(error = null) }
                 setEffect { Effect.Navigation.Pop }
             }
 

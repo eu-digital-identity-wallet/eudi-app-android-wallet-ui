@@ -57,6 +57,7 @@
     <string name="content_description_visibility_off_icon">Hide</string>
     <string name="content_description_add_icon">Add</string>
     <string name="content_description_edit_icon">Edit</string>
+    <string name="content_description_verified_icon">Verified</string>
 
     <!-- Document Types -->
     <string name="pid">National ID</string>
@@ -107,8 +108,8 @@
 
 
     <!-- Request Screen -->
-    <string name="request_title">Verifier requests the following</string>
-    <string name="request_title_with_verifier_name">%1$s requests the following</string>
+    <string name="request_title_before_badge">Verifier</string>
+    <string name="request_title_after_badge">\ requests the following</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
     <string name="request_subtitle_one">Please review carefully before sharing your data.</string>
@@ -123,6 +124,9 @@
     <string name="request_bottom_sheet_subtitle_title">Why we need your data</string>
     <string name="request_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
     <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
+    <string name="request_bottom_sheet_badge_title">Trusted relying party</string>
+    <string name="request_bottom_sheet_badge_subtitle">A relying party is considered trusted when it meets predefined criteria for security, data protection, compliance, and responsible data handling. Trust is reinforced through assessments, audits, and certifications.</string>
+    <string name="request_bottom_sheet_badge_primary_button_text">@string/generic_ok</string>
     <string name="request_required_fields_title">Verification Data</string>
     <string name="request_gender_male">male</string>
     <string name="request_gender_female">female</string>

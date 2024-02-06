@@ -33,10 +33,14 @@ import kotlinx.coroutines.flow.mapNotNull
 sealed class ProximityRequestInteractorPartialState {
     data class Success(
         val verifierName: String? = null,
+        val verifierIsTrusted: Boolean,
         val requestDocuments: List<RequestDataUi<Event>>
     ) : ProximityRequestInteractorPartialState()
 
-    data class NoData(val verifierName: String? = null) : ProximityRequestInteractorPartialState()
+    data class NoData(
+        val verifierName: String? = null,
+        val verifierIsTrusted: Boolean,
+    ) : ProximityRequestInteractorPartialState()
 
     data class Failure(val error: String) : ProximityRequestInteractorPartialState()
     data object Disconnect : ProximityRequestInteractorPartialState()
@@ -68,7 +72,8 @@ class ProximityRequestInteractorImpl(
                 is TransferEventPartialState.RequestReceived -> {
                     if (response.requestData.all { it.docRequest.requestItems.isEmpty() }) {
                         ProximityRequestInteractorPartialState.NoData(
-                            verifierName = response.verifierName
+                            verifierName = response.verifierName,
+                            verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
                         val requestDataUi = RequestTransformer.transformToUiItems(
@@ -79,6 +84,7 @@ class ProximityRequestInteractorImpl(
                         )
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = response.verifierName,
+                            verifierIsTrusted = response.verifierIsTrusted,
                             requestDocuments = requestDataUi
                         )
                     }

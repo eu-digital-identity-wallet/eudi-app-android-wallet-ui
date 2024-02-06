@@ -19,6 +19,7 @@ package eu.europa.ec.commonfeature.ui.request
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.TitleWithBadge
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -34,7 +35,7 @@ data class State(
     val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.SUBTITLE,
 
     val verifierName: String? = null,
-    val screenTitle: String,
+    val screenTitle: TitleWithBadge,
     val screenSubtitle: String,
     val screenClickableSubtitle: String?,
     val warningText: String,
@@ -51,6 +52,7 @@ sealed class Event : ViewEvent {
     data class ExpandOrCollapseRequiredDataList(val id: Int) : Event()
     data class UserIdentificationClicked(val itemId: String) : Event()
 
+    data object BadgeClicked : Event()
     data object SubtitleClicked : Event()
     data object PrimaryButtonPressed : Event()
     data object SecondaryButtonPressed : Event()
@@ -64,6 +66,10 @@ sealed class Event : ViewEvent {
         }
 
         sealed class Subtitle : BottomSheet() {
+            data object PrimaryButtonPressed : Subtitle()
+        }
+
+        sealed class Badge : BottomSheet() {
             data object PrimaryButtonPressed : Subtitle()
         }
     }
@@ -86,7 +92,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 enum class RequestBottomSheetContent {
-    SUBTITLE, CANCEL
+    BADGE, SUBTITLE, CANCEL
 }
 
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
@@ -117,7 +123,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State {
         return State(
-            screenTitle = "",
+            screenTitle = TitleWithBadge(isTrusted = false),
             screenSubtitle = getScreenSubtitle(),
             screenClickableSubtitle = getScreenClickableSubtitle(),
             warningText = getWarningText(),
@@ -157,6 +163,10 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 updateUserIdentificationItem(id = event.itemId)
             }
 
+            is Event.BadgeClicked -> {
+                showBottomSheet(sheetContent = RequestBottomSheetContent.BADGE)
+            }
+
             is Event.SubtitleClicked -> {
                 showBottomSheet(sheetContent = RequestBottomSheetContent.SUBTITLE)
             }
@@ -185,6 +195,10 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.BottomSheet.Subtitle.PrimaryButtonPressed -> {
+                hideBottomSheet()
+            }
+
+            is Event.BottomSheet.Badge.PrimaryButtonPressed -> {
                 hideBottomSheet()
             }
         }
