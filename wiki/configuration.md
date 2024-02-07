@@ -6,10 +6,20 @@ The application allows the configuration of:
 
 1. Wallet Host Url
 2. Verifier API
-3. Trusted certificates
 
 Via the *EudiWalletConfig* class.
 
+1. Trusted certificates
+
+Via the *ProximityConfig* struct.
+
+The applications certificates are located here:
+
+https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw
+
+You will also find the IACA certificate here. (trusted iaca root certificates).
+
+ProximityConfig
 ## Theme configuration
 
 The application allows the configuration of:
