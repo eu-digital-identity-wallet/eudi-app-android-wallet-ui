@@ -16,7 +16,6 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -43,6 +42,8 @@ data class State(
 
     val items: List<RequestDataUi<Event>> = emptyList(),
     val noItems: Boolean = false,
+    val showWarningCard: Boolean = false,
+    val allowShare: Boolean = false
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -100,6 +101,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     protected var viewModelJob: Job? = null
 
     abstract fun getScreenSubtitle(): String
+    abstract fun getScreenTitle(): TitleWithBadge
     abstract fun getScreenClickableSubtitle(): String?
     abstract fun getWarningText(): String
     abstract fun getNextScreen(): String
@@ -115,15 +117,23 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         getOrCreatePresentationScope().close()
     }
 
-    open fun updateData(updatedItems: List<RequestDataUi<Event>>) {
+    open fun updateData(updatedItems: List<RequestDataUi<Event>>, allowShare: Boolean? = null) {
         setState {
-            copy(items = updatedItems)
+            copy(
+                items = updatedItems,
+                showWarningCard = updatedItems.any {
+                    it is RequestDataUi.OptionalField
+                            && it.optionalFieldItemUi.requestDocumentItemUi.enabled
+                            && !it.optionalFieldItemUi.requestDocumentItemUi.checked
+                },
+                allowShare = allowShare ?: updatedItems.isNotEmpty()
+            )
         }
     }
 
     override fun setInitialState(): State {
         return State(
-            screenTitle = TitleWithBadge(isTrusted = false),
+            screenTitle = getScreenTitle(),
             screenSubtitle = getScreenSubtitle(),
             screenClickableSubtitle = getScreenClickableSubtitle(),
             warningText = getWarningText(),
@@ -246,7 +256,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 item
             }
         }
-        updateData(updatedItems)
+        updateData(updatedItems, viewState.value.allowShare)
     }
 
     private fun updateUserIdentificationItem(id: String) {
@@ -267,7 +277,19 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 item
             }
         }
-        updateData(updatedList)
+
+        val hasVerificationItems = updatedList.any { it is RequestDataUi.RequiredFields }
+
+        val hasAtLeastOneFieldSelected = updatedList
+            .filterIsInstance<RequestDataUi.OptionalField<Event>>().any {
+                it.optionalFieldItemUi.requestDocumentItemUi.enabled
+                        && it.optionalFieldItemUi.requestDocumentItemUi.checked
+            }
+
+        updateData(
+            updatedItems = updatedList,
+            allowShare = hasAtLeastOneFieldSelected || hasVerificationItems
+        )
     }
 
     private fun showBottomSheet(sheetContent: RequestBottomSheetContent) {

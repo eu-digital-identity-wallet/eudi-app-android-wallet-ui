@@ -97,7 +97,7 @@ fun <T> Request(
                     }
 
                     is RequestDataUi.OptionalField -> {
-                        OptionalField(
+                        Field(
                             item = item.optionalFieldItemUi.requestDocumentItemUi,
                             showFullDetails = isShowingFullUserInfo,
                             onEventSend = onEventSend,
@@ -105,7 +105,7 @@ fun <T> Request(
                     }
 
                     is RequestDataUi.RequiredFields -> {
-                        RequiredFields(
+                        RequiredCard(
                             item = item.requiredFieldsItemUi,
                             showFullDetails = isShowingFullUserInfo,
                             onEventSend = onEventSend,
@@ -149,7 +149,7 @@ fun DocumentCard(
 }
 
 @Composable
-fun <T> OptionalField(
+fun <T> Field(
     item: RequestDocumentItemUi<T>,
     showFullDetails: Boolean,
     onEventSend: (T) -> Unit,
@@ -199,7 +199,7 @@ fun <T> OptionalField(
 }
 
 @Composable
-fun <T> RequiredFields(
+fun <T> RequiredCard(
     item: RequiredFieldsItemUi<T>,
     showFullDetails: Boolean,
     onEventSend: (T) -> Unit,
@@ -238,7 +238,7 @@ fun <T> RequiredFields(
             cardTitlePadding = requiredFieldsTitlePadding,
             cardContent = {
                 item.requestDocumentItemsUi.forEach { requiredUserIdentificationUi ->
-                    OptionalField(
+                    Field(
                         item = requiredUserIdentificationUi,
                         showFullDetails = showFullDetails,
                         onEventSend = onEventSend

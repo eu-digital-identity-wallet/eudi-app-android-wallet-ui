@@ -36,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -264,10 +263,7 @@ fun StickyBottomSection(
         VSpacer.ExtraSmall()
 
         AnimatedVisibility(
-            visible = state.items.any {
-                it is RequestDataUi.OptionalField
-                        && !it.optionalFieldItemUi.requestDocumentItemUi.checked
-            }
+            visible = state.showWarningCard
         ) {
             Column {
                 WarningCard(warningText = state.warningText)
@@ -277,7 +273,7 @@ fun StickyBottomSection(
 
         WrapPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading && !state.noItems,
+            enabled = !state.isLoading && state.allowShare,
             onClick = { onEventSend(Event.PrimaryButtonPressed) }
         ) {
             Text(text = stringResource(id = R.string.request_primary_button_text))

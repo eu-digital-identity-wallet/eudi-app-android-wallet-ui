@@ -103,6 +103,7 @@ object RequestTransformer {
                                 elementIdentifier = docItem.elementIdentifier,
                             ),
                             optional = false,
+                            isChecked = true,
                             event = null,
                             readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
                             value = value
@@ -124,6 +125,7 @@ object RequestTransformer {
                                     elementIdentifier = docItem.elementIdentifier,
                                 ),
                                 optional = isAvailable,
+                                isChecked = isAvailable,
                                 event = Event.UserIdentificationClicked(itemId = uID),
                                 readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
                                 value = value
@@ -141,16 +143,18 @@ object RequestTransformer {
             items += RequestDataUi.Space()
 
             // Add required fields item.
-            items += RequestDataUi.RequiredFields(
-                requiredFieldsItemUi = RequiredFieldsItemUi(
-                    id = docIndex,
-                    requestDocumentItemsUi = required,
-                    expanded = false,
-                    title = requiredFieldsTitle,
-                    event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
+            if (required.isNotEmpty()) {
+                items += RequestDataUi.RequiredFields(
+                    requiredFieldsItemUi = RequiredFieldsItemUi(
+                        id = docIndex,
+                        requestDocumentItemsUi = required,
+                        expanded = false,
+                        title = requiredFieldsTitle,
+                        event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
+                    )
                 )
-            )
-            items += RequestDataUi.Space()
+                items += RequestDataUi.Space()
+            }
         }
 
         return items
