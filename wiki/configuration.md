@@ -8,7 +8,7 @@ The application allows the configuration of:
 2. Verifier API
 3. Trusted certificates
 
-Via the *WalletConfig* struct.
+Via the *EudiWalletConfig* class.
 
 ## Theme configuration
 
@@ -20,4 +20,4 @@ The application allows the configuration of:
 4. Fonts
 5. Dimension
 
-Via the *ThemeConfiguration* struct.
+Via *ThemeManager.Builder()*.
