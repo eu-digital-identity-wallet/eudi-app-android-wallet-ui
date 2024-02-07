@@ -42,10 +42,15 @@ import org.json.JSONObject
 private fun getMandatoryFields(docType: DocumentTypeUi): List<String> = when (docType) {
 
     DocumentTypeUi.PID -> listOf(
-        "age_over_18",
-        "family_name",
-        "given_name",
-        "birth_date",
+        "issuance_date",
+        "expiry_date",
+        "issuing_authority",
+        "document_number",
+        "administrative_number",
+        "issuing_country",
+        "issuing_jurisdiction",
+        "portrait",
+        "portrait_capture_date"
     )
 
     else -> emptyList()
