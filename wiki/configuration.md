@@ -4,14 +4,15 @@
 
 The application allows the configuration of:
 
-1. Wallet Host Url
+1. Environment Config.
 2. Verifier API
+3. VCI API URL
 
-Via the *EudiWalletConfig* class.
+Via the *WalletEnvironmentConfig* class.
 
 1. Trusted certificates
 
-Via the *ProximityConfig* struct.
+Via the *WalletCoreConfig* struct.
 
 The applications certificates are located here:
 

@@ -61,7 +61,7 @@ You will also need to download the Android Verifier app [here](https://install.a
 App launch
 
 1. Launch the application
-2. You will be presented with a welcome screen were you will be asked to create a PIN for future logins. (e.g. 1111).
+2. You will be presented with a welcome screen were you will be asked to create a PIN for future logins.
 
 Issuance flow
 
