@@ -92,7 +92,7 @@ Presentation (Online authentication/Same device) flow.
 Proximity flow
 
 1. User logs in successfully to EUDI Wallet app and views the dashboard.
-2. User clicks the 'SHOW QR/TAP' button in order to display the QR code.
+2. User clicks the 'SHOW QR' button in order to display the QR code.
 3. Relying Party scans the presented QR code.
 4. EUDI Wallet User can view the set of requested data from the relying party.
 
