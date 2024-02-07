@@ -39,15 +39,15 @@ involved, follow the guidelines found in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Issuance
 
-[Issuance](https://github.com/niscy-eudiw/eudi-app-ios-wallet-ui/blob/feature/updated-readme-07-02/wiki/issuance.mp4)
+[Issuance](wiki/issuance.mp4)
 
 Presentation
 
-[Presentation](https://github.com/niscy-eudiw/eudi-app-ios-wallet-ui/blob/feature/updated-readme-07-02/wiki/presentation.mp4)
+[Presentation](wiki/presentation.mp4)
 
 Proximity
 
-[Proximity](https://github.com/niscy-eudiw/eudi-app-ios-wallet-ui/blob/feature/updated-readme-07-02/wiki/proximity.mp4)
+[Proximity](wiki/proximity.mp4)
 
 ## How to use the application
 
@@ -104,7 +104,7 @@ Proximity flow
 
 ## Application configuration
 
-You can find instructions on how to configure the application [here](https://github.com/niscy-eudiw/eudi-app-ios-wallet-ui/blob/feature/updated-readme-07-02/wiki/configuration.md)
+You can find instructions on how to configure the application [here](wiki/configuration.md)
 
 ## License
 
