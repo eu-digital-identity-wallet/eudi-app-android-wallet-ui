@@ -64,12 +64,13 @@ fun <T> DocItem.toRequestDocumentItemUi(
     readableName: String,
     value: String,
     optional: Boolean,
+    isChecked: Boolean,
     event: T?
 ): RequestDocumentItemUi<T> {
     return RequestDocumentItemUi(
         id = uID,
         domainPayload = docPayload,
-        checked = true,
+        checked = isChecked,
         enabled = optional,
         readableName = readableName,
         docItem = this,

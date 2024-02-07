@@ -59,6 +59,10 @@ class PresentationRequestViewModel(
         return resourceProvider.getString(R.string.request_warning_text)
     }
 
+    override fun getScreenTitle(): TitleWithBadge {
+        return constructTitle()
+    }
+
     override fun getNextScreen(): String {
         return generateComposableNavigationLink(
             screen = CommonScreens.Biometric,
@@ -124,7 +128,7 @@ class PresentationRequestViewModel(
                                 isLoading = false,
                                 error = null,
                                 verifierName = response.verifierName,
-                                screenTitle = getScreenTitle(
+                                screenTitle = constructTitle(
                                     verifierName = response.verifierName,
                                     verifierIsTrusted = response.verifierIsTrusted
                                 ),
@@ -143,7 +147,7 @@ class PresentationRequestViewModel(
                                 isLoading = false,
                                 error = null,
                                 verifierName = response.verifierName,
-                                screenTitle = getScreenTitle(
+                                screenTitle = constructTitle(
                                     verifierName = response.verifierName,
                                     verifierIsTrusted = response.verifierIsTrusted
                                 ),
@@ -156,8 +160,8 @@ class PresentationRequestViewModel(
         }
     }
 
-    override fun updateData(updatedItems: List<RequestDataUi<Event>>) {
-        super.updateData(updatedItems)
+    override fun updateData(updatedItems: List<RequestDataUi<Event>>, allowShare: Boolean?) {
+        super.updateData(updatedItems, allowShare)
         interactor.updateRequestedDocuments(updatedItems)
     }
 
@@ -166,7 +170,10 @@ class PresentationRequestViewModel(
         interactor.stopPresentation()
     }
 
-    private fun getScreenTitle(verifierName: String?, verifierIsTrusted: Boolean): TitleWithBadge {
+    private fun constructTitle(
+        verifierName: String? = null,
+        verifierIsTrusted: Boolean = false
+    ): TitleWithBadge {
         val textBeforeBadge = if (verifierName.isNullOrBlank()) {
             resourceProvider.getString(R.string.request_title_before_badge)
         } else {
