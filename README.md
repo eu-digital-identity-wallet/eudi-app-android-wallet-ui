@@ -44,11 +44,11 @@ Issuance
 
 Presentation
 
-[Presentation](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/9d22eb6e-b50d-4738-94a7-0703cb8af251)
+[Presentation](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/36dc1755-6807-4002-8dbe-c41e6798e1a7)
 
 Proximity
 
-[Proximity](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/18e0f5f1-789c-4a70-9f2b-49ea0607bc17)
+[Proximity](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/e9edaf85-e5da-4cf9-8690-d10300e261bf)
 
 ## How to use the application
 
