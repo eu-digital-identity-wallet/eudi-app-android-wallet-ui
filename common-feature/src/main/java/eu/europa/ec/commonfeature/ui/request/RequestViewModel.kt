@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
+import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -109,7 +110,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
      *
      * Kill presentation scope.
      *
-     * Therefore kill [EudiWalletInteractor]
      * */
     open fun cleanUp() {
         getOrCreatePresentationScope().close()

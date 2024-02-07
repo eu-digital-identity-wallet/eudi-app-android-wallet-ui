@@ -40,19 +40,6 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.json.JSONObject
 
 private fun getMandatoryFields(docType: DocumentTypeUi): List<String> = when (docType) {
-    DocumentTypeUi.MDL -> listOf(
-        "family_name",
-        "given_name",
-        "birth_date",
-        "issue_date",
-        "expiry_date",
-        "issuing_country",
-        "issuing_authority",
-        "document_number",
-        "portrait",
-        "driving_privileges",
-        "un_distinguishing_sign",
-    )
 
     DocumentTypeUi.PID -> listOf(
         "age_over_18",

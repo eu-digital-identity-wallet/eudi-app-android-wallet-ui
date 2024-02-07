@@ -39,8 +39,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
@@ -98,7 +98,7 @@ fun <T> Request(
 
                     is RequestDataUi.OptionalField -> {
                         OptionalField(
-                            item = item.optionalFieldItemUi,
+                            item = item.optionalFieldItemUi.requestDocumentItemUi,
                             showFullDetails = isShowingFullUserInfo,
                             onEventSend = onEventSend,
                         )
@@ -107,6 +107,7 @@ fun <T> Request(
                     is RequestDataUi.RequiredFields -> {
                         RequiredFields(
                             item = item.requiredFieldsItemUi,
+                            showFullDetails = isShowingFullUserInfo,
                             onEventSend = onEventSend,
                             contentPadding = contentPadding,
                         )
@@ -149,31 +150,31 @@ fun DocumentCard(
 
 @Composable
 fun <T> OptionalField(
-    item: OptionalFieldItemUi<T>,
+    item: RequestDocumentItemUi<T>,
     showFullDetails: Boolean,
     onEventSend: (T) -> Unit,
 ) {
     CheckboxWithContent(
         modifier = Modifier.fillMaxWidth(),
         checkboxData = CheckboxData(
-            isChecked = item.requestDocumentItemUi.checked,
-            enabled = item.requestDocumentItemUi.enabled,
+            isChecked = item.checked,
+            enabled = item.enabled,
             onCheckedChange = {
-                item.requestDocumentItemUi.event?.let { event ->
+                item.event?.let { event ->
                     onEventSend(event)
                 }
             }
         )
     ) {
-        val infoName = item.requestDocumentItemUi.readableName
-        val infoValueStyle = if (item.requestDocumentItemUi.checked) {
+        val infoName = item.readableName
+        val infoValueStyle = if (item.checked) {
             MaterialTheme.typography.titleMedium
         } else {
             MaterialTheme.typography.bodyLarge
         }
 
         if (showFullDetails) {
-            if (item.requestDocumentItemUi.keyIsBase64) {
+            if (item.keyIsBase64) {
                 InfoTextWithNameAndIconData(
                     title = infoName,
                     icon = AppIcons.User,
@@ -183,7 +184,7 @@ fun <T> OptionalField(
                 InfoTextWithNameAndValue(
                     itemData = InfoTextWithNameAndValueData.create(
                         title = infoName,
-                        item.requestDocumentItemUi.value,
+                        item.value,
                     ),
                     infoValueTextStyle = infoValueStyle
                 )
@@ -200,8 +201,9 @@ fun <T> OptionalField(
 @Composable
 fun <T> RequiredFields(
     item: RequiredFieldsItemUi<T>,
+    showFullDetails: Boolean,
     onEventSend: (T) -> Unit,
-    contentPadding: PaddingValues,
+    contentPadding: PaddingValues
 ) {
     val requiredFieldsTextStyle = MaterialTheme.typography.titleMedium
     val requiredFieldsTitlePadding = PaddingValues(
@@ -236,20 +238,11 @@ fun <T> RequiredFields(
             cardTitlePadding = requiredFieldsTitlePadding,
             cardContent = {
                 item.requestDocumentItemsUi.forEach { requiredUserIdentificationUi ->
-                    val checkboxData = CheckboxData(
-                        isChecked = requiredUserIdentificationUi.checked,
-                        enabled = requiredUserIdentificationUi.enabled,
-                        onCheckedChange = null
+                    OptionalField(
+                        item = requiredUserIdentificationUi,
+                        showFullDetails = showFullDetails,
+                        onEventSend = onEventSend
                     )
-                    CheckboxWithContent(
-                        modifier = Modifier.fillMaxWidth(),
-                        checkboxData = checkboxData
-                    ) {
-                        Text(
-                            text = requiredUserIdentificationUi.readableName,
-                            style = requiredFieldsTextStyle
-                        )
-                    }
                 }
             },
             cardContentPadding = PaddingValues(all = SPACING_SMALL.dp),
