@@ -65,28 +65,28 @@ App launch
 
 Issuance flow
 
-1. Then you will be show the "Add document" screen.
+1. Then you will be shown the "Add document" screen.
 2. Pick "National ID".
 3. From the web view that appears select the "FormEU" option and tap submit.
 4. Fill in the form. Any data will do.
-5. You will be show a success screen. Tap next.
+5. You will be shown a success screen. Tap next.
 6. Your "National ID" is displayed. Tap "Continue".
 7. You are now in the "Dashboard" screen.
 
-Here you can tap "Add doc" add issue a new document, e.g. "Driving License".
+Here you can tap "Add doc" and issue a new document, e.g. "Driving License".
 
 If you want to re-issue a document you must delete it first by tapping on the document in the "Dashboard" screen and tapping the delete icon in the "Document details" view.
 
 Presentation (Online authentication/Same device) flow.
 
-1. Go to the browser application on yoiur device and enter "https://dev.verifier.eudiw.dev/"
+1. Go to the browser application on your device and enter "https://dev.verifier.eudiw.dev/"
 2. Tap the first option (selectable) and pick the fields you want to share (e.g. "Family Name" and "Given Name")
 3. Tap "Next" and then "Authorize".
 4. When asked to open the wallet app tap "Open".
 5. You will be taken back to the app to the "Request" screen. Tap "Share".
 6. Enter the PIN you added in the initail steps.
 7. On success tap "Continue".
-8. A browser will open showing the the Verifier has accepted your request.
+8. A browser will open showing that the Verifier has accepted your request.
 9. Return to the app. You are back to the "Dashboard" screen and the flow is complete.
 
 Proximity flow
@@ -108,10 +108,6 @@ Proximity flow
 You can find instructions on how to configure the application [here](wiki/configuration.md)
 
 ## License
-
-### Third-party component
-
-Coming soon....
 
 ### License details
 

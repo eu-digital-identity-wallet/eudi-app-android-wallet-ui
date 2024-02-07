@@ -20,7 +20,6 @@ https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-lo
 
 You will also find the IACA certificate here. (trusted iaca root certificates).
 
-ProximityConfig
 ## Theme configuration
 
 The application allows the configuration of:
