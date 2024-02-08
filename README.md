@@ -20,7 +20,7 @@ The EUDI Wallet Reference Implementation is the application that allows users to
 
 The EUDIW project provides through this repository an Android app.
  
-The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to faciliate remote presentation, proximity and issuing test/demo functionality following specification of the [ARF]() including:
+The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to faciliate remote presentation, proximity and issuing test/demo functionality following specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework) including:
  
 OID4VP draft 19 (remote presentation), presentation exchange v2.0,
  
