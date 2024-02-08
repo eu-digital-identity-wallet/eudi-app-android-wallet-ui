@@ -14,31 +14,36 @@
 
 The EUDI Wallet Reference Implementation is the application that allows users to:
 
-1. To obtain, store and present documents (mDL, PID).
+1. To obtain, store and, present documents (i.e. PID, mDL).
 2. Verify presentations.
 3. Share data on proximity scenarios.
+4. Support remote QES and more use cases with the modules included.
 
 The EUDIW project provides through this repository an Android app.
  
 The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to faciliate remote presentation, proximity and issuing test/demo functionality following specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework) including:
  
-OID4VP draft 19 (remote presentation), presentation exchange v2.0,
+- OID4VP draft 19 (remote presentation), presentation exchange v2.0,
  
-ISO18013-5 (proximity presentation),
+- ISO18013-5 (proximity presentation),
  
-OID4VCI draft 12 (issuing)
+- OID4VCI draft 12 (issuing)
  
-Issuer functionality, to support development and testing, one can access a OID4VCI test/demo service for issuing at https://issuer.eudiw.dev/oidc. 
+- Issuer functionality, to support development and testing, one can access a OID4VCI test/demo service for issuing at: 
 
-[Issuer repository](https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer)
+  - https://issuer.eudiw.dev/oidc. 
+
+  - [Issuer source repository](https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer)
  
 Relying Party functionality:
  
-To support development and testing, one can access a test/demo service for remote presentation at https://verifier.eudiw.dev. 
+To support development and testing, one can access a test/demo service for remote presentation at:
 
-[Web verifier](https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
+  - https://verifier.eudiw.dev. 
 
- [Verifier resyful backend service](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt).
+  - [Web verifier source](https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
+
+  - [Verifier resyful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt).
  
 To support proximity an Android Proximity Verifier is available as an app that can request PID and mDL with reader authentication available [here](https://install.appcenter.ms/orgs/eu-digital-identity-wallet/apps/mdoc-verifier-testing/distribution_groups/eudi%20verifier%20(testing)%20public)
 
@@ -78,7 +83,7 @@ Proximity
 
 Minumum device requirements
 
-
+- API level 26.
 
 Prerequisites
 
@@ -141,7 +146,7 @@ You can find instructions on how to configure the application [here](wiki/config
 
 *resources-logic*: All app resources reside here (images, etc.)
 
-*analytics-logic*: Access to analytics providers.
+*analytics-logic*: Access to analytics providers. Capabilities for test monitoring analytics (i.e. crashes) can be added here (no functionality right now)
 
 *business-logic*: App business logic, wallet core resides here.
 
@@ -161,32 +166,12 @@ You can find instructions on how to configure the application [here](wiki/config
 
 *proximity-feature*: Proximity scenarions feature.
 
+
 ```mermaid
 graph TD;
-    resources-logic-->ui-logic;
-    resources-logic-->business-logic;
-    analytics-logic-->business-logic;
-    analytics-logic-->ui-logic;
-    business-logic-->ui-logic;
-    business-logic-->network-logic;
-    network-logic-->assembly-logic;
-
-    resources-logic-->assembly-logic;
-    analytics-logic-->assembly-logic;
-    business-logic-->assembly-logic;
-    ui-logic-->assembly-logic;
-
-    common-feature-->assembly-logic;
-
-    login-feature-->assembly-logic;
-    dashboard-feature-->assembly-logic;
-    startup-feature-->assembly-logic;
-    presentation-feature-->assembly-logic;
-    issuance-feature-->assembly-logic;
-    proximity-feature-->assembly-logic;
-
-    assembly-logic-->EudiReferenceWallet;
+    Logic-modules/resources-logic,ui-logic,business-logic,network-logic,assembly-logic/-->Feature-modules/common-feature,login-feature,dashboard-feature,startup-feature,presentation-feature,issuance-feature,proximity-feature/;
 ```
+
 
 ## License
 
