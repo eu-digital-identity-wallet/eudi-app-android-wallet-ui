@@ -142,7 +142,9 @@ You can find instructions on how to configure the application [here](wiki/config
 
 ## Package structure
 
-*assembly-logic*: Application gradle plugins.
+*assembly-logic*: App dependencies.
+
+*build-logic*: Application gradle plugins.
 
 *resources-logic*: All app resources reside here (images, etc.)
 
