@@ -22,7 +22,7 @@ The EUDI Wallet Reference Implementation is the application that allows users to
 3. Share data on proximity scenarios.
 4. Support remote QES and more use cases with the modules included.
 
-The EUDIW project provides through this repository an Android app.
+The EUDIW project provides through this repository an Android app. Please refer to the repositories listed in the following sections for more detailed information on how to get started, contribute, and engage with the EUDI Wallet Reference Implementation.
  
 The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to faciliate remote presentation, proximity and issuing test/demo functionality following specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework) including:
  
