@@ -16,13 +16,15 @@
 
 package eu.europa.ec.loginfeature.ui.welcome
 
+import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.LoginScreens
-import eu.europa.ec.uilogic.navigation.Screen
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import org.koin.android.annotation.KoinViewModel
 
 data class State(
@@ -50,15 +52,21 @@ class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.NavigateToLogin -> navigateTo(DashboardScreens.Dashboard, true)
-            is Event.NavigateToFaq -> navigateTo(LoginScreens.Faq, false)
+            is Event.NavigateToLogin -> navigateTo(
+                route = generateComposableNavigationLink(
+                    screen = CommonScreens.QuickPin,
+                    arguments = generateComposableArguments(mapOf("pinFlow" to PinFlow.CREATE))
+                )
+            )
+
+            is Event.NavigateToFaq -> navigateTo(LoginScreens.Faq.screenRoute)
         }
     }
 
-    private fun navigateTo(screen: Screen, currentInclusive: Boolean) {
+    private fun navigateTo(route: String, currentInclusive: Boolean = false) {
         setEffect {
             Effect.Navigation.SwitchScreen(
-                screenRoute = screen.screenRoute,
+                screenRoute = route,
                 currentInclusive = currentInclusive
             )
         }
