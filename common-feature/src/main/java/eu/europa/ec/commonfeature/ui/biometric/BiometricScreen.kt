@@ -238,7 +238,7 @@ fun PinFieldLayout(
         onPinUpdate = {
             onPinInput(it)
         },
-        length = 4,
+        length = state.quickPinSize,
         hasError = !state.quickPinError.isNullOrEmpty(),
         errorMessage = state.quickPinError,
         visualTransformation = PasswordVisualTransformation(),
