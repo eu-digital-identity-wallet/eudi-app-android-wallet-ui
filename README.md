@@ -14,7 +14,7 @@
 
 The EUDI Wallet Reference Implementation is the application that allows users to:
 
-1. To obtain, store and, present PID and (Q)EAAs.
+1. To obtain, store and, present PID and mDL.
 2. Verify presentations.
 3. Share data on proximity scenarios.
 4. Support remote QES and more use cases with the modules included.
@@ -31,9 +31,13 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
  
 - Issuer functionality, to support development and testing, one can access a OID4VCI test/demo service for issuing at: 
 
-  - https://issuer.eudiw.dev/oidc. 
+  - ```https://issuer.eudiw.dev/oidc.```
 
-  - [Issuer source repository](https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer)
+  - OpenID4VCI PID and mDL Issuer (python) 
+    https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py
+ 
+  - OpenID4VCI PID and mDL Issuer (kotlin)
+    https://github.com/eu-digital-identity-wallet/eudi-srv-pid-issuer
  
 Relying Party functionality:
  
@@ -43,7 +47,7 @@ To support development and testing, one can access a test/demo service for remot
 
   - [Web verifier source](https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
 
-  - [Verifier resyful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt).
+  - [Verifier restful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt).
  
 To support proximity an Android Proximity Verifier is available as an app that can request PID and mDL with reader authentication available [here](https://install.appcenter.ms/orgs/eu-digital-identity-wallet/apps/mdoc-verifier-testing/distribution_groups/eudi%20verifier%20(testing)%20public)
 
