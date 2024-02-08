@@ -137,6 +137,8 @@ You can find instructions on how to configure the application [here](wiki/config
 
 ## Package structure
 
+*assembly-logic*: Application gradle plugins.
+
 *resources-logic*: All app resources reside here (images, etc.)
 
 *analytics-logic*: Access to analytics providers.
@@ -159,34 +161,31 @@ You can find instructions on how to configure the application [here](wiki/config
 
 *proximity-feature*: Proximity scenarions feature.
 
-*navigation-logic*: This module has access to all the above modules.
-
 ```mermaid
 graph TD;
     resources-logic-->ui-logic;
+    resources-logic-->business-logic;
     analytics-logic-->business-logic;
+    analytics-logic-->ui-logic;
     business-logic-->ui-logic;
-    business-logic-->netwrok-logic;
-    
-    business-logic-->common-feature;
-    ui-logic-->common-feature;
-    netwrok-logic-->common-feature;
+    business-logic-->network-logic;
+    network-logic-->assembly-logic;
 
-    common-feature-->login-feature;
-    common-feature-->dashboard-feature;
-    common-feature-->startup-feature;
-    common-feature-->presentation-feature;
-    common-feature-->issuance-feature;
-    common-feature-->proximity-feature;
+    resources-logic-->assembly-logic;
+    analytics-logic-->assembly-logic;
+    business-logic-->assembly-logic;
+    ui-logic-->assembly-logic;
 
-    login-feature-->logic-navigation;
-    dashboard-feature-->logic-navigation;
-    startup-feature-->logic-navigation;
-    presentation-feature-->logic-navigation;
-    issuance-feature-->logic-navigation;
-    proximity-feature-->logic-navigation;
+    common-feature-->assembly-logic;
 
-    logic-navigation-->EudiReferenceWallet;
+    login-feature-->assembly-logic;
+    dashboard-feature-->assembly-logic;
+    startup-feature-->assembly-logic;
+    presentation-feature-->assembly-logic;
+    issuance-feature-->assembly-logic;
+    proximity-feature-->assembly-logic;
+
+    assembly-logic-->EudiReferenceWallet;
 ```
 
 ## License
