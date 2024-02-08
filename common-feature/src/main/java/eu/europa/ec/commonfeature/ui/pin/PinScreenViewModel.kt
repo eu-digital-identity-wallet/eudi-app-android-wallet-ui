@@ -67,6 +67,7 @@ data class State(
     val resetPin: Boolean = false,
     val pinState: PinValidationState,
     val isBottomSheetOpen: Boolean = false,
+    val quickPinSize: Int = 6
 ) : ViewState {
     val action: ScreenNavigateAction
         get() {
@@ -288,7 +289,10 @@ class PinViewModel(
         return Form(
             mapOf(
                 listOf(
-                    Rule.ValidateStringRange(4..4, ""),
+                    Rule.ValidateStringRange(
+                        viewState.value.quickPinSize..viewState.value.quickPinSize,
+                        ""
+                    ),
                     Rule.ValidateRegex(
                         "-?\\d+(\\.\\d+)?".toRegex(),
                         resourceProvider.getString(R.string.quick_pin_numerical_rule_invalid_error_message)
