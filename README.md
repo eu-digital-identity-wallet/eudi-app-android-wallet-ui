@@ -76,15 +76,15 @@ involved, follow the guidelines found in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Issuance
 
-[Issuance](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/b8f6d3e9-fca0-4403-bdc5-0817fa9aa468)
+[Issuance](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/2bede317-0ec1-4eb9-b985-0e79528e52b8)
 
 Presentation
 
-[Presentation](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/36dc1755-6807-4002-8dbe-c41e6798e1a7)
+[Presentation](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/32dbda4f-cd33-48a7-879b-7b853db32bed)
 
 Proximity
 
-[Proximity](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/e9edaf85-e5da-4cf9-8690-d10300e261bf)
+[Proximity](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/dc60da95-0d09-4ad7-8aa5-568c0007b300)
 
 ## How to use the application
 
