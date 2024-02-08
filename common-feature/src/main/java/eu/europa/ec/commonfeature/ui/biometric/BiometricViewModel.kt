@@ -61,7 +61,8 @@ data class State(
     val quickPinError: String? = null,
     val quickPin: String = "",
     val userBiometricsAreEnabled: Boolean = false,
-    val isCancellable: Boolean = false
+    val isCancellable: Boolean = false,
+    val quickPinSize: Int = 6
 ) : ViewState
 
 sealed class Effect : ViewSideEffect {
@@ -181,7 +182,7 @@ class BiometricViewModel(
 
     private fun authorizeWithPin(pin: String) {
 
-        if (pin.length != 4) {
+        if (pin.length != viewState.value.quickPinSize) {
             return
         }
 
