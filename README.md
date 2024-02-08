@@ -14,7 +14,7 @@
 
 The EUDI Wallet Reference Implementation is the application that allows users to:
 
-1. To obtain, store and, present documents (i.e. PID, mDL).
+1. To obtain, store and, present PID and (Q)EAAs.
 2. Verify presentations.
 3. Share data on proximity scenarios.
 4. Support remote QES and more use cases with the modules included.
