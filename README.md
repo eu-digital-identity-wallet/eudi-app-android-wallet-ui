@@ -12,12 +12,12 @@
 
 ## Overview
 
-The EUDI Wallet Reference Implementation is built based on the Architecture Reference Framework and aims at showcasing a robust and interoperable platform for digital identification, authentication and electronic signatures based on common standards across the European Union.
-The EUDI Wallet Reference Implementation is based on a modular architecture composed of a set of business agnostic, re-usable components which will be evolved in incremental steps and can be re-used across multiple projects.
+The EUDI Wallet Reference Implementation is built based on the Architecture Reference Framework and aims to showcase a robust and interoperable platform for digital identification, authentication, and electronic signatures based on common standards across the European Union.
+The EUDI Wallet Reference Implementation is based on a modular architecture composed of business-agnostic, reusable components that will evolve in incremental steps and can be re-used across multiple projects.
 
 The EUDI Wallet Reference Implementation is the application that allows users to:
 
-1. To obtain, store and, present PID and mDL.
+1. To obtain, store, and, present PID and mDL.
 2. Verify presentations.
 3. Share data on proximity scenarios.
 4. Support remote QES and more use cases with the modules included.
@@ -26,7 +26,7 @@ The EUDIW project provides through this repository an Android app. Please refer 
  
 # 💡 Specifications Employed
 
-The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to faciliate remote presentation, proximity and issuing test/demo functionality following specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework) including:
+The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to facilitate remote presentation, proximity, and issuing test/demo functionality following specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework) including:
  
 - OID4VP draft 19 (remote presentation), presentation exchange v2.0,
  
@@ -34,7 +34,7 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
  
 - OID4VCI draft 12 (issuing)
  
-- Issuer functionality, to support development and testing, one can access a OID4VCI test/demo service for issuing at: 
+- Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
 
   - ```https://issuer.eudiw.dev/oidc.```
 
@@ -54,19 +54,19 @@ To support development and testing, one can access a test/demo service for remot
  
 To support proximity an Android Proximity Verifier is available as an app that can request PID and mDL with reader authentication available [here](https://install.appcenter.ms/orgs/eu-digital-identity-wallet/apps/mdoc-verifier-testing/distribution_groups/eudi%20verifier%20(testing)%20public)
 
-The issuer, verifier service and verifier app authentication are based on the EUDIW development [IACA](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
+The issuer, verifier service, and verifier app authentication are based on the EUDIW development [IACA](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
 
 ## Disclaimer
 
-The released software is a initial development release version: 
--  The initial development release is an early endeavor reflecting the efforts of a short timeboxed period, and by no means can be considered as the final product.  
+The released software is an initial development release version: 
+-  The initial development release is an early endeavor reflecting the efforts of a short time-boxed period, and by no means can be considered as the final product.  
 -  The initial development release may be changed substantially over time, might introduce new features but also may change or remove existing ones, potentially breaking compatibility with your existing code.
 -  The initial development release is limited in functional scope.
 -  The initial development release may contain errors or design flaws and other problems that could cause system or other failures and data loss.
 -  The initial development release has reduced security, privacy, availability, and reliability standards relative to future releases. This could make the software slower, less reliable, or more vulnerable to attacks than mature software.
 -  The initial development release is not yet comprehensively documented. 
 -  Users of the software must perform sufficient engineering and additional testing in order to properly evaluate their application and determine whether any of the open-sourced components is suitable for use in that application.
--  We strongly recommend to not put this version of the software into production use.
+-  We strongly recommend not putting this version of the software into production use.
 -  Only the latest version of the software will be supported
 
 ## How to contribute
@@ -90,7 +90,7 @@ Proximity
 
 ## How to use the application
 
-Minumum device requirements
+Minimum device requirements
 
 - API level 26.
 
@@ -103,7 +103,7 @@ You will also need to download the Android Verifier app [here](https://install.a
 App launch
 
 1. Launch the application
-2. You will be presented with a welcome screen were you will be asked to create a PIN for future logins.
+2. You will be presented with a welcome screen where you will be asked to create a PIN for future logins.
 
 Issuance flow
 
@@ -113,7 +113,7 @@ Issuance flow
 4. Fill in the form. Any data will do.
 5. You will be shown a success screen. Tap next.
 6. Your "National ID" is displayed. Tap "Continue".
-7. You are now in the "Dashboard" screen.
+7. You are now on the "Dashboard" screen.
 
 Here you can tap "Add doc" and issue a new document, e.g. "Driving License".
 
@@ -126,16 +126,16 @@ Presentation (Online authentication/Same device) flow.
 3. Tap "Next" and then "Authorize".
 4. When asked to open the wallet app tap "Open".
 5. You will be taken back to the app to the "Request" screen. Tap "Share".
-6. Enter the PIN you added in the initail steps.
+6. Enter the PIN you added in the initial steps.
 7. On success tap "Continue".
 8. A browser will open showing that the Verifier has accepted your request.
 9. Return to the app. You are back to the "Dashboard" screen and the flow is complete.
 
 Proximity flow
 
-1. User logs in successfully to EUDI Wallet app and views the dashboard.
-2. User clicks the 'SHOW QR/TAP' button in order to display the QR code.
-3. Relying Party scans the presented QR code.
+1. The user logs in successfully to the EUDI Wallet app and views the dashboard.
+2. The user clicks the 'SHOW QR/TAP' button in order to display the QR code.
+3. The Relying Party scans the presented QR code.
 4. EUDI Wallet User can view the set of requested data from the relying party.
 
     1. The distinction between mandatory and optional data elements is depicted.
@@ -175,7 +175,7 @@ You can find instructions on how to configure the application [here](wiki/config
 
 *issuance-feature*: Document issuance feature.
 
-*proximity-feature*: Proximity scenarions feature.
+*proximity-feature*: Proximity scenarios feature.
 
 
 ```mermaid
