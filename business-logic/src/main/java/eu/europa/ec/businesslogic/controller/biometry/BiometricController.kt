@@ -25,6 +25,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.AuthenticationResult
+import androidx.biometric.BiometricPrompt.CryptoObject
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
@@ -50,6 +51,7 @@ enum class BiometricsAuthError(val code: Int) {
 interface BiometricController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
     fun authenticate(context: Context, listener: (BiometricsAuthenticate) -> Unit)
+    fun authenticate(context: Context, payload: BiometricPromptPayload)
     fun launchBiometricSystemScreen()
 }
 
@@ -209,6 +211,47 @@ class BiometricControllerImpl(
             }
         } ?: BiometricsAuthenticate.Failed(context.getString(R.string.generic_error_description))
     }
+
+    override fun authenticate(context: Context, payload: BiometricPromptPayload) {
+        context as FragmentActivity
+
+        val prompt = BiometricPrompt(
+            context,
+            ContextCompat.getMainExecutor(context),
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    payload.onCancel()
+                }
+
+                override fun onAuthenticationSucceeded(result: AuthenticationResult) {
+                    payload.onSuccess()
+                }
+
+                override fun onAuthenticationFailed() {
+                    payload.onFailure()
+                }
+            }
+        )
+
+        if (payload.cryptoObject != null) {
+            prompt.authenticate(
+                BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(context.getString(R.string.biometric_prompt_title))
+                    .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
+                    .setNegativeButtonText(context.getString(R.string.generic_cancel))
+                    .build(),
+                payload.cryptoObject
+            )
+        } else {
+            prompt.authenticate(
+                BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(context.getString(R.string.biometric_prompt_title))
+                    .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
+                    .setNegativeButtonText(context.getString(R.string.generic_cancel))
+                    .build()
+            )
+        }
+    }
 }
 
 sealed class BiometricsAuthenticate {
@@ -227,4 +270,11 @@ data class BiometricPromptData(
     val authenticationResult: AuthenticationResult?,
     val errorCode: Int = -1,
     val errorString: CharSequence = "",
+)
+
+data class BiometricPromptPayload(
+    val cryptoObject: CryptoObject?,
+    val onSuccess: () -> Unit,
+    val onCancel: () -> Unit,
+    val onFailure: () -> Unit,
 )

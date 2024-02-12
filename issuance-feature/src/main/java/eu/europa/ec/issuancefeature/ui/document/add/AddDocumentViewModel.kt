@@ -16,6 +16,7 @@
 
 package eu.europa.ec.issuancefeature.ui.document.add
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
@@ -58,7 +59,7 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data object DismissError : Event()
-    data class IssueDocument(val issuanceMethod: IssuanceMethod, val documentType: String) : Event()
+    data class IssueDocument(val issuanceMethod: IssuanceMethod, val documentType: String, val context: Context) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -103,7 +104,8 @@ class AddDocumentViewModel(
                     issueDocument(
                         event = event,
                         issuanceMethod = event.issuanceMethod,
-                        docType = event.documentType
+                        docType = event.documentType,
+                        context = event.context
                     )
                 } else {
                     loadSampleData(event)
@@ -152,7 +154,7 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun issueDocument(event: Event, issuanceMethod: IssuanceMethod, docType: String) {
+    private fun issueDocument(event: Event, issuanceMethod: IssuanceMethod, docType: String, context: Context) {
         setState {
             copy(
                 isLoading = true
@@ -188,6 +190,10 @@ class AddDocumentViewModel(
                         navigateToSuccessScreen(
                             documentId = response.documentId
                         )
+                    }
+
+                    is IssueDocumentPartialState.UserAuthRequired -> {
+                        addDocumentInteractor.handleUserAuth(context, response.payload)
                     }
                 }
             }

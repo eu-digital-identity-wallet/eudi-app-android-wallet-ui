@@ -16,6 +16,7 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
+import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
@@ -40,11 +41,14 @@ enum class IssuanceMethod {
 sealed class IssueDocumentPartialState {
     data class Success(val documentId: String) : IssueDocumentPartialState()
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
+    data class UserAuthRequired(val payload: BiometricPromptPayload) : IssueDocumentPartialState()
 }
 
 sealed class OpenId4VCIIssueDocumentPartialState {
     data class Success(val documentId: String) : OpenId4VCIIssueDocumentPartialState()
     data class Failure(val errorMessage: String) : OpenId4VCIIssueDocumentPartialState()
+    data class UserAuthRequired(val payload: BiometricPromptPayload) :
+        OpenId4VCIIssueDocumentPartialState()
 }
 
 sealed class AddSampleDataPartialState {
@@ -159,6 +163,10 @@ class WalletCoreDocumentsControllerImpl(
                                 documentId = response.documentId
                             )
                         )
+
+                        is OpenId4VCIIssueDocumentPartialState.UserAuthRequired -> emit(
+                            IssueDocumentPartialState.UserAuthRequired(response.payload)
+                        )
                     }
                 }
             }
@@ -268,8 +276,13 @@ class WalletCoreDocumentsControllerImpl(
 
                         is IssueDocumentResult.UserAuthRequired -> {
                             trySendBlocking(
-                                OpenId4VCIIssueDocumentPartialState.Failure(
-                                    errorMessage = resourceProvider.getString(R.string.issuance_add_document_user_auth_required)
+                                OpenId4VCIIssueDocumentPartialState.UserAuthRequired(
+                                    payload = BiometricPromptPayload(
+                                        cryptoObject = result.cryptoObject,
+                                        onSuccess = { result.resume() },
+                                        onCancel = { result.cancel() },
+                                        onFailure = { result.cancel() }
+                                    )
                                 )
                             )
                         }

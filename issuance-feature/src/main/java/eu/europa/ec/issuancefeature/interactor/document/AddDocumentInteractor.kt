@@ -16,12 +16,16 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
+import android.content.Context
+import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
+import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
@@ -47,10 +51,13 @@ interface AddDocumentInteractor {
     ): Flow<IssueDocumentPartialState>
 
     fun addSampleData(): Flow<AddSampleDataPartialState>
+
+    fun handleUserAuth(context: Context, payload: BiometricPromptPayload)
 }
 
 class AddDocumentInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val biometricInteractor: BiometricInteractor,
     private val resourceProvider: ResourceProvider,
 ) : AddDocumentInteractor {
     private val genericErrorMsg
@@ -105,6 +112,22 @@ class AddDocumentInteractorImpl(
 
     override fun addSampleData(): Flow<AddSampleDataPartialState> =
         walletCoreDocumentsController.addSampleData()
+
+    override fun handleUserAuth(context: Context, payload: BiometricPromptPayload) {
+        biometricInteractor.getBiometricsAvailability {
+            when(it){
+                is BiometricsAvailability.CanAuthenticate -> {
+                    biometricInteractor.authenticateWithBiometrics(context, payload)
+                }
+                is BiometricsAvailability.NonEnrolled -> {
+                    biometricInteractor.launchBiometricSystemScreen()
+                }
+                is BiometricsAvailability.Failure -> {
+                    payload.onFailure()
+                }
+            }
+        }
+    }
 
     private fun hasDocument(documentTypeUi: DocumentTypeUi): Boolean {
         val documents = walletCoreDocumentsController.getAllDocuments()

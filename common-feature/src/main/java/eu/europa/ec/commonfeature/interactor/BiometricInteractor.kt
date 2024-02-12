@@ -18,6 +18,7 @@ package eu.europa.ec.commonfeature.interactor
 
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.biometry.BiometricController
+import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAuthenticate
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
@@ -30,6 +31,11 @@ interface BiometricInteractor {
     fun authenticateWithBiometrics(
         context: Context,
         listener: (BiometricsAuthenticate) -> Unit
+    )
+
+    fun authenticateWithBiometrics(
+        context: Context,
+        payload: BiometricPromptPayload
     )
 
     fun launchBiometricSystemScreen()
