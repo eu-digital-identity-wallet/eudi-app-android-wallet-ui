@@ -16,7 +16,9 @@
 
 package eu.europa.ec.presentationfeature.ui.loading
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Event
@@ -77,7 +79,7 @@ class PresentationLoadingViewModel(
         )
     }
 
-    override fun doWork() {
+    override fun doWork(context: Context) {
         viewModelScope.launch {
             interactor.observeResponse().collect {
                 when (it) {
@@ -85,7 +87,7 @@ class PresentationLoadingViewModel(
                         setState {
                             copy(
                                 error = ContentErrorConfig(
-                                    onRetry = { setEvent(Event.DoWork) },
+                                    onRetry = { setEvent(Event.DoWork(context)) },
                                     errorSubTitle = it.error,
                                     onCancel = {
                                         setEvent(Event.DismissError)
@@ -101,7 +103,7 @@ class PresentationLoadingViewModel(
                     }
 
                     is PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
-                        // Provide implementation for Biometrics POP
+                        interactor.handleUserAuthentication(context, it.payload)
                     }
 
                     is PresentationLoadingObserveResponsePartialState.Redirect -> {

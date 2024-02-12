@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -39,6 +40,7 @@ fun LoadingScreen(
     viewModel: LoadingViewModel
 ) {
     val state = viewModel.viewState.value
+    val context = LocalContext.current
 
     ContentScreen(
         isLoading = state.error != null,
@@ -72,7 +74,7 @@ fun LoadingScreen(
     }
 
     OneTimeLaunchedEffect {
-        viewModel.setEvent(Event.DoWork)
+        viewModel.setEvent(Event.DoWork(context))
     }
 }
 

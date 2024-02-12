@@ -16,6 +16,7 @@
 
 package eu.europa.ec.proximityfeature.ui.loading
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
@@ -76,7 +77,7 @@ class ProximityLoadingViewModel(
         )
     }
 
-    override fun doWork() {
+    override fun doWork(context: Context) {
         viewModelScope.launch {
             interactor.observeResponse().collect {
                 when (it) {
@@ -84,7 +85,7 @@ class ProximityLoadingViewModel(
                         setState {
                             copy(
                                 error = ContentErrorConfig(
-                                    onRetry = { setEvent(Event.DoWork) },
+                                    onRetry = { setEvent(Event.DoWork(context)) },
                                     errorSubTitle = it.error,
                                     onCancel = {
                                         setEvent(Event.DismissError)
@@ -107,7 +108,7 @@ class ProximityLoadingViewModel(
                     }
 
                     is ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
-                        // Provide implementation for Biometrics POP
+                        interactor.handleUserAuthentication(context, it.payload)
                     }
                 }
             }

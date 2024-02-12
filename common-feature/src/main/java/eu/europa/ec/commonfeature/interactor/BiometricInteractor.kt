@@ -70,6 +70,10 @@ class BiometricInteractorImpl(
         biometricController.authenticate(context, listener)
     }
 
+    override fun authenticateWithBiometrics(context: Context, payload: BiometricPromptPayload) {
+        biometricController.authenticate(context, payload)
+    }
+
     override fun launchBiometricSystemScreen() {
         biometricController.launchBiometricSystemScreen()
     }

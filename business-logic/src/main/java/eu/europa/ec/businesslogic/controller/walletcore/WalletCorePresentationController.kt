@@ -17,6 +17,7 @@
 package eu.europa.ec.businesslogic.controller.walletcore
 
 import androidx.activity.ComponentActivity
+import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
@@ -63,7 +64,7 @@ sealed class TransferEventPartialState {
 
 sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
-    data object UserAuthenticationRequired : SendRequestedDocumentsPartialState()
+    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) : SendRequestedDocumentsPartialState()
     data object RequestSent : SendRequestedDocumentsPartialState()
 }
 
@@ -74,7 +75,7 @@ sealed class ResponseReceivedPartialState {
 }
 
 sealed class WalletCorePartialState {
-    data object UserAuthenticationRequired : WalletCorePartialState()
+    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) : WalletCorePartialState()
     data class Failure(val error: String) : WalletCorePartialState()
     data object Success : WalletCorePartialState()
     data class Redirect(val uri: URI) : WalletCorePartialState()
@@ -276,7 +277,14 @@ class WalletCorePresentationControllerImpl(
                     }
 
                     is ResponseResult.UserAuthRequired -> {
-                        emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired)
+                        emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired(
+                            payload = BiometricPromptPayload(
+                                cryptoObject = response.cryptoObject,
+                                onSuccess = { /*TODO what here*/ },
+                                onCancel = { /*TODO what here*/ },
+                                onFailure = { /*TODO what here*/ }
+                            )
+                        ))
                     }
                 }
             }
@@ -326,7 +334,7 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 createResponseState is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
-                    WalletCorePartialState.UserAuthenticationRequired
+                    WalletCorePartialState.UserAuthenticationRequired(createResponseState.payload)
                 }
 
                 sentResponseState is ResponseReceivedPartialState.Failure -> {

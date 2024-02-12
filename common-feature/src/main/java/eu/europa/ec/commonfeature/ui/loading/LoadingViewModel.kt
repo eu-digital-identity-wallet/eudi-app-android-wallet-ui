@@ -16,6 +16,8 @@
 
 package eu.europa.ec.commonfeature.ui.loading
 
+import android.content.Context
+import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -31,7 +33,7 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data object DoWork : Event()
+    data class DoWork(val context: Context) : Event()
     data object GoBack : Event()
     data object DismissError : Event()
 }
@@ -76,7 +78,7 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
      * Gets called once upon initialization of the [LoadingScreen] +
      * each time the user presses "Try again" in its Error screen.
      */
-    abstract fun doWork()
+    abstract fun doWork(context: Context)
 
     override fun setInitialState(): State {
         return State(
@@ -88,7 +90,7 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.DoWork -> doWork()
+            is Event.DoWork -> doWork(event.context)
 
             is Event.GoBack -> {
                 setState {
@@ -102,18 +104,6 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
                     copy(error = null)
                 }
             }
-        }
-    }
-
-    protected fun setErrorState(errorMsg: String) {
-        setState {
-            copy(
-                error = ContentErrorConfig(
-                    errorSubTitle = errorMsg,
-                    onCancel = { setEvent(Event.GoBack) },
-                    onRetry = { setEvent(Event.DoWork) }
-                )
-            )
         }
     }
 
