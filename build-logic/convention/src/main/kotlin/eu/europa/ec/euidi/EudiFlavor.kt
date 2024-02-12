@@ -27,8 +27,12 @@ enum class FlavorDimension {
 }
 
 @Suppress("EnumEntryName")
-enum class EudiFlavor(val dimension: FlavorDimension, val applicationIdSuffix: String? = null) {
-    dev(FlavorDimension.contentType, applicationIdSuffix = ".dev"),
+enum class EudiFlavor(
+    val dimension: FlavorDimension,
+    val applicationIdSuffix: String? = null,
+    val applicationNameSuffix: String? = null
+) {
+    dev(FlavorDimension.contentType, applicationIdSuffix = ".dev", applicationNameSuffix = " Dev"),
     demo(FlavorDimension.contentType)
 }
 
@@ -47,6 +51,7 @@ fun configureFlavors(
                         if (it.applicationIdSuffix != null) {
                             applicationIdSuffix = it.applicationIdSuffix
                         }
+                        manifestPlaceholders["appNameSuffix"] = it.applicationNameSuffix.orEmpty()
                     }
                 }
             }
