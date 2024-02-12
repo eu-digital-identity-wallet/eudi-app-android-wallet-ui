@@ -17,13 +17,16 @@
 package eu.europa.ec.businesslogic.config
 
 class ConfigLogicImpl : ConfigLogic {
+    override val appFlavor: AppFlavor
+        get() = AppFlavor.DEV
+
     override val environmentConfig: EnvironmentConfig
-        get() = WalletEnvironmentConfig()
+        get() = DevEnvironmentConfig()
 }
 
-private class WalletEnvironmentConfig : EnvironmentConfig() {
+private class DevEnvironmentConfig : EnvironmentConfig() {
     override fun getServerHost(): String = when (environment) {
-        ServerConfig.Dev -> ""
-        ServerConfig.Demo -> ""
+        ServerConfig.Debug -> ""
+        ServerConfig.Release -> ""
     }
 }

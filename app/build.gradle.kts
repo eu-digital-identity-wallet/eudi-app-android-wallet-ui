@@ -15,6 +15,7 @@
  */
 
 import eu.europa.ec.euidi.EudiBuildType
+import eu.europa.ec.euidi.EudiFlavor
 import eu.europa.ec.euidi.getProperty
 
 plugins {
@@ -24,6 +25,8 @@ plugins {
 
 android {
 
+    val storedVersion: String = getProperty<String>("VERSION_NAME", "version.properties").orEmpty()
+
     signingConfigs {
         create("release") {
 
@@ -31,7 +34,8 @@ android {
 
             keyAlias = getProperty("androidKeyAlias") ?: System.getenv("ANDROID_KEY_ALIAS")
             keyPassword = getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
-            storePassword = getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
+            storePassword =
+                getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
 
             enableV2Signing = true
         }
@@ -40,7 +44,6 @@ android {
     defaultConfig {
         applicationId = "eu.europa.ec.euidi"
         versionCode = 1
-        versionName = getProperty("VERSION_NAME", "version.properties")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -62,6 +65,16 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
+
+    productFlavors {
+        getByName(EudiFlavor.dev.name) {
+            versionName = "$storedVersion-Dev"
+        }
+        getByName(EudiFlavor.demo.name) {
+            versionName = "$storedVersion-Demo"
+        }
+    }
+
     namespace = "eu.europa.ec.euidi"
 }
 

@@ -26,6 +26,11 @@ interface ConfigLogic {
     val appBuildType: AppBuildType get() = AppBuildType.getType()
 
     /**
+     * Application Flavor.
+     */
+    val appFlavor: AppFlavor
+
+    /**
      * Server Environment Configuration.
      */
     val environmentConfig: EnvironmentConfig
@@ -34,6 +39,10 @@ interface ConfigLogic {
      * Application version.
      */
     val appVersion: String get() = BuildConfig.APP_VERSION
+}
+
+enum class AppFlavor {
+    DEV, DEMO
 }
 
 enum class AppBuildType {
@@ -53,8 +62,8 @@ abstract class EnvironmentConfig {
     val environment: ServerConfig
         get() {
             return when (AppBuildType.getType()) {
-                AppBuildType.DEBUG -> ServerConfig.Dev
-                AppBuildType.RELEASE -> ServerConfig.Demo
+                AppBuildType.DEBUG -> ServerConfig.Debug
+                AppBuildType.RELEASE -> ServerConfig.Release
             }
         }
 
@@ -63,7 +72,7 @@ abstract class EnvironmentConfig {
 
     abstract fun getServerHost(): String
     sealed class ServerConfig {
-        data object Dev : ServerConfig()
-        data object Demo : ServerConfig()
+        data object Debug : ServerConfig()
+        data object Release : ServerConfig()
     }
 }

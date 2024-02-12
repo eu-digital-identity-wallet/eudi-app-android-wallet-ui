@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.EudiFlavor
 import eu.europa.ec.euidi.addConfigField
 import eu.europa.ec.euidi.getProperty
 
@@ -23,6 +24,9 @@ plugins {
 }
 
 android {
+
+    val storedVersion: String = getProperty<String>("VERSION_NAME", "version.properties").orEmpty()
+
     namespace = "eu.europa.ec.businesslogic"
 
     defaultConfig {
@@ -31,6 +35,21 @@ android {
             "APP_VERSION",
             getProperty("VERSION_NAME", "version.properties") ?: ""
         )
+    }
+
+    productFlavors {
+        getByName(EudiFlavor.dev.name) {
+            addConfigField(
+                "APP_VERSION",
+                "$storedVersion-Dev"
+            )
+        }
+        getByName(EudiFlavor.demo.name) {
+            addConfigField(
+                "APP_VERSION",
+                "$storedVersion-Demo"
+            )
+        }
     }
 }
 
