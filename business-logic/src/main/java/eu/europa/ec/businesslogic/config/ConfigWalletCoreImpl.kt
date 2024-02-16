@@ -29,8 +29,9 @@ internal class WalletCoreConfigImpl(
 ) : WalletCoreConfig {
 
     companion object {
-        const val VERIFIER_API_URI = "https://verifier.eudiw.dev"
-        const val VERIFIER_CLIENT_ID = "Verifier"
+        const val OPENID4VP_VERIFIER_API_URI = "https://verifier.eudiw.dev"
+        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
+        const val OPENID4VP_SCHEME = "eudi-openid4vp"
         const val VCI_ISSUER_URL = "https://issuer.eudiw.dev/oidc"
         const val VCI_CLIENT_ID = "wallet-dev"
     }
@@ -51,13 +52,14 @@ internal class WalletCoreConfigImpl(
                                 ClientIdScheme.Preregistered(
                                     listOf(
                                         PreregisteredVerifier(
-                                            VERIFIER_CLIENT_ID,
-                                            VERIFIER_API_URI
+                                            clientId = OPENID4VP_VERIFIER_CLIENT_ID,
+                                            verifierApi = OPENID4VP_VERIFIER_API_URI
                                         )
                                     )
                                 )
                             )
                         )
+                        withScheme(OPENID4VP_SCHEME)
                     }
                     .openId4VciConfig {
                         withIssuerUrl(issuerUrl = VCI_ISSUER_URL)
