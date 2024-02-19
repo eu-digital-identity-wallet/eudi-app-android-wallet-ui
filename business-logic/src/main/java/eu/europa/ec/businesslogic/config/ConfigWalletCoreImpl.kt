@@ -17,6 +17,7 @@
 package eu.europa.ec.businesslogic.config
 
 import android.content.Context
+import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
@@ -29,8 +30,8 @@ internal class WalletCoreConfigImpl(
 ) : WalletCoreConfig {
 
     companion object {
-        const val VERIFIER_API_URI = "https://verifier.eudiw.dev"
-        const val VERIFIER_CLIENT_ID = "Verifier"
+        const val OPENID4VP_VERIFIER_API_URI = "https://verifier.eudiw.dev"
+        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
         const val VCI_ISSUER_URL = "https://issuer.eudiw.dev/oidc"
         const val VCI_CLIENT_ID = "wallet-dev"
     }
@@ -51,13 +52,14 @@ internal class WalletCoreConfigImpl(
                                 ClientIdScheme.Preregistered(
                                     listOf(
                                         PreregisteredVerifier(
-                                            VERIFIER_CLIENT_ID,
-                                            VERIFIER_API_URI
+                                            clientId = OPENID4VP_VERIFIER_CLIENT_ID,
+                                            verifierApi = OPENID4VP_VERIFIER_API_URI
                                         )
                                     )
                                 )
                             )
                         )
+                        withScheme(BuildConfig.OPENID4VP_SCHEME)
                     }
                     .openId4VciConfig {
                         withIssuerUrl(issuerUrl = VCI_ISSUER_URL)

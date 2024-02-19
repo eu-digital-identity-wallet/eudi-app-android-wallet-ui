@@ -23,7 +23,6 @@ import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.ResponseResult
-import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.CoroutineDispatcher
@@ -208,14 +207,15 @@ class WalletCorePresentationControllerImpl(
                     TransferEventPartialState.Error(error = errorMessage)
                 )
             },
-            onRequestReceived = { requestDocuments ->
+            onRequestReceived = { requestedDocumentData ->
+                val requestedDocuments = requestedDocumentData.documents
                 verifierName =
-                    requestDocuments.firstOrNull()?.docRequest?.readerAuth?.readerCommonName
+                    requestedDocuments.firstOrNull()?.docRequest?.readerAuth?.readerCommonName
                 val verifierIsTrusted =
-                    requestDocuments.firstOrNull()?.docRequest?.readerAuth?.readerSignIsValid == true
+                    requestedDocuments.firstOrNull()?.docRequest?.readerAuth?.readerSignIsValid == true
                 trySendBlocking(
                     TransferEventPartialState.RequestReceived(
-                        requestData = requestDocuments,
+                        requestData = requestedDocuments,
                         verifierName = verifierName,
                         verifierIsTrusted = verifierIsTrusted
                     )
@@ -254,37 +254,40 @@ class WalletCorePresentationControllerImpl(
     override fun toggleNfcEngagement(componentActivity: ComponentActivity, toggle: Boolean) {
         try {
             if (toggle) {
-                NfcEngagementService.enable(componentActivity)
+                eudiWallet.enableNFCEngagement(componentActivity)
             } else {
-                NfcEngagementService.disable(componentActivity)
+                eudiWallet.disableNFCEngagement(componentActivity)
             }
         } catch (_: Exception) {
         }
     }
 
-    override fun sendRequestedDocuments() =
-        flow {
-            disclosedDocuments?.let { documents ->
-                when (val response = eudiWallet.createResponse(documents)) {
-                    is ResponseResult.Failure -> {
-                        emit(SendRequestedDocumentsPartialState.Failure(genericErrorMessage))
-                    }
+    override fun sendRequestedDocuments() = flow {
+        disclosedDocuments?.let { documents ->
+            when (val response = eudiWallet.sendResponse(disclosedDocuments = documents)) {
+                is ResponseResult.Failure -> {
+                    val errorMessage = response.throwable.localizedMessage ?: genericErrorMessage
+                    emit(
+                        SendRequestedDocumentsPartialState.Failure(
+                            error = errorMessage
+                        )
+                    )
+                }
 
-                    is ResponseResult.Response -> {
-                        sendResponse(response.bytes)
-                        emit(SendRequestedDocumentsPartialState.RequestSent)
-                    }
+                is ResponseResult.Success -> {
+                    emit(SendRequestedDocumentsPartialState.RequestSent)
+                }
 
-                    is ResponseResult.UserAuthRequired -> {
-                        emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired)
-                    }
+                is ResponseResult.UserAuthRequired -> {
+                    emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired)
                 }
             }
-        }.safeAsync {
-            SendRequestedDocumentsPartialState.Failure(
-                it.localizedMessage ?: genericErrorMessage
-            )
         }
+    }.safeAsync {
+        SendRequestedDocumentsPartialState.Failure(
+            error = it.localizedMessage ?: genericErrorMessage
+        )
+    }
 
     override fun mappedCallbackStateFlow(): Flow<ResponseReceivedPartialState> {
         return events.mapNotNull { response ->
@@ -350,7 +353,9 @@ class WalletCorePresentationControllerImpl(
             }
         }.filterNotNull()
             .safeAsync {
-                WalletCorePartialState.Failure(it.localizedMessage ?: genericErrorMessage)
+                WalletCorePartialState.Failure(
+                    error = it.localizedMessage ?: genericErrorMessage
+                )
             }
 
     override fun updateRequestedDocuments(disclosedDocuments: DisclosedDocuments?) {
@@ -363,28 +368,16 @@ class WalletCorePresentationControllerImpl(
     }
 
     private fun addListener(listener: EudiWalletListenerWrapper) {
-        when (val config = requireInit { _config }) {
-            is PresentationControllerConfig.OpenId4VP -> {
-                eudiWallet.openId4vpManager.addTransferEventListener(listener)
-                eudiWallet.openId4vpManager.resolveRequestUri(config.uri)
-            }
-
-            PresentationControllerConfig.Ble -> {
-                eudiWallet.addTransferEventListener(listener)
-            }
+        val config = requireInit { _config }
+        eudiWallet.addTransferEventListener(listener)
+        if (config is PresentationControllerConfig.OpenId4VP) {
+            eudiWallet.resolveRequestUri(config.uri)
         }
     }
 
     private fun removeListener(listener: EudiWalletListenerWrapper) {
-        when (requireInit { _config }) {
-            is PresentationControllerConfig.OpenId4VP -> {
-                eudiWallet.openId4vpManager.removeTransferEventListener(listener)
-            }
-
-            PresentationControllerConfig.Ble -> {
-                eudiWallet.removeTransferEventListener(listener)
-            }
-        }
+        requireInit { _config }
+        eudiWallet.removeTransferEventListener(listener)
     }
 
     private fun <T> requireInit(block: () -> T): T {
@@ -392,17 +385,5 @@ class WalletCorePresentationControllerImpl(
             throw IllegalStateException("setConfig() must be called before using the WalletCorePresentationController")
         }
         return block()
-    }
-
-    private fun sendResponse(responseBytes: ByteArray) {
-        when (requireInit { _config }) {
-            is PresentationControllerConfig.OpenId4VP -> {
-                eudiWallet.openId4vpManager.sendResponse(responseBytes)
-            }
-
-            is PresentationControllerConfig.Ble -> {
-                eudiWallet.sendResponse(responseBytes)
-            }
-        }
     }
 }
