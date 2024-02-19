@@ -44,7 +44,7 @@ fun configureFlavors(
         flavorDimensions += FlavorDimension.contentType.name
         productFlavors {
             EudiFlavor.values().forEach {
-                create(it.name) {
+                create(it.name.lowercase()) {
                     val fullVersion = "$version-${it.name}"
                     dimension = it.dimension.name
                     if (this@apply is ApplicationExtension && this is ApplicationProductFlavor) {
