@@ -23,6 +23,10 @@ android {
     namespace = "eu.europa.ec.assemblylogic"
 
     defaultConfig {
+        // App name
+        manifestPlaceholders["appName"] = "EUDI Wallet"
+
+        // Manifest placeholders used for OpenId4VP
         manifestPlaceholders["deepLinkScheme"] = "eudi-wallet"
         manifestPlaceholders["openid4vpScheme"] = "eudi-openid4vp"
         manifestPlaceholders["deepLinkHost"] = "*"

@@ -21,7 +21,7 @@ platform :android do
   lane :deploy do
     git_pull
 
-    buildVersion = version_name
+    buildVersion = version_name(buildType: ENV["APP_BUILD_TYPE"])
     appcenter_build_number = latest_appcenter_release(
       appName: ENV["APP_CENTER_APP_NAME"],
       appVersion: buildVersion,
@@ -132,11 +132,13 @@ platform :android do
   end
 
   desc "Get version version From Project"
-  lane :version_name do
-    get_version_name(
+  lane :version_name do |values|
+  buildType = values[:buildType]
+  versionName = get_version_name(
       gradle_file_path: "version.properties",
       ext_constant_name: "VERSION_NAME",
     ).sub("VERSION_NAME=", "")
+    "#{versionName}-#{buildType}"
   end
 
   desc "Set versionCode back to default 1"
