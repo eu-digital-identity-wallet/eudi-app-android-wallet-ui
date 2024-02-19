@@ -24,8 +24,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.proximityfeature.BuildConfig
 import eu.europa.ec.proximityfeature.ui.loading.ProximityLoadingScreen
 import eu.europa.ec.proximityfeature.ui.qr.ProximityQRScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute

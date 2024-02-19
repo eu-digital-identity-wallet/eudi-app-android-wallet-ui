@@ -21,7 +21,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
-import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.startupfeature.BuildConfig
 import eu.europa.ec.startupfeature.ui.splash.SplashScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.StartupScreens

@@ -21,7 +21,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation.NavController
-import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.PresentationScreens
