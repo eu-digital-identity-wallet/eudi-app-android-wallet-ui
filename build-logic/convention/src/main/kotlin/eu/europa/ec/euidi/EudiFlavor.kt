@@ -26,18 +26,18 @@ enum class FlavorDimension {
     contentType
 }
 
-@Suppress("EnumEntryName")
 enum class EudiFlavor(
     val dimension: FlavorDimension,
     val applicationIdSuffix: String? = null,
     val applicationNameSuffix: String? = null
 ) {
-    dev(FlavorDimension.contentType, applicationIdSuffix = ".dev", applicationNameSuffix = " Dev"),
-    demo(FlavorDimension.contentType)
+    Dev(FlavorDimension.contentType, applicationIdSuffix = ".dev", applicationNameSuffix = " Dev"),
+    Demo(FlavorDimension.contentType)
 }
 
 fun configureFlavors(
     commonExtension: CommonExtension<*, *, *, *, *>,
+    version: String,
     flavorConfigurationBlock: ProductFlavor.(flavor: EudiFlavor) -> Unit = {}
 ) {
     commonExtension.apply {
@@ -45,14 +45,20 @@ fun configureFlavors(
         productFlavors {
             EudiFlavor.values().forEach {
                 create(it.name) {
+                    val fullVersion = "$version-${it.name}"
                     dimension = it.dimension.name
-                    flavorConfigurationBlock(this, it)
                     if (this@apply is ApplicationExtension && this is ApplicationProductFlavor) {
                         if (it.applicationIdSuffix != null) {
                             applicationIdSuffix = it.applicationIdSuffix
+                            versionName = fullVersion
                         }
                         manifestPlaceholders["appNameSuffix"] = it.applicationNameSuffix.orEmpty()
                     }
+                    addConfigField(
+                        "APP_VERSION",
+                        fullVersion
+                    )
+                    flavorConfigurationBlock(this, it)
                 }
             }
         }

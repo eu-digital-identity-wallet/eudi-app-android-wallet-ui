@@ -108,7 +108,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="${deepLinkHost}"
+                    android:host="${openid4vpHost}"
                     android:scheme="${openid4vpScheme}" />
 
             </intent-filter>

@@ -15,7 +15,6 @@
  */
 
 import eu.europa.ec.euidi.EudiBuildType
-import eu.europa.ec.euidi.EudiFlavor
 import eu.europa.ec.euidi.getProperty
 
 plugins {
@@ -24,8 +23,6 @@ plugins {
 }
 
 android {
-
-    val storedVersion: String = getProperty<String>("VERSION_NAME", "version.properties").orEmpty()
 
     signingConfigs {
         create("release") {
@@ -63,15 +60,6 @@ android {
             applicationIdSuffix = EudiBuildType.RELEASE.applicationIdSuffix
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
-        }
-    }
-
-    productFlavors {
-        getByName(EudiFlavor.dev.name) {
-            versionName = "$storedVersion-Dev"
-        }
-        getByName(EudiFlavor.demo.name) {
-            versionName = "$storedVersion-Demo"
         }
     }
 

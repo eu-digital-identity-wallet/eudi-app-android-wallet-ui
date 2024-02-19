@@ -16,6 +16,7 @@
 
 import com.android.build.api.dsl.ApplicationExtension
 import eu.europa.ec.euidi.configureFlavors
+import eu.europa.ec.euidi.getProperty
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -23,8 +24,14 @@ import org.gradle.kotlin.dsl.configure
 class AndroidApplicationFlavorsConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
+
+            val storedVersion = getProperty<String>(
+                "VERSION_NAME",
+                "version.properties"
+            ).orEmpty()
+
             extensions.configure<ApplicationExtension> {
-                configureFlavors(this)
+                configureFlavors(this, storedVersion)
             }
         }
     }
