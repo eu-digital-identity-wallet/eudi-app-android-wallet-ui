@@ -15,15 +15,18 @@
  */
 
 import com.android.build.gradle.LibraryExtension
+import eu.europa.ec.euidi.config.LibraryPluginConfig
 import eu.europa.ec.euidi.configureGradleManagedDevices
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
 
 class AndroidFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
+            val config = extensions.create<LibraryPluginConfig>("featureConfig", false)
             pluginManager.apply {
                 apply("eudi.android.library")
                 apply("eudi.android.library.compose")
@@ -44,6 +47,14 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 add("implementation", project(":analytics-logic"))
                 add("testImplementation", project(":test-feature"))
                 add("androidTestImplementation", project(":test-feature"))
+            }
+
+            afterEvaluate {
+                if (!config.isCommonFeature) {
+                    dependencies {
+                        add("implementation", project(":common-feature"))
+                    }
+                }
             }
         }
     }

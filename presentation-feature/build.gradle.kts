@@ -20,7 +20,3 @@ plugins {
 android {
     namespace = "eu.europa.ec.presentationfeature"
 }
-
-dependencies {
-    implementation(project(":common-feature"))
-}
