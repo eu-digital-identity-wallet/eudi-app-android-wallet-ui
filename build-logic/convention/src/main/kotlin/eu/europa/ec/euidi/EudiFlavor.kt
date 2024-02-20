@@ -52,8 +52,8 @@ fun configureFlavors(
                             applicationIdSuffix = it.applicationIdSuffix
                             versionName = fullVersion
                         }
-                        manifestPlaceholders["appNameSuffix"] = it.applicationNameSuffix.orEmpty()
                     }
+                    manifestPlaceholders["appNameSuffix"] = it.applicationNameSuffix.orEmpty()
                     addConfigField(
                         "APP_VERSION",
                         fullVersion
