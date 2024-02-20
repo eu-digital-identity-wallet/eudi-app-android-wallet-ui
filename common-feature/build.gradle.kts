@@ -25,3 +25,7 @@ android {
 dependencies {
     implementation(libs.gson)
 }
+
+featureConfig {
+    isCommonFeature = true
+}

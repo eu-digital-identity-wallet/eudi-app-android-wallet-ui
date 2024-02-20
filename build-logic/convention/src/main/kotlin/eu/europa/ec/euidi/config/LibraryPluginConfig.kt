@@ -13,18 +13,7 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-plugins {
-    id("eudi.android.feature")
-}
 
-android {
-    namespace = "eu.europa.ec.dashboardfeature"
-}
+package eu.europa.ec.euidi.config
 
-dependencies {
-    implementation(libs.zxing)
-    implementation(libs.androidx.camera.core)
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.view)
-    implementation(libs.androidx.camera.camera2)
-}
+open class LibraryPluginConfig(var isCommonFeature: Boolean)
