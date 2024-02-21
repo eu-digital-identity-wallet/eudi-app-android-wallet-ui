@@ -19,7 +19,7 @@ package eu.europa.ec.presentationfeature.di
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
-import eu.europa.ec.commonfeature.interactor.BiometricInteractor
+import eu.europa.ec.commonfeature.interactor.DeviceBiometricInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractorImpl
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
@@ -50,7 +50,7 @@ fun providePresentationRequestInteractor(
 @Factory
 fun providePresentationLoadingInteractor(
     @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController,
-    biometricInteractor: BiometricInteractor
+    deviceBiometricInteractor: DeviceBiometricInteractor
 ): PresentationLoadingInteractor {
-    return PresentationLoadingInteractorImpl(walletCorePresentationController, biometricInteractor)
+    return PresentationLoadingInteractorImpl(walletCorePresentationController, deviceBiometricInteractor)
 }

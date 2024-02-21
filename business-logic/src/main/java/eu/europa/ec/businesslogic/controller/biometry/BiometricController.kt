@@ -22,7 +22,9 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build
 import android.provider.Settings
 import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.AuthenticationResult
 import androidx.biometric.BiometricPrompt.CryptoObject
@@ -63,7 +65,7 @@ class BiometricControllerImpl(
 
     override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
         val biometricManager = BiometricManager.from(resourceProvider.provideContext())
-        when (biometricManager.canAuthenticate(BIOMETRIC_WEAK)) {
+        when (biometricManager.canAuthenticate(DEVICE_CREDENTIAL)) {
             BiometricManager.BIOMETRIC_SUCCESS -> listener.invoke(BiometricsAvailability.CanAuthenticate)
             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> listener.invoke(BiometricsAvailability.NonEnrolled)
             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE, BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> listener.invoke(
@@ -239,6 +241,7 @@ class BiometricControllerImpl(
                     .setTitle(context.getString(R.string.biometric_prompt_title))
                     .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
                     .setNegativeButtonText(context.getString(R.string.generic_cancel))
+                    .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
                     .build(),
                 payload.cryptoObject
             )
@@ -248,6 +251,7 @@ class BiometricControllerImpl(
                     .setTitle(context.getString(R.string.biometric_prompt_title))
                     .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
                     .setNegativeButtonText(context.getString(R.string.generic_cancel))
+                    .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
                     .build()
             )
         }

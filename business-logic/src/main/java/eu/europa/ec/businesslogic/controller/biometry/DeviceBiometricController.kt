@@ -1,0 +1,90 @@
+/*
+ * Copyright (c) 2023 European Commission
+ *
+ * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
+ * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
+ * except in compliance with the Licence.
+ *
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/software/page/eupl
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under
+ * the Licence is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+ * ANY KIND, either express or implied. See the Licence for the specific language
+ * governing permissions and limitations under the Licence.
+ */
+
+package eu.europa.ec.businesslogic.controller.biometry
+
+import android.content.Context
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+
+interface DeviceBiometricController {
+    fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
+    fun authenticate(context: Context, payload: BiometricPromptPayload)
+}
+
+class DeviceBiometricControllerImpl(
+    private val resourceProvider: ResourceProvider,
+): DeviceBiometricController {
+    override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
+        val biometricManager = BiometricManager.from(resourceProvider.provideContext())
+        when (biometricManager.canAuthenticate(BIOMETRIC_WEAK)) {
+            BiometricManager.BIOMETRIC_SUCCESS -> listener.invoke(BiometricsAvailability.CanAuthenticate)
+            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> listener.invoke(BiometricsAvailability.NonEnrolled)
+            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE, BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> listener.invoke(
+                BiometricsAvailability.Failure(resourceProvider.getString(R.string.biometric_no_hardware))
+            )
+
+            else -> listener.invoke(BiometricsAvailability.Failure(resourceProvider.getString(R.string.biometric_unknown_error)))
+        }
+    }
+
+    override fun authenticate(context: Context, payload: BiometricPromptPayload) {
+        context as FragmentActivity
+
+        val prompt = BiometricPrompt(
+            context,
+            ContextCompat.getMainExecutor(context),
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    payload.onCancel()
+                }
+
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    payload.onSuccess()
+                }
+
+                override fun onAuthenticationFailed() {
+                    payload.onFailure()
+                }
+            }
+        )
+
+        if (payload.cryptoObject != null) {
+            prompt.authenticate(
+                BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(context.getString(R.string.biometric_prompt_title))
+                    .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
+                    .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+                    .build(),
+                payload.cryptoObject
+            )
+        } else {
+            prompt.authenticate(
+                BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(context.getString(R.string.biometric_prompt_title))
+                    .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
+                    .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+                    .build()
+            )
+        }
+    }
+}

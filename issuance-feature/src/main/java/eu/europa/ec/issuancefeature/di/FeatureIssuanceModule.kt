@@ -18,7 +18,7 @@ package eu.europa.ec.issuancefeature.di
 
 
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
-import eu.europa.ec.commonfeature.interactor.BiometricInteractor
+import eu.europa.ec.commonfeature.interactor.DeviceBiometricInteractor
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
@@ -38,9 +38,9 @@ class FeatureIssuanceModule
 fun provideAddDocumentInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
-    biometricInteractor: BiometricInteractor
+    deviceBiometricInteractor: DeviceBiometricInteractor
 ): AddDocumentInteractor =
-    AddDocumentInteractorImpl(walletCoreDocumentsController, biometricInteractor, resourceProvider)
+    AddDocumentInteractorImpl(walletCoreDocumentsController, deviceBiometricInteractor, resourceProvider)
 
 @Factory
 fun provideDocumentDetailsInteractor(

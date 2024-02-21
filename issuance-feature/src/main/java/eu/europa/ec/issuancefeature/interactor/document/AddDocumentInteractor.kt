@@ -25,7 +25,7 @@ import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialStat
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
-import eu.europa.ec.commonfeature.interactor.BiometricInteractor
+import eu.europa.ec.commonfeature.interactor.DeviceBiometricInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
@@ -57,7 +57,7 @@ interface AddDocumentInteractor {
 
 class AddDocumentInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val biometricInteractor: BiometricInteractor,
+    private val deviceBiometricInteractor: DeviceBiometricInteractor,
     private val resourceProvider: ResourceProvider,
 ) : AddDocumentInteractor {
     private val genericErrorMsg
@@ -114,13 +114,13 @@ class AddDocumentInteractorImpl(
         walletCoreDocumentsController.addSampleData()
 
     override fun handleUserAuth(context: Context, payload: BiometricPromptPayload) {
-        biometricInteractor.getBiometricsAvailability {
+        deviceBiometricInteractor.getBiometricsAvailability {
             when(it){
                 is BiometricsAvailability.CanAuthenticate -> {
-                    biometricInteractor.authenticateWithBiometrics(context, payload)
+                    deviceBiometricInteractor.authenticateWithBiometrics(context, payload)
                 }
                 is BiometricsAvailability.NonEnrolled -> {
-                    biometricInteractor.launchBiometricSystemScreen()
+                    payload.onFailure()
                 }
                 is BiometricsAvailability.Failure -> {
                     payload.onFailure()
