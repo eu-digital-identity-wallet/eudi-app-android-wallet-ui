@@ -14,13 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.assemblylogic.service
+package eu.europa.ec.euidi.config
 
-import eu.europa.ec.eudi.iso18013.transfer.TransferManager
-import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService
-import eu.europa.ec.eudi.wallet.EudiWallet
-
-class NfcEngagementServiceImpl : NfcEngagementService() {
-    override val transferManager: TransferManager
-        get() = EudiWallet.transferManager
-}
+open class LibraryPluginConfig(var isCommonFeature: Boolean)

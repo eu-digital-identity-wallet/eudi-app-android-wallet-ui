@@ -21,7 +21,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
-import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.dashboardfeature.BuildConfig
 import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardScreen
 import eu.europa.ec.dashboardfeature.ui.scanner.QrScanScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens

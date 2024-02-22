@@ -21,7 +21,3 @@ plugins {
 android {
     namespace = "eu.europa.ec.startupfeature"
 }
-
-dependencies {
-    implementation(project(":common-feature"))
-}

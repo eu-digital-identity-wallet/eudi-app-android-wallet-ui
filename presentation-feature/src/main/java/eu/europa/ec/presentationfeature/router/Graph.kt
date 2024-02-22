@@ -23,8 +23,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.presentationfeature.BuildConfig
 import eu.europa.ec.presentationfeature.ui.loading.PresentationLoadingScreen
 import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute

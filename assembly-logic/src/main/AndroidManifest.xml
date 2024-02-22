@@ -65,7 +65,7 @@
         tools:targetApi="34">
 
         <service
-            android:name=".service.NfcEngagementServiceImpl"
+            android:name="eu.europa.ec.eudi.wallet.util.DefaultNfcEngagementService"
             android:exported="true"
             android:label="@string/nfc_engagement_service_desc"
             android:permission="android.permission.BIND_NFC_SERVICE">
@@ -108,7 +108,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="${deepLinkHost}"
+                    android:host="${openid4vpHost}"
                     android:scheme="${openid4vpScheme}" />
 
             </intent-filter>

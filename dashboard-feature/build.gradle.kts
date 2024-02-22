@@ -22,7 +22,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":common-feature"))
     implementation(libs.zxing)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.lifecycle)
