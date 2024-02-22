@@ -52,11 +52,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             with(pluginManager) {
                 apply("com.android.library")
-                apply("eudi.android.library.jacoco")
+                apply("eudi.android.library.kover")
                 apply("eudi.android.lint")
                 apply("eudi.android.koin")
                 apply("org.jetbrains.kotlin.android")
-                apply("jacoco")
                 apply("kotlinx-serialization")
                 apply("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
             }

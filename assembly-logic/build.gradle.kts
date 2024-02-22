@@ -45,4 +45,16 @@ dependencies {
     api(project(":presentation-feature"))
     api(project(":proximity-feature"))
     api(project(":issuance-feature"))
+
+    // Test Cover Report
+    kover(project(":business-logic"))
+    kover(project(":ui-logic"))
+    kover(project(":network-logic"))
+    kover(project(":common-feature"))
+    kover(project(":startup-feature"))
+    kover(project(":login-feature"))
+    kover(project(":dashboard-feature"))
+    kover(project(":presentation-feature"))
+    kover(project(":proximity-feature"))
+    kover(project(":issuance-feature"))
 }
