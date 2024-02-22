@@ -171,7 +171,7 @@ class AddDocumentViewModel(
                         setState {
                             copy(
                                 error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
+                                    onRetry = null,
                                     errorSubTitle = response.errorMessage,
                                     onCancel = { setEvent(Event.DismissError) }
                                 ),

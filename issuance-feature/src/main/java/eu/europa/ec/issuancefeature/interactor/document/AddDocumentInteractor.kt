@@ -120,7 +120,7 @@ class AddDocumentInteractorImpl(
                     deviceBiometricInteractor.authenticateWithBiometrics(context, payload)
                 }
                 is BiometricsAvailability.NonEnrolled -> {
-                    payload.onFailure()
+                    deviceBiometricInteractor.authenticateWithBiometrics(context, payload)
                 }
                 is BiometricsAvailability.Failure -> {
                     payload.onFailure()
