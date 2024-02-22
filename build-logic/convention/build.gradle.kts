@@ -52,10 +52,6 @@ gradlePlugin {
             id = "eudi.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
         }
-        register("androidApplicationJacoco") {
-            id = "eudi.android.application.jacoco"
-            implementationClass = "AndroidApplicationJacocoConventionPlugin"
-        }
         register("androidLibraryCompose") {
             id = "eudi.android.library.compose"
             implementationClass = "AndroidLibraryComposeConventionPlugin"
@@ -68,9 +64,9 @@ gradlePlugin {
             id = "eudi.android.feature"
             implementationClass = "AndroidFeatureConventionPlugin"
         }
-        register("androidLibraryJacoco") {
-            id = "eudi.android.library.jacoco"
-            implementationClass = "AndroidLibraryJacocoConventionPlugin"
+        register("androidLibraryKover") {
+            id = "eudi.android.library.kover"
+            implementationClass = "AndroidLibraryKoverConventionPlugin"
         }
         register("androidTest") {
             id = "eudi.android.test"
