@@ -58,3 +58,14 @@ dependencies {
     kover(project(":proximity-feature"))
     kover(project(":issuance-feature"))
 }
+
+koverReport {
+    filters {
+        excludes {
+            classes(
+                "org.koin.ksp.generated.*",
+                "eu.europa.ec.assemblylogic.*"
+            )
+        }
+    }
+}
