@@ -1,3 +1,5 @@
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+
 /*
  * Copyright (c) 2023 European Commission
  *
@@ -55,6 +57,18 @@ dependencies {
     kover(project(":login-feature"))
     kover(project(":dashboard-feature"))
     kover(project(":presentation-feature"))
+    kover(project(":presentation-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.PresentationFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.PresentationFeature.packages
+                )
+            }
+        }
+    }
     kover(project(":proximity-feature"))
     kover(project(":issuance-feature"))
 }
@@ -63,8 +77,10 @@ koverReport {
     filters {
         excludes {
             classes(
-                "org.koin.ksp.generated.*",
-                "eu.europa.ec.assemblylogic.*"
+                KoverExclusionRules.AssemblyLogic.classes
+            )
+            packages(
+                KoverExclusionRules.AssemblyLogic.packages
             )
         }
     }
