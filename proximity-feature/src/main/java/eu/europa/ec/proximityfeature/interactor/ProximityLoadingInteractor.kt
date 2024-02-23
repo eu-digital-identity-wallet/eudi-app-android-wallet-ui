@@ -26,7 +26,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityLoadingObserveResponsePartialState {
-    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) : ProximityLoadingObserveResponsePartialState()
+    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) :
+        ProximityLoadingObserveResponsePartialState()
+
     data class Failure(val error: String) : ProximityLoadingObserveResponsePartialState()
     data object Success : ProximityLoadingObserveResponsePartialState()
 }
@@ -63,13 +65,15 @@ class ProximityLoadingInteractorImpl(
 
     override fun handleUserAuthentication(context: Context, payload: BiometricPromptPayload) {
         deviceBiometricInteractor.getBiometricsAvailability {
-            when(it){
+            when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
                     deviceBiometricInteractor.authenticateWithBiometrics(context, payload)
                 }
+
                 is BiometricsAvailability.NonEnrolled -> {
-                    payload.onFailure()
+                    deviceBiometricInteractor.authenticateWithBiometrics(context, payload)
                 }
+
                 is BiometricsAvailability.Failure -> {
                     payload.onFailure()
                 }

@@ -36,11 +36,10 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.zip
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
 import java.net.URI
@@ -63,7 +62,9 @@ sealed class TransferEventPartialState {
 
 sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
-    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) : SendRequestedDocumentsPartialState()
+    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) :
+        SendRequestedDocumentsPartialState()
+
     data object RequestSent : SendRequestedDocumentsPartialState()
 }
 
@@ -74,7 +75,9 @@ sealed class ResponseReceivedPartialState {
 }
 
 sealed class WalletCorePartialState {
-    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) : WalletCorePartialState()
+    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) :
+        WalletCorePartialState()
+
     data class Failure(val error: String) : WalletCorePartialState()
     data object Success : WalletCorePartialState()
     data class Redirect(val uri: URI) : WalletCorePartialState()
@@ -283,7 +286,7 @@ class WalletCorePresentationControllerImpl(
                     emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired(
                         payload = BiometricPromptPayload(
                             cryptoObject = response.cryptoObject,
-                            onSuccess = { /*TODO what here*/ },
+                            onSuccess = { eudiWallet.sendResponse(disclosedDocuments = documents) },
                             onCancel = { /*TODO what here*/ },
                             onFailure = { /*TODO what here*/ }
                         )
@@ -291,11 +294,12 @@ class WalletCorePresentationControllerImpl(
                 }
             }
         }
-    }.safeAsync {
-        SendRequestedDocumentsPartialState.Failure(
-            error = it.localizedMessage ?: genericErrorMessage
-        )
-    }
+    }.shareIn(coroutineScope, SharingStarted.Lazily, 1)
+        .safeAsync {
+            SendRequestedDocumentsPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMessage
+            )
+        }
 
     override fun mappedCallbackStateFlow(): Flow<ResponseReceivedPartialState> {
         return events.mapNotNull { response ->
@@ -322,36 +326,37 @@ class WalletCorePresentationControllerImpl(
 
                 else -> null
             }
-        }.safeAsync {
-            ResponseReceivedPartialState.Failure(
-                error = it.localizedMessage ?: genericErrorMessage
-            )
-        }
+        }.shareIn(coroutineScope, SharingStarted.Lazily, 1)
+            .safeAsync {
+                ResponseReceivedPartialState.Failure(
+                    error = it.localizedMessage ?: genericErrorMessage
+                )
+            }
     }
 
     override fun observeSentDocumentsRequest(): Flow<WalletCorePartialState> =
-        sendRequestedDocuments().zip(mappedCallbackStateFlow()) { createResponseState, sentResponseState ->
+        merge(sendRequestedDocuments(), mappedCallbackStateFlow()).mapNotNull {
             when {
-                createResponseState is SendRequestedDocumentsPartialState.Failure -> {
-                    WalletCorePartialState.Failure(createResponseState.error)
+                it is SendRequestedDocumentsPartialState.Failure -> {
+                    WalletCorePartialState.Failure(it.error)
                 }
 
-                createResponseState is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
-                    WalletCorePartialState.UserAuthenticationRequired(createResponseState.payload)
+                it is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
+                    WalletCorePartialState.UserAuthenticationRequired(it.payload)
                 }
 
-                sentResponseState is ResponseReceivedPartialState.Failure -> {
-                    WalletCorePartialState.Failure(sentResponseState.error)
+                it is ResponseReceivedPartialState.Failure -> {
+                    WalletCorePartialState.Failure(it.error)
                 }
 
-                sentResponseState is ResponseReceivedPartialState.Redirect -> {
+                it is ResponseReceivedPartialState.Redirect -> {
                     WalletCorePartialState.Redirect(
-                        uri = sentResponseState.uri
+                        uri = it.uri
                     )
                 }
 
-                createResponseState is SendRequestedDocumentsPartialState.RequestSent &&
-                        sentResponseState !is ResponseReceivedPartialState.Success -> {
+                it is SendRequestedDocumentsPartialState.RequestSent &&
+                        it !is ResponseReceivedPartialState.Success -> {
                     null
                 }
 
@@ -359,7 +364,7 @@ class WalletCorePresentationControllerImpl(
                     WalletCorePartialState.Success
                 }
             }
-        }.filterNotNull()
+        }
             .safeAsync {
                 WalletCorePartialState.Failure(
                     error = it.localizedMessage ?: genericErrorMessage
