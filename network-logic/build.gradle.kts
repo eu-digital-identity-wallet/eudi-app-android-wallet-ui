@@ -14,6 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+
 plugins {
     id("eudi.android.library")
 }
@@ -34,4 +36,15 @@ dependencies {
     releaseImplementation(libs.chucker.android.no.op)
 
     testImplementation(project(":test-logic"))
+}
+
+koverReport.filters {
+    excludes {
+        classes(
+            KoverExclusionRules.NetworkLogic.classes
+        )
+        packages(
+            KoverExclusionRules.NetworkLogic.packages
+        )
+    }
 }

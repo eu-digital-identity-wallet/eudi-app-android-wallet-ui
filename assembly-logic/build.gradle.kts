@@ -73,7 +73,18 @@ dependencies {
             }
         }
     }
-    kover(project(":network-logic"))
+    kover(project(":network-logic")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.NetworkLogic.classes
+                )
+                packages(
+                    KoverExclusionRules.NetworkLogic.packages
+                )
+            }
+        }
+    }
     kover(project(":common-feature"))
     kover(project(":startup-feature"))
     kover(project(":login-feature"))

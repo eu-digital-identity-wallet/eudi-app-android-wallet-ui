@@ -90,6 +90,17 @@ sealed interface KoverExclusionRules {
             )
     }
 
+    object NetworkLogic : KoverExclusionRules {
+        override val classes: List<String>
+            get() = listOf(
+                KOIN,
+            )
+        override val packages: List<String>
+            get() = listOf(
+                "eu.europa.ec.networklogic"
+            )
+    }
+
     object PresentationFeature : KoverExclusionRules {
         override val classes: List<String>
             get() = listOf(
