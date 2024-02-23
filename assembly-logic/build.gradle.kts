@@ -109,7 +109,18 @@ dependencies {
             }
         }
     }
-    kover(project(":login-feature"))
+    kover(project(":login-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.LoginFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.LoginFeature.packages
+                )
+            }
+        }
+    }
     kover(project(":dashboard-feature"))
     kover(project(":presentation-feature")) {
         koverReport.filters {

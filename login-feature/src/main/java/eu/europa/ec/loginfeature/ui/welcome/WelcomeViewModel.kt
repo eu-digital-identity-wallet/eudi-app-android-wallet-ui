@@ -47,7 +47,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-class WelcomeScreenViewModel : MviViewModel<Event, State, Effect>() {
+class WelcomeViewModel : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State()
 
     override fun handleEvents(event: Event) {

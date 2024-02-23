@@ -67,7 +67,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 @Composable
 fun FaqScreen(
     navController: NavController,
-    viewModel: FaqScreenViewModel
+    viewModel: FaqViewModel
 ) {
     ContentScreen(
         isLoading = false,
