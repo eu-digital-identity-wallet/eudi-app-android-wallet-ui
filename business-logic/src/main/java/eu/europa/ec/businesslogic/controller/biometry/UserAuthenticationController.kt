@@ -27,14 +27,14 @@ import androidx.fragment.app.FragmentActivity
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
-interface DeviceBiometricController {
+interface UserAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
     fun authenticate(context: Context, payload: BiometricPromptPayload)
 }
 
-class DeviceBiometricControllerImpl(
+class UserAuthenticationControllerImpl(
     private val resourceProvider: ResourceProvider,
-) : DeviceBiometricController {
+) : UserAuthenticationController {
     override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
         val biometricManager = BiometricManager.from(resourceProvider.provideContext())
         when (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {

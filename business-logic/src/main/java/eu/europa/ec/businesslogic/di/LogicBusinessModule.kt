@@ -25,8 +25,8 @@ import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.config.WalletCoreConfigImpl
 import eu.europa.ec.businesslogic.controller.biometry.BiometricController
 import eu.europa.ec.businesslogic.controller.biometry.BiometricControllerImpl
-import eu.europa.ec.businesslogic.controller.biometry.DeviceBiometricController
-import eu.europa.ec.businesslogic.controller.biometry.DeviceBiometricControllerImpl
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationController
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationControllerImpl
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.controller.crypto.CryptoControllerImpl
 import eu.europa.ec.businesslogic.controller.crypto.KeystoreController
@@ -103,10 +103,10 @@ fun provideBiometricController(
     BiometricControllerImpl(resourceProvider, cryptoController, prefKeys)
 
 @Factory
-fun provideDeviceBiometricController(
+fun provideUserAuthenticationController(
     resourceProvider: ResourceProvider
-): DeviceBiometricController =
-    DeviceBiometricControllerImpl(resourceProvider)
+): UserAuthenticationController =
+    UserAuthenticationControllerImpl(resourceProvider)
 
 @Factory
 fun provideFormValidator(logController: LogController): FormValidator =

@@ -17,13 +17,13 @@
 package eu.europa.ec.commonfeature.di
 
 import eu.europa.ec.businesslogic.controller.biometry.BiometricController
-import eu.europa.ec.businesslogic.controller.biometry.DeviceBiometricController
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.BiometricInteractorImpl
-import eu.europa.ec.commonfeature.interactor.DeviceBiometricInteractor
-import eu.europa.ec.commonfeature.interactor.DeviceBiometricInteractorImpl
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractorImpl
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -57,7 +57,7 @@ fun provideBiometricInteractor(
 
 @Factory
 fun provideDeviceBiometricInteractor(
-    deviceBiometricController: DeviceBiometricController
-): DeviceBiometricInteractor {
-    return DeviceBiometricInteractorImpl(deviceBiometricController)
+    userAuthenticationController: UserAuthenticationController
+): UserAuthenticationInteractor {
+    return UserAuthenticationInteractorImpl(userAuthenticationController)
 }

@@ -19,9 +19,9 @@ package eu.europa.ec.commonfeature.interactor
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.biometry.DeviceBiometricController
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationController
 
-interface DeviceBiometricInteractor {
+interface UserAuthenticationInteractor {
     fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
     fun authenticateWithBiometrics(
         context: Context,
@@ -29,14 +29,14 @@ interface DeviceBiometricInteractor {
     )
 }
 
-class DeviceBiometricInteractorImpl(private val deviceBiometricController: DeviceBiometricController) :
-    DeviceBiometricInteractor {
+class UserAuthenticationInteractorImpl(private val userAuthenticationController: UserAuthenticationController) :
+    UserAuthenticationInteractor {
     override fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit) {
-        deviceBiometricController.deviceSupportsBiometrics(listener)
+        userAuthenticationController.deviceSupportsBiometrics(listener)
     }
 
     override fun authenticateWithBiometrics(context: Context, payload: BiometricPromptPayload) {
-        deviceBiometricController.authenticate(context, payload)
+        userAuthenticationController.authenticate(context, payload)
     }
 
 }

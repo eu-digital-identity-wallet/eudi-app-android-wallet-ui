@@ -21,7 +21,7 @@ import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
-import eu.europa.ec.commonfeature.interactor.DeviceBiometricInteractor
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 import java.net.URI
@@ -42,7 +42,7 @@ interface PresentationLoadingInteractor {
 
 class PresentationLoadingInteractorImpl(
     private val walletCorePresentationController: WalletCorePresentationController,
-    private val deviceBiometricInteractor: DeviceBiometricInteractor,
+    private val userAuthenticationInteractor: UserAuthenticationInteractor,
 ) : PresentationLoadingInteractor {
 
     override val verifierName: String? = walletCorePresentationController.verifierName
@@ -69,13 +69,13 @@ class PresentationLoadingInteractorImpl(
         }
 
     override fun handleUserAuthentication(context: Context, payload: BiometricPromptPayload) {
-        deviceBiometricInteractor.getBiometricsAvailability {
+        userAuthenticationInteractor.getBiometricsAvailability {
             when(it){
                 is BiometricsAvailability.CanAuthenticate -> {
-                    deviceBiometricInteractor.authenticateWithBiometrics(context, payload)
+                    userAuthenticationInteractor.authenticateWithBiometrics(context, payload)
                 }
                 is BiometricsAvailability.NonEnrolled -> {
-                    deviceBiometricInteractor.authenticateWithBiometrics(context, payload)
+                    userAuthenticationInteractor.authenticateWithBiometrics(context, payload)
                 }
                 is BiometricsAvailability.Failure -> {
                     payload.onFailure()
