@@ -24,9 +24,7 @@ private const val ROUTER_GRAPH = "eu.europa.ec.*.router"
 
 sealed interface KoverExclusionRules {
     val classes: List<String>
-        get() = listOf()
     val packages: List<String>
-        get() = listOf()
 
     object AssemblyLogic : KoverExclusionRules {
         override val classes: List<String>
