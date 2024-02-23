@@ -22,25 +22,25 @@ private const val MODELS = "eu.europa.ec.*.model"
 private const val DI = "eu.europa.ec.*.di"
 
 sealed interface KoverExclusionRules {
-    val classes: ArrayList<String>
-        get() = arrayListOf()
-    val packages: ArrayList<String>
-        get() = arrayListOf()
+    val classes: List<String>
+        get() = listOf()
+    val packages: List<String>
+        get() = listOf()
 
     object AssemblyLogic : KoverExclusionRules {
-        override val classes: ArrayList<String>
-            get() = arrayListOf(
+        override val classes: List<String>
+            get() = listOf(
                 KOIN,
             )
-        override val packages: ArrayList<String>
-            get() = arrayListOf(
+        override val packages: List<String>
+            get() = listOf(
                 "eu.europa.ec.assemblylogic",
             )
     }
 
     object BusinessLogic : KoverExclusionRules {
-        override val classes: ArrayList<String>
-            get() = arrayListOf(
+        override val classes: List<String>
+            get() = listOf(
                 KOIN,
                 BUILD_CONFIG,
                 "eu.europa.ec.businesslogic.controller.security.AntiHookController",
@@ -56,8 +56,8 @@ sealed interface KoverExclusionRules {
                 "eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper",
                 "eu.europa.ec.businesslogic.util.SafeLet*",
             )
-        override val packages: ArrayList<String>
-            get() = arrayListOf(
+        override val packages: List<String>
+            get() = listOf(
                 DI,
                 MODELS,
                 "eu.europa.ec.businesslogic.config",
@@ -69,8 +69,8 @@ sealed interface KoverExclusionRules {
     }
 
     object UiLogic : KoverExclusionRules {
-        override val classes: ArrayList<String>
-            get() = arrayListOf(
+        override val classes: List<String>
+            get() = listOf(
                 KOIN,
                 BUILD_CONFIG,
                 "eu.europa.ec.uilogic.navigation.*Screen*",
@@ -79,8 +79,8 @@ sealed interface KoverExclusionRules {
                 "eu.europa.ec.uilogic.serializer.UiSerializableParser*",
                 "eu.europa.ec.uilogic.serializer.UiSerializerImpl",
             )
-        override val packages: ArrayList<String>
-            get() = arrayListOf(
+        override val packages: List<String>
+            get() = listOf(
                 DI,
                 "eu.europa.ec.uilogic.component",
                 "eu.europa.ec.uilogic.config",
@@ -91,8 +91,8 @@ sealed interface KoverExclusionRules {
     }
 
     object PresentationFeature : KoverExclusionRules {
-        override val classes: ArrayList<String>
-            get() = arrayListOf(
+        override val classes: List<String>
+            get() = listOf(
                 "eu.europa.ec.presentationfeature.ui.*.*Screen*",
             )
     }
