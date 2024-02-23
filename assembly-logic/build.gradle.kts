@@ -85,7 +85,18 @@ dependencies {
             }
         }
     }
-    kover(project(":common-feature"))
+    kover(project(":common-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.CommonFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.CommonFeature.packages
+                )
+            }
+        }
+    }
     kover(project(":startup-feature"))
     kover(project(":login-feature"))
     kover(project(":dashboard-feature"))

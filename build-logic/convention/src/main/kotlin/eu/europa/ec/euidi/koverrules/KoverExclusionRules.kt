@@ -20,6 +20,7 @@ private const val KOIN = "org.koin.*"
 private const val BUILD_CONFIG = "eu.europa.ec.*.BuildConfig"
 private const val MODELS = "eu.europa.ec.*.model"
 private const val DI = "eu.europa.ec.*.di"
+private const val ROUTER_GRAPH = "eu.europa.ec.*.router"
 
 sealed interface KoverExclusionRules {
     val classes: List<String>
@@ -98,6 +99,23 @@ sealed interface KoverExclusionRules {
         override val packages: List<String>
             get() = listOf(
                 "eu.europa.ec.networklogic"
+            )
+    }
+
+    object CommonFeature : KoverExclusionRules {
+        override val classes: List<String>
+            get() = listOf(
+                KOIN,
+                BUILD_CONFIG,
+                "eu.europa.ec.commonfeature.ui.*.*Screen*",
+            )
+        override val packages: List<String>
+            get() = listOf(
+                DI,
+                MODELS,
+                ROUTER_GRAPH,
+                "eu.europa.ec.commonfeature.config",
+                "eu.europa.ec.commonfeature.ui.*.model",
             )
     }
 
