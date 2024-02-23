@@ -145,7 +145,18 @@ dependencies {
             }
         }
     }
-    kover(project(":proximity-feature"))
+    kover(project(":proximity-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.ProximityFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.ProximityFeature.packages
+                )
+            }
+        }
+    }
     kover(project(":issuance-feature"))
 }
 

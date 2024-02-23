@@ -176,4 +176,19 @@ sealed interface KoverExclusionRules {
                 ROUTER_GRAPH,
             )
     }
+
+    object ProximityFeature : KoverExclusionRules {
+        override val classes: List<String>
+            get() = listOf(
+                KOIN,
+                BUILD_CONFIG,
+                "eu.europa.ec.proximityfeature.ui.*.*Screen*",
+            )
+        override val packages: List<String>
+            get() = listOf(
+                DI,
+                ROUTER_GRAPH,
+                "eu.europa.ec.proximityfeature.ui.qr.component",
+            )
+    }
 }
