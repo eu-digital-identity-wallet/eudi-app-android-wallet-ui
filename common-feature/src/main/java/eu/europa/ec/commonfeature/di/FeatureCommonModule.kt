@@ -31,8 +31,6 @@ import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 
-//const val PRESENTATION_SCOPE_ID = "presentation_scope_id"
-
 @Module
 @ComponentScan("eu.europa.ec.commonfeature")
 class FeatureCommonModule

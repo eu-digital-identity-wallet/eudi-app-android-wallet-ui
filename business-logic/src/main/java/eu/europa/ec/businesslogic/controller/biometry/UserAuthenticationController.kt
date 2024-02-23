@@ -89,3 +89,10 @@ class UserAuthenticationControllerImpl(
         }
     }
 }
+
+data class BiometricPromptPayload(
+    val cryptoObject: BiometricPrompt.CryptoObject?,
+    val onSuccess: () -> Unit,
+    val onCancel: () -> Unit,
+    val onFailure: () -> Unit,
+)
