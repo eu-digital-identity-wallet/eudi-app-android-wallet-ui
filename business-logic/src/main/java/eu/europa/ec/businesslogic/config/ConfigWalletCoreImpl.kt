@@ -42,7 +42,6 @@ internal class WalletCoreConfigImpl(
         get() {
             if (_config == null) {
                 _config = EudiWalletConfig.Builder(context)
-                    .userAuthenticationRequired(true)
                     .openId4VpConfig {
                         withEncryptionAlgorithms(listOf(EncryptionAlgorithm.ECDH_ES))
                         withEncryptionMethods(listOf(EncryptionMethod.A128CBC_HS256))
