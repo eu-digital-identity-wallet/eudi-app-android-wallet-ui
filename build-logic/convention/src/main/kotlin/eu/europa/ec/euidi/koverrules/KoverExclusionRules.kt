@@ -17,6 +17,7 @@
 package eu.europa.ec.euidi.koverrules
 
 private const val KOIN = "org.koin.*"
+private const val BUILD_CONFIG = "eu.europa.ec.*.BuildConfig"
 private const val MODELS = "eu.europa.ec.*.model"
 private const val DI = "eu.europa.ec.*.di"
 
@@ -41,7 +42,7 @@ sealed interface KoverExclusionRules {
         override val classes: ArrayList<String>
             get() = arrayListOf(
                 KOIN,
-                "eu.europa.ec.businesslogic.BuildConfig",
+                BUILD_CONFIG,
                 "eu.europa.ec.businesslogic.controller.security.AntiHookController",
                 "eu.europa.ec.businesslogic.controller.security.RootController",
                 "eu.europa.ec.businesslogic.controller.security.AndroidInstaller",
@@ -64,6 +65,28 @@ sealed interface KoverExclusionRules {
                 "eu.europa.ec.businesslogic.controller.crypto",
                 "eu.europa.ec.businesslogic.controller.log",
                 "eu.europa.ec.businesslogic.controller.storage",
+            )
+    }
+
+    object UiLogic : KoverExclusionRules {
+        override val classes: ArrayList<String>
+            get() = arrayListOf(
+                KOIN,
+                BUILD_CONFIG,
+                "eu.europa.ec.uilogic.navigation.*Screen*",
+                "eu.europa.ec.uilogic.navigation.ModuleRoute*",
+                "eu.europa.ec.uilogic.navigation.RouterHost*",
+                "eu.europa.ec.uilogic.serializer.UiSerializableParser*",
+                "eu.europa.ec.uilogic.serializer.UiSerializerImpl",
+            )
+        override val packages: ArrayList<String>
+            get() = arrayListOf(
+                DI,
+                "eu.europa.ec.uilogic.component",
+                "eu.europa.ec.uilogic.config",
+                "eu.europa.ec.uilogic.container",
+                "eu.europa.ec.uilogic.extension",
+                "eu.europa.ec.uilogic.mvi",
             )
     }
 

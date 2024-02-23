@@ -61,7 +61,18 @@ dependencies {
             }
         }
     }
-    kover(project(":ui-logic"))
+    kover(project(":ui-logic")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.UiLogic.classes
+                )
+                packages(
+                    KoverExclusionRules.UiLogic.packages
+                )
+            }
+        }
+    }
     kover(project(":network-logic"))
     kover(project(":common-feature"))
     kover(project(":startup-feature"))
