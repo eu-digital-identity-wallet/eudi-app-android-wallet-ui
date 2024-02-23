@@ -44,7 +44,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-class SplashScreenViewModel(
+class SplashViewModel(
     private val interactor: SplashInteractor,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State()

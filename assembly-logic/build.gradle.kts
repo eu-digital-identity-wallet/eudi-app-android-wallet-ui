@@ -97,7 +97,18 @@ dependencies {
             }
         }
     }
-    kover(project(":startup-feature"))
+    kover(project(":startup-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.StartupFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.StartupFeature.packages
+                )
+            }
+        }
+    }
     kover(project(":login-feature"))
     kover(project(":dashboard-feature"))
     kover(project(":presentation-feature")) {

@@ -119,6 +119,20 @@ sealed interface KoverExclusionRules {
             )
     }
 
+    object StartupFeature : KoverExclusionRules {
+        override val classes: List<String>
+            get() = listOf(
+                KOIN,
+                BUILD_CONFIG,
+                "eu.europa.ec.startupfeature.ui.*.*Screen*",
+            )
+        override val packages: List<String>
+            get() = listOf(
+                DI,
+                ROUTER_GRAPH,
+            )
+    }
+
     object PresentationFeature : KoverExclusionRules {
         override val classes: List<String>
             get() = listOf(
