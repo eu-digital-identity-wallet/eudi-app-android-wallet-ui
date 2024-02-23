@@ -121,7 +121,18 @@ dependencies {
             }
         }
     }
-    kover(project(":dashboard-feature"))
+    kover(project(":dashboard-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.DashboardFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.DashboardFeature.packages
+                )
+            }
+        }
+    }
     kover(project(":presentation-feature")) {
         koverReport.filters {
             excludes {

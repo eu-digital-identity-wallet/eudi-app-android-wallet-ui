@@ -148,6 +148,21 @@ sealed interface KoverExclusionRules {
             )
     }
 
+    object DashboardFeature : KoverExclusionRules {
+        override val classes: List<String>
+            get() = listOf(
+                KOIN,
+                BUILD_CONFIG,
+                "eu.europa.ec.dashboardfeature.ui.*.*Screen*",
+            )
+        override val packages: List<String>
+            get() = listOf(
+                DI,
+                ROUTER_GRAPH,
+                "eu.europa.ec.dashboardfeature.ui.scanner.component",
+            )
+    }
+
     object PresentationFeature : KoverExclusionRules {
         override val classes: List<String>
             get() = listOf(

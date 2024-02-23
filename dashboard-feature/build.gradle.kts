@@ -13,6 +13,9 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+
 plugins {
     id("eudi.android.feature")
 }
@@ -27,4 +30,15 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.camera2)
+}
+
+koverReport.filters {
+    excludes {
+        classes(
+            KoverExclusionRules.DashboardFeature.classes
+        )
+        packages(
+            KoverExclusionRules.DashboardFeature.packages
+        )
+    }
 }
