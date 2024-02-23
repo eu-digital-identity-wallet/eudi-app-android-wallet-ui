@@ -14,6 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+
 plugins {
     id("eudi.android.library")
     id("eudi.wallet.core")
@@ -35,4 +37,15 @@ dependencies {
 
     testImplementation(project(":test-logic"))
     androidTestImplementation(project(":test-logic"))
+}
+
+koverReport.filters {
+    excludes {
+        classes(
+            KoverExclusionRules.BusinessLogic.classes
+        )
+        packages(
+            KoverExclusionRules.BusinessLogic.packages
+        )
+    }
 }

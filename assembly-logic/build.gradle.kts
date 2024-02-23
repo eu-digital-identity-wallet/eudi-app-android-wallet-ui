@@ -1,5 +1,3 @@
-import eu.europa.ec.euidi.koverrules.KoverExclusionRules
-
 /*
  * Copyright (c) 2023 European Commission
  *
@@ -15,6 +13,8 @@ import eu.europa.ec.euidi.koverrules.KoverExclusionRules
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
 
 plugins {
     id("eudi.android.library")
@@ -49,14 +49,24 @@ dependencies {
     api(project(":issuance-feature"))
 
     // Test Cover Report
-    kover(project(":business-logic"))
+    kover(project(":business-logic")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.BusinessLogic.classes
+                )
+                packages(
+                    KoverExclusionRules.BusinessLogic.packages
+                )
+            }
+        }
+    }
     kover(project(":ui-logic"))
     kover(project(":network-logic"))
     kover(project(":common-feature"))
     kover(project(":startup-feature"))
     kover(project(":login-feature"))
     kover(project(":dashboard-feature"))
-    kover(project(":presentation-feature"))
     kover(project(":presentation-feature")) {
         koverReport.filters {
             excludes {
