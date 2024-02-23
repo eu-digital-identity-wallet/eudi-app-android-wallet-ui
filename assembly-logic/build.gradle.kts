@@ -157,7 +157,18 @@ dependencies {
             }
         }
     }
-    kover(project(":issuance-feature"))
+    kover(project(":issuance-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.IssuanceFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.IssuanceFeature.packages
+                )
+            }
+        }
+    }
 }
 
 koverReport {

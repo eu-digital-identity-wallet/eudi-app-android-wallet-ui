@@ -13,10 +13,24 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+
 plugins {
     id("eudi.android.feature")
 }
 
 android {
     namespace = "eu.europa.ec.issuancefeature"
+}
+
+koverReport.filters {
+    excludes {
+        classes(
+            KoverExclusionRules.IssuanceFeature.classes
+        )
+        packages(
+            KoverExclusionRules.IssuanceFeature.packages
+        )
+    }
 }
