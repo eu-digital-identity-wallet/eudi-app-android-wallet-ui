@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.excludeFromKoverReport
 import eu.europa.ec.euidi.koverrules.KoverExclusionRules
 
 plugins {
@@ -38,13 +39,7 @@ dependencies {
     testImplementation(project(":test-logic"))
 }
 
-koverReport.filters {
-    excludes {
-        classes(
-            KoverExclusionRules.NetworkLogic.classes
-        )
-        packages(
-            KoverExclusionRules.NetworkLogic.packages
-        )
-    }
-}
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.NetworkLogic.classes,
+    excludedPackages = KoverExclusionRules.NetworkLogic.packages,
+)

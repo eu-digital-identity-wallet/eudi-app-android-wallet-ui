@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.excludeFromKoverReport
 import eu.europa.ec.euidi.koverrules.KoverExclusionRules
 
 plugins {
@@ -39,13 +40,7 @@ dependencies {
     androidTestImplementation(project(":test-logic"))
 }
 
-koverReport.filters {
-    excludes {
-        classes(
-            KoverExclusionRules.BusinessLogic.classes
-        )
-        packages(
-            KoverExclusionRules.BusinessLogic.packages
-        )
-    }
-}
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.BusinessLogic.classes,
+    excludedPackages = KoverExclusionRules.BusinessLogic.packages,
+)

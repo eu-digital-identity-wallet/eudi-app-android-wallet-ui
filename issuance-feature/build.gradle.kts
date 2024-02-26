@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.excludeFromKoverReport
 import eu.europa.ec.euidi.koverrules.KoverExclusionRules
 
 plugins {
@@ -24,13 +25,7 @@ android {
     namespace = "eu.europa.ec.issuancefeature"
 }
 
-koverReport.filters {
-    excludes {
-        classes(
-            KoverExclusionRules.IssuanceFeature.classes
-        )
-        packages(
-            KoverExclusionRules.IssuanceFeature.packages
-        )
-    }
-}
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.IssuanceFeature.classes,
+    excludedPackages = KoverExclusionRules.IssuanceFeature.packages,
+)

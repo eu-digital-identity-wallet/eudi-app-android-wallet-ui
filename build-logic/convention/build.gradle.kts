@@ -40,6 +40,7 @@ dependencies {
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.secrets.gradlePlugin)
     compileOnly(libs.owasp.dependencycheck.gradlePlugin)
+    compileOnly(libs.kotlinx.kover.gradlePlugin)
 }
 
 gradlePlugin {

@@ -16,10 +16,26 @@
 
 package eu.europa.ec.euidi
 
+import kotlinx.kover.gradle.plugin.dsl.KoverReportExtension
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
 
 val Project.libs
     get(): VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+fun Project.excludeFromKoverReport(
+    excludedClasses: List<String>,
+    excludedPackages: List<String>,
+) {
+    configure<KoverReportExtension> {
+        filters {
+            excludes {
+                classes(excludedClasses)
+                packages(excludedPackages)
+            }
+        }
+    }
+}

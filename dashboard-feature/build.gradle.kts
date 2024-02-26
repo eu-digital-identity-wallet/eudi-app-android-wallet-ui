@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.excludeFromKoverReport
 import eu.europa.ec.euidi.koverrules.KoverExclusionRules
 
 plugins {
@@ -32,13 +33,7 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
 }
 
-koverReport.filters {
-    excludes {
-        classes(
-            KoverExclusionRules.DashboardFeature.classes
-        )
-        packages(
-            KoverExclusionRules.DashboardFeature.packages
-        )
-    }
-}
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.DashboardFeature.classes,
+    excludedPackages = KoverExclusionRules.DashboardFeature.packages,
+)
