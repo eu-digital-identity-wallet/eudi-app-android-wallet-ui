@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.excludeFromKoverReport
 import eu.europa.ec.euidi.koverrules.KoverExclusionRules
 
 plugins {
@@ -24,13 +25,7 @@ android {
     namespace = "eu.europa.ec.loginfeature"
 }
 
-koverReport.filters {
-    excludes {
-        classes(
-            KoverExclusionRules.LoginFeature.classes
-        )
-        packages(
-            KoverExclusionRules.LoginFeature.packages
-        )
-    }
-}
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.LoginFeature.classes,
+    excludedPackages = KoverExclusionRules.LoginFeature.packages,
+)

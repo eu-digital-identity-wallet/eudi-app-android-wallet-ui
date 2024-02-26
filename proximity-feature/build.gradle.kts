@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.excludeFromKoverReport
 import eu.europa.ec.euidi.koverrules.KoverExclusionRules
 
 plugins {
@@ -28,13 +29,7 @@ dependencies {
     implementation(libs.zxing)
 }
 
-koverReport.filters {
-    excludes {
-        classes(
-            KoverExclusionRules.ProximityFeature.classes
-        )
-        packages(
-            KoverExclusionRules.ProximityFeature.packages
-        )
-    }
-}
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.ProximityFeature.classes,
+    excludedPackages = KoverExclusionRules.ProximityFeature.packages,
+)

@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.excludeFromKoverReport
 import eu.europa.ec.euidi.koverrules.KoverExclusionRules
 
 plugins {
@@ -32,13 +33,7 @@ featureConfig {
     isCommonFeature = true
 }
 
-koverReport.filters {
-    excludes {
-        classes(
-            KoverExclusionRules.CommonFeature.classes
-        )
-        packages(
-            KoverExclusionRules.CommonFeature.packages
-        )
-    }
-}
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.CommonFeature.classes,
+    excludedPackages = KoverExclusionRules.CommonFeature.packages,
+)
