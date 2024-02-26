@@ -47,7 +47,7 @@ moduleConfig {
 }
 
 dependencies {
-    implementation(project(":business-logic"))
+    implementation(project(LibraryModule.BusinessLogic.path))
 
     api(libs.retrofit.core)
     implementation(libs.retrofit.gson)
@@ -57,7 +57,7 @@ dependencies {
     debugImplementation(libs.chucker.android)
     releaseImplementation(libs.chucker.android.no.op)
 
-    testImplementation(project(":test-logic"))
+    testImplementation(project(LibraryModule.TestLogic.path))
 }
 
 excludeFromKoverReport(

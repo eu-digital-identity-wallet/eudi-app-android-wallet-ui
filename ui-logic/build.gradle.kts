@@ -48,9 +48,9 @@ moduleConfig {
 }
 
 dependencies {
-    implementation(project(":resources-logic"))
-    implementation(project(":business-logic"))
-    implementation(project(":analytics-logic"))
+    implementation(project(LibraryModule.ResourcesLogic.path))
+    implementation(project(LibraryModule.BusinessLogic.path))
+    implementation(project(LibraryModule.AnalyticsLogic.path))
 
     implementation(libs.zxing)
     implementation(libs.gson)
@@ -58,7 +58,7 @@ dependencies {
     debugImplementation(libs.chucker.android)
     releaseImplementation(libs.chucker.android.no.op)
 
-    testImplementation(project(":test-logic"))
+    testImplementation(project(LibraryModule.TestLogic.path))
 }
 
 excludeFromKoverReport(

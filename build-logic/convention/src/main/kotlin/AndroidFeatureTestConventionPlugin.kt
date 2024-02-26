@@ -15,6 +15,7 @@
  */
 
 import com.android.build.gradle.LibraryExtension
+import eu.europa.ec.euidi.config.LibraryModule
 import eu.europa.ec.euidi.configureGradleManagedDevices
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -36,11 +37,11 @@ class AndroidFeatureTestConventionPlugin : Plugin<Project> {
             }
 
             dependencies {
-                add("implementation", project(":business-logic"))
-                add("implementation", project(":ui-logic"))
-                add("implementation", project(":network-logic"))
-                add("implementation", project(":resources-logic"))
-                add("api", project(":test-logic"))
+                add("implementation", project(LibraryModule.BusinessLogic.path))
+                add("implementation", project(LibraryModule.UiLogic.path))
+                add("implementation", project(LibraryModule.NetworkLogic.path))
+                add("implementation", project(LibraryModule.ResourcesLogic.path))
+                add("api", project(LibraryModule.TestLogic.path))
             }
         }
     }

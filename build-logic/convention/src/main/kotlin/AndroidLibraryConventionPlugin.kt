@@ -107,7 +107,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             afterEvaluate {
                 if (!config.module.isLogicModule && !config.module.isFeatureCommon) {
                     dependencies {
-                        add("implementation", project(":common-feature"))
+                        add("implementation", project(LibraryModule.CommonFeature.path))
                     }
                 }
             }

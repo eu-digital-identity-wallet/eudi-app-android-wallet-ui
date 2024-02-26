@@ -18,10 +18,10 @@ package eu.europa.ec.euidi.config
 
 enum class LibraryModule(val path: String) {
     Unspecified(""),
-    TestLogic("test-logic"),
-    TestFeatureLogic("test-feature"),
+    TestLogic(":test-logic"),
+    TestFeatureLogic(":test-feature"),
     AnalyticsLogic(":analytics-logic"),
-    AssemblyLogic("assembly-logic"),
+    AssemblyLogic(":assembly-logic"),
     BusinessLogic(":business-logic"),
     UiLogic(":ui-logic"),
     NetworkLogic(":network-logic"),

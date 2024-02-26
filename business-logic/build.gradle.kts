@@ -48,7 +48,7 @@ moduleConfig {
 }
 
 dependencies {
-    implementation(project(":resources-logic"))
+    implementation(project(LibraryModule.ResourcesLogic.path))
     implementation(libs.gson)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.security)
@@ -57,8 +57,8 @@ dependencies {
     implementation(libs.google.phonenumber)
     implementation(libs.rootbeer)
 
-    testImplementation(project(":test-logic"))
-    androidTestImplementation(project(":test-logic"))
+    testImplementation(project(LibraryModule.TestLogic.path))
+    androidTestImplementation(project(LibraryModule.TestLogic.path))
 }
 
 excludeFromKoverReport(
