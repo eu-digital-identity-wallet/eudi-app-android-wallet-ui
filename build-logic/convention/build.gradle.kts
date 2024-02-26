@@ -40,6 +40,7 @@ dependencies {
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.secrets.gradlePlugin)
     compileOnly(libs.owasp.dependencycheck.gradlePlugin)
+    compileOnly(libs.kotlinx.kover.gradlePlugin)
 }
 
 gradlePlugin {
@@ -51,10 +52,6 @@ gradlePlugin {
         register("androidApplication") {
             id = "eudi.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
-        }
-        register("androidApplicationJacoco") {
-            id = "eudi.android.application.jacoco"
-            implementationClass = "AndroidApplicationJacocoConventionPlugin"
         }
         register("androidLibraryCompose") {
             id = "eudi.android.library.compose"
@@ -68,9 +65,9 @@ gradlePlugin {
             id = "eudi.android.feature"
             implementationClass = "AndroidFeatureConventionPlugin"
         }
-        register("androidLibraryJacoco") {
-            id = "eudi.android.library.jacoco"
-            implementationClass = "AndroidLibraryJacocoConventionPlugin"
+        register("androidLibraryKover") {
+            id = "eudi.android.library.kover"
+            implementationClass = "AndroidLibraryKoverConventionPlugin"
         }
         register("androidTest") {
             id = "eudi.android.test"

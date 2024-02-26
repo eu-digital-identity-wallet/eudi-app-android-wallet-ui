@@ -13,6 +13,11 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+
 plugins {
     id("eudi.android.feature")
 }
@@ -20,3 +25,12 @@ plugins {
 android {
     namespace = "eu.europa.ec.presentationfeature"
 }
+
+moduleConfig {
+    module = LibraryModule.PresentationFeature
+}
+
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.PresentationFeature.classes,
+    excludedPackages = KoverExclusionRules.PresentationFeature.packages,
+)

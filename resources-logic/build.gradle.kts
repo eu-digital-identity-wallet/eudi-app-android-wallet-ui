@@ -14,6 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.config.LibraryModule
+
 plugins {
     id("eudi.android.library")
     id("eudi.android.library.compose")
@@ -21,6 +23,10 @@ plugins {
 
 android {
     namespace = "eu.europa.ec.resourceslogic"
+}
+
+moduleConfig {
+    module = LibraryModule.ResourcesLogic
 }
 
 dependencies {

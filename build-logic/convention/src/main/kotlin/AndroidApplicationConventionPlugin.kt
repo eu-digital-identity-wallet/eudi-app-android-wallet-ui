@@ -29,9 +29,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply("com.android.application")
                 apply("org.jetbrains.kotlin.android")
-                apply("jacoco")
                 apply("eudi.android.application.flavors")
-                apply("eudi.android.application.jacoco")
                 apply("eudi.android.koin")
                 apply("eudi.android.lint")
                 apply("eudi.owasp.dependency.check")

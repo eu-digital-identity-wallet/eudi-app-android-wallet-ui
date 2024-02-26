@@ -13,6 +13,11 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+
 plugins {
     id("eudi.android.feature")
 }
@@ -21,6 +26,15 @@ android {
     namespace = "eu.europa.ec.proximityfeature"
 }
 
+moduleConfig {
+    module = LibraryModule.ProximityFeature
+}
+
 dependencies {
     implementation(libs.zxing)
 }
+
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.ProximityFeature.classes,
+    excludedPackages = KoverExclusionRules.ProximityFeature.packages,
+)

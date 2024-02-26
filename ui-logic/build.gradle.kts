@@ -14,6 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+
 plugins {
     id("eudi.android.library")
     id("eudi.android.library.compose")
@@ -23,10 +27,14 @@ android {
     namespace = "eu.europa.ec.uilogic"
 }
 
+moduleConfig {
+    module = LibraryModule.UiLogic
+}
+
 dependencies {
-    implementation(project(":resources-logic"))
-    implementation(project(":business-logic"))
-    implementation(project(":analytics-logic"))
+    implementation(project(LibraryModule.ResourcesLogic.path))
+    implementation(project(LibraryModule.BusinessLogic.path))
+    implementation(project(LibraryModule.AnalyticsLogic.path))
 
     implementation(libs.zxing)
     implementation(libs.gson)
@@ -34,5 +42,10 @@ dependencies {
     debugImplementation(libs.chucker.android)
     releaseImplementation(libs.chucker.android.no.op)
 
-    testImplementation(project(":test-logic"))
+    testImplementation(project(LibraryModule.TestLogic.path))
 }
+
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.UiLogic.classes,
+    excludedPackages = KoverExclusionRules.UiLogic.packages,
+)

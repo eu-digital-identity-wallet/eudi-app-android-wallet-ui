@@ -14,21 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import eu.europa.ec.euidi.configureJacoco
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.getByType
 
-class AndroidLibraryJacocoConventionPlugin : Plugin<Project> {
+class AndroidLibraryKoverConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("org.gradle.jacoco")
+                apply("org.jetbrains.kotlinx.kover")
                 apply("com.android.library")
             }
-            val extension = extensions.getByType<LibraryAndroidComponentsExtension>()
-            configureJacoco(extension)
         }
     }
 }
