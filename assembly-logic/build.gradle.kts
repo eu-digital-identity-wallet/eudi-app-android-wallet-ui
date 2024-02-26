@@ -14,6 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+
 plugins {
     id("eudi.android.library")
     id("eudi.android.library.compose")
@@ -47,24 +49,136 @@ dependencies {
     api(project(":issuance-feature"))
 
     // Test Cover Report
-    kover(project(":business-logic"))
-    kover(project(":ui-logic"))
-    kover(project(":network-logic"))
-    kover(project(":common-feature"))
-    kover(project(":startup-feature"))
-    kover(project(":login-feature"))
-    kover(project(":dashboard-feature"))
-    kover(project(":presentation-feature"))
-    kover(project(":proximity-feature"))
-    kover(project(":issuance-feature"))
+    kover(project(":business-logic")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.BusinessLogic.classes
+                )
+                packages(
+                    KoverExclusionRules.BusinessLogic.packages
+                )
+            }
+        }
+    }
+    kover(project(":ui-logic")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.UiLogic.classes
+                )
+                packages(
+                    KoverExclusionRules.UiLogic.packages
+                )
+            }
+        }
+    }
+    kover(project(":network-logic")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.NetworkLogic.classes
+                )
+                packages(
+                    KoverExclusionRules.NetworkLogic.packages
+                )
+            }
+        }
+    }
+    kover(project(":common-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.CommonFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.CommonFeature.packages
+                )
+            }
+        }
+    }
+    kover(project(":startup-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.StartupFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.StartupFeature.packages
+                )
+            }
+        }
+    }
+    kover(project(":login-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.LoginFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.LoginFeature.packages
+                )
+            }
+        }
+    }
+    kover(project(":dashboard-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.DashboardFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.DashboardFeature.packages
+                )
+            }
+        }
+    }
+    kover(project(":presentation-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.PresentationFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.PresentationFeature.packages
+                )
+            }
+        }
+    }
+    kover(project(":proximity-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.ProximityFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.ProximityFeature.packages
+                )
+            }
+        }
+    }
+    kover(project(":issuance-feature")) {
+        koverReport.filters {
+            excludes {
+                classes(
+                    KoverExclusionRules.IssuanceFeature.classes
+                )
+                packages(
+                    KoverExclusionRules.IssuanceFeature.packages
+                )
+            }
+        }
+    }
 }
 
 koverReport {
     filters {
         excludes {
             classes(
-                "org.koin.ksp.generated.*",
-                "eu.europa.ec.assemblylogic.*"
+                KoverExclusionRules.AssemblyLogic.classes
+            )
+            packages(
+                KoverExclusionRules.AssemblyLogic.packages
             )
         }
     }

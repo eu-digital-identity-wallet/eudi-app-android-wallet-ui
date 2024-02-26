@@ -14,10 +14,23 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+
 plugins {
     id("eudi.android.feature")
 }
 
 android {
     namespace = "eu.europa.ec.loginfeature"
+}
+
+koverReport.filters {
+    excludes {
+        classes(
+            KoverExclusionRules.LoginFeature.classes
+        )
+        packages(
+            KoverExclusionRules.LoginFeature.packages
+        )
+    }
 }

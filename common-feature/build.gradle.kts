@@ -14,6 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+
 plugins {
     id("eudi.android.feature")
 }
@@ -28,4 +30,15 @@ dependencies {
 
 featureConfig {
     isCommonFeature = true
+}
+
+koverReport.filters {
+    excludes {
+        classes(
+            KoverExclusionRules.CommonFeature.classes
+        )
+        packages(
+            KoverExclusionRules.CommonFeature.packages
+        )
+    }
 }
