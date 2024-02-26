@@ -14,21 +14,22 @@
  * governing permissions and limitations under the Licence.
  */
 
-import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import eu.europa.ec.euidi.configureJacoco
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.getByType
+package eu.europa.ec.euidi.kover
 
-class AndroidApplicationJacocoConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        with(target) {
-            with(pluginManager) {
-                apply("org.gradle.jacoco")
-                apply("com.android.application")
+import kotlinx.kover.gradle.plugin.dsl.KoverReportExtension
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
+
+fun Project.excludeFromKoverReport(
+    excludedClasses: List<String>,
+    excludedPackages: List<String>,
+) {
+    configure<KoverReportExtension> {
+        filters {
+            excludes {
+                classes(excludedClasses)
+                packages(excludedPackages)
             }
-            val extension = extensions.getByType<ApplicationAndroidComponentsExtension>()
-            configureJacoco(extension)
         }
     }
 }

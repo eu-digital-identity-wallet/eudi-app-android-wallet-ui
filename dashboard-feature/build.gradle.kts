@@ -13,12 +13,21 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
+
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+
 plugins {
     id("eudi.android.feature")
 }
 
 android {
     namespace = "eu.europa.ec.dashboardfeature"
+}
+
+moduleConfig {
+    module = LibraryModule.DashboardFeature
 }
 
 dependencies {
@@ -28,3 +37,8 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.camera2)
 }
+
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.DashboardFeature.classes,
+    excludedPackages = KoverExclusionRules.DashboardFeature.packages,
+)

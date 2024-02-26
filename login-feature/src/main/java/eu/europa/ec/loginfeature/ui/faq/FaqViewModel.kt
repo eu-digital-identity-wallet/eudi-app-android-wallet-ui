@@ -44,7 +44,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-class FaqScreenViewModel(
+class FaqViewModel(
     private val interactor: FaqInteractor
 ) : MviViewModel<Event, State, Effect>() {
 

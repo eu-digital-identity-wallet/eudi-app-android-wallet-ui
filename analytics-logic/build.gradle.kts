@@ -14,6 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.config.LibraryModule
+
 plugins {
     id("eudi.android.library")
     id("eudi.appcenter")
@@ -21,4 +23,8 @@ plugins {
 
 android {
     namespace = "eu.europa.ec.analyticslogic"
+}
+
+moduleConfig {
+    module = LibraryModule.AnalyticsLogic
 }

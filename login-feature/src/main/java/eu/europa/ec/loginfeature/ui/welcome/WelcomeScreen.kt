@@ -62,7 +62,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 @Composable
 fun WelcomeScreen(
     navController: NavController,
-    viewModel: WelcomeScreenViewModel
+    viewModel: WelcomeViewModel
 ) {
     Content(
         state = viewModel.viewState.value,

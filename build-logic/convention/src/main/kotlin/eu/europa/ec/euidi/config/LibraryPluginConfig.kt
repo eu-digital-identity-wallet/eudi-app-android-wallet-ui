@@ -16,4 +16,30 @@
 
 package eu.europa.ec.euidi.config
 
-open class LibraryPluginConfig(var isCommonFeature: Boolean)
+enum class LibraryModule(val path: String) {
+    Unspecified(""),
+    TestLogic(":test-logic"),
+    TestFeatureLogic(":test-feature"),
+    AnalyticsLogic(":analytics-logic"),
+    AssemblyLogic(":assembly-logic"),
+    BusinessLogic(":business-logic"),
+    UiLogic(":ui-logic"),
+    NetworkLogic(":network-logic"),
+    ResourcesLogic(":resources-logic"),
+    CommonFeature(":common-feature"),
+    StartupFeature(":startup-feature"),
+    LoginFeature(":login-feature"),
+    DashboardFeature(":dashboard-feature"),
+    PresentationFeature(":presentation-feature"),
+    ProximityFeature(":proximity-feature"),
+    IssuanceFeature(":issuance-feature");
+
+    val isLogicModule: Boolean
+        get() {
+            return this.name.contains("Logic")
+        }
+
+    val isFeatureCommon: Boolean get() = this == CommonFeature
+}
+
+open class LibraryPluginConfig(var module: LibraryModule)

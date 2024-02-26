@@ -14,6 +14,23 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.config.LibraryModule.AnalyticsLogic
+import eu.europa.ec.euidi.config.LibraryModule.AssemblyLogic
+import eu.europa.ec.euidi.config.LibraryModule.BusinessLogic
+import eu.europa.ec.euidi.config.LibraryModule.CommonFeature
+import eu.europa.ec.euidi.config.LibraryModule.DashboardFeature
+import eu.europa.ec.euidi.config.LibraryModule.IssuanceFeature
+import eu.europa.ec.euidi.config.LibraryModule.LoginFeature
+import eu.europa.ec.euidi.config.LibraryModule.NetworkLogic
+import eu.europa.ec.euidi.config.LibraryModule.PresentationFeature
+import eu.europa.ec.euidi.config.LibraryModule.ProximityFeature
+import eu.europa.ec.euidi.config.LibraryModule.ResourcesLogic
+import eu.europa.ec.euidi.config.LibraryModule.StartupFeature
+import eu.europa.ec.euidi.config.LibraryModule.UiLogic
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+import eu.europa.ec.euidi.kover.koverModules
+
 plugins {
     id("eudi.android.library")
     id("eudi.android.library.compose")
@@ -28,21 +45,40 @@ android {
     }
 }
 
+moduleConfig {
+    module = AssemblyLogic
+}
+
 dependencies {
 
     // Logic Modules
-    api(project(":resources-logic"))
-    api(project(":business-logic"))
-    api(project(":ui-logic"))
-    api(project(":network-logic"))
-    api(project(":analytics-logic"))
+    api(project(ResourcesLogic.path))
+    api(project(BusinessLogic.path))
+    api(project(UiLogic.path))
+    api(project(NetworkLogic.path))
+    api(project(AnalyticsLogic.path))
 
     // Feature Modules
-    api(project(":common-feature"))
-    api(project(":startup-feature"))
-    api(project(":login-feature"))
-    api(project(":dashboard-feature"))
-    api(project(":presentation-feature"))
-    api(project(":proximity-feature"))
-    api(project(":issuance-feature"))
+    api(project(CommonFeature.path))
+    api(project(StartupFeature.path))
+    api(project(LoginFeature.path))
+    api(project(DashboardFeature.path))
+    api(project(PresentationFeature.path))
+    api(project(ProximityFeature.path))
+    api(project(IssuanceFeature.path))
+
+    // Test Cover Report
+    koverModules.forEach {
+        kover(project(it.key.path)) {
+            excludeFromKoverReport(
+                excludedClasses = it.value.classes,
+                excludedPackages = it.value.packages,
+            )
+        }
+    }
 }
+
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.AssemblyLogic.classes,
+    excludedPackages = KoverExclusionRules.AssemblyLogic.packages,
+)

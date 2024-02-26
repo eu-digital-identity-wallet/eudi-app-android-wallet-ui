@@ -14,6 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+
 plugins {
     id("eudi.android.library")
     id("eudi.wallet.core")
@@ -23,8 +27,12 @@ android {
     namespace = "eu.europa.ec.businesslogic"
 }
 
+moduleConfig {
+    module = LibraryModule.BusinessLogic
+}
+
 dependencies {
-    implementation(project(":resources-logic"))
+    implementation(project(LibraryModule.ResourcesLogic.path))
     implementation(libs.gson)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.security)
@@ -33,6 +41,11 @@ dependencies {
     implementation(libs.google.phonenumber)
     implementation(libs.rootbeer)
 
-    testImplementation(project(":test-logic"))
-    androidTestImplementation(project(":test-logic"))
+    testImplementation(project(LibraryModule.TestLogic.path))
+    androidTestImplementation(project(LibraryModule.TestLogic.path))
 }
+
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.BusinessLogic.classes,
+    excludedPackages = KoverExclusionRules.BusinessLogic.packages,
+)
