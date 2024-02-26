@@ -13,9 +13,10 @@
  * ANY KIND, either express or implied. See the Licence for the specific language
  * governing permissions and limitations under the Licence.
  */
-
-import eu.europa.ec.euidi.excludeFromKoverReport
-import eu.europa.ec.euidi.koverrules.KoverExclusionRules
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+import eu.europa.ec.euidi.kover.koverModules
 
 plugins {
     id("eudi.android.library")
@@ -29,6 +30,10 @@ android {
         // App name
         manifestPlaceholders["appName"] = "EUDI Wallet"
     }
+}
+
+moduleConfig {
+    module = LibraryModule.AssemblyLogic
 }
 
 dependencies {
@@ -49,66 +54,14 @@ dependencies {
     api(project(":proximity-feature"))
     api(project(":issuance-feature"))
 
-    // Test Cover Report
-    kover(project(":business-logic")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.BusinessLogic.classes,
-            excludedPackages = KoverExclusionRules.BusinessLogic.packages,
-        )
-    }
-    kover(project(":ui-logic")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.UiLogic.classes,
-            excludedPackages = KoverExclusionRules.UiLogic.packages,
-        )
-    }
-    kover(project(":network-logic")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.NetworkLogic.classes,
-            excludedPackages = KoverExclusionRules.NetworkLogic.packages,
-        )
-    }
-    kover(project(":common-feature")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.CommonFeature.classes,
-            excludedPackages = KoverExclusionRules.CommonFeature.packages,
-        )
-    }
-    kover(project(":startup-feature")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.StartupFeature.classes,
-            excludedPackages = KoverExclusionRules.StartupFeature.packages,
-        )
-    }
-    kover(project(":login-feature")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.LoginFeature.classes,
-            excludedPackages = KoverExclusionRules.LoginFeature.packages,
-        )
-    }
-    kover(project(":dashboard-feature")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.DashboardFeature.classes,
-            excludedPackages = KoverExclusionRules.DashboardFeature.packages,
-        )
-    }
-    kover(project(":presentation-feature")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.PresentationFeature.classes,
-            excludedPackages = KoverExclusionRules.PresentationFeature.packages,
-        )
-    }
-    kover(project(":proximity-feature")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.ProximityFeature.classes,
-            excludedPackages = KoverExclusionRules.ProximityFeature.packages,
-        )
-    }
-    kover(project(":issuance-feature")) {
-        excludeFromKoverReport(
-            excludedClasses = KoverExclusionRules.IssuanceFeature.classes,
-            excludedPackages = KoverExclusionRules.IssuanceFeature.packages,
-        )
+    //Test Cover Report
+    koverModules.forEach {
+        kover(project(it.key.path)) {
+            excludeFromKoverReport(
+                excludedClasses = it.value.classes,
+                excludedPackages = it.value.packages,
+            )
+        }
     }
 }
 

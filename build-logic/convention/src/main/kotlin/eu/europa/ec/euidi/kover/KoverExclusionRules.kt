@@ -14,7 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.euidi.koverrules
+package eu.europa.ec.euidi.kover
+
+import eu.europa.ec.euidi.config.LibraryModule
 
 private const val KOIN = "org.koin.*"
 private const val BUILD_CONFIG = "eu.europa.ec.*.BuildConfig"
@@ -22,6 +24,19 @@ private const val SCREEN_COMPOSABLES = "eu.europa.ec.*.ui.*.*Screen*"
 private const val MODELS = "eu.europa.ec.*.model"
 private const val DI = "eu.europa.ec.*.di"
 private const val ROUTER_GRAPH = "eu.europa.ec.*.router"
+
+val koverModules: Map<LibraryModule, KoverExclusionRules> = mapOf(
+    LibraryModule.BusinessLogic to KoverExclusionRules.BusinessLogic,
+    LibraryModule.UiLogic to KoverExclusionRules.UiLogic,
+    LibraryModule.NetworkLogic to KoverExclusionRules.NetworkLogic,
+    LibraryModule.CommonFeature to KoverExclusionRules.CommonFeature,
+    LibraryModule.StartupFeature to KoverExclusionRules.StartupFeature,
+    LibraryModule.LoginFeature to KoverExclusionRules.LoginFeature,
+    LibraryModule.DashboardFeature to KoverExclusionRules.DashboardFeature,
+    LibraryModule.PresentationFeature to KoverExclusionRules.PresentationFeature,
+    LibraryModule.ProximityFeature to KoverExclusionRules.ProximityFeature,
+    LibraryModule.IssuanceFeature to KoverExclusionRules.IssuanceFeature
+)
 
 sealed interface KoverExclusionRules {
     val commonClasses: List<String>

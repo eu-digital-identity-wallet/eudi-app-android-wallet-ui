@@ -18,6 +18,8 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryExtension
 import com.google.android.libraries.mapsplatform.secrets_gradle_plugin.SecretsPluginExtension
 import eu.europa.ec.euidi.addConfigField
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.config.LibraryPluginConfig
 import eu.europa.ec.euidi.configureFlavors
 import eu.europa.ec.euidi.configureGradleManagedDevices
 import eu.europa.ec.euidi.configureKotlinAndroid
@@ -28,12 +30,16 @@ import eu.europa.ec.euidi.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
 
         with(target) {
+
+            val config =
+                extensions.create<LibraryPluginConfig>("moduleConfig", LibraryModule.Unspecified)
 
             val walletScheme = "eudi-wallet"
             val walletHost = "*"
@@ -97,6 +103,13 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
                 add("implementation", libs.findLibrary("kotlinx-coroutines-guava").get())
                 add("implementation", libs.findLibrary("kotlinx.serialization.json").get())
+            }
+            afterEvaluate {
+                if (!config.module.isLogicModule && !config.module.isFeatureCommon) {
+                    dependencies {
+                        add("implementation", project(":common-feature"))
+                    }
+                }
             }
         }
     }
