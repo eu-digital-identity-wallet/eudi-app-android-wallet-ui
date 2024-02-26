@@ -67,7 +67,7 @@ dependencies {
     api(project(ProximityFeature.path))
     api(project(IssuanceFeature.path))
 
-    //Test Cover Report
+    // Test Cover Report
     koverModules.forEach {
         kover(project(it.key.path)) {
             excludeFromKoverReport(
