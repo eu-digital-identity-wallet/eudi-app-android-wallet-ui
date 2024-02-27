@@ -336,27 +336,26 @@ class WalletCorePresentationControllerImpl(
 
     override fun observeSentDocumentsRequest(): Flow<WalletCorePartialState> =
         merge(sendRequestedDocuments(), mappedCallbackStateFlow()).mapNotNull {
-            when {
-                it is SendRequestedDocumentsPartialState.Failure -> {
+            when (it) {
+                is SendRequestedDocumentsPartialState.Failure -> {
                     WalletCorePartialState.Failure(it.error)
                 }
 
-                it is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
+                is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
                     WalletCorePartialState.UserAuthenticationRequired(it.payload)
                 }
 
-                it is ResponseReceivedPartialState.Failure -> {
+                is ResponseReceivedPartialState.Failure -> {
                     WalletCorePartialState.Failure(it.error)
                 }
 
-                it is ResponseReceivedPartialState.Redirect -> {
+                is ResponseReceivedPartialState.Redirect -> {
                     WalletCorePartialState.Redirect(
                         uri = it.uri
                     )
                 }
 
-                it is SendRequestedDocumentsPartialState.RequestSent &&
-                        it !is ResponseReceivedPartialState.Success -> {
+                is SendRequestedDocumentsPartialState.RequestSent -> {
                     null
                 }
 
