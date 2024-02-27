@@ -14,6 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+
 plugins {
     id("eudi.android.library")
 }
@@ -22,8 +26,12 @@ android {
     namespace = "eu.europa.ec.networklogic"
 }
 
+moduleConfig {
+    module = LibraryModule.NetworkLogic
+}
+
 dependencies {
-    implementation(project(":business-logic"))
+    implementation(project(LibraryModule.BusinessLogic.path))
 
     api(libs.retrofit.core)
     implementation(libs.retrofit.gson)
@@ -33,5 +41,10 @@ dependencies {
     debugImplementation(libs.chucker.android)
     releaseImplementation(libs.chucker.android.no.op)
 
-    testImplementation(project(":test-logic"))
+    testImplementation(project(LibraryModule.TestLogic.path))
 }
+
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.NetworkLogic.classes,
+    excludedPackages = KoverExclusionRules.NetworkLogic.packages,
+)

@@ -46,7 +46,7 @@ import kotlinx.coroutines.flow.onEach
 @Composable
 fun SplashScreen(
     navController: NavController,
-    viewModel: SplashScreenViewModel
+    viewModel: SplashViewModel
 ) {
     Content(
         state = viewModel.viewState.value,

@@ -14,10 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.config.LibraryModule
+
 plugins {
     id("eudi.android.feature.test")
 }
 
 android {
     namespace = "eu.europa.ec.testfeature"
+}
+
+moduleConfig {
+    module = LibraryModule.TestFeatureLogic
 }

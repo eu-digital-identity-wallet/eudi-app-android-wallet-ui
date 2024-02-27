@@ -15,18 +15,16 @@
  */
 
 import com.android.build.gradle.LibraryExtension
-import eu.europa.ec.euidi.config.LibraryPluginConfig
+import eu.europa.ec.euidi.config.LibraryModule
 import eu.europa.ec.euidi.configureGradleManagedDevices
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
 
 class AndroidFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-            val config = extensions.create<LibraryPluginConfig>("featureConfig", false)
             pluginManager.apply {
                 apply("eudi.android.library")
                 apply("eudi.android.library.compose")
@@ -40,21 +38,13 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             }
 
             dependencies {
-                add("implementation", project(":business-logic"))
-                add("implementation", project(":ui-logic"))
-                add("implementation", project(":network-logic"))
-                add("implementation", project(":resources-logic"))
-                add("implementation", project(":analytics-logic"))
-                add("testImplementation", project(":test-feature"))
-                add("androidTestImplementation", project(":test-feature"))
-            }
-
-            afterEvaluate {
-                if (!config.isCommonFeature) {
-                    dependencies {
-                        add("implementation", project(":common-feature"))
-                    }
-                }
+                add("implementation", project(LibraryModule.BusinessLogic.path))
+                add("implementation", project(LibraryModule.UiLogic.path))
+                add("implementation", project(LibraryModule.NetworkLogic.path))
+                add("implementation", project(LibraryModule.ResourcesLogic.path))
+                add("implementation", project(LibraryModule.AnalyticsLogic.path))
+                add("testImplementation", project(LibraryModule.TestFeatureLogic.path))
+                add("androidTestImplementation", project(LibraryModule.TestFeatureLogic.path))
             }
         }
     }

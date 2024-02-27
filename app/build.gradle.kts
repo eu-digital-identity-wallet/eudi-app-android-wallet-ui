@@ -15,6 +15,7 @@
  */
 
 import eu.europa.ec.euidi.EudiBuildType
+import eu.europa.ec.euidi.config.LibraryModule
 import eu.europa.ec.euidi.getProperty
 
 plugins {
@@ -67,5 +68,5 @@ android {
 }
 
 dependencies {
-    implementation(project(":assembly-logic"))
+    implementation(project(LibraryModule.AssemblyLogic.path))
 }

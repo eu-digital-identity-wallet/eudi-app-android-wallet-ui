@@ -14,6 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
+import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
+
 plugins {
     id("eudi.android.feature")
 }
@@ -22,10 +26,15 @@ android {
     namespace = "eu.europa.ec.commonfeature"
 }
 
+moduleConfig {
+    module = LibraryModule.CommonFeature
+}
+
 dependencies {
     implementation(libs.gson)
 }
 
-featureConfig {
-    isCommonFeature = true
-}
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.CommonFeature.classes,
+    excludedPackages = KoverExclusionRules.CommonFeature.packages,
+)
