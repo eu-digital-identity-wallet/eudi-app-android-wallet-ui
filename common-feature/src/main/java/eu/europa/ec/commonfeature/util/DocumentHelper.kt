@@ -25,16 +25,21 @@ import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 
 fun extractValueFromDocumentOrEmpty(
     document: Document,
     key: String
 ): String {
-    val docType = document.docType.toDocumentTypeUi()
-    val documentJsonObject =
-        document.nameSpacedDataJSONObject.get(docType.codeName) as? JSONObject
-    return documentJsonObject?.getStringFromJsonOrEmpty(key) ?: ""
+    return try {
+        val docType = document.docType.toDocumentTypeUi()
+        val documentJsonObject =
+            document.nameSpacedDataJSONObject.get(docType.codeName) as? JSONObject
+        return documentJsonObject?.getStringFromJsonOrEmpty(key) ?: ""
+    } catch (e: JSONException) {
+        ""
+    }
 }
 
 fun extractFullNameFromDocumentOrEmpty(document: Document): String {
