@@ -1,83 +1,16 @@
-name: SAST - SonarCloud
+name: SAST - SonarCloud (BT) Caller
 on:
   push:
+    branches-ignore:
+      - 'dependabot/*'
   pull_request_target:
   workflow_dispatch:
 
 jobs:
-  check_secret:
-    name: Check secret presence
-    runs-on: ubuntu-latest
-    steps:
-    - run: if [[ -z "$SONAR_TOKEN" ]]; then exit 1; else echo "Secret exists. The workflow will be continued"; fi
-    env:
+   SAST_caller:
+      uses: eu-digital-identity-wallet/eudi-infra-ci/.github/workflows/sast_bt.yml@main
+      secrets:
        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  P_WD_analysis:
-    name: SAST - SonarCloud - Push/WD analysis
-    needs: check_secret
-    runs-on:  ubuntu-latest
-    if: (github.event_name == 'push'|| github.event_name == 'workflow_dispatch')
-    steps:
-      - name: Checkout project sources
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 #Shallow clones should be disabled for a better relevancy of SonarCloud analysis
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-      - name: setup projectkey
-        run: echo "PROJECTKEY=${{ github.repository_owner}}_$(echo ${{ github.repository }} | sed 's/.*\///')" >> $GITHUB_ENV
-      - name: Build with Gradle Wrapper & Run Sonar
-        uses: gradle/gradle-build-action@v2.9.0
-        with:
-          gradle-version: wrapper
-          arguments: test jacocoTestReport sonar --info --full-stacktrace -Dsonar.organization=${{ github.repository_owner }} -Dsonar.projectKey=${{ env.PROJECTKEY }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          CI: true
-
-  PR_analysis:
-    name: SAST - SonarCloud - PR analysis
-    needs: check_secret
-    runs-on:  ubuntu-latest
-    if: (github.event_name == 'pull_request_target')
-    steps:
-      - name: Checkout project sources
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 #Shallow clones should be disabled for a better relevancy of SonarCloud analysis
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-      - name: setup projectkey
-        run: echo "PROJECTKEY=${{ github.repository_owner}}_$(echo ${{ github.repository }} | sed 's/.*\///')" >> $GITHUB_ENV
-      - name: Build with Gradle Wrapper & Run Sonar
-        uses: gradle/gradle-build-action@v2.9.0
-        with:
-          gradle-version: wrapper
-          arguments: sonar --info --full-stacktrace -Dsonar.organization=${{ github.repository_owner }} -Dsonar.projectKey=${{ env.PROJECTKEY }} -Dsonar.pullrequest.key=${{ github.event.pull_request.number }} -Dsonar.pullrequest.base=${{ github.event.pull_request.base.ref }} -Dsonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          CI: true
+       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+       DOJO_TOKEN: ${{ secrets.DOJO_TOKEN }}
+       DOJO_URL: ${{ secrets.DOJO_URL }}
