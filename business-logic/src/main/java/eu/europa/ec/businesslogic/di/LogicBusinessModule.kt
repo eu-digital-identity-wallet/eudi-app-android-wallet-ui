@@ -104,9 +104,10 @@ fun provideBiometricController(
 
 @Factory
 fun provideUserAuthenticationController(
-    resourceProvider: ResourceProvider
+    resourceProvider: ResourceProvider,
+    biometricController: BiometricController
 ): UserAuthenticationController =
-    UserAuthenticationControllerImpl(resourceProvider)
+    UserAuthenticationControllerImpl(resourceProvider, biometricController)
 
 @Factory
 fun provideFormValidator(logController: LogController): FormValidator =

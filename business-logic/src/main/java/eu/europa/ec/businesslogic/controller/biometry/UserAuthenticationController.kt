@@ -17,8 +17,6 @@
 package eu.europa.ec.businesslogic.controller.biometry
 
 import android.content.Context
-import androidx.biometric.BiometricManager
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
 import androidx.biometric.BiometricPrompt
@@ -34,18 +32,10 @@ interface UserAuthenticationController {
 
 class UserAuthenticationControllerImpl(
     private val resourceProvider: ResourceProvider,
+    private val biometricController: BiometricController
 ) : UserAuthenticationController {
     override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
-        val biometricManager = BiometricManager.from(resourceProvider.provideContext())
-        when (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
-            BiometricManager.BIOMETRIC_SUCCESS -> listener.invoke(BiometricsAvailability.CanAuthenticate)
-            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> listener.invoke(BiometricsAvailability.NonEnrolled)
-            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE, BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> listener.invoke(
-                BiometricsAvailability.Failure(resourceProvider.getString(R.string.biometric_no_hardware))
-            )
-
-            else -> listener.invoke(BiometricsAvailability.Failure(resourceProvider.getString(R.string.biometric_unknown_error)))
-        }
+        biometricController.deviceSupportsBiometrics(listener)
     }
 
     override fun authenticate(context: Context, payload: BiometricPromptPayload) {
@@ -72,8 +62,8 @@ class UserAuthenticationControllerImpl(
         if (payload.cryptoObject != null) {
             prompt.authenticate(
                 BiometricPrompt.PromptInfo.Builder()
-                    .setTitle(context.getString(R.string.biometric_prompt_title))
-                    .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
+                    .setTitle(resourceProvider.getString(R.string.biometric_prompt_title))
+                    .setSubtitle(resourceProvider.getString(R.string.biometric_prompt_subtitle))
                     .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
                     .build(),
                 payload.cryptoObject
@@ -81,8 +71,8 @@ class UserAuthenticationControllerImpl(
         } else {
             prompt.authenticate(
                 BiometricPrompt.PromptInfo.Builder()
-                    .setTitle(context.getString(R.string.biometric_prompt_title))
-                    .setSubtitle(context.getString(R.string.biometric_prompt_subtitle))
+                    .setTitle(resourceProvider.getString(R.string.biometric_prompt_title))
+                    .setSubtitle(resourceProvider.getString(R.string.biometric_prompt_subtitle))
                     .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
                     .build()
             )

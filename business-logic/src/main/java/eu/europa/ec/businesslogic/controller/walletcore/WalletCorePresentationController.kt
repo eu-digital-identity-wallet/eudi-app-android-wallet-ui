@@ -287,8 +287,8 @@ class WalletCorePresentationControllerImpl(
                         payload = BiometricPromptPayload(
                             cryptoObject = response.cryptoObject,
                             onSuccess = { eudiWallet.sendResponse(disclosedDocuments = documents) },
-                            onCancel = { /*TODO what here*/ },
-                            onFailure = { /*TODO what here*/ }
+                            onCancel = { /* No-op */ },
+                            onFailure = { /* No-op */ }
                         )
                     ))
                 }
