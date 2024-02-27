@@ -14,19 +14,20 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature
+package eu.europa.ec.testfeature.walletcore
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import eu.europa.ec.eudi.wallet.EudiWalletConfig
+import eu.europa.ec.testlogic.base.getMockedContext
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-class ExampleUnitTest {
-    @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+fun getMockedEudiWalletConfig(extras: (EudiWalletConfig.Builder.() -> EudiWalletConfig.Builder)? = null): EudiWalletConfig {
+    return if (extras != null) {
+        EudiWalletConfig
+            .Builder(getMockedContext())
+            .extras()
+            .build()
+    } else {
+        EudiWalletConfig
+            .Builder(getMockedContext())
+            .build()
     }
 }
