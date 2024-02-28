@@ -14,18 +14,15 @@
  * governing permissions and limitations under the Licence.
  */
 
-@Suppress("DSL_SCOPE_VIOLATION")
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.gms) apply false
-    alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.secrets) apply false
-    alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.org.jetbrains.kotlin.android) apply false
-    alias(libs.plugins.owasp.dependencycheck) apply false
-    alias(libs.plugins.kotlinx.kover) apply false
-    alias(libs.plugins.sonar) apply false
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+
+class SonarPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            with(pluginManager) {
+                apply("org.sonarqube")
+            }
+        }
+    }
 }
-true

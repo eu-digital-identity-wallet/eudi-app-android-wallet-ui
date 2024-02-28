@@ -109,5 +109,9 @@ gradlePlugin {
             id = "eudi.appcenter"
             implementationClass = "AppCenterPlugin"
         }
+        register("sonar") {
+            id = "eudi.sonar"
+            implementationClass = "SonarPlugin"
+        }
     }
 }
