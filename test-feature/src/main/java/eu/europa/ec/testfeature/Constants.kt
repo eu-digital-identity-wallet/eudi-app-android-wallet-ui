@@ -20,7 +20,7 @@ import eu.europa.ec.eudi.wallet.document.Document
 import java.time.Instant
 
 const val mockedGenericErrorMessage = "resourceProvider's genericErrorMessage"
-const val plainFailureMessage = "failure message"
+const val mockedPlainFailureMessage = "failure message"
 
 val mockedExceptionWithMessage = RuntimeException("Exception to test interactor.")
 val mockedExceptionWithNoMessage = RuntimeException()
@@ -417,6 +417,229 @@ val mockedMdlFields: Map<String, ByteArray> = mapOf(
     "age_over_68" to byteArrayOf(-12),
 )
 
+val mockedPidBasicFields: Map<String, ByteArray> = mapOf(
+    "family_name" to byteArrayOf(105, 65, 78, 68, 69, 82, 83, 83, 79, 78),
+    "given_name" to byteArrayOf(99, 74, 65, 78),
+    "age_over_18" to byteArrayOf(-11),
+    "age_over_65" to byteArrayOf(-12),
+    "age_birth_year" to byteArrayOf(25, 7, -63),
+    "birth_city" to byteArrayOf(107, 75, 65, 84, 82, 73, 78, 69, 72, 79, 76, 77),
+    "gender" to byteArrayOf(1),
+    "expiry_date" to byteArrayOf(
+        -64,
+        116,
+        50,
+        48,
+        53,
+        48,
+        45,
+        48,
+        51,
+        45,
+        51,
+        48,
+        84,
+        48,
+        48,
+        58,
+        48,
+        48,
+        58,
+        48,
+        48,
+        90
+    ),
+)
+
+val mockedMdlBasicFields: Map<String, ByteArray> = mapOf(
+    "family_name" to byteArrayOf(105, 65, 78, 68, 69, 82, 83, 83, 79, 78),
+    "given_name" to byteArrayOf(99, 74, 65, 78),
+    "birth_place" to byteArrayOf(102, 83, 87, 69, 68, 69, 78),
+    "expiry_date" to byteArrayOf(
+        -64,
+        116,
+        50,
+        48,
+        53,
+        48,
+        45,
+        48,
+        51,
+        45,
+        51,
+        48,
+        84,
+        48,
+        48,
+        58,
+        48,
+        48,
+        58,
+        48,
+        48,
+        90
+    ),
+    "portrait" to byteArrayOf(98, 83, 69),
+    "driving_privileges" to byteArrayOf(
+        -126,
+        -93,
+        106,
+        105,
+        115,
+        115,
+        117,
+        101,
+        95,
+        100,
+        97,
+        116,
+        101,
+        -39,
+        3,
+        -20,
+        106,
+        50,
+        48,
+        49,
+        48,
+        45,
+        48,
+        55,
+        45,
+        48,
+        49,
+        107,
+        101,
+        120,
+        112,
+        105,
+        114,
+        121,
+        95,
+        100,
+        97,
+        116,
+        101,
+        -39,
+        3,
+        -20,
+        106,
+        50,
+        48,
+        53,
+        48,
+        45,
+        48,
+        51,
+        45,
+        51,
+        48,
+        117,
+        118,
+        101,
+        104,
+        105,
+        99,
+        108,
+        101,
+        95,
+        99,
+        97,
+        116,
+        101,
+        103,
+        111,
+        114,
+        121,
+        95,
+        99,
+        111,
+        100,
+        101,
+        97,
+        65,
+        -93,
+        106,
+        105,
+        115,
+        115,
+        117,
+        101,
+        95,
+        100,
+        97,
+        116,
+        101,
+        -39,
+        3,
+        -20,
+        106,
+        50,
+        48,
+        48,
+        56,
+        45,
+        48,
+        53,
+        45,
+        49,
+        57,
+        107,
+        101,
+        120,
+        112,
+        105,
+        114,
+        121,
+        95,
+        100,
+        97,
+        116,
+        101,
+        -39,
+        3,
+        -20,
+        106,
+        50,
+        48,
+        53,
+        48,
+        45,
+        48,
+        51,
+        45,
+        51,
+        48,
+        117,
+        118,
+        101,
+        104,
+        105,
+        99,
+        108,
+        101,
+        95,
+        99,
+        97,
+        116,
+        101,
+        103,
+        111,
+        114,
+        121,
+        95,
+        99,
+        111,
+        100,
+        101,
+        97,
+        66
+    ),
+
+    "signature_usual_mark" to byteArrayOf(98, 83, 69),
+    "sex" to byteArrayOf(1),
+)
+
 const val mockedPidDocType = "eu.europa.ec.eudiw.pid.1"
 const val mockedPidCodeName = "eu.europa.ec.eudiw.pid.1"
 const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
@@ -434,6 +657,18 @@ val mockedFullPid = Document(
     )
 )
 
+val mockedPidWithBasicFields = mockedFullPid.copy(
+    nameSpacedData = mapOf(
+        mockedPidCodeName to mockedPidBasicFields
+    )
+)
+
+val mockedEmptyPid = mockedFullPid.copy(
+    nameSpacedData = mapOf(
+        mockedPidCodeName to emptyMap()
+    )
+)
+
 val mockedFullMdl = Document(
     id = mockedId2,
     docType = mockedMdlDocType,
@@ -443,6 +678,12 @@ val mockedFullMdl = Document(
     requiresUserAuth = false,
     nameSpacedData = mapOf(
         mockedMdlCodeName to mockedMdlFields
+    )
+)
+
+val mockedMdlWithBasicFields = mockedFullMdl.copy(
+    nameSpacedData = mapOf(
+        mockedMdlCodeName to mockedMdlBasicFields
     )
 )
 

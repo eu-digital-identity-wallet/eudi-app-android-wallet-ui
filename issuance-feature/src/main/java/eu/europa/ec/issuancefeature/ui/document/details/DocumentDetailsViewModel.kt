@@ -19,11 +19,9 @@ package eu.europa.ec.issuancefeature.ui.document.details
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.HeaderData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -53,7 +51,6 @@ data class State(
     val isBottomSheetOpen: Boolean = false,
 
     val document: DocumentUi? = null,
-    val documentTypeUiName: String = "",
     val headerData: HeaderData? = null
 ) : ViewState
 
@@ -93,7 +90,6 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
-    private val resourceProvider: ResourceProvider,
     @InjectedParam private val detailsType: IssuanceFlowUiConfig,
     @InjectedParam private val documentId: String,
     @InjectedParam private val documentType: String,
@@ -166,15 +162,13 @@ class DocumentDetailsViewModel(
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
                         val documentUi = response.documentUi
-                        val documentTypeUiName = documentUi.documentType.toUiName(resourceProvider)
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
                                 document = documentUi,
-                                documentTypeUiName = documentTypeUiName,
                                 headerData = HeaderData(
-                                    title = documentTypeUiName,
+                                    title = documentUi.documentName,
                                     subtitle = documentUi.userFullName.orEmpty(),
                                     base64Image = documentUi.documentImage,
                                     icon = AppIcons.IdStroke

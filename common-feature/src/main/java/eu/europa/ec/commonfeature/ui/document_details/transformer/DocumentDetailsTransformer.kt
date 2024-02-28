@@ -21,6 +21,7 @@ import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.businesslogic.util.toList
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
+import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
@@ -68,13 +69,15 @@ object DocumentDetailsTransformer {
                 )
             }
 
+        val documentTypeUi = document.docType.toDocumentTypeUi()
+
         return DocumentUi(
             documentId = document.id,
-            documentName = document.name,
-            documentType = document.docType.toDocumentTypeUi(),
+            documentName = documentTypeUi.toUiName(resourceProvider),
+            documentType = documentTypeUi,
             documentExpirationDateFormatted = documentJson.getStringFromJsonOrEmpty(
                 key = DocumentJsonKeys.EXPIRY_DATE
-            ).toDateFormatted().toString(),
+            ).toDateFormatted() ?: "",
             documentImage = documentJson.getStringFromJsonOrEmpty(
                 key = DocumentJsonKeys.PORTRAIT
             ),

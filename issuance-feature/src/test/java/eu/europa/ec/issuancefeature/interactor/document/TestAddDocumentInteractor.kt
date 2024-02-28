@@ -28,7 +28,7 @@ import eu.europa.ec.commonfeature.util.TestsConstants.mockedMdlOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedPidOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedSampleDataOptionItemUi
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.mockDocumentTypeUiToUiNameCall
+import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullMdl

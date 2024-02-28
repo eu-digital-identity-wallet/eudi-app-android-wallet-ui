@@ -33,7 +33,7 @@ import eu.europa.ec.commonfeature.util.TestsConstants.mockedUserFirstName
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.mockDocumentTypeUiToUiNameCall
+import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullDocuments

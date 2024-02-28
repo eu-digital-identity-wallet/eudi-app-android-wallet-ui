@@ -19,6 +19,7 @@ package eu.europa.ec.testfeature
 import androidx.annotation.VisibleForTesting
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.whenever
 
 private const val mockedDocUiNamePid = "National ID"
@@ -26,20 +27,67 @@ private const val mockedDocUiNameMdl = "Driving License"
 private const val mockedDocUiNameConferenceBadge = "EUDI Conference Badge"
 private const val mockedDocUiNameSampleData = "Load Sample Documents"
 
-/**
- * Mock the call of [eu.europa.ec.commonfeature.model.toUiName]
- */
 @VisibleForTesting(otherwise = VisibleForTesting.NONE)
-fun mockDocumentTypeUiToUiNameCall(resourceProvider: ResourceProvider) {
-    whenever(resourceProvider.getString(R.string.pid))
-        .thenReturn(mockedDocUiNamePid)
+object MockResourceProviderForStringCalls {
 
-    whenever(resourceProvider.getString(R.string.mdl))
-        .thenReturn(mockedDocUiNameMdl)
+    /**
+     * Mock the call of [eu.europa.ec.commonfeature.model.toUiName]
+     */
+    fun mockDocumentTypeUiToUiNameCall(resourceProvider: ResourceProvider) {
+        whenever(resourceProvider.getString(R.string.pid))
+            .thenReturn(mockedDocUiNamePid)
 
-    whenever(resourceProvider.getString(R.string.conference_badge))
-        .thenReturn(mockedDocUiNameConferenceBadge)
+        whenever(resourceProvider.getString(R.string.mdl))
+            .thenReturn(mockedDocUiNameMdl)
 
-    whenever(resourceProvider.getString(R.string.load_sample_data))
-        .thenReturn(mockedDocUiNameSampleData)
+        whenever(resourceProvider.getString(R.string.conference_badge))
+            .thenReturn(mockedDocUiNameConferenceBadge)
+
+        whenever(resourceProvider.getString(R.string.load_sample_data))
+            .thenReturn(mockedDocUiNameSampleData)
+    }
+
+    /**
+     * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToUiItem]
+     */
+    fun mockTransformToUiItemCall(resourceProvider: ResourceProvider) {
+        mockTransformToDocumentDetailsUiCall(resourceProvider)
+    }
+
+    /**
+     * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsUi]
+     */
+    fun mockTransformToDocumentDetailsUiCall(resourceProvider: ResourceProvider) {
+        whenever(resourceProvider.getString(R.string.document_details_portrait_readable_identifier))
+            .thenReturn("Shown above")
+
+        mockGetKeyValueUiCall(resourceProvider)
+    }
+
+    /**
+     * Mock the call of [eu.europa.ec.commonfeature.util.getKeyValueUi]
+     */
+    fun mockGetKeyValueUiCall(resourceProvider: ResourceProvider) {
+        whenever(resourceProvider.getReadableElementIdentifier(ArgumentMatchers.anyString()))
+            .then {
+                it.arguments.first()
+            }
+
+        whenever(resourceProvider.getString(R.string.document_details_boolean_item_true_readable_value))
+            .thenReturn("yes")
+        whenever(resourceProvider.getString(R.string.document_details_boolean_item_false_readable_value))
+            .thenReturn("no")
+
+        mockGetGenderValueCall(resourceProvider)
+    }
+
+    /**
+     * Mock the call of [eu.europa.ec.commonfeature.util.getGenderValue]
+     */
+    fun mockGetGenderValueCall(resourceProvider: ResourceProvider) {
+        whenever(resourceProvider.getString(R.string.request_gender_male))
+            .thenReturn("male")
+        whenever(resourceProvider.getString(R.string.request_gender_female))
+            .thenReturn("female")
+    }
 }
