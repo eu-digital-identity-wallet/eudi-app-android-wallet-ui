@@ -35,7 +35,7 @@ import org.json.JSONObject
 
 object DocumentDetailsTransformer {
 
-    fun transformToUiItems(
+    fun transformToUiItem(
         document: Document,
         resourceProvider: ResourceProvider,
         docType: String,
