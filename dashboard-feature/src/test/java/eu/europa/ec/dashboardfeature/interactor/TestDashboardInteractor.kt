@@ -52,10 +52,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
@@ -99,8 +99,8 @@ class TestDashboardInteractor {
             configLogic = configLogic
         )
 
-        `when`(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
-        `when`(resourceProvider.provideContext()).thenReturn(getMockedContext())
+        whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
+        whenever(resourceProvider.provideContext()).thenReturn(getMockedContext())
 
         bluetoothManager =
             getMockedContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -158,7 +158,7 @@ class TestDashboardInteractor {
             bleTransferMode(EudiWalletConfig.BLE_CLIENT_CENTRAL_MODE)
         }
 
-        `when`(walletCoreConfig.config).thenReturn(mockedConfig)
+        whenever(walletCoreConfig.config).thenReturn(mockedConfig)
 
         // When
         val actual = interactor.isBleCentralClientModeEnabled()
@@ -178,7 +178,7 @@ class TestDashboardInteractor {
             bleTransferMode(EudiWalletConfig.BLE_SERVER_PERIPHERAL_MODE)
         }
 
-        `when`(walletCoreConfig.config).thenReturn(mockedConfig)
+        whenever(walletCoreConfig.config).thenReturn(mockedConfig)
 
         // When
         val actual = interactor.isBleCentralClientModeEnabled()
@@ -205,7 +205,7 @@ class TestDashboardInteractor {
             // Given
             mockGetStringForDocumentsCall(resourceProvider)
 
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(mockedFullDocuments)
 
             // When
@@ -239,7 +239,7 @@ class TestDashboardInteractor {
             // Given
             mockGetStringForDocumentsCall(resourceProvider)
 
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedMdlWithNoUserNameAndNoUserImage))
 
             // When
@@ -272,7 +272,7 @@ class TestDashboardInteractor {
             // Given
             mockGetStringForDocumentsCall(resourceProvider)
 
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedMdlWithNoExpirationDate))
 
             // When
@@ -296,7 +296,7 @@ class TestDashboardInteractor {
     fun `Given Case 4, When getDocuments is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -318,7 +318,7 @@ class TestDashboardInteractor {
     fun `Given Case 5, When getDocuments is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -340,7 +340,7 @@ class TestDashboardInteractor {
     fun `Given an App Version, When getAppVersion is called, Then it returns the Apps Version`() {
         // Given
         val expectedAppVersion = "2024.01.1"
-        `when`(configLogic.appVersion)
+        whenever(configLogic.appVersion)
             .thenReturn(expectedAppVersion)
 
         // When
@@ -366,7 +366,7 @@ class TestDashboardInteractor {
     private fun mockGetStringForDocumentsCall(resourceProvider: ResourceProvider) {
         mockDocumentTypeUiToUiNameCall(resourceProvider)
 
-        `when`(resourceProvider.getString(R.string.dashboard_document_no_expiration_found))
+        whenever(resourceProvider.getString(R.string.dashboard_document_no_expiration_found))
             .thenReturn(mockedNoExpirationDateFound)
     }
     //endregion

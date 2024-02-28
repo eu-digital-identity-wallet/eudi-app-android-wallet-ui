@@ -19,7 +19,7 @@ package eu.europa.ec.testfeature
 import androidx.annotation.VisibleForTesting
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.mockito.Mockito.`when`
+import org.mockito.kotlin.whenever
 
 private const val mockedDocUiNamePid = "National ID"
 private const val mockedDocUiNameMdl = "Driving License"
@@ -31,15 +31,15 @@ private const val mockedDocUiNameSampleData = "Load Sample Documents"
  */
 @VisibleForTesting(otherwise = VisibleForTesting.NONE)
 fun mockDocumentTypeUiToUiNameCall(resourceProvider: ResourceProvider) {
-    `when`(resourceProvider.getString(R.string.pid))
+    whenever(resourceProvider.getString(R.string.pid))
         .thenReturn(mockedDocUiNamePid)
 
-    `when`(resourceProvider.getString(R.string.mdl))
+    whenever(resourceProvider.getString(R.string.mdl))
         .thenReturn(mockedDocUiNameMdl)
 
-    `when`(resourceProvider.getString(R.string.conference_badge))
+    whenever(resourceProvider.getString(R.string.conference_badge))
         .thenReturn(mockedDocUiNameConferenceBadge)
 
-    `when`(resourceProvider.getString(R.string.load_sample_data))
+    whenever(resourceProvider.getString(R.string.load_sample_data))
         .thenReturn(mockedDocUiNameSampleData)
 }

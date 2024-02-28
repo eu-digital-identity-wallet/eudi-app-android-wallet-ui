@@ -43,10 +43,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import kotlin.test.assertEquals
 
 class TestAddDocumentInteractor {
@@ -77,7 +77,7 @@ class TestAddDocumentInteractor {
             resourceProvider = resourceProvider,
         )
 
-        `when`(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
+        whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
     }
 
     @After
@@ -100,7 +100,7 @@ class TestAddDocumentInteractor {
     fun `Given Case 1, When getAddDocumentOption is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(emptyList())
             mockDocumentTypeUiToUiNameCall(resourceProvider)
 
@@ -137,7 +137,7 @@ class TestAddDocumentInteractor {
     fun `Given Case 2, When getAddDocumentOption is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedFullMdl))
             mockDocumentTypeUiToUiNameCall(resourceProvider)
 
@@ -173,7 +173,7 @@ class TestAddDocumentInteractor {
     fun `Given Case 3, When getAddDocumentOption is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(emptyList())
             mockDocumentTypeUiToUiNameCall(resourceProvider)
 
@@ -207,7 +207,7 @@ class TestAddDocumentInteractor {
     fun `Given Case 4, When getAddDocumentOption is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedFullPid))
             mockDocumentTypeUiToUiNameCall(resourceProvider)
 
@@ -237,7 +237,7 @@ class TestAddDocumentInteractor {
     fun `Given Case 5, When getAddDocumentOption is called, Then it returns Failure with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -261,7 +261,7 @@ class TestAddDocumentInteractor {
     fun `Given Case 6, When getAddDocumentOption is called, Then it returns Failure with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -288,7 +288,7 @@ class TestAddDocumentInteractor {
             val mockedIssuanceMethod = IssuanceMethod.OPENID4VCI
             val mockedDocumentType = DocumentTypeUi.PID.docType
 
-            `when`(
+            whenever(
                 walletCoreDocumentsController.issueDocument(
                     issuanceMethod = mockedIssuanceMethod,
                     documentType = mockedDocumentType
@@ -318,7 +318,7 @@ class TestAddDocumentInteractor {
     fun `When addSampleData is called, Then it calls walletCoreDocumentsController#addSampleData`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.addSampleData())
+            whenever(walletCoreDocumentsController.addSampleData())
                 .thenReturn(AddSampleDataPartialState.Success.toFlow())
 
             // When
