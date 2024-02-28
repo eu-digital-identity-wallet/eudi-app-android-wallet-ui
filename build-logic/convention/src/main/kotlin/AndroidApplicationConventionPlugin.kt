@@ -33,6 +33,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply("eudi.android.koin")
                 apply("eudi.android.lint")
                 apply("eudi.owasp.dependency.check")
+                apply("eudi.sonar")
             }
 
             extensions.configure<ApplicationExtension> {
