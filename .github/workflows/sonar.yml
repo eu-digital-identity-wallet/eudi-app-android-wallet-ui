@@ -8,7 +8,7 @@ on:
 
 jobs:
    SAST_caller:
-      uses: eu-digital-identity-wallet/eudi-infra-ci/.github/workflows/sast_bt.yml@main
+      uses: eu-digital-identity-wallet/eudi-infra-ci/.github/workflows/sast_bt_no_cov.yml@main
       secrets:
        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
