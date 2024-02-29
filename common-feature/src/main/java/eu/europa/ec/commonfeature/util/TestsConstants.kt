@@ -17,8 +17,10 @@
 package eu.europa.ec.commonfeature.util
 
 import androidx.annotation.VisibleForTesting
+import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.uilogic.component.AppIcons
 
 @VisibleForTesting(otherwise = VisibleForTesting.NONE)
 object TestsConstants {
@@ -28,6 +30,7 @@ object TestsConstants {
     const val mockedUserBase64Portrait = "SE"
     const val mockedDocUiNamePid = "National ID"
     const val mockedDocUiNameMdl = "Driving License"
+    const val mockedDocUiNameSampleData = "Load Sample Documents"
     const val mockedNoUserFistNameFound = ""
     const val mockedNoUserBase64PortraitFound = ""
     const val mockedNoExpirationDateFound = "-"
@@ -59,5 +62,26 @@ object TestsConstants {
 
     val mockedFullDocumentsUi: List<DocumentUi> = listOf(
         mockedFullPidUi, mockedFullMdlUi
+    )
+
+    val mockedPidOptionItemUi = DocumentOptionItemUi(
+        text = mockedDocUiNamePid,
+        icon = AppIcons.Id,
+        type = DocumentTypeUi.PID,
+        available = true
+    )
+
+    val mockedMdlOptionItemUi = DocumentOptionItemUi(
+        text = mockedDocUiNameMdl,
+        icon = AppIcons.Id,
+        type = DocumentTypeUi.MDL,
+        available = true
+    )
+
+    val mockedSampleDataOptionItemUi = DocumentOptionItemUi(
+        text = mockedDocUiNameSampleData,
+        icon = AppIcons.Id,
+        type = DocumentTypeUi.SAMPLE_DOCUMENTS,
+        available = true
     )
 }
