@@ -294,12 +294,11 @@ class WalletCorePresentationControllerImpl(
                 }
             }
         }
-    }.shareIn(coroutineScope, SharingStarted.Lazily, 1)
-        .safeAsync {
-            SendRequestedDocumentsPartialState.Failure(
-                error = it.localizedMessage ?: genericErrorMessage
-            )
-        }
+    }.safeAsync {
+        SendRequestedDocumentsPartialState.Failure(
+            error = it.localizedMessage ?: genericErrorMessage
+        )
+    }
 
     override fun mappedCallbackStateFlow(): Flow<ResponseReceivedPartialState> {
         return events.mapNotNull { response ->
@@ -326,12 +325,11 @@ class WalletCorePresentationControllerImpl(
 
                 else -> null
             }
-        }.shareIn(coroutineScope, SharingStarted.Lazily, 1)
-            .safeAsync {
-                ResponseReceivedPartialState.Failure(
-                    error = it.localizedMessage ?: genericErrorMessage
-                )
-            }
+        }.safeAsync {
+            ResponseReceivedPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMessage
+            )
+        }
     }
 
     override fun observeSentDocumentsRequest(): Flow<WalletCorePartialState> =
@@ -363,12 +361,11 @@ class WalletCorePresentationControllerImpl(
                     WalletCorePartialState.Success
                 }
             }
+        }.safeAsync {
+            WalletCorePartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMessage
+            )
         }
-            .safeAsync {
-                WalletCorePartialState.Failure(
-                    error = it.localizedMessage ?: genericErrorMessage
-                )
-            }
 
     override fun updateRequestedDocuments(disclosedDocuments: DisclosedDocuments?) {
         this.disclosedDocuments = disclosedDocuments
