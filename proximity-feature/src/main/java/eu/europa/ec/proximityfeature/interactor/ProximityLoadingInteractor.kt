@@ -19,6 +19,7 @@ package eu.europa.ec.proximityfeature.interactor
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationBiometricResult
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
@@ -37,7 +38,10 @@ interface ProximityLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
     fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState>
-    fun handleUserAuthentication(context: Context, payload: UserAuthenticationCorePayload)
+    fun handleUserAuthentication(
+        context: Context, payload: UserAuthenticationCorePayload,
+        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+    )
 }
 
 class ProximityLoadingInteractorImpl(
@@ -63,15 +67,27 @@ class ProximityLoadingInteractorImpl(
             }
         }
 
-    override fun handleUserAuthentication(context: Context, payload: UserAuthenticationCorePayload) {
+    override fun handleUserAuthentication(
+        context: Context,
+        payload: UserAuthenticationCorePayload,
+        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+    ) {
         userAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(context, payload)
+                    userAuthenticationInteractor.authenticateWithBiometrics(
+                        context = context,
+                        payload = payload,
+                        userAuthenticationBiometricResult = userAuthenticationBiometricResult
+                    )
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(context, payload)
+                    userAuthenticationInteractor.authenticateWithBiometrics(
+                        context = context,
+                        payload = payload,
+                        userAuthenticationBiometricResult = userAuthenticationBiometricResult
+                    )
                 }
 
                 is BiometricsAvailability.Failure -> {

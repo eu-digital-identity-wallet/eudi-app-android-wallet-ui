@@ -19,6 +19,7 @@ package eu.europa.ec.presentationfeature.interactor
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationBiometricResult
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
@@ -27,7 +28,9 @@ import kotlinx.coroutines.flow.mapNotNull
 import java.net.URI
 
 sealed class PresentationLoadingObserveResponsePartialState {
-    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) : PresentationLoadingObserveResponsePartialState()
+    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) :
+        PresentationLoadingObserveResponsePartialState()
+
     data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
     data object Success : PresentationLoadingObserveResponsePartialState()
     data class Redirect(val uri: URI) : PresentationLoadingObserveResponsePartialState()
@@ -37,7 +40,11 @@ interface PresentationLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
-    fun handleUserAuthentication(context: Context, payload: UserAuthenticationCorePayload)
+    fun handleUserAuthentication(
+        context: Context,
+        payload: UserAuthenticationCorePayload,
+        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+    )
 }
 
 class PresentationLoadingInteractorImpl(
@@ -63,20 +70,36 @@ class PresentationLoadingInteractorImpl(
                 }
 
                 is WalletCorePartialState.UserAuthenticationRequired -> {
-                    PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(response.payload)
+                    PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(
+                        response.payload
+                    )
                 }
             }
         }
 
-    override fun handleUserAuthentication(context: Context, payload: UserAuthenticationCorePayload) {
+    override fun handleUserAuthentication(
+        context: Context,
+        payload: UserAuthenticationCorePayload,
+        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+    ) {
         userAuthenticationInteractor.getBiometricsAvailability {
-            when(it){
+            when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(context, payload)
+                    userAuthenticationInteractor.authenticateWithBiometrics(
+                        context,
+                        payload,
+                        userAuthenticationBiometricResult
+                    )
                 }
+
                 is BiometricsAvailability.NonEnrolled -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(context, payload)
+                    userAuthenticationInteractor.authenticateWithBiometrics(
+                        context,
+                        payload,
+                        userAuthenticationBiometricResult
+                    )
                 }
+
                 is BiometricsAvailability.Failure -> {
                     payload.onFailure()
                 }

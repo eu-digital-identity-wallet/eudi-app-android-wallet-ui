@@ -18,8 +18,10 @@ package eu.europa.ec.presentationfeature.ui.loading
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationBiometricResult
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
@@ -32,6 +34,7 @@ import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -102,7 +105,22 @@ class PresentationLoadingViewModel(
                     }
 
                     is PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
-                        interactor.handleUserAuthentication(context, it.payload)
+                        val popEffect = Effect.Navigation.PopBackStackUpTo(
+                            screenRoute = PresentationScreens.PresentationRequest.screenRoute,
+                            inclusive = false
+                        )
+                        interactor.handleUserAuthentication(
+                            context = context,
+                            payload = it.payload,
+                            userAuthenticationBiometricResult = UserAuthenticationBiometricResult(
+                                onAuthenticationError = {
+                                    setEffect { popEffect }
+                                },
+                                onAuthenticationFailure = {
+                                    setEffect { popEffect }
+                                }
+                            )
+                        )
                     }
 
                     is PresentationLoadingObserveResponsePartialState.Redirect -> {

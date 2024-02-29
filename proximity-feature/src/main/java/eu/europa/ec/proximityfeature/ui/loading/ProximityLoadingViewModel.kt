@@ -18,8 +18,10 @@ package eu.europa.ec.proximityfeature.ui.loading
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationBiometricResult
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
@@ -108,7 +110,22 @@ class ProximityLoadingViewModel(
                     }
 
                     is ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
-                        interactor.handleUserAuthentication(context, it.payload)
+                        val popEffect = Effect.Navigation.PopBackStackUpTo(
+                            screenRoute = ProximityScreens.Request.screenRoute,
+                            inclusive = false
+                        )
+                        interactor.handleUserAuthentication(
+                            context = context,
+                            payload = it.payload,
+                            userAuthenticationBiometricResult = UserAuthenticationBiometricResult(
+                                onAuthenticationError = {
+                                    setEffect { popEffect }
+                                },
+                                onAuthenticationFailure = {
+                                    setEffect { popEffect }
+                                }
+                            )
+                        )
                     }
                 }
             }

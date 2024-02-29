@@ -27,7 +27,11 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 interface UserAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
-    fun authenticate(context: Context, payload: UserAuthenticationCorePayload)
+    fun authenticate(
+        context: Context,
+        payload: UserAuthenticationCorePayload,
+        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+    )
 }
 
 class UserAuthenticationControllerImpl(
@@ -38,7 +42,11 @@ class UserAuthenticationControllerImpl(
         biometricController.deviceSupportsBiometrics(listener)
     }
 
-    override fun authenticate(context: Context, payload: UserAuthenticationCorePayload) {
+    override fun authenticate(
+        context: Context,
+        payload: UserAuthenticationCorePayload,
+        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+    ) {
         context as FragmentActivity
 
         val prompt = BiometricPrompt(
@@ -47,14 +55,17 @@ class UserAuthenticationControllerImpl(
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     payload.onCancel()
+                    userAuthenticationBiometricResult.onAuthenticationError()
                 }
 
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     payload.onSuccess()
+                    userAuthenticationBiometricResult.onAuthenticationSuccess()
                 }
 
                 override fun onAuthenticationFailed() {
                     payload.onFailure()
+                    userAuthenticationBiometricResult.onAuthenticationFailure()
                 }
             }
         )
@@ -85,4 +96,10 @@ data class UserAuthenticationCorePayload(
     val onSuccess: () -> Unit,
     val onCancel: () -> Unit,
     val onFailure: () -> Unit,
+)
+
+data class UserAuthenticationBiometricResult(
+    val onAuthenticationSuccess: () -> Unit = {},
+    val onAuthenticationError: () -> Unit,
+    val onAuthenticationFailure: () -> Unit
 )

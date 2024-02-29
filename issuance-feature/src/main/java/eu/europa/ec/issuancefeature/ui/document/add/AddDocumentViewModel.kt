@@ -18,6 +18,7 @@ package eu.europa.ec.issuancefeature.ui.document.add
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationBiometricResult
 import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
@@ -36,6 +37,7 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
@@ -59,7 +61,11 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data object DismissError : Event()
-    data class IssueDocument(val issuanceMethod: IssuanceMethod, val documentType: String, val context: Context) : Event()
+    data class IssueDocument(
+        val issuanceMethod: IssuanceMethod,
+        val documentType: String,
+        val context: Context
+    ) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -154,7 +160,12 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun issueDocument(event: Event, issuanceMethod: IssuanceMethod, docType: String, context: Context) {
+    private fun issueDocument(
+        event: Event,
+        issuanceMethod: IssuanceMethod,
+        docType: String,
+        context: Context
+    ) {
         setState {
             copy(
                 isLoading = true
@@ -193,7 +204,23 @@ class AddDocumentViewModel(
                     }
 
                     is IssueDocumentPartialState.UserAuthRequired -> {
-                        addDocumentInteractor.handleUserAuth(context, response.payload)
+                        val popEffect =
+                            eu.europa.ec.commonfeature.ui.loading.Effect.Navigation.PopBackStackUpTo(
+                                ProximityScreens.Request.screenRoute,
+                                false
+                            )
+                        addDocumentInteractor.handleUserAuth(
+                            context = context,
+                            payload = response.payload,
+                            userAuthenticationBiometricResult = UserAuthenticationBiometricResult(
+                                onAuthenticationError = {
+                                    /* no op*/
+                                },
+                                onAuthenticationFailure = {
+                                    /* no op */
+                                }
+                            )
+                        )
                     }
                 }
             }
