@@ -17,7 +17,7 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import java.net.URI
 
 sealed class PresentationLoadingObserveResponsePartialState {
-    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) : PresentationLoadingObserveResponsePartialState()
+    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) : PresentationLoadingObserveResponsePartialState()
     data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
     data object Success : PresentationLoadingObserveResponsePartialState()
     data class Redirect(val uri: URI) : PresentationLoadingObserveResponsePartialState()
@@ -37,7 +37,7 @@ interface PresentationLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
-    fun handleUserAuthentication(context: Context, payload: BiometricPromptPayload)
+    fun handleUserAuthentication(context: Context, payload: UserAuthenticationCorePayload)
 }
 
 class PresentationLoadingInteractorImpl(
@@ -68,7 +68,7 @@ class PresentationLoadingInteractorImpl(
             }
         }
 
-    override fun handleUserAuthentication(context: Context, payload: BiometricPromptPayload) {
+    override fun handleUserAuthentication(context: Context, payload: UserAuthenticationCorePayload) {
         userAuthenticationInteractor.getBiometricsAvailability {
             when(it){
                 is BiometricsAvailability.CanAuthenticate -> {

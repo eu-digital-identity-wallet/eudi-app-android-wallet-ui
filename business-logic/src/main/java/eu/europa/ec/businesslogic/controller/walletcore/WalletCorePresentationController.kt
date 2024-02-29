@@ -17,7 +17,7 @@
 package eu.europa.ec.businesslogic.controller.walletcore
 
 import androidx.activity.ComponentActivity
-import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
@@ -62,7 +62,7 @@ sealed class TransferEventPartialState {
 
 sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
-    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) :
+    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) :
         SendRequestedDocumentsPartialState()
 
     data object RequestSent : SendRequestedDocumentsPartialState()
@@ -75,7 +75,7 @@ sealed class ResponseReceivedPartialState {
 }
 
 sealed class WalletCorePartialState {
-    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) :
+    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) :
         WalletCorePartialState()
 
     data class Failure(val error: String) : WalletCorePartialState()
@@ -284,7 +284,7 @@ class WalletCorePresentationControllerImpl(
 
                 is ResponseResult.UserAuthRequired -> {
                     emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired(
-                        payload = BiometricPromptPayload(
+                        payload = UserAuthenticationCorePayload(
                             cryptoObject = response.cryptoObject,
                             onSuccess = { eudiWallet.sendResponse(disclosedDocuments = documents) },
                             onCancel = { /* No-op */ },

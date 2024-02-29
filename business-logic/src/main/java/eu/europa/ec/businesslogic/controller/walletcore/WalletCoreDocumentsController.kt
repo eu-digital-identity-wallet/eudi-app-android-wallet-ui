@@ -16,7 +16,7 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
-import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
@@ -41,13 +41,13 @@ enum class IssuanceMethod {
 sealed class IssueDocumentPartialState {
     data class Success(val documentId: String) : IssueDocumentPartialState()
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
-    data class UserAuthRequired(val payload: BiometricPromptPayload) : IssueDocumentPartialState()
+    data class UserAuthRequired(val payload: UserAuthenticationCorePayload) : IssueDocumentPartialState()
 }
 
 sealed class OpenId4VCIIssueDocumentPartialState {
     data class Success(val documentId: String) : OpenId4VCIIssueDocumentPartialState()
     data class Failure(val errorMessage: String) : OpenId4VCIIssueDocumentPartialState()
-    data class UserAuthRequired(val payload: BiometricPromptPayload) :
+    data class UserAuthRequired(val payload: UserAuthenticationCorePayload) :
         OpenId4VCIIssueDocumentPartialState()
 }
 
@@ -277,7 +277,7 @@ class WalletCoreDocumentsControllerImpl(
                         is IssueDocumentResult.UserAuthRequired -> {
                             trySendBlocking(
                                 OpenId4VCIIssueDocumentPartialState.UserAuthRequired(
-                                    payload = BiometricPromptPayload(
+                                    payload = UserAuthenticationCorePayload(
                                         cryptoObject = result.cryptoObject,
                                         onSuccess = { result.resume() },
                                         onCancel = { result.cancel() },

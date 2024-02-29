@@ -27,7 +27,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 interface UserAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
-    fun authenticate(context: Context, payload: BiometricPromptPayload)
+    fun authenticate(context: Context, payload: UserAuthenticationCorePayload)
 }
 
 class UserAuthenticationControllerImpl(
@@ -38,7 +38,7 @@ class UserAuthenticationControllerImpl(
         biometricController.deviceSupportsBiometrics(listener)
     }
 
-    override fun authenticate(context: Context, payload: BiometricPromptPayload) {
+    override fun authenticate(context: Context, payload: UserAuthenticationCorePayload) {
         context as FragmentActivity
 
         val prompt = BiometricPrompt(
@@ -80,7 +80,7 @@ class UserAuthenticationControllerImpl(
     }
 }
 
-data class BiometricPromptPayload(
+data class UserAuthenticationCorePayload(
     val cryptoObject: BiometricPrompt.CryptoObject?,
     val onSuccess: () -> Unit,
     val onCancel: () -> Unit,

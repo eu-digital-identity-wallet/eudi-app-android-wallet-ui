@@ -17,7 +17,7 @@
 package eu.europa.ec.issuancefeature.interactor.document
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
@@ -52,7 +52,7 @@ interface AddDocumentInteractor {
 
     fun addSampleData(): Flow<AddSampleDataPartialState>
 
-    fun handleUserAuth(context: Context, payload: BiometricPromptPayload)
+    fun handleUserAuth(context: Context, payload: UserAuthenticationCorePayload)
 }
 
 class AddDocumentInteractorImpl(
@@ -113,7 +113,7 @@ class AddDocumentInteractorImpl(
     override fun addSampleData(): Flow<AddSampleDataPartialState> =
         walletCoreDocumentsController.addSampleData()
 
-    override fun handleUserAuth(context: Context, payload: BiometricPromptPayload) {
+    override fun handleUserAuth(context: Context, payload: UserAuthenticationCorePayload) {
         userAuthenticationInteractor.getBiometricsAvailability {
             when(it){
                 is BiometricsAvailability.CanAuthenticate -> {

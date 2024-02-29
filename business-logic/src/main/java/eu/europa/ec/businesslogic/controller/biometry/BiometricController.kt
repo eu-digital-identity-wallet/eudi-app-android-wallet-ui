@@ -62,7 +62,7 @@ class BiometricControllerImpl(
 
     override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
         val biometricManager = BiometricManager.from(resourceProvider.provideContext())
-        when (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
+        when (biometricManager.canAuthenticate(BIOMETRIC_WEAK)) {
             BiometricManager.BIOMETRIC_SUCCESS -> listener.invoke(BiometricsAvailability.CanAuthenticate)
             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> listener.invoke(BiometricsAvailability.NonEnrolled)
             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE, BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> listener.invoke(

@@ -17,7 +17,7 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityLoadingObserveResponsePartialState {
-    data class UserAuthenticationRequired(val payload: BiometricPromptPayload) :
+    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) :
         ProximityLoadingObserveResponsePartialState()
 
     data class Failure(val error: String) : ProximityLoadingObserveResponsePartialState()
@@ -37,7 +37,7 @@ interface ProximityLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
     fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState>
-    fun handleUserAuthentication(context: Context, payload: BiometricPromptPayload)
+    fun handleUserAuthentication(context: Context, payload: UserAuthenticationCorePayload)
 }
 
 class ProximityLoadingInteractorImpl(
@@ -63,7 +63,7 @@ class ProximityLoadingInteractorImpl(
             }
         }
 
-    override fun handleUserAuthentication(context: Context, payload: BiometricPromptPayload) {
+    override fun handleUserAuthentication(context: Context, payload: UserAuthenticationCorePayload) {
         userAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {

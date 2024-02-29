@@ -17,7 +17,6 @@
 package eu.europa.ec.commonfeature.ui.loading
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.biometry.BiometricPromptPayload
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
