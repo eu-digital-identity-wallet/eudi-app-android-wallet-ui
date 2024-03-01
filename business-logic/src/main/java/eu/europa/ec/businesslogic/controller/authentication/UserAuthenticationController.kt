@@ -14,22 +14,25 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.controller.biometry
+package eu.europa.ec.businesslogic.controller.authentication
 
 import android.content.Context
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
-import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import eu.europa.ec.businesslogic.controller.biometry.BiometricController
+import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.businesslogic.model.BiometricCrypto
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.launch
 
 interface UserAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
     fun authenticate(
         context: Context,
-        biometryCrypto: BiometryCrypto,
+        biometryCrypto: BiometricCrypto,
         userAuthenticationBiometricResult: UserAuthenticationResult
     )
 }
@@ -44,41 +47,32 @@ class UserAuthenticationControllerImpl(
 
     override fun authenticate(
         context: Context,
-        biometryCrypto: BiometryCrypto,
+        biometryCrypto: BiometricCrypto,
         userAuthenticationBiometricResult: UserAuthenticationResult
     ) {
-        context as FragmentActivity
+        (context as? FragmentActivity)?.let { activity ->
 
-        val prompt = BiometricPrompt(
-            context,
-            ContextCompat.getMainExecutor(context),
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    userAuthenticationBiometricResult.onAuthenticationError()
-                }
+            activity.lifecycleScope.launch {
 
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                val data = biometricController.authenticate(
+                    activity = activity,
+                    biometryCrypto = biometryCrypto,
+                    promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle(resourceProvider.getString(R.string.biometric_prompt_title))
+                        .setSubtitle(resourceProvider.getString(R.string.biometric_prompt_subtitle))
+                        .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                        .build()
+                )
+
+                if (data.authenticationResult != null) {
                     userAuthenticationBiometricResult.onAuthenticationSuccess()
-                }
-
-                override fun onAuthenticationFailed() {
+                } else if (data.hasError) {
+                    userAuthenticationBiometricResult.onAuthenticationError()
+                } else {
                     userAuthenticationBiometricResult.onAuthenticationFailure()
                 }
             }
-        )
-
-        val builder = BiometricPrompt.PromptInfo.Builder()
-            .setTitle(resourceProvider.getString(R.string.biometric_prompt_title))
-            .setSubtitle(resourceProvider.getString(R.string.biometric_prompt_subtitle))
-            .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
-            .build()
-
-        biometryCrypto.cryptoObject?.let {
-            prompt.authenticate(
-                builder,
-                it
-            )
-        } ?: prompt.authenticate(builder)
+        }
     }
 }
 
@@ -87,5 +81,3 @@ data class UserAuthenticationResult(
     val onAuthenticationError: () -> Unit = {},
     val onAuthenticationFailure: () -> Unit = {},
 )
-
-data class BiometryCrypto(val cryptoObject: BiometricPrompt.CryptoObject?)

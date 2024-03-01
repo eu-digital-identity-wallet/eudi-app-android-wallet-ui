@@ -18,7 +18,7 @@ package eu.europa.ec.presentationfeature.ui.loading
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Effect

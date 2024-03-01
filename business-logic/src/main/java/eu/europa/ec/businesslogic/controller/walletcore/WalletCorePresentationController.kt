@@ -17,10 +17,10 @@
 package eu.europa.ec.businesslogic.controller.walletcore
 
 import androidx.activity.ComponentActivity
-import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.businesslogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
@@ -64,7 +64,7 @@ sealed class TransferEventPartialState {
 sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
     data class UserAuthenticationRequired(
-        val crypto: BiometryCrypto,
+        val crypto: BiometricCrypto,
         val resultHandler: UserAuthenticationResult
     ) : SendRequestedDocumentsPartialState()
 
@@ -79,7 +79,7 @@ sealed class ResponseReceivedPartialState {
 
 sealed class WalletCorePartialState {
     data class UserAuthenticationRequired(
-        val crypto: BiometryCrypto,
+        val crypto: BiometricCrypto,
         val resultHandler: UserAuthenticationResult
     ) : WalletCorePartialState()
 
@@ -290,7 +290,7 @@ class WalletCorePresentationControllerImpl(
                 is ResponseResult.UserAuthRequired -> {
                     emit(
                         SendRequestedDocumentsPartialState.UserAuthenticationRequired(
-                            BiometryCrypto(response.cryptoObject),
+                            BiometricCrypto(response.cryptoObject),
                             UserAuthenticationResult(
                                 onAuthenticationSuccess = {
                                     eudiWallet.sendResponse(

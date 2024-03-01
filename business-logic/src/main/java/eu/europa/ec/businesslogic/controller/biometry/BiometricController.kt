@@ -32,6 +32,7 @@ import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.decodeFromPemBase64String
 import eu.europa.ec.businesslogic.extension.encodeToPemBase64String
+import eu.europa.ec.businesslogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.model.BiometricData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -50,6 +51,12 @@ enum class BiometricsAuthError(val code: Int) {
 interface BiometricController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
     fun authenticate(context: Context, listener: (BiometricsAuthenticate) -> Unit)
+    suspend fun authenticate(
+        activity: FragmentActivity,
+        biometryCrypto: BiometricCrypto,
+        promptInfo: BiometricPrompt.PromptInfo
+    ): BiometricPromptData
+
     fun launchBiometricSystemScreen()
 }
 
@@ -88,7 +95,15 @@ class BiometricControllerImpl(
                     return@launch
                 }
 
-                val data = authenticate(activity = activity, cipher = cipher)
+                val data = authenticate(
+                    activity = activity,
+                    biometryCrypto = BiometricCrypto(BiometricPrompt.CryptoObject(cipher)),
+                    promptInfo = BiometricPrompt.PromptInfo.Builder()
+                        .setTitle(activity.getString(R.string.biometric_prompt_title))
+                        .setSubtitle(activity.getString(R.string.biometric_prompt_subtitle))
+                        .setNegativeButtonText(activity.getString(R.string.generic_cancel))
+                        .build()
+                )
 
                 if (data.authenticationResult != null) {
                     val state = verifyCrypto(
@@ -124,11 +139,12 @@ class BiometricControllerImpl(
         resourceProvider.provideContext().startActivity(enrollIntent)
     }
 
-    private suspend fun authenticate(
+    override suspend fun authenticate(
         activity: FragmentActivity,
-        cipher: Cipher,
+        biometryCrypto: BiometricCrypto,
+        promptInfo: BiometricPrompt.PromptInfo
     ): BiometricPromptData = suspendCancellableCoroutine { continuation ->
-        BiometricPrompt(
+        val prompt = BiometricPrompt(
             activity,
             ContextCompat.getMainExecutor(activity),
             object : BiometricPrompt.AuthenticationCallback() {
@@ -152,14 +168,14 @@ class BiometricControllerImpl(
                     }
                 }
             }
-        ).authenticate(
-            BiometricPrompt.PromptInfo.Builder()
-                .setTitle(activity.getString(R.string.biometric_prompt_title))
-                .setSubtitle(activity.getString(R.string.biometric_prompt_subtitle))
-                .setNegativeButtonText(activity.getString(R.string.generic_cancel))
-                .build(),
-            BiometricPrompt.CryptoObject(cipher)
         )
+
+        biometryCrypto.cryptoObject?.let {
+            prompt.authenticate(
+                promptInfo,
+                it
+            )
+        } ?: prompt.authenticate(promptInfo)
     }
 
     private suspend fun retrieveCrypto(): Pair<BiometricData?, Cipher?> =
@@ -227,4 +243,6 @@ data class BiometricPromptData(
     val authenticationResult: AuthenticationResult?,
     val errorCode: Int = -1,
     val errorString: CharSequence = "",
-)
+) {
+    val hasError: Boolean get() = errorCode != -1
+}

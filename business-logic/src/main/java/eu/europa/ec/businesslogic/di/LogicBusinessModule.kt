@@ -23,10 +23,10 @@ import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogicImpl
 import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.config.WalletCoreConfigImpl
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationController
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationControllerImpl
 import eu.europa.ec.businesslogic.controller.biometry.BiometricController
 import eu.europa.ec.businesslogic.controller.biometry.BiometricControllerImpl
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationController
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationControllerImpl
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.controller.crypto.CryptoControllerImpl
 import eu.europa.ec.businesslogic.controller.crypto.KeystoreController

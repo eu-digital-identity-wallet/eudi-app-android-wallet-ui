@@ -17,11 +17,11 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import android.content.Context
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
+import eu.europa.ec.businesslogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -29,7 +29,7 @@ import java.net.URI
 
 sealed class PresentationLoadingObserveResponsePartialState {
     data class UserAuthenticationRequired(
-        val crypto: BiometryCrypto,
+        val crypto: BiometricCrypto,
         val resultHandler: UserAuthenticationResult
     ) : PresentationLoadingObserveResponsePartialState()
 
@@ -44,7 +44,7 @@ interface PresentationLoadingInteractor {
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
     fun handleUserAuthentication(
         context: Context,
-        crypto: BiometryCrypto,
+        crypto: BiometricCrypto,
         resultHandler: UserAuthenticationResult
     )
 }
@@ -82,7 +82,7 @@ class PresentationLoadingInteractorImpl(
 
     override fun handleUserAuthentication(
         context: Context,
-        crypto: BiometryCrypto,
+        crypto: BiometricCrypto,
         resultHandler: UserAuthenticationResult
     ) {
         userAuthenticationInteractor.getBiometricsAvailability {
