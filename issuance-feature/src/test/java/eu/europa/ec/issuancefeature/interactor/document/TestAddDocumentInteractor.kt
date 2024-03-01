@@ -21,6 +21,7 @@ import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedId1
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedMdlOptionItemUi
@@ -57,6 +58,9 @@ class TestAddDocumentInteractor {
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     @Mock
+    private lateinit var userAuthenticationInteractor: UserAuthenticationInteractor
+
+    @Mock
     private lateinit var resourceProvider: ResourceProvider
 
     private lateinit var interactor: AddDocumentInteractor
@@ -68,8 +72,9 @@ class TestAddDocumentInteractor {
         closeable = MockitoAnnotations.openMocks(this)
 
         interactor = AddDocumentInteractorImpl(
-            resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
+            userAuthenticationInteractor = userAuthenticationInteractor,
+            resourceProvider = resourceProvider,
         )
 
         `when`(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
