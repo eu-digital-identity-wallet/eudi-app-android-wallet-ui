@@ -118,6 +118,7 @@ class ProximityLoadingViewModel(
                             context = context,
                             crypto = it.crypto,
                             resultHandler = UserAuthenticationResult(
+                                onAuthenticationSuccess = { it.resultHandler.onAuthenticationSuccess() },
                                 onAuthenticationFailure = { setEffect { popEffect } },
                                 onAuthenticationError = { setEffect { popEffect } }
                             )

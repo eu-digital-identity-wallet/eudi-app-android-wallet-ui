@@ -206,7 +206,17 @@ class AddDocumentViewModel(
                         addDocumentInteractor.handleUserAuth(
                             context = context,
                             crypto = response.crypto,
-                            resultHandler = UserAuthenticationResult()
+                            resultHandler = UserAuthenticationResult(
+                                onAuthenticationSuccess = {
+                                    response.resultHandler.onAuthenticationSuccess()
+                                },
+                                onAuthenticationFailure = {
+                                    response.resultHandler.onAuthenticationFailure
+                                },
+                                onAuthenticationError = {
+                                    response.resultHandler.onAuthenticationError
+                                }
+                            )
                         )
                     }
                 }

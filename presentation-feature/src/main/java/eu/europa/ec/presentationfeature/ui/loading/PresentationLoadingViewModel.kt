@@ -112,6 +112,7 @@ class PresentationLoadingViewModel(
                             context = context,
                             crypto = it.crypto,
                             resultHandler = UserAuthenticationResult(
+                                onAuthenticationSuccess = { it.resultHandler.onAuthenticationSuccess() },
                                 onAuthenticationError = { setEffect { popEffect } },
                                 onAuthenticationFailure = { setEffect { popEffect } }
                             )
