@@ -37,7 +37,6 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
-import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
@@ -204,11 +203,6 @@ class AddDocumentViewModel(
                     }
 
                     is IssueDocumentPartialState.UserAuthRequired -> {
-                        val popEffect =
-                            eu.europa.ec.commonfeature.ui.loading.Effect.Navigation.PopBackStackUpTo(
-                                ProximityScreens.Request.screenRoute,
-                                false
-                            )
                         addDocumentInteractor.handleUserAuth(
                             context = context,
                             payload = response.payload,
