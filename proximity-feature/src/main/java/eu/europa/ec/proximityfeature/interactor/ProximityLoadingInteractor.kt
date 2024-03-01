@@ -17,9 +17,9 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
+import androidx.biometric.BiometricPrompt
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationBiometricResult
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
@@ -27,8 +27,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityLoadingObserveResponsePartialState {
-    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) :
-        ProximityLoadingObserveResponsePartialState()
+    data class UserAuthenticationRequired(
+        val crypto: BiometricPrompt.CryptoObject?,
+        val resultHandler: UserAuthenticationResult
+    ) : ProximityLoadingObserveResponsePartialState()
 
     data class Failure(val error: String) : ProximityLoadingObserveResponsePartialState()
     data object Success : ProximityLoadingObserveResponsePartialState()
@@ -39,8 +41,9 @@ interface ProximityLoadingInteractor {
     fun stopPresentation()
     fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState>
     fun handleUserAuthentication(
-        context: Context, payload: UserAuthenticationCorePayload,
-        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+        context: Context,
+        crypto: BiometricPrompt.CryptoObject?,
+        resultHandler: UserAuthenticationResult
     )
 }
 
@@ -62,36 +65,39 @@ class ProximityLoadingInteractorImpl(
 
                 is WalletCorePartialState.Success -> ProximityLoadingObserveResponsePartialState.Success
                 is WalletCorePartialState.UserAuthenticationRequired -> {
-                    ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired(response.payload)
+                    ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired(
+                        response.crypto,
+                        response.resultHandler
+                    )
                 }
             }
         }
 
     override fun handleUserAuthentication(
         context: Context,
-        payload: UserAuthenticationCorePayload,
-        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+        crypto: BiometricPrompt.CryptoObject?,
+        resultHandler: UserAuthenticationResult
     ) {
         userAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
                     userAuthenticationInteractor.authenticateWithBiometrics(
                         context = context,
-                        payload = payload,
-                        userAuthenticationBiometricResult = userAuthenticationBiometricResult
+                        crypto = crypto,
+                        resultHandler = resultHandler
                     )
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
                     userAuthenticationInteractor.authenticateWithBiometrics(
                         context = context,
-                        payload = payload,
-                        userAuthenticationBiometricResult = userAuthenticationBiometricResult
+                        crypto = crypto,
+                        resultHandler = resultHandler
                     )
                 }
 
                 is BiometricsAvailability.Failure -> {
-                    payload.onFailure()
+                    resultHandler.onAuthenticationFailure()
                 }
             }
         }

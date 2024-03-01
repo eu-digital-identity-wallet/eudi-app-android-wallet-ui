@@ -18,7 +18,7 @@ package eu.europa.ec.presentationfeature.ui.loading
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationBiometricResult
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Effect
@@ -34,7 +34,6 @@ import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
-import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -111,14 +110,10 @@ class PresentationLoadingViewModel(
                         )
                         interactor.handleUserAuthentication(
                             context = context,
-                            payload = it.payload,
-                            userAuthenticationBiometricResult = UserAuthenticationBiometricResult(
-                                onAuthenticationError = {
-                                    setEffect { popEffect }
-                                },
-                                onAuthenticationFailure = {
-                                    setEffect { popEffect }
-                                }
+                            crypto = it.crypto,
+                            resultHandler = UserAuthenticationResult(
+                                onAuthenticationError = { setEffect { popEffect } },
+                                onAuthenticationFailure = { setEffect { popEffect } }
                             )
                         )
                     }

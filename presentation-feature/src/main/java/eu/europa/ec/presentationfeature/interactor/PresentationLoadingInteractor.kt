@@ -17,9 +17,9 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
+import androidx.biometric.BiometricPrompt
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationBiometricResult
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
@@ -28,8 +28,10 @@ import kotlinx.coroutines.flow.mapNotNull
 import java.net.URI
 
 sealed class PresentationLoadingObserveResponsePartialState {
-    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) :
-        PresentationLoadingObserveResponsePartialState()
+    data class UserAuthenticationRequired(
+        val crypto: BiometricPrompt.CryptoObject?,
+        val resultHandler: UserAuthenticationResult
+    ) : PresentationLoadingObserveResponsePartialState()
 
     data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
     data object Success : PresentationLoadingObserveResponsePartialState()
@@ -42,8 +44,8 @@ interface PresentationLoadingInteractor {
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
     fun handleUserAuthentication(
         context: Context,
-        payload: UserAuthenticationCorePayload,
-        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+        crypto: BiometricPrompt.CryptoObject?,
+        resultHandler: UserAuthenticationResult
     )
 }
 
@@ -71,7 +73,8 @@ class PresentationLoadingInteractorImpl(
 
                 is WalletCorePartialState.UserAuthenticationRequired -> {
                     PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(
-                        response.payload
+                        response.crypto,
+                        response.resultHandler
                     )
                 }
             }
@@ -79,29 +82,29 @@ class PresentationLoadingInteractorImpl(
 
     override fun handleUserAuthentication(
         context: Context,
-        payload: UserAuthenticationCorePayload,
-        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+        crypto: BiometricPrompt.CryptoObject?,
+        resultHandler: UserAuthenticationResult
     ) {
         userAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
                     userAuthenticationInteractor.authenticateWithBiometrics(
                         context,
-                        payload,
-                        userAuthenticationBiometricResult
+                        crypto,
+                        resultHandler
                     )
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
                     userAuthenticationInteractor.authenticateWithBiometrics(
                         context,
-                        payload,
-                        userAuthenticationBiometricResult
+                        crypto,
+                        resultHandler
                     )
                 }
 
                 is BiometricsAvailability.Failure -> {
-                    payload.onFailure()
+                    resultHandler.onAuthenticationFailure
                 }
             }
         }

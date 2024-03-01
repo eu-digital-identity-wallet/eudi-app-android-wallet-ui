@@ -17,7 +17,8 @@
 package eu.europa.ec.businesslogic.controller.walletcore
 
 import androidx.activity.ComponentActivity
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
+import androidx.biometric.BiometricPrompt
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
@@ -62,8 +63,10 @@ sealed class TransferEventPartialState {
 
 sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
-    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) :
-        SendRequestedDocumentsPartialState()
+    data class UserAuthenticationRequired(
+        val crypto: BiometricPrompt.CryptoObject?,
+        val resultHandler: UserAuthenticationResult
+    ) : SendRequestedDocumentsPartialState()
 
     data object RequestSent : SendRequestedDocumentsPartialState()
 }
@@ -75,8 +78,10 @@ sealed class ResponseReceivedPartialState {
 }
 
 sealed class WalletCorePartialState {
-    data class UserAuthenticationRequired(val payload: UserAuthenticationCorePayload) :
-        WalletCorePartialState()
+    data class UserAuthenticationRequired(
+        val crypto: BiometricPrompt.CryptoObject?,
+        val resultHandler: UserAuthenticationResult
+    ) : WalletCorePartialState()
 
     data class Failure(val error: String) : WalletCorePartialState()
     data object Success : WalletCorePartialState()
@@ -283,14 +288,18 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 is ResponseResult.UserAuthRequired -> {
-                    emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired(
-                        payload = UserAuthenticationCorePayload(
-                            cryptoObject = response.cryptoObject,
-                            onSuccess = { eudiWallet.sendResponse(disclosedDocuments = documents) },
-                            onCancel = { /* No-op */ },
-                            onFailure = { /* No-op */ }
+                    emit(
+                        SendRequestedDocumentsPartialState.UserAuthenticationRequired(
+                            response.cryptoObject,
+                            UserAuthenticationResult(
+                                onAuthenticationSuccess = {
+                                    eudiWallet.sendResponse(
+                                        disclosedDocuments = documents
+                                    )
+                                }
+                            )
                         )
-                    ))
+                    )
                 }
             }
         }
@@ -340,7 +349,7 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
-                    WalletCorePartialState.UserAuthenticationRequired(it.payload)
+                    WalletCorePartialState.UserAuthenticationRequired(it.crypto, it.resultHandler)
                 }
 
                 is ResponseReceivedPartialState.Failure -> {

@@ -22,7 +22,6 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build
 import android.provider.Settings
 import androidx.biometric.BiometricManager
-import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
 import androidx.biometric.BiometricPrompt
 import androidx.biometric.BiometricPrompt.AuthenticationResult

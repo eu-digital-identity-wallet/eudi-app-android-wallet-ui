@@ -29,8 +29,8 @@ interface UserAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
     fun authenticate(
         context: Context,
-        payload: UserAuthenticationCorePayload,
-        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+        biometricPrompt: BiometricPrompt.CryptoObject?,
+        userAuthenticationBiometricResult: UserAuthenticationResult
     )
 }
 
@@ -44,8 +44,8 @@ class UserAuthenticationControllerImpl(
 
     override fun authenticate(
         context: Context,
-        payload: UserAuthenticationCorePayload,
-        userAuthenticationBiometricResult: UserAuthenticationBiometricResult
+        biometricPrompt: BiometricPrompt.CryptoObject?,
+        userAuthenticationBiometricResult: UserAuthenticationResult
     ) {
         context as FragmentActivity
 
@@ -54,52 +54,36 @@ class UserAuthenticationControllerImpl(
             ContextCompat.getMainExecutor(context),
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    payload.onCancel()
                     userAuthenticationBiometricResult.onAuthenticationError()
                 }
 
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    payload.onSuccess()
                     userAuthenticationBiometricResult.onAuthenticationSuccess()
                 }
 
                 override fun onAuthenticationFailed() {
-                    payload.onFailure()
                     userAuthenticationBiometricResult.onAuthenticationFailure()
                 }
             }
         )
 
-        if (payload.cryptoObject != null) {
+        val builder = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(resourceProvider.getString(R.string.biometric_prompt_title))
+            .setSubtitle(resourceProvider.getString(R.string.biometric_prompt_subtitle))
+            .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
+            .build()
+
+        biometricPrompt?.let {
             prompt.authenticate(
-                BiometricPrompt.PromptInfo.Builder()
-                    .setTitle(resourceProvider.getString(R.string.biometric_prompt_title))
-                    .setSubtitle(resourceProvider.getString(R.string.biometric_prompt_subtitle))
-                    .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
-                    .build(),
-                payload.cryptoObject
+                builder,
+                it
             )
-        } else {
-            prompt.authenticate(
-                BiometricPrompt.PromptInfo.Builder()
-                    .setTitle(resourceProvider.getString(R.string.biometric_prompt_title))
-                    .setSubtitle(resourceProvider.getString(R.string.biometric_prompt_subtitle))
-                    .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
-                    .build()
-            )
-        }
+        } ?: prompt.authenticate(builder)
     }
 }
 
-data class UserAuthenticationCorePayload(
-    val cryptoObject: BiometricPrompt.CryptoObject?,
-    val onSuccess: () -> Unit,
-    val onCancel: () -> Unit,
-    val onFailure: () -> Unit,
-)
-
-data class UserAuthenticationBiometricResult(
+data class UserAuthenticationResult(
     val onAuthenticationSuccess: () -> Unit = {},
-    val onAuthenticationError: () -> Unit,
-    val onAuthenticationFailure: () -> Unit
+    val onAuthenticationError: () -> Unit = {},
+    val onAuthenticationFailure: () -> Unit = {},
 )

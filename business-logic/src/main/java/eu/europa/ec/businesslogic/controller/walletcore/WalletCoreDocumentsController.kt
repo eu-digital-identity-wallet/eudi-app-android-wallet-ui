@@ -16,7 +16,8 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationCorePayload
+import androidx.biometric.BiometricPrompt
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
@@ -41,13 +42,20 @@ enum class IssuanceMethod {
 sealed class IssueDocumentPartialState {
     data class Success(val documentId: String) : IssueDocumentPartialState()
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
-    data class UserAuthRequired(val payload: UserAuthenticationCorePayload) : IssueDocumentPartialState()
+    data class UserAuthRequired(
+        val crypto: BiometricPrompt.CryptoObject?,
+        val resultHandler: UserAuthenticationResult
+    ) :
+        IssueDocumentPartialState()
 }
 
 sealed class OpenId4VCIIssueDocumentPartialState {
     data class Success(val documentId: String) : OpenId4VCIIssueDocumentPartialState()
     data class Failure(val errorMessage: String) : OpenId4VCIIssueDocumentPartialState()
-    data class UserAuthRequired(val payload: UserAuthenticationCorePayload) :
+    data class UserAuthRequired(
+        val crypto: BiometricPrompt.CryptoObject?,
+        val resultHandler: UserAuthenticationResult
+    ) :
         OpenId4VCIIssueDocumentPartialState()
 }
 
@@ -165,7 +173,7 @@ class WalletCoreDocumentsControllerImpl(
                         )
 
                         is OpenId4VCIIssueDocumentPartialState.UserAuthRequired -> emit(
-                            IssueDocumentPartialState.UserAuthRequired(response.payload)
+                            IssueDocumentPartialState.UserAuthRequired(response.crypto, response.resultHandler)
                         )
                     }
                 }
@@ -277,11 +285,11 @@ class WalletCoreDocumentsControllerImpl(
                         is IssueDocumentResult.UserAuthRequired -> {
                             trySendBlocking(
                                 OpenId4VCIIssueDocumentPartialState.UserAuthRequired(
-                                    payload = UserAuthenticationCorePayload(
-                                        cryptoObject = result.cryptoObject,
-                                        onSuccess = { result.resume() },
-                                        onCancel = { result.cancel() },
-                                        onFailure = { result.cancel() }
+                                    result.cryptoObject,
+                                    UserAuthenticationResult(
+                                        onAuthenticationSuccess = { result.resume() },
+                                        onAuthenticationError = { result.cancel() },
+                                        onAuthenticationFailure = { result.cancel() },
                                     )
                                 )
                             )

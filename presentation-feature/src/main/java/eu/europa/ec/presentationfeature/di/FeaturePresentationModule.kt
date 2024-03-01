@@ -52,5 +52,8 @@ fun providePresentationLoadingInteractor(
     @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController,
     userAuthenticationInteractor: UserAuthenticationInteractor
 ): PresentationLoadingInteractor {
-    return PresentationLoadingInteractorImpl(walletCorePresentationController, userAuthenticationInteractor)
+    return PresentationLoadingInteractorImpl(
+        walletCorePresentationController,
+        userAuthenticationInteractor
+    )
 }

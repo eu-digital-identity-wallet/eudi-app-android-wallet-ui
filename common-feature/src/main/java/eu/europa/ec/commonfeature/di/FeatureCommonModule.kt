@@ -22,10 +22,10 @@ import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.BiometricInteractorImpl
-import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
-import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractorImpl
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorImpl
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
