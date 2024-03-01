@@ -17,18 +17,18 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import android.content.Context
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
+import eu.europa.ec.businesslogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityLoadingObserveResponsePartialState {
     data class UserAuthenticationRequired(
-        val crypto: BiometryCrypto,
+        val crypto: BiometricCrypto,
         val resultHandler: UserAuthenticationResult
     ) : ProximityLoadingObserveResponsePartialState()
 
@@ -42,7 +42,7 @@ interface ProximityLoadingInteractor {
     fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState>
     fun handleUserAuthentication(
         context: Context,
-        crypto: BiometryCrypto,
+        crypto: BiometricCrypto,
         resultHandler: UserAuthenticationResult
     )
 }
@@ -75,7 +75,7 @@ class ProximityLoadingInteractorImpl(
 
     override fun handleUserAuthentication(
         context: Context,
-        crypto: BiometryCrypto,
+        crypto: BiometricCrypto,
         resultHandler: UserAuthenticationResult
     ) {
         userAuthenticationInteractor.getBiometricsAvailability {

@@ -16,9 +16,9 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
-import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.businesslogic.model.BiometricCrypto
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
@@ -43,7 +43,7 @@ sealed class IssueDocumentPartialState {
     data class Success(val documentId: String) : IssueDocumentPartialState()
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
     data class UserAuthRequired(
-        val crypto: BiometryCrypto,
+        val crypto: BiometricCrypto,
         val resultHandler: UserAuthenticationResult
     ) : IssueDocumentPartialState()
 }
@@ -52,7 +52,7 @@ sealed class OpenId4VCIIssueDocumentPartialState {
     data class Success(val documentId: String) : OpenId4VCIIssueDocumentPartialState()
     data class Failure(val errorMessage: String) : OpenId4VCIIssueDocumentPartialState()
     data class UserAuthRequired(
-        val crypto: BiometryCrypto,
+        val crypto: BiometricCrypto,
         val resultHandler: UserAuthenticationResult
     ) : OpenId4VCIIssueDocumentPartialState()
 }
@@ -286,7 +286,7 @@ class WalletCoreDocumentsControllerImpl(
                         is IssueDocumentResult.UserAuthRequired -> {
                             trySendBlocking(
                                 OpenId4VCIIssueDocumentPartialState.UserAuthRequired(
-                                    BiometryCrypto(result.cryptoObject),
+                                    BiometricCrypto(result.cryptoObject),
                                     UserAuthenticationResult(
                                         onAuthenticationSuccess = { result.resume() },
                                         onAuthenticationError = { result.cancel() },

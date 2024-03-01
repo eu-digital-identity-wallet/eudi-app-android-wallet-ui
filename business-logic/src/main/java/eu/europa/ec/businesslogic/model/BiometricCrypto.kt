@@ -14,25 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature
+package eu.europa.ec.businesslogic.model
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.Assert.assertEquals
-import org.junit.Test
-import org.junit.runner.RunWith
+import androidx.biometric.BiometricPrompt
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-@RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
-    @Test
-    fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("eu.europa.ec.commonfeature.test", appContext.packageName)
-    }
-}
+data class BiometricCrypto(val cryptoObject: BiometricPrompt.CryptoObject?)

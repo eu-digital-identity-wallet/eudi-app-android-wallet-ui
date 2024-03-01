@@ -25,7 +25,7 @@ import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.*
+import java.util.Arrays
 
 enum class AndroidInstaller {
     TRUSTED, UNKNOWN

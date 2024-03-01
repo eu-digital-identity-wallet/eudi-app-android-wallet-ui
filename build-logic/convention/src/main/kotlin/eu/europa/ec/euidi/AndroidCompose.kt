@@ -64,6 +64,7 @@ internal fun Project.configureAndroidCompose(
             add("testImplementation", libs.findLibrary("robolectric").get())
         }
 
+        @Suppress("UnstableApiUsage")
         testOptions {
             unitTests {
                 // For Robolectric
@@ -86,7 +87,9 @@ private fun Project.buildComposeMetricsParameters(): List<String> {
 
     val enableMetrics = (enableMetricsProvider.orNull == "true")
     if (enableMetrics) {
-        val metricsFolder = rootProject.buildDir.resolve("compose-metrics").resolve(relativePath)
+        val metricsFolder =
+            rootProject.layout.buildDirectory.get().asFile.resolve("compose-metrics")
+                .resolve(relativePath)
         metricParameters.add("-P")
         metricParameters.add(
             "plugin:androidx.compose.compiler.plugins.kotlin:metricsDestination=" + metricsFolder.absolutePath
@@ -96,7 +99,9 @@ private fun Project.buildComposeMetricsParameters(): List<String> {
     val enableReportsProvider = project.providers.gradleProperty("enableComposeCompilerReports")
     val enableReports = (enableReportsProvider.orNull == "true")
     if (enableReports) {
-        val reportsFolder = rootProject.buildDir.resolve("compose-reports").resolve(relativePath)
+        val reportsFolder =
+            rootProject.layout.buildDirectory.get().asFile.resolve("compose-reports")
+                .resolve(relativePath)
         metricParameters.add("-P")
         metricParameters.add(
             "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + reportsFolder.absolutePath

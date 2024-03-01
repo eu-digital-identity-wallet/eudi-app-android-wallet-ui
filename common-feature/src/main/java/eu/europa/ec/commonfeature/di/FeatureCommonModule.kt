@@ -16,8 +16,8 @@
 
 package eu.europa.ec.commonfeature.di
 
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationController
 import eu.europa.ec.businesslogic.controller.biometry.BiometricController
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor

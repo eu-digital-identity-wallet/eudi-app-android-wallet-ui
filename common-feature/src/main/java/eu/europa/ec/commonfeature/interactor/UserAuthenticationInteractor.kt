@@ -17,16 +17,16 @@
 package eu.europa.ec.commonfeature.interactor
 
 import android.content.Context
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationController
+import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationController
-import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
+import eu.europa.ec.businesslogic.model.BiometricCrypto
 
 interface UserAuthenticationInteractor {
     fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
     fun authenticateWithBiometrics(
         context: Context,
-        crypto: BiometryCrypto,
+        crypto: BiometricCrypto,
         resultHandler: UserAuthenticationResult
     )
 }
@@ -39,7 +39,7 @@ class UserAuthenticationInteractorImpl(private val userAuthenticationController:
 
     override fun authenticateWithBiometrics(
         context: Context,
-        crypto: BiometryCrypto,
+        crypto: BiometricCrypto,
         resultHandler: UserAuthenticationResult
     ) {
         userAuthenticationController.authenticate(
