@@ -29,7 +29,7 @@ interface UserAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
     fun authenticate(
         context: Context,
-        biometricPrompt: BiometricPrompt.CryptoObject?,
+        biometryCrypto: BiometryCrypto,
         userAuthenticationBiometricResult: UserAuthenticationResult
     )
 }
@@ -44,7 +44,7 @@ class UserAuthenticationControllerImpl(
 
     override fun authenticate(
         context: Context,
-        biometricPrompt: BiometricPrompt.CryptoObject?,
+        biometryCrypto: BiometryCrypto,
         userAuthenticationBiometricResult: UserAuthenticationResult
     ) {
         context as FragmentActivity
@@ -73,7 +73,7 @@ class UserAuthenticationControllerImpl(
             .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
             .build()
 
-        biometricPrompt?.let {
+        biometryCrypto.cryptoObject?.let {
             prompt.authenticate(
                 builder,
                 it
@@ -87,3 +87,5 @@ data class UserAuthenticationResult(
     val onAuthenticationError: () -> Unit = {},
     val onAuthenticationFailure: () -> Unit = {},
 )
+
+data class BiometryCrypto(val cryptoObject: BiometricPrompt.CryptoObject?)

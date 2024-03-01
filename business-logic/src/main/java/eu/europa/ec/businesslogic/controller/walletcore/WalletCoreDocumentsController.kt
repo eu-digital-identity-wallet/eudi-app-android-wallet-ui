@@ -16,7 +16,7 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
-import androidx.biometric.BiometricPrompt
+import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
 import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.eudi.wallet.EudiWallet
@@ -43,7 +43,7 @@ sealed class IssueDocumentPartialState {
     data class Success(val documentId: String) : IssueDocumentPartialState()
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
     data class UserAuthRequired(
-        val crypto: BiometricPrompt.CryptoObject?,
+        val crypto: BiometryCrypto,
         val resultHandler: UserAuthenticationResult
     ) : IssueDocumentPartialState()
 }
@@ -52,7 +52,7 @@ sealed class OpenId4VCIIssueDocumentPartialState {
     data class Success(val documentId: String) : OpenId4VCIIssueDocumentPartialState()
     data class Failure(val errorMessage: String) : OpenId4VCIIssueDocumentPartialState()
     data class UserAuthRequired(
-        val crypto: BiometricPrompt.CryptoObject?,
+        val crypto: BiometryCrypto,
         val resultHandler: UserAuthenticationResult
     ) : OpenId4VCIIssueDocumentPartialState()
 }
@@ -286,7 +286,7 @@ class WalletCoreDocumentsControllerImpl(
                         is IssueDocumentResult.UserAuthRequired -> {
                             trySendBlocking(
                                 OpenId4VCIIssueDocumentPartialState.UserAuthRequired(
-                                    result.cryptoObject,
+                                    BiometryCrypto(result.cryptoObject),
                                     UserAuthenticationResult(
                                         onAuthenticationSuccess = { result.resume() },
                                         onAuthenticationError = { result.cancel() },

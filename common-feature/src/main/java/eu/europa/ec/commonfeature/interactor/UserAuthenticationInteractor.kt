@@ -17,8 +17,8 @@
 package eu.europa.ec.commonfeature.interactor
 
 import android.content.Context
-import androidx.biometric.BiometricPrompt
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
 import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationController
 import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 
@@ -26,7 +26,7 @@ interface UserAuthenticationInteractor {
     fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
     fun authenticateWithBiometrics(
         context: Context,
-        crypto: BiometricPrompt.CryptoObject?,
+        crypto: BiometryCrypto,
         resultHandler: UserAuthenticationResult
     )
 }
@@ -39,7 +39,7 @@ class UserAuthenticationInteractorImpl(private val userAuthenticationController:
 
     override fun authenticateWithBiometrics(
         context: Context,
-        crypto: BiometricPrompt.CryptoObject?,
+        crypto: BiometryCrypto,
         resultHandler: UserAuthenticationResult
     ) {
         userAuthenticationController.authenticate(

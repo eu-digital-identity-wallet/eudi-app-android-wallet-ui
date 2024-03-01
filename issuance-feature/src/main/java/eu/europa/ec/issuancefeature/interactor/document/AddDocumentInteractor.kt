@@ -17,8 +17,8 @@
 package eu.europa.ec.issuancefeature.interactor.document
 
 import android.content.Context
-import androidx.biometric.BiometricPrompt
 import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
 import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
@@ -55,7 +55,7 @@ interface AddDocumentInteractor {
 
     fun handleUserAuth(
         context: Context,
-        crypto: BiometricPrompt.CryptoObject?,
+        crypto: BiometryCrypto,
         resultHandler: UserAuthenticationResult
     )
 }
@@ -120,7 +120,7 @@ class AddDocumentInteractorImpl(
 
     override fun handleUserAuth(
         context: Context,
-        crypto: BiometricPrompt.CryptoObject?,
+        crypto: BiometryCrypto,
         resultHandler: UserAuthenticationResult
     ) {
         userAuthenticationInteractor.getBiometricsAvailability {

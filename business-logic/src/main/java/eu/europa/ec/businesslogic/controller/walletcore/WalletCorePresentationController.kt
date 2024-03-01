@@ -17,7 +17,7 @@
 package eu.europa.ec.businesslogic.controller.walletcore
 
 import androidx.activity.ComponentActivity
-import androidx.biometric.BiometricPrompt
+import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
 import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -64,7 +64,7 @@ sealed class TransferEventPartialState {
 sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
     data class UserAuthenticationRequired(
-        val crypto: BiometricPrompt.CryptoObject?,
+        val crypto: BiometryCrypto,
         val resultHandler: UserAuthenticationResult
     ) : SendRequestedDocumentsPartialState()
 
@@ -79,7 +79,7 @@ sealed class ResponseReceivedPartialState {
 
 sealed class WalletCorePartialState {
     data class UserAuthenticationRequired(
-        val crypto: BiometricPrompt.CryptoObject?,
+        val crypto: BiometryCrypto,
         val resultHandler: UserAuthenticationResult
     ) : WalletCorePartialState()
 
@@ -290,7 +290,7 @@ class WalletCorePresentationControllerImpl(
                 is ResponseResult.UserAuthRequired -> {
                     emit(
                         SendRequestedDocumentsPartialState.UserAuthenticationRequired(
-                            response.cryptoObject,
+                            BiometryCrypto(response.cryptoObject),
                             UserAuthenticationResult(
                                 onAuthenticationSuccess = {
                                     eudiWallet.sendResponse(
@@ -349,7 +349,10 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
-                    WalletCorePartialState.UserAuthenticationRequired(it.crypto, it.resultHandler)
+                    WalletCorePartialState.UserAuthenticationRequired(
+                        it.crypto,
+                        it.resultHandler
+                    )
                 }
 
                 is ResponseReceivedPartialState.Failure -> {
