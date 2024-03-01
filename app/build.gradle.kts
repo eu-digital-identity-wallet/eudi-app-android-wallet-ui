@@ -69,4 +69,5 @@ android {
 
 dependencies {
     implementation(project(LibraryModule.AssemblyLogic.path))
+    "baselineProfile"(project(LibraryModule.BaselineProfileLogic.path))
 }
