@@ -16,7 +16,9 @@
 
 package eu.europa.ec.issuancefeature.ui.document.add
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
@@ -58,7 +60,11 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data object DismissError : Event()
-    data class IssueDocument(val issuanceMethod: IssuanceMethod, val documentType: String) : Event()
+    data class IssueDocument(
+        val issuanceMethod: IssuanceMethod,
+        val documentType: String,
+        val context: Context
+    ) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -103,7 +109,8 @@ class AddDocumentViewModel(
                     issueDocument(
                         event = event,
                         issuanceMethod = event.issuanceMethod,
-                        docType = event.documentType
+                        docType = event.documentType,
+                        context = event.context
                     )
                 } else {
                     loadSampleData(event)
@@ -152,7 +159,12 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun issueDocument(event: Event, issuanceMethod: IssuanceMethod, docType: String) {
+    private fun issueDocument(
+        event: Event,
+        issuanceMethod: IssuanceMethod,
+        docType: String,
+        context: Context
+    ) {
         setState {
             copy(
                 isLoading = true
@@ -169,7 +181,7 @@ class AddDocumentViewModel(
                         setState {
                             copy(
                                 error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
+                                    onRetry = null,
                                     errorSubTitle = response.errorMessage,
                                     onCancel = { setEvent(Event.DismissError) }
                                 ),
@@ -187,6 +199,24 @@ class AddDocumentViewModel(
                         }
                         navigateToSuccessScreen(
                             documentId = response.documentId
+                        )
+                    }
+
+                    is IssueDocumentPartialState.UserAuthRequired -> {
+                        addDocumentInteractor.handleUserAuth(
+                            context = context,
+                            crypto = response.crypto,
+                            resultHandler = UserAuthenticationResult(
+                                onAuthenticationSuccess = {
+                                    response.resultHandler.onAuthenticationSuccess()
+                                },
+                                onAuthenticationFailure = {
+                                    response.resultHandler.onAuthenticationFailure()
+                                },
+                                onAuthenticationError = {
+                                    response.resultHandler.onAuthenticationError()
+                                }
+                            )
                         )
                     }
                 }

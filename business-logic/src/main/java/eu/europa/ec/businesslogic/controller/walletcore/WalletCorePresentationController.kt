@@ -17,6 +17,8 @@
 package eu.europa.ec.businesslogic.controller.walletcore
 
 import androidx.activity.ComponentActivity
+import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
@@ -35,11 +37,10 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.zip
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
 import java.net.URI
@@ -62,7 +63,11 @@ sealed class TransferEventPartialState {
 
 sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
-    data object UserAuthenticationRequired : SendRequestedDocumentsPartialState()
+    data class UserAuthenticationRequired(
+        val crypto: BiometryCrypto,
+        val resultHandler: UserAuthenticationResult
+    ) : SendRequestedDocumentsPartialState()
+
     data object RequestSent : SendRequestedDocumentsPartialState()
 }
 
@@ -73,7 +78,11 @@ sealed class ResponseReceivedPartialState {
 }
 
 sealed class WalletCorePartialState {
-    data object UserAuthenticationRequired : WalletCorePartialState()
+    data class UserAuthenticationRequired(
+        val crypto: BiometryCrypto,
+        val resultHandler: UserAuthenticationResult
+    ) : WalletCorePartialState()
+
     data class Failure(val error: String) : WalletCorePartialState()
     data object Success : WalletCorePartialState()
     data class Redirect(val uri: URI) : WalletCorePartialState()
@@ -279,7 +288,18 @@ class WalletCorePresentationControllerImpl(
                 }
 
                 is ResponseResult.UserAuthRequired -> {
-                    emit(SendRequestedDocumentsPartialState.UserAuthenticationRequired)
+                    emit(
+                        SendRequestedDocumentsPartialState.UserAuthenticationRequired(
+                            BiometryCrypto(response.cryptoObject),
+                            UserAuthenticationResult(
+                                onAuthenticationSuccess = {
+                                    eudiWallet.sendResponse(
+                                        disclosedDocuments = documents
+                                    )
+                                }
+                            )
+                        )
+                    )
                 }
             }
         }
@@ -322,28 +342,30 @@ class WalletCorePresentationControllerImpl(
     }
 
     override fun observeSentDocumentsRequest(): Flow<WalletCorePartialState> =
-        sendRequestedDocuments().zip(mappedCallbackStateFlow()) { createResponseState, sentResponseState ->
-            when {
-                createResponseState is SendRequestedDocumentsPartialState.Failure -> {
-                    WalletCorePartialState.Failure(createResponseState.error)
+        merge(sendRequestedDocuments(), mappedCallbackStateFlow()).mapNotNull {
+            when (it) {
+                is SendRequestedDocumentsPartialState.Failure -> {
+                    WalletCorePartialState.Failure(it.error)
                 }
 
-                createResponseState is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
-                    WalletCorePartialState.UserAuthenticationRequired
-                }
-
-                sentResponseState is ResponseReceivedPartialState.Failure -> {
-                    WalletCorePartialState.Failure(sentResponseState.error)
-                }
-
-                sentResponseState is ResponseReceivedPartialState.Redirect -> {
-                    WalletCorePartialState.Redirect(
-                        uri = sentResponseState.uri
+                is SendRequestedDocumentsPartialState.UserAuthenticationRequired -> {
+                    WalletCorePartialState.UserAuthenticationRequired(
+                        it.crypto,
+                        it.resultHandler
                     )
                 }
 
-                createResponseState is SendRequestedDocumentsPartialState.RequestSent &&
-                        sentResponseState !is ResponseReceivedPartialState.Success -> {
+                is ResponseReceivedPartialState.Failure -> {
+                    WalletCorePartialState.Failure(it.error)
+                }
+
+                is ResponseReceivedPartialState.Redirect -> {
+                    WalletCorePartialState.Redirect(
+                        uri = it.uri
+                    )
+                }
+
+                is SendRequestedDocumentsPartialState.RequestSent -> {
                     null
                 }
 
@@ -351,12 +373,11 @@ class WalletCorePresentationControllerImpl(
                     WalletCorePartialState.Success
                 }
             }
-        }.filterNotNull()
-            .safeAsync {
-                WalletCorePartialState.Failure(
-                    error = it.localizedMessage ?: genericErrorMessage
-                )
-            }
+        }.safeAsync {
+            WalletCorePartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMessage
+            )
+        }
 
     override fun updateRequestedDocuments(disclosedDocuments: DisclosedDocuments?) {
         this.disclosedDocuments = disclosedDocuments

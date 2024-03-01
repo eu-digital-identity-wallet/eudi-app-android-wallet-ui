@@ -19,6 +19,7 @@ package eu.europa.ec.presentationfeature.di
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractorImpl
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
@@ -48,7 +49,11 @@ fun providePresentationRequestInteractor(
 
 @Factory
 fun providePresentationLoadingInteractor(
-    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController,
+    userAuthenticationInteractor: UserAuthenticationInteractor
 ): PresentationLoadingInteractor {
-    return PresentationLoadingInteractorImpl(walletCorePresentationController)
+    return PresentationLoadingInteractorImpl(
+        walletCorePresentationController,
+        userAuthenticationInteractor
+    )
 }

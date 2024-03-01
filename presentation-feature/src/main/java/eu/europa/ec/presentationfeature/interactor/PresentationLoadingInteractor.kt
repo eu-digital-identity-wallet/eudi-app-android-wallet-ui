@@ -16,14 +16,23 @@
 
 package eu.europa.ec.presentationfeature.interactor
 
+import android.content.Context
+import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.businesslogic.controller.biometry.BiometryCrypto
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 import java.net.URI
 
 sealed class PresentationLoadingObserveResponsePartialState {
-    data object UserAuthenticationRequired : PresentationLoadingObserveResponsePartialState()
+    data class UserAuthenticationRequired(
+        val crypto: BiometryCrypto,
+        val resultHandler: UserAuthenticationResult
+    ) : PresentationLoadingObserveResponsePartialState()
+
     data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
     data object Success : PresentationLoadingObserveResponsePartialState()
     data class Redirect(val uri: URI) : PresentationLoadingObserveResponsePartialState()
@@ -33,10 +42,16 @@ interface PresentationLoadingInteractor {
     val verifierName: String?
     fun stopPresentation()
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
+    fun handleUserAuthentication(
+        context: Context,
+        crypto: BiometryCrypto,
+        resultHandler: UserAuthenticationResult
+    )
 }
 
 class PresentationLoadingInteractorImpl(
-    private val walletCorePresentationController: WalletCorePresentationController
+    private val walletCorePresentationController: WalletCorePresentationController,
+    private val userAuthenticationInteractor: UserAuthenticationInteractor,
 ) : PresentationLoadingInteractor {
 
     override val verifierName: String? = walletCorePresentationController.verifierName
@@ -52,10 +67,48 @@ class PresentationLoadingInteractorImpl(
                     uri = response.uri
                 )
 
-                is WalletCorePartialState.Success -> PresentationLoadingObserveResponsePartialState.Success
-                is WalletCorePartialState.UserAuthenticationRequired -> PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired
+                is WalletCorePartialState.Success -> {
+                    PresentationLoadingObserveResponsePartialState.Success
+                }
+
+                is WalletCorePartialState.UserAuthenticationRequired -> {
+                    PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(
+                        response.crypto,
+                        response.resultHandler
+                    )
+                }
             }
         }
+
+    override fun handleUserAuthentication(
+        context: Context,
+        crypto: BiometryCrypto,
+        resultHandler: UserAuthenticationResult
+    ) {
+        userAuthenticationInteractor.getBiometricsAvailability {
+            when (it) {
+                is BiometricsAvailability.CanAuthenticate -> {
+                    userAuthenticationInteractor.authenticateWithBiometrics(
+                        context,
+                        crypto,
+                        resultHandler
+                    )
+                }
+
+                is BiometricsAvailability.NonEnrolled -> {
+                    userAuthenticationInteractor.authenticateWithBiometrics(
+                        context,
+                        crypto,
+                        resultHandler
+                    )
+                }
+
+                is BiometricsAvailability.Failure -> {
+                    resultHandler.onAuthenticationFailure()
+                }
+            }
+        }
+    }
 
     override fun stopPresentation() {
         walletCorePresentationController.stopPresentation()

@@ -18,6 +18,7 @@ package eu.europa.ec.issuancefeature.di
 
 
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
@@ -36,9 +37,14 @@ class FeatureIssuanceModule
 @Factory
 fun provideAddDocumentInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
-    resourceProvider: ResourceProvider
+    resourceProvider: ResourceProvider,
+    userAuthenticationInteractor: UserAuthenticationInteractor
 ): AddDocumentInteractor =
-    AddDocumentInteractorImpl(walletCoreDocumentsController, resourceProvider)
+    AddDocumentInteractorImpl(
+        walletCoreDocumentsController,
+        userAuthenticationInteractor,
+        resourceProvider
+    )
 
 @Factory
 fun provideDocumentDetailsInteractor(

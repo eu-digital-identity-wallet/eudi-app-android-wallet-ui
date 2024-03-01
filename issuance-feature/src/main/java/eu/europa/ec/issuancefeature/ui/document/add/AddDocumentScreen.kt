@@ -16,6 +16,7 @@
 
 package eu.europa.ec.issuancefeature.ui.document.add
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -55,6 +57,7 @@ fun AddDocumentScreen(
     viewModel: AddDocumentViewModel
 ) {
     val state = viewModel.viewState.value
+    val context = LocalContext.current
 
     ContentScreen(
         isLoading = state.isLoading,
@@ -78,7 +81,8 @@ fun AddDocumentScreen(
                     }
                 }
             },
-            paddingValues = paddingValues
+            paddingValues = paddingValues,
+            context = context
         )
     }
 
@@ -96,7 +100,8 @@ fun Content(
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    context: Context
 ) {
     Column(
         modifier = Modifier
@@ -122,7 +127,8 @@ fun Content(
                             onEventSend(
                                 Event.IssueDocument(
                                     issuanceMethod = IssuanceMethod.OPENID4VCI,
-                                    documentType = option.type.docType
+                                    documentType = option.type.docType,
+                                    context = context
                                 )
                             )
                         }
@@ -170,7 +176,8 @@ private fun IssuanceAddDocumentScreenPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(all = SPACING_LARGE.dp)
+            paddingValues = PaddingValues(all = SPACING_LARGE.dp),
+            context = LocalContext.current
         )
     }
 }
@@ -202,7 +209,8 @@ private fun DashboardAddDocumentScreenPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(all = SPACING_LARGE.dp)
+            paddingValues = PaddingValues(all = SPACING_LARGE.dp),
+            context = LocalContext.current
         )
     }
 }

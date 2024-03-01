@@ -16,9 +16,12 @@
 
 package eu.europa.ec.presentationfeature.ui.loading
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
@@ -77,7 +80,7 @@ class PresentationLoadingViewModel(
         )
     }
 
-    override fun doWork() {
+    override fun doWork(context: Context) {
         viewModelScope.launch {
             interactor.observeResponse().collect {
                 when (it) {
@@ -85,7 +88,7 @@ class PresentationLoadingViewModel(
                         setState {
                             copy(
                                 error = ContentErrorConfig(
-                                    onRetry = { setEvent(Event.DoWork) },
+                                    onRetry = { setEvent(Event.DoWork(context)) },
                                     errorSubTitle = it.error,
                                     onCancel = {
                                         setEvent(Event.DismissError)
@@ -101,7 +104,19 @@ class PresentationLoadingViewModel(
                     }
 
                     is PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
-                        // Provide implementation for Biometrics POP
+                        val popEffect = Effect.Navigation.PopBackStackUpTo(
+                            screenRoute = PresentationScreens.PresentationRequest.screenRoute,
+                            inclusive = false
+                        )
+                        interactor.handleUserAuthentication(
+                            context = context,
+                            crypto = it.crypto,
+                            resultHandler = UserAuthenticationResult(
+                                onAuthenticationSuccess = { it.resultHandler.onAuthenticationSuccess() },
+                                onAuthenticationError = { setEffect { popEffect } },
+                                onAuthenticationFailure = { setEffect { popEffect } }
+                            )
+                        )
                     }
 
                     is PresentationLoadingObserveResponsePartialState.Redirect -> {
