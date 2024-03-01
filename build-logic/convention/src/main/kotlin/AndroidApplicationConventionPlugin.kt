@@ -19,9 +19,11 @@ import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import eu.europa.ec.euidi.configureGradleManagedDevices
 import eu.europa.ec.euidi.configureKotlinAndroid
 import eu.europa.ec.euidi.configurePrintApksTask
+import eu.europa.ec.euidi.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.dependencies
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -34,6 +36,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 apply("eudi.android.lint")
                 apply("eudi.owasp.dependency.check")
                 apply("eudi.sonar")
+                apply("androidx.baselineprofile")
             }
 
             extensions.configure<ApplicationExtension> {
@@ -43,6 +46,10 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
             extensions.configure<ApplicationAndroidComponentsExtension> {
                 configurePrintApksTask(this)
+            }
+
+            dependencies {
+                add("implementation", libs.findLibrary("androidx-profileinstaller").get())
             }
         }
     }

@@ -41,6 +41,7 @@ dependencies {
     compileOnly(libs.secrets.gradlePlugin)
     compileOnly(libs.owasp.dependencycheck.gradlePlugin)
     compileOnly(libs.kotlinx.kover.gradlePlugin)
+    compileOnly(libs.baselineprofile.gradlePlugin)
 }
 
 gradlePlugin {
@@ -112,6 +113,10 @@ gradlePlugin {
         register("sonar") {
             id = "eudi.sonar"
             implementationClass = "SonarPlugin"
+        }
+        register("androidBaseProfile") {
+            id = "eudi.android.base.profile"
+            implementationClass = "BaseLineProfilePlugin"
         }
     }
 }
