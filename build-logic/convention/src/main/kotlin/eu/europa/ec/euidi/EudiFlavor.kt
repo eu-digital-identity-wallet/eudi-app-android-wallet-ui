@@ -36,7 +36,7 @@ enum class EudiFlavor(
 }
 
 fun configureFlavors(
-    commonExtension: CommonExtension<*, *, *, *, *>,
+    commonExtension: CommonExtension<*, *, *, *, *, *>,
     version: String,
     flavorConfigurationBlock: ProductFlavor.(flavor: EudiFlavor) -> Unit = {}
 ) {
