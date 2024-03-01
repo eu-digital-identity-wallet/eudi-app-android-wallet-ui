@@ -1,5 +1,5 @@
 [versions]
-accompanist = "0.32.0"
+accompanist = "0.34.0"
 androidDesugarJdkLibs = "2.0.4"
 androidGradlePlugin = "8.2.2"
 androidxActivity = "1.8.2"
@@ -38,7 +38,7 @@ firebasePerfPlugin = "1.4.2"
 gmsPlugin = "4.4.1"
 junit4 = "4.13.2"
 kotlin = "1.9.10"
-kotlinxCoroutines = "1.7.3"
+kotlinxCoroutines = "1.8.0"
 kotlinxDatetime = "0.4.1"
 kotlinxSerializationJson = "1.6.1"
 ksp = "1.9.10-1.0.13"
@@ -55,7 +55,7 @@ koinAnnotations = "1.3.0"
 org-jetbrains-kotlin-android = "1.9.10"
 junit = "1.1.5"
 material = "1.11.0"
-mockito = "5.8.0"
+mockito = "5.10.0"
 mockitoKotlin = "5.2.1"
 mockitoInline = "5.2.0"
 chucker = "4.0.0"
@@ -64,7 +64,7 @@ slf4j = "2.0.7"
 rootbeer = "0.1.0"
 gson = "2.10.1"
 logcat = "0.1"
-googlePhoneNumber = "8.13.27"
+googlePhoneNumber = "8.13.31"
 zxing = "3.5.2"
 eudiWalletCore = "0.5.1-SNAPSHOT"
 cborTree = "0.01.02"
@@ -74,6 +74,7 @@ material3 = "1.2.0"
 workTesting = "2.9.0"
 appCenter = "5.0.4"
 kover = "0.7.5"
+sonar = "4.4.1.3373"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -201,3 +202,4 @@ secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugi
 org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "org-jetbrains-kotlin-android" }
 owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owaspDependencyCheck" }
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+sonar = { id = "org.sonarqube", version.ref = "sonar" }

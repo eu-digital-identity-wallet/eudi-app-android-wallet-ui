@@ -14,22 +14,11 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.getProperty
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.configure
-import org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension
+package eu.europa.ec.testlogic.base
 
-class OwaspDependencyCheckPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        with(target) {
-            with(pluginManager) {
-                apply("org.owasp.dependencycheck")
-            }
-            extensions.configure<DependencyCheckExtension> {
-                formats = listOf("XML", "HTML")
-                nvd.apiKey = target.getProperty("NVD_API_KEY") ?: System.getenv("NVD_API_KEY")
-            }
-        }
-    }
+import android.content.Context
+import org.robolectric.RuntimeEnvironment
+
+fun getMockedContext(): Context {
+    return RuntimeEnvironment.getApplication().applicationContext
 }
