@@ -45,8 +45,7 @@ sealed class IssueDocumentPartialState {
     data class UserAuthRequired(
         val crypto: BiometricPrompt.CryptoObject?,
         val resultHandler: UserAuthenticationResult
-    ) :
-        IssueDocumentPartialState()
+    ) : IssueDocumentPartialState()
 }
 
 sealed class OpenId4VCIIssueDocumentPartialState {
@@ -55,8 +54,7 @@ sealed class OpenId4VCIIssueDocumentPartialState {
     data class UserAuthRequired(
         val crypto: BiometricPrompt.CryptoObject?,
         val resultHandler: UserAuthenticationResult
-    ) :
-        OpenId4VCIIssueDocumentPartialState()
+    ) : OpenId4VCIIssueDocumentPartialState()
 }
 
 sealed class AddSampleDataPartialState {
@@ -173,7 +171,10 @@ class WalletCoreDocumentsControllerImpl(
                         )
 
                         is OpenId4VCIIssueDocumentPartialState.UserAuthRequired -> emit(
-                            IssueDocumentPartialState.UserAuthRequired(response.crypto, response.resultHandler)
+                            IssueDocumentPartialState.UserAuthRequired(
+                                crypto = response.crypto,
+                                resultHandler = response.resultHandler
+                            )
                         )
                     }
                 }

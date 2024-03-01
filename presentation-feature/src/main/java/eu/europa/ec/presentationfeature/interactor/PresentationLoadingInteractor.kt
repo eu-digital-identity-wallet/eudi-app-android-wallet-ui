@@ -104,7 +104,7 @@ class PresentationLoadingInteractorImpl(
                 }
 
                 is BiometricsAvailability.Failure -> {
-                    resultHandler.onAuthenticationFailure
+                    resultHandler.onAuthenticationFailure()
                 }
             }
         }

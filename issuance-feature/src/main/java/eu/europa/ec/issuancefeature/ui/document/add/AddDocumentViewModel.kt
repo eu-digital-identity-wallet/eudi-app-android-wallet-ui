@@ -211,10 +211,10 @@ class AddDocumentViewModel(
                                     response.resultHandler.onAuthenticationSuccess()
                                 },
                                 onAuthenticationFailure = {
-                                    response.resultHandler.onAuthenticationFailure
+                                    response.resultHandler.onAuthenticationFailure()
                                 },
                                 onAuthenticationError = {
-                                    response.resultHandler.onAuthenticationError
+                                    response.resultHandler.onAuthenticationError()
                                 }
                             )
                         )
