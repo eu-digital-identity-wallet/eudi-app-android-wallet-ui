@@ -17,18 +17,19 @@
 package eu.europa.ec.commonfeature.di
 
 import eu.europa.ec.businesslogic.controller.biometry.BiometricController
+import eu.europa.ec.businesslogic.controller.biometry.UserAuthenticationController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.BiometricInteractorImpl
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorImpl
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
+import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
-
-//const val PRESENTATION_SCOPE_ID = "presentation_scope_id"
 
 @Module
 @ComponentScan("eu.europa.ec.commonfeature")
@@ -50,4 +51,11 @@ fun provideBiometricInteractor(
     quickPinInteractor: QuickPinInteractor
 ): BiometricInteractor {
     return BiometricInteractorImpl(prefKeys, biometricController, quickPinInteractor)
+}
+
+@Factory
+fun provideDeviceBiometricInteractor(
+    userAuthenticationController: UserAuthenticationController
+): UserAuthenticationInteractor {
+    return UserAuthenticationInteractorImpl(userAuthenticationController)
 }
