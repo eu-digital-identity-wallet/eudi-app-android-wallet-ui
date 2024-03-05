@@ -249,12 +249,11 @@ class WalletCorePresentationControllerImpl(
             removeListener(eventListenerWrapper)
             eudiWallet.stopPresentation()
         }
+    }.safeAsync {
+        TransferEventPartialState.Error(
+            error = it.localizedMessage ?: resourceProvider.genericErrorMessage()
+        )
     }.shareIn(coroutineScope, SharingStarted.Lazily, 1)
-        .safeAsync {
-            TransferEventPartialState.Error(
-                error = it.localizedMessage ?: resourceProvider.genericErrorMessage()
-            )
-        }
 
     override fun startQrEngagement() {
         eudiWallet.startQrEngagement()
