@@ -48,9 +48,9 @@ fun configureFlavors(
                     val fullVersion = "$version-${it.name}"
                     dimension = it.dimension.name
                     if (this@apply is ApplicationExtension && this is ApplicationProductFlavor) {
+                        versionName = fullVersion
                         if (it.applicationIdSuffix != null) {
                             applicationIdSuffix = it.applicationIdSuffix
-                            versionName = fullVersion
                         }
                     }
                     manifestPlaceholders["appNameSuffix"] = it.applicationNameSuffix.orEmpty()
