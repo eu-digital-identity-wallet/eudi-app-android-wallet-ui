@@ -156,7 +156,7 @@ platform :android do
   lane :calver do |values|
     buildCode = values[:buildCode]
     date = DateTime.now
-    version = "#{date.strftime("%Y.%-m")}.#{buildCode}"
+    version = "#{date.strftime("%Y.%m")}.#{buildCode}"
     puts "Generated Calver: #{version}"
     set_properties_value(
       path: "version.properties",
