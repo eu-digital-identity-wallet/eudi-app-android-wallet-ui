@@ -109,6 +109,8 @@ GEM
     fastlane-plugin-appcenter (2.1.2)
     fastlane-plugin-get_version_name (0.2.2)
     fastlane-plugin-increment_version_code (0.4.3)
+    fastlane-plugin-properties (1.1.2)
+      java-properties
     gh_inspector (1.1.3)
     google-apis-androidpublisher_v3 (0.53.0)
       google-apis-core (>= 0.11.0, < 2.a)
@@ -151,6 +153,7 @@ GEM
     http-cookie (1.0.5)
       domain_name (~> 0.5)
     httpclient (2.8.3)
+    java-properties (0.3.0)
     jmespath (1.6.2)
     json (2.7.1)
     jwt (2.7.1)
@@ -219,6 +222,7 @@ DEPENDENCIES
   fastlane-plugin-appcenter
   fastlane-plugin-get_version_name
   fastlane-plugin-increment_version_code
+  fastlane-plugin-properties
 
 BUNDLED WITH
    2.4.10

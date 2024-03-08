@@ -13,6 +13,8 @@
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
+require "date"
+
 default_platform(:android)
 
 platform :android do
@@ -21,19 +23,17 @@ platform :android do
   lane :deploy do
     git_pull
 
-    buildVersion = version_name(buildType: ENV["APP_BUILD_TYPE"])
     appcenter_build_number = latest_appcenter_release(
       appName: ENV["APP_CENTER_APP_NAME"],
-      appVersion: buildVersion,
       appToken: ENV["APP_CENTER_APP_TOKEN"],
       ownerName: ENV["APP_CENTER_ACCOUNT"],
     )
+
     buildNumber = build_number(versionNumber: appcenter_build_number)
 
-    fullVersion = full_version(
-      buildName: buildVersion,
-      buildNumber: buildNumber,
-    )
+    calver(buildCode: buildNumber)
+    buildVersion = version_name(buildType: ENV["APP_BUILD_TYPE"])
+
     tagVersion = tag_name(
       buildName: buildVersion,
       buildNumber: buildNumber,
@@ -59,6 +59,7 @@ platform :android do
 
     clean_build_artifacts
     reset_versioncode
+    reset_versionname
 
     add_git_tag(
       tag: tagVersion,
@@ -80,7 +81,7 @@ platform :android do
       app_name: appName,
       file: "app/build/outputs/apk/#{path}/release/app-#{path}-release.apk",
       notify_testers: true,
-      destinations: groups
+      destinations: groups,
     )
   end
 
@@ -111,15 +112,6 @@ platform :android do
     number
   end
 
-  desc "Build Full version"
-  lane :full_version do |values|
-    buildName = values[:buildName]
-    buildNumber = values[:buildNumber]
-    version = "[BUILD_VERSION=#{buildName} BUILD_NUMBER=#{buildNumber}]"
-    puts "Full version: #{version}"
-    version
-  end
-
   desc "Build Tag Name"
   lane :tag_name do |values|
     buildName = values[:buildName]
@@ -133,12 +125,14 @@ platform :android do
 
   desc "Get version version From Project"
   lane :version_name do |values|
-  buildType = values[:buildType]
-  versionName = get_version_name(
-      gradle_file_path: "version.properties",
-      ext_constant_name: "VERSION_NAME",
-    ).sub("VERSION_NAME=", "")
-    "#{versionName}-#{buildType}"
+    buildType = values[:buildType]
+    versionName = get_properties_value(
+      key: "VERSION_NAME",
+      path: "version.properties",
+    )
+    version = "#{versionName}-#{buildType}"
+    puts "Version retrieved from properties: #{version}"
+    version
   end
 
   desc "Set versionCode back to default 1"
@@ -147,5 +141,28 @@ platform :android do
       gradle_file_path: "app/build.gradle.kts",
       version_code: 1,
     )
+  end
+
+  desc "Set versionName back to default yyyy.d.m"
+  lane :reset_versionname do
+    set_properties_value(
+      path: "version.properties",
+      key: "VERSION_NAME",
+      value: "yyyy.d.m",
+    )
+  end
+
+  desc "Build Version"
+  lane :calver do |values|
+    buildCode = values[:buildCode]
+    date = DateTime.now
+    version = "#{date.strftime("%Y.%-m")}.#{buildCode}"
+    puts "Generated Calver: #{version}"
+    set_properties_value(
+      path: "version.properties",
+      key: "VERSION_NAME",
+      value: version,
+    )
+    version
   end
 end
