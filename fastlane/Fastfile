@@ -148,7 +148,7 @@ platform :android do
     set_properties_value(
       path: "version.properties",
       key: "VERSION_NAME",
-      value: "yyyy.d.m",
+      value: "yyyy.m.v",
     )
   end
 
@@ -163,6 +163,5 @@ platform :android do
       key: "VERSION_NAME",
       value: version,
     )
-    version
   end
 end
