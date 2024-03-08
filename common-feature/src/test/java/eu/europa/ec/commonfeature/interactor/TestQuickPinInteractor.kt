@@ -33,10 +33,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.Mockito.anyString
-import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class TestQuickPinInteractor {
 
@@ -66,7 +66,7 @@ class TestQuickPinInteractor {
             resourceProvider = resourceProvider
         )
 
-        `when`(resourceProvider.genericErrorMessage())
+        whenever(resourceProvider.genericErrorMessage())
             .thenReturn(mockedGenericErrorMessage)
     }
 
@@ -82,7 +82,7 @@ class TestQuickPinInteractor {
     @Test
     fun `Given Case 1, When hasPin is called, Then it returns false`() {
         // Given
-        `when`(prefKeys.getDevicePin())
+        whenever(prefKeys.getDevicePin())
             .thenReturn(mockedEmptyPin)
 
         // When
@@ -101,7 +101,7 @@ class TestQuickPinInteractor {
     @Test
     fun `Given Case 2, When hasPin is called, Then it returns false`() {
         // Given
-        `when`(prefKeys.getDevicePin())
+        whenever(prefKeys.getDevicePin())
             .thenReturn(mockedBlankPin)
 
         // When
@@ -120,7 +120,7 @@ class TestQuickPinInteractor {
     @Test
     fun `Given Case 3, When hasPin is called, Then it returns true`() {
         // Given
-        `when`(prefKeys.getDevicePin())
+        whenever(prefKeys.getDevicePin())
             .thenReturn(mockedPin)
 
         // When
@@ -170,7 +170,7 @@ class TestQuickPinInteractor {
     fun `Given Case 2, When setPin is called, Then it returns Failed with the appropriate error message`() {
         coroutineRule.runTest {
             // Given
-            `when`(resourceProvider.getString(R.string.quick_pin_non_match))
+            whenever(resourceProvider.getString(R.string.quick_pin_non_match))
                 .thenReturn(mockedPinsDontMatchMessage)
 
             val mockedNewPin = mockedNewPin
@@ -204,7 +204,7 @@ class TestQuickPinInteractor {
             // Given
             val mockedNewPin = mockedPin
             val mockedInitialPin = mockedPin
-            `when`(prefKeys.setDevicePin(anyString()))
+            whenever(prefKeys.setDevicePin(anyString()))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -232,7 +232,7 @@ class TestQuickPinInteractor {
             // Given
             val mockedNewPin = mockedPin
             val mockedInitialPin = mockedPin
-            `when`(prefKeys.setDevicePin(anyString()))
+            whenever(prefKeys.setDevicePin(anyString()))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -279,7 +279,7 @@ class TestQuickPinInteractor {
     fun `Given Case 2, When changePin is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            `when`(prefKeys.setDevicePin(mockedNewPin))
+            whenever(prefKeys.setDevicePin(mockedNewPin))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -303,7 +303,7 @@ class TestQuickPinInteractor {
     fun `Given Case 3, When changePin is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            `when`(prefKeys.setDevicePin(mockedNewPin))
+            whenever(prefKeys.setDevicePin(mockedNewPin))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -331,7 +331,7 @@ class TestQuickPinInteractor {
     fun `Given Case 1, When isCurrentPinValid is called, Then it returns Success`() {
         coroutineRule.runTest {
             // Given
-            `when`(prefKeys.getDevicePin())
+            whenever(prefKeys.getDevicePin())
                 .thenReturn(mockedPin)
 
             // When
@@ -354,9 +354,9 @@ class TestQuickPinInteractor {
     fun `Given Case 2, When isCurrentPinValid is called, Then it returns Failed with the appropriate error message`() {
         coroutineRule.runTest {
             // Given
-            `when`(prefKeys.getDevicePin())
+            whenever(prefKeys.getDevicePin())
                 .thenReturn(mockedPin)
-            `when`(resourceProvider.getString(R.string.quick_pin_invalid_error))
+            whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
                 .thenReturn(mockedInvalidPinMessage)
 
             // When
@@ -383,7 +383,7 @@ class TestQuickPinInteractor {
     fun `Given Case 3, When isCurrentPinValid is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            `when`(prefKeys.getDevicePin())
+            whenever(prefKeys.getDevicePin())
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -407,7 +407,7 @@ class TestQuickPinInteractor {
     fun `Given Case 4, When isCurrentPinValid is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            `when`(prefKeys.getDevicePin())
+            whenever(prefKeys.getDevicePin())
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -457,7 +457,7 @@ class TestQuickPinInteractor {
     fun `Given Case 2, When isPinMatched is called, Then it returns Failed with the appropriate error message`() {
         coroutineRule.runTest {
             // Given
-            `when`(resourceProvider.getString(R.string.quick_pin_invalid_error))
+            whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
                 .thenReturn(mockedInvalidPinMessage)
 
             // When
@@ -485,7 +485,7 @@ class TestQuickPinInteractor {
     fun `Given Case 3, When isPinMatched is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            `when`(resourceProvider.getString(R.string.quick_pin_invalid_error))
+            whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -510,7 +510,7 @@ class TestQuickPinInteractor {
     fun `Given Case 4, When isPinMatched is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            `when`(resourceProvider.getString(R.string.quick_pin_invalid_error))
+            whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When

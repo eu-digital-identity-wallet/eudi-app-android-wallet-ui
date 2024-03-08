@@ -138,7 +138,7 @@ fun DocumentDetailsScreen(
                 sheetState = bottomSheetState
             ) {
                 SheetContent(
-                    documentTypeUiName = state.documentTypeUiName,
+                    documentTypeUiName = state.document?.documentName.orEmpty(),
                     onEventSent = {
                         viewModel.setEvent(it)
                     }

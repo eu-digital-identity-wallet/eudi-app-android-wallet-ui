@@ -51,7 +51,15 @@ fun extractFullNameFromDocumentOrEmpty(document: Document): String {
         document = document,
         key = DocumentJsonKeys.LAST_NAME
     )
-    return "$firstName $lastName"
+    return if (firstName.isNotBlank() && lastName.isNotBlank()) {
+        "$firstName $lastName"
+    } else if (firstName.isNotBlank()) {
+        firstName
+    } else if (lastName.isNotBlank()) {
+        lastName
+    } else {
+        ""
+    }
 }
 
 fun keyIsBase64(key: String): Boolean {
