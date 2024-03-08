@@ -138,7 +138,7 @@ fun DocumentDetailsScreen(
                 sheetState = bottomSheetState
             ) {
                 SheetContent(
-                    documentTypeUiName = state.document?.documentName,
+                    documentTypeUiName = state.document?.documentName.orEmpty(),
                     onEventSent = {
                         viewModel.setEvent(it)
                     }
@@ -274,25 +274,23 @@ private fun Content(
 
 @Composable
 private fun SheetContent(
-    documentTypeUiName: String?,
+    documentTypeUiName: String,
     onEventSent: (event: Event) -> Unit
 ) {
-    documentTypeUiName?.let {
-        DialogBottomSheet(
-            title = stringResource(
-                id = R.string.document_details_bottom_sheet_delete_title,
-                it
-            ),
-            message = stringResource(
-                id = R.string.document_details_bottom_sheet_delete_subtitle,
-                it
-            ),
-            positiveButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_primary_button_text),
-            negativeButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_secondary_button_text),
-            onPositiveClick = { onEventSent(Event.BottomSheet.Delete.PrimaryButtonPressed) },
-            onNegativeClick = { onEventSent(Event.BottomSheet.Delete.SecondaryButtonPressed) }
-        )
-    }
+    DialogBottomSheet(
+        title = stringResource(
+            id = R.string.document_details_bottom_sheet_delete_title,
+            documentTypeUiName
+        ),
+        message = stringResource(
+            id = R.string.document_details_bottom_sheet_delete_subtitle,
+            documentTypeUiName
+        ),
+        positiveButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_primary_button_text),
+        negativeButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_secondary_button_text),
+        onPositiveClick = { onEventSent(Event.BottomSheet.Delete.PrimaryButtonPressed) },
+        onNegativeClick = { onEventSent(Event.BottomSheet.Delete.SecondaryButtonPressed) }
+    )
 }
 
 @Composable
