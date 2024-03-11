@@ -321,12 +321,6 @@ class WalletCorePresentationControllerImpl(
                     }
                 }
 
-                is TransferEventPartialState.Disconnected -> {
-                    if (requireInit { _config } is PresentationControllerConfig.OpenId4VP) {
-                        ResponseReceivedPartialState.Success
-                    } else null
-                }
-
                 is TransferEventPartialState.Redirect -> {
                     ResponseReceivedPartialState.Redirect(uri = response.uri)
                 }

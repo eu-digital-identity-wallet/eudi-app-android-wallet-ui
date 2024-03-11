@@ -68,12 +68,12 @@ class DocumentDetailsInteractorImpl(
         flow {
             val document = walletCoreDocumentsController.getDocumentById(id = documentId)
             document?.let {
-                val itemsUi = DocumentDetailsTransformer.transformToUiItems(
+                val itemUi = DocumentDetailsTransformer.transformToUiItem(
                     document = it,
                     resourceProvider = resourceProvider,
                     docType = documentType
                 )
-                itemsUi?.let { documentUi ->
+                itemUi?.let { documentUi ->
                     emit(
                         DocumentDetailsInteractorPartialState.Success(
                             documentUi = documentUi

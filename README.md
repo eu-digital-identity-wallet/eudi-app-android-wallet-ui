@@ -1,5 +1,10 @@
 # EUDI Android Wallet reference application
 
+:heavy_exclamation_mark: **Important!** Before you proceed, please read
+the [EUDI Wallet Reference Implementation project description](https://github.com/eu-digital-identity-wallet/.github/blob/main/profile/reference-implementation.md)
+
+----
+
 ## Table of contents
 
 * [Overview](#overview)
@@ -28,11 +33,11 @@ The EUDIW project provides through this repository an Android app. Please refer 
 
 The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to facilitate remote presentation, proximity, and issuing test/demo functionality following specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework) including:
  
-- OID4VP draft 19 (remote presentation), presentation exchange v2.0,
+- OpenID4VP - draft 19 (remote presentation), presentation exchange v2.0,
  
 - ISO18013-5 (proximity presentation),
  
-- OID4VCI draft 12 (issuing)
+- OpenID4VCI draft 12 (issuing)
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
 
@@ -78,15 +83,15 @@ involved, follow the guidelines found in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Issuance
 
-[Issuance](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/2bede317-0ec1-4eb9-b985-0e79528e52b8)
+[Issuance](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/60732c14-653a-46d5-a87a-8973f8823d0f)
 
 Presentation
 
-[Presentation](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/32dbda4f-cd33-48a7-879b-7b853db32bed)
+[Presentation](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/21050222-2c07-4bcd-983b-4f6d4cf20248)
 
 Proximity
 
-[Proximity](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/assets/129499163/dc60da95-0d09-4ad7-8aa5-568c0007b300)
+[Proximity](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/c92f1818-e64c-463d-98c5-4f9f87c61760)
 
 ## How to use the application
 

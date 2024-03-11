@@ -30,9 +30,9 @@ import junit.framework.TestCase.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import org.mockito.Spy
+import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -72,131 +72,131 @@ class TestSecurityController {
         )
         MockitoAnnotations.openMocks(this)
 
-        Mockito.`when`(configLogic.appBuildType).thenReturn(AppBuildType.RELEASE)
-        Mockito.`when`(androidPackageController.getSignatures()).thenReturn(listOf(signature))
+        whenever(configLogic.appBuildType).thenReturn(AppBuildType.RELEASE)
+        whenever(androidPackageController.getSignatures()).thenReturn(listOf(signature))
     }
 
     @Test
     fun testIsRunningOnEmulatorWithBlockEmulatorConfigTrue() {
-        Mockito.`when`(configSecurityLogic.blockEmulator).thenReturn(true)
+        whenever(configSecurityLogic.blockEmulator).thenReturn(true)
         assertTrue(securityController.isRunningOnEmulator())
     }
 
     @Test
     fun testIsRunningOnEmulatorWithBlockEmulatorConfigFalse() {
-        Mockito.`when`(configSecurityLogic.blockEmulator).thenReturn(false)
+        whenever(configSecurityLogic.blockEmulator).thenReturn(false)
         assertFalse(securityController.isRunningOnEmulator())
     }
 
     @Test
     fun testIsDeviceRootedWithBlockRootAccessConfigTrue() {
-        Mockito.`when`(configSecurityLogic.blockRootAccess).thenReturn(true)
-        Mockito.`when`(rootController.isRooted()).thenReturn(true)
+        whenever(configSecurityLogic.blockRootAccess).thenReturn(true)
+        whenever(rootController.isRooted()).thenReturn(true)
         assertTrue(securityController.isDeviceRooted())
     }
 
     @Test
     fun testIsDeviceRootedWithBlockRootAccessConfigFalse() {
-        Mockito.`when`(configSecurityLogic.blockRootAccess).thenReturn(false)
-        Mockito.`when`(rootController.isRooted()).thenReturn(true)
+        whenever(configSecurityLogic.blockRootAccess).thenReturn(false)
+        whenever(rootController.isRooted()).thenReturn(true)
         assertFalse(securityController.isDeviceRooted())
     }
 
     @Test
     fun testIsSignatureValidWithSignaturePackageNotNullAndValid() {
-        Mockito.`when`(configSecurityLogic.packageSignature).thenReturn(signature)
+        whenever(configSecurityLogic.packageSignature).thenReturn(signature)
         assertTrue(securityController.isSignatureValid())
     }
 
     @Test
     fun testIsSignatureValidWithSignaturePackageNotNullAndNotValid() {
-        Mockito.`when`(configSecurityLogic.packageSignature).thenReturn("")
+        whenever(configSecurityLogic.packageSignature).thenReturn("")
         assertFalse(securityController.isSignatureValid())
     }
 
     @Test
     fun testIsSignatureValidWithSignaturePackageConfigIsNull() {
-        Mockito.`when`(configSecurityLogic.packageSignature).thenReturn(null)
+        whenever(configSecurityLogic.packageSignature).thenReturn(null)
         assertTrue(securityController.isSignatureValid())
     }
 
     @Test
     fun testIsPackageInstallerValidWithConfigPackageInstallersNotEmptyAndValidInstaller() {
-        Mockito.`when`(configSecurityLogic.packageInstallers).thenReturn(installers)
-        Mockito.`when`(androidPackageController.getInstaller(installers))
+        whenever(configSecurityLogic.packageInstallers).thenReturn(installers)
+        whenever(androidPackageController.getInstaller(installers))
             .thenReturn(AndroidInstaller.TRUSTED)
         assertTrue(securityController.isPackageInstallerValid())
     }
 
     @Test
     fun testIsPackageInstallerValidWithConfigPackageInstallersNotEmptyAndInValidInstaller() {
-        Mockito.`when`(configSecurityLogic.packageInstallers).thenReturn(installers)
-        Mockito.`when`(androidPackageController.getInstaller(installers))
+        whenever(configSecurityLogic.packageInstallers).thenReturn(installers)
+        whenever(androidPackageController.getInstaller(installers))
             .thenReturn(AndroidInstaller.UNKNOWN)
         assertFalse(securityController.isPackageInstallerValid())
     }
 
     @Test
     fun testIsPackageInstallerValidWithConfigPackageInstallersEmpty() {
-        Mockito.`when`(configSecurityLogic.packageInstallers).thenReturn(emptyList())
+        whenever(configSecurityLogic.packageInstallers).thenReturn(emptyList())
         assertTrue(securityController.isPackageInstallerValid())
     }
 
     @Test
     fun testIsDebugModeEnabledWithConfigBlockDebugModeEnabledAndFlagDebuggable() {
-        Mockito.`when`(configSecurityLogic.blockDebugMode).thenReturn(true)
-        Mockito.`when`(androidPackageController.isDebugModeEnabled()).thenReturn(true)
+        whenever(configSecurityLogic.blockDebugMode).thenReturn(true)
+        whenever(androidPackageController.isDebugModeEnabled()).thenReturn(true)
         assertTrue(securityController.isDebugModeEnabled())
     }
 
     @Test
     fun testIsDebugModeEnabledWithConfigBlockDebugModeEnabledAndFlagNotDebuggable() {
-        Mockito.`when`(configSecurityLogic.blockDebugMode).thenReturn(true)
-        Mockito.`when`(androidPackageController.isDebugModeEnabled()).thenReturn(false)
+        whenever(configSecurityLogic.blockDebugMode).thenReturn(true)
+        whenever(androidPackageController.isDebugModeEnabled()).thenReturn(false)
         assertFalse(securityController.isDebugModeEnabled())
     }
 
     @Test
     fun testBlockScreenCaptureWithConfigBlockScreenCaptureEnabled() {
-        Mockito.`when`(configSecurityLogic.blockScreenCapture).thenReturn(true)
+        whenever(configSecurityLogic.blockScreenCapture).thenReturn(true)
         assertTrue(securityController.blockScreenCapture())
     }
 
     @Test
     fun testBlockScreenCaptureWithConfigBlockScreenCaptureDisabled() {
-        Mockito.`when`(configSecurityLogic.blockScreenCapture).thenReturn(false)
+        whenever(configSecurityLogic.blockScreenCapture).thenReturn(false)
         assertFalse(securityController.blockScreenCapture())
     }
 
     @Test
     fun testIsHookDetectedWithConfigBlockHooksEnabledAndReleaseBuildAndIsStackTracedHookDetectedAndIsMemoryHookedDetected() {
-        Mockito.`when`(configSecurityLogic.blockHooks).thenReturn(true)
-        Mockito.`when`(antiHookController.isMemoryHooked()).thenReturn(true)
-        Mockito.`when`(antiHookController.isStacktraceHooked()).thenReturn(true)
+        whenever(configSecurityLogic.blockHooks).thenReturn(true)
+        whenever(antiHookController.isMemoryHooked()).thenReturn(true)
+        whenever(antiHookController.isStacktraceHooked()).thenReturn(true)
         assertTrue(securityController.isHookDetected())
     }
 
     @Test
     fun testIsHookDetectedWithConfigBlockHooksEnabledAndReleaseBuildAndIsStackTracedHookDetectedAndIsMemoryHookedNotDetected() {
-        Mockito.`when`(configSecurityLogic.blockHooks).thenReturn(true)
-        Mockito.`when`(antiHookController.isMemoryHooked()).thenReturn(false)
-        Mockito.`when`(antiHookController.isStacktraceHooked()).thenReturn(true)
+        whenever(configSecurityLogic.blockHooks).thenReturn(true)
+        whenever(antiHookController.isMemoryHooked()).thenReturn(false)
+        whenever(antiHookController.isStacktraceHooked()).thenReturn(true)
         assertTrue(securityController.isHookDetected())
     }
 
     @Test
     fun testIsHookDetectedWithConfigBlockHooksEnabledAndReleaseBuildAndIsStackTracedHookNotDetectedAndIsMemoryHookedNotDetected() {
-        Mockito.`when`(configSecurityLogic.blockHooks).thenReturn(true)
-        Mockito.`when`(antiHookController.isMemoryHooked()).thenReturn(false)
-        Mockito.`when`(antiHookController.isStacktraceHooked()).thenReturn(false)
+        whenever(configSecurityLogic.blockHooks).thenReturn(true)
+        whenever(antiHookController.isMemoryHooked()).thenReturn(false)
+        whenever(antiHookController.isStacktraceHooked()).thenReturn(false)
         assertFalse(securityController.isHookDetected())
     }
 
     @Test
     fun testIsHookDetectedWithConfigBlockHooksDisabledAndReleaseBuildAndIsStackTracedHookDetectedAndIsMemoryHookedDetected() {
-        Mockito.`when`(configSecurityLogic.blockHooks).thenReturn(false)
-        Mockito.`when`(antiHookController.isMemoryHooked()).thenReturn(true)
-        Mockito.`when`(antiHookController.isStacktraceHooked()).thenReturn(true)
+        whenever(configSecurityLogic.blockHooks).thenReturn(false)
+        whenever(antiHookController.isMemoryHooked()).thenReturn(true)
+        whenever(antiHookController.isStacktraceHooked()).thenReturn(true)
         assertFalse(securityController.isHookDetected())
     }
 }

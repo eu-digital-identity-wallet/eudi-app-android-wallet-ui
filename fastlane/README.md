@@ -47,14 +47,6 @@ Get Release version From AppCenter
 
 Build Number
 
-### android full_version
-
-```sh
-[bundle exec] fastlane android full_version
-```
-
-Build Full version
-
 ### android tag_name
 
 ```sh
@@ -78,6 +70,22 @@ Get version version From Project
 ```
 
 Set versionCode back to default 1
+
+### android reset_versionname
+
+```sh
+[bundle exec] fastlane android reset_versionname
+```
+
+Set versionName back to default yyyy.d.m
+
+### android calver
+
+```sh
+[bundle exec] fastlane android calver
+```
+
+Build Version
 
 ----
 
