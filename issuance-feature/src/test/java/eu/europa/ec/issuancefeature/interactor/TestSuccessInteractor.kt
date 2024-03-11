@@ -20,8 +20,9 @@ import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsContr
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedDocUiNamePid
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.mockDocumentTypeUiToUiNameCall
+import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
+import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullPid
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -72,7 +73,7 @@ class TestSuccessInteractor {
 
 
     @Test
-    fun `Given invalid document id, When fetchDocumentById is called, Then Failure Result is returned`() {
+    fun `Given invalid document id, When fetchDocumentById is called, Then Failure with generic error message`() {
         coroutineRule.runTest {
             // Given
             whenever(walletCoreDocumentsController.getDocumentById(""))
@@ -91,7 +92,7 @@ class TestSuccessInteractor {
     }
 
     @Test
-    fun `When walletCoreDocumentsController,getAllDocuments() throws an exception with a message, Then fetchDocumentById Failure Result is returned`() {
+    fun `Given walletCoreDocumentsController,getAllDocuments() throws an exception with a message, When fetchDocumentById is called, Then it returns Failure with exception's localized message`() {
         coroutineRule.runTest {
             // Given
             whenever(walletCoreDocumentsController.getDocumentById(""))
@@ -102,6 +103,25 @@ class TestSuccessInteractor {
                 assertEquals(
                     SuccessFetchDocumentByIdPartialState.Failure(
                         error = mockedExceptionWithMessage.localizedMessage!!
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `Given walletCoreDocumentsController,getAllDocuments() throws an exception with no message, When fetchDocumentById is called, Then it returns Failure with generic error message`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.getDocumentById(""))
+                .thenThrow(mockedExceptionWithNoMessage)
+
+            // When
+            interactor.fetchDocumentById("").runFlowTest {
+                assertEquals(
+                    SuccessFetchDocumentByIdPartialState.Failure(
+                        error = mockedGenericErrorMessage
                     ),
                     awaitItem()
                 )
