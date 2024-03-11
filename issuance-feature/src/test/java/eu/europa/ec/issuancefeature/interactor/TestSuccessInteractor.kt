@@ -32,8 +32,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.whenever
 import kotlin.test.assertEquals
 
 class TestSuccessInteractor {
@@ -60,7 +60,7 @@ class TestSuccessInteractor {
             walletCoreDocumentsController = walletCoreDocumentsController
         )
 
-        `when`(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
+        whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
     }
 
     @After
@@ -75,7 +75,7 @@ class TestSuccessInteractor {
     fun `Given invalid document id, When fetchDocumentById is called, Then Failure Result is returned`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getDocumentById(""))
+            whenever(walletCoreDocumentsController.getDocumentById(""))
                 .thenReturn(null)
 
             // When
@@ -94,7 +94,7 @@ class TestSuccessInteractor {
     fun `When walletCoreDocumentsController,getAllDocuments() throws an exception with a message, Then fetchDocumentById Failure Result is returned`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getDocumentById(""))
+            whenever(walletCoreDocumentsController.getDocumentById(""))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -113,7 +113,7 @@ class TestSuccessInteractor {
     fun `Given valid document id, When fetchDocumentById is called, Then Success Result is returned with valid data`() {
         coroutineRule.runTest {
             // Given
-            `when`(walletCoreDocumentsController.getDocumentById("test_id"))
+            whenever(walletCoreDocumentsController.getDocumentById("test_id"))
                 .thenReturn(mockedFullPid)
             mockDocumentTypeUiToUiNameCall(resourceProvider)
 
