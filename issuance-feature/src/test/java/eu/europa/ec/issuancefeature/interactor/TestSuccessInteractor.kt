@@ -20,7 +20,7 @@ import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsContr
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedDocUiNamePid
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.mockDocumentTypeUiToUiNameCall
+import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullPid
