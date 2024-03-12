@@ -16,6 +16,7 @@
 
 import eu.europa.ec.euidi.config.LibraryModule.AnalyticsLogic
 import eu.europa.ec.euidi.config.LibraryModule.AssemblyLogic
+import eu.europa.ec.euidi.config.LibraryModule.AuthenticationLogic
 import eu.europa.ec.euidi.config.LibraryModule.BusinessLogic
 import eu.europa.ec.euidi.config.LibraryModule.CommonFeature
 import eu.europa.ec.euidi.config.LibraryModule.DashboardFeature
@@ -57,6 +58,7 @@ dependencies {
     api(project(UiLogic.path))
     api(project(NetworkLogic.path))
     api(project(AnalyticsLogic.path))
+    api(project(AuthenticationLogic.path))
 
     // Feature Modules
     api(project(CommonFeature.path))

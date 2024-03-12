@@ -14,47 +14,46 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.controller.authentication
+package eu.europa.ec.authenticationlogic.controller.authentication
 
 import android.content.Context
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
-import eu.europa.ec.businesslogic.controller.biometry.BiometricController
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
 import eu.europa.ec.businesslogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.launch
 
-interface UserAuthenticationController {
+interface DeviceAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
     fun authenticate(
         context: Context,
         biometryCrypto: BiometricCrypto,
-        userAuthenticationBiometricResult: UserAuthenticationResult
+        result: DeviceAuthenticationResult
     )
 }
 
-class UserAuthenticationControllerImpl(
+class DeviceAuthenticationControllerImpl(
     private val resourceProvider: ResourceProvider,
-    private val biometricController: BiometricController
-) : UserAuthenticationController {
+    private val biometricAuthenticationController: BiometricAuthenticationController
+) : DeviceAuthenticationController {
     override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
-        biometricController.deviceSupportsBiometrics(listener)
+        biometricAuthenticationController.deviceSupportsBiometrics(listener)
     }
 
     override fun authenticate(
         context: Context,
         biometryCrypto: BiometricCrypto,
-        userAuthenticationBiometricResult: UserAuthenticationResult
+        result: DeviceAuthenticationResult
     ) {
         (context as? FragmentActivity)?.let { activity ->
 
             activity.lifecycleScope.launch {
 
-                val data = biometricController.authenticate(
+                val data = biometricAuthenticationController.authenticate(
                     activity = activity,
                     biometryCrypto = biometryCrypto,
                     promptInfo = BiometricPrompt.PromptInfo.Builder()
@@ -65,19 +64,13 @@ class UserAuthenticationControllerImpl(
                 )
 
                 if (data.authenticationResult != null) {
-                    userAuthenticationBiometricResult.onAuthenticationSuccess()
+                    result.onAuthenticationSuccess()
                 } else if (data.hasError) {
-                    userAuthenticationBiometricResult.onAuthenticationError()
+                    result.onAuthenticationError()
                 } else {
-                    userAuthenticationBiometricResult.onAuthenticationFailure()
+                    result.onAuthenticationFailure()
                 }
             }
         }
     }
 }
-
-data class UserAuthenticationResult(
-    val onAuthenticationSuccess: () -> Unit = {},
-    val onAuthenticationError: () -> Unit = {},
-    val onAuthenticationFailure: () -> Unit = {},
-)

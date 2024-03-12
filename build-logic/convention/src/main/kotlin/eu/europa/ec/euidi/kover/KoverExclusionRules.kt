@@ -28,7 +28,6 @@ private const val ROUTER_GRAPH = "eu.europa.ec.*.router"
 val koverModules: Map<LibraryModule, KoverExclusionRules> = mapOf(
     LibraryModule.BusinessLogic to KoverExclusionRules.BusinessLogic,
     LibraryModule.UiLogic to KoverExclusionRules.UiLogic,
-    LibraryModule.NetworkLogic to KoverExclusionRules.NetworkLogic,
     LibraryModule.CommonFeature to KoverExclusionRules.CommonFeature,
     LibraryModule.StartupFeature to KoverExclusionRules.StartupFeature,
     LibraryModule.LoginFeature to KoverExclusionRules.LoginFeature,
@@ -88,10 +87,9 @@ sealed interface KoverExclusionRules {
         override val packages: List<String>
             get() = commonPackages + listOf(
                 "eu.europa.ec.businesslogic.config",
-                "eu.europa.ec.businesslogic.controller.biometry",
                 "eu.europa.ec.businesslogic.controller.crypto",
                 "eu.europa.ec.businesslogic.controller.log",
-                "eu.europa.ec.businesslogic.controller.storage",
+                "eu.europa.ec.businesslogic.controller.storage"
             )
     }
 
@@ -187,5 +185,25 @@ sealed interface KoverExclusionRules {
 
         override val packages: List<String>
             get() = commonPackages
+    }
+
+    object AuthenticationLogic : FeatureModule {
+        override val classes: List<String>
+            get() = commonClasses
+
+        override val packages: List<String>
+            get() = commonPackages + listOf(
+                "eu.europa.ec.authenticationlogic"
+            )
+    }
+
+    object AnalyticsLogic : FeatureModule {
+        override val classes: List<String>
+            get() = commonClasses
+
+        override val packages: List<String>
+            get() = commonPackages + listOf(
+                "eu.europa.ec.analyticslogic"
+            )
     }
 }

@@ -19,8 +19,6 @@ package eu.europa.ec.businesslogic.controller.storage
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.google.gson.Gson
-import eu.europa.ec.businesslogic.model.BiometricData
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 interface PrefsController {
@@ -312,12 +310,6 @@ class PrefsControllerImpl(
 interface PrefKeys {
     fun getBiometricAlias(): String
     fun setBiometricAlias(value: String)
-    fun getBiometricData(): BiometricData?
-    fun setBiometricData(value: BiometricData?)
-    fun setUseBiometricsAuth(value: Boolean)
-    fun getUseBiometricsAuth(): Boolean
-    fun getDevicePin(): String
-    fun setDevicePin(pin: String)
 }
 
 class PrefKeysImpl(
@@ -338,50 +330,5 @@ class PrefKeysImpl(
      */
     override fun setBiometricAlias(value: String) {
         prefsController.setString("BiometricAlias", value)
-    }
-
-    /**
-     * Returns the biometric data in order to validate that biometric is not tampered in any way.
-     */
-    override fun getBiometricData(): BiometricData? {
-        return try {
-            Gson().fromJson(
-                prefsController.getString("BiometricData", ""),
-                BiometricData::class.java
-            )
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    /**
-     * Stores the biometric data used to validate that biometric is not tampered in any way.
-     *
-     * @param value the biometric data.
-     */
-    override fun setBiometricData(value: BiometricData?) {
-        if (value == null) prefsController.clear("BiometricData")
-        prefsController.setString("BiometricData", Gson().toJson(value))
-    }
-
-    /**
-     * Key to use Biometrics Auth instead of quick pin.
-     *
-     * Setting an empty value will clear the entry from shared prefs.
-     */
-    override fun setUseBiometricsAuth(value: Boolean) {
-        prefsController.setBool("UseBiometricsAuth", value)
-    }
-
-    override fun getUseBiometricsAuth(): Boolean {
-        return prefsController.getBool("UseBiometricsAuth", false)
-    }
-
-    override fun setDevicePin(pin: String) {
-        prefsController.setString("DevicePin", pin)
-    }
-
-    override fun getDevicePin(): String {
-        return prefsController.getString("DevicePin", "")
     }
 }

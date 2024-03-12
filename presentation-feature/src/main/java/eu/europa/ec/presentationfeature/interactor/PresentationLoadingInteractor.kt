@@ -17,12 +17,12 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 import java.net.URI
@@ -30,7 +30,7 @@ import java.net.URI
 sealed class PresentationLoadingObserveResponsePartialState {
     data class UserAuthenticationRequired(
         val crypto: BiometricCrypto,
-        val resultHandler: UserAuthenticationResult
+        val resultHandler: DeviceAuthenticationResult
     ) : PresentationLoadingObserveResponsePartialState()
 
     data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
@@ -45,13 +45,13 @@ interface PresentationLoadingInteractor {
     fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
-        resultHandler: UserAuthenticationResult
+        resultHandler: DeviceAuthenticationResult
     )
 }
 
 class PresentationLoadingInteractorImpl(
     private val walletCorePresentationController: WalletCorePresentationController,
-    private val userAuthenticationInteractor: UserAuthenticationInteractor,
+    private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
 ) : PresentationLoadingInteractor {
 
     override val verifierName: String? = walletCorePresentationController.verifierName
@@ -83,12 +83,12 @@ class PresentationLoadingInteractorImpl(
     override fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
-        resultHandler: UserAuthenticationResult
+        resultHandler: DeviceAuthenticationResult
     ) {
-        userAuthenticationInteractor.getBiometricsAvailability {
+        deviceAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
                         context,
                         crypto,
                         resultHandler
@@ -96,7 +96,7 @@ class PresentationLoadingInteractorImpl(
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
                         context,
                         crypto,
                         resultHandler

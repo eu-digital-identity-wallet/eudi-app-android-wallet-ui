@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.controller.biometry
+package eu.europa.ec.authenticationlogic.controller.authentication
 
 import android.content.Context
 import android.content.Intent
@@ -28,12 +28,12 @@ import androidx.biometric.BiometricPrompt.AuthenticationResult
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
+import eu.europa.ec.authenticationlogic.model.BiometricAuthentication
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.decodeFromPemBase64String
 import eu.europa.ec.businesslogic.extension.encodeToPemBase64String
 import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.model.BiometricData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +48,7 @@ enum class BiometricsAuthError(val code: Int) {
     Cancel(10), CancelByUser(13)
 }
 
-interface BiometricController {
+interface BiometricAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
     fun authenticate(context: Context, listener: (BiometricsAuthenticate) -> Unit)
     suspend fun authenticate(
@@ -60,11 +60,11 @@ interface BiometricController {
     fun launchBiometricSystemScreen()
 }
 
-class BiometricControllerImpl(
+class BiometricAuthenticationControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val cryptoController: CryptoController,
-    private val prefsKeys: PrefKeys
-) : BiometricController {
+    private val biometryStorageController: BiometryStorageController
+) : BiometricAuthenticationController {
 
     override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
         val biometricManager = BiometricManager.from(resourceProvider.provideContext())
@@ -109,7 +109,7 @@ class BiometricControllerImpl(
                     val state = verifyCrypto(
                         context = context,
                         result = data.authenticationResult,
-                        biometricData = biometricData
+                        biometricAuthentication = biometricData
                     )
                     listener.invoke(state)
                 } else if (
@@ -169,7 +169,6 @@ class BiometricControllerImpl(
                 }
             }
         )
-
         biometryCrypto.cryptoObject?.let {
             prompt.authenticate(
                 promptInfo,
@@ -178,9 +177,9 @@ class BiometricControllerImpl(
         } ?: prompt.authenticate(promptInfo)
     }
 
-    private suspend fun retrieveCrypto(): Pair<BiometricData?, Cipher?> =
+    private suspend fun retrieveCrypto(): Pair<BiometricAuthentication?, Cipher?> =
         withContext(Dispatchers.IO) {
-            val biometricData = prefsKeys.getBiometricData()
+            val biometricData = biometryStorageController.getBiometricAuthentication()
             val cipher = cryptoController.getBiometricCipher(
                 encrypt = biometricData == null,
                 ivBytes = biometricData?.ivString?.decodeFromPemBase64String() ?: ByteArray(0)
@@ -191,13 +190,13 @@ class BiometricControllerImpl(
     private suspend fun verifyCrypto(
         context: Context,
         result: AuthenticationResult?,
-        biometricData: BiometricData?
+        biometricAuthentication: BiometricAuthentication?
     ): BiometricsAuthenticate = withContext(Dispatchers.IO) {
         result?.cryptoObject?.cipher?.let {
-            if (biometricData == null) {
+            if (biometricAuthentication == null) {
                 val randomString = cryptoController.generateCodeVerifier()
-                prefsKeys.setBiometricData(
-                    BiometricData(
+                biometryStorageController.setBiometricAuthentication(
+                    BiometricAuthentication(
                         randomString = randomString,
                         encryptedString = cryptoController.encryptDecryptBiometric(
                             cipher = it,
@@ -208,12 +207,12 @@ class BiometricControllerImpl(
                 )
                 BiometricsAuthenticate.Success
             } else {
-                if (biometricData.randomString
+                if (biometricAuthentication.randomString
                         .toByteArray(StandardCharsets.UTF_8)
                         .contentEquals(
                             cryptoController.encryptDecryptBiometric(
                                 cipher = it,
-                                byteArray = biometricData.encryptedString
+                                byteArray = biometricAuthentication.encryptedString
                                     .decodeFromPemBase64String() ?: ByteArray(0)
                             )
                         )

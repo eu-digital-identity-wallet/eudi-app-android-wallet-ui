@@ -16,9 +16,9 @@
 
 package eu.europa.ec.businesslogic.controller.walletcore
 
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
@@ -44,7 +44,7 @@ sealed class IssueDocumentPartialState {
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
-        val resultHandler: UserAuthenticationResult
+        val resultHandler: DeviceAuthenticationResult
     ) : IssueDocumentPartialState()
 }
 
@@ -53,7 +53,7 @@ sealed class OpenId4VCIIssueDocumentPartialState {
     data class Failure(val errorMessage: String) : OpenId4VCIIssueDocumentPartialState()
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
-        val resultHandler: UserAuthenticationResult
+        val resultHandler: DeviceAuthenticationResult
     ) : OpenId4VCIIssueDocumentPartialState()
 }
 
@@ -287,7 +287,7 @@ class WalletCoreDocumentsControllerImpl(
                             trySendBlocking(
                                 OpenId4VCIIssueDocumentPartialState.UserAuthRequired(
                                     BiometricCrypto(result.cryptoObject),
-                                    UserAuthenticationResult(
+                                    DeviceAuthenticationResult(
                                         onAuthenticationSuccess = { result.resume() },
                                         onAuthenticationError = { result.cancel() },
                                         onAuthenticationFailure = { result.cancel() },

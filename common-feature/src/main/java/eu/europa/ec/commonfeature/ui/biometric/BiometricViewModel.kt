@@ -19,8 +19,8 @@ package eu.europa.ec.commonfeature.ui.biometric
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAuthenticate
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor

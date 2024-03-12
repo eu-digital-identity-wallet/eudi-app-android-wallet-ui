@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.interactor
 
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.resourceslogic.R
@@ -41,14 +41,14 @@ interface QuickPinInteractor : FormValidator {
 
 class QuickPinInteractorImpl(
     private val formValidator: FormValidator,
-    private val prefKeys: PrefKeys,
+    private val pinStorageController: PinStorageController,
     private val resourceProvider: ResourceProvider,
 ) : FormValidator by formValidator, QuickPinInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun hasPin(): Boolean = prefKeys.getDevicePin().isNotBlank()
+    override fun hasPin(): Boolean = pinStorageController.retrievePin().isNotBlank()
 
     override fun setPin(
         newPin: String,
@@ -66,7 +66,7 @@ class QuickPinInteractorImpl(
                     }
 
                     is QuickPinInteractorPinValidPartialState.Success -> {
-                        prefKeys.setDevicePin(newPin)
+                        pinStorageController.setPin(newPin)
                         emit(QuickPinInteractorSetPinPartialState.Success)
                     }
                 }
@@ -81,7 +81,7 @@ class QuickPinInteractorImpl(
         newPin: String
     ): Flow<QuickPinInteractorSetPinPartialState> =
         flow {
-            prefKeys.setDevicePin(newPin)
+            pinStorageController.setPin(newPin)
             emit(QuickPinInteractorSetPinPartialState.Success)
         }.safeAsync {
             QuickPinInteractorSetPinPartialState.Failed(
@@ -91,7 +91,7 @@ class QuickPinInteractorImpl(
 
     override fun isCurrentPinValid(pin: String): Flow<QuickPinInteractorPinValidPartialState> =
         flow {
-            if (prefKeys.getDevicePin() == pin) {
+            if (pinStorageController.isPinValid(pin)) {
                 emit(QuickPinInteractorPinValidPartialState.Success)
             } else {
                 emit(

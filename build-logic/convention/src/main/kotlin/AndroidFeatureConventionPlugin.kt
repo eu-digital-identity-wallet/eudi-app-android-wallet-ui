@@ -43,6 +43,7 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
                 add("implementation", project(LibraryModule.NetworkLogic.path))
                 add("implementation", project(LibraryModule.ResourcesLogic.path))
                 add("implementation", project(LibraryModule.AnalyticsLogic.path))
+                add("implementation", project(LibraryModule.AuthenticationLogic.path))
                 add("testImplementation", project(LibraryModule.TestFeatureLogic.path))
                 add("androidTestImplementation", project(LibraryModule.TestFeatureLogic.path))
             }

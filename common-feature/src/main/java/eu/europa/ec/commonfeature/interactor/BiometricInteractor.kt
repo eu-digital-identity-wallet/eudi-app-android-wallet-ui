@@ -17,10 +17,10 @@
 package eu.europa.ec.commonfeature.interactor
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.biometry.BiometricController
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAuthenticate
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import kotlinx.coroutines.flow.Flow
 
 interface BiometricInteractor {
@@ -37,8 +37,8 @@ interface BiometricInteractor {
 }
 
 class BiometricInteractorImpl(
-    private val prefKeys: PrefKeys,
-    private val biometricController: BiometricController,
+    private val biometryStorageController: BiometryStorageController,
+    private val biometricAuthenticationController: BiometricAuthenticationController,
     private val quickPinInteractor: QuickPinInteractor,
 ) : BiometricInteractor {
 
@@ -46,25 +46,25 @@ class BiometricInteractorImpl(
         quickPinInteractor.isCurrentPinValid(pin)
 
     override fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean) {
-        prefKeys.setUseBiometricsAuth(shouldUseBiometrics)
+        biometryStorageController.setUseBiometricsAuth(shouldUseBiometrics)
     }
 
     override fun getBiometricUserSelection(): Boolean {
-        return prefKeys.getUseBiometricsAuth()
+        return biometryStorageController.getUseBiometricsAuth()
     }
 
     override fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit) {
-        biometricController.deviceSupportsBiometrics(listener)
+        biometricAuthenticationController.deviceSupportsBiometrics(listener)
     }
 
     override fun authenticateWithBiometrics(
         context: Context,
         listener: (BiometricsAuthenticate) -> Unit
     ) {
-        biometricController.authenticate(context, listener)
+        biometricAuthenticationController.authenticate(context, listener)
     }
 
     override fun launchBiometricSystemScreen() {
-        biometricController.launchBiometricSystemScreen()
+        biometricAuthenticationController.launchBiometricSystemScreen()
     }
 }

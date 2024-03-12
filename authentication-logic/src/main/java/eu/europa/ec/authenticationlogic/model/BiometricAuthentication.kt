@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.model
+package eu.europa.ec.authenticationlogic.model
 
 import com.google.gson.annotations.SerializedName
 
@@ -26,7 +26,7 @@ import com.google.gson.annotations.SerializedName
  * @param encryptedString       The random String encrypted with biometric cipher and in base64 form.
  * @param ivString              The iv used in biometric cipher in base64 form.
  */
-data class BiometricData(
+data class BiometricAuthentication(
     @SerializedName("random") val randomString: String,
     @SerializedName("encrypted") val encryptedString: String,
     @SerializedName("iv") val ivString: String,
