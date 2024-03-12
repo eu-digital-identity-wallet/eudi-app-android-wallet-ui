@@ -29,11 +29,12 @@ internal class WalletCoreConfigImpl(
     private val context: Context
 ) : WalletCoreConfig {
 
-    companion object {
+    private companion object {
         const val OPENID4VP_VERIFIER_API_URI = "https://verifier.eudiw.dev"
         const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
         const val VCI_ISSUER_URL = "https://issuer.eudiw.dev/oidc"
         const val VCI_CLIENT_ID = "wallet-demo"
+        const val AUTHENTICATION_REQUIRED = false
     }
 
     private var _config: EudiWalletConfig? = null
@@ -42,7 +43,7 @@ internal class WalletCoreConfigImpl(
         get() {
             if (_config == null) {
                 _config = EudiWalletConfig.Builder(context)
-                    .userAuthenticationRequired(false)
+                    .userAuthenticationRequired(AUTHENTICATION_REQUIRED)
                     .openId4VpConfig {
                         withEncryptionAlgorithms(listOf(EncryptionAlgorithm.ECDH_ES))
                         withEncryptionMethods(
