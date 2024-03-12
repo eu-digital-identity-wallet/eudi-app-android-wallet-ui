@@ -166,6 +166,8 @@ You can find instructions on how to configure the application [here](wiki/config
 
 *business-logic*: App business logic, wallet core resides here.
 
+*authentication-logic*: Pin/Biometry Storage and System Biometrics Logic.
+
 *ui-logic*: Common UI components.
 
 *common-feature*: Code that is common to all features.
@@ -185,7 +187,7 @@ You can find instructions on how to configure the application [here](wiki/config
 
 ```mermaid
 graph TD;
-    Logic-modules/resources-logic,ui-logic,business-logic,network-logic,assembly-logic/-->Feature-modules/common-feature,login-feature,dashboard-feature,startup-feature,presentation-feature,issuance-feature,proximity-feature/;
+    Logic-modules/resources-logic,ui-logic,business-logic,authentication-logic,network-logic,assembly-logic/-->Feature-modules/common-feature,login-feature,dashboard-feature,startup-feature,presentation-feature,issuance-feature,proximity-feature/;
 ```
 
 

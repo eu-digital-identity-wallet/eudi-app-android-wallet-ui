@@ -16,16 +16,17 @@
 
 package eu.europa.ec.commonfeature.di
 
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationController
-import eu.europa.ec.businesslogic.controller.biometry.BiometricController
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationController
+import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
+import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.BiometricInteractorImpl
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractorImpl
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorImpl
-import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
-import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -38,24 +39,28 @@ class FeatureCommonModule
 @Factory
 fun provideQuickPinInteractor(
     formValidator: FormValidator,
-    prefKeys: PrefKeys,
+    pinStorageController: PinStorageController,
     resourceProvider: ResourceProvider
 ): QuickPinInteractor {
-    return QuickPinInteractorImpl(formValidator, prefKeys, resourceProvider)
+    return QuickPinInteractorImpl(formValidator, pinStorageController, resourceProvider)
 }
 
 @Factory
 fun provideBiometricInteractor(
-    prefKeys: PrefKeys,
-    biometricController: BiometricController,
+    biometryStorageController: BiometryStorageController,
+    biometricAuthenticationController: BiometricAuthenticationController,
     quickPinInteractor: QuickPinInteractor
 ): BiometricInteractor {
-    return BiometricInteractorImpl(prefKeys, biometricController, quickPinInteractor)
+    return BiometricInteractorImpl(
+        biometryStorageController,
+        biometricAuthenticationController,
+        quickPinInteractor
+    )
 }
 
 @Factory
-fun provideDeviceBiometricInteractor(
-    userAuthenticationController: UserAuthenticationController
-): UserAuthenticationInteractor {
-    return UserAuthenticationInteractorImpl(userAuthenticationController)
+fun provideDeviceAuthenticationInteractor(
+    deviceAuthenticationController: DeviceAuthenticationController
+): DeviceAuthenticationInteractor {
+    return DeviceAuthenticationInteractorImpl(deviceAuthenticationController)
 }

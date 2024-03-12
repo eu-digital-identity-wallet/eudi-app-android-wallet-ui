@@ -17,19 +17,19 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityLoadingObserveResponsePartialState {
     data class UserAuthenticationRequired(
         val crypto: BiometricCrypto,
-        val resultHandler: UserAuthenticationResult
+        val resultHandler: DeviceAuthenticationResult
     ) : ProximityLoadingObserveResponsePartialState()
 
     data class Failure(val error: String) : ProximityLoadingObserveResponsePartialState()
@@ -43,13 +43,13 @@ interface ProximityLoadingInteractor {
     fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
-        resultHandler: UserAuthenticationResult
+        resultHandler: DeviceAuthenticationResult
     )
 }
 
 class ProximityLoadingInteractorImpl(
     private val walletCorePresentationController: WalletCorePresentationController,
-    private val userAuthenticationInteractor: UserAuthenticationInteractor
+    private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 ) : ProximityLoadingInteractor {
 
     override val verifierName: String? = walletCorePresentationController.verifierName
@@ -76,12 +76,12 @@ class ProximityLoadingInteractorImpl(
     override fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
-        resultHandler: UserAuthenticationResult
+        resultHandler: DeviceAuthenticationResult
     ) {
-        userAuthenticationInteractor.getBiometricsAvailability {
+        deviceAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
                         context = context,
                         crypto = crypto,
                         resultHandler = resultHandler
@@ -89,7 +89,7 @@ class ProximityLoadingInteractorImpl(
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
                         context = context,
                         crypto = crypto,
                         resultHandler = resultHandler

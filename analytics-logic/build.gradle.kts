@@ -15,6 +15,8 @@
  */
 
 import eu.europa.ec.euidi.config.LibraryModule
+import eu.europa.ec.euidi.kover.KoverExclusionRules
+import eu.europa.ec.euidi.kover.excludeFromKoverReport
 
 plugins {
     id("eudi.android.library")
@@ -28,3 +30,8 @@ android {
 moduleConfig {
     module = LibraryModule.AnalyticsLogic
 }
+
+excludeFromKoverReport(
+    excludedClasses = KoverExclusionRules.AnalyticsLogic.classes,
+    excludedPackages = KoverExclusionRules.AnalyticsLogic.packages,
+)

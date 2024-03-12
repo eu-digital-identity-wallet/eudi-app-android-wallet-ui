@@ -18,10 +18,10 @@ package eu.europa.ec.issuancefeature.ui.document.add
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
@@ -206,7 +206,7 @@ class AddDocumentViewModel(
                         addDocumentInteractor.handleUserAuth(
                             context = context,
                             crypto = response.crypto,
-                            resultHandler = UserAuthenticationResult(
+                            resultHandler = DeviceAuthenticationResult(
                                 onAuthenticationSuccess = {
                                     response.resultHandler.onAuthenticationSuccess()
                                 },

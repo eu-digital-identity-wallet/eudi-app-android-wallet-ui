@@ -17,16 +17,16 @@
 package eu.europa.ec.issuancefeature.interactor.document
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
-import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
@@ -56,13 +56,13 @@ interface AddDocumentInteractor {
     fun handleUserAuth(
         context: Context,
         crypto: BiometricCrypto,
-        resultHandler: UserAuthenticationResult
+        resultHandler: DeviceAuthenticationResult
     )
 }
 
 class AddDocumentInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val userAuthenticationInteractor: UserAuthenticationInteractor,
+    private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     private val resourceProvider: ResourceProvider,
 ) : AddDocumentInteractor {
     private val genericErrorMsg
@@ -121,12 +121,12 @@ class AddDocumentInteractorImpl(
     override fun handleUserAuth(
         context: Context,
         crypto: BiometricCrypto,
-        resultHandler: UserAuthenticationResult
+        resultHandler: DeviceAuthenticationResult
     ) {
-        userAuthenticationInteractor.getBiometricsAvailability {
+        deviceAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
                         context,
                         crypto,
                         resultHandler
@@ -134,7 +134,7 @@ class AddDocumentInteractorImpl(
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
-                    userAuthenticationInteractor.authenticateWithBiometrics(
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
                         context,
                         crypto,
                         resultHandler

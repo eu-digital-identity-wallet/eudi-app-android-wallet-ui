@@ -18,8 +18,8 @@ package eu.europa.ec.proximityfeature.ui.loading
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
@@ -117,7 +117,7 @@ class ProximityLoadingViewModel(
                         interactor.handleUserAuthentication(
                             context = context,
                             crypto = it.crypto,
-                            resultHandler = UserAuthenticationResult(
+                            resultHandler = DeviceAuthenticationResult(
                                 onAuthenticationSuccess = { it.resultHandler.onAuthenticationSuccess() },
                                 onAuthenticationFailure = { setEffect { popEffect } },
                                 onAuthenticationError = { setEffect { popEffect } }

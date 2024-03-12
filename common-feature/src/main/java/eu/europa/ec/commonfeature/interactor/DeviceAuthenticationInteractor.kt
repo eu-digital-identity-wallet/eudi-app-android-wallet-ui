@@ -17,32 +17,32 @@
 package eu.europa.ec.commonfeature.interactor
 
 import android.content.Context
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationController
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
-import eu.europa.ec.businesslogic.controller.biometry.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationController
 import eu.europa.ec.businesslogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 
-interface UserAuthenticationInteractor {
+interface DeviceAuthenticationInteractor {
     fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
     fun authenticateWithBiometrics(
         context: Context,
         crypto: BiometricCrypto,
-        resultHandler: UserAuthenticationResult
+        resultHandler: DeviceAuthenticationResult
     )
 }
 
-class UserAuthenticationInteractorImpl(private val userAuthenticationController: UserAuthenticationController) :
-    UserAuthenticationInteractor {
+class DeviceAuthenticationInteractorImpl(private val deviceAuthenticationController: DeviceAuthenticationController) :
+    DeviceAuthenticationInteractor {
     override fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit) {
-        userAuthenticationController.deviceSupportsBiometrics(listener)
+        deviceAuthenticationController.deviceSupportsBiometrics(listener)
     }
 
     override fun authenticateWithBiometrics(
         context: Context,
         crypto: BiometricCrypto,
-        resultHandler: UserAuthenticationResult
+        resultHandler: DeviceAuthenticationResult
     ) {
-        userAuthenticationController.authenticate(
+        deviceAuthenticationController.authenticate(
             context,
             crypto,
             resultHandler

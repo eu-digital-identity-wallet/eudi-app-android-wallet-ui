@@ -21,7 +21,7 @@ import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
 import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
-import eu.europa.ec.commonfeature.interactor.UserAuthenticationInteractor
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedId1
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedMdlOptionItemUi
@@ -58,7 +58,7 @@ class TestAddDocumentInteractor {
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     @Mock
-    private lateinit var userAuthenticationInteractor: UserAuthenticationInteractor
+    private lateinit var deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 
     @Mock
     private lateinit var resourceProvider: ResourceProvider
@@ -73,7 +73,7 @@ class TestAddDocumentInteractor {
 
         interactor = AddDocumentInteractorImpl(
             walletCoreDocumentsController = walletCoreDocumentsController,
-            userAuthenticationInteractor = userAuthenticationInteractor,
+            deviceAuthenticationInteractor = deviceAuthenticationInteractor,
             resourceProvider = resourceProvider,
         )
 

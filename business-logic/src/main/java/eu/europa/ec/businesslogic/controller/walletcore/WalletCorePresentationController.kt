@@ -17,10 +17,10 @@
 package eu.europa.ec.businesslogic.controller.walletcore
 
 import androidx.activity.ComponentActivity
-import eu.europa.ec.businesslogic.controller.authentication.UserAuthenticationResult
 import eu.europa.ec.businesslogic.di.WalletPresentationScope
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
@@ -65,7 +65,7 @@ sealed class SendRequestedDocumentsPartialState {
     data class Failure(val error: String) : SendRequestedDocumentsPartialState()
     data class UserAuthenticationRequired(
         val crypto: BiometricCrypto,
-        val resultHandler: UserAuthenticationResult
+        val resultHandler: DeviceAuthenticationResult
     ) : SendRequestedDocumentsPartialState()
 
     data object RequestSent : SendRequestedDocumentsPartialState()
@@ -80,7 +80,7 @@ sealed class ResponseReceivedPartialState {
 sealed class WalletCorePartialState {
     data class UserAuthenticationRequired(
         val crypto: BiometricCrypto,
-        val resultHandler: UserAuthenticationResult
+        val resultHandler: DeviceAuthenticationResult
     ) : WalletCorePartialState()
 
     data class Failure(val error: String) : WalletCorePartialState()
@@ -290,7 +290,7 @@ class WalletCorePresentationControllerImpl(
                     emit(
                         SendRequestedDocumentsPartialState.UserAuthenticationRequired(
                             BiometricCrypto(response.cryptoObject),
-                            UserAuthenticationResult(
+                            DeviceAuthenticationResult(
                                 onAuthenticationSuccess = {
                                     eudiWallet.sendResponse(
                                         disclosedDocuments = documents

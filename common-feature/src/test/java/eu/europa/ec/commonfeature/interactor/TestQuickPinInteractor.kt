@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.interactor
 
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -47,7 +47,7 @@ class TestQuickPinInteractor {
     private lateinit var formValidator: FormValidator
 
     @Mock
-    private lateinit var prefKeys: PrefKeys
+    private lateinit var pinStorageController: PinStorageController
 
     @Mock
     private lateinit var resourceProvider: ResourceProvider
@@ -62,7 +62,7 @@ class TestQuickPinInteractor {
 
         interactor = QuickPinInteractorImpl(
             formValidator = formValidator,
-            prefKeys = prefKeys,
+            pinStorageController = pinStorageController,
             resourceProvider = resourceProvider
         )
 
@@ -82,7 +82,7 @@ class TestQuickPinInteractor {
     @Test
     fun `Given Case 1, When hasPin is called, Then it returns false`() {
         // Given
-        whenever(prefKeys.getDevicePin())
+        whenever(pinStorageController.retrievePin())
             .thenReturn(mockedEmptyPin)
 
         // When
@@ -92,16 +92,16 @@ class TestQuickPinInteractor {
         val expected = false
 
         assertEquals(expected, actual)
-        verify(prefKeys, times(1))
-            .getDevicePin()
+        verify(pinStorageController, times(1))
+            .retrievePin()
     }
 
     // Case 2:
-    // prefKeys.getDevicePin() returns blank String.
+    // pinStorageController.retrievePin() returns blank String.
     @Test
     fun `Given Case 2, When hasPin is called, Then it returns false`() {
         // Given
-        whenever(prefKeys.getDevicePin())
+        whenever(pinStorageController.retrievePin())
             .thenReturn(mockedBlankPin)
 
         // When
@@ -111,16 +111,16 @@ class TestQuickPinInteractor {
         val expected = false
 
         assertEquals(expected, actual)
-        verify(prefKeys, times(1))
-            .getDevicePin()
+        verify(pinStorageController, times(1))
+            .retrievePin()
     }
 
     // Case 3:
-    // prefKeys.getDevicePin() returns a valid String.
+    // pinStorageController.retrievePin() returns a valid String.
     @Test
     fun `Given Case 3, When hasPin is called, Then it returns true`() {
         // Given
-        whenever(prefKeys.getDevicePin())
+        whenever(pinStorageController.retrievePin())
             .thenReturn(mockedPin)
 
         // When
@@ -130,8 +130,8 @@ class TestQuickPinInteractor {
         val expected = true
 
         assertEquals(expected, actual)
-        verify(prefKeys, times(1))
-            .getDevicePin()
+        verify(pinStorageController, times(1))
+            .retrievePin()
     }
     //endregion
 
@@ -139,7 +139,7 @@ class TestQuickPinInteractor {
 
     // Case 1:
     // isPinMatched returns Success.
-    // prefKeys.setDevicePin() throws no errors.
+    // pinStorageController.setPin() throws no errors.
     @Test
     fun `Given Case 1, When setPin is called, Then it returns Success`() {
         coroutineRule.runTest {
@@ -159,8 +159,8 @@ class TestQuickPinInteractor {
                 )
             }
 
-            verify(prefKeys, times(1))
-                .setDevicePin(pin = mockedPin)
+            verify(pinStorageController, times(1))
+                .setPin(pin = mockedPin)
         }
     }
 
@@ -197,14 +197,14 @@ class TestQuickPinInteractor {
 
     // Case 3:
     // isPinMatched returns Success.
-    // prefKeys.setDevicePin() throws an exception with a message.
+    // pinStorageController.setPin() throws an exception with a message.
     @Test
     fun `Given Case 3, When setPin is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
             val mockedNewPin = mockedPin
             val mockedInitialPin = mockedPin
-            whenever(prefKeys.setDevicePin(anyString()))
+            whenever(pinStorageController.setPin(anyString()))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -225,14 +225,14 @@ class TestQuickPinInteractor {
 
     // Case 4:
     // isPinMatched returns Success.
-    // prefKeys.setDevicePin() throws an exception with no message.
+    // pinStorageController.setPin() throws an exception with no message.
     @Test
     fun `Given Case 4, When setPin is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
             val mockedNewPin = mockedPin
             val mockedInitialPin = mockedPin
-            whenever(prefKeys.setDevicePin(anyString()))
+            whenever(pinStorageController.setPin(anyString()))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -255,7 +255,7 @@ class TestQuickPinInteractor {
     //region changePin
 
     // Case 1:
-    // prefKeys.setDevicePin() throws no errors.
+    // pinStorageController.setPin() throws no errors.
     @Test
     fun `Given Case 1, When changePin is called, Then it returns Success`() {
         coroutineRule.runTest {
@@ -274,12 +274,12 @@ class TestQuickPinInteractor {
     }
 
     // Case 2:
-    // prefKeys.setDevicePin() throws an exception with a message.
+    // pinStorageController.setPin() throws an exception with a message.
     @Test
     fun `Given Case 2, When changePin is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            whenever(prefKeys.setDevicePin(mockedNewPin))
+            whenever(pinStorageController.setPin(mockedNewPin))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -298,12 +298,12 @@ class TestQuickPinInteractor {
     }
 
     // Case 3:
-    // prefKeys.setDevicePin() throws an exception with no message.
+    // pinStorageController.setPin() throws an exception with no message.
     @Test
     fun `Given Case 3, When changePin is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            whenever(prefKeys.setDevicePin(mockedNewPin))
+            whenever(pinStorageController.setPin(mockedNewPin))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -325,14 +325,13 @@ class TestQuickPinInteractor {
     //region isCurrentPinValid
 
     // Case 1:
-    // prefKeys.getDevicePin() throws no errors.
-    // prefKeys.getDevicePin() == pin is true.
+    // pinStorageController.isPinValid() == pin is true.
     @Test
     fun `Given Case 1, When isCurrentPinValid is called, Then it returns Success`() {
         coroutineRule.runTest {
             // Given
-            whenever(prefKeys.getDevicePin())
-                .thenReturn(mockedPin)
+            whenever(pinStorageController.isPinValid(anyString()))
+                .thenReturn(true)
 
             // When
             interactor.isCurrentPinValid(
@@ -348,14 +347,14 @@ class TestQuickPinInteractor {
     }
 
     // Case 2:
-    // prefKeys.getDevicePin() throws no errors.
-    // prefKeys.getDevicePin() == pin is false.
+    // pinStorageController.isPinValid() == pin is false.
     @Test
     fun `Given Case 2, When isCurrentPinValid is called, Then it returns Failed with the appropriate error message`() {
         coroutineRule.runTest {
             // Given
-            whenever(prefKeys.getDevicePin())
-                .thenReturn(mockedPin)
+            whenever(pinStorageController.isPinValid(anyString()))
+                .thenReturn(false)
+
             whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
                 .thenReturn(mockedInvalidPinMessage)
 
@@ -378,12 +377,12 @@ class TestQuickPinInteractor {
     }
 
     // Case 3:
-    // prefKeys.getDevicePin() throws an exception with a message.
+    // pinStorageController.isPinValid() throws an exception with a message.
     @Test
     fun `Given Case 3, When isCurrentPinValid is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            whenever(prefKeys.getDevicePin())
+            whenever(pinStorageController.isPinValid(anyString()))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -402,12 +401,12 @@ class TestQuickPinInteractor {
     }
 
     // Case 4:
-    // prefKeys.getDevicePin() throws an exception with no message.
+    // pinStorageController.isPinValid() throws an exception with no message.
     @Test
     fun `Given Case 4, When isCurrentPinValid is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            whenever(prefKeys.getDevicePin())
+            whenever(pinStorageController.isPinValid(anyString()))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
