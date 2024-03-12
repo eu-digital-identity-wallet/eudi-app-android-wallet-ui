@@ -90,4 +90,17 @@ object MockResourceProviderForStringCalls {
         whenever(resourceProvider.getString(R.string.request_gender_female))
             .thenReturn("female")
     }
+
+    /**
+     * Mock the call of [eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer.transformToUiItems]
+     */
+    fun mockTransformToUiItemsCall(
+        resourceProvider: ResourceProvider,
+        notAvailableString: String
+    ) {
+        whenever(resourceProvider.getString(R.string.request_element_identifier_not_available))
+            .thenReturn(notAvailableString)
+        mockDocumentTypeUiToUiNameCall(resourceProvider)
+        mockGetKeyValueUiCall(resourceProvider)
+    }
 }

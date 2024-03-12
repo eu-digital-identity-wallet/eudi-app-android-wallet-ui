@@ -16,7 +16,7 @@
 
 package eu.europa.ec.issuancefeature.interactor
 
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedDocUiNamePid
+import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
