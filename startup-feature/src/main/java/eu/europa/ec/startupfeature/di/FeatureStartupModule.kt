@@ -16,8 +16,8 @@
 
 package eu.europa.ec.startupfeature.di
 
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
 import eu.europa.ec.startupfeature.interactor.splash.SplashInteractorImpl

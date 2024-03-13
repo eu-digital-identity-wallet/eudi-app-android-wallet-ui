@@ -16,15 +16,15 @@
 
 package eu.europa.ec.presentationfeature.interactor
 
-import eu.europa.ec.businesslogic.controller.walletcore.TransferEventPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
+import eu.europa.ec.corelogic.controller.TransferEventPartialState
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow

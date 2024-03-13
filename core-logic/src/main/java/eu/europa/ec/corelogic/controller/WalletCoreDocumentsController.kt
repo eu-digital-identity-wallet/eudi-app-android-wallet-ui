@@ -14,11 +14,11 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.controller.walletcore
+package eu.europa.ec.corelogic.controller
 
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
@@ -102,7 +102,7 @@ interface WalletCoreDocumentsController {
         documentId: String
     ): Flow<DeleteDocumentPartialState>
 
-    fun deleteAllDocuments(PID_documentId: String): Flow<DeleteAllDocumentsPartialState>
+    fun deleteAllDocuments(documentId: String): Flow<DeleteAllDocumentsPartialState>
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -205,10 +205,10 @@ class WalletCoreDocumentsControllerImpl(
         )
     }
 
-    override fun deleteAllDocuments(PID_documentId: String): Flow<DeleteAllDocumentsPartialState> =
+    override fun deleteAllDocuments(documentId: String): Flow<DeleteAllDocumentsPartialState> =
         flow {
             val allDocuments = eudiWallet.getDocuments()
-            val PID_document = allDocuments.find { it.id == PID_documentId }
+            val PID_document = allDocuments.find { it.id == documentId }
 
             PID_document?.let {
                 val restNonPID_Documents = allDocuments.minusElement(it)
@@ -235,7 +235,7 @@ class WalletCoreDocumentsControllerImpl(
 
                 if (allNonPidDocsDeleted) {
                     deleteDocument(
-                        documentId = PID_documentId
+                        documentId = documentId
                     ).collect { deletePID_documentPartialState ->
                         when (deletePID_documentPartialState) {
                             is DeleteDocumentPartialState.Failure -> emit(

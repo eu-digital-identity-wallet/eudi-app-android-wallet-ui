@@ -206,4 +206,14 @@ sealed interface KoverExclusionRules {
                 "eu.europa.ec.analyticslogic"
             )
     }
+
+    object CoreLogic : FeatureModule {
+        override val classes: List<String>
+            get() = commonClasses
+
+        override val packages: List<String>
+            get() = commonPackages + listOf(
+                "eu.europa.ec.corelogic"
+            )
+    }
 }

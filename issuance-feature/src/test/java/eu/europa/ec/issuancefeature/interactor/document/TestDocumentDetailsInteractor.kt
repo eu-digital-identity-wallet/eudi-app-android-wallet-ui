@@ -16,15 +16,15 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
-import eu.europa.ec.businesslogic.controller.walletcore.DeleteAllDocumentsPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.DeleteDocumentPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.util.TestsConstants
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedBasicMdlUi
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedBasicPidUi
+import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
+import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall

@@ -16,14 +16,14 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
-import eu.europa.ec.businesslogic.controller.walletcore.DeleteAllDocumentsPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.DeleteDocumentPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer
+import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
+import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -93,7 +93,7 @@ class DocumentDetailsInteractorImpl(
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState> =
         flow {
             if (documentType.toDocumentTypeUi() == DocumentTypeUi.PID) {
-                walletCoreDocumentsController.deleteAllDocuments(PID_documentId = documentId).map {
+                walletCoreDocumentsController.deleteAllDocuments(documentId = documentId).map {
                     when (it) {
                         is DeleteAllDocumentsPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
                             errorMessage = it.errorMessage

@@ -20,8 +20,6 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import eu.europa.ec.businesslogic.config.ConfigLogic
-import eu.europa.ec.businesslogic.config.WalletCoreConfig
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedFullDocumentsUi
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedMdlUiWithNoExpirationDate
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedMdlUiWithNoUserNameAndNoUserImage
@@ -30,6 +28,8 @@ import eu.europa.ec.commonfeature.util.TestsConstants.mockedNoUserBase64Portrait
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedNoUserFistNameFound
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedUserBase64Portrait
 import eu.europa.ec.commonfeature.util.TestsConstants.mockedUserFirstName
+import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider

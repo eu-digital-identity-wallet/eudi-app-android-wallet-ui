@@ -23,6 +23,7 @@ enum class LibraryModule(val path: String) {
     AnalyticsLogic(":analytics-logic"),
     AssemblyLogic(":assembly-logic"),
     BusinessLogic(":business-logic"),
+    CoreLogic(":core-logic"),
     AuthenticationLogic(":authentication-logic"),
     UiLogic(":ui-logic"),
     NetworkLogic(":network-logic"),

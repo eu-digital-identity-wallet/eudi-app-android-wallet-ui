@@ -17,8 +17,8 @@
 package eu.europa.ec.issuancefeature.di
 
 
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor

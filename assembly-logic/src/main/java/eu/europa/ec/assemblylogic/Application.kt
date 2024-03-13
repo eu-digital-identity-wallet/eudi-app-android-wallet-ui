@@ -21,8 +21,8 @@ import android.os.StrictMode
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
-import eu.europa.ec.businesslogic.config.WalletCoreConfig
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate

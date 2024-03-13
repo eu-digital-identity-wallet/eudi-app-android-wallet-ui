@@ -16,10 +16,10 @@
 
 package eu.europa.ec.proximityfeature.di
 
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
-import eu.europa.ec.businesslogic.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.di.PRESENTATION_SCOPE_ID
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor

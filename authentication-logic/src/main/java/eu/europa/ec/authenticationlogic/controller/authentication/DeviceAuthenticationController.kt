@@ -21,8 +21,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
-import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.launch
@@ -74,3 +73,9 @@ class DeviceAuthenticationControllerImpl(
         }
     }
 }
+
+data class DeviceAuthenticationResult(
+    val onAuthenticationSuccess: () -> Unit = {},
+    val onAuthenticationError: () -> Unit = {},
+    val onAuthenticationFailure: () -> Unit = {},
+)

@@ -15,7 +15,7 @@ interface WalletCoreConfig {
 }
 ```
 
-You can configure the *EudiWalletConfig* per flavor. You can find both implementations inside the business-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+You can configure the *EudiWalletConfig* per flavor. You can find both implementations inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
 
 ```
     private companion object {
@@ -37,7 +37,7 @@ interface WalletCoreConfig {
 }
 ```
 
-Same as the Verifier and Issuing APIs you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the business-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+Same as the Verifier and Issuing APIs you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
 
 ```
 _config = EudiWalletConfig.Builder(context)
