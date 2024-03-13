@@ -21,6 +21,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.di.WalletPresentationScope
+import eu.europa.ec.corelogic.util.EudiWalletListenerWrapper
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.ResponseResult
@@ -194,7 +195,7 @@ class WalletCorePresentationControllerImpl(
     }
 
     override val events = callbackFlow {
-        val eventListenerWrapper = eu.europa.ec.corelogic.util.EudiWalletListenerWrapper(
+        val eventListenerWrapper = EudiWalletListenerWrapper(
             onQrEngagementReady = { qrCode ->
                 trySendBlocking(
                     TransferEventPartialState.QrEngagementReady(qrCode = qrCode)
@@ -385,7 +386,7 @@ class WalletCorePresentationControllerImpl(
         coroutineScope.cancel()
     }
 
-    private fun addListener(listener: eu.europa.ec.corelogic.util.EudiWalletListenerWrapper) {
+    private fun addListener(listener: EudiWalletListenerWrapper) {
         val config = requireInit { _config }
         eudiWallet.addTransferEventListener(listener)
         if (config is PresentationControllerConfig.OpenId4VP) {
@@ -393,7 +394,7 @@ class WalletCorePresentationControllerImpl(
         }
     }
 
-    private fun removeListener(listener: eu.europa.ec.corelogic.util.EudiWalletListenerWrapper) {
+    private fun removeListener(listener: EudiWalletListenerWrapper) {
         requireInit { _config }
         eudiWallet.removeTransferEventListener(listener)
     }
