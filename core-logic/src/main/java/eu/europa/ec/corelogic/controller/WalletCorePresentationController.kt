@@ -258,7 +258,7 @@ class WalletCorePresentationControllerImpl(
         TransferEventPartialState.Error(
             error = it.localizedMessage ?: resourceProvider.genericErrorMessage()
         )
-    }.shareIn(coroutineScope, SharingStarted.Lazily, 1)
+    }.shareIn(coroutineScope, SharingStarted.Lazily, 2)
 
     override fun startQrEngagement() {
         eudiWallet.startQrEngagement()
@@ -328,6 +328,13 @@ class WalletCorePresentationControllerImpl(
 
                 is TransferEventPartialState.Redirect -> {
                     ResponseReceivedPartialState.Redirect(uri = response.uri)
+                }
+
+                is TransferEventPartialState.Disconnected -> {
+                    when {
+                        events.replayCache.firstOrNull() is TransferEventPartialState.Redirect -> null
+                        else -> ResponseReceivedPartialState.Success
+                    }
                 }
 
                 else -> null

@@ -108,7 +108,7 @@ object RequestTransformer {
                                 elementIdentifier = docItem.elementIdentifier,
                             ),
                             optional = false,
-                            isChecked = true,
+                            isChecked = isAvailable,
                             event = null,
                             readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
                             value = value
