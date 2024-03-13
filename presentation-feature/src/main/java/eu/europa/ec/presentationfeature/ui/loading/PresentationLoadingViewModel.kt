@@ -18,12 +18,12 @@ package eu.europa.ec.presentationfeature.ui.loading
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingObserveResponsePartialState
 import eu.europa.ec.resourceslogic.R

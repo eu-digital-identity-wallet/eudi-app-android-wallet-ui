@@ -18,19 +18,19 @@ package eu.europa.ec.issuancefeature.interactor.document
 
 import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
-import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.model.toUiName
+import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
+import eu.europa.ec.corelogic.controller.IssuanceMethod
+import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import kotlinx.coroutines.flow.Flow

@@ -20,7 +20,6 @@ import eu.europa.ec.euidi.kover.excludeFromKoverReport
 
 plugins {
     id("eudi.android.library")
-    id("eudi.wallet.core")
 }
 
 android {
@@ -34,7 +33,6 @@ moduleConfig {
 dependencies {
     implementation(project(LibraryModule.ResourcesLogic.path))
     implementation(libs.gson)
-    implementation(libs.androidx.biometric)
     implementation(libs.androidx.security)
     implementation(libs.androidx.appAuth)
     implementation(libs.logcat)

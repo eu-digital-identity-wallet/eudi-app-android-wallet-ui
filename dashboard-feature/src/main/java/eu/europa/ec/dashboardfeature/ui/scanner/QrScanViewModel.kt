@@ -16,9 +16,9 @@
 
 package eu.europa.ec.dashboardfeature.ui.scanner
 
-import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect

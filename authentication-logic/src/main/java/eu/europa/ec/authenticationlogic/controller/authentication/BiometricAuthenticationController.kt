@@ -30,10 +30,10 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
 import eu.europa.ec.authenticationlogic.model.BiometricAuthentication
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.extension.decodeFromPemBase64String
 import eu.europa.ec.businesslogic.extension.encodeToPemBase64String
-import eu.europa.ec.businesslogic.model.BiometricCrypto
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.Dispatchers

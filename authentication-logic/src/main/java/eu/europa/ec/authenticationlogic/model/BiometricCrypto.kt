@@ -14,9 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.controller.walletcore
+package eu.europa.ec.authenticationlogic.model
 
-sealed class PresentationControllerConfig {
-    data class OpenId4VP(val uri: String) : PresentationControllerConfig()
-    data object Ble : PresentationControllerConfig()
-}
+import androidx.biometric.BiometricPrompt
+
+data class BiometricCrypto(val cryptoObject: BiometricPrompt.CryptoObject?)

@@ -18,12 +18,12 @@ package eu.europa.ec.proximityfeature.ui.loading
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingObserveResponsePartialState
 import eu.europa.ec.resourceslogic.R

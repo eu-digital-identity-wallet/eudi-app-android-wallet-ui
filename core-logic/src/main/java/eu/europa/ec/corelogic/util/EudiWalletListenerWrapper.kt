@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.util
+package eu.europa.ec.corelogic.util
 
 import eu.europa.ec.eudi.iso18013.transfer.RequestedDocumentData
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent

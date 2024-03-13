@@ -19,8 +19,6 @@ package eu.europa.ec.dashboardfeature.interactor
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import eu.europa.ec.businesslogic.config.ConfigLogic
-import eu.europa.ec.businesslogic.config.WalletCoreConfig
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
@@ -28,6 +26,8 @@ import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
+import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow

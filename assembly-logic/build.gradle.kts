@@ -28,6 +28,7 @@ import eu.europa.ec.euidi.config.LibraryModule.ProximityFeature
 import eu.europa.ec.euidi.config.LibraryModule.ResourcesLogic
 import eu.europa.ec.euidi.config.LibraryModule.StartupFeature
 import eu.europa.ec.euidi.config.LibraryModule.UiLogic
+import eu.europa.ec.euidi.config.LibraryModule.CoreLogic
 import eu.europa.ec.euidi.kover.KoverExclusionRules
 import eu.europa.ec.euidi.kover.excludeFromKoverReport
 import eu.europa.ec.euidi.kover.koverModules
@@ -59,6 +60,7 @@ dependencies {
     api(project(NetworkLogic.path))
     api(project(AnalyticsLogic.path))
     api(project(AuthenticationLogic.path))
+    api(project(CoreLogic.path))
 
     // Feature Modules
     api(project(CommonFeature.path))

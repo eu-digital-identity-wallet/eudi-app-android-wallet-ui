@@ -17,11 +17,11 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import androidx.activity.ComponentActivity
-import eu.europa.ec.businesslogic.controller.walletcore.TransferEventPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
+import eu.europa.ec.corelogic.controller.TransferEventPartialState
+import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable

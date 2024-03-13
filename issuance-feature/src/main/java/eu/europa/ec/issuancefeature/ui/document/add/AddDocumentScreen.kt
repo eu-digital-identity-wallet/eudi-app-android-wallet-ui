@@ -30,9 +30,9 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
+import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IssuanceButton
 import eu.europa.ec.uilogic.component.IssuanceButtonData

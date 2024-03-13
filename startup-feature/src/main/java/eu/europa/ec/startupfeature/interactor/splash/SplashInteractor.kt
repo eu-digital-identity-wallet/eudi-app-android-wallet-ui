@@ -16,11 +16,11 @@
 
 package eu.europa.ec.startupfeature.interactor.splash
 
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCoreDocumentsController
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.model.PinFlow
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.config.ConfigNavigation

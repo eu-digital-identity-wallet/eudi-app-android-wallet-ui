@@ -18,11 +18,11 @@ package eu.europa.ec.presentationfeature.interactor
 
 import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePartialState
-import eu.europa.ec.businesslogic.controller.walletcore.WalletCorePresentationController
-import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
+import eu.europa.ec.corelogic.controller.WalletCorePartialState
+import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 import java.net.URI

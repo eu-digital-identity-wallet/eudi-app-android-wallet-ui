@@ -18,13 +18,13 @@ package eu.europa.ec.issuancefeature.ui.document.add
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.controller.walletcore.AddSampleDataPartialState
-import eu.europa.ec.businesslogic.controller.walletcore.IssuanceMethod
-import eu.europa.ec.businesslogic.controller.walletcore.IssueDocumentPartialState
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
+import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
+import eu.europa.ec.corelogic.controller.IssuanceMethod
+import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R

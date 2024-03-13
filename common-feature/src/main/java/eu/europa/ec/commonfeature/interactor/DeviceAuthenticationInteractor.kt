@@ -19,8 +19,8 @@ package eu.europa.ec.commonfeature.interactor
 import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationController
-import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 
 interface DeviceAuthenticationInteractor {
     fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)

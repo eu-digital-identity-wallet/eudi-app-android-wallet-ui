@@ -164,7 +164,9 @@ You can find instructions on how to configure the application [here](wiki/config
 
 *analytics-logic*: Access to analytics providers. Capabilities for test monitoring analytics (i.e. crashes) can be added here (no functionality right now)
 
-*business-logic*: App business logic, wallet core resides here.
+*business-logic*: App business logic.
+
+*core-logic*: Wallet core logic.
 
 *authentication-logic*: Pin/Biometry Storage and System Biometrics Logic.
 
@@ -187,7 +189,7 @@ You can find instructions on how to configure the application [here](wiki/config
 
 ```mermaid
 graph TD;
-    Logic-modules/resources-logic,ui-logic,business-logic,authentication-logic,network-logic,assembly-logic/-->Feature-modules/common-feature,login-feature,dashboard-feature,startup-feature,presentation-feature,issuance-feature,proximity-feature/;
+    Logic-modules/resources-logic,ui-logic,business-logic,core-logic,authentication-logic,network-logic,assembly-logic/-->Feature-modules/common-feature,login-feature,dashboard-feature,startup-feature,presentation-feature,issuance-feature,proximity-feature/;
 ```
 
 

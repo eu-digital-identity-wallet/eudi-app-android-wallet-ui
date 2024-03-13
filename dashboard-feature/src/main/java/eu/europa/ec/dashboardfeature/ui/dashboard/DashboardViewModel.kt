@@ -18,12 +18,12 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.di.getOrCreatePresentationScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.PinFlow
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig

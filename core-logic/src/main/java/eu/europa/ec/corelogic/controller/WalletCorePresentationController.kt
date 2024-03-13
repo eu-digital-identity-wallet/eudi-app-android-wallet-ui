@@ -14,14 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.controller.walletcore
+package eu.europa.ec.corelogic.controller
 
 import androidx.activity.ComponentActivity
-import eu.europa.ec.businesslogic.di.WalletPresentationScope
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.businesslogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.model.DeviceAuthenticationResult
-import eu.europa.ec.businesslogic.util.EudiWalletListenerWrapper
+import eu.europa.ec.corelogic.di.WalletPresentationScope
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
 import eu.europa.ec.eudi.iso18013.transfer.ResponseResult
@@ -44,6 +43,11 @@ import kotlinx.coroutines.flow.shareIn
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
 import java.net.URI
+
+sealed class PresentationControllerConfig {
+    data class OpenId4VP(val uri: String) : PresentationControllerConfig()
+    data object Ble : PresentationControllerConfig()
+}
 
 sealed class TransferEventPartialState {
     data object Connected : TransferEventPartialState()
@@ -190,7 +194,7 @@ class WalletCorePresentationControllerImpl(
     }
 
     override val events = callbackFlow {
-        val eventListenerWrapper = EudiWalletListenerWrapper(
+        val eventListenerWrapper = eu.europa.ec.corelogic.util.EudiWalletListenerWrapper(
             onQrEngagementReady = { qrCode ->
                 trySendBlocking(
                     TransferEventPartialState.QrEngagementReady(qrCode = qrCode)
@@ -381,7 +385,7 @@ class WalletCorePresentationControllerImpl(
         coroutineScope.cancel()
     }
 
-    private fun addListener(listener: EudiWalletListenerWrapper) {
+    private fun addListener(listener: eu.europa.ec.corelogic.util.EudiWalletListenerWrapper) {
         val config = requireInit { _config }
         eudiWallet.addTransferEventListener(listener)
         if (config is PresentationControllerConfig.OpenId4VP) {
@@ -389,7 +393,7 @@ class WalletCorePresentationControllerImpl(
         }
     }
 
-    private fun removeListener(listener: EudiWalletListenerWrapper) {
+    private fun removeListener(listener: eu.europa.ec.corelogic.util.EudiWalletListenerWrapper) {
         requireInit { _config }
         eudiWallet.removeTransferEventListener(listener)
     }

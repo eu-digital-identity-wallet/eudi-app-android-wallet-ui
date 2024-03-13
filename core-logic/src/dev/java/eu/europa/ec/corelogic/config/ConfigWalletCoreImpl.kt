@@ -14,10 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.config
+package eu.europa.ec.corelogic.config
 
 import android.content.Context
-import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.corelogic.BuildConfig
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
