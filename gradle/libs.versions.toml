@@ -170,6 +170,7 @@ eudi-wallet-core = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-walle
 cbor-tree = { group = "com.google.iot.cbor", name = "cbor", version.ref = "cborTree" }
 appcenter-analytics = { group = "com.microsoft.appcenter", name = "appcenter-analytics", version.ref = "appCenter" }
 appcenter-crashes = { group = "com.microsoft.appcenter", name = "appcenter-crashes", version.ref = "appCenter" }
+appcenter-distribute = { group = "com.microsoft.appcenter", name = "appcenter-distribute", version.ref = "appCenter" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
