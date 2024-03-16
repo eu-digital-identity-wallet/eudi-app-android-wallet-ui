@@ -34,7 +34,6 @@ dependencies {
 
     implementation(project(LibraryModule.ResourcesLogic.path))
     implementation(project(LibraryModule.BusinessLogic.path))
-    implementation(project(LibraryModule.AnalyticsLogic.path))
 
     implementation(libs.gson)
     implementation(libs.androidx.biometric)
