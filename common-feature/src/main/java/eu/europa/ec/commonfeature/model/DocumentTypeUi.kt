@@ -25,6 +25,7 @@ data class DocumentUi(
     val documentName: String,
     val documentType: DocumentTypeUi,
     val documentExpirationDateFormatted: String,
+    val documentHasExpired: Boolean,
     val documentImage: String,
     val documentDetails: List<DocumentDetailsUi>,
     val userFullName: String? = null,

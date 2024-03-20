@@ -167,7 +167,8 @@ private fun UserImageAndIcon(
         ) {
             BigImageAndMediumIcon(
                 base64Image = base64Image,
-                icon = icon
+                icon = icon,
+                docHasExpired = false,
             )
             VSpacer.Large()
             Text(

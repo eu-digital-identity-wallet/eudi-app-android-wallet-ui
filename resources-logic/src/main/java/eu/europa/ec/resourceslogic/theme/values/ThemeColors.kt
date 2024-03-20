@@ -54,7 +54,7 @@ class ThemeColors {
         internal const val eudiw_theme_light_textSecondaryDark: Long = 0x8A000000
         internal const val eudiw_theme_light_textDisabledDark: Long = 0x61000000
         internal const val eudiw_theme_light_dividerDark: Long = 0x1F000000
-        internal const val eudiw_theme_light_backgroundDefault: Long = 0x0A000000
+        internal const val eudiw_theme_light_backgroundDefault: Long = 0xFFF5F5F5
         const val eudiw_theme_light_backgroundPaper: Long = 0xFFFFFFFF
         internal const val eudiw_theme_light_textSecondaryLight: Long = 0xB3FFFFFF
         internal const val eudiw_theme_light_textDisabledLight: Long = 0x80FFFFFF

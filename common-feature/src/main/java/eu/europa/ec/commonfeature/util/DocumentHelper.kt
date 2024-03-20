@@ -18,6 +18,7 @@ package eu.europa.ec.commonfeature.util
 
 import eu.europa.ec.businesslogic.util.getStringFromJsonOrEmpty
 import eu.europa.ec.businesslogic.util.toDateFormatted
+import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.eudi.wallet.document.Document
@@ -27,6 +28,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.time.LocalDate
 
 fun extractValueFromDocumentOrEmpty(
     document: Document,
@@ -181,4 +183,15 @@ fun getKeyValueUi(
         }
 
     return Pair(uiKey, uiValue)
+}
+
+fun documentHasExpired(
+    documentExpirationDate: String,
+    currentDate: LocalDate = LocalDate.now(),
+): Boolean {
+    val localDateOfDocumentExpirationDate = documentExpirationDate.toLocalDate()
+
+    return localDateOfDocumentExpirationDate?.let {
+        currentDate.isAfter(it)
+    } ?: false
 }

@@ -170,6 +170,7 @@ class DocumentDetailsViewModel(
                                 headerData = HeaderData(
                                     title = documentUi.documentName,
                                     subtitle = documentUi.userFullName.orEmpty(),
+                                    documentHasExpired = documentUi.documentHasExpired,
                                     base64Image = documentUi.documentImage,
                                     icon = AppIcons.IdStroke
                                 )

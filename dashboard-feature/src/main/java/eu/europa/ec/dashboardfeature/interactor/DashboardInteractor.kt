@@ -25,6 +25,7 @@ import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
+import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -79,6 +80,9 @@ class DashboardInteractorImpl(
                 document = document,
                 key = DocumentJsonKeys.EXPIRY_DATE
             )
+
+            val docHasExpired = documentHasExpired(documentExpirationDate)
+
             documentExpirationDate = if (documentExpirationDate.isNotBlank()) {
                 documentExpirationDate.toDateFormatted().toString()
             } else {
@@ -105,6 +109,7 @@ class DashboardInteractorImpl(
                 documentType = document.docType.toDocumentTypeUi(),
                 documentImage = "",
                 documentExpirationDateFormatted = documentExpirationDate,
+                documentHasExpired = docHasExpired,
                 documentDetails = emptyList()
             )
         }

@@ -52,7 +52,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -63,10 +66,13 @@ import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
+import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DocumentHasExpiredIndicator
 import eu.europa.ec.uilogic.component.ScalableText
 import eu.europa.ec.uilogic.component.UserImageOrPlaceholder
 import eu.europa.ec.uilogic.component.content.ContentGradient
@@ -562,10 +568,17 @@ private fun CardListItem(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            WrapIcon(
-                iconData = AppIcons.Id,
-                customTint = MaterialTheme.colorScheme.primary
-            )
+            Box {
+                WrapIcon(
+                    iconData = AppIcons.Id,
+                    customTint = MaterialTheme.colorScheme.primary
+                )
+                if (dataItem.documentHasExpired) {
+                    DocumentHasExpiredIndicator(
+                        backgroundColor = MaterialTheme.colorScheme.backgroundDefault
+                    )
+                }
+            }
             Box(
                 modifier = Modifier
                     .wrapContentWidth()
@@ -580,14 +593,18 @@ private fun CardListItem(
                 )
             }
             VSpacer.Small()
-            ExpiryDate(expirationDate = dataItem.documentExpirationDateFormatted)
+            ExpiryDate(
+                expirationDate = dataItem.documentExpirationDateFormatted,
+                hasExpired = dataItem.documentHasExpired
+            )
         }
     }
 }
 
 @Composable
 private fun ExpiryDate(
-    expirationDate: String
+    expirationDate: String,
+    hasExpired: Boolean
 ) {
     val textStyle = MaterialTheme.typography.bodySmall
         .copy(color = MaterialTheme.colorScheme.textSecondaryDark)
@@ -595,7 +612,26 @@ private fun ExpiryDate(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = stringResource(id = R.string.dashboard_document_expiration), style = textStyle)
+        if (hasExpired) {
+            val annotatedText = buildAnnotatedString {
+                withStyle(
+                    style = SpanStyle(
+                        fontStyle = MaterialTheme.typography.bodySmall.fontStyle,
+                        color = MaterialTheme.colorScheme.warning
+                    )
+                ) {
+                    append(stringResource(id = R.string.dashboard_document_has_expired_one))
+                }
+
+                append(stringResource(id = R.string.dashboard_document_has_expired_two))
+            }
+            Text(text = annotatedText, style = textStyle)
+        } else {
+            Text(
+                text = stringResource(id = R.string.dashboard_document_has_not_expired),
+                style = textStyle
+            )
+        }
         Text(text = expirationDate, style = textStyle)
     }
 }
@@ -611,6 +647,7 @@ private fun DashboardScreenPreview() {
                 documentName = "National ID",
                 documentType = DocumentTypeUi.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
+                documentHasExpired = false,
                 documentImage = "image1",
                 documentDetails = emptyList(),
             ),
@@ -619,6 +656,7 @@ private fun DashboardScreenPreview() {
                 documentName = "Driving License",
                 documentType = DocumentTypeUi.MDL,
                 documentExpirationDateFormatted = "25 Dec 2050",
+                documentHasExpired = false,
                 documentImage = "image2",
                 documentDetails = emptyList(),
             ),
@@ -626,7 +664,8 @@ private fun DashboardScreenPreview() {
                 documentId = "2",
                 documentName = "Other",
                 documentType = DocumentTypeUi.OTHER,
-                documentExpirationDateFormatted = "01 Jun 2030",
+                documentExpirationDateFormatted = "01 Jun 2020",
+                documentHasExpired = true,
                 documentImage = "image3",
                 documentDetails = emptyList(),
             )

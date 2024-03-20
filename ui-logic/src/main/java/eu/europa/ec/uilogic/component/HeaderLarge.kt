@@ -37,6 +37,7 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 data class HeaderData(
     val title: String,
     val subtitle: String,
+    val documentHasExpired: Boolean,
     val base64Image: String,
     val icon: IconData = AppIcons.IdStroke
 )
@@ -77,20 +78,40 @@ fun HeaderLarge(
 
         BigImageAndMediumIcon(
             base64Image = data.base64Image,
-            icon = data.icon
+            icon = data.icon,
+            docHasExpired = data.documentHasExpired,
         )
     }
 }
 
 @ThemeModePreviews
 @Composable
-private fun HeaderLargePreview() {
+private fun HeaderLargeDocExpiredPreview() {
     PreviewTheme {
         HeaderLarge(
             modifier = Modifier.fillMaxWidth(),
             data = HeaderData(
                 title = "National ID",
                 subtitle = "Jane Doe",
+                documentHasExpired = true,
+                base64Image = "",
+                icon = AppIcons.IdStroke
+            ),
+            containerColor = MaterialTheme.colorScheme.secondary,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun HeaderLargeDocNotExpiredPreview() {
+    PreviewTheme {
+        HeaderLarge(
+            modifier = Modifier.fillMaxWidth(),
+            data = HeaderData(
+                title = "National ID",
+                subtitle = "Jane Doe",
+                documentHasExpired = false,
                 base64Image = "",
                 icon = AppIcons.IdStroke
             ),
