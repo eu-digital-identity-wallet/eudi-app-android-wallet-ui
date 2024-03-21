@@ -18,6 +18,8 @@ package eu.europa.ec.businesslogic.util
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -47,4 +49,26 @@ fun String.toDateFormatted(
         }
     }
     return formattedDate?.let { dateFormat.format(it) }
+}
+
+fun String.toLocalDate(
+    selectedLanguage: String = LocaleUtils.DEFAULT_LOCALE,
+): LocalDate? {
+    var dateFormatter: DateTimeFormatter?
+    var result: LocalDate? = null
+
+    for (formatter in dtoDateFormatters) {
+        try {
+            dateFormatter = DateTimeFormatter.ofPattern(
+                formatter,
+                LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
+            )
+            result = LocalDate.parse(this, dateFormatter)
+            break
+        } catch (_: Exception) {
+            continue
+        }
+    }
+
+    return result
 }

@@ -38,12 +38,14 @@ object TestsConstants {
     const val mockedNoUserBase64PortraitFound = ""
     const val mockedNoExpirationDateFound = "-"
     const val mockedFormattedExpirationDate = "30 Mar 2050"
+    const val mockedDocumentHasExpired = false
 
     val mockedFullPidUi = DocumentUi(
         documentId = mockedId1,
         documentName = mockedDocUiNamePid,
         documentType = DocumentTypeUi.PID,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
+        documentHasExpired = mockedDocumentHasExpired,
         documentImage = "",
         documentDetails = emptyList(),
     )
@@ -115,6 +117,7 @@ object TestsConstants {
         documentName = mockedDocUiNameMdl,
         documentType = DocumentTypeUi.MDL,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
+        documentHasExpired = mockedDocumentHasExpired,
         documentImage = "",
         documentDetails = emptyList(),
     )

@@ -16,9 +16,11 @@
 
 package eu.europa.ec.uilogic.component
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,11 +31,13 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapImage
+import eu.europa.ec.uilogic.extension.IconWarningIndicator
 
 @Composable
 fun BigImageAndMediumIcon(
     base64Image: String,
     icon: IconData?,
+    docHasExpired: Boolean,
 ) {
     val bigImageWidth = 160.dp
     val bigImageHeight = 160.dp
@@ -57,7 +61,7 @@ fun BigImageAndMediumIcon(
         )
 
         if (icon != null) {
-            WrapImage(
+            Box(
                 modifier = Modifier
                     .size(width = smallIconWidth, height = smallIconHeight)
                     .clip(RoundedCornerShape(SIZE_SMALL.dp))
@@ -67,19 +71,40 @@ fun BigImageAndMediumIcon(
                         bottom.linkTo(bigImage.bottom)
                         end.linkTo(verticalGuideline)
                     },
-                iconData = icon
-            )
+            ) {
+                WrapImage(
+                    iconData = icon
+                )
+                if (docHasExpired) {
+                    IconWarningIndicator(
+                        backgroundColor = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
         }
     }
 }
 
 @ThemeModePreviews
 @Composable
-private fun BigImageAndMediumIconPreview() {
+private fun BigImageAndMediumIconWithDocExpiredPreview() {
     PreviewTheme {
         BigImageAndMediumIcon(
             base64Image = "",
-            icon = AppIcons.IdStroke
+            icon = AppIcons.IdStroke,
+            docHasExpired = true,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun BigImageAndMediumIconWithDocNotExpiredPreview() {
+    PreviewTheme {
+        BigImageAndMediumIcon(
+            base64Image = "",
+            icon = AppIcons.IdStroke,
+            docHasExpired = false,
         )
     }
 }

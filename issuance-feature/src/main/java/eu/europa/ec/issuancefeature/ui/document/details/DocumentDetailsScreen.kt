@@ -343,12 +343,14 @@ private fun IssuanceDocumentDetailsScreenPreview() {
                 documentName = "National ID",
                 documentType = DocumentTypeUi.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
+                documentHasExpired = false,
                 documentImage = "image3",
                 documentDetails = emptyList()
             ),
             headerData = HeaderData(
                 title = "Title",
                 subtitle = "subtitle",
+                documentHasExpired = false,
                 base64Image = "",
                 icon = AppIcons.IdStroke
             )
@@ -384,12 +386,14 @@ private fun DashboardDocumentDetailsScreenPreview() {
                 documentName = "National ID",
                 documentType = DocumentTypeUi.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
+                documentHasExpired = false,
                 documentImage = "image3",
                 documentDetails = emptyList()
             ),
             headerData = HeaderData(
                 title = "Title",
                 subtitle = "subtitle",
+                documentHasExpired = false,
                 base64Image = "",
                 icon = AppIcons.IdStroke
             )

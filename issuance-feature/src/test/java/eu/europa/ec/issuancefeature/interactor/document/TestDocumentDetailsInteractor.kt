@@ -248,6 +248,7 @@ class TestDocumentDetailsInteractor {
                             documentName = TestsConstants.mockedDocUiNamePid,
                             documentType = DocumentTypeUi.PID,
                             documentExpirationDateFormatted = "",
+                            documentHasExpired = TestsConstants.mockedDocumentHasExpired,
                             documentImage = "",
                             documentDetails = listOf(
                                 DocumentDetailsUi.DefaultItem(
