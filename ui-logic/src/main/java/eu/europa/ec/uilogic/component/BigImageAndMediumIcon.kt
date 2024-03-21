@@ -31,6 +31,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapImage
+import eu.europa.ec.uilogic.extension.IconWarningIndicator
 
 @Composable
 fun BigImageAndMediumIcon(
@@ -75,7 +76,7 @@ fun BigImageAndMediumIcon(
                     iconData = icon
                 )
                 if (docHasExpired) {
-                    DocumentHasExpiredIndicator(
+                    IconWarningIndicator(
                         backgroundColor = MaterialTheme.colorScheme.secondary
                     )
                 }

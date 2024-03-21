@@ -72,7 +72,6 @@ import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.DocumentHasExpiredIndicator
 import eu.europa.ec.uilogic.component.ScalableText
 import eu.europa.ec.uilogic.component.UserImageOrPlaceholder
 import eu.europa.ec.uilogic.component.content.ContentGradient
@@ -100,6 +99,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
+import eu.europa.ec.uilogic.extension.IconWarningIndicator
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
@@ -574,7 +574,7 @@ private fun CardListItem(
                     customTint = MaterialTheme.colorScheme.primary
                 )
                 if (dataItem.documentHasExpired) {
-                    DocumentHasExpiredIndicator(
+                    IconWarningIndicator(
                         backgroundColor = MaterialTheme.colorScheme.backgroundDefault
                     )
                 }

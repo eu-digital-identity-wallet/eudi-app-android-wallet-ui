@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.extension
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -29,18 +29,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.warning
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 @Composable
-fun BoxScope.DocumentHasExpiredIndicator(
+fun BoxScope.IconWarningIndicator(
+    iconData: IconData = AppIcons.Warning,
+    customTint: Color = MaterialTheme.colorScheme.warning,
     backgroundColor: Color,
 ) {
     WrapIcon(
-        iconData = AppIcons.Warning,
-        customTint = MaterialTheme.colorScheme.warning,
+        iconData = iconData,
+        customTint = customTint,
         modifier = Modifier
             .align(Alignment.TopEnd)
             .background(
@@ -54,14 +58,14 @@ fun BoxScope.DocumentHasExpiredIndicator(
 
 @ThemeModePreviews
 @Composable
-private fun DocumentHasExpiredIndicatorPreview() {
+private fun IconWarningIndicatorPreview() {
     PreviewTheme {
         Box {
             WrapIcon(
                 iconData = AppIcons.Id,
                 customTint = MaterialTheme.colorScheme.primary
             )
-            DocumentHasExpiredIndicator(
+            IconWarningIndicator(
                 backgroundColor = MaterialTheme.colorScheme.background
             )
         }
