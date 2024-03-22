@@ -189,7 +189,42 @@ You can find instructions on how to configure the application [here](wiki/config
 
 ```mermaid
 graph TD;
-    Logic-modules/resources-logic,ui-logic,business-logic,core-logic,authentication-logic,network-logic,assembly-logic/-->Feature-modules/common-feature,login-feature,dashboard-feature,startup-feature,presentation-feature,issuance-feature,proximity-feature/;
+  startup-feature --> assembly-logic
+  login-feature --> assembly-logic
+  dashboard-feature --> assembly-logic
+  presentation-feature --> assembly-logic
+  proximity-feature --> assembly-logic
+  issuance-feature --> assembly-logic
+
+  common-feature --> startup-feature
+  common-feature --> login-feature
+  common-feature --> dashboard-feature
+  common-feature --> presentation-feature
+  common-feature --> proximity-feature
+  common-feature --> issuance-feature
+
+  business-logic -->common-feature
+  ui-logic -->common-feature
+  network-logic -->common-feature
+  resources-logic -->common-feature
+  analytics-logic -->common-feature 
+  authentication-logic -->common-feature 
+  core-logic -->common-feature 
+
+  business-logic -->core-logic
+  resources-logic -->core-logic
+  authentication-logic -->core-logic
+
+  business-logic -->ui-logic
+  resources-logic -->ui-logic
+  analytics-logic -->ui-logic
+
+  business-logic -->network-logic
+
+  resources-logic -->business-logic
+
+  resources-logic --> authentication-logic
+  business-logic --> authentication-logic
 ```
 
 
