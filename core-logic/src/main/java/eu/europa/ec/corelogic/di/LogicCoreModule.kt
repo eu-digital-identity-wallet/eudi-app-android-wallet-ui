@@ -39,6 +39,12 @@ class LogicCoreModule
 @Single
 fun provideEudiWalletCore(): EudiWallet = EudiWallet
 
+@Single
+fun provideConfigWalletCore(
+    context: Context
+): WalletCoreConfig =
+    WalletCoreConfigImpl(context)
+
 @Factory
 fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
@@ -48,12 +54,6 @@ fun provideWalletCoreDocumentsController(
         resourceProvider,
         eudiWallet
     )
-
-@Factory
-fun provideConfigWalletCore(
-    context: Context
-): WalletCoreConfig =
-    WalletCoreConfigImpl(context)
 
 /**
  * Koin scope that lives for all the document presentation flow. It is manually handled from the
