@@ -19,10 +19,10 @@ package eu.europa.ec.issuancefeature.interactor.document
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedId1
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedMdlOptionItemUi
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedPidOptionItemUi
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedSampleDataOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedMdlOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
+import eu.europa.ec.commonfeature.util.TestsData.mockedPidOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedSampleDataOptionItemUi
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
@@ -293,7 +293,7 @@ class TestAddDocumentInteractor {
                     issuanceMethod = mockedIssuanceMethod,
                     documentType = mockedDocumentType
                 )
-            ).thenReturn(IssueDocumentPartialState.Success(mockedId1).toFlow())
+            ).thenReturn(IssueDocumentPartialState.Success(mockedPidId).toFlow())
 
             // When
             interactor.issueDocument(

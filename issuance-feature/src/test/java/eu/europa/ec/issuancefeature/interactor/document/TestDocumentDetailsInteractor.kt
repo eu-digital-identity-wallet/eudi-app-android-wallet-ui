@@ -19,9 +19,9 @@ package eu.europa.ec.issuancefeature.interactor.document
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
-import eu.europa.ec.commonfeature.util.TestsConstants
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedBasicMdlUi
-import eu.europa.ec.commonfeature.util.TestsConstants.mockedBasicPidUi
+import eu.europa.ec.commonfeature.util.TestsData
+import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidUi
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -33,11 +33,11 @@ import eu.europa.ec.testfeature.mockedEmptyPid
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedId1
-import eu.europa.ec.testfeature.mockedId2
 import eu.europa.ec.testfeature.mockedMdlCodeName
+import eu.europa.ec.testfeature.mockedMdlId
 import eu.europa.ec.testfeature.mockedMdlWithBasicFields
 import eu.europa.ec.testfeature.mockedPidCodeName
+import eu.europa.ec.testfeature.mockedPidId
 import eu.europa.ec.testfeature.mockedPidWithBasicFields
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -105,7 +105,7 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.getDocumentDetails(
-                documentId = mockedId1,
+                documentId = mockedPidId,
                 documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
@@ -135,7 +135,7 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.getDocumentDetails(
-                documentId = mockedId2,
+                documentId = mockedMdlId,
                 documentType = mockedMdlCodeName
             ).runFlowTest {
                 // Then
@@ -165,7 +165,7 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.getDocumentDetails(
-                documentId = mockedId1,
+                documentId = mockedPidId,
                 documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
@@ -193,7 +193,7 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.getDocumentDetails(
-                documentId = mockedId1,
+                documentId = mockedPidId,
                 documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
@@ -237,18 +237,18 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.getDocumentDetails(
-                documentId = mockedId1,
+                documentId = mockedPidId,
                 documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
                         documentUi = DocumentUi(
-                            documentId = TestsConstants.mockedId1,
-                            documentName = TestsConstants.mockedDocUiNamePid,
+                            documentId = TestsData.mockedPidId,
+                            documentName = TestsData.mockedDocUiNamePid,
                             documentType = DocumentTypeUi.PID,
                             documentExpirationDateFormatted = "",
-                            documentHasExpired = TestsConstants.mockedDocumentHasExpired,
+                            documentHasExpired = TestsData.mockedDocumentHasExpired,
                             documentImage = "",
                             documentDetails = listOf(
                                 DocumentDetailsUi.DefaultItem(
@@ -277,12 +277,12 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 6, When getDocumentDetails is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.getDocumentById(mockedId1))
+            whenever(walletCoreDocumentsController.getDocumentById(mockedPidId))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
             interactor.getDocumentDetails(
-                documentId = mockedId1,
+                documentId = mockedPidId,
                 documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
@@ -306,12 +306,12 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 7, When getDocumentDetails is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.getDocumentById(mockedId1))
+            whenever(walletCoreDocumentsController.getDocumentById(mockedPidId))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
             interactor.getDocumentDetails(
-                documentId = mockedId1,
+                documentId = mockedPidId,
                 documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
@@ -344,7 +344,7 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.deleteDocument(
-                documentId = mockedId1,
+                documentId = mockedPidId,
                 documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
@@ -370,7 +370,7 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.deleteDocument(
-                documentId = mockedId1,
+                documentId = mockedPidId,
                 documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
@@ -398,7 +398,7 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.deleteDocument(
-                documentId = mockedId2,
+                documentId = mockedMdlId,
                 documentType = mockedMdlCodeName
             ).runFlowTest {
                 // Then
@@ -424,7 +424,7 @@ class TestDocumentDetailsInteractor {
 
             // When
             interactor.deleteDocument(
-                documentId = mockedId2,
+                documentId = mockedMdlId,
                 documentType = mockedMdlCodeName
             ).runFlowTest {
                 // Then
@@ -444,12 +444,12 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 5, When deleteDocument is called, Then it returns Failure with the exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.deleteDocument(mockedId2))
+            whenever(walletCoreDocumentsController.deleteDocument(mockedMdlId))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
             interactor.deleteDocument(
-                documentId = mockedId2,
+                documentId = mockedMdlId,
                 documentType = mockedMdlCodeName
             ).runFlowTest {
                 // Then
@@ -471,12 +471,12 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 6, When deleteDocument is called, Then it returns Failure with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.deleteDocument(mockedId2))
+            whenever(walletCoreDocumentsController.deleteDocument(mockedMdlId))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
             interactor.deleteDocument(
-                documentId = mockedId2,
+                documentId = mockedMdlId,
                 documentType = mockedMdlCodeName
             ).runFlowTest {
                 // Then
