@@ -25,10 +25,14 @@ import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.mockedPlainFailureMessage
+import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import junit.framework.TestCase
+import kotlinx.coroutines.flow.flow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -36,6 +40,7 @@ import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
+import java.net.URI
 import kotlin.test.assertEquals
 
 class TestPresentationLoadingInteractor {
@@ -73,14 +78,100 @@ class TestPresentationLoadingInteractor {
         closeable.close()
     }
 
+    //region observeResponse
+
+    // Case 1:
+    // 1. walletCorePresentationController.events emits:
+    // TransferEventPartialState.Error, with an error message.
+
+    // Case 1 Expected Result:
+    // PresentationLoadingObserveResponsePartialState.Failure state, with the same error message.
 
     @Test
-    fun test() {
+    fun `Given Case 1, When observeResponse is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
-           whenever(walletCorePresentationController.observeSentDocumentsRequest()).thenReturn(WalletCorePartialState.Success.toFlow())
-            interactor.observeResponse().runFlowTest {
-                assertEquals(PresentationLoadingObserveResponsePartialState.Success, awaitItem())
-            }
+            // Given
+            mockWalletCorePresentationControllerEventEmission(
+                event = WalletCorePartialState.Failure(
+                    error = mockedPlainFailureMessage
+                )
+            )
+
+            // When
+            interactor.observeResponse()
+                .runFlowTest {
+                    // Then
+                    TestCase.assertEquals(
+                        PresentationLoadingObserveResponsePartialState.Failure(
+                            error = mockedPlainFailureMessage
+                        ),
+                        awaitItem()
+                    )
+                }
         }
     }
+
+    // Case 2:
+    // 2. walletCorePresentationController.events emits:
+    // TransferEventPartialState.Success.
+
+    // Case 2 Expected Result:
+    // PresentationLoadingObserveResponsePartialState.Success state.
+
+    @Test
+    fun `Given Case 2, When observeResponse is called, Then Case 2 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            mockWalletCorePresentationControllerEventEmission(
+                event = WalletCorePartialState.Success
+            )
+
+            // When
+            interactor.observeResponse()
+                .runFlowTest {
+                    // Then
+                    TestCase.assertEquals(
+                        PresentationLoadingObserveResponsePartialState.Success,
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    // Case 3:
+    // 3. walletCorePresentationController.events emits:
+    // TransferEventPartialState.Success.
+
+    // Case 3 Expected Result:
+    // PresentationLoadingObserveResponsePartialState.Redirect with the same URI.
+
+    @Test
+    fun `Given Case 3, When observeResponse is called, Then Case 3 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            mockWalletCorePresentationControllerEventEmission(
+                event = WalletCorePartialState.Redirect(uri = URI("uri"))
+            )
+
+            // When
+            interactor.observeResponse()
+                .runFlowTest {
+                    // Then
+                    TestCase.assertEquals(
+                        PresentationLoadingObserveResponsePartialState.Redirect(URI("uri")),
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    //endregion
+
+    //region helper functions
+    private fun mockWalletCorePresentationControllerEventEmission(event: WalletCorePartialState) {
+        whenever(walletCorePresentationController.observeSentDocumentsRequest())
+            .thenReturn(event.toFlow())
+    }
+
+    //endregion
 }
