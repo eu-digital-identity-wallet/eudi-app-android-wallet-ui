@@ -26,8 +26,11 @@ val mockedExceptionWithMessage = RuntimeException("Exception to test interactor.
 val mockedExceptionWithNoMessage = RuntimeException()
 
 const val mockedDocumentCreationDate = "2024-01-25T14:25:00.073Z"
-const val mockedId1 = "000001"
-const val mockedId2 = "000002"
+const val mockedPidId = "000001"
+const val mockedMdlId = "000002"
+const val mockedPidDocName = "EU PID"
+const val mockedMdlDocName = "mDL"
+const val mockedVerifierIsTrusted = true
 val mockedPidFields: Map<String, ByteArray> = mapOf(
     "family_name" to byteArrayOf(105, 65, 78, 68, 69, 82, 83, 83, 79, 78),
     "given_name" to byteArrayOf(99, 74, 65, 78),
@@ -646,9 +649,9 @@ const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
 const val mockedMdlCodeName = "org.iso.18013.5.1"
 
 val mockedFullPid = Document(
-    id = mockedId1,
+    id = mockedPidId,
     docType = mockedPidDocType,
-    name = "EU PID",
+    name = mockedPidDocName,
     hardwareBacked = false,
     createdAt = Instant.parse(mockedDocumentCreationDate),
     requiresUserAuth = false,
@@ -670,9 +673,9 @@ val mockedEmptyPid = mockedFullPid.copy(
 )
 
 val mockedFullMdl = Document(
-    id = mockedId2,
+    id = mockedMdlId,
     docType = mockedMdlDocType,
-    name = "mDL",
+    name = mockedMdlDocName,
     hardwareBacked = false,
     createdAt = Instant.parse(mockedDocumentCreationDate),
     requiresUserAuth = false,
