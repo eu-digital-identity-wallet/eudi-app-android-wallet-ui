@@ -124,3 +124,61 @@ fun provideStorageConfig(
     biometryImpl = PrefsBiometryStorageProvider(prefsController)
 )
 ```
+
+## Analytics configuration
+
+The application allows the configuration of multiple analytics providers. You can configure the following:
+
+1. Initializing the provider (e.g. Firebase, Appcenter, etc...)
+2. Screen logging
+3. Event logging
+
+Via the *AnalyticsConfig* inside the analytics-logic module.
+
+```
+interface AnalyticsConfig {
+    val analyticsProviders: Map<String, AnalyticsProvider>
+        get() = emptyMap()
+}
+```
+
+You can provide your implementation by implementing the *AnalyticsProvider* interface and then adding it to your *AnalyticsConfigImpl* analyticsProviders variable.
+You will also need the provider's token/key, thus requiring a Map<String, AnalyticsProvider> configuration.
+The project utilizes Koin for Dependency Injection (DI), thus requiring adjustment of the *LogicAnalyticsModule* graph to provide the configuration.
+
+Implementation Example:
+```
+object AppCenterAnalyticsProvider : AnalyticsProvider {
+    override fun initialize(context: Application, key: String) {
+        AppCenter.start(
+            context,
+            key,
+            Analytics::class.java
+        )
+    }
+
+    override fun logScreen(name: String, arguments: Map<String, String>) {
+        logEvent(name, arguments)
+    }
+
+    override fun logEvent(event: String, arguments: Map<String, String>) {
+        if (Analytics.isEnabled().get()) {
+            Analytics.trackEvent(event, arguments)
+        }
+    }
+}
+```
+
+Config Example:
+```
+class AnalyticsConfigImpl : AnalyticsConfig {
+    override val analyticsProviders: Map<String, AnalyticsProvider>
+        get() = mapOf("YOUR_OWN_KEY" to AppCenterAnalyticsProvider)
+}
+```
+
+Config Construction via Koin DI Example:
+```
+@Single
+fun provideAnalyticsConfig(): AnalyticsConfig = AnalyticsConfigImpl()
+```
