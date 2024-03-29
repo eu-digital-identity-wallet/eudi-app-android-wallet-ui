@@ -84,7 +84,7 @@ sealed class ResponseReceivedPartialState {
 
 sealed class WalletCorePartialState {
     data class UserAuthenticationRequired(
-        val crypto: BiometricCrypto,
+        val crypto: BiometricCrypto?,
         val resultHandler: DeviceAuthenticationResult
     ) : WalletCorePartialState()
 

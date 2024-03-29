@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityLoadingObserveResponsePartialState {
     data class UserAuthenticationRequired(
-        val crypto: BiometricCrypto,
+        val crypto: BiometricCrypto?,
         val resultHandler: DeviceAuthenticationResult
     ) : ProximityLoadingObserveResponsePartialState()
 

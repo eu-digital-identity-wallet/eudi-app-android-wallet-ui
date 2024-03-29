@@ -16,32 +16,33 @@
 
 package eu.europa.ec.presentationfeature.interactor
 
-import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationController
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
-import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractorImpl
-import eu.europa.ec.corelogic.controller.TransferEventPartialState
-import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
-import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase
-import kotlinx.coroutines.flow.flow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.net.URI
-import kotlin.test.assertEquals
 
 class TestPresentationLoadingInteractor {
 
@@ -112,7 +113,7 @@ class TestPresentationLoadingInteractor {
     }
 
     // Case 2:
-    // 2. walletCorePresentationController.events emits:
+    // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.Success.
 
     // Case 2 Expected Result:
@@ -139,7 +140,7 @@ class TestPresentationLoadingInteractor {
     }
 
     // Case 3:
-    // 3. walletCorePresentationController.events emits:
+    // 1. walletCorePresentationController.events emits:
     // TransferEventPartialState.Success.
 
     // Case 3 Expected Result:
@@ -159,6 +160,39 @@ class TestPresentationLoadingInteractor {
                     // Then
                     TestCase.assertEquals(
                         PresentationLoadingObserveResponsePartialState.Redirect(URI("uri")),
+                        awaitItem()
+                    )
+                }
+        }
+    }
+
+    // Case 4:
+    // 1. walletCorePresentationController.events emits:
+    // TransferEventPartialState.UserAuthenticationRequired.
+
+    // Case 4 Expected Result:
+    // PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired.
+
+    @Test
+    fun `Given Case 4, When observeResponse is called, Then Case 4 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            mockWalletCorePresentationControllerEventEmission(
+                event = WalletCorePartialState.UserAuthenticationRequired(
+                    crypto = null,
+                    resultHandler = DeviceAuthenticationResult()
+                )
+            )
+
+            // When
+            interactor.observeResponse()
+                .runFlowTest {
+                    // Then
+                    TestCase.assertEquals(
+                        PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(
+                            crypto = null,
+                            resultHandler = DeviceAuthenticationResult()
+                        ),
                         awaitItem()
                     )
                 }
