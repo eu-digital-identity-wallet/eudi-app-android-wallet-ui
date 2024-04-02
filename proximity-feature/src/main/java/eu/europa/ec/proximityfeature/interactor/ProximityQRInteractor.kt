@@ -24,7 +24,7 @@ import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class ProximityQRPartialState {
@@ -57,9 +57,9 @@ class ProximityQRInteractorImpl(
         walletCorePresentationController.setConfig(config.toDomainConfig())
     }
 
-    override fun startQrEngagement(): Flow<ProximityQRPartialState> {
+    override fun startQrEngagement(): Flow<ProximityQRPartialState> = flow {
         walletCorePresentationController.startQrEngagement()
-        return walletCorePresentationController.events.mapNotNull {
+        walletCorePresentationController.events.mapNotNull {
             when (it) {
                 is TransferEventPartialState.Connected -> {
                     ProximityQRPartialState.Connected
@@ -79,9 +79,11 @@ class ProximityQRInteractorImpl(
 
                 else -> null
             }
-        }.safeAsync {
-            ProximityQRPartialState.Error(error = it.localizedMessage ?: genericErrorMsg)
-        }.cancellable()
+        }.collect {
+            emit(it)
+        }
+    }.safeAsync {
+        ProximityQRPartialState.Error(error = it.localizedMessage ?: genericErrorMsg)
     }
 
     override fun toggleNfcEngagement(
