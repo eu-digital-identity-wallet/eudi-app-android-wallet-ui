@@ -16,9 +16,7 @@
 
 package eu.europa.ec.presentationfeature.interactor
 
-import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
-import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
@@ -35,10 +33,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -197,6 +192,16 @@ class TestPresentationLoadingInteractor {
                     )
                 }
         }
+    }
+
+    //endregion
+
+    //region stopPresentation
+
+    @Test
+    fun `when interactor stopPresentation is called then it delegates to walletCoreInteractor stopPresentation`() {
+        interactor.stopPresentation()
+        verify(walletCorePresentationController, times(1)).stopPresentation()
     }
 
     //endregion
