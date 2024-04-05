@@ -16,13 +16,18 @@
 
 package eu.europa.ec.presentationfeature.interactor
 
+import android.content.Context
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
+import eu.europa.ec.testlogic.base.TestApplication
+import eu.europa.ec.testlogic.base.getMockedContext
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -32,13 +37,19 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.net.URI
 
+@RunWith(RobolectricTestRunner::class)
+@Config(application = TestApplication::class)
 class TestPresentationLoadingInteractor {
 
     @get:Rule
@@ -48,12 +59,15 @@ class TestPresentationLoadingInteractor {
     private lateinit var walletCorePresentationController: WalletCorePresentationController
 
     @Mock
-    private lateinit var resourceProvider: ResourceProvider
+    private lateinit var deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 
-    private lateinit var interactor: PresentationLoadingInteractor
+    private lateinit var context: Context
+    private lateinit var crypto: BiometricCrypto
 
     @Mock
-    private lateinit var deviceAuthenticationInteractor: DeviceAuthenticationInteractor
+    private lateinit var resultHandler: DeviceAuthenticationResult
+
+    private lateinit var interactor: PresentationLoadingInteractor
 
     private lateinit var closeable: AutoCloseable
 
@@ -66,7 +80,8 @@ class TestPresentationLoadingInteractor {
             deviceAuthenticationInteractor = deviceAuthenticationInteractor
         )
 
-        whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
+        context = getMockedContext()
+        crypto = BiometricCrypto(cryptoObject = null)
     }
 
     @After
@@ -196,6 +211,90 @@ class TestPresentationLoadingInteractor {
 
     //endregion
 
+    //region handleUserAuthentication
+
+    // Case 5:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.CanAuthenticate
+
+    // Case 5 Expected Result:
+    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    @Test
+    fun `Given case 5, When handleUserAuthentication is called, Then Case 5 expected result is returned`() {
+        // Given
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.CanAuthenticate
+        )
+
+        // When
+        interactor.handleUserAuthentication(
+            context = context,
+            crypto = crypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(deviceAuthenticationInteractor, times(1))
+            .authenticateWithBiometrics(context, crypto, resultHandler)
+    }
+
+    // Case 6:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.NonEnrolled
+
+    // Case 6 Expected Result:
+    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    @Test
+    fun `Given case 6, When handleUserAuthentication is called, Then Case 6 expected result is returned`() {
+        // Given
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.NonEnrolled
+        )
+
+        // When
+        interactor.handleUserAuthentication(
+            context = context,
+            crypto = crypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(deviceAuthenticationInteractor, times(1))
+            .authenticateWithBiometrics(context, crypto, resultHandler)
+    }
+
+    // Case 7:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.Failure
+
+    // Case 7 Expected Result:
+    // resultHandler.onAuthenticationFailure called once.
+    @Test
+    fun `Given case 7, When handleUserAuthentication is called, Then Case 7 expected result is returned`() {
+        // Given
+        val mockedOnAuthenticationFailure: () -> Unit = {}
+        whenever(resultHandler.onAuthenticationFailure)
+            .thenReturn(mockedOnAuthenticationFailure)
+
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.Failure(
+                errorMessage = mockedPlainFailureMessage
+            )
+        )
+
+        // When
+        interactor.handleUserAuthentication(
+            context = context,
+            crypto = crypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(resultHandler, times(1))
+            .onAuthenticationFailure
+    }
+    //endregion
+
     //region stopPresentation
 
     @Test
@@ -212,5 +311,12 @@ class TestPresentationLoadingInteractor {
             .thenReturn(event.toFlow())
     }
 
+    private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(listener = any()))
+            .thenAnswer {
+                val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
+                bioAvailability(response)
+            }
+    }
     //endregion
 }
