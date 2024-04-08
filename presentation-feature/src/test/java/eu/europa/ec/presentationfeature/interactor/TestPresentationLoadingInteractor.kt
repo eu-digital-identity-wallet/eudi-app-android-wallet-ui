@@ -23,11 +23,7 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
-import eu.europa.ec.testlogic.base.TestApplication
-import eu.europa.ec.testlogic.base.getMockedContext
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -37,19 +33,14 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import java.net.URI
 
-@RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class TestPresentationLoadingInteractor {
 
     @get:Rule
@@ -61,8 +52,8 @@ class TestPresentationLoadingInteractor {
     @Mock
     private lateinit var deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 
+    @Mock
     private lateinit var context: Context
-    private lateinit var crypto: BiometricCrypto
 
     @Mock
     private lateinit var resultHandler: DeviceAuthenticationResult
@@ -70,6 +61,8 @@ class TestPresentationLoadingInteractor {
     private lateinit var interactor: PresentationLoadingInteractor
 
     private lateinit var closeable: AutoCloseable
+
+    private lateinit var crypto: BiometricCrypto
 
     @Before
     fun before() {
@@ -80,7 +73,6 @@ class TestPresentationLoadingInteractor {
             deviceAuthenticationInteractor = deviceAuthenticationInteractor
         )
 
-        context = getMockedContext()
         crypto = BiometricCrypto(cryptoObject = null)
     }
 
@@ -93,7 +85,7 @@ class TestPresentationLoadingInteractor {
 
     // Case 1:
     // 1. walletCorePresentationController.events emits:
-    // TransferEventPartialState.Error, with an error message.
+    // WalletCorePartialState.Failure, with an error message.
 
     // Case 1 Expected Result:
     // PresentationLoadingObserveResponsePartialState.Failure state, with the same error message.
@@ -124,7 +116,7 @@ class TestPresentationLoadingInteractor {
 
     // Case 2:
     // 1. walletCorePresentationController.events emits:
-    // TransferEventPartialState.Success.
+    // WalletCorePartialState.Success.
 
     // Case 2 Expected Result:
     // PresentationLoadingObserveResponsePartialState.Success state.
@@ -151,7 +143,7 @@ class TestPresentationLoadingInteractor {
 
     // Case 3:
     // 1. walletCorePresentationController.events emits:
-    // TransferEventPartialState.Success.
+    // WalletCorePartialState.Redirect with a URI.
 
     // Case 3 Expected Result:
     // PresentationLoadingObserveResponsePartialState.Redirect with the same URI.
@@ -178,7 +170,7 @@ class TestPresentationLoadingInteractor {
 
     // Case 4:
     // 1. walletCorePresentationController.events emits:
-    // TransferEventPartialState.UserAuthenticationRequired.
+    // WalletCorePartialState.UserAuthenticationRequired.
 
     // Case 4 Expected Result:
     // PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired.
@@ -189,7 +181,7 @@ class TestPresentationLoadingInteractor {
             // Given
             mockWalletCorePresentationControllerEventEmission(
                 event = WalletCorePartialState.UserAuthenticationRequired(
-                    crypto = null,
+                    crypto = crypto,
                     resultHandler = DeviceAuthenticationResult()
                 )
             )
@@ -200,7 +192,7 @@ class TestPresentationLoadingInteractor {
                     // Then
                     TestCase.assertEquals(
                         PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(
-                            crypto = null,
+                            crypto = crypto,
                             resultHandler = DeviceAuthenticationResult()
                         ),
                         awaitItem()

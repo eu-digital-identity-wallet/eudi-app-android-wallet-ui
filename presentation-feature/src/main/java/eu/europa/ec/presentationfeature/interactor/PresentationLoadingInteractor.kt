@@ -29,7 +29,7 @@ import java.net.URI
 
 sealed class PresentationLoadingObserveResponsePartialState {
     data class UserAuthenticationRequired(
-        val crypto: BiometricCrypto?,
+        val crypto: BiometricCrypto,
         val resultHandler: DeviceAuthenticationResult
     ) : PresentationLoadingObserveResponsePartialState()
 
@@ -44,7 +44,7 @@ interface PresentationLoadingInteractor {
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
     fun handleUserAuthentication(
         context: Context,
-        crypto: BiometricCrypto?,
+        crypto: BiometricCrypto,
         resultHandler: DeviceAuthenticationResult
     )
 }
@@ -82,10 +82,9 @@ class PresentationLoadingInteractorImpl(
 
     override fun handleUserAuthentication(
         context: Context,
-        crypto: BiometricCrypto?,
+        crypto: BiometricCrypto,
         resultHandler: DeviceAuthenticationResult
     ) {
-        if (crypto == null) return
         deviceAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
