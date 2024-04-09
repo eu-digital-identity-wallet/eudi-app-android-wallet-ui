@@ -19,7 +19,7 @@ package eu.europa.ec.businesslogic.controller.crypto
 import android.util.Base64
 import java.security.SecureRandom
 import javax.crypto.Cipher
-import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.GCMParameterSpec
 
 typealias GUID = String
 
@@ -30,7 +30,7 @@ interface CryptoController {
      * Returns the [Cipher] needed to create the [androidx.biometric.BiometricPrompt.CryptoObject]
      * for biometric authentication.
      * [encrypt] should be set to true if the cipher should encrypt, false otherwise.
-     * [ivBytes] is needed only for decryption to create the [IvParameterSpec].
+     * [ivBytes] is needed only for decryption to create the [GCMParameterSpec].
      */
     fun getBiometricCipher(encrypt: Boolean = false, ivBytes: ByteArray? = null): Cipher?
 
@@ -49,6 +49,7 @@ class CryptoControllerImpl(
 
     companion object {
         private const val AES_EXTERNAL_TRANSFORMATION = "AES/GCM/NoPadding"
+        private const val IV_SIZE = 128
         const val MAX_GUID_LENGTH = 64
     }
 
@@ -72,7 +73,7 @@ class CryptoControllerImpl(
                     init(
                         Cipher.DECRYPT_MODE,
                         keystoreController.retrieveOrGenerateBiometricSecretKey(),
-                        IvParameterSpec(ivBytes)
+                        GCMParameterSpec(IV_SIZE, ivBytes)
                     )
                 }
             }
