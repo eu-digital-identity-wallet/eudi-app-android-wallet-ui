@@ -36,7 +36,7 @@ dependencies {
     implementation(project(LibraryModule.BusinessLogic.path))
 
     implementation(libs.gson)
-    implementation(libs.androidx.biometric)
+    api(libs.androidx.biometric)
 }
 
 excludeFromKoverReport(
