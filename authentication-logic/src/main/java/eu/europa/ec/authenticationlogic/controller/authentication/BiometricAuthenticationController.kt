@@ -37,7 +37,6 @@ import eu.europa.ec.businesslogic.extension.encodeToPemBase64String
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -117,9 +116,7 @@ class BiometricAuthenticationControllerImpl(
                     data.errorCode != BiometricsAuthError.Cancel.code &&
                     data.errorCode != BiometricsAuthError.CancelByUser.code
                 ) {
-                    delay(500L)
-                    data.prompt.cancelAuthentication()
-                    listener.invoke(BiometricsAuthenticate.Failed(data.errorString.toString()))
+                    authenticate(context, listener)
                 } else {
                     listener.invoke(BiometricsAuthenticate.Cancelled)
                 }
@@ -147,28 +144,27 @@ class BiometricAuthenticationControllerImpl(
         biometryCrypto: BiometricCrypto,
         promptInfo: BiometricPrompt.PromptInfo
     ): BiometricPromptData = suspendCancellableCoroutine { continuation ->
-        lateinit var prompt: BiometricPrompt
-        prompt = BiometricPrompt(
+        val prompt = BiometricPrompt(
             activity,
             ContextCompat.getMainExecutor(activity),
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     if (continuation.isActive) {
                         continuation.resume(
-                            BiometricPromptData(prompt, null, errorCode, errString)
+                            BiometricPromptData(null, errorCode, errString)
                         )
                     }
                 }
 
                 override fun onAuthenticationSucceeded(result: AuthenticationResult) {
                     if (continuation.isActive) {
-                        continuation.resume(BiometricPromptData(prompt, result))
+                        continuation.resume(BiometricPromptData(result))
                     }
                 }
 
                 override fun onAuthenticationFailed() {
                     if (continuation.isActive) {
-                        continuation.resume(BiometricPromptData(prompt, null))
+                        continuation.resume(BiometricPromptData(null))
                     }
                 }
             }
@@ -243,7 +239,6 @@ sealed class BiometricsAvailability {
 }
 
 data class BiometricPromptData(
-    val prompt: BiometricPrompt,
     val authenticationResult: AuthenticationResult?,
     val errorCode: Int = -1,
     val errorString: CharSequence = "",
