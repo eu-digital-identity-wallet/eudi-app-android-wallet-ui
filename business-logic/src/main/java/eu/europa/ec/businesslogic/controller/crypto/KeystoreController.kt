@@ -74,6 +74,7 @@ class KeystoreControllerImpl(
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun generateBiometricSecretKey(alias: String) {
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, STORE_TYPE)
         keyGenerator.init(
@@ -83,12 +84,9 @@ class KeystoreControllerImpl(
             )
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                /* Commented out on purpose as some devices failed when crypto object is returned
-                from success authentication. This should be re-enabled when google has fixed that.
-                 */
-//                .setUserAuthenticationRequired(true)
-//                .setInvalidatedByBiometricEnrollment(true)
-//                .setUserAuthenticationValidityDurationSeconds(-1)
+                .setUserAuthenticationRequired(true)
+                .setInvalidatedByBiometricEnrollment(true)
+                .setUserAuthenticationValidityDurationSeconds(-1)
                 .build()
         )
         keyGenerator.generateKey()
