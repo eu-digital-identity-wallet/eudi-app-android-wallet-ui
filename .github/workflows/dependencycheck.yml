@@ -2,7 +2,7 @@ name: SCA - Dependency Check Caller
 on:
   push:
     branches-ignore:
-      - 'dependabot/*'
+      - 'dependabot/**'
   workflow_dispatch:
 
 jobs:
