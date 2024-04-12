@@ -2,7 +2,7 @@ name: Secret Scanning - Gitleaks Caller
 on:
   push:
     branches-ignore:
-      - 'dependabot/*'
+      - 'dependabot/**'
   workflow_dispatch:
 
 jobs:
