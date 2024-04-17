@@ -253,7 +253,6 @@ class DocumentDetailsViewModel(
                     }
                 }
             }
-
         }
     }
 

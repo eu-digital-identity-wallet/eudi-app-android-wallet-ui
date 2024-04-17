@@ -38,7 +38,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
@@ -106,7 +105,6 @@ fun ContentScreen(
     )
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ContentScreen(
     loadingType: LoadingType = LoadingType.NONE,
@@ -189,11 +187,13 @@ fun ContentScreen(
     }
 
     BackHandler(enabled = true) {
-        onBack?.invoke()
+        contentErrorConfig?.let {
+            contentErrorConfig.onCancel()
+        } ?: onBack?.invoke()
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DefaultToolBar(
     navigatableAction: ScreenNavigateAction,

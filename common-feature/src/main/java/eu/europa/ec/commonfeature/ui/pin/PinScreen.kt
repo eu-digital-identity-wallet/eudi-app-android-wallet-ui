@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.pin
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -44,6 +46,7 @@ import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -60,6 +63,7 @@ fun PinScreen(
     viewModel: PinViewModel,
 ) {
     val state = viewModel.viewState.value
+    val context = LocalContext.current
 
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
@@ -70,11 +74,7 @@ fun PinScreen(
     ContentScreen(
         isLoading = state.isLoading,
         navigatableAction = state.action,
-        onBack = {
-            state.onBackEvent?.let { backEvent ->
-                viewModel.setEvent(backEvent)
-            }
-        },
+        onBack = { viewModel.setEvent(state.onBackEvent) },
         stickyBottom = {
             WrapPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
@@ -96,7 +96,11 @@ fun PinScreen(
             effectFlow = viewModel.effect,
             onEventSend = { event -> viewModel.setEvent(event) },
             onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController)
+                handleNavigationEffect(
+                    context,
+                    navigationEffect,
+                    navController
+                )
             },
             paddingValues = paddingValues,
             coroutineScope = scope,
@@ -125,6 +129,7 @@ fun PinScreen(
 }
 
 private fun handleNavigationEffect(
+    context: Context,
     navigationEffect: Effect.Navigation,
     navController: NavController
 ) {
@@ -140,6 +145,7 @@ private fun handleNavigationEffect(
         is Effect.Navigation.SwitchModule -> navController.navigate(navigationEffect.moduleRoute.route)
 
         is Effect.Navigation.Pop -> navController.popBackStack()
+        is Effect.Navigation.Finish -> context.finish()
     }
 }
 

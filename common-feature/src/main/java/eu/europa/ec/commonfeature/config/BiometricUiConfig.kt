@@ -31,7 +31,7 @@ data class BiometricUiConfig(
     val isPreAuthorization: Boolean = false,
     val shouldInitializeBiometricAuthOnCreate: Boolean = true,
     val onSuccessNavigation: ConfigNavigation,
-    val onBackNavigation: ConfigNavigation?
+    val onBackNavigationConfig: OnBackNavigationConfig
 ) : UiSerializable {
 
     companion object Parser : UiSerializableParser {
@@ -43,4 +43,11 @@ data class BiometricUiConfig(
             ).create()
         }
     }
+}
+
+data class OnBackNavigationConfig(
+    val onBackNavigation: ConfigNavigation?,
+    private val hasToolbarCancelIcon: Boolean
+) {
+    val isCancellable: Boolean get() = hasToolbarCancelIcon && onBackNavigation != null
 }

@@ -111,7 +111,7 @@ class SuccessViewModel(
                 nav.link.toUri()
             )
 
-            is NavigationType.Pop -> Effect.Navigation.Pop
+            is NavigationType.Pop, NavigationType.Finish -> Effect.Navigation.Pop
 
             is NavigationType.PushRoute -> Effect.Navigation.SwitchScreen(nav.route)
         }

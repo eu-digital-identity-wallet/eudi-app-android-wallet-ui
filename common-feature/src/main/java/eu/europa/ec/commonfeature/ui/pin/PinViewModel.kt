@@ -77,13 +77,11 @@ data class State(
             }
         }
 
-    val onBackEvent: Event?
+    val onBackEvent: Event
         get() {
             return when (pinFlow) {
-                PinFlow.CREATE -> null
-                PinFlow.UPDATE -> {
-                    Event.CancelPressed
-                }
+                PinFlow.CREATE -> Event.Finish
+                PinFlow.UPDATE -> Event.CancelPressed
             }
         }
 }
@@ -92,7 +90,7 @@ sealed class Event : ViewEvent {
     data class NextButtonPressed(val pin: String) : Event()
     data class OnQuickPinEntered(val quickPin: String) : Event()
     data object CancelPressed : Event()
-
+    data object Finish : Event()
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
 
@@ -109,6 +107,7 @@ sealed class Effect : ViewSideEffect {
         data class SwitchScreen(val screen: String) : Navigation()
 
         data object Pop : Navigation()
+        data object Finish : Navigation()
     }
 
     data object ShowBottomSheet : Effect()
@@ -203,6 +202,8 @@ class PinViewModel(
                     setEffect { Effect.Navigation.Pop }
                 }
             }
+
+            is Event.Finish -> setEffect { Effect.Navigation.Finish }
         }
     }
 

@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -46,6 +47,7 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.cacheDeepLink
+import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.resetBackStack
 import eu.europa.ec.uilogic.extension.setBackStackFlowCancelled
 import eu.europa.ec.uilogic.extension.setBackStackFlowSuccess
@@ -136,6 +138,7 @@ fun BiometricScreen(
                     }
 
                     is Effect.Navigation.Pop -> navController.popBackStack()
+                    is Effect.Navigation.Finish -> context.finish()
                 }
             },
             padding = it
@@ -263,8 +266,11 @@ private fun PreviewBiometricScreen() {
                     onSuccessNavigation = ConfigNavigation(
                         navigationType = NavigationType.PushScreen(CommonScreens.Biometric)
                     ),
-                    onBackNavigation = ConfigNavigation(
-                        navigationType = NavigationType.PushScreen(CommonScreens.Biometric),
+                    onBackNavigationConfig = OnBackNavigationConfig(
+                        onBackNavigation = ConfigNavigation(
+                            navigationType = NavigationType.PushScreen(CommonScreens.Biometric),
+                        ),
+                        hasToolbarCancelIcon = true
                     )
                 )
             ),

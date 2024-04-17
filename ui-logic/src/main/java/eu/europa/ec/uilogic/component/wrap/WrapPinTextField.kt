@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -55,7 +54,6 @@ import eu.europa.ec.uilogic.component.utils.EmptyTextToolbar
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WrapPinTextField(
     modifier: Modifier = Modifier.fillMaxWidth(),

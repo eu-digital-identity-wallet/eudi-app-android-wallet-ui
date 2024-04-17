@@ -82,6 +82,7 @@ sealed class Effect : ViewSideEffect {
         data object LaunchBiometricsSystemScreen : Navigation()
         data class Deeplink(val link: Uri, val isPreAuthorization: Boolean) : Navigation()
         data object Pop : Navigation()
+        data object Finish : Navigation()
     }
 }
 
@@ -104,7 +105,7 @@ class BiometricViewModel(
         return State(
             config = config,
             userBiometricsAreEnabled = biometricInteractor.getBiometricUserSelection(),
-            isCancellable = config.onBackNavigation != null
+            isCancellable = config.onBackNavigationConfig.isCancellable
         )
     }
 
@@ -159,7 +160,7 @@ class BiometricViewModel(
 
             is Event.OnNavigateBack -> {
                 setState { copy(error = null) }
-                biometricUiConfig.onBackNavigation?.let {
+                biometricUiConfig.onBackNavigationConfig.onBackNavigation?.let {
                     doNavigation(
                         navigation = it,
                         flowSucceeded = false
@@ -275,6 +276,7 @@ class BiometricViewModel(
             )
 
             is NavigationType.Pop -> Effect.Navigation.Pop
+            is NavigationType.Finish -> Effect.Navigation.Finish
         }
 
         setEffect {
