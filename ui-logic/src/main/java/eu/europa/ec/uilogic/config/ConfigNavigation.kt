@@ -26,6 +26,7 @@ data class ConfigNavigation(
 
 sealed interface NavigationType {
     data object Pop : NavigationType
+    data object Finish : NavigationType
     data class PushScreen(
         val screen: Screen,
         val arguments: Map<String, String> = emptyMap()

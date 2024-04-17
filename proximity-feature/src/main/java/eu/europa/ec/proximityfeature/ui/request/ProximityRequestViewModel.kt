@@ -18,6 +18,7 @@ package eu.europa.ec.proximityfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
@@ -78,8 +79,11 @@ class ProximityRequestViewModel(
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PushScreen(ProximityScreens.Loading)
                             ),
-                            onBackNavigation = ConfigNavigation(
-                                navigationType = NavigationType.PopTo(ProximityScreens.Request),
+                            onBackNavigationConfig = OnBackNavigationConfig(
+                                onBackNavigation = ConfigNavigation(
+                                    navigationType = NavigationType.PopTo(ProximityScreens.Request),
+                                ),
+                                hasToolbarCancelIcon = true
                             )
                         ),
                         BiometricUiConfig.Parser

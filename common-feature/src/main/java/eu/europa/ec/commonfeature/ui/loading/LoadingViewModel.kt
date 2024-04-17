@@ -114,7 +114,7 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            is NavigationType.Pop -> {
+            is NavigationType.Pop, NavigationType.Finish -> {
                 setEffect {
                     Effect.Navigation.PopBackStackUpTo(
                         screenRoute = getPreviousScreen().screenRoute,

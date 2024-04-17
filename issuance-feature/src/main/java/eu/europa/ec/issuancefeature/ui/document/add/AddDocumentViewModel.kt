@@ -59,6 +59,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
+    data object Finish : Event()
     data object DismissError : Event()
     data class IssueDocument(
         val issuanceMethod: IssuanceMethod,
@@ -70,6 +71,7 @@ sealed class Event : ViewEvent {
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()
+        data object Finish : Navigation()
         data class SwitchScreen(val screenRoute: String, val inclusive: Boolean) : Navigation()
     }
 }
@@ -116,6 +118,8 @@ class AddDocumentViewModel(
                     loadSampleData(event)
                 }
             }
+
+            is Event.Finish -> setEffect { Effect.Navigation.Finish }
         }
     }
 
@@ -296,7 +300,10 @@ class AddDocumentViewModel(
 
     private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit)? {
         return when (flowType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> null
+            IssuanceFlowUiConfig.NO_DOCUMENT -> {
+                { setEvent(Event.Finish) }
+            }
+
             IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
                 { setEvent(Event.Pop) }
             }

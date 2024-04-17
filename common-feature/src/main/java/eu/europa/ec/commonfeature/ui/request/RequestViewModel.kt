@@ -221,7 +221,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 setEffect { Effect.Navigation.SwitchScreen(navigationType.screen.screenRoute) }
             }
 
-            is NavigationType.Pop -> {
+            is NavigationType.Pop, NavigationType.Finish -> {
                 unsubscribe()
                 cleanUp()
                 setEffect { Effect.Navigation.Pop }

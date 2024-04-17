@@ -44,6 +44,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -79,6 +80,8 @@ fun AddDocumentScreen(
                             }
                         }
                     }
+
+                    is Effect.Navigation.Finish -> context.finish()
                 }
             },
             paddingValues = paddingValues,

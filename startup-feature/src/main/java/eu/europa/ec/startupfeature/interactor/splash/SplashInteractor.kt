@@ -18,6 +18,7 @@ package eu.europa.ec.startupfeature.interactor.splash
 
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -89,7 +90,12 @@ class SplashInteractorImpl(
                                     }
                                 )
                             ),
-                            onBackNavigation = null
+                            onBackNavigationConfig = OnBackNavigationConfig(
+                                onBackNavigation = ConfigNavigation(
+                                    navigationType = NavigationType.Finish
+                                ),
+                                hasToolbarCancelIcon = false
+                            )
                         ),
                         BiometricUiConfig.Parser
                     ).orEmpty()
