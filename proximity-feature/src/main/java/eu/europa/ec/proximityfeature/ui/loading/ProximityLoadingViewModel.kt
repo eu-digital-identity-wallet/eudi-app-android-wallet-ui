@@ -129,8 +129,12 @@ class ProximityLoadingViewModel(
         }
     }
 
-    private fun getSuccessConfig(): Map<String, String> =
-        mapOf(
+    private fun getSuccessConfig(): Map<String, String> {
+        val popToDashboard = ConfigNavigation(
+            navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
+        )
+
+        return mapOf(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
                     header = resourceProvider.getString(R.string.loading_success_config_title),
@@ -146,16 +150,13 @@ class ProximityLoadingViewModel(
                         SuccessUIConfig.ButtonConfig(
                             text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                            navigation = ConfigNavigation(
-                                navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
-                            )
+                            navigation = popToDashboard,
                         )
                     ),
-                    onBackScreenToNavigate = ConfigNavigation(
-                        navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
-                    ),
+                    onBackScreenToNavigate = popToDashboard,
                 ),
                 SuccessUIConfig.Parser
             ).orEmpty()
         )
+    }
 }

@@ -138,8 +138,14 @@ class PresentationLoadingViewModel(
         doNavigation(NavigationType.PushRoute(getNextScreen(uri)))
     }
 
-    private fun getSuccessConfig(uri: URI?): Map<String, String> =
-        mapOf(
+    private fun getSuccessConfig(uri: URI?): Map<String, String> {
+        val deepLinkWithUriOrPopToDashboard = ConfigNavigation(
+            navigationType = uri?.let {
+                NavigationType.Deeplink(it.toString())
+            } ?: NavigationType.PopTo(DashboardScreens.Dashboard)
+        )
+
+        return mapOf(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
                     header = resourceProvider.getString(R.string.loading_success_config_title),
@@ -155,18 +161,13 @@ class PresentationLoadingViewModel(
                         SuccessUIConfig.ButtonConfig(
                             text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                            navigation = ConfigNavigation(
-                                navigationType = uri?.let {
-                                    NavigationType.Deeplink(it.toString())
-                                } ?: NavigationType.PopTo(DashboardScreens.Dashboard)
-                            )
+                            navigation = deepLinkWithUriOrPopToDashboard,
                         )
                     ),
-                    onBackScreenToNavigate = ConfigNavigation(
-                        navigationType = NavigationType.PopTo(DashboardScreens.Dashboard)
-                    ),
+                    onBackScreenToNavigate = deepLinkWithUriOrPopToDashboard,
                 ),
                 SuccessUIConfig.Parser
             ).orEmpty()
         )
+    }
 }
