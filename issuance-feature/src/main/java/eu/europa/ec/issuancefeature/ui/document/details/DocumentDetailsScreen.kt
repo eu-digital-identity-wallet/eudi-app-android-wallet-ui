@@ -104,7 +104,7 @@ fun DocumentDetailsScreen(
                         ToolbarAction(
                             icon = AppIcons.Delete,
                             onClick = { viewModel.setEvent(Event.DeleteDocumentPressed) },
-                            enabled = true
+                            enabled = !state.isLoading
                         )
                     )
                 ) { viewModel.setEvent(Event.Pop) }
