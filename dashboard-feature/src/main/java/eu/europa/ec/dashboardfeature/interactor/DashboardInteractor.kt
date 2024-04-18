@@ -102,7 +102,7 @@ class DashboardInteractorImpl(
 
             if (userImage.isBlank()) {
                 userImage = extractValueFromDocumentOrEmpty(
-                    document = mainPid ?: document,
+                    document = document,
                     key = DocumentJsonKeys.PORTRAIT
                 )
             }
