@@ -21,6 +21,7 @@ import android.content.Context
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
+import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.model.toUiName
@@ -74,6 +75,9 @@ class DashboardInteractorImpl(
         var userFirstName = ""
         var userImage = ""
         val documents = walletCoreDocumentsController.getAllDocuments()
+        val mainPid = documents
+            .filter { it.docType.toDocumentTypeUi() == DocumentTypeUi.PID }
+            .minByOrNull { it.createdAt }
         val documentsUi = documents.map { document ->
 
             var documentExpirationDate = extractValueFromDocumentOrEmpty(
@@ -91,14 +95,14 @@ class DashboardInteractorImpl(
 
             if (userFirstName.isBlank()) {
                 userFirstName = extractValueFromDocumentOrEmpty(
-                    document = document,
+                    document = mainPid ?: document,
                     key = DocumentJsonKeys.FIRST_NAME
                 )
             }
 
             if (userImage.isBlank()) {
                 userImage = extractValueFromDocumentOrEmpty(
-                    document = document,
+                    document = mainPid ?: document,
                     key = DocumentJsonKeys.PORTRAIT
                 )
             }
