@@ -25,7 +25,9 @@ const val mockedPlainFailureMessage = "failure message"
 val mockedExceptionWithMessage = RuntimeException("Exception to test interactor.")
 val mockedExceptionWithNoMessage = RuntimeException()
 
+const val mockedOldestDocumentCreationDate = "2000-01-25T14:25:00.073Z"
 const val mockedDocumentCreationDate = "2024-01-25T14:25:00.073Z"
+const val mockedOldestPidId = "000000"
 const val mockedPidId = "000001"
 const val mockedMdlId = "000002"
 const val mockedPidDocName = "EU PID"
@@ -664,6 +666,11 @@ val mockedPidWithBasicFields = mockedFullPid.copy(
     nameSpacedData = mapOf(
         mockedPidCodeName to mockedPidBasicFields
     )
+)
+
+val mockedOldestPidWithBasicFields = mockedPidWithBasicFields.copy(
+    id = mockedOldestPidId,
+    createdAt = Instant.parse(mockedOldestDocumentCreationDate)
 )
 
 val mockedEmptyPid = mockedFullPid.copy(

@@ -36,6 +36,8 @@ import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedMdlCodeName
 import eu.europa.ec.testfeature.mockedMdlId
 import eu.europa.ec.testfeature.mockedMdlWithBasicFields
+import eu.europa.ec.testfeature.mockedOldestPidId
+import eu.europa.ec.testfeature.mockedOldestPidWithBasicFields
 import eu.europa.ec.testfeature.mockedPidCodeName
 import eu.europa.ec.testfeature.mockedPidId
 import eu.europa.ec.testfeature.mockedPidWithBasicFields
@@ -331,11 +333,17 @@ class TestDocumentDetailsInteractor {
     // Case 1:
 
     // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.deleteAllDocuments() returns Failure.
+    // 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
+    // 3. walletCoreDocumentsController.deleteAllDocuments() returns Failure.
     @Test
     fun `Given Case 1, When deleteDocument is called, Then it returns Failure with failure's error message`() {
         coroutineRule.runTest {
             // Given
+            mockGetAllDocumentsCall(
+                response = listOf(
+                    mockedPidWithBasicFields
+                )
+            )
             mockDeleteAllDocumentsCall(
                 response = DeleteAllDocumentsPartialState.Failure(
                     errorMessage = mockedPlainFailureMessage
@@ -361,11 +369,17 @@ class TestDocumentDetailsInteractor {
     // Case 2:
 
     // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.deleteAllDocuments() returns Success.
+    // 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
+    // 3. walletCoreDocumentsController.deleteAllDocuments() returns Success.
     @Test
     fun `Given Case 2, When deleteDocument is called, Then it returns AllDocumentsDeleted`() {
         coroutineRule.runTest {
             // Given
+            mockGetAllDocumentsCall(
+                response = listOf(
+                    mockedPidWithBasicFields
+                )
+            )
             mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
 
             // When
@@ -384,10 +398,76 @@ class TestDocumentDetailsInteractor {
 
     // Case 3:
 
+    // 1. A documentId and document is PID.
+    // 2. walletCoreDocumentsController.getAllDocuments() returns more than 1 PIDs
+    //      AND the documentId we are about to delete IS the one of the oldest PID.
+    // 3. walletCoreDocumentsController.deleteAllDocuments() returns Success.
+    @Test
+    fun `Given Case 3, When deleteDocument is called, Then it returns AllDocumentsDeleted`() {
+        coroutineRule.runTest {
+            // Given
+            mockGetAllDocumentsCall(
+                response = listOf(
+                    mockedMdlWithBasicFields,
+                    mockedPidWithBasicFields,
+                    mockedOldestPidWithBasicFields
+                )
+            )
+            mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
+
+            // When
+            interactor.deleteDocument(
+                documentId = mockedOldestPidId,
+                documentType = mockedPidCodeName
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 4:
+
+    // 1. A documentId and document is PID.
+    // 2. walletCoreDocumentsController.getAllDocuments() returns more than 1 PIDs
+    //      AND the documentId we are about to delete is NOT the one of the oldest PID.
+    // 3. walletCoreDocumentsController.deleteDocument() returns Success.
+    @Test
+    fun `Given Case 4, When deleteDocument is called, Then it returns SingleDocumentDeleted`() {
+        coroutineRule.runTest {
+            // Given
+            mockGetAllDocumentsCall(
+                response = listOf(
+                    mockedMdlWithBasicFields,
+                    mockedPidWithBasicFields,
+                    mockedOldestPidWithBasicFields
+                )
+            )
+            mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+
+            // When
+            interactor.deleteDocument(
+                documentId = mockedPidId,
+                documentType = mockedPidCodeName
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteDocumentPartialState.SingleDocumentDeleted,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 5:
+
     // 1. A documentId and document is mDL.
     // 2. walletCoreDocumentsController.deleteDocument() returns Failure.
     @Test
-    fun `Given Case 3, When deleteDocument is called, Then it returns Failure with failure's error message`() {
+    fun `Given Case 5, When deleteDocument is called, Then it returns Failure with failure's error message`() {
         coroutineRule.runTest {
             // Given
             mockDeleteDocumentCall(
@@ -412,12 +492,12 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 4:
+    // Case 6:
 
     // 1. A documentId and document is mDL.
     // 2. walletCoreDocumentsController.deleteDocument() returns Success.
     @Test
-    fun `Given Case 4, When deleteDocument is called, Then it returns SingleDocumentDeleted`() {
+    fun `Given Case 6, When deleteDocument is called, Then it returns SingleDocumentDeleted`() {
         coroutineRule.runTest {
             // Given
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
@@ -436,12 +516,12 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 5:
+    // Case 7:
 
     // 1. A documentId and document is mDL.
     // 2. walletCoreDocumentsController.deleteDocument() throws an exception with a message.
     @Test
-    fun `Given Case 5, When deleteDocument is called, Then it returns Failure with the exception's localized message`() {
+    fun `Given Case 7, When deleteDocument is called, Then it returns Failure with the exception's localized message`() {
         coroutineRule.runTest {
             // Given
             whenever(walletCoreDocumentsController.deleteDocument(mockedMdlId))
@@ -463,12 +543,12 @@ class TestDocumentDetailsInteractor {
         }
     }
 
-    // Case 6:
+    // Case 8:
 
     // 1. A documentId and document is mDL.
     // 2. walletCoreDocumentsController.deleteDocument() throws an exception with no message.
     @Test
-    fun `Given Case 6, When deleteDocument is called, Then it returns Failure with the generic error message`() {
+    fun `Given Case 8, When deleteDocument is called, Then it returns Failure with the generic error message`() {
         coroutineRule.runTest {
             // Given
             whenever(walletCoreDocumentsController.deleteDocument(mockedMdlId))
@@ -491,6 +571,12 @@ class TestDocumentDetailsInteractor {
     }
     //endregion
 
+    //region helper functions
+    private fun mockGetAllDocumentsCall(response: List<Document>) {
+        whenever(walletCoreDocumentsController.getAllDocuments())
+            .thenReturn(response)
+    }
+
     private fun mockGetDocumentByIdCall(response: Document?) {
         whenever(walletCoreDocumentsController.getDocumentById(anyString()))
             .thenReturn(response)
@@ -505,4 +591,5 @@ class TestDocumentDetailsInteractor {
         whenever(walletCoreDocumentsController.deleteDocument(anyString()))
             .thenReturn(response.toFlow())
     }
+    //endregion
 }
