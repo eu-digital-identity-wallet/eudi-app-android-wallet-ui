@@ -325,7 +325,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 7, When getRequestDocuments is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsResponse(
+            mockGetAllDocumentsCall(
                 response = listOf(mockedPidWithBasicFields)
             )
             whenever(resourceProvider.getString(R.string.request_required_fields_title))
@@ -381,7 +381,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 8, When getRequestDocuments is called, Then Case 8 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsResponse(
+            mockGetAllDocumentsCall(
                 response = listOf(mockedMdlWithBasicFields)
             )
             whenever(resourceProvider.getString(R.string.request_required_fields_title))
@@ -437,7 +437,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 9, When getRequestDocuments is called, Then Case 9 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsResponse(
+            mockGetAllDocumentsCall(
                 response = listOf(
                     mockedMdlWithBasicFields,
                     mockedPidWithBasicFields
@@ -498,7 +498,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 10, When getRequestDocuments is called, Then Case 10 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsResponse(
+            mockGetAllDocumentsCall(
                 response = listOf(
                     mockedPidWithBasicFields,
                     mockedMdlWithBasicFields
@@ -703,7 +703,7 @@ class TestProximityRequestInteractor {
             )
     }
 
-    private fun mockGetAllDocumentsResponse(response: List<Document>) {
+    private fun mockGetAllDocumentsCall(response: List<Document>) {
         whenever(walletCoreDocumentsController.getAllDocuments())
             .thenReturn(response)
     }

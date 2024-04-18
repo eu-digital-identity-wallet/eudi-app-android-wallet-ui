@@ -16,6 +16,10 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
+import android.content.Context
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
@@ -31,9 +35,8 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
-import eu.europa.ec.testfeature.mockedFullMdl
-import eu.europa.ec.testfeature.mockedFullPid
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -42,8 +45,10 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -63,9 +68,17 @@ class TestAddDocumentInteractor {
     @Mock
     private lateinit var resourceProvider: ResourceProvider
 
+    @Mock
+    private lateinit var context: Context
+
+    @Mock
+    private lateinit var resultHandler: DeviceAuthenticationResult
+
     private lateinit var interactor: AddDocumentInteractor
 
     private lateinit var closeable: AutoCloseable
+
+    private lateinit var crypto: BiometricCrypto
 
     @Before
     fun before() {
@@ -76,6 +89,8 @@ class TestAddDocumentInteractor {
             deviceAuthenticationInteractor = deviceAuthenticationInteractor,
             resourceProvider = resourceProvider,
         )
+
+        crypto = BiometricCrypto(cryptoObject = null)
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
     }
@@ -88,20 +103,17 @@ class TestAddDocumentInteractor {
     //region getAddDocumentOption
 
     // Case 1:
-    // 1. walletCoreDocumentsController.getAllDocuments() returns no documents.
-    // 2. flowType == IssuanceFlowUiConfig.NO_DOCUMENT
+    // 1. flowType == IssuanceFlowUiConfig.NO_DOCUMENT
 
     // Case 1 Expected Result:
     // AddDocumentInteractorPartialState.Success state, with the following options:
     // 1. a PID option, available to add.
     // 2. an mDL option, unavailable to add.
-    // 2. an Load Sample Data option, available to add.
+    // 3. a Load Sample Data option, available to add.
     @Test
     fun `Given Case 1, When getAddDocumentOption is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.getAllDocuments())
-                .thenReturn(emptyList())
             mockDocumentTypeUiToUiNameCall(resourceProvider)
 
             // When
@@ -126,19 +138,17 @@ class TestAddDocumentInteractor {
     }
 
     // Case 2:
-    // 1. walletCoreDocumentsController.getAllDocuments() returns only an mDL.
     // 2. flowType == IssuanceFlowUiConfig.EXTRA_DOCUMENT
 
     // Case 2 Expected Result:
     // AddDocumentInteractorPartialState.Success state, with the following options:
     // 1. a PID option, available to add.
-    // 2. an mDL option, unavailable to add.
+    // 2. an mDL option, available to add.
+    // 3. no Load Sample Data option.
     @Test
     fun `Given Case 2, When getAddDocumentOption is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.getAllDocuments())
-                .thenReturn(listOf(mockedFullMdl))
             mockDocumentTypeUiToUiNameCall(resourceProvider)
 
             // When
@@ -150,9 +160,7 @@ class TestAddDocumentInteractor {
                     AddDocumentInteractorPartialState.Success(
                         options = listOf(
                             mockedPidOptionItemUi,
-                            mockedMdlOptionItemUi.copy(
-                                available = false
-                            )
+                            mockedMdlOptionItemUi
                         )
                     ),
                     awaitItem()
@@ -162,82 +170,12 @@ class TestAddDocumentInteractor {
     }
 
     // Case 3:
-    // 1. walletCoreDocumentsController.getAllDocuments() returns no documents.
-    // 2. flowType == IssuanceFlowUiConfig.EXTRA_DOCUMENT
-
-    // Case 3 Expected Result:
-    // AddDocumentInteractorPartialState.Success state, with the following options:
-    // 1. a PID option, available to add.
-    // 2. an mDL option, available to add.
+    // 1. resourceProvider.getString() throws an exception with a message.
     @Test
-    fun `Given Case 3, When getAddDocumentOption is called, Then Case 3 Expected Result is returned`() {
+    fun `Given Case 3, When getAddDocumentOption is called, Then it returns Failure with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.getAllDocuments())
-                .thenReturn(emptyList())
-            mockDocumentTypeUiToUiNameCall(resourceProvider)
-
-            // When
-            interactor.getAddDocumentOption(
-                flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    AddDocumentInteractorPartialState.Success(
-                        options = listOf(
-                            mockedPidOptionItemUi,
-                            mockedMdlOptionItemUi
-                        )
-                    ),
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    // Case 4:
-    // 1. walletCoreDocumentsController.getAllDocuments() returns only a PID.
-    // 2. flowType == IssuanceFlowUiConfig.EXTRA_DOCUMENT
-
-    // Case 4 Expected Result:
-    // AddDocumentInteractorPartialState.Success state, with the following options:
-    // 1. a PID option, unavailable to add.
-    // 2. an mDL option, available to add.
-    @Test
-    fun `Given Case 4, When getAddDocumentOption is called, Then Case 4 Expected Result is returned`() {
-        coroutineRule.runTest {
-            // Given
-            whenever(walletCoreDocumentsController.getAllDocuments())
-                .thenReturn(listOf(mockedFullPid))
-            mockDocumentTypeUiToUiNameCall(resourceProvider)
-
-            // When
-            interactor.getAddDocumentOption(
-                flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    AddDocumentInteractorPartialState.Success(
-                        options = listOf(
-                            mockedPidOptionItemUi.copy(
-                                available = false
-                            ),
-                            mockedMdlOptionItemUi
-                        )
-                    ),
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    // Case 5:
-    // 1. walletCoreDocumentsController.getAllDocuments() throws an exception with a message.
-    @Test
-    fun `Given Case 5, When getAddDocumentOption is called, Then it returns Failure with exception's localized message`() {
-        coroutineRule.runTest {
-            // Given
-            whenever(walletCoreDocumentsController.getAllDocuments())
+            whenever(resourceProvider.getString(anyInt()))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -255,13 +193,13 @@ class TestAddDocumentInteractor {
         }
     }
 
-    // Case 6:
-    // 1. walletCoreDocumentsController.getAllDocuments() throws an exception with no message.
+    // Case 4:
+    // 1. resourceProvider.getString() throws an exception with no message.
     @Test
-    fun `Given Case 6, When getAddDocumentOption is called, Then it returns Failure with the generic error message`() {
+    fun `Given Case 4, When getAddDocumentOption is called, Then it returns Failure with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.getAllDocuments())
+            whenever(resourceProvider.getString(anyInt()))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -331,6 +269,100 @@ class TestAddDocumentInteractor {
                         .addSampleData()
                 }
         }
+    }
+    //endregion
+
+    //region handleUserAuth
+
+    // Case 1:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.CanAuthenticate
+
+    // Case 1 Expected Result:
+    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    @Test
+    fun `Given case 1, When handleUserAuth is called, Then Case 1 expected result is returned`() {
+        // Given
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.CanAuthenticate
+        )
+
+        // When
+        interactor.handleUserAuth(
+            context = context,
+            crypto = crypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(deviceAuthenticationInteractor, times(1))
+            .authenticateWithBiometrics(context, crypto, resultHandler)
+    }
+
+    // Case 2:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.NonEnrolled
+
+    // Case 2 Expected Result:
+    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    @Test
+    fun `Given case 2, When handleUserAuth is called, Then Case 2 expected result is returned`() {
+        // Given
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.NonEnrolled
+        )
+
+        // When
+        interactor.handleUserAuth(
+            context = context,
+            crypto = crypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(deviceAuthenticationInteractor, times(1))
+            .authenticateWithBiometrics(context, crypto, resultHandler)
+    }
+
+    // Case 3:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.Failure
+
+    // Case 3 Expected Result:
+    // resultHandler.onAuthenticationFailure called once.
+    @Test
+    fun `Given case 3, When handleUserAuth is called, Then Case 3 expected result is returned`() {
+        // Given
+        val mockedOnAuthenticationFailure: () -> Unit = {}
+        whenever(resultHandler.onAuthenticationFailure)
+            .thenReturn(mockedOnAuthenticationFailure)
+
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.Failure(
+                errorMessage = mockedPlainFailureMessage
+            )
+        )
+
+        // When
+        interactor.handleUserAuth(
+            context = context,
+            crypto = crypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(resultHandler, times(1))
+            .onAuthenticationFailure
+    }
+    //endregion
+
+    //region helper functions
+    private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(listener = any()))
+            .thenAnswer {
+                val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
+                bioAvailability(response)
+            }
     }
     //endregion
 }

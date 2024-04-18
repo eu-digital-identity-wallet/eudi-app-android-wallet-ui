@@ -92,7 +92,23 @@ class DocumentDetailsInteractorImpl(
         documentType: String
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState> =
         flow {
-            if (documentType.toDocumentTypeUi() == DocumentTypeUi.PID) {
+
+            val shouldDeleteAllDocuments: Boolean =
+                if (documentType.toDocumentTypeUi() == DocumentTypeUi.PID) {
+
+                    val allPidDocuments = walletCoreDocumentsController.getAllDocuments()
+                        .filter { it.docType.toDocumentTypeUi() == DocumentTypeUi.PID }
+
+                    if (allPidDocuments.count() > 1) {
+                        allPidDocuments.minByOrNull { it.createdAt }?.id == documentId
+                    } else {
+                        true
+                    }
+                } else {
+                    false
+                }
+
+            if (shouldDeleteAllDocuments) {
                 walletCoreDocumentsController.deleteAllDocuments(documentId = documentId).map {
                     when (it) {
                         is DeleteAllDocumentsPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
