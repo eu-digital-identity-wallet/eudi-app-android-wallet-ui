@@ -205,14 +205,14 @@ class TestPresentationLoadingInteractor {
 
     //region handleUserAuthentication
 
-    // Case 5:
+    // Case 1:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
     // BiometricsAvailability.CanAuthenticate
 
-    // Case 5 Expected Result:
+    // Case 1 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 5, When handleUserAuthentication is called, Then Case 5 expected result is returned`() {
+    fun `Given case 1, When handleUserAuthentication is called, Then Case 1 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.CanAuthenticate
@@ -230,14 +230,14 @@ class TestPresentationLoadingInteractor {
             .authenticateWithBiometrics(context, crypto, resultHandler)
     }
 
-    // Case 6:
+    // Case 2:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
     // BiometricsAvailability.NonEnrolled
 
-    // Case 6 Expected Result:
+    // Case 2 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 6, When handleUserAuthentication is called, Then Case 6 expected result is returned`() {
+    fun `Given case 2, When handleUserAuthentication is called, Then Case 2 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.NonEnrolled
@@ -255,14 +255,14 @@ class TestPresentationLoadingInteractor {
             .authenticateWithBiometrics(context, crypto, resultHandler)
     }
 
-    // Case 7:
+    // Case 3:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
     // BiometricsAvailability.Failure
 
-    // Case 7 Expected Result:
+    // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.
     @Test
-    fun `Given case 7, When handleUserAuthentication is called, Then Case 7 expected result is returned`() {
+    fun `Given case 3, When handleUserAuthentication is called, Then Case 3 expected result is returned`() {
         // Given
         val mockedOnAuthenticationFailure: () -> Unit = {}
         whenever(resultHandler.onAuthenticationFailure)
