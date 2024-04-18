@@ -19,6 +19,7 @@ package eu.europa.ec.commonfeature.ui.request.model
 import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.DocRequest
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 
 data class RequestDocumentItemUi<T>(
@@ -79,5 +80,5 @@ fun <T> DocItem.toRequestDocumentItemUi(
     )
 }
 
-fun DocRequest.produceDocUID(elementIdentifier: ElementIdentifier): String =
-    docType + elementIdentifier
+fun DocRequest.produceDocUID(elementIdentifier: ElementIdentifier, documentId: DocumentId): String =
+    docType + elementIdentifier + documentId

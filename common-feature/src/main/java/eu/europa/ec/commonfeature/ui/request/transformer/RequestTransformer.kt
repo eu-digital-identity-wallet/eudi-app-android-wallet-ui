@@ -99,7 +99,10 @@ object RequestTransformer {
                 ) {
                     required.add(
                         docItem.toRequestDocumentItemUi(
-                            uID = requestDocument.docRequest.produceDocUID(docItem.elementIdentifier),
+                            uID = requestDocument.docRequest.produceDocUID(
+                                docItem.elementIdentifier,
+                                requestDocument.documentId
+                            ),
                             docPayload = DocumentItemDomainPayload(
                                 docId = requestDocument.documentId,
                                 docRequest = requestDocument.docRequest,
@@ -115,7 +118,10 @@ object RequestTransformer {
                         )
                     )
                 } else {
-                    val uID = requestDocument.docRequest.produceDocUID(docItem.elementIdentifier)
+                    val uID = requestDocument.docRequest.produceDocUID(
+                        docItem.elementIdentifier,
+                        requestDocument.documentId
+                    )
 
                     items += RequestDataUi.Space()
                     items += RequestDataUi.OptionalField(

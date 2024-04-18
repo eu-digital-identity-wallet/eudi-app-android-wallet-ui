@@ -25,7 +25,6 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentTypeUi
-import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
@@ -75,7 +74,7 @@ class AddDocumentInteractorImpl(
                     text = DocumentTypeUi.PID.toUiName(resourceProvider),
                     icon = AppIcons.Id,
                     type = DocumentTypeUi.PID,
-                    available = !hasDocument(DocumentTypeUi.PID)
+                    available = true
                 ),
                 DocumentOptionItemUi(
                     text = DocumentTypeUi.MDL.toUiName(resourceProvider),
@@ -148,20 +147,6 @@ class AddDocumentInteractorImpl(
         }
     }
 
-    private fun hasDocument(documentTypeUi: DocumentTypeUi): Boolean {
-        val documents = walletCoreDocumentsController.getAllDocuments()
-        return if (documents.isNotEmpty()) {
-            documents.any { it.docType.toDocumentTypeUi() == documentTypeUi }
-        } else {
-            false
-        }
-    }
-
-    private fun canCreateMdl(flowType: IssuanceFlowUiConfig): Boolean {
-        return if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
-            false
-        } else {
-            !hasDocument(DocumentTypeUi.MDL)
-        }
-    }
+    private fun canCreateMdl(flowType: IssuanceFlowUiConfig): Boolean =
+        flowType != IssuanceFlowUiConfig.NO_DOCUMENT
 }
