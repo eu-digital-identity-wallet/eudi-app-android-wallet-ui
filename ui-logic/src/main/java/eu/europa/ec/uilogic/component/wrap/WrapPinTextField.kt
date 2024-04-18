@@ -52,6 +52,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.EmptyTextToolbar
 import eu.europa.ec.uilogic.component.utils.HSpacer
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @Composable
@@ -64,7 +65,8 @@ fun WrapPinTextField(
     errorMessage: String? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     pinWidth: Dp? = null,
-    clearCode: Boolean = false
+    clearCode: Boolean = false,
+    focusOnCreate: Boolean = false
 ) {
     // Text field range.
     val fieldsRange = 0 until length
@@ -210,6 +212,11 @@ fun WrapPinTextField(
                 )
             }
 
+            OneTimeLaunchedEffect {
+                if (focusOnCreate) {
+                    focusRequesters.first().requestFocus()
+                }
+            }
         }
     }
 }
@@ -226,7 +233,7 @@ private fun PreviewWrapPinTextField() {
             onPinUpdate = {},
             length = 4,
             visualTransformation = PasswordVisualTransformation(),
-            pinWidth = 46.dp
+            pinWidth = 46.dp,
         )
     }
 }
