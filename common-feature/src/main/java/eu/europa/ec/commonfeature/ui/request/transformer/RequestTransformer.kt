@@ -76,7 +76,7 @@ object RequestTransformer {
             items += RequestDataUi.Space()
 
             val required = mutableListOf<RequestDocumentItemUi<Event>>()
-            val storageDocument = storageDocuments.first { it.docType == requestDocument.docType }
+            val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
 
             // Add optional field items.
             requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
