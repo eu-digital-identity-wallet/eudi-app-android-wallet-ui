@@ -16,7 +16,6 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.util.TestsData
@@ -25,6 +24,7 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidUi
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.DocumentType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
@@ -54,6 +54,7 @@ import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import kotlin.test.assertEquals
 
@@ -248,7 +249,7 @@ class TestDocumentDetailsInteractor {
                         documentUi = DocumentUi(
                             documentId = TestsData.mockedPidId,
                             documentName = TestsData.mockedDocUiNamePid,
-                            documentType = DocumentTypeUi.PID,
+                            documentType = DocumentType.PID,
                             documentExpirationDateFormatted = "",
                             documentHasExpired = TestsData.mockedDocumentHasExpired,
                             documentImage = "",
@@ -432,21 +433,21 @@ class TestDocumentDetailsInteractor {
     // Case 4:
 
     // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.getAllDocuments() returns more than 1 PIDs
+    // 2. walletCoreDocumentsController.getAllDocuments(docType: DocumentType) returns more than 1 PIDs
     //      AND the documentId we are about to delete is NOT the one of the oldest PID.
     // 3. walletCoreDocumentsController.deleteDocument() returns Success.
     @Test
     fun `Given Case 4, When deleteDocument is called, Then it returns SingleDocumentDeleted`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsCall(
+            mockGetAllDocumentsWithTypeCall(
                 response = listOf(
-                    mockedMdlWithBasicFields,
                     mockedPidWithBasicFields,
                     mockedOldestPidWithBasicFields
                 )
             )
             mockDeleteDocumentCall(response = DeleteDocumentPartialState.Success)
+            mockGetMainPidDocument(mockedOldestPidWithBasicFields)
 
             // When
             interactor.deleteDocument(
@@ -577,8 +578,18 @@ class TestDocumentDetailsInteractor {
             .thenReturn(response)
     }
 
+    private fun mockGetAllDocumentsWithTypeCall(response: List<Document>) {
+        whenever(walletCoreDocumentsController.getAllDocuments(docType = any()))
+            .thenReturn(response)
+    }
+
     private fun mockGetDocumentByIdCall(response: Document?) {
         whenever(walletCoreDocumentsController.getDocumentById(anyString()))
+            .thenReturn(response)
+    }
+
+    private fun mockGetMainPidDocument(response: Document?) {
+        whenever(walletCoreDocumentsController.getMainPidDocument())
             .thenReturn(response)
     }
 

@@ -19,7 +19,6 @@ package eu.europa.ec.commonfeature.ui.document_details.transformer
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.businesslogic.util.toList
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
@@ -27,6 +26,7 @@ import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.getKeyValueUi
+import eu.europa.ec.corelogic.model.toDocumentType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
@@ -70,7 +70,7 @@ object DocumentDetailsTransformer {
                 )
             }
 
-        val documentTypeUi = document.docType.toDocumentTypeUi()
+        val documentTypeUi = document.docType.toDocumentType()
 
         val documentImage = extractValueFromDocumentOrEmpty(
             document = document,

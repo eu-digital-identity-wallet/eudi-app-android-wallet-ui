@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
+import eu.europa.ec.corelogic.model.DocumentType
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IssuanceButton
 import eu.europa.ec.uilogic.component.IssuanceButtonData
@@ -165,13 +165,13 @@ private fun IssuanceAddDocumentScreenPreview() {
                     DocumentOptionItemUi(
                         text = "National ID",
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.PID,
+                        type = DocumentType.PID,
                         available = true,
                     ),
                     DocumentOptionItemUi(
                         text = "Driving License",
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.MDL,
+                        type = DocumentType.MDL,
                         available = false,
                     )
                 )
@@ -198,13 +198,13 @@ private fun DashboardAddDocumentScreenPreview() {
                     DocumentOptionItemUi(
                         text = "National ID",
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.PID,
+                        type = DocumentType.PID,
                         available = true,
                     ),
                     DocumentOptionItemUi(
                         text = "Driving License",
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.MDL,
+                        type = DocumentType.MDL,
                         available = false,
                     )
                 )

@@ -19,6 +19,8 @@ package eu.europa.ec.corelogic.controller
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.toDocumentType
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
@@ -91,7 +93,11 @@ interface WalletCoreDocumentsController {
      * */
     fun getAllDocuments(): List<Document>
 
+    fun getAllDocuments(docType: DocumentType): List<Document>
+
     fun getDocumentById(id: String): Document?
+
+    fun getMainPidDocument(): Document?
 
     fun issueDocument(
         issuanceMethod: IssuanceMethod,
@@ -145,9 +151,16 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun getAllDocuments(): List<Document> = eudiWallet.getDocuments()
 
+    override fun getAllDocuments(docType: DocumentType): List<Document> =
+        getAllDocuments().filter { it.docType.toDocumentType() == DocumentType.PID }
+
     override fun getDocumentById(id: String): Document? {
         return eudiWallet.getDocumentById(documentId = id)
     }
+
+    override fun getMainPidDocument(): Document? = getAllDocuments()
+        .filter { it.docType.toDocumentType() == DocumentType.PID }
+        .minByOrNull { it.createdAt }
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,

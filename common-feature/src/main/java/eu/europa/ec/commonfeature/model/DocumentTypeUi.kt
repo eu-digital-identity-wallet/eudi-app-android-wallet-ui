@@ -17,13 +17,14 @@
 package eu.europa.ec.commonfeature.model
 
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
+import eu.europa.ec.corelogic.model.DocumentType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 data class DocumentUi(
     val documentId: String,
     val documentName: String,
-    val documentType: DocumentTypeUi,
+    val documentType: DocumentType,
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,
     val documentImage: String,
@@ -31,43 +32,12 @@ data class DocumentUi(
     val userFullName: String? = null,
 )
 
-enum class DocumentTypeUi(
-    val codeName: String,
-    val docType: String
-) {
-    PID(
-        codeName = "eu.europa.ec.eudiw.pid.1",
-        docType = "eu.europa.ec.eudiw.pid.1"
-    ),
-    MDL(
-        codeName = "org.iso.18013.5.1",
-        docType = "org.iso.18013.5.1.mDL"
-    ),
-    CONFERENCE_BADGE(
-        codeName = "com.example.conference.badge",
-        docType = "com.example.conference.badge"
-    ),
-    SAMPLE_DOCUMENTS(
-        codeName = "load_sample_documents",
-        docType = "load_sample_documents"
-    ),
-    OTHER(codeName = "", docType = "")
-}
-
-fun DocumentTypeUi.toUiName(resourceProvider: ResourceProvider): String {
+fun DocumentType.toUiName(resourceProvider: ResourceProvider): String {
     return when (this) {
-        DocumentTypeUi.PID -> resourceProvider.getString(R.string.pid)
-        DocumentTypeUi.MDL -> resourceProvider.getString(R.string.mdl)
-        DocumentTypeUi.CONFERENCE_BADGE -> resourceProvider.getString(R.string.conference_badge)
-        DocumentTypeUi.SAMPLE_DOCUMENTS -> resourceProvider.getString(R.string.load_sample_data)
-        DocumentTypeUi.OTHER -> ""
+        DocumentType.PID -> resourceProvider.getString(R.string.pid)
+        DocumentType.MDL -> resourceProvider.getString(R.string.mdl)
+        DocumentType.CONFERENCE_BADGE -> resourceProvider.getString(R.string.conference_badge)
+        DocumentType.SAMPLE_DOCUMENTS -> resourceProvider.getString(R.string.load_sample_data)
+        DocumentType.OTHER -> ""
     }
-}
-
-fun String.toDocumentTypeUi(): DocumentTypeUi = when (this) {
-    "eu.europa.ec.eudiw.pid.1" -> DocumentTypeUi.PID
-    "org.iso.18013.5.1.mDL" -> DocumentTypeUi.MDL
-    "com.example.conference.badge" -> DocumentTypeUi.CONFERENCE_BADGE
-    "load_sample_documents" -> DocumentTypeUi.SAMPLE_DOCUMENTS
-    else -> DocumentTypeUi.OTHER
 }
