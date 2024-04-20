@@ -21,15 +21,14 @@ import android.content.Context
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.toDocumentType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
@@ -75,9 +74,7 @@ class DashboardInteractorImpl(
         var userFirstName = ""
         var userImage = ""
         val documents = walletCoreDocumentsController.getAllDocuments()
-        val mainPid = documents
-            .filter { it.docType.toDocumentTypeUi() == DocumentTypeUi.PID }
-            .minByOrNull { it.createdAt }
+        val mainPid = walletCoreDocumentsController.getMainPidDocument()
         val documentsUi = documents.map { document ->
 
             var documentExpirationDate = extractValueFromDocumentOrEmpty(
@@ -109,8 +106,8 @@ class DashboardInteractorImpl(
 
             return@map DocumentUi(
                 documentId = document.id,
-                documentName = document.docType.toDocumentTypeUi().toUiName(resourceProvider),
-                documentType = document.docType.toDocumentTypeUi(),
+                documentName = document.docType.toDocumentType().toUiName(resourceProvider),
+                documentType = document.docType.toDocumentType(),
                 documentImage = "",
                 documentExpirationDateFormatted = documentExpirationDate,
                 documentHasExpired = docHasExpired,

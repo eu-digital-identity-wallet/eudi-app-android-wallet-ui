@@ -24,12 +24,12 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.DocumentType
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import kotlinx.coroutines.flow.Flow
@@ -71,24 +71,24 @@ class AddDocumentInteractorImpl(
         flow {
             val options = mutableListOf(
                 DocumentOptionItemUi(
-                    text = DocumentTypeUi.PID.toUiName(resourceProvider),
+                    text = DocumentType.PID.toUiName(resourceProvider),
                     icon = AppIcons.Id,
-                    type = DocumentTypeUi.PID,
+                    type = DocumentType.PID,
                     available = true
                 ),
                 DocumentOptionItemUi(
-                    text = DocumentTypeUi.MDL.toUiName(resourceProvider),
+                    text = DocumentType.MDL.toUiName(resourceProvider),
                     icon = AppIcons.Id,
-                    type = DocumentTypeUi.MDL,
+                    type = DocumentType.MDL,
                     available = canCreateMdl(flowType)
                 )
             )
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
                 options.add(
                     DocumentOptionItemUi(
-                        text = DocumentTypeUi.SAMPLE_DOCUMENTS.toUiName(resourceProvider),
+                        text = DocumentType.SAMPLE_DOCUMENTS.toUiName(resourceProvider),
                         icon = AppIcons.Id,
-                        type = DocumentTypeUi.SAMPLE_DOCUMENTS,
+                        type = DocumentType.SAMPLE_DOCUMENTS,
                         available = true
                     )
                 )

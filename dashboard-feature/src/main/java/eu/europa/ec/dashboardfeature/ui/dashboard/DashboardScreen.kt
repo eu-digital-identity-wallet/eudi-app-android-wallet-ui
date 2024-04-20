@@ -62,8 +62,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.corelogic.model.DocumentType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
@@ -645,7 +645,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "0",
                 documentName = "National ID",
-                documentType = DocumentTypeUi.PID,
+                documentType = DocumentType.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image1",
@@ -654,7 +654,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "1",
                 documentName = "Driving License",
-                documentType = DocumentTypeUi.MDL,
+                documentType = DocumentType.MDL,
                 documentExpirationDateFormatted = "25 Dec 2050",
                 documentHasExpired = false,
                 documentImage = "image2",
@@ -663,7 +663,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "2",
                 documentName = "Other",
-                documentType = DocumentTypeUi.OTHER,
+                documentType = DocumentType.OTHER,
                 documentExpirationDateFormatted = "01 Jun 2020",
                 documentHasExpired = true,
                 documentImage = "image3",

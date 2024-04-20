@@ -17,13 +17,13 @@
 package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.model.DocumentTypeUi
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.model.toDocumentTypeUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.toDocumentType
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -94,13 +94,13 @@ class DocumentDetailsInteractorImpl(
         flow {
 
             val shouldDeleteAllDocuments: Boolean =
-                if (documentType.toDocumentTypeUi() == DocumentTypeUi.PID) {
+                if (documentType.toDocumentType() == DocumentType.PID) {
 
-                    val allPidDocuments = walletCoreDocumentsController.getAllDocuments()
-                        .filter { it.docType.toDocumentTypeUi() == DocumentTypeUi.PID }
+                    val allPidDocuments =
+                        walletCoreDocumentsController.getAllDocuments(docType = DocumentType.PID)
 
                     if (allPidDocuments.count() > 1) {
-                        allPidDocuments.minByOrNull { it.createdAt }?.id == documentId
+                        walletCoreDocumentsController.getMainPidDocument()?.id == documentId
                     } else {
                         true
                     }
