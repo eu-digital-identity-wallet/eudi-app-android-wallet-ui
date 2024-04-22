@@ -93,7 +93,7 @@ interface WalletCoreDocumentsController {
      * */
     fun getAllDocuments(): List<Document>
 
-    fun getAllDocuments(docType: DocumentType): List<Document>
+    fun getAllDocumentsByType(docType: DocumentType): List<Document>
 
     fun getDocumentById(id: String): Document?
 
@@ -108,7 +108,7 @@ interface WalletCoreDocumentsController {
         documentId: String
     ): Flow<DeleteDocumentPartialState>
 
-    fun deleteAllDocuments(documentId: String): Flow<DeleteAllDocumentsPartialState>
+    fun deleteAllDocuments(mainPidDocumentId: String): Flow<DeleteAllDocumentsPartialState>
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -151,16 +151,16 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun getAllDocuments(): List<Document> = eudiWallet.getDocuments()
 
-    override fun getAllDocuments(docType: DocumentType): List<Document> =
-        getAllDocuments().filter { it.docType.toDocumentType() == DocumentType.PID }
+    override fun getAllDocumentsByType(docType: DocumentType): List<Document> =
+        getAllDocuments().filter { it.docType.toDocumentType() == docType }
 
     override fun getDocumentById(id: String): Document? {
         return eudiWallet.getDocumentById(documentId = id)
     }
 
-    override fun getMainPidDocument(): Document? = getAllDocuments()
-        .filter { it.docType.toDocumentType() == DocumentType.PID }
-        .minByOrNull { it.createdAt }
+    override fun getMainPidDocument(): Document? =
+        getAllDocumentsByType(docType = DocumentType.PID)
+            .minByOrNull { it.createdAt }
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,
@@ -218,27 +218,27 @@ class WalletCoreDocumentsControllerImpl(
         )
     }
 
-    override fun deleteAllDocuments(documentId: String): Flow<DeleteAllDocumentsPartialState> =
+    override fun deleteAllDocuments(mainPidDocumentId: String): Flow<DeleteAllDocumentsPartialState> =
         flow {
             val allDocuments = eudiWallet.getDocuments()
-            val PID_document = allDocuments.find { it.id == documentId }
+            val mainPidDocument = getMainPidDocument()
 
-            PID_document?.let {
-                val restNonPID_Documents = allDocuments.minusElement(it)
+            mainPidDocument?.let {
+                val restOfDocuments = allDocuments.minusElement(it)
 
-                var allNonPidDocsDeleted = true
-                var allNonPidDocsDeletedFailureReason = ""
+                var restOfAllDocsDeleted = true
+                var restOfAllDocsDeletedFailureReason = ""
 
-                restNonPID_Documents.forEach { document ->
+                restOfDocuments.forEach { document ->
 
                     deleteDocument(
                         documentId = document.id
-                    ).collect { deleteNonPID_documentsPartialState ->
-                        when (deleteNonPID_documentsPartialState) {
+                    ).collect { deleteDocumentPartialState ->
+                        when (deleteDocumentPartialState) {
                             is DeleteDocumentPartialState.Failure -> {
-                                allNonPidDocsDeleted = false
-                                allNonPidDocsDeletedFailureReason =
-                                    deleteNonPID_documentsPartialState.errorMessage
+                                restOfAllDocsDeleted = false
+                                restOfAllDocsDeletedFailureReason =
+                                    deleteDocumentPartialState.errorMessage
                             }
 
                             is DeleteDocumentPartialState.Success -> {}
@@ -246,14 +246,14 @@ class WalletCoreDocumentsControllerImpl(
                     }
                 }
 
-                if (allNonPidDocsDeleted) {
+                if (restOfAllDocsDeleted) {
                     deleteDocument(
-                        documentId = documentId
-                    ).collect { deletePID_documentPartialState ->
-                        when (deletePID_documentPartialState) {
+                        documentId = mainPidDocumentId
+                    ).collect { deleteMainPidDocumentPartialState ->
+                        when (deleteMainPidDocumentPartialState) {
                             is DeleteDocumentPartialState.Failure -> emit(
                                 DeleteAllDocumentsPartialState.Failure(
-                                    errorMessage = deletePID_documentPartialState.errorMessage
+                                    errorMessage = deleteMainPidDocumentPartialState.errorMessage
                                 )
                             )
 
@@ -263,7 +263,7 @@ class WalletCoreDocumentsControllerImpl(
                         }
                     }
                 } else {
-                    emit(DeleteAllDocumentsPartialState.Failure(errorMessage = allNonPidDocsDeletedFailureReason))
+                    emit(DeleteAllDocumentsPartialState.Failure(errorMessage = restOfAllDocsDeletedFailureReason))
                 }
             } ?: emit(
                 DeleteAllDocumentsPartialState.Failure(

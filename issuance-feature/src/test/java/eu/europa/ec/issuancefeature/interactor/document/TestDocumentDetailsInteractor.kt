@@ -579,7 +579,7 @@ class TestDocumentDetailsInteractor {
     }
 
     private fun mockGetAllDocumentsWithTypeCall(response: List<Document>) {
-        whenever(walletCoreDocumentsController.getAllDocuments(docType = any()))
+        whenever(walletCoreDocumentsController.getAllDocumentsByType(docType = any()))
             .thenReturn(response)
     }
 

@@ -97,7 +97,7 @@ class DocumentDetailsInteractorImpl(
                 if (documentType.toDocumentType() == DocumentType.PID) {
 
                     val allPidDocuments =
-                        walletCoreDocumentsController.getAllDocuments(docType = DocumentType.PID)
+                        walletCoreDocumentsController.getAllDocumentsByType(docType = DocumentType.PID)
 
                     if (allPidDocuments.count() > 1) {
                         walletCoreDocumentsController.getMainPidDocument()?.id == documentId
@@ -109,7 +109,7 @@ class DocumentDetailsInteractorImpl(
                 }
 
             if (shouldDeleteAllDocuments) {
-                walletCoreDocumentsController.deleteAllDocuments(documentId = documentId).map {
+                walletCoreDocumentsController.deleteAllDocuments(mainPidDocumentId = documentId).map {
                     when (it) {
                         is DeleteAllDocumentsPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
                             errorMessage = it.errorMessage
