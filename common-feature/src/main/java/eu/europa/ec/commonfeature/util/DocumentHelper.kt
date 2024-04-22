@@ -89,100 +89,83 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
-fun getKeyValueUi(
-    item: Any,
-    key: String,
+fun parseKeyValueUi(
+    json: Any,
+    groupIdentifier: String,
+    keyIdentifier: String = "",
     resourceProvider: ResourceProvider,
-): Pair<String, String> {
-    val uiKey = resourceProvider.getReadableElementIdentifier(key)
-    val uiValue: String =
-        when (item) {
+    allItems: StringBuilder
+) {
+    when (json) {
+        is JSONObject -> {
+            val keys = json.keys()
+            while (keys.hasNext()) {
 
-            // Item is a JSON Array with other JSON Objects within it.
-            is JSONArray -> {
+                val key = keys.next()
+                val value = json[key]
 
-                val allItems: MutableList<String> = mutableListOf()
-
-                for (index in 0 until item.length()) {
-                    item.optJSONObject(index)?.let { row ->
-                        row.keys().forEach { objKey ->
-                            row.opt(objKey)?.let { value ->
-
-                                val formatted = when (value) {
-                                    is JSONArray -> {
-                                        StringBuilder().apply {
-                                            for (internalIndex in 0 until value.length()) {
-                                                if (internalIndex > 0) {
-                                                    append(" ")
-                                                }
-                                                append(value.optString(internalIndex))
-                                            }
-                                        }.toString()
-                                    }
-
-                                    else -> {
-                                        value.toString()
-                                    }
-                                }
-
-                                allItems.add(
-                                    "${resourceProvider.getReadableElementIdentifier(objKey)}:" +
-                                            " ${formatted.toDateFormatted() ?: formatted}"
-                                )
-                            }
-                        }
-                    }
-                }
-
-                var result = ""
-                allItems.forEachIndexed { index, s ->
-                    result += s
-                    if (index != allItems.lastIndex) {
-                        result += "\n"
-                    }
-                }
-
-                result
+                parseKeyValueUi(
+                    json = value,
+                    groupIdentifier = groupIdentifier,
+                    keyIdentifier = key,
+                    resourceProvider = resourceProvider,
+                    allItems = allItems
+                )
             }
+        }
 
-            // Item is Boolean.
-            is Boolean -> {
-                val infoValue = resourceProvider.getString(
-                    if (item) {
+        is JSONArray -> {
+            for (i in 0 until json.length()) {
+                val value = json[i]
+                parseKeyValueUi(
+                    json = value,
+                    groupIdentifier = groupIdentifier,
+                    resourceProvider = resourceProvider,
+                    allItems = allItems
+                )
+            }
+        }
+
+        is Boolean -> {
+            allItems.append(
+                resourceProvider.getString(
+                    if (json) {
                         R.string.document_details_boolean_item_true_readable_value
                     } else {
                         R.string.document_details_boolean_item_false_readable_value
                     }
                 )
+            )
+        }
 
-                infoValue
-            }
+        else -> {
+            val date: String? = (json as? String)?.toDateFormatted()
+            allItems.append(
+                when {
 
-            // Item is String, Int, etc.
-            else -> {
-                // Try to parse it as a Date.
-                val date: String? = (item as? String)?.toDateFormatted()
-
-                val infoValue = when {
-
-                    keyIsGender(key) -> {
-                        getGenderValue(item.toString(), resourceProvider)
+                    keyIsGender(groupIdentifier) -> {
+                        getGenderValue(json.toString(), resourceProvider)
                     }
 
-                    date != null -> {
+                    date != null && keyIdentifier.isEmpty() -> {
                         date
                     }
 
                     else -> {
-                        item.toString()
+                        val jsonString = json.toString()
+                        if (keyIdentifier.isEmpty()) {
+                            jsonString
+                        } else {
+                            val lineChange = if (allItems.isNotEmpty()) "\n" else ""
+                            val key = resourceProvider.getReadableElementIdentifier(keyIdentifier)
+                            val value = jsonString.toDateFormatted() ?: jsonString
+                            "$lineChange$key: $value"
+                        }
                     }
                 }
-
-                infoValue
-            }
+            )
         }
-
-    return Pair(uiKey, uiValue)
+    }
 }
 
 fun documentHasExpired(
