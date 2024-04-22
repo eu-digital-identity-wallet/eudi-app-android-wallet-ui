@@ -93,7 +93,7 @@ interface WalletCoreDocumentsController {
      * */
     fun getAllDocuments(): List<Document>
 
-    fun getAllDocuments(docType: DocumentType): List<Document>
+    fun getAllDocumentsByType(docType: DocumentType): List<Document>
 
     fun getDocumentById(id: String): Document?
 
@@ -151,16 +151,16 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun getAllDocuments(): List<Document> = eudiWallet.getDocuments()
 
-    override fun getAllDocuments(docType: DocumentType): List<Document> =
-        getAllDocuments().filter { it.docType.toDocumentType() == DocumentType.PID }
+    override fun getAllDocumentsByType(docType: DocumentType): List<Document> =
+        getAllDocuments().filter { it.docType.toDocumentType() == docType }
 
     override fun getDocumentById(id: String): Document? {
         return eudiWallet.getDocumentById(documentId = id)
     }
 
-    override fun getMainPidDocument(): Document? = getAllDocuments()
-        .filter { it.docType.toDocumentType() == DocumentType.PID }
-        .minByOrNull { it.createdAt }
+    override fun getMainPidDocument(): Document? =
+        getAllDocumentsByType(docType = DocumentType.PID)
+            .minByOrNull { it.createdAt }
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,
