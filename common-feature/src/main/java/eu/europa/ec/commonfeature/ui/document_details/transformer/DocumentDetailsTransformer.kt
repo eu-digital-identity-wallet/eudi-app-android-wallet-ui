@@ -25,7 +25,7 @@ import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
-import eu.europa.ec.commonfeature.util.getKeyValueUi
+import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.toDocumentType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
@@ -103,14 +103,24 @@ private fun transformToDocumentDetailsUi(
     item: Any,
     resourceProvider: ResourceProvider
 ): DocumentDetailsUi {
-    val (keyUi, valueUi) = getKeyValueUi(item, key, resourceProvider)
+
+    val uiKey = resourceProvider.getReadableElementIdentifier(key)
+
+    val values = StringBuilder()
+    parseKeyValueUi(
+        json = item,
+        groupIdentifier = key,
+        resourceProvider = resourceProvider,
+        allItems = values
+    )
+    val groupedValues = values.toString()
 
     return when (key) {
         DocumentJsonKeys.SIGNATURE -> {
             DocumentDetailsUi.SignatureItem(
                 itemData = InfoTextWithNameAndImageData(
-                    title = keyUi,
-                    base64Image = valueUi
+                    title = uiKey,
+                    base64Image = groupedValues
                 )
             )
         }
@@ -118,7 +128,7 @@ private fun transformToDocumentDetailsUi(
         DocumentJsonKeys.PORTRAIT -> {
             DocumentDetailsUi.DefaultItem(
                 itemData = InfoTextWithNameAndValueData.create(
-                    title = keyUi,
+                    title = uiKey,
                     infoValues = arrayOf(resourceProvider.getString(R.string.document_details_portrait_readable_identifier))
                 )
             )
@@ -127,8 +137,8 @@ private fun transformToDocumentDetailsUi(
         else -> {
             DocumentDetailsUi.DefaultItem(
                 itemData = InfoTextWithNameAndValueData.create(
-                    title = keyUi,
-                    infoValues = arrayOf(valueUi)
+                    title = uiKey,
+                    infoValues = arrayOf(groupedValues)
                 )
             )
         }

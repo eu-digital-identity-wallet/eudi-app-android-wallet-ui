@@ -26,7 +26,7 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
 import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
-import eu.europa.ec.commonfeature.util.getKeyValueUi
+import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentType
 import eu.europa.ec.corelogic.model.toDocumentType
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocument
@@ -82,13 +82,14 @@ object RequestTransformer {
             requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
 
                 val (value, isAvailable) = try {
-                    val (_, valueUi) = getKeyValueUi(
-                        item = storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier],
-                        key = docItem.elementIdentifier,
+                    val values = StringBuilder()
+                    parseKeyValueUi(
+                        json = storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier],
+                        groupIdentifier = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
+                        allItems = values
                     )
-
-                    (valueUi to true)
+                    (values.toString() to true)
                 } catch (ex: Exception) {
                     (resourceProvider.getString(R.string.request_element_identifier_not_available) to false)
                 }
