@@ -47,6 +47,7 @@ import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
@@ -101,7 +102,8 @@ fun ContentTitle(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(SIZE_SMALL.dp)
         ) {
             if (titleWithBadge != null) {
                 val inlineContentMap = mapOf(

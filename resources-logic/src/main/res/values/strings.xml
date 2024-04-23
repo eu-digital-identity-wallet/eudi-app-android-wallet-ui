@@ -162,7 +162,7 @@
     <string name="dashboard_bottom_sheet_bluetooth_secondary_button_text">@string/generic_cancel_capitalized</string>
 
     <!-- Qr Scan -->
-    <string name="qr_scan_permission_not_granted">Camera initialization error. Please check the permissions.</string>
+    <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>
 
     <!-- Document Details -->
     <string name="document_details_portrait_readable_identifier">Shown above</string>

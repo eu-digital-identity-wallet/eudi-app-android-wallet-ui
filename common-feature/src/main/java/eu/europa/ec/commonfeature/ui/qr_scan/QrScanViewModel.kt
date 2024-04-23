@@ -44,12 +44,14 @@ sealed class Event : ViewEvent {
     data class OnQrScanned(val resultQr: String) : Event()
     data object CameraAccessGranted : Event()
     data object ShowPermissionRational : Event()
+    data object GoToAppSettings : Event()
 }
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data class SwitchScreen(val screenRoute: String) : Navigation()
         data object Pop : Navigation()
+        data object GoToAppSettings : Navigation()
     }
 }
 
@@ -96,6 +98,8 @@ class QrScanViewModel(
                     copy(shouldShowPermissionRational = true)
                 }
             }
+
+            is Event.GoToAppSettings -> setEffect { Effect.Navigation.GoToAppSettings }
         }
     }
 

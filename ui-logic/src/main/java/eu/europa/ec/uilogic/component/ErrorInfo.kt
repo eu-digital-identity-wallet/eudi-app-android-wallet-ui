@@ -28,9 +28,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 @Composable
@@ -41,11 +43,11 @@ fun ErrorInfo(
     iconAlpha: Float = 0.4f,
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp
-    val errorIconSize = (screenWidth / 4).dp
+    val errorIconSize = (screenWidth / 6).dp
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(SIZE_SMALL.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WrapIcon(
@@ -58,7 +60,8 @@ fun ErrorInfo(
             text = informativeText,
             style = MaterialTheme.typography.bodyMedium,
             color = contentColor,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            lineHeight = 20.sp
         )
     }
 }
