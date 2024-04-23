@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.qr_scan
 
+import android.content.Context
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
@@ -23,6 +24,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,11 +65,12 @@ import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
-import kotlin.math.min
 
 @Composable
 fun QrScanScreen(
@@ -75,6 +78,7 @@ fun QrScanScreen(
     viewModel: QrScanViewModel
 ) {
     val state = viewModel.viewState.value
+    val context = LocalContext.current
 
     ContentScreen(
         isLoading = false,
@@ -86,7 +90,7 @@ fun QrScanScreen(
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController)
+                handleNavigationEffect(context, navigationEffect, navController)
             },
             paddingValues = paddingValues,
         )
@@ -94,6 +98,7 @@ fun QrScanScreen(
 }
 
 private fun handleNavigationEffect(
+    context: Context,
     navigationEffect: Effect.Navigation,
     navController: NavController
 ) {
@@ -109,6 +114,8 @@ private fun handleNavigationEffect(
         is Effect.Navigation.Pop -> {
             navController.popBackStack()
         }
+
+        is Effect.Navigation.GoToAppSettings -> context.openAppSettings()
     }
 }
 
@@ -172,8 +179,7 @@ private fun OpenCamera(
     }
 
     val screenWidth = LocalConfiguration.current.screenWidthDp
-    val screenHeight = LocalConfiguration.current.screenHeightDp
-    val cameraSize = min(screenWidth, screenHeight)
+    val cameraSize = (screenWidth - (SPACING_LARGE * 2)).dp
     val cameraShape = RoundedCornerShape(SIZE_LARGE.dp)
 
     val permissionState = rememberPermissionState(permission = android.Manifest.permission.CAMERA)
@@ -191,7 +197,7 @@ private fun OpenCamera(
     // The space the Camera is going to occupy.
     Box(
         modifier = Modifier
-            .size(cameraSize.dp)
+            .size(cameraSize)
             .background(
                 color = Color.Black,
                 shape = cameraShape
@@ -241,6 +247,7 @@ private fun OpenCamera(
             )
         } else if (shouldShowPermissionRational) {
             ErrorInfo(
+                modifier = Modifier.clickable { onEventSend(Event.GoToAppSettings) },
                 informativeText = stringResource(id = R.string.qr_scan_permission_not_granted),
                 contentColor = Color.White,
                 iconAlpha = 1f
