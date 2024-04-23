@@ -36,11 +36,15 @@ sealed class CommonScreens {
 
     data object QuickPin :
         Screen(name = "QUICK_PIN", parameters = "?pinFlow={pinFlow}")
+
+    data object QrScan : Screen(
+        name = "QR_SCAN",
+        parameters = "?qrScanConfig={qrScanConfig}"
+    )
 }
 
 sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
-    data object Scanner : Screen(name = "DASHBOARD_SCAN")
 }
 
 sealed class LoginScreens {

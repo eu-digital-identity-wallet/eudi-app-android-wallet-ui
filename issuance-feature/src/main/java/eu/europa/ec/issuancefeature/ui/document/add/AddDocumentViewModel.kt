@@ -20,6 +20,8 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.QrScanFlow
+import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
@@ -35,10 +37,12 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
@@ -66,6 +70,8 @@ sealed class Event : ViewEvent {
         val documentType: String,
         val context: Context
     ) : Event()
+
+    data object GoToQrScan : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -80,6 +86,7 @@ sealed class Effect : ViewSideEffect {
 class AddDocumentViewModel(
     private val addDocumentInteractor: AddDocumentInteractor,
     private val resourceProvider: ResourceProvider,
+    private val uiSerializer: UiSerializer,
     @InjectedParam private val flowType: IssuanceFlowUiConfig,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
@@ -120,6 +127,8 @@ class AddDocumentViewModel(
             }
 
             is Event.Finish -> setEffect { Effect.Navigation.Finish }
+
+            is Event.GoToQrScan -> navigateToQrScanScreen()
         }
     }
 
@@ -287,6 +296,29 @@ class AddDocumentViewModel(
             Effect.Navigation.SwitchScreen(
                 screenRoute = DashboardScreens.Dashboard.screenRoute,
                 inclusive = true
+            )
+        }
+    }
+
+    private fun navigateToQrScanScreen() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = CommonScreens.QrScan,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            QrScanUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                QrScanUiConfig(
+                                    title = resourceProvider.getString(R.string.issuance_qr_scan_title),
+                                    subTitle = resourceProvider.getString(R.string.issuance_qr_scan_subtitle),
+                                    flowType = QrScanFlow.ISSUANCE
+                                ),
+                                QrScanUiConfig.Parser
+                            )
+                        )
+                    )
+                ),
+                inclusive = false
             )
         }
     }

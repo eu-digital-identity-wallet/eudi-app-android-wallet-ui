@@ -17,7 +17,6 @@
 package eu.europa.ec.commonfeature.ui.request
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -34,9 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
@@ -44,11 +41,11 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.CardWithIconAndText
 import eu.europa.ec.uilogic.component.CheckboxWithContent
+import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndIconData
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
@@ -73,7 +70,7 @@ fun <T> Request(
     contentPadding: PaddingValues = PaddingValues(all = 0.dp),
 ) {
     if (noData) {
-        NoData(
+        ErrorInfo(
             informativeText = stringResource(id = R.string.request_no_data),
             modifier = modifier
         )
@@ -277,49 +274,12 @@ fun WarningCard(warningText: String) {
     )
 }
 
-@Composable
-fun NoData(informativeText: String, modifier: Modifier) {
-    val screenWidth = LocalConfiguration.current.screenWidthDp
-    val errorIconSize = (screenWidth / 4).dp
-    val contentColor = MaterialTheme.colorScheme.textSecondaryDark
-
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        WrapIcon(
-            iconData = AppIcons.Error,
-            modifier = Modifier.size(errorIconSize),
-            customTint = contentColor,
-            contentAlpha = 0.4f
-        )
-        Text(
-            text = informativeText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = contentColor,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
 @ThemeModePreviews
 @Composable
 private fun IdentificationPartyCardPreview() {
     PreviewTheme {
         DocumentCard(
             cardText = "Warning",
-        )
-    }
-}
-
-@ThemeModePreviews
-@Composable
-private fun NoDataPreview() {
-    PreviewTheme {
-        NoData(
-            informativeText = "No data available",
-            modifier = Modifier
         )
     }
 }

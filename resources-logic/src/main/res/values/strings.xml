@@ -31,6 +31,8 @@
     <string name="generic_success">Success</string>
     <string name="generic_ok">OK</string>
     <string name="generic_dash">-</string>
+    <string name="generic_qr_scan_title">Scan QR</string>
+    <string name="generic_qr_scan_subtitle">Place the QR code within the frame to start scanning</string>
 
     <!-- Content Description -->
     <string name="content_description_user_image">User image</string>
@@ -159,6 +161,9 @@
     <string name="dashboard_bottom_sheet_bluetooth_primary_button_text">@string/generic_enable_capitalized</string>
     <string name="dashboard_bottom_sheet_bluetooth_secondary_button_text">@string/generic_cancel_capitalized</string>
 
+    <!-- Qr Scan -->
+    <string name="qr_scan_permission_not_granted">Camera initialization error. Please check the permissions.</string>
+
     <!-- Document Details -->
     <string name="document_details_portrait_readable_identifier">Shown above</string>
     <string name="vehicle_category_code">Vehicle category code</string>
@@ -175,6 +180,10 @@
     <string name="proximity_qr_subtitle">Show this QR code to access the necessary information for sharing</string>
     <string name="proximity_qr_use_nfc">Or use the NFC</string>
 
+    <!-- Presentation Qr Scan -->
+    <string name="presentation_qr_scan_title">@string/generic_qr_scan_title</string>
+    <string name="presentation_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
+
     <!-- Presentation Loading Screen -->
     <string name="presentation_loading_success_config_subtitle">You successfully shared information with %1$s</string>
     <string name="presentation_loading_success_config_verifier">Verifier</string>
@@ -184,6 +193,8 @@
     <string name="issuance_add_document_title">Add document</string>
     <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
     <string name="issuance_add_document_user_auth_required">User authentication is required</string>
+    <string name="issuance_add_document_qr_scan_section_title">Or</string>
+    <string name="issuance_add_document_qr_scan_section_subtitle">SCAN QR</string>
 
     <!-- Issuance Success Screen -->
     <string name="issuance_success_title">@string/generic_success</string>
@@ -192,5 +203,9 @@
 
     <!-- Issuance Documents Details Screen -->
     <string name="issuance_document_details_primary_button_text">@string/generic_continue_capitalized</string>
+
+    <!-- Issuance Qr Scan -->
+    <string name="issuance_qr_scan_title">@string/generic_qr_scan_title</string>
+    <string name="issuance_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
 
 </resources>

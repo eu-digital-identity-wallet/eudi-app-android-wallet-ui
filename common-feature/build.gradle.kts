@@ -32,6 +32,12 @@ moduleConfig {
 
 dependencies {
     implementation(libs.gson)
+
+    implementation(libs.zxing)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.camera2)
 }
 
 excludeFromKoverReport(
