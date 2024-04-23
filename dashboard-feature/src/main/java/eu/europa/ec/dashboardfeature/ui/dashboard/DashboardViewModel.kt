@@ -20,19 +20,22 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
+import eu.europa.ec.commonfeature.config.QrScanFlow
+import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
@@ -120,7 +123,8 @@ sealed class DashboardBottomSheetContent {
 @KoinViewModel
 class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,
-    private val uiSerializer: UiSerializer
+    private val uiSerializer: UiSerializer,
+    private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State(
@@ -198,7 +202,7 @@ class DashboardViewModel(
 
             is Event.BottomSheet.Options.OpenScanQr -> {
                 hideBottomSheet()
-                navigateToScanQr()
+                navigateToQrScan()
             }
 
             is Event.BottomSheet.Bluetooth.PrimaryButtonPressed -> {
@@ -338,11 +342,27 @@ class DashboardViewModel(
         }
     }
 
-    private fun navigateToScanQr() {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = DashboardScreens.Scanner.screenRoute,
+    private fun navigateToQrScan() {
+        val navigationEffect = Effect.Navigation.SwitchScreen(
+            screenRoute = generateComposableNavigationLink(
+                screen = CommonScreens.QrScan,
+                arguments = generateComposableArguments(
+                    mapOf(
+                        QrScanUiConfig.serializedKeyName to uiSerializer.toBase64(
+                            QrScanUiConfig(
+                                title = resourceProvider.getString(R.string.presentation_qr_scan_title),
+                                subTitle = resourceProvider.getString(R.string.presentation_qr_scan_subtitle),
+                                flowType = QrScanFlow.PRESENTATION
+                            ),
+                            QrScanUiConfig.Parser
+                        )
+                    )
+                )
             )
+        )
+
+        setEffect {
+            navigationEffect
         }
     }
 

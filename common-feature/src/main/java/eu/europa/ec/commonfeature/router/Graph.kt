@@ -25,10 +25,12 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.BuildConfig
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.commonfeature.ui.biometric.BiometricScreen
 import eu.europa.ec.commonfeature.ui.pin.PinScreen
+import eu.europa.ec.commonfeature.ui.qr_scan.QrScanScreen
 import eu.europa.ec.commonfeature.ui.success.SuccessScreen
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
@@ -65,6 +67,7 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
                 )
             )
         }
+
         composable(
             route = CommonScreens.Success.screenRoute,
             deepLinks = listOf(
@@ -90,6 +93,7 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
                 )
             )
         }
+
         composable(
             route = CommonScreens.QuickPin.screenRoute,
             deepLinks = listOf(
@@ -111,6 +115,32 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
                             PinFlow.valueOf(
                                 it.arguments?.getString("pinFlow").orEmpty()
                             )
+                        )
+                    }
+                )
+            )
+        }
+
+        composable(
+            route = CommonScreens.QrScan.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + CommonScreens.QrScan.screenRoute
+                }
+            ),
+            arguments = listOf(
+                navArgument(QrScanUiConfig.serializedKeyName) {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            QrScanScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(QrScanUiConfig.serializedKeyName).orEmpty()
                         )
                     }
                 )

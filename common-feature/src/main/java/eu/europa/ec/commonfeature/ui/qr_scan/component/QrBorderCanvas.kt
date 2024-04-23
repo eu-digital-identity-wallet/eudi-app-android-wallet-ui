@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.scanner.component
+package eu.europa.ec.commonfeature.ui.qr_scan.component
 
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -34,6 +34,7 @@ fun DrawScope.qrBorderCanvas(
     capSize: Dp,
     gapAngle: Int = SIZE_LARGE,
     shadowSize: Dp = strokeWidth * 2,
+    drawShadowLinesOnTheEdges: Boolean = false,
     cap: StrokeCap = StrokeCap.Square,
     lineCap: StrokeCap = StrokeCap.Round,
 ) {
@@ -48,17 +49,19 @@ fun DrawScope.qrBorderCanvas(
     val sweepAngle = 90 / 2 - gapAngle / 2f
 
     strokeWidth.toPx().toInt()
-    for (i in 4..shadowSize.toPx().toInt() step 2) {
-        drawRoundRect(
-            color = Color(0x05000000),
-            size = size,
-            topLeft = Offset(0f, 0f),
-            style = Stroke(width = i * 1f),
-            cornerRadius = CornerRadius(
-                x = curvePx,
-                y = curvePx
-            ),
-        )
+    if (drawShadowLinesOnTheEdges) {
+        for (i in 4..shadowSize.toPx().toInt() step 2) {
+            drawRoundRect(
+                color = Color(0x05000000),
+                size = size,
+                topLeft = Offset(0f, 0f),
+                style = Stroke(width = i * 1f),
+                cornerRadius = CornerRadius(
+                    x = curvePx,
+                    y = curvePx
+                ),
+            )
+        }
     }
 
     val mCurve = curvePx * 2

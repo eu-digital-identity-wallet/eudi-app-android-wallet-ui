@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.scanner.component
+package eu.europa.ec.commonfeature.ui.qr_scan.component
 
 import android.graphics.ImageFormat
 import androidx.camera.core.ImageAnalysis

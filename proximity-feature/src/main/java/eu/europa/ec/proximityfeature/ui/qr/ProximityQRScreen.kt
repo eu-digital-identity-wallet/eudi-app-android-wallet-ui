@@ -45,6 +45,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.proximityfeature.ui.qr.component.rememberQrBitmapPainter
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.topCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
@@ -186,7 +187,7 @@ private fun NFCSection() {
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                color = MaterialTheme.colorScheme.backgroundDefault,
                 shape = MaterialTheme.shapes.topCorneredShapeSmall
             )
             .padding(vertical = SPACING_EXTRA_LARGE.dp, horizontal = SPACING_LARGE.dp),
