@@ -24,7 +24,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,6 +66,7 @@ import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.extension.openAppSettings
+import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -247,7 +247,7 @@ private fun OpenCamera(
             )
         } else if (shouldShowPermissionRational) {
             ErrorInfo(
-                modifier = Modifier.clickable { onEventSend(Event.GoToAppSettings) },
+                modifier = Modifier.throttledClickable { onEventSend(Event.GoToAppSettings) },
                 informativeText = stringResource(id = R.string.qr_scan_permission_not_granted),
                 contentColor = Color.White,
                 iconAlpha = 1f

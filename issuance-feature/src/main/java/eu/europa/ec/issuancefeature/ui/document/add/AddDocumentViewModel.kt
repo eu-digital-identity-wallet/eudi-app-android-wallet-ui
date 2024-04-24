@@ -330,7 +330,7 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit)? {
+    private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit) {
         return when (flowType) {
             IssuanceFlowUiConfig.NO_DOCUMENT -> {
                 { setEvent(Event.Finish) }

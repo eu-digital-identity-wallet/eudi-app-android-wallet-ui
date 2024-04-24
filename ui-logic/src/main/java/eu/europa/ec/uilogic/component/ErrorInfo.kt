@@ -47,7 +47,7 @@ fun ErrorInfo(
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(SIZE_SMALL.dp),
+        verticalArrangement = Arrangement.spacedBy(SIZE_SMALL.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WrapIcon(
