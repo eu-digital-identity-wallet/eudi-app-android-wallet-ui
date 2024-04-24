@@ -114,7 +114,7 @@ class AddDocumentViewModel(
             }
 
             is Event.IssueDocument -> {
-                if (event.documentType != DocumentType.SAMPLE_DOCUMENTS.codeName) {
+                if (event.documentType != DocumentType.SAMPLE_DOCUMENTS.nameSpace) {
                     issueDocument(
                         event = event,
                         issuanceMethod = event.issuanceMethod,

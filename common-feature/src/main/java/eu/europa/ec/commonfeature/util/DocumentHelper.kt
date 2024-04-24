@@ -37,7 +37,7 @@ fun extractValueFromDocumentOrEmpty(
     return try {
         val docType = document.docType.toDocumentType()
         val documentJsonObject =
-            document.nameSpacedDataJSONObject.get(docType.codeName) as? JSONObject
+            document.nameSpacedDataJSONObject.get(docType.nameSpace) as? JSONObject
         return documentJsonObject?.getStringFromJsonOrEmpty(key) ?: ""
     } catch (e: JSONException) {
         ""

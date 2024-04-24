@@ -104,7 +104,7 @@ class SuccessViewModel(
                                             flowType
                                         ),
                                         "documentId" to document.id,
-                                        "documentType" to document.docType.toDocumentType().codeName,
+                                        "documentType" to document.docType.toDocumentType().nameSpace,
                                     )
                                 )
                             )
