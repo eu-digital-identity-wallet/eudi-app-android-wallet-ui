@@ -555,7 +555,7 @@ private fun CardListItem(
             onEventSend(
                 Event.NavigateToDocument(
                     documentId = dataItem.documentId,
-                    documentType = dataItem.documentType.codeName,
+                    documentType = dataItem.documentType.nameSpace,
                 )
             )
         },

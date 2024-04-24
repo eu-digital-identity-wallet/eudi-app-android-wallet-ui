@@ -114,7 +114,7 @@ class AddDocumentViewModel(
             }
 
             is Event.IssueDocument -> {
-                if (event.documentType != DocumentType.SAMPLE_DOCUMENTS.codeName) {
+                if (event.documentType != DocumentType.SAMPLE_DOCUMENTS.nameSpace) {
                     issueDocument(
                         event = event,
                         issuanceMethod = event.issuanceMethod,
@@ -330,7 +330,7 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit)? {
+    private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit) {
         return when (flowType) {
             IssuanceFlowUiConfig.NO_DOCUMENT -> {
                 { setEvent(Event.Finish) }

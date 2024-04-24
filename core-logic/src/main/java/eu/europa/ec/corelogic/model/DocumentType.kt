@@ -17,26 +17,26 @@
 package eu.europa.ec.corelogic.model
 
 enum class DocumentType(
-    val codeName: String,
+    val nameSpace: String,
     val docType: String
 ) {
     PID(
-        codeName = "eu.europa.ec.eudiw.pid.1",
+        nameSpace = "eu.europa.ec.eudiw.pid.1",
         docType = "eu.europa.ec.eudiw.pid.1"
     ),
     MDL(
-        codeName = "org.iso.18013.5.1",
+        nameSpace = "org.iso.18013.5.1",
         docType = "org.iso.18013.5.1.mDL"
     ),
     CONFERENCE_BADGE(
-        codeName = "com.example.conference.badge",
+        nameSpace = "com.example.conference.badge",
         docType = "com.example.conference.badge"
     ),
     SAMPLE_DOCUMENTS(
-        codeName = "load_sample_documents",
+        nameSpace = "load_sample_documents",
         docType = "load_sample_documents"
     ),
-    OTHER(codeName = "", docType = "")
+    OTHER(nameSpace = "", docType = "")
 }
 
 fun String.toDocumentType(): DocumentType = when (this) {
