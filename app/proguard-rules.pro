@@ -85,6 +85,8 @@
 -dontwarn org.zeroturnaround.javarebel.ClassEventListener
 -dontwarn org.zeroturnaround.javarebel.Reloader
 -dontwarn org.zeroturnaround.javarebel.ReloaderFactory
+-dontwarn com.eygraber.uri.JvmUriKt
+-dontwarn org.slf4j.impl.StaticLoggerBinder
 
 # Retrofit
 -keep,allowobfuscation,allowshrinking interface retrofit2.Call
