@@ -114,7 +114,7 @@
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
     <string name="request_subtitle_one">Please review carefully before sharing your data.</string>
-    <string name="request_subtitle_two"> Why we need your data?</string>
+    <string name="request_subtitle_two">\ Why we need your data?</string>
     <string name="request_warning_text">Your selection of data to be shared may impact the service</string>
     <string name="request_primary_button_text">SHARE</string>
     <string name="request_secondary_button_text">@string/generic_cancel_capitalized</string>
