@@ -208,4 +208,22 @@
     <string name="issuance_qr_scan_title">@string/generic_qr_scan_title</string>
     <string name="issuance_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
 
+    <!-- Issuance Document Offer -->
+    <string name="issuance_document_offer_default_issuer_name">Issuer</string>
+    <string name="issuance_document_offer_title">%1$s wants to issue the following in your wallet</string>
+    <string name="issuance_document_offer_subtitle">Please confirm the issuance of the following</string>
+    <string name="issuance_document_offer_primary_button_text">ISSUE</string>
+    <string name="issuance_document_offer_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <string name="issuance_document_offer_success_title">@string/generic_success</string>
+    <string name="issuance_document_offer_success_subtitle">Your documents from %1$s have been successfully issued.</string>
+    <string name="issuance_document_offer_partial_success_subtitle">Your documents from %1$s have been successfully issued except %2$s</string>
+    <string name="issuance_document_offer_success_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="issuance_document_offer_error_missing_pid_text">Wallet needs to be activated first with a National ID</string>
+    <string name="issuance_document_offer_error_no_document">Unable to fetch and process the credential offer</string>
+
+    <string name="issuance_document_offer_bottom_sheet_cancel_title">Cancel issuance process?</string>
+    <string name="issuance_document_offer_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the documents list with no new documents</string>
+    <string name="issuance_document_offer_bottom_sheet_cancel_primary_button_text">CONTINUE ISSUANCE</string>
+    <string name="issuance_document_offer_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+
 </resources>

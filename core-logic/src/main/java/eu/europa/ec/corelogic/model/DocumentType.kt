@@ -36,7 +36,13 @@ enum class DocumentType(
         nameSpace = "load_sample_documents",
         docType = "load_sample_documents"
     ),
-    OTHER(nameSpace = "", docType = "")
+    OTHER(nameSpace = "", docType = "");
+
+    val isSupported: Boolean
+        get() = when (this) {
+            PID, MDL -> true
+            CONFERENCE_BADGE, SAMPLE_DOCUMENTS, OTHER -> false
+        }
 }
 
 fun String.toDocumentType(): DocumentType = when (this) {

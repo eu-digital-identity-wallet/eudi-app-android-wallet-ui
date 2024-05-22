@@ -25,6 +25,8 @@ import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorImpl
+import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
+import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -58,3 +60,10 @@ fun provideSuccessInteractor(
     resourceProvider: ResourceProvider,
     walletCoreDocumentsController: WalletCoreDocumentsController
 ): SuccessInteractor = SuccessInteractorImpl(resourceProvider, walletCoreDocumentsController)
+
+@Factory
+fun provideDocumentOfferInteractor(
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    resourceProvider: ResourceProvider
+): DocumentOfferInteractor =
+    DocumentOfferInteractorImpl(walletCoreDocumentsController, resourceProvider)

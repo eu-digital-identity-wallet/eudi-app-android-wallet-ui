@@ -309,7 +309,8 @@ class AddDocumentViewModel(
                                 QrScanUiConfig(
                                     title = resourceProvider.getString(R.string.issuance_qr_scan_title),
                                     subTitle = resourceProvider.getString(R.string.issuance_qr_scan_subtitle),
-                                    flowType = QrScanFlow.ISSUANCE
+                                    qrScanFlow = QrScanFlow.ISSUANCE,
+                                    issuanceFlow = flowType
                                 ),
                                 QrScanUiConfig.Parser
                             )

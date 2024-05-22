@@ -16,15 +16,22 @@
 
 package eu.europa.ec.commonfeature.ui.qr_scan
 
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -58,6 +65,7 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class QrScanViewModel(
     private val uiSerializer: UiSerializer,
+    private val resourceProvider: ResourceProvider,
     @InjectedParam private val qrScannedConfig: String,
 ) : MviViewModel<Event, State, Effect>() {
 
@@ -82,8 +90,8 @@ class QrScanViewModel(
                 }
 
                 calculateNextStep(
-                    flowType = viewState.value.qrScannedConfig.flowType,
-                    qrCode = event.resultQr
+                    qrScanFlow = viewState.value.qrScannedConfig.qrScanFlow,
+                    scanResult = event.resultQr
                 )
             }
 
@@ -104,16 +112,16 @@ class QrScanViewModel(
     }
 
     private fun calculateNextStep(
-        flowType: QrScanFlow,
-        qrCode: String,
+        qrScanFlow: QrScanFlow,
+        scanResult: String,
     ) {
-        when (flowType) {
-            QrScanFlow.PRESENTATION -> navigateToPresentationRequest(qrCode)
-            QrScanFlow.ISSUANCE -> navigateToNewIssuanceScreen()
+        when (qrScanFlow) {
+            QrScanFlow.PRESENTATION -> navigateToPresentationRequest(scanResult)
+            QrScanFlow.ISSUANCE -> navigateToDocumentOffer(scanResult)
         }
     }
 
-    private fun navigateToPresentationRequest(qrCode: String) {
+    private fun navigateToPresentationRequest(scanResult: String) {
         setEffect {
             getOrCreatePresentationScope()
             Effect.Navigation.SwitchScreen(
@@ -122,7 +130,7 @@ class QrScanViewModel(
                     arguments = generateComposableArguments(
                         mapOf(
                             RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
-                                RequestUriConfig(PresentationMode.OpenId4Vp(uri = qrCode)),
+                                RequestUriConfig(PresentationMode.OpenId4Vp(uri = scanResult)),
                                 RequestUriConfig.Parser
                             )
                         )
@@ -132,7 +140,63 @@ class QrScanViewModel(
         }
     }
 
-    private fun navigateToNewIssuanceScreen() {
-        //TODO
+    private fun navigateToDocumentOffer(scanResult: String) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = IssuanceScreens.DocumentOffer,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            OfferUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                OfferUiConfig(
+                                    offerURI = scanResult,
+                                    onSuccessNavigation = calculateOnSuccessNavigation(viewState.value.qrScannedConfig.issuanceFlow),
+                                    onCancelNavigation = calculateOnCancelNavigation(viewState.value.qrScannedConfig.issuanceFlow)
+                                ),
+                                OfferUiConfig.Parser
+                            )
+                        )
+                    )
+                )
+            )
+        }
+    }
+
+    private fun calculateOnSuccessNavigation(issuanceFlowUiConfig: IssuanceFlowUiConfig): ConfigNavigation {
+        return when (issuanceFlowUiConfig) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> {
+                ConfigNavigation(
+                    navigationType = NavigationType.PushRoute(
+                        route = DashboardScreens.Dashboard.screenRoute
+                    )
+                )
+            }
+
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
+                ConfigNavigation(
+                    navigationType = NavigationType.PopTo(
+                        screen = DashboardScreens.Dashboard
+                    )
+                )
+            }
+        }
+    }
+
+    private fun calculateOnCancelNavigation(issuanceFlowUiConfig: IssuanceFlowUiConfig): ConfigNavigation {
+        return when (issuanceFlowUiConfig) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> {
+                ConfigNavigation(
+                    navigationType = NavigationType.Pop
+                )
+            }
+
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
+                ConfigNavigation(
+                    navigationType = NavigationType.PopTo(
+                        screen = DashboardScreens.Dashboard
+                    )
+                )
+            }
+        }
     }
 }
