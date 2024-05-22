@@ -112,6 +112,28 @@
                     android:scheme="${openid4vpScheme}" />
 
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="${openid4vciHost}"
+                    android:scheme="${openid4vciScheme}" />
+
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="${openId4VciAuthorizationHost}"
+                    android:scheme="${openId4VciAuthorizationScheme}" />
+
+            </intent-filter>
         </activity>
 
     </application>

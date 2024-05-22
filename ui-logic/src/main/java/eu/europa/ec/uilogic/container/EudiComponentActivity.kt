@@ -37,6 +37,8 @@ import com.chuckerteam.chucker.api.Chucker
 import eu.europa.ec.businesslogic.controller.security.SecurityController
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.navigation.RouterHost
+import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
+import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -73,7 +75,7 @@ open class EudiComponentActivity : FragmentActivity() {
                         builder(it)
                     }
                     flowStarted = true
-                    handleDeepLink(intent)
+                    handleDeepLink(intent, coldBoot = true)
                     ChuckerPermissions()
                 }
             }
@@ -102,11 +104,18 @@ open class EudiComponentActivity : FragmentActivity() {
         }
     }
 
-    private fun handleDeepLink(intent: Intent?) {
+    private fun handleDeepLink(intent: Intent?, coldBoot: Boolean = false) {
         hasDeepLink(intent?.data)?.let {
-            cacheDeepLink(intent)
-            if (routerHost.currentFlowIsAfterOnBoarding()) {
-                routerHost.popToLandingScreen()
+            if (it.type == DeepLinkType.ISSUANCE && !coldBoot) {
+                handleDeepLinkAction(
+                    routerHost.getNavController(),
+                    it.link
+                )
+            } else if (it.type != DeepLinkType.ISSUANCE) {
+                cacheDeepLink(intent)
+                if (routerHost.currentFlowIsAfterOnBoarding()) {
+                    routerHost.popToLandingScreen()
+                }
             }
             setIntent(Intent())
         }

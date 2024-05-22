@@ -23,7 +23,7 @@ import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
-enum class QrScanFlow{
+enum class QrScanFlow {
     PRESENTATION,
     ISSUANCE,
 }

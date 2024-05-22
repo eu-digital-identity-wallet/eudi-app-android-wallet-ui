@@ -21,6 +21,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.extension.openUrl
@@ -84,38 +85,63 @@ fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
 fun handleDeepLinkAction(navController: NavController, uri: Uri, arguments: String? = null) {
     hasDeepLink(uri)?.let { action ->
 
-        val screen = when (action.type) {
-            DeepLinkType.OPENID4VP -> PresentationScreens.PresentationRequest
-            DeepLinkType.EXTERNAL -> null
-        }
+        val screen: Screen
 
-        screen?.let {
-
-            val navigationLink = arguments?.let {
-                generateComposableNavigationLink(
-                    screen = screen,
-                    arguments = arguments
-                )
-            } ?: screen.screenRoute
-
-            navController.navigate(navigationLink) {
-                popUpTo(screen.screenRoute) { inclusive = true }
+        when (action.type) {
+            DeepLinkType.OPENID4VP -> {
+                screen = PresentationScreens.PresentationRequest
             }
 
-        } ?: navController.context.openUrl(action.link)
+            DeepLinkType.OPENID4VCI -> {
+                // TODO VCI CREDENTIAL OFFER
+                return@let
+            }
+
+            DeepLinkType.ISSUANCE -> {
+                EudiWallet.resumeOpenId4VciWithAuthorization(action.link)
+                return@let
+            }
+
+            DeepLinkType.EXTERNAL -> {
+                navController.context.openUrl(action.link)
+                return@let
+            }
+        }
+
+        val navigationLink = arguments?.let {
+            generateComposableNavigationLink(
+                screen = screen,
+                arguments = arguments
+            )
+        } ?: screen.screenRoute
+
+        navController.navigate(navigationLink) {
+            popUpTo(screen.screenRoute) { inclusive = true }
+        }
     }
 }
 
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
-enum class DeepLinkType {
+enum class DeepLinkType(val host: String? = null) {
 
     OPENID4VP,
+    OPENID4VCI,
+    ISSUANCE("authorization"),
     EXTERNAL;
 
     companion object {
         fun parse(uri: Uri): DeepLinkType = when {
+
             uri.scheme?.contains(OPENID4VP.name.lowercase()) == true -> {
                 OPENID4VP
+            }
+
+            uri.scheme?.contains(OPENID4VCI.name.lowercase()) == true -> {
+                OPENID4VCI
+            }
+
+            uri.scheme?.contains(ISSUANCE.name.lowercase()) == true && uri.host == ISSUANCE.host -> {
+                ISSUANCE
             }
 
             else -> EXTERNAL

@@ -109,15 +109,16 @@ class DocumentDetailsInteractorImpl(
                 }
 
             if (shouldDeleteAllDocuments) {
-                walletCoreDocumentsController.deleteAllDocuments(mainPidDocumentId = documentId).map {
-                    when (it) {
-                        is DeleteAllDocumentsPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
-                            errorMessage = it.errorMessage
-                        )
+                walletCoreDocumentsController.deleteAllDocuments(mainPidDocumentId = documentId)
+                    .map {
+                        when (it) {
+                            is DeleteAllDocumentsPartialState.Failure -> DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
+                                errorMessage = it.errorMessage
+                            )
 
-                        is DeleteAllDocumentsPartialState.Success -> DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted
+                            is DeleteAllDocumentsPartialState.Success -> DocumentDetailsInteractorDeleteDocumentPartialState.AllDocumentsDeleted
+                        }
                     }
-                }
             } else {
                 walletCoreDocumentsController.deleteDocument(documentId = documentId).map {
                     when (it) {
