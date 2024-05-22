@@ -34,8 +34,6 @@ tasks.withType<KotlinCompile>().configureEach {
 
 dependencies {
     compileOnly(libs.android.gradlePlugin)
-    compileOnly(libs.firebase.crashlytics.gradlePlugin)
-    compileOnly(libs.firebase.performance.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.secrets.gradlePlugin)
@@ -81,10 +79,6 @@ gradlePlugin {
         register("androidKoin") {
             id = "eudi.android.koin"
             implementationClass = "AndroidKoinConventionPlugin"
-        }
-        register("androidFirebase") {
-            id = "eudi.android.application.firebase"
-            implementationClass = "AndroidApplicationFirebaseConventionPlugin"
         }
         register("androidFlavors") {
             id = "eudi.android.application.flavors"

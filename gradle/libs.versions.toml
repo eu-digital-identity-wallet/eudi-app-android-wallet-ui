@@ -1,7 +1,7 @@
 [versions]
 accompanist = "0.34.0"
 androidDesugarJdkLibs = "2.0.4"
-androidGradlePlugin = "8.4.0"
+androidGradlePlugin = "8.4.1"
 androidxActivity = "1.9.0"
 androidxAppCompat = "1.6.1"
 androidxBrowser = "1.8.0"
@@ -32,9 +32,6 @@ androidxSecurity = "1.1.0-alpha06"
 androidxAppAuth = "1.0.0-beta01"
 coil = "2.6.0"
 constraintlayoutVersion = "1.0.1"
-firebaseBom = "33.0.0"
-firebaseCrashlyticsPlugin = "3.0.1"
-firebasePerfPlugin = "1.4.2"
 gmsPlugin = "4.4.1"
 junit4 = "4.13.2"
 kotlin = "1.9.23"
@@ -42,7 +39,7 @@ kotlinxCoroutines = "1.8.1"
 kotlinxDatetime = "0.4.1"
 kotlinxSerializationJson = "1.6.1"
 ksp = "1.9.23-1.0.20"
-lint = "31.4.0"
+lint = "31.4.1"
 okhttp = "4.12.0"
 protobuf = "3.24.0"
 protobufPlugin = "0.9.4"
@@ -125,12 +122,6 @@ androidx-work-testing = { group = "androidx.work", name = "work-testing", versio
 coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 coil-kt-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
-firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-firebase-cloud-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
-firebase-performance = { group = "com.google.firebase", name = "firebase-perf-ktx" }
-firebase-performance-gradle = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
 junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
@@ -174,8 +165,6 @@ appcenter-distribute = { group = "com.microsoft.appcenter", name = "appcenter-di
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
-firebase-crashlytics-gradlePlugin = { group = "com.google.firebase", name = "firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
-firebase-performance-gradlePlugin = { group = "com.google.firebase", name = "perf-plugin", version.ref = "firebasePerfPlugin" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 secrets-gradlePlugin = { group = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", name = "secrets-gradle-plugin", version.ref = "secrets" }
@@ -194,8 +183,6 @@ baselineprofile-gradlePlugin = { group = "androidx.benchmark", name = "benchmark
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
-firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
-firebase-perf = { id = "com.google.firebase.firebase-perf", version.ref = "firebasePerfPlugin" }
 gms = { id = "com.google.gms.google-services", version.ref = "gmsPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

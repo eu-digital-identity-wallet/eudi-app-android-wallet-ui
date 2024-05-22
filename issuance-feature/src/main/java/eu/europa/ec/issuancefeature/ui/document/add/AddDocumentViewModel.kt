@@ -116,7 +116,6 @@ class AddDocumentViewModel(
             is Event.IssueDocument -> {
                 if (event.documentType != DocumentType.SAMPLE_DOCUMENTS.nameSpace) {
                     issueDocument(
-                        event = event,
                         issuanceMethod = event.issuanceMethod,
                         docType = event.documentType,
                         context = event.context
@@ -173,7 +172,6 @@ class AddDocumentViewModel(
     }
 
     private fun issueDocument(
-        event: Event,
         issuanceMethod: IssuanceMethod,
         docType: String,
         context: Context
