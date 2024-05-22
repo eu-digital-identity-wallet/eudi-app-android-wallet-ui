@@ -69,8 +69,10 @@ internal class WalletCoreConfigImpl(
                         withScheme(BuildConfig.OPENID4VP_SCHEME)
                     }
                     .openId4VciConfig {
-                        withIssuerUrl(issuerUrl = VCI_ISSUER_URL)
-                        withClientId(clientId = VCI_CLIENT_ID)
+                        issuerUrl(issuerUrl = VCI_ISSUER_URL)
+                        clientId(clientId = VCI_CLIENT_ID)
+                        authFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+                        useStrongBoxIfSupported(true)
                     }
                     .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
                     .build()

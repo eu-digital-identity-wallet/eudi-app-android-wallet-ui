@@ -24,10 +24,12 @@ import eu.europa.ec.corelogic.model.toDocumentType
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
-import eu.europa.ec.eudi.wallet.document.issue.IssueDocumentResult
 import eu.europa.ec.eudi.wallet.document.sample.LoadSampleResult
+import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
+import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +45,7 @@ enum class IssuanceMethod {
 
 sealed class IssueDocumentPartialState {
     data class Success(val documentId: String) : IssueDocumentPartialState()
+
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
@@ -50,13 +53,18 @@ sealed class IssueDocumentPartialState {
     ) : IssueDocumentPartialState()
 }
 
-sealed class OpenId4VCIIssueDocumentPartialState {
-    data class Success(val documentId: String) : OpenId4VCIIssueDocumentPartialState()
-    data class Failure(val errorMessage: String) : OpenId4VCIIssueDocumentPartialState()
+sealed class IssueDocumentsPartialState {
+    data class Success(val documentIds: List<String>) : IssueDocumentsPartialState()
+    data class PartialSuccess(
+        val documentIds: List<String>,
+        val nonIssuedDocuments: Map<String, String>
+    ) : IssueDocumentsPartialState()
+
+    data class Failure(val errorMessage: String) : IssueDocumentsPartialState()
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
         val resultHandler: DeviceAuthenticationResult
-    ) : OpenId4VCIIssueDocumentPartialState()
+    ) : IssueDocumentsPartialState()
 }
 
 sealed class AddSampleDataPartialState {
@@ -171,24 +179,30 @@ class WalletCoreDocumentsControllerImpl(
             IssuanceMethod.OPENID4VCI -> {
                 issueDocumentWithOpenId4VCI(documentType = documentType).collect { response ->
                     when (response) {
-                        is OpenId4VCIIssueDocumentPartialState.Failure -> emit(
+                        is IssueDocumentsPartialState.Failure -> emit(
                             IssueDocumentPartialState.Failure(
                                 errorMessage = response.errorMessage
                             )
                         )
 
-                        is OpenId4VCIIssueDocumentPartialState.Success -> emit(
+                        is IssueDocumentsPartialState.Success -> emit(
                             IssueDocumentPartialState.Success(
-                                documentId = response.documentId
+                                response.documentIds.first()
                             )
                         )
 
-                        is OpenId4VCIIssueDocumentPartialState.UserAuthRequired -> emit(
+                        is IssueDocumentsPartialState.UserAuthRequired -> emit(
                             IssueDocumentPartialState.UserAuthRequired(
                                 crypto = response.crypto,
                                 resultHandler = response.resultHandler
                             )
                         )
+
+                        is IssueDocumentsPartialState.PartialSuccess -> {
+                            IssueDocumentPartialState.Success(
+                                response.documentIds.first()
+                            )
+                        }
                     }
                 }
             }
@@ -276,46 +290,94 @@ class WalletCoreDocumentsControllerImpl(
             )
         }
 
-    private fun issueDocumentWithOpenId4VCI(documentType: String): Flow<OpenId4VCIIssueDocumentPartialState> =
+    private fun issueDocumentWithOpenId4VCI(documentType: String): Flow<IssueDocumentsPartialState> =
         callbackFlow {
-            eudiWallet.issueDocument(
+
+            eudiWallet.issueDocumentByDocType(
                 docType = documentType,
-                callback = { result ->
-                    when (result) {
-                        is IssueDocumentResult.Failure -> {
-                            val errorMessage = result.error.localizedMessage ?: genericErrorMessage
-                            trySendBlocking(
-                                OpenId4VCIIssueDocumentPartialState.Failure(
-                                    errorMessage = errorMessage
-                                )
-                            )
-                        }
-
-                        is IssueDocumentResult.Success -> {
-                            val documentId = result.documentId
-                            trySendBlocking(OpenId4VCIIssueDocumentPartialState.Success(documentId = documentId))
-                        }
-
-                        is IssueDocumentResult.UserAuthRequired -> {
-                            trySendBlocking(
-                                OpenId4VCIIssueDocumentPartialState.UserAuthRequired(
-                                    BiometricCrypto(result.cryptoObject),
-                                    DeviceAuthenticationResult(
-                                        onAuthenticationSuccess = { result.resume() },
-                                        onAuthenticationError = { result.cancel() },
-                                        onAuthenticationFailure = { result.cancel() },
-                                    )
-                                )
-                            )
-                        }
-                    }
-                }
+                onEvent = issuanceCallback()
             )
 
             awaitClose()
+
         }.safeAsync {
-            OpenId4VCIIssueDocumentPartialState.Failure(
+            IssueDocumentsPartialState.Failure(
                 errorMessage = it.localizedMessage ?: genericErrorMessage
             )
         }
+
+    private fun ProducerScope<IssueDocumentsPartialState>.issuanceCallback(): OpenId4VciManager.OnIssueEvent {
+
+        var totalDocumentsToBeIssued = 0
+        val nonIssuedDocuments: MutableMap<String, String> = mutableMapOf()
+        val issuedDocuments: MutableMap<String, String> = mutableMapOf()
+
+        val listener = OpenId4VciManager.OnIssueEvent { event ->
+            when (event) {
+                is IssueEvent.DocumentFailed -> {
+                    nonIssuedDocuments[event.docType] = event.name
+                }
+
+                is IssueEvent.DocumentRequiresUserAuth -> {
+                    trySendBlocking(
+                        IssueDocumentsPartialState.UserAuthRequired(
+                            BiometricCrypto(event.cryptoObject),
+                            DeviceAuthenticationResult(
+                                onAuthenticationSuccess = { event.resume() },
+                                onAuthenticationError = { event.cancel() },
+                                onAuthenticationFailure = { event.cancel() },
+                            )
+                        )
+                    )
+                }
+
+                is IssueEvent.Failure -> {
+                    val errorMessage = event.cause.localizedMessage ?: genericErrorMessage
+                    trySendBlocking(
+                        IssueDocumentsPartialState.Failure(
+                            errorMessage = errorMessage
+                        )
+                    )
+                }
+
+                is IssueEvent.Finished -> {
+
+                    if (event.issuedDocuments.isEmpty()) {
+                        trySendBlocking(
+                            IssueDocumentsPartialState.Failure(
+                                errorMessage = genericErrorMessage
+                            )
+                        )
+                        return@OnIssueEvent
+                    }
+
+                    if (event.issuedDocuments.size == totalDocumentsToBeIssued) {
+                        trySendBlocking(
+                            IssueDocumentsPartialState.Success(
+                                documentIds = event.issuedDocuments
+                            )
+                        )
+                        return@OnIssueEvent
+                    }
+
+                    trySendBlocking(
+                        IssueDocumentsPartialState.PartialSuccess(
+                            documentIds = event.issuedDocuments,
+                            nonIssuedDocuments = nonIssuedDocuments
+                        )
+                    )
+                }
+
+                is IssueEvent.DocumentIssued -> {
+                    issuedDocuments[event.documentId] = event.docType
+                }
+
+                is IssueEvent.Started -> {
+                    totalDocumentsToBeIssued = event.total
+                }
+            }
+        }
+
+        return listener
+    }
 }

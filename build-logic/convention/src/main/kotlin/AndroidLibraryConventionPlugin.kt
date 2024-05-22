@@ -47,9 +47,11 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             val openId4VpScheme = "eudi-openid4vp"
             val openid4VpHost = "*"
 
-            val openId4VciScheme = "eudi-openid4ci"
-            val openid4VciHost = "authorize"
-            val openid4VciPath = ""
+            val openId4VciScheme = "eudi-openid4vci"
+            val openid4VciHost = "*"
+
+            val openId4VciAuthorizationScheme = "eudi-issuance"
+            val openId4VciAuthorizationHost = "authorization"
 
             val storedVersion = getProperty<String>(
                 "VERSION_NAME",
@@ -74,6 +76,11 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
                     addConfigField("DEEPLINK", "$walletScheme://")
                     addConfigField("OPENID4VP_SCHEME", openId4VpScheme)
+                    addConfigField("OPENID4VCI_SCHEME", openId4VciScheme)
+                    addConfigField(
+                        "ISSUE_AUTHORIZATION_DEEPLINK",
+                        "$openId4VciAuthorizationScheme://$openId4VciAuthorizationHost"
+                    )
 
                     // Manifest placeholders for Wallet deepLink
                     manifestPlaceholders["deepLinkScheme"] = walletScheme
@@ -83,10 +90,15 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     manifestPlaceholders["openid4vpScheme"] = openId4VpScheme
                     manifestPlaceholders["openid4vpHost"] = openid4VpHost
 
-                    // Manifest placeholders used by the Core's VCI
-                    manifestPlaceholders["openid4vciAuthorizeHost"] = openid4VciHost
-                    manifestPlaceholders["openid4vciAuthorizePath"] = openid4VciPath
-                    manifestPlaceholders["openid4vciAuthorizeScheme"] = openId4VciScheme
+                    // Manifest placeholders used for OpenId4VCI
+                    manifestPlaceholders["openid4vciHost"] = openid4VciHost
+                    manifestPlaceholders["openid4vciScheme"] = openId4VciScheme
+
+                    // Manifest placeholders used for OpenId4VCI Authorization
+                    manifestPlaceholders["openId4VciAuthorizationScheme"] =
+                        openId4VciAuthorizationScheme
+                    manifestPlaceholders["openId4VciAuthorizationHost"] =
+                        openId4VciAuthorizationHost
                 }
                 configureFlavors(this, storedVersion)
                 configureGradleManagedDevices(this)
