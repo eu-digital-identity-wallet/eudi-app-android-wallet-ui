@@ -24,9 +24,11 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.issuancefeature.BuildConfig
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
+import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
 import eu.europa.ec.issuancefeature.ui.success.SuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
@@ -125,6 +127,33 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                             ),
                             it.arguments?.getString("documentId").orEmpty(),
                             it.arguments?.getString("documentType").orEmpty(),
+                        )
+                    }
+                )
+            )
+        }
+
+        // Document Offer
+        composable(
+            route = IssuanceScreens.DocumentOffer.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + IssuanceScreens.DocumentOffer.screenRoute
+                }
+            ),
+            arguments = listOf(
+                navArgument(OfferUiConfig.serializedKeyName) {
+                    type = NavType.StringType
+                },
+            )
+        ) {
+            DocumentOfferScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(OfferUiConfig.serializedKeyName).orEmpty()
                         )
                     }
                 )

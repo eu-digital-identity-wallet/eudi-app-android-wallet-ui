@@ -94,6 +94,11 @@ sealed class IssuanceScreens {
                 + "&documentId={documentId}"
                 + "&documentType={documentType}"
     )
+
+    data object DocumentOffer : Screen(
+        name = "ISSUANCE_DOCUMENT_OFFER",
+        parameters = "?offerConfig={offerConfig}"
+    )
 }
 
 sealed class ModuleRoute(val route: String) : NavigatableItem {

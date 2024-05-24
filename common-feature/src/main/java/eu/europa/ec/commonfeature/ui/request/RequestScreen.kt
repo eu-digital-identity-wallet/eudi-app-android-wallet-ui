@@ -151,6 +151,7 @@ private fun Content(
             .padding(paddingValues),
         verticalArrangement = Arrangement.Top
     ) {
+
         // Screen Title.
         ContentTitle(
             titleWithBadge = state.screenTitle,
@@ -255,7 +256,7 @@ private fun SheetContent(
 }
 
 @Composable
-fun StickyBottomSection(
+private fun StickyBottomSection(
     state: State,
     onEventSend: (Event) -> Unit,
 ) {

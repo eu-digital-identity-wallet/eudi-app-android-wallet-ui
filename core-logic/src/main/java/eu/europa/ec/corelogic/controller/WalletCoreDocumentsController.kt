@@ -26,6 +26,8 @@ import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.sample.LoadSampleResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
+import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
+import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -82,6 +84,11 @@ sealed class DeleteAllDocumentsPartialState {
     data class Failure(val errorMessage: String) : DeleteAllDocumentsPartialState()
 }
 
+sealed class ResolveDocumentOfferPartialState {
+    data class Success(val offer: Offer) : ResolveDocumentOfferPartialState()
+    data class Failure(val errorMessage: String) : ResolveDocumentOfferPartialState()
+}
+
 /**
  * Controller for interacting with internal local storage of Core for CRUD operations on documents
  * */
@@ -112,11 +119,17 @@ interface WalletCoreDocumentsController {
         documentType: String
     ): Flow<IssueDocumentPartialState>
 
+    fun issueDocumentsByOfferUri(
+        offerUri: String,
+    ): Flow<IssueDocumentsPartialState>
+
     fun deleteDocument(
         documentId: String
     ): Flow<DeleteDocumentPartialState>
 
     fun deleteAllDocuments(mainPidDocumentId: String): Flow<DeleteAllDocumentsPartialState>
+
+    fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState>
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -211,6 +224,20 @@ class WalletCoreDocumentsControllerImpl(
         IssueDocumentPartialState.Failure(errorMessage = it.localizedMessage ?: genericErrorMessage)
     }
 
+    override fun issueDocumentsByOfferUri(offerUri: String): Flow<IssueDocumentsPartialState> =
+        callbackFlow {
+            eudiWallet.issueDocumentByOfferUri(
+                offerUri = offerUri,
+                onEvent = issuanceCallback()
+            )
+
+            awaitClose()
+        }.safeAsync {
+            IssueDocumentsPartialState.Failure(
+                errorMessage = it.localizedMessage ?: genericErrorMessage
+            )
+        }
+
     override fun deleteDocument(documentId: String): Flow<DeleteDocumentPartialState> = flow {
         when (val deleteResult = eudiWallet.deleteDocumentById(documentId = documentId)) {
             is DeleteDocumentResult.Failure -> {
@@ -286,6 +313,39 @@ class WalletCoreDocumentsControllerImpl(
             )
         }.safeAsync {
             DeleteAllDocumentsPartialState.Failure(
+                errorMessage = it.localizedMessage ?: genericErrorMessage
+            )
+        }
+
+    override fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState> =
+        callbackFlow {
+            eudiWallet.resolveDocumentOffer(
+                offerUri = offerUri,
+                onResult = { offerResult ->
+                    when (offerResult) {
+                        is OfferResult.Failure -> {
+                            trySendBlocking(
+                                ResolveDocumentOfferPartialState.Failure(
+                                    errorMessage = offerResult.error.localizedMessage
+                                        ?: genericErrorMessage
+                                )
+                            )
+                        }
+
+                        is OfferResult.Success -> {
+                            trySendBlocking(
+                                ResolveDocumentOfferPartialState.Success(
+                                    offer = offerResult.offer
+                                )
+                            )
+                        }
+                    }
+                }
+            )
+
+            awaitClose()
+        }.safeAsync {
+            ResolveDocumentOfferPartialState.Failure(
                 errorMessage = it.localizedMessage ?: genericErrorMessage
             )
         }

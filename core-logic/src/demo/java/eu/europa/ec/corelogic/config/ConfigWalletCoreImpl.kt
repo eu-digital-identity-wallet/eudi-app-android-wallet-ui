@@ -75,6 +75,7 @@ internal class WalletCoreConfigImpl(
                         clientId(clientId = VCI_CLIENT_ID)
                         authFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                         useStrongBoxIfSupported(true)
+                        useDPoP(true)
                     }
                     .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
                     .build()
