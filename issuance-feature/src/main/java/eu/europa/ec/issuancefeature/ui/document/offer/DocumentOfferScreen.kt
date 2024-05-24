@@ -95,6 +95,7 @@ fun DocumentOfferScreen(
             paddingValues = paddingValues,
             coroutineScope = scope,
             modalBottomSheetState = bottomSheetState,
+            context = context
         )
 
         if (isBottomSheetOpen) {
@@ -165,6 +166,7 @@ private fun Content(
     paddingValues: PaddingValues,
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
+    context: Context
 ) {
     Column(
         modifier = Modifier
@@ -203,7 +205,8 @@ private fun Content(
         // Sticky Bottom Section
         StickyBottomSection(
             state = state,
-            onEventSend = onEventSend
+            onEventSend = onEventSend,
+            context = context
         )
     }
 
@@ -269,13 +272,14 @@ private fun MainContent(
 private fun StickyBottomSection(
     state: State,
     onEventSend: (Event) -> Unit,
+    context: Context
 ) {
     Column {
 
         WrapPrimaryButton(
             modifier = Modifier.fillMaxWidth(),
             enabled = !state.isLoading && !state.noDocument,
-            onClick = { onEventSend(Event.PrimaryButtonPressed) }
+            onClick = { onEventSend(Event.PrimaryButtonPressed(context)) }
         ) {
             Text(text = stringResource(id = R.string.issuance_document_offer_primary_button_text))
         }

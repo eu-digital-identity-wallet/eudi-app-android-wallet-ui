@@ -18,29 +18,27 @@ package eu.europa.ec.commonfeature.config
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
-enum class QrScanFlow {
-    PRESENTATION,
-    ISSUANCE,
+sealed interface QrScanFlow {
+    data object Presentation : QrScanFlow
+    data class Issuance(val issuanceFlow: IssuanceFlowUiConfig) : QrScanFlow
 }
 
 data class QrScanUiConfig(
     val title: String,
     val subTitle: String,
-    val qrScanFlow: QrScanFlow,
-    val issuanceFlow: IssuanceFlowUiConfig,
+    val qrScanFlow: QrScanFlow
 ) : UiSerializable {
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "qrScanConfig"
         override fun provideParser(): Gson {
             return GsonBuilder().registerTypeAdapter(
-                NavigationType::class.java,
-                SerializableTypeAdapter<NavigationType>()
+                QrScanFlow::class.java,
+                SerializableTypeAdapter<QrScanFlow>()
             ).create()
         }
     }

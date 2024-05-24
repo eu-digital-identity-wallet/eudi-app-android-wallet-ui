@@ -352,8 +352,7 @@ class DashboardViewModel(
                             QrScanUiConfig(
                                 title = resourceProvider.getString(R.string.presentation_qr_scan_title),
                                 subTitle = resourceProvider.getString(R.string.presentation_qr_scan_subtitle),
-                                qrScanFlow = QrScanFlow.PRESENTATION,
-                                issuanceFlow = IssuanceFlowUiConfig.EXTRA_DOCUMENT,
+                                qrScanFlow = QrScanFlow.Presentation
                             ),
                             QrScanUiConfig.Parser
                         )

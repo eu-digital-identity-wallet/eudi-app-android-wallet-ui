@@ -16,6 +16,7 @@
 
 package eu.europa.ec.issuancefeature.ui.document.offer
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.extension.toUri
@@ -61,7 +62,7 @@ sealed class Event : ViewEvent {
     data object Pop : Event()
     data object DismissError : Event()
 
-    data object PrimaryButtonPressed : Event()
+    data class PrimaryButtonPressed(val context: Context) : Event()
     data object SecondaryButtonPressed : Event()
 
     sealed class BottomSheet : Event() {
@@ -142,6 +143,7 @@ class DocumentOfferViewModel(
                 issueDocuments(
                     offerUri = viewState.value.offerUiConfig.offerURI,
                     issuerName = viewState.value.issuerName,
+                    context = event.context
                 )
             }
 
@@ -224,7 +226,7 @@ class DocumentOfferViewModel(
         }
     }
 
-    private fun issueDocuments(offerUri: String, issuerName: String) {
+    private fun issueDocuments(offerUri: String, issuerName: String, context: Context) {
         setState {
             copy(
                 isLoading = true,
@@ -262,7 +264,11 @@ class DocumentOfferViewModel(
                     }
 
                     is IssueDocumentsInteractorPartialState.UserAuthRequired -> {
-                        //TODO()
+                        documentOfferInteractor.handleUserAuthentication(
+                            context = context,
+                            crypto = response.crypto,
+                            resultHandler = response.resultHandler
+                        )
                     }
                 }
             }

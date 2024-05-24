@@ -16,9 +16,12 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
+import android.content.Context
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
@@ -62,10 +65,17 @@ interface DocumentOfferInteractor {
         offerUri: String,
         issuerName: String,
     ): Flow<IssueDocumentsInteractorPartialState>
+
+    fun handleUserAuthentication(
+        context: Context,
+        crypto: BiometricCrypto,
+        resultHandler: DeviceAuthenticationResult
+    )
 }
 
 class DocumentOfferInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     private val resourceProvider: ResourceProvider,
 ) : DocumentOfferInteractor {
     private val genericErrorMsg
@@ -86,8 +96,10 @@ class DocumentOfferInteractorImpl(
                         if (offerHasNoDocuments) {
                             ResolveDocumentOfferInteractorPartialState.NoDocument(issuerName = response.offer.issuerName)
                         } else {
+
                             val hasMainPid =
                                 walletCoreDocumentsController.getMainPidDocument() != null
+
                             val hasPidInOffer =
                                 response.offer.offeredDocuments.any { offeredDocument ->
                                     offeredDocument.docType.toDocumentType() == DocumentType.PID
@@ -151,7 +163,7 @@ class DocumentOfferInteractorImpl(
                                 it.value
                             }
                         }.joinToString(
-                            separator = ",",
+                            separator = ", ",
                             transform = {
                                 it
                             }
@@ -191,4 +203,33 @@ class DocumentOfferInteractorImpl(
             )
         }
 
+    override fun handleUserAuthentication(
+        context: Context,
+        crypto: BiometricCrypto,
+        resultHandler: DeviceAuthenticationResult
+    ) {
+        deviceAuthenticationInteractor.getBiometricsAvailability {
+            when (it) {
+                is BiometricsAvailability.CanAuthenticate -> {
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
+                        context,
+                        crypto,
+                        resultHandler
+                    )
+                }
+
+                is BiometricsAvailability.NonEnrolled -> {
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
+                        context,
+                        crypto,
+                        resultHandler
+                    )
+                }
+
+                is BiometricsAvailability.Failure -> {
+                    resultHandler.onAuthenticationFailure()
+                }
+            }
+        }
+    }
 }

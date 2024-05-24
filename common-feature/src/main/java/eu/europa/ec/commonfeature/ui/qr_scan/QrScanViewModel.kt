@@ -23,7 +23,6 @@ import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
-import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -65,7 +64,6 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class QrScanViewModel(
     private val uiSerializer: UiSerializer,
-    private val resourceProvider: ResourceProvider,
     @InjectedParam private val qrScannedConfig: String,
 ) : MviViewModel<Event, State, Effect>() {
 
@@ -116,8 +114,8 @@ class QrScanViewModel(
         scanResult: String,
     ) {
         when (qrScanFlow) {
-            QrScanFlow.PRESENTATION -> navigateToPresentationRequest(scanResult)
-            QrScanFlow.ISSUANCE -> navigateToDocumentOffer(scanResult)
+            is QrScanFlow.Presentation -> navigateToPresentationRequest(scanResult)
+            is QrScanFlow.Issuance -> navigateToDocumentOffer(scanResult, qrScanFlow.issuanceFlow)
         }
     }
 
@@ -140,7 +138,7 @@ class QrScanViewModel(
         }
     }
 
-    private fun navigateToDocumentOffer(scanResult: String) {
+    private fun navigateToDocumentOffer(scanResult: String, issuanceFLow: IssuanceFlowUiConfig) {
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
@@ -150,8 +148,8 @@ class QrScanViewModel(
                             OfferUiConfig.serializedKeyName to uiSerializer.toBase64(
                                 OfferUiConfig(
                                     offerURI = scanResult,
-                                    onSuccessNavigation = calculateOnSuccessNavigation(viewState.value.qrScannedConfig.issuanceFlow),
-                                    onCancelNavigation = calculateOnCancelNavigation(viewState.value.qrScannedConfig.issuanceFlow)
+                                    onSuccessNavigation = calculateOnSuccessNavigation(issuanceFLow),
+                                    onCancelNavigation = calculateOnCancelNavigation(issuanceFLow)
                                 ),
                                 OfferUiConfig.Parser
                             )
