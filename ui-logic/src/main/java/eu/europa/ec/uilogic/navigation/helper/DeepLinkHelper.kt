@@ -25,6 +25,7 @@ import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.extension.openUrl
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.Screen
 
@@ -93,8 +94,7 @@ fun handleDeepLinkAction(navController: NavController, uri: Uri, arguments: Stri
             }
 
             DeepLinkType.OPENID4VCI -> {
-                // TODO VCI CREDENTIAL OFFER
-                return@let
+                screen = IssuanceScreens.DocumentOffer
             }
 
             DeepLinkType.ISSUANCE -> {

@@ -49,6 +49,7 @@ data class State(
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
+    val isInitialised: Boolean = false,
 
     val issuerName: String,
     val screenTitle: String,
@@ -127,7 +128,12 @@ class DocumentOfferViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                resolveDocumentOffer(offerUri = viewState.value.offerUiConfig.offerURI)
+                if (viewState.value.isInitialised) {
+                    setState { copy(isLoading = false) }
+                }
+                if (viewState.value.documents.isEmpty()) {
+                    resolveDocumentOffer(offerUri = viewState.value.offerUiConfig.offerURI)
+                }
             }
 
             is Event.Pop -> {
@@ -185,6 +191,7 @@ class DocumentOfferViewModel(
                         setState {
                             copy(
                                 isLoading = false,
+                                isInitialised = false,
                                 error = ContentErrorConfig(
                                     errorSubTitle = response.errorMessage,
                                     onCancel = {
@@ -202,6 +209,7 @@ class DocumentOfferViewModel(
                                 isLoading = false,
                                 error = null,
                                 documents = response.documents,
+                                isInitialised = true,
                                 noDocument = false,
                                 issuerName = response.issuerName,
                                 screenTitle = calculateScreenTitle(issuerName = response.issuerName)
@@ -215,6 +223,7 @@ class DocumentOfferViewModel(
                                 isLoading = false,
                                 error = null,
                                 documents = emptyList(),
+                                isInitialised = true,
                                 noDocument = true,
                                 issuerName = response.issuerName,
                                 screenTitle = calculateScreenTitle(issuerName = response.issuerName)

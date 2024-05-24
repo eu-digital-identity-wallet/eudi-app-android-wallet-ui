@@ -64,6 +64,11 @@ fun provideSuccessInteractor(
 @Factory
 fun provideDocumentOfferInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
-    resourceProvider: ResourceProvider
+    resourceProvider: ResourceProvider,
+    deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 ): DocumentOfferInteractor =
-    DocumentOfferInteractorImpl(walletCoreDocumentsController, resourceProvider)
+    DocumentOfferInteractorImpl(
+        walletCoreDocumentsController,
+        deviceAuthenticationInteractor,
+        resourceProvider
+    )

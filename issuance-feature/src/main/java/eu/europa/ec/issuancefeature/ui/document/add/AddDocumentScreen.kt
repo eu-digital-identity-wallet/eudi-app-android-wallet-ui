@@ -64,8 +64,10 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.extension.finish
+import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -102,6 +104,11 @@ fun AddDocumentScreen(
                     }
 
                     is Effect.Navigation.Finish -> context.finish()
+                    is Effect.Navigation.OpenDeepLinkAction -> handleDeepLinkAction(
+                        navController,
+                        navigationEffect.deepLinkUri,
+                        navigationEffect.arguments
+                    )
                 }
             },
             paddingValues = paddingValues,
@@ -113,7 +120,7 @@ fun AddDocumentScreen(
         lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
-        viewModel.setEvent(Event.Init)
+        viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
     }
 }
 

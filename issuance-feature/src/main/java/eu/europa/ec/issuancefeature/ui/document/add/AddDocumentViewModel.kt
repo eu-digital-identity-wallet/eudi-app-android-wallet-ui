@@ -17,9 +17,11 @@
 package eu.europa.ec.issuancefeature.ui.document.add
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
@@ -33,6 +35,8 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -40,8 +44,10 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -61,7 +67,7 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data object Init : Event()
+    data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
     data object Finish : Event()
     data object DismissError : Event()
@@ -79,6 +85,8 @@ sealed class Effect : ViewSideEffect {
         data object Pop : Navigation()
         data object Finish : Navigation()
         data class SwitchScreen(val screenRoute: String, val inclusive: Boolean) : Navigation()
+        data class OpenDeepLinkAction(val deepLinkUri: Uri, val arguments: String?) :
+            Navigation()
     }
 }
 
@@ -103,7 +111,7 @@ class AddDocumentViewModel(
                     setState { copy(isLoading = false) }
                 }
                 if (viewState.value.options.isEmpty()) {
-                    getOptions(event)
+                    getOptions(event, event.deepLink)
                 }
             }
 
@@ -131,7 +139,8 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun getOptions(event: Event) {
+    private fun getOptions(event: Event, deepLinkUri: Uri?) {
+
         setState {
             copy(
                 isLoading = true
@@ -150,6 +159,7 @@ class AddDocumentViewModel(
                                 isLoading = false
                             )
                         }
+                        handleDeepLink(deepLinkUri)
                     }
 
                     is AddDocumentInteractorPartialState.Failure -> {
@@ -336,6 +346,42 @@ class AddDocumentViewModel(
 
             IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
                 { setEvent(Event.Pop) }
+            }
+        }
+    }
+
+    private fun handleDeepLink(deepLinkUri: Uri?) {
+        deepLinkUri?.let { uri ->
+            hasDeepLink(uri)?.let {
+                when (it.type) {
+                    DeepLinkType.OPENID4VCI -> {
+                        setEffect {
+                            Effect.Navigation.OpenDeepLinkAction(
+                                deepLinkUri = uri,
+                                arguments = generateComposableArguments(
+                                    mapOf(
+                                        OfferUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                            OfferUiConfig(
+                                                offerURI = it.link.toString(),
+                                                onSuccessNavigation = ConfigNavigation(
+                                                    navigationType = NavigationType.PushScreen(
+                                                        screen = DashboardScreens.Dashboard
+                                                    )
+                                                ),
+                                                onCancelNavigation = ConfigNavigation(
+                                                    navigationType = NavigationType.Pop
+                                                )
+                                            ),
+                                            OfferUiConfig.Parser
+                                        )
+                                    )
+                                )
+                            )
+                        }
+                    }
+
+                    else -> {}
+                }
             }
         }
     }
