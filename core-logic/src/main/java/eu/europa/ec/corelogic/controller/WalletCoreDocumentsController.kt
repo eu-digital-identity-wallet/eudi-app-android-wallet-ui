@@ -53,6 +53,8 @@ sealed class IssueDocumentPartialState {
         val crypto: BiometricCrypto,
         val resultHandler: DeviceAuthenticationResult
     ) : IssueDocumentPartialState()
+
+    data object Start : IssueDocumentPartialState()
 }
 
 sealed class IssueDocumentsPartialState {
@@ -67,6 +69,8 @@ sealed class IssueDocumentsPartialState {
         val crypto: BiometricCrypto,
         val resultHandler: DeviceAuthenticationResult
     ) : IssueDocumentsPartialState()
+
+    data object Start : IssueDocumentsPartialState()
 }
 
 sealed class AddSampleDataPartialState {
@@ -211,11 +215,15 @@ class WalletCoreDocumentsControllerImpl(
                             )
                         )
 
-                        is IssueDocumentsPartialState.PartialSuccess -> {
+                        is IssueDocumentsPartialState.PartialSuccess -> emit(
                             IssueDocumentPartialState.Success(
                                 response.documentIds.first()
                             )
-                        }
+                        )
+
+                        is IssueDocumentsPartialState.Start -> emit(
+                            IssueDocumentPartialState.Start
+                        )
                     }
                 }
             }
@@ -434,6 +442,9 @@ class WalletCoreDocumentsControllerImpl(
 
                 is IssueEvent.Started -> {
                     totalDocumentsToBeIssued = event.total
+                    trySendBlocking(
+                        IssueDocumentsPartialState.Start
+                    )
                 }
             }
         }

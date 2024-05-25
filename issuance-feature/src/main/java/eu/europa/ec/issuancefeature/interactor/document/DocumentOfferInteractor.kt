@@ -56,6 +56,8 @@ sealed class IssueDocumentsInteractorPartialState {
         val crypto: BiometricCrypto,
         val resultHandler: DeviceAuthenticationResult
     ) : IssueDocumentsInteractorPartialState()
+
+    data object Start : IssueDocumentsInteractorPartialState()
 }
 
 interface DocumentOfferInteractor {
@@ -193,6 +195,8 @@ class DocumentOfferInteractorImpl(
                             resultHandler = response.resultHandler
                         )
                     }
+
+                    is IssueDocumentsPartialState.Start -> IssueDocumentsInteractorPartialState.Start
                 }
             }.collect {
                 emit(it)

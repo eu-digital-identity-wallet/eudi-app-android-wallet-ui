@@ -69,6 +69,7 @@ data class State(
 sealed class Event : ViewEvent {
     data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
+    data object OnPause : Event()
     data object Finish : Event()
     data object DismissError : Event()
     data class IssueDocument(
@@ -85,8 +86,7 @@ sealed class Effect : ViewSideEffect {
         data object Pop : Navigation()
         data object Finish : Navigation()
         data class SwitchScreen(val screenRoute: String, val inclusive: Boolean) : Navigation()
-        data class OpenDeepLinkAction(val deepLinkUri: Uri, val arguments: String?) :
-            Navigation()
+        data class OpenDeepLinkAction(val deepLinkUri: Uri, val arguments: String?) : Navigation()
     }
 }
 
@@ -107,11 +107,10 @@ class AddDocumentViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                if (viewState.value.isInitialised) {
-                    setState { copy(isLoading = false) }
-                }
                 if (viewState.value.options.isEmpty()) {
                     getOptions(event, event.deepLink)
+                } else {
+                    handleDeepLink(event.deepLink)
                 }
             }
 
@@ -136,6 +135,12 @@ class AddDocumentViewModel(
             is Event.Finish -> setEffect { Effect.Navigation.Finish }
 
             is Event.GoToQrScan -> navigateToQrScanScreen()
+
+            is Event.OnPause -> {
+                if (viewState.value.isInitialised) {
+                    setState { copy(isLoading = false) }
+                }
+            }
         }
     }
 
@@ -143,7 +148,8 @@ class AddDocumentViewModel(
 
         setState {
             copy(
-                isLoading = true
+                isLoading = true,
+                error = null
             )
         }
 
@@ -186,12 +192,6 @@ class AddDocumentViewModel(
         docType: String,
         context: Context
     ) {
-        setState {
-            copy(
-                isLoading = true
-            )
-        }
-
         viewModelScope.launch {
             addDocumentInteractor.issueDocument(
                 issuanceMethod = issuanceMethod,
@@ -238,6 +238,13 @@ class AddDocumentViewModel(
                                     response.resultHandler.onAuthenticationError()
                                 }
                             )
+                        )
+                    }
+
+                    is IssueDocumentPartialState.Start -> setState {
+                        copy(
+                            isLoading = true,
+                            error = null
                         )
                     }
                 }
