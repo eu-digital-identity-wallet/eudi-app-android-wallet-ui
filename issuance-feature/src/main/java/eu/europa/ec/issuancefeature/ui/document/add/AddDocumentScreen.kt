@@ -118,6 +118,13 @@ fun AddDocumentScreen(
 
     LifecycleEffect(
         lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_PAUSE
+    ) {
+        viewModel.setEvent(Event.OnPause)
+    }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         viewModel.setEvent(Event.Init(context.getPendingDeepLink()))

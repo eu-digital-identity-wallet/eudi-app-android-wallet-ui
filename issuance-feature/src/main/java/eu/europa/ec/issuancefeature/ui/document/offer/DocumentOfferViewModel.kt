@@ -61,6 +61,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
+    data object OnPause : Event()
     data object DismissError : Event()
 
     data class PrimaryButtonPressed(val context: Context) : Event()
@@ -128,12 +129,7 @@ class DocumentOfferViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                if (viewState.value.isInitialised) {
-                    setState { copy(isLoading = false) }
-                }
-                if (viewState.value.documents.isEmpty()) {
-                    resolveDocumentOffer(offerUri = viewState.value.offerUiConfig.offerURI)
-                }
+                resolveDocumentOffer(offerUri = viewState.value.offerUiConfig.offerURI)
             }
 
             is Event.Pop -> {
@@ -171,6 +167,12 @@ class DocumentOfferViewModel(
                 hideBottomSheet()
                 doNavigation(viewState.value.offerUiConfig.onCancelNavigation)
             }
+
+            is Event.OnPause -> {
+                if (viewState.value.isInitialised) {
+                    setState { copy(isLoading = false) }
+                }
+            }
         }
     }
 
@@ -181,7 +183,6 @@ class DocumentOfferViewModel(
                 error = null
             )
         }
-
         viewModelScope.launch {
             documentOfferInteractor.resolveDocumentOffer(
                 offerUri = offerUri
@@ -236,13 +237,6 @@ class DocumentOfferViewModel(
     }
 
     private fun issueDocuments(offerUri: String, issuerName: String, context: Context) {
-        setState {
-            copy(
-                isLoading = true,
-                error = null
-            )
-        }
-
         viewModelScope.launch {
             documentOfferInteractor.issueDocuments(
                 offerUri = offerUri,
@@ -277,6 +271,13 @@ class DocumentOfferViewModel(
                             context = context,
                             crypto = response.crypto,
                             resultHandler = response.resultHandler
+                        )
+                    }
+
+                    is IssueDocumentsInteractorPartialState.Start -> setState {
+                        copy(
+                            isLoading = true,
+                            error = null
                         )
                     }
                 }
