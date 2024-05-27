@@ -62,6 +62,7 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data object OnPause : Event()
+    data object OnResumeIssuance : Event()
     data object DismissError : Event()
 
     data class PrimaryButtonPressed(val context: Context) : Event()
@@ -172,6 +173,10 @@ class DocumentOfferViewModel(
                 if (viewState.value.isInitialised) {
                     setState { copy(isLoading = false) }
                 }
+            }
+
+            is Event.OnResumeIssuance -> setState {
+                copy(isLoading = true)
             }
         }
     }

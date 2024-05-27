@@ -21,6 +21,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
@@ -83,7 +84,11 @@ fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
     }
 }
 
-fun handleDeepLinkAction(navController: NavController, uri: Uri, arguments: String? = null) {
+fun handleDeepLinkAction(
+    navController: NavController,
+    uri: Uri,
+    arguments: String? = null
+) {
     hasDeepLink(uri)?.let { action ->
 
         val screen: Screen
@@ -99,6 +104,7 @@ fun handleDeepLinkAction(navController: NavController, uri: Uri, arguments: Stri
 
             DeepLinkType.ISSUANCE -> {
                 EudiWallet.resumeOpenId4VciWithAuthorization(action.link)
+                notifyOnResumeIssuance(navController.context)
                 return@let
             }
 
@@ -146,5 +152,13 @@ enum class DeepLinkType(val host: String? = null) {
 
             else -> EXTERNAL
         }
+    }
+}
+
+private fun notifyOnResumeIssuance(context: Context) {
+    Intent().also { intent ->
+        intent.setAction(CoreActions.VCI_RESUME_ACTION)
+        intent.putExtra("data", "Nothing to see here, move along.")
+        context.sendBroadcast(intent)
     }
 }

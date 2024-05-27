@@ -41,8 +41,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.DocumentCard
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
+import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ErrorInfo
+import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -86,7 +88,7 @@ fun DocumentOfferScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
         navigatableAction = ScreenNavigateAction.NONE,
-        onBack = { viewModel.setEvent(Event.Pop) },
+        onBack = { viewModel.setEvent(Event.SecondaryButtonPressed) },
     ) { paddingValues ->
         Content(
             state = state,
@@ -130,6 +132,10 @@ fun DocumentOfferScreen(
 
     OneTimeLaunchedEffect {
         viewModel.setEvent(Event.Init)
+    }
+
+    SystemBroadcastReceiver(action = CoreActions.VCI_RESUME_ACTION) {
+        viewModel.setEvent(Event.OnResumeIssuance)
     }
 }
 

@@ -70,6 +70,7 @@ sealed class Event : ViewEvent {
     data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
     data object OnPause : Event()
+    data object OnResumeIssuance : Event()
     data object Finish : Event()
     data object DismissError : Event()
     data class IssueDocument(
@@ -140,6 +141,10 @@ class AddDocumentViewModel(
                 if (viewState.value.isInitialised) {
                     setState { copy(isLoading = false) }
                 }
+            }
+
+            is Event.OnResumeIssuance -> setState {
+                copy(isLoading = true)
             }
         }
     }

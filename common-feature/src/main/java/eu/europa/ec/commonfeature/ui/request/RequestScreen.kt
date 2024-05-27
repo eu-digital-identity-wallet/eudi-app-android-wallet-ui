@@ -77,7 +77,7 @@ fun RequestScreen(
     ContentScreen(
         navigatableAction = ScreenNavigateAction.NONE,
         isLoading = state.isLoading,
-        onBack = { viewModel.setEvent(Event.GoBack) },
+        onBack = { viewModel.setEvent(Event.SecondaryButtonPressed) },
         contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
