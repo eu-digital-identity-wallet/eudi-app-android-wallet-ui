@@ -35,6 +35,7 @@ interface RouterHost {
     fun currentFlowIsAfterOnBoarding(): Boolean
     fun popToLandingScreen()
     fun getLandingScreen(): String
+    fun isScreenOnBackStackOrForeground(screen: Screen): Boolean
 
     @Composable
     fun StartFlow(builder: NavGraphBuilder.(NavController) -> Unit)
@@ -70,6 +71,19 @@ class RouterHostImpl(
 
     override fun currentFlowIsAfterOnBoarding(): Boolean {
         val screenRoute = getLandingScreen()
+        try {
+            if (navController.currentDestination?.route == screenRoute) {
+                return true
+            }
+            navController.getBackStackEntry(screenRoute)
+            return true
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
+    override fun isScreenOnBackStackOrForeground(screen: Screen): Boolean {
+        val screenRoute = screen.screenRoute
         try {
             if (navController.currentDestination?.route == screenRoute) {
                 return true

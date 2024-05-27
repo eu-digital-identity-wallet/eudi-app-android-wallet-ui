@@ -43,6 +43,7 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
@@ -52,6 +53,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.IssuanceButton
 import eu.europa.ec.uilogic.component.IssuanceButtonData
+import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -128,6 +130,10 @@ fun AddDocumentScreen(
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
+    }
+
+    SystemBroadcastReceiver(action = CoreActions.VCI_RESUME_ACTION) {
+        viewModel.setEvent(Event.OnResumeIssuance)
     }
 }
 

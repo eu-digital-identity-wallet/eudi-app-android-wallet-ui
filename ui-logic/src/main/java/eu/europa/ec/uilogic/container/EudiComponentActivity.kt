@@ -36,6 +36,7 @@ import androidx.navigation.NavGraphBuilder
 import com.chuckerteam.chucker.api.Chucker
 import eu.europa.ec.businesslogic.controller.security.SecurityController
 import eu.europa.ec.resourceslogic.theme.ThemeManager
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
@@ -110,6 +111,16 @@ open class EudiComponentActivity : FragmentActivity() {
                 handleDeepLinkAction(
                     routerHost.getNavController(),
                     it.link
+                )
+            } else if (
+                it.type == DeepLinkType.OPENID4VCI
+                && !routerHost.currentFlowIsAfterOnBoarding()
+                && routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.AddDocument)
+            ) {
+                cacheDeepLink(intent)
+                routerHost.getNavController().popBackStack(
+                    route = IssuanceScreens.AddDocument.screenRoute,
+                    inclusive = false
                 )
             } else if (it.type != DeepLinkType.ISSUANCE) {
                 cacheDeepLink(intent)
