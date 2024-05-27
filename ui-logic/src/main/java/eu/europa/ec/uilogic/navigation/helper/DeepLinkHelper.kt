@@ -158,7 +158,6 @@ enum class DeepLinkType(val host: String? = null) {
 private fun notifyOnResumeIssuance(context: Context) {
     Intent().also { intent ->
         intent.setAction(CoreActions.VCI_RESUME_ACTION)
-        intent.putExtra("data", "Nothing to see here, move along.")
         context.sendBroadcast(intent)
     }
 }
