@@ -63,7 +63,6 @@
     <!-- Document Types -->
     <string name="pid">National ID</string>
     <string name="mdl">Driving License</string>
-    <string name="conference_badge">EUDI Conference Badge</string>
     <string name="load_sample_data">Load Sample Documents</string>
 
     <!-- Biometric prompt -->

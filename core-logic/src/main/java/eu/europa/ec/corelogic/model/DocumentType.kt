@@ -28,10 +28,6 @@ enum class DocumentType(
         nameSpace = "org.iso.18013.5.1",
         docType = "org.iso.18013.5.1.mDL"
     ),
-    CONFERENCE_BADGE(
-        nameSpace = "com.example.conference.badge",
-        docType = "com.example.conference.badge"
-    ),
     SAMPLE_DOCUMENTS(
         nameSpace = "load_sample_documents",
         docType = "load_sample_documents"
@@ -41,14 +37,13 @@ enum class DocumentType(
     val isSupported: Boolean
         get() = when (this) {
             PID, MDL -> true
-            CONFERENCE_BADGE, SAMPLE_DOCUMENTS, OTHER -> false
+            SAMPLE_DOCUMENTS, OTHER -> false
         }
 }
 
 fun String.toDocumentType(): DocumentType = when (this) {
     "eu.europa.ec.eudiw.pid.1" -> DocumentType.PID
     "org.iso.18013.5.1.mDL" -> DocumentType.MDL
-    "com.example.conference.badge" -> DocumentType.CONFERENCE_BADGE
     "load_sample_documents" -> DocumentType.SAMPLE_DOCUMENTS
     else -> DocumentType.OTHER
 }

@@ -497,7 +497,7 @@ object TestsData {
                         value = testFieldUi.value,
                     )
 
-                    DocumentType.CONFERENCE_BADGE, DocumentType.SAMPLE_DOCUMENTS, DocumentType.OTHER -> throw NotSupportedDocumentTypeException
+                    DocumentType.SAMPLE_DOCUMENTS, DocumentType.OTHER -> throw NotSupportedDocumentTypeException
                 }
 
                 resultList.add(RequestDataUi.Space())
@@ -625,7 +625,7 @@ object TestsData {
                 docRequest = mockedMdlWithBasicFieldsDocRequest
             }
 
-            DocumentType.CONFERENCE_BADGE, DocumentType.SAMPLE_DOCUMENTS, DocumentType.OTHER -> throw NotSupportedDocumentTypeException
+            DocumentType.SAMPLE_DOCUMENTS, DocumentType.OTHER -> throw NotSupportedDocumentTypeException
         }
 
         return RequestDocumentItemUi(
