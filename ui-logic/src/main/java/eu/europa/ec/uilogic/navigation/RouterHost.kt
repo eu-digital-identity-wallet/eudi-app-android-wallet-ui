@@ -32,9 +32,10 @@ import eu.europa.ec.uilogic.config.ConfigUILogic
 interface RouterHost {
     fun getNavController(): NavHostController
     fun getNavContext(): Context
-    fun currentFlowIsAfterOnBoarding(): Boolean
-    fun popToLandingScreen()
-    fun getLandingScreen(): String
+    fun userIsLoggedInWithDocuments(): Boolean
+    fun userIsLoggedInWithNoDocuments(): Boolean
+    fun popToDashboardScreen()
+    fun popToIssuanceOnboardingScreen()
     fun isScreenOnBackStackOrForeground(screen: Screen): Boolean
 
     @Composable
@@ -69,18 +70,11 @@ class RouterHostImpl(
         }
     }
 
-    override fun currentFlowIsAfterOnBoarding(): Boolean {
-        val screenRoute = getLandingScreen()
-        try {
-            if (navController.currentDestination?.route == screenRoute) {
-                return true
-            }
-            navController.getBackStackEntry(screenRoute)
-            return true
-        } catch (e: Exception) {
-            return false
-        }
-    }
+    override fun userIsLoggedInWithDocuments(): Boolean =
+        isScreenOnBackStackOrForeground(getDashboardScreen())
+
+    override fun userIsLoggedInWithNoDocuments(): Boolean =
+        isScreenOnBackStackOrForeground(getIssuanceScreen())
 
     override fun isScreenOnBackStackOrForeground(screen: Screen): Boolean {
         val screenRoute = screen.screenRoute
@@ -95,14 +89,25 @@ class RouterHostImpl(
         }
     }
 
-    override fun popToLandingScreen() {
+    override fun popToDashboardScreen() {
         navController.popBackStack(
-            route = getLandingScreen(),
+            route = getDashboardScreen().screenRoute,
             inclusive = false
         )
     }
 
-    override fun getLandingScreen(): String {
-        return configUILogic.landingScreenIdentifier.screenRoute
+    override fun popToIssuanceOnboardingScreen() {
+        navController.popBackStack(
+            route = getIssuanceScreen().screenRoute,
+            inclusive = false
+        )
+    }
+
+    private fun getDashboardScreen(): Screen {
+        return configUILogic.dashboardScreenIdentifier
+    }
+
+    private fun getIssuanceScreen(): Screen {
+        return configUILogic.issuanceScreenIdentifier
     }
 }
