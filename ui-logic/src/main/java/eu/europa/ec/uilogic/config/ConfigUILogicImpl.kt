@@ -17,9 +17,13 @@
 package eu.europa.ec.uilogic.config
 
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.Screen
 
 class ConfigUILogicImpl : ConfigUILogic {
-    override val landingScreenIdentifier: Screen
+    override val dashboardScreenIdentifier: Screen
         get() = DashboardScreens.Dashboard
+
+    override val issuanceScreenIdentifier: Screen
+        get() = IssuanceScreens.AddDocument
 }

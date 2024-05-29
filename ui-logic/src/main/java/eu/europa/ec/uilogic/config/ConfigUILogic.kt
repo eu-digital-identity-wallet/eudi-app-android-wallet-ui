@@ -22,5 +22,10 @@ interface ConfigUILogic {
     /*
        Define the dashboard identifier
     */
-    val landingScreenIdentifier: Screen
+    val dashboardScreenIdentifier: Screen
+
+    /*
+   Define the issuance identifier
+   */
+    val issuanceScreenIdentifier: Screen
 }
