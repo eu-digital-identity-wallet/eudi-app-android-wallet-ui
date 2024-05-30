@@ -26,7 +26,7 @@ enum class FlavorDimension {
     contentType
 }
 
-enum class EudiFlavor(
+enum class AppFlavor(
     val dimension: FlavorDimension,
     val applicationIdSuffix: String? = null,
     val applicationNameSuffix: String? = null
@@ -38,12 +38,12 @@ enum class EudiFlavor(
 fun configureFlavors(
     commonExtension: CommonExtension<*, *, *, *, *, *>,
     version: String,
-    flavorConfigurationBlock: ProductFlavor.(flavor: EudiFlavor) -> Unit = {}
+    flavorConfigurationBlock: ProductFlavor.(flavor: AppFlavor) -> Unit = {}
 ) {
     commonExtension.apply {
         flavorDimensions += FlavorDimension.contentType.name
         productFlavors {
-            EudiFlavor.values().forEach {
+            AppFlavor.values().forEach {
                 create(it.name.lowercase()) {
                     val fullVersion = "$version-${it.name}"
                     dimension = it.dimension.name

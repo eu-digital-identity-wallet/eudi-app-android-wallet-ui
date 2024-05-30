@@ -19,7 +19,7 @@ package eu.europa.ec.euidi
 /**
  * This is shared between :app and modules to provide configurations type safety.
  */
-enum class EudiBuildType(val applicationIdSuffix: String? = null) {
+enum class AppBuildType(val applicationIdSuffix: String? = null) {
     DEBUG,
     RELEASE
 }

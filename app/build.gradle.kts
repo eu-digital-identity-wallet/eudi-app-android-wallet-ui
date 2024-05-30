@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.EudiBuildType
+import eu.europa.ec.euidi.AppBuildType
 import eu.europa.ec.euidi.config.LibraryModule
 import eu.europa.ec.euidi.getProperty
 
@@ -53,12 +53,12 @@ android {
         debug {
             isDebuggable = true
             isMinifyEnabled = false
-            applicationIdSuffix = EudiBuildType.DEBUG.applicationIdSuffix
+            applicationIdSuffix = AppBuildType.DEBUG.applicationIdSuffix
         }
         release {
             isDebuggable = false
             isMinifyEnabled = false
-            applicationIdSuffix = EudiBuildType.RELEASE.applicationIdSuffix
+            applicationIdSuffix = AppBuildType.RELEASE.applicationIdSuffix
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
