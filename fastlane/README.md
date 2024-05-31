@@ -15,6 +15,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## Android
 
+### android tests
+
+```sh
+[bundle exec] fastlane android tests
+```
+
+Runs all the unit tests
+
 ### android deploy
 
 ```sh
@@ -71,10 +79,10 @@ Get version version From Project
 
 Set versionCode back to default 1
 
-### android reset_versionname
+### android reset_versionName
 
 ```sh
-[bundle exec] fastlane android reset_versionname
+[bundle exec] fastlane android reset_versionName
 ```
 
 Set versionName back to default yyyy.d.m
@@ -85,7 +93,7 @@ Set versionName back to default yyyy.d.m
 [bundle exec] fastlane android calver
 ```
 
-Build Version
+Build VersionName based on CalVer
 
 ----
 
