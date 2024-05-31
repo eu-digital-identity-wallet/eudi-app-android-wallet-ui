@@ -18,8 +18,19 @@ require "date"
 default_platform(:android)
 
 platform :android do
-  desc "Build Wallet and upload it to appcenter"
 
+  desc "Runs all the unit tests"
+  lane :tests do
+
+    # Run tests
+    gradle(task: "clean")
+    gradle(task: "test#{ENV["APP_BUILD_TYPE"]}DebugUnitTest")
+
+    # Clean Artifacts
+    clean_build_artifacts
+  end
+
+  desc "Build Wallet and upload it to appcenter"
   lane :deploy do
     git_pull
 
@@ -59,7 +70,7 @@ platform :android do
 
     clean_build_artifacts
     reset_versioncode
-    reset_versionname
+    reset_versionName
 
     add_git_tag(
       tag: tagVersion,
@@ -144,7 +155,7 @@ platform :android do
   end
 
   desc "Set versionName back to default yyyy.d.m"
-  lane :reset_versionname do
+  lane :reset_versionName do
     set_properties_value(
       path: "version.properties",
       key: "VERSION_NAME",
@@ -152,7 +163,7 @@ platform :android do
     )
   end
 
-  desc "Build Version"
+  desc "Build VersionName based on CalVer"
   lane :calver do |values|
     buildCode = values[:buildCode]
     date = DateTime.now
