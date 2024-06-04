@@ -16,25 +16,25 @@
 
 package eu.europa.ec.corelogic.model
 
-sealed interface DocumentType {
+sealed interface DocumentIdentifier {
     val nameSpace: String
     val docType: String
 
-    data object PID : DocumentType {
+    data object PID : DocumentIdentifier {
         override val nameSpace: String
             get() = "eu.europa.ec.eudiw.pid.1"
         override val docType: String
             get() = "eu.europa.ec.eudiw.pid.1"
     }
 
-    data object MDL : DocumentType {
+    data object MDL : DocumentIdentifier {
         override val nameSpace: String
             get() = "org.iso.18013.5.1"
         override val docType: String
             get() = "org.iso.18013.5.1.mDL"
     }
 
-    data object SAMPLE_DOCUMENTS : DocumentType {
+    data object SAMPLE_DOCUMENTS : DocumentIdentifier {
         override val nameSpace: String
             get() = "load_sample_documents"
         override val docType: String
@@ -44,21 +44,21 @@ sealed interface DocumentType {
     data class OTHER(
         override val nameSpace: String,
         override val docType: String,
-    ) : DocumentType
+    ) : DocumentIdentifier
 }
 
-fun DocumentType.isSupported(): Boolean {
+fun DocumentIdentifier.isSupported(): Boolean {
     return when (this) {
-        is DocumentType.PID, DocumentType.MDL -> true
-        is DocumentType.SAMPLE_DOCUMENTS, is DocumentType.OTHER -> false
+        is DocumentIdentifier.PID, DocumentIdentifier.MDL -> true
+        is DocumentIdentifier.SAMPLE_DOCUMENTS, is DocumentIdentifier.OTHER -> false
     }
 }
 
-fun String.toDocumentType(): DocumentType = when (this) {
-    "eu.europa.ec.eudiw.pid.1" -> DocumentType.PID
-    "org.iso.18013.5.1.mDL" -> DocumentType.MDL
-    "load_sample_documents" -> DocumentType.SAMPLE_DOCUMENTS
-    else -> DocumentType.OTHER(
+fun String.toDocumentIdentifier(): DocumentIdentifier = when (this) {
+    "eu.europa.ec.eudiw.pid.1" -> DocumentIdentifier.PID
+    "org.iso.18013.5.1.mDL" -> DocumentIdentifier.MDL
+    "load_sample_documents" -> DocumentIdentifier.SAMPLE_DOCUMENTS
+    else -> DocumentIdentifier.OTHER(
         nameSpace = this,
         docType = this
     )

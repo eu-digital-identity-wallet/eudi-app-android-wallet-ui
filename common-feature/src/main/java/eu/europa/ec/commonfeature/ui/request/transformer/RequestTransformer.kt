@@ -27,8 +27,8 @@ import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
 import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
-import eu.europa.ec.corelogic.model.DocumentType
-import eu.europa.ec.corelogic.model.toDocumentType
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
@@ -39,9 +39,9 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.json.JSONObject
 
-private fun getMandatoryFields(docType: DocumentType): List<String> = when (docType) {
+private fun getMandatoryFields(docType: DocumentIdentifier): List<String> = when (docType) {
 
-    DocumentType.PID -> listOf(
+    DocumentIdentifier.PID -> listOf(
         "issuance_date",
         "expiry_date",
         "issuing_authority",
@@ -70,7 +70,8 @@ object RequestTransformer {
             // Add document item.
             items += RequestDataUi.Document(
                 documentItemUi = DocumentItemUi(
-                    title = requestDocument.docType.toDocumentType().toUiName(resourceProvider)
+                    title = requestDocument.docType.toDocumentIdentifier()
+                        .toUiName(resourceProvider)
                 )
             )
             items += RequestDataUi.Space()
@@ -84,7 +85,9 @@ object RequestTransformer {
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
                     parseKeyValueUi(
-                        json = storageDocument.nameSpacedDataJSONObject.getDocObject(requestDocument.docType)[docItem.elementIdentifier],
+                        json = storageDocument.nameSpacedDataJSONObject.getDocObject(
+                            requestDocument.docType.toDocumentIdentifier().nameSpace
+                        )[docItem.elementIdentifier],
                         groupIdentifier = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = values
@@ -95,7 +98,7 @@ object RequestTransformer {
                 }
 
                 if (
-                    getMandatoryFields(docType = requestDocument.docType.toDocumentType())
+                    getMandatoryFields(docType = requestDocument.docType.toDocumentIdentifier())
                         .contains(docItem.elementIdentifier)
                 ) {
                     required.add(
@@ -214,7 +217,6 @@ object RequestTransformer {
         )
     }
 
-    // TODO Provide proper docType from Core
     private fun JSONObject.getDocObject(docType: String): JSONObject =
-        this[docType.replace(".mDL", "")] as JSONObject
+        this[docType] as JSONObject
 }

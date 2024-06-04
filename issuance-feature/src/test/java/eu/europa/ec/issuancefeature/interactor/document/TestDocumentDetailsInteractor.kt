@@ -24,7 +24,7 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidUi
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
@@ -249,7 +249,7 @@ class TestDocumentDetailsInteractor {
                         documentUi = DocumentUi(
                             documentId = TestsData.mockedPidId,
                             documentName = TestsData.mockedDocUiNamePid,
-                            documentType = DocumentType.PID,
+                            documentIdentifier = DocumentIdentifier.PID,
                             documentExpirationDateFormatted = "",
                             documentHasExpired = TestsData.mockedDocumentHasExpired,
                             documentImage = "",

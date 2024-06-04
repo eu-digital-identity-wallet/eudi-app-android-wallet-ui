@@ -28,7 +28,7 @@ import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.toDocumentType
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
@@ -106,8 +106,8 @@ class DashboardInteractorImpl(
 
             return@map DocumentUi(
                 documentId = document.id,
-                documentName = document.docType.toDocumentType().toUiName(resourceProvider),
-                documentType = document.docType.toDocumentType(),
+                documentName = document.docType.toDocumentIdentifier().toUiName(resourceProvider),
+                documentIdentifier = document.docType.toDocumentIdentifier(),
                 documentImage = "",
                 documentExpirationDateFormatted = documentExpirationDate,
                 documentHasExpired = docHasExpired,

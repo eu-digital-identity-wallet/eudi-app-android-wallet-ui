@@ -27,9 +27,9 @@ import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.isSupported
-import eu.europa.ec.corelogic.model.toDocumentType
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
@@ -105,14 +105,16 @@ class DocumentOfferInteractorImpl(
 
                             val hasPidInOffer =
                                 response.offer.offeredDocuments.any { offeredDocument ->
-                                    offeredDocument.docType.toDocumentType() == DocumentType.PID
+                                    offeredDocument.docType.toDocumentIdentifier() == DocumentIdentifier.PID
                                 }
 
                             if (hasMainPid || hasPidInOffer) {
                                 val resolvedDocumentsNames =
                                     response.offer.offeredDocuments.map { offeredDocument ->
-                                        if (offeredDocument.docType.toDocumentType().isSupported()) {
-                                            offeredDocument.docType.toDocumentType()
+                                        if (offeredDocument.docType.toDocumentIdentifier()
+                                                .isSupported()
+                                        ) {
+                                            offeredDocument.docType.toDocumentIdentifier()
                                                 .toUiName(resourceProvider)
                                         } else {
                                             offeredDocument.name
@@ -160,8 +162,8 @@ class DocumentOfferInteractorImpl(
                     is IssueDocumentsPartialState.PartialSuccess -> {
 
                         val nonIssuedDocsNames: String = response.nonIssuedDocuments.entries.map {
-                            if (it.key.toDocumentType().isSupported()) {
-                                it.key.toDocumentType().toUiName(resourceProvider)
+                            if (it.key.toDocumentIdentifier().isSupported()) {
+                                it.key.toDocumentIdentifier().toUiName(resourceProvider)
                             } else {
                                 it.value
                             }

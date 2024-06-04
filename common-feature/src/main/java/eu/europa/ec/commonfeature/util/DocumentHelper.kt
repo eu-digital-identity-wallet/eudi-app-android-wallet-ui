@@ -20,7 +20,7 @@ import eu.europa.ec.businesslogic.util.getStringFromJsonOrEmpty
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
-import eu.europa.ec.corelogic.model.toDocumentType
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
@@ -35,9 +35,9 @@ fun extractValueFromDocumentOrEmpty(
     key: String
 ): String {
     return try {
-        val docType = document.docType.toDocumentType()
+        val documentIdentifier = document.docType.toDocumentIdentifier()
         val documentJsonObject =
-            document.nameSpacedDataJSONObject.get(docType.nameSpace) as? JSONObject
+            document.nameSpacedDataJSONObject.get(documentIdentifier.nameSpace) as? JSONObject
         return documentJsonObject?.getStringFromJsonOrEmpty(key) ?: ""
     } catch (e: JSONException) {
         ""

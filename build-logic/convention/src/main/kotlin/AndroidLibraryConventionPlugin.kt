@@ -44,7 +44,13 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             val walletScheme = "eudi-wallet"
             val walletHost = "*"
 
-            val openId4VpScheme = "eudi-openid4vp"
+            val eudiOpenId4VpScheme = "eudi-openid4vp"
+            val eudiOpenid4VpHost = "*"
+
+            val mdocOpenId4VpScheme = "mdoc-openid4vp"
+            val mdocOpenid4VpHost = "*"
+
+            val openId4VpScheme = "openid4vp"
             val openid4VpHost = "*"
 
             val openId4VciScheme = "eudi-openid4vci"
@@ -75,6 +81,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     targetSdk = 34
 
                     addConfigField("DEEPLINK", "$walletScheme://")
+                    addConfigField("EUDI_OPENID4VP_SCHEME", eudiOpenId4VpScheme)
+                    addConfigField("MDOC_OPENID4VP_SCHEME", mdocOpenId4VpScheme)
                     addConfigField("OPENID4VP_SCHEME", openId4VpScheme)
                     addConfigField("OPENID4VCI_SCHEME", openId4VciScheme)
                     addConfigField(
@@ -87,6 +95,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     manifestPlaceholders["deepLinkHost"] = walletHost
 
                     // Manifest placeholders used for OpenId4VP
+                    manifestPlaceholders["eudiOpenid4vpScheme"] = eudiOpenId4VpScheme
+                    manifestPlaceholders["eudiOpenid4vpHost"] = eudiOpenid4VpHost
+                    manifestPlaceholders["mdocOpenid4vpScheme"] = mdocOpenId4VpScheme
+                    manifestPlaceholders["mdocOpenid4vpHost"] = mdocOpenid4VpHost
                     manifestPlaceholders["openid4vpScheme"] = openId4VpScheme
                     manifestPlaceholders["openid4vpHost"] = openid4VpHost
 

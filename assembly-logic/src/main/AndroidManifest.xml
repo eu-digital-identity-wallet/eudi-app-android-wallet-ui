@@ -49,7 +49,7 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS"/>
+    <uses-permission android:name="android.permission.HIDE_OVERLAY_WINDOWS" />
 
     <application
         android:name=".Application"
@@ -100,6 +100,28 @@
                 <data
                     android:host="${deepLinkHost}"
                     android:scheme="${deepLinkScheme}" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="${eudiOpenid4vpHost}"
+                    android:scheme="${eudiOpenid4vpScheme}" />
+
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="${mdocOpenid4vpHost}"
+                    android:scheme="${mdocOpenid4vpScheme}" />
+
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
