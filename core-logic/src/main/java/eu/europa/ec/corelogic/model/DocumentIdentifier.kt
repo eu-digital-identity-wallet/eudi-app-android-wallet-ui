@@ -34,7 +34,7 @@ sealed interface DocumentIdentifier {
             get() = "org.iso.18013.5.1.mDL"
     }
 
-    data object SAMPLE_DOCUMENTS : DocumentIdentifier {
+    data object SAMPLE : DocumentIdentifier {
         override val nameSpace: String
             get() = "load_sample_documents"
         override val docType: String
@@ -50,14 +50,14 @@ sealed interface DocumentIdentifier {
 fun DocumentIdentifier.isSupported(): Boolean {
     return when (this) {
         is DocumentIdentifier.PID, DocumentIdentifier.MDL -> true
-        is DocumentIdentifier.SAMPLE_DOCUMENTS, is DocumentIdentifier.OTHER -> false
+        is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> false
     }
 }
 
 fun String.toDocumentIdentifier(): DocumentIdentifier = when (this) {
     "eu.europa.ec.eudiw.pid.1" -> DocumentIdentifier.PID
     "org.iso.18013.5.1.mDL" -> DocumentIdentifier.MDL
-    "load_sample_documents" -> DocumentIdentifier.SAMPLE_DOCUMENTS
+    "load_sample_documents" -> DocumentIdentifier.SAMPLE
     else -> DocumentIdentifier.OTHER(
         nameSpace = this,
         docType = this

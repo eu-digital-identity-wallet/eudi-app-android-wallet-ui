@@ -86,9 +86,9 @@ class AddDocumentInteractorImpl(
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
                 options.add(
                     DocumentOptionItemUi(
-                        text = DocumentIdentifier.SAMPLE_DOCUMENTS.toUiName(resourceProvider),
+                        text = DocumentIdentifier.SAMPLE.toUiName(resourceProvider),
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.SAMPLE_DOCUMENTS,
+                        type = DocumentIdentifier.SAMPLE,
                         available = true
                     )
                 )

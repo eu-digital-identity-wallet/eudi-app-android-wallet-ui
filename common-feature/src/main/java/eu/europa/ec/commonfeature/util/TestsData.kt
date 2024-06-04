@@ -367,7 +367,7 @@ object TestsData {
     val mockedSampleDataOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNameSampleData,
         icon = AppIcons.Id,
-        type = DocumentIdentifier.SAMPLE_DOCUMENTS,
+        type = DocumentIdentifier.SAMPLE,
         available = true
     )
 
@@ -497,7 +497,7 @@ object TestsData {
                         value = testFieldUi.value,
                     )
 
-                    is DocumentIdentifier.SAMPLE_DOCUMENTS, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
+                    is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
                 }
 
                 resultList.add(RequestDataUi.Space())
@@ -625,7 +625,7 @@ object TestsData {
                 docRequest = mockedMdlWithBasicFieldsDocRequest
             }
 
-            is DocumentIdentifier.SAMPLE_DOCUMENTS, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
+            is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
         }
 
         return RequestDocumentItemUi(

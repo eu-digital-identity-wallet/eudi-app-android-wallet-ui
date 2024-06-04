@@ -122,7 +122,7 @@ class AddDocumentViewModel(
             }
 
             is Event.IssueDocument -> {
-                if (event.documentType != DocumentIdentifier.SAMPLE_DOCUMENTS.docType) {
+                if (event.documentType != DocumentIdentifier.SAMPLE.docType) {
                     issueDocument(
                         issuanceMethod = event.issuanceMethod,
                         docType = event.documentType,
