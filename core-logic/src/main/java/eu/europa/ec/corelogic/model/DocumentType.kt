@@ -16,34 +16,50 @@
 
 package eu.europa.ec.corelogic.model
 
-enum class DocumentType(
-    val nameSpace: String,
+sealed interface DocumentType {
+    val nameSpace: String
     val docType: String
-) {
-    PID(
-        nameSpace = "eu.europa.ec.eudiw.pid.1",
-        docType = "eu.europa.ec.eudiw.pid.1"
-    ),
-    MDL(
-        nameSpace = "org.iso.18013.5.1",
-        docType = "org.iso.18013.5.1.mDL"
-    ),
-    SAMPLE_DOCUMENTS(
-        nameSpace = "load_sample_documents",
-        docType = "load_sample_documents"
-    ),
-    OTHER(nameSpace = "", docType = "");
 
-    val isSupported: Boolean
-        get() = when (this) {
-            PID, MDL -> true
-            SAMPLE_DOCUMENTS, OTHER -> false
-        }
+    data object PID : DocumentType {
+        override val nameSpace: String
+            get() = "eu.europa.ec.eudiw.pid.1"
+        override val docType: String
+            get() = "eu.europa.ec.eudiw.pid.1"
+    }
+
+    data object MDL : DocumentType {
+        override val nameSpace: String
+            get() = "org.iso.18013.5.1"
+        override val docType: String
+            get() = "org.iso.18013.5.1.mDL"
+    }
+
+    data object SAMPLE_DOCUMENTS : DocumentType {
+        override val nameSpace: String
+            get() = "load_sample_documents"
+        override val docType: String
+            get() = "load_sample_documents"
+    }
+
+    data class OTHER(
+        override val nameSpace: String,
+        override val docType: String,
+    ) : DocumentType
+}
+
+fun DocumentType.isSupported(): Boolean {
+    return when (this) {
+        is DocumentType.PID, DocumentType.MDL -> true
+        is DocumentType.SAMPLE_DOCUMENTS, is DocumentType.OTHER -> false
+    }
 }
 
 fun String.toDocumentType(): DocumentType = when (this) {
     "eu.europa.ec.eudiw.pid.1" -> DocumentType.PID
     "org.iso.18013.5.1.mDL" -> DocumentType.MDL
     "load_sample_documents" -> DocumentType.SAMPLE_DOCUMENTS
-    else -> DocumentType.OTHER
+    else -> DocumentType.OTHER(
+        nameSpace = this,
+        docType = this
+    )
 }

@@ -28,6 +28,7 @@ import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.isSupported
 import eu.europa.ec.corelogic.model.toDocumentType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -110,7 +111,7 @@ class DocumentOfferInteractorImpl(
                             if (hasMainPid || hasPidInOffer) {
                                 val resolvedDocumentsNames =
                                     response.offer.offeredDocuments.map { offeredDocument ->
-                                        if (offeredDocument.docType.toDocumentType().isSupported) {
+                                        if (offeredDocument.docType.toDocumentType().isSupported()) {
                                             offeredDocument.docType.toDocumentType()
                                                 .toUiName(resourceProvider)
                                         } else {
@@ -159,7 +160,7 @@ class DocumentOfferInteractorImpl(
                     is IssueDocumentsPartialState.PartialSuccess -> {
 
                         val nonIssuedDocsNames: String = response.nonIssuedDocuments.entries.map {
-                            if (it.key.toDocumentType().isSupported) {
+                            if (it.key.toDocumentType().isSupported()) {
                                 it.key.toDocumentType().toUiName(resourceProvider)
                             } else {
                                 it.value

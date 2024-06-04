@@ -485,19 +485,19 @@ object TestsData {
 
             transformedRequestDataUi.optionalFields.forEachIndexed { index, testFieldUi ->
                 val optionalField = when (transformedRequestDataUi.documentTypeUi) {
-                    DocumentType.PID -> mockCreateOptionalFieldForPid(
+                    is DocumentType.PID -> mockCreateOptionalFieldForPid(
                         docId = transformedRequestDataUi.documentId,
                         elementIdentifier = testFieldUi.elementIdentifier,
                         value = testFieldUi.value
                     )
 
-                    DocumentType.MDL -> mockCreateOptionalFieldForMdl(
+                    is DocumentType.MDL -> mockCreateOptionalFieldForMdl(
                         docId = transformedRequestDataUi.documentId,
                         elementIdentifier = testFieldUi.elementIdentifier,
                         value = testFieldUi.value,
                     )
 
-                    DocumentType.SAMPLE_DOCUMENTS, DocumentType.OTHER -> throw NotSupportedDocumentTypeException
+                    is DocumentType.SAMPLE_DOCUMENTS, is DocumentType.OTHER -> throw NotSupportedDocumentTypeException
                 }
 
                 resultList.add(RequestDataUi.Space())
@@ -611,21 +611,21 @@ object TestsData {
         val docRequest: DocRequest
 
         when (documentTypeUi) {
-            DocumentType.PID -> {
+            is DocumentType.PID -> {
                 namespace = mockedPidCodeName
                 docId = mockedPidId
                 docType = mockedPidDocType
                 docRequest = mockedPidWithBasicFieldsDocRequest
             }
 
-            DocumentType.MDL -> {
+            is DocumentType.MDL -> {
                 namespace = mockedMdlCodeName
                 docId = mockedMdlId
                 docType = mockedMdlDocType
                 docRequest = mockedMdlWithBasicFieldsDocRequest
             }
 
-            DocumentType.SAMPLE_DOCUMENTS, DocumentType.OTHER -> throw NotSupportedDocumentTypeException
+            is DocumentType.SAMPLE_DOCUMENTS, is DocumentType.OTHER -> throw NotSupportedDocumentTypeException
         }
 
         return RequestDocumentItemUi(

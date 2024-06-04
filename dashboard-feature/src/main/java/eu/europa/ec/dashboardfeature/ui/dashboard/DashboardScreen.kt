@@ -663,7 +663,10 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "2",
                 documentName = "Other",
-                documentType = DocumentType.OTHER,
+                documentType = DocumentType.OTHER(
+                    nameSpace = "",
+                    docType = ""
+                ),
                 documentExpirationDateFormatted = "01 Jun 2020",
                 documentHasExpired = true,
                 documentImage = "image3",

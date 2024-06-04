@@ -34,9 +34,9 @@ data class DocumentUi(
 
 fun DocumentType.toUiName(resourceProvider: ResourceProvider): String {
     return when (this) {
-        DocumentType.PID -> resourceProvider.getString(R.string.pid)
-        DocumentType.MDL -> resourceProvider.getString(R.string.mdl)
-        DocumentType.SAMPLE_DOCUMENTS -> resourceProvider.getString(R.string.load_sample_data)
-        DocumentType.OTHER -> ""
+        is DocumentType.PID -> resourceProvider.getString(R.string.pid)
+        is DocumentType.MDL -> resourceProvider.getString(R.string.mdl)
+        is DocumentType.SAMPLE_DOCUMENTS -> resourceProvider.getString(R.string.load_sample_data)
+        is DocumentType.OTHER -> docType
     }
 }
