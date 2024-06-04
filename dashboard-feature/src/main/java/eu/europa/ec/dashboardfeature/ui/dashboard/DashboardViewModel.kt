@@ -75,7 +75,7 @@ sealed class Event : ViewEvent {
     data object Pop : Event()
     data class NavigateToDocument(
         val documentId: String,
-        val documentType: String,
+        val documentNameSpace: String,
     ) : Event()
 
     data object OptionsPressed : Event()
@@ -154,7 +154,7 @@ class DashboardViewModel(
                                 mapOf(
                                     "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
                                     "documentId" to event.documentId,
-                                    "documentType" to event.documentType,
+                                    "nameSpace" to event.documentNameSpace,
                                 )
                             )
                         )

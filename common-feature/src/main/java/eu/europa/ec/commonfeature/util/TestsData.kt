@@ -27,7 +27,7 @@ import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
-import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.DocRequest
 import eu.europa.ec.eudi.iso18013.transfer.ReaderAuth
@@ -47,7 +47,7 @@ object TestsData {
 
     data class TestTransformedRequestDataUi(
         val documentId: String,
-        val documentTypeUi: DocumentType,
+        val documentIdentifierUi: DocumentIdentifier,
         val documentTitle: String,
         val optionalFields: List<TestFieldUi>,
         val requiredFields: List<TestFieldUi>
@@ -193,7 +193,7 @@ object TestsData {
     val mockedFullPidUi = DocumentUi(
         documentId = mockedPidId,
         documentName = mockedDocUiNamePid,
-        documentType = DocumentType.PID,
+        documentIdentifier = DocumentIdentifier.PID,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
         documentImage = "",
@@ -265,7 +265,7 @@ object TestsData {
     val mockedFullMdlUi = DocumentUi(
         documentId = mockedMdlId,
         documentName = mockedDocUiNameMdl,
-        documentType = DocumentType.MDL,
+        documentIdentifier = DocumentIdentifier.MDL,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
         documentImage = "",
@@ -353,21 +353,21 @@ object TestsData {
     val mockedPidOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNamePid,
         icon = AppIcons.Id,
-        type = DocumentType.PID,
+        type = DocumentIdentifier.PID,
         available = true
     )
 
     val mockedMdlOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNameMdl,
         icon = AppIcons.Id,
-        type = DocumentType.MDL,
+        type = DocumentIdentifier.MDL,
         available = true
     )
 
     val mockedSampleDataOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNameSampleData,
         icon = AppIcons.Id,
-        type = DocumentType.SAMPLE_DOCUMENTS,
+        type = DocumentIdentifier.SAMPLE,
         available = true
     )
 
@@ -462,7 +462,7 @@ object TestsData {
 
     val mockedTransformedRequestDataUiForPidWithBasicFields = TestTransformedRequestDataUi(
         documentId = mockedPidId,
-        documentTypeUi = DocumentType.PID,
+        documentIdentifierUi = DocumentIdentifier.PID,
         documentTitle = mockedDocUiNamePid,
         optionalFields = mockedOptionalFieldsForPidWithBasicFields,
         requiredFields = mockedRequiredFieldsForPidWithBasicFields
@@ -484,20 +484,20 @@ object TestsData {
             resultList.add(RequestDataUi.Space())
 
             transformedRequestDataUi.optionalFields.forEachIndexed { index, testFieldUi ->
-                val optionalField = when (transformedRequestDataUi.documentTypeUi) {
-                    DocumentType.PID -> mockCreateOptionalFieldForPid(
+                val optionalField = when (transformedRequestDataUi.documentIdentifierUi) {
+                    is DocumentIdentifier.PID -> mockCreateOptionalFieldForPid(
                         docId = transformedRequestDataUi.documentId,
                         elementIdentifier = testFieldUi.elementIdentifier,
                         value = testFieldUi.value
                     )
 
-                    DocumentType.MDL -> mockCreateOptionalFieldForMdl(
+                    is DocumentIdentifier.MDL -> mockCreateOptionalFieldForMdl(
                         docId = transformedRequestDataUi.documentId,
                         elementIdentifier = testFieldUi.elementIdentifier,
                         value = testFieldUi.value,
                     )
 
-                    DocumentType.SAMPLE_DOCUMENTS, DocumentType.OTHER -> throw NotSupportedDocumentTypeException
+                    is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
                 }
 
                 resultList.add(RequestDataUi.Space())
@@ -528,7 +528,7 @@ object TestsData {
 
     val mockedTransformedRequestDataUiForMdlWithBasicFields = TestTransformedRequestDataUi(
         documentId = mockedMdlId,
-        documentTypeUi = DocumentType.MDL,
+        documentIdentifierUi = DocumentIdentifier.MDL,
         documentTitle = mockedDocUiNameMdl,
         optionalFields = mockedOptionalFieldsForMdlWithBasicFields,
         requiredFields = emptyList()
@@ -543,7 +543,7 @@ object TestsData {
     ): RequestDataUi.OptionalField<Event> {
         val uniqueId = mockedPidDocType + elementIdentifier + docId
         return mockCreateOptionalField(
-            documentTypeUi = DocumentType.PID,
+            documentIdentifierUi = DocumentIdentifier.PID,
             uniqueId = uniqueId,
             elementIdentifier = elementIdentifier,
             value = value,
@@ -562,7 +562,7 @@ object TestsData {
     ): RequestDataUi.OptionalField<Event> {
         val uniqueId = mockedMdlDocType + elementIdentifier + docId
         return mockCreateOptionalField(
-            documentTypeUi = DocumentType.MDL,
+            documentIdentifierUi = DocumentIdentifier.MDL,
             uniqueId = uniqueId,
             elementIdentifier = elementIdentifier,
             value = value,
@@ -573,7 +573,7 @@ object TestsData {
     }
 
     private fun mockCreateOptionalField(
-        documentTypeUi: DocumentType,
+        documentIdentifierUi: DocumentIdentifier,
         uniqueId: String,
         elementIdentifier: String,
         value: String,
@@ -584,7 +584,7 @@ object TestsData {
         return RequestDataUi.OptionalField(
             optionalFieldItemUi = OptionalFieldItemUi(
                 requestDocumentItemUi = mockCreateRequestDocumentItemUi(
-                    documentTypeUi = documentTypeUi,
+                    documentIdentifierUi = documentIdentifierUi,
                     uniqueId = uniqueId,
                     elementIdentifier = elementIdentifier,
                     value = value,
@@ -597,7 +597,7 @@ object TestsData {
     }
 
     private fun mockCreateRequestDocumentItemUi(
-        documentTypeUi: DocumentType,
+        documentIdentifierUi: DocumentIdentifier,
         uniqueId: String,
         elementIdentifier: String,
         value: String,
@@ -610,22 +610,22 @@ object TestsData {
         val docType: String
         val docRequest: DocRequest
 
-        when (documentTypeUi) {
-            DocumentType.PID -> {
+        when (documentIdentifierUi) {
+            is DocumentIdentifier.PID -> {
                 namespace = mockedPidCodeName
                 docId = mockedPidId
                 docType = mockedPidDocType
                 docRequest = mockedPidWithBasicFieldsDocRequest
             }
 
-            DocumentType.MDL -> {
+            is DocumentIdentifier.MDL -> {
                 namespace = mockedMdlCodeName
                 docId = mockedMdlId
                 docType = mockedMdlDocType
                 docRequest = mockedMdlWithBasicFieldsDocRequest
             }
 
-            DocumentType.SAMPLE_DOCUMENTS, DocumentType.OTHER -> throw NotSupportedDocumentTypeException
+            is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
         }
 
         return RequestDocumentItemUi(
@@ -659,7 +659,7 @@ object TestsData {
             val uniqueId = mockedPidDocType + it.elementIdentifier + docId
             requestDocumentItemsUi.add(
                 mockCreateRequestDocumentItemUi(
-                    documentTypeUi = DocumentType.PID,
+                    documentIdentifierUi = DocumentIdentifier.PID,
                     uniqueId = uniqueId,
                     elementIdentifier = it.elementIdentifier,
                     value = it.value,

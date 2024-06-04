@@ -29,7 +29,7 @@ import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import kotlinx.coroutines.flow.Flow
@@ -71,24 +71,24 @@ class AddDocumentInteractorImpl(
         flow {
             val options = mutableListOf(
                 DocumentOptionItemUi(
-                    text = DocumentType.PID.toUiName(resourceProvider),
+                    text = DocumentIdentifier.PID.toUiName(resourceProvider),
                     icon = AppIcons.Id,
-                    type = DocumentType.PID,
+                    type = DocumentIdentifier.PID,
                     available = true
                 ),
                 DocumentOptionItemUi(
-                    text = DocumentType.MDL.toUiName(resourceProvider),
+                    text = DocumentIdentifier.MDL.toUiName(resourceProvider),
                     icon = AppIcons.Id,
-                    type = DocumentType.MDL,
+                    type = DocumentIdentifier.MDL,
                     available = canCreateMdl(flowType)
                 )
             )
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
                 options.add(
                     DocumentOptionItemUi(
-                        text = DocumentType.SAMPLE_DOCUMENTS.toUiName(resourceProvider),
+                        text = DocumentIdentifier.SAMPLE.toUiName(resourceProvider),
                         icon = AppIcons.Id,
-                        type = DocumentType.SAMPLE_DOCUMENTS,
+                        type = DocumentIdentifier.SAMPLE,
                         available = true
                     )
                 )

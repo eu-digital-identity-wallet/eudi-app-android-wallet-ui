@@ -22,8 +22,8 @@ import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetail
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocumentType
-import eu.europa.ec.corelogic.model.toDocumentType
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -94,10 +94,10 @@ class DocumentDetailsInteractorImpl(
         flow {
 
             val shouldDeleteAllDocuments: Boolean =
-                if (documentType.toDocumentType() == DocumentType.PID) {
+                if (documentType.toDocumentIdentifier() == DocumentIdentifier.PID) {
 
                     val allPidDocuments =
-                        walletCoreDocumentsController.getAllDocumentsByType(docType = DocumentType.PID)
+                        walletCoreDocumentsController.getAllDocumentsByType(docType = DocumentIdentifier.PID)
 
                     if (allPidDocuments.count() > 1) {
                         walletCoreDocumentsController.getMainPidDocument()?.id == documentId

@@ -20,7 +20,7 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.toDocumentType
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
@@ -54,7 +54,7 @@ class SuccessInteractorImpl(
             emit(
                 SuccessFetchDocumentByIdPartialState.Success(
                     document = it,
-                    documentName = it.docType.toDocumentType().toUiName(resourceProvider),
+                    documentName = it.docType.toDocumentIdentifier().toUiName(resourceProvider),
                     fullName = extractFullNameFromDocumentOrEmpty(it)
                 )
             )

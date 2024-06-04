@@ -17,14 +17,14 @@
 package eu.europa.ec.commonfeature.model
 
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
-import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 data class DocumentUi(
     val documentId: String,
     val documentName: String,
-    val documentType: DocumentType,
+    val documentIdentifier: DocumentIdentifier,
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,
     val documentImage: String,
@@ -32,11 +32,11 @@ data class DocumentUi(
     val userFullName: String? = null,
 )
 
-fun DocumentType.toUiName(resourceProvider: ResourceProvider): String {
+fun DocumentIdentifier.toUiName(resourceProvider: ResourceProvider): String {
     return when (this) {
-        DocumentType.PID -> resourceProvider.getString(R.string.pid)
-        DocumentType.MDL -> resourceProvider.getString(R.string.mdl)
-        DocumentType.SAMPLE_DOCUMENTS -> resourceProvider.getString(R.string.load_sample_data)
-        DocumentType.OTHER -> ""
+        is DocumentIdentifier.PID -> resourceProvider.getString(R.string.pid)
+        is DocumentIdentifier.MDL -> resourceProvider.getString(R.string.mdl)
+        is DocumentIdentifier.SAMPLE -> resourceProvider.getString(R.string.load_sample_data)
+        is DocumentIdentifier.OTHER -> docType
     }
 }

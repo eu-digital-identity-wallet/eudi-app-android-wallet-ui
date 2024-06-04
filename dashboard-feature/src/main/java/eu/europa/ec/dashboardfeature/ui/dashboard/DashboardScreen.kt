@@ -63,7 +63,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.corelogic.model.DocumentType
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
@@ -555,7 +555,7 @@ private fun CardListItem(
             onEventSend(
                 Event.NavigateToDocument(
                     documentId = dataItem.documentId,
-                    documentType = dataItem.documentType.nameSpace,
+                    documentNameSpace = dataItem.documentIdentifier.nameSpace,
                 )
             )
         },
@@ -645,7 +645,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "0",
                 documentName = "National ID",
-                documentType = DocumentType.PID,
+                documentIdentifier = DocumentIdentifier.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image1",
@@ -654,7 +654,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "1",
                 documentName = "Driving License",
-                documentType = DocumentType.MDL,
+                documentIdentifier = DocumentIdentifier.MDL,
                 documentExpirationDateFormatted = "25 Dec 2050",
                 documentHasExpired = false,
                 documentImage = "image2",
@@ -663,7 +663,10 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "2",
                 documentName = "Other",
-                documentType = DocumentType.OTHER,
+                documentIdentifier = DocumentIdentifier.OTHER(
+                    nameSpace = "",
+                    docType = ""
+                ),
                 documentExpirationDateFormatted = "01 Jun 2020",
                 documentHasExpired = true,
                 documentImage = "image3",

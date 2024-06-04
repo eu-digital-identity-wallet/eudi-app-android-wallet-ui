@@ -26,7 +26,7 @@ import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
-import eu.europa.ec.corelogic.model.toDocumentType
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
@@ -70,7 +70,7 @@ object DocumentDetailsTransformer {
                 )
             }
 
-        val documentTypeUi = document.docType.toDocumentType()
+        val documentIdentifierUi = document.docType.toDocumentIdentifier()
 
         val documentImage = extractValueFromDocumentOrEmpty(
             document = document,
@@ -86,8 +86,8 @@ object DocumentDetailsTransformer {
 
         return DocumentUi(
             documentId = document.id,
-            documentName = documentTypeUi.toUiName(resourceProvider),
-            documentType = documentTypeUi,
+            documentName = documentIdentifierUi.toUiName(resourceProvider),
+            documentIdentifier = documentIdentifierUi,
             documentExpirationDateFormatted = documentExpirationDate.toDateFormatted() ?: "",
             documentHasExpired = docHasExpired,
             documentImage = documentImage,
