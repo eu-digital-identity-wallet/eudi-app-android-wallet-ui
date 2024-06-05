@@ -112,7 +112,7 @@ open class EudiComponentActivity : FragmentActivity() {
                     it.link
                 )
             } else if (
-                it.type == DeepLinkType.OPENID4VCI
+                it.type == DeepLinkType.CREDENTIAL_OFFER
                 && !routerHost.userIsLoggedInWithDocuments()
                 && routerHost.userIsLoggedInWithNoDocuments()
             ) {

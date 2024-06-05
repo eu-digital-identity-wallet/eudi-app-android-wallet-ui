@@ -53,8 +53,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             val openId4VpScheme = "openid4vp"
             val openid4VpHost = "*"
 
-            val openId4VciScheme = "eudi-openid4vci"
-            val openid4VciHost = "*"
+            val credentialOfferScheme = "openid-credential-offer"
+            val credentialOfferHost = "*"
 
             val openId4VciAuthorizationScheme = "eudi-issuance"
             val openId4VciAuthorizationHost = "authorization"
@@ -84,7 +84,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     addConfigField("EUDI_OPENID4VP_SCHEME", eudiOpenId4VpScheme)
                     addConfigField("MDOC_OPENID4VP_SCHEME", mdocOpenId4VpScheme)
                     addConfigField("OPENID4VP_SCHEME", openId4VpScheme)
-                    addConfigField("OPENID4VCI_SCHEME", openId4VciScheme)
+                    addConfigField("CREDENTIAL_OFFER_SCHEME", credentialOfferScheme)
                     addConfigField(
                         "ISSUE_AUTHORIZATION_DEEPLINK",
                         "$openId4VciAuthorizationScheme://$openId4VciAuthorizationHost"
@@ -103,8 +103,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     manifestPlaceholders["openid4vpHost"] = openid4VpHost
 
                     // Manifest placeholders used for OpenId4VCI
-                    manifestPlaceholders["openid4vciHost"] = openid4VciHost
-                    manifestPlaceholders["openid4vciScheme"] = openId4VciScheme
+                    manifestPlaceholders["credentialOfferHost"] = credentialOfferHost
+                    manifestPlaceholders["credentialOfferScheme"] = credentialOfferScheme
 
                     // Manifest placeholders used for OpenId4VCI Authorization
                     manifestPlaceholders["openId4VciAuthorizationScheme"] =

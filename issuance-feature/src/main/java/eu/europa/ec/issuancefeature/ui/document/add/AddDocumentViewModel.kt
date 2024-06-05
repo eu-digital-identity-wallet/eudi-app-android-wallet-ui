@@ -366,7 +366,7 @@ class AddDocumentViewModel(
         deepLinkUri?.let { uri ->
             hasDeepLink(uri)?.let {
                 when (it.type) {
-                    DeepLinkType.OPENID4VCI -> {
+                    DeepLinkType.CREDENTIAL_OFFER -> {
                         setEffect {
                             Effect.Navigation.OpenDeepLinkAction(
                                 deepLinkUri = uri,

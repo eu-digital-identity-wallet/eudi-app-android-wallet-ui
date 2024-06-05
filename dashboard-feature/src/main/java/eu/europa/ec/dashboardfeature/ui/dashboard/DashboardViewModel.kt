@@ -310,7 +310,7 @@ class DashboardViewModel(
                         )
                     }
 
-                    DeepLinkType.OPENID4VCI -> generateComposableArguments(
+                    DeepLinkType.CREDENTIAL_OFFER -> generateComposableArguments(
                         mapOf(
                             OfferUiConfig.serializedKeyName to uiSerializer.toBase64(
                                 OfferUiConfig(

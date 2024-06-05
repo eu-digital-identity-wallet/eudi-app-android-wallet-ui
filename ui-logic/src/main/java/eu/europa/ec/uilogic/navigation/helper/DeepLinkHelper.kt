@@ -98,7 +98,7 @@ fun handleDeepLinkAction(
                 screen = PresentationScreens.PresentationRequest
             }
 
-            DeepLinkType.OPENID4VCI -> {
+            DeepLinkType.CREDENTIAL_OFFER -> {
                 screen = IssuanceScreens.DocumentOffer
             }
 
@@ -128,25 +128,25 @@ fun handleDeepLinkAction(
 }
 
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
-enum class DeepLinkType(val host: String? = null) {
+enum class DeepLinkType(val schema: String, val host: String? = null) {
 
-    OPENID4VP,
-    OPENID4VCI,
-    ISSUANCE("authorization"),
-    EXTERNAL;
+    OPENID4VP(schema = "openid4vp"),
+    CREDENTIAL_OFFER(schema = "credential-offer"),
+    ISSUANCE(schema = "issuance", host = "authorization"),
+    EXTERNAL("external");
 
     companion object {
         fun parse(uri: Uri): DeepLinkType = when {
 
-            uri.scheme?.contains(OPENID4VP.name.lowercase()) == true -> {
+            uri.scheme?.contains(OPENID4VP.schema) == true -> {
                 OPENID4VP
             }
 
-            uri.scheme?.contains(OPENID4VCI.name.lowercase()) == true -> {
-                OPENID4VCI
+            uri.scheme?.contains(CREDENTIAL_OFFER.schema) == true -> {
+                CREDENTIAL_OFFER
             }
 
-            uri.scheme?.contains(ISSUANCE.name.lowercase()) == true && uri.host == ISSUANCE.host -> {
+            uri.scheme?.contains(ISSUANCE.schema) == true && uri.host == ISSUANCE.host -> {
                 ISSUANCE
             }
 
