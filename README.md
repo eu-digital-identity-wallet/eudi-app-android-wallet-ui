@@ -78,9 +78,9 @@ The released software is an initial development release version:
 
 ## Important things to know
 
-The main purpose of the reference wallet implementation is to showcase the ecosystem and act as a technical example of how to integrate and use all of the available components.
+The main purpose of the reference implementation is to showcase the ecosystem and act as a technical example of how to integrate and use all of the available components.
 
-If you're planning to use it as a production application, we recommend reviewing the following steps:
+If you're planning to use this application in production, we recommend reviewing the following steps:
 - Configure the application properly by following the guide [here](wiki/configuration.md)
 - Ensure the Pin storage configuration matches your security requirements or provide your own by following this guide [Pin Storage Configuration](wiki/configuration.md#pin-storage-configuration)
 - Ensure the application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
