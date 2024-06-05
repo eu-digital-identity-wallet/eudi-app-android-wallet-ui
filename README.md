@@ -82,7 +82,7 @@ The main purpose of the reference wallet implementation is to showcase the ecosy
 
 If you're planning to use it as a production application, we recommend reviewing the following steps:
 - Configure the application properly by following the guide [here](wiki/configuration.md)
-- Ensure the PIN storage configuration matches your security requirements or provide your own by following this guide [Pin Storage Configuration](wiki/configuration.md#pin-storage-configuration)
+- Ensure the Pin storage configuration matches your security requirements or provide your own by following this guide [Pin Storage Configuration](wiki/configuration.md#pin-storage-configuration)
 - Ensure the application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
     - [OWASP MASVS](https://mas.owasp.org/MASVS/)
     - [Play Integrity API](https://developer.android.com/google/play/integrity)
