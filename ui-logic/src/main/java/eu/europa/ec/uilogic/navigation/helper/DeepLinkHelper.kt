@@ -21,6 +21,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.uilogic.BuildConfig
@@ -79,8 +80,11 @@ fun generateNewTaskDeepLink(
     }
 
 fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
-    return deepLinkUri?.let { uri ->
-        DeepLinkAction(link = uri, type = DeepLinkType.parse(uri))
+    return safeLet(
+        deepLinkUri,
+        deepLinkUri?.scheme
+    ) { uri, scheme ->
+        DeepLinkAction(link = uri, type = DeepLinkType.parse(scheme, uri.host))
     }
 }
 
@@ -128,25 +132,36 @@ fun handleDeepLinkAction(
 }
 
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
-enum class DeepLinkType(val schema: String, val host: String? = null) {
+enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
 
-    OPENID4VP(schema = "openid4vp"),
-    CREDENTIAL_OFFER(schema = "credential-offer"),
-    ISSUANCE(schema = "issuance", host = "authorization"),
-    EXTERNAL("external");
+    OPENID4VP(
+        schemas = listOf(
+            BuildConfig.OPENID4VP_SCHEME,
+            BuildConfig.EUDI_OPENID4VP_SCHEME,
+            BuildConfig.MDOC_OPENID4VP_SCHEME
+        )
+    ),
+    CREDENTIAL_OFFER(
+        schemas = listOf(BuildConfig.CREDENTIAL_OFFER_SCHEME)
+    ),
+    ISSUANCE(
+        schemas = listOf(BuildConfig.ISSUE_AUTHORIZATION_SCHEME),
+        host = BuildConfig.ISSUE_AUTHORIZATION_HOST
+    ),
+    EXTERNAL(listOf("external"));
 
     companion object {
-        fun parse(uri: Uri): DeepLinkType = when {
+        fun parse(scheme: String, host: String? = null): DeepLinkType = when {
 
-            uri.scheme?.contains(OPENID4VP.schema) == true -> {
+            OPENID4VP.schemas.contains(scheme) -> {
                 OPENID4VP
             }
 
-            uri.scheme?.contains(CREDENTIAL_OFFER.schema) == true -> {
+            CREDENTIAL_OFFER.schemas.contains(scheme) -> {
                 CREDENTIAL_OFFER
             }
 
-            uri.scheme?.contains(ISSUANCE.schema) == true && uri.host == ISSUANCE.host -> {
+            ISSUANCE.schemas.contains(scheme) && host == ISSUANCE.host -> {
                 ISSUANCE
             }
 
