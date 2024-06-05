@@ -55,7 +55,6 @@ material = "1.12.0"
 mockito = "5.12.0"
 mockitoKotlin = "5.3.1"
 mockitoInline = "5.2.0"
-chucker = "4.0.0"
 ktor = "2.3.7"
 slf4j = "2.0.7"
 rootbeer = "0.1.0"
@@ -146,8 +145,6 @@ koin-ksp = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref =
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 mockito-inline = { group = "org.mockito", name = "mockito-inline", version.ref = "mockitoInline" }
-chucker-android = { group = "com.github.chuckerteam.chucker", name = "library", version.ref = "chucker" }
-chucker-android-no-op = { group = "com.github.chuckerteam.chucker", name = "library-no-op", version.ref = "chucker" }
 ktor-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 slf4j = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }

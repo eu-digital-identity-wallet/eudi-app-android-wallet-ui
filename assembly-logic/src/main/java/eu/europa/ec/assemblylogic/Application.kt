@@ -17,10 +17,8 @@
 package eu.europa.ec.assemblylogic
 
 import android.app.Application
-import android.os.StrictMode
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
-import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.eudi.wallet.EudiWallet
@@ -35,7 +33,6 @@ class Application : Application() {
 
     private val logController: LogController by inject()
     private val configWalletCore: WalletCoreConfig by inject()
-    private val configSecurityLogic: ConfigSecurityLogic by inject()
     private val analyticsController: AnalyticsController by inject()
 
     override fun onCreate() {
@@ -45,7 +42,6 @@ class Application : Application() {
         initializeEudiWallet()
         initializeLogging()
         initializeTheme()
-        handleStrictMode()
     }
 
     private fun initializeReporting() {
@@ -75,24 +71,5 @@ class Application : Application() {
             applicationContext,
             configWalletCore.config
         )
-    }
-
-    private fun handleStrictMode() {
-        if (configSecurityLogic.enableStrictMode) {
-            StrictMode.setThreadPolicy(
-                StrictMode.ThreadPolicy.Builder()
-                    .detectDiskReads()
-                    .detectDiskWrites()
-                    .detectNetwork()
-                    .penaltyLog()
-                    .build()
-            )
-            StrictMode.setVmPolicy(
-                StrictMode.VmPolicy.Builder()
-                    .detectAll()
-                    .penaltyLog()
-                    .build()
-            )
-        }
     }
 }

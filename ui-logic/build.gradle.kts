@@ -40,9 +40,6 @@ dependencies {
     implementation(libs.zxing)
     implementation(libs.gson)
 
-    debugImplementation(libs.chucker.android)
-    releaseImplementation(libs.chucker.android.no.op)
-
     testImplementation(project(LibraryModule.TestLogic.path))
 }
 

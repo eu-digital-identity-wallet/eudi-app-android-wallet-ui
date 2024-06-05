@@ -16,25 +16,17 @@
 
 package eu.europa.ec.uilogic.container
 
-import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
-import android.view.WindowManager
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import com.chuckerteam.chucker.api.Chucker
-import eu.europa.ec.businesslogic.controller.security.SecurityController
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
@@ -49,7 +41,6 @@ import org.koin.core.annotation.KoinExperimentalAPI
 open class EudiComponentActivity : FragmentActivity() {
 
     private val routerHost: RouterHost by inject()
-    private val securityController: SecurityController by inject()
 
     private var flowStarted: Boolean = false
 
@@ -76,7 +67,6 @@ open class EudiComponentActivity : FragmentActivity() {
                     }
                     flowStarted = true
                     handleDeepLink(intent, coldBoot = true)
-                    ChuckerPermissions()
                 }
             }
         }
@@ -125,35 +115,6 @@ open class EudiComponentActivity : FragmentActivity() {
                 }
             }
             setIntent(Intent())
-        }
-    }
-
-    protected fun windowFlags() {
-        if (securityController.blockScreenCapture()) {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_SECURE,
-                WindowManager.LayoutParams.FLAG_SECURE
-            )
-        }
-        @SuppressLint("MissingPermission", "NewApi")
-        if (securityController.blockOverlayWindow()) {
-            window.setHideOverlayWindows(true)
-        }
-    }
-
-    @Composable
-    private fun ChuckerPermissions() {
-        if (Chucker.isOp
-            && ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-            && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-        ) {
-            requestPermissions(
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                1000
-            )
         }
     }
 }

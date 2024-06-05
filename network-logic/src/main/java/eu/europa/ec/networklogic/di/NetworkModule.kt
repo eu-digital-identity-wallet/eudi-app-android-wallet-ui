@@ -16,11 +16,8 @@
 
 package eu.europa.ec.networklogic.di
 
-import android.content.Context
-import com.chuckerteam.chucker.api.ChuckerInterceptor
 import eu.europa.ec.businesslogic.config.AppBuildType
 import eu.europa.ec.businesslogic.config.ConfigLogic
-import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
 import eu.europa.ec.networklogic.api.Api
 import eu.europa.ec.networklogic.api.ApiClient
 import eu.europa.ec.networklogic.api.ApiClientImpl
@@ -49,20 +46,14 @@ fun providesHttpLoggingInterceptor(configLogic: ConfigLogic) = HttpLoggingInterc
 
 @Factory
 fun provideOkHttpClient(
-    context: Context,
     httpLoggingInterceptor: HttpLoggingInterceptor,
-    configLogic: ConfigLogic,
-    configSecurityLogic: ConfigSecurityLogic
+    configLogic: ConfigLogic
 ): OkHttpClient {
 
     val client = OkHttpClient().newBuilder()
         .readTimeout(configLogic.environmentConfig.readTimeoutSeconds, TimeUnit.SECONDS)
         .connectTimeout(configLogic.environmentConfig.connectTimeoutSeconds, TimeUnit.SECONDS)
         .addInterceptor(httpLoggingInterceptor)
-
-    if (configSecurityLogic.useNetworkLogger) {
-        client.addInterceptor(ChuckerInterceptor.Builder(context).build())
-    }
 
     return client.build()
 }
