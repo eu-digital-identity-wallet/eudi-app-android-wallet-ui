@@ -9,6 +9,7 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 
 * [Overview](#overview)
 * [Disclaimer](#disclaimer)
+* [Important things to know](#important-things-to-know)
 * [How to contribute](#how-to-contribute)
 * [Demo videos](#demo-videos)
 * [How to use the application](#how-to-use-the-application)
@@ -71,9 +72,20 @@ The released software is an initial development release version:
 -  The initial development release may contain errors or design flaws and other problems that could cause system or other failures and data loss.
 -  The initial development release has reduced security, privacy, availability, and reliability standards relative to future releases. This could make the software slower, less reliable, or more vulnerable to attacks than mature software.
 -  The initial development release is not yet comprehensively documented. 
--  Users of the software must perform sufficient engineering and additional testing in order to properly evaluate their application and determine whether any of the open-sourced components is suitable for use in that application.
+-  Users of the software must perform sufficient engineering and additional testing to properly evaluate their application and determine whether any of the open-sourced components are suitable for use in that application.
 -  We strongly recommend not putting this version of the software into production use.
 -  Only the latest version of the software will be supported
+
+## Important things to know
+
+The main purpose of the reference wallet implementation is to showcase the ecosystem and act as a technical example of how to integrate and use all of the available components.
+
+If you're planning to use it as a production application, we recommend reviewing the following steps:
+- Configure the application properly by following the guide here: https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/blob/main/wiki/configuration.md
+- Ensure the PIN storage configuration matches your security requirements or provide your own by following this guide: https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/blob/main/wiki/configuration.md#pin-storage-configuration
+- Ensure the application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
+    - https://mas.owasp.org/MASVS/
+    - https://developer.android.com/google/play/integrity
 
 ## How to contribute
 
