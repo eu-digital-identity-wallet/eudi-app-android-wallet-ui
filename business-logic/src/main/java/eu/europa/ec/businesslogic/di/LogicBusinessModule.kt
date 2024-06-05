@@ -18,22 +18,12 @@ package eu.europa.ec.businesslogic.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.ConfigLogicImpl
-import eu.europa.ec.businesslogic.config.ConfigSecurityLogic
-import eu.europa.ec.businesslogic.config.ConfigSecurityLogicImpl
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.controller.crypto.CryptoControllerImpl
 import eu.europa.ec.businesslogic.controller.crypto.KeystoreController
 import eu.europa.ec.businesslogic.controller.crypto.KeystoreControllerImpl
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.log.LogControllerImpl
-import eu.europa.ec.businesslogic.controller.security.AndroidPackageController
-import eu.europa.ec.businesslogic.controller.security.AndroidPackageControllerImpl
-import eu.europa.ec.businesslogic.controller.security.AntiHookController
-import eu.europa.ec.businesslogic.controller.security.AntiHookControllerImpl
-import eu.europa.ec.businesslogic.controller.security.RootController
-import eu.europa.ec.businesslogic.controller.security.RootControllerImpl
-import eu.europa.ec.businesslogic.controller.security.SecurityController
-import eu.europa.ec.businesslogic.controller.security.SecurityControllerImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.controller.storage.PrefKeysImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
@@ -52,10 +42,6 @@ class LogicBusinessModule
 
 @Single
 fun provideConfigLogic(): ConfigLogic = ConfigLogicImpl()
-
-@Single
-fun provideConfigSecurityLogic(configLogic: ConfigLogic): ConfigSecurityLogic =
-    ConfigSecurityLogicImpl(configLogic)
 
 @Single
 fun provideLogController(configLogic: ConfigLogic): LogController =
@@ -83,34 +69,3 @@ fun provideCryptoController(keystoreController: KeystoreController): CryptoContr
 @Factory
 fun provideFormValidator(logController: LogController): FormValidator =
     FormValidatorImpl(logController)
-
-@Factory
-fun provideAndroidPackageController(
-    resourceProvider: ResourceProvider,
-    logController: LogController
-): AndroidPackageController =
-    AndroidPackageControllerImpl(resourceProvider, logController)
-
-@Factory
-fun provideAntiHookController(logController: LogController): AntiHookController =
-    AntiHookControllerImpl(logController)
-
-@Factory
-fun provideRootController(resourceProvider: ResourceProvider): RootController =
-    RootControllerImpl(resourceProvider)
-
-@Factory
-fun provideSecurityController(
-    configLogic: ConfigLogic,
-    configSecurityLogic: ConfigSecurityLogic,
-    rootController: RootController,
-    antiHookController: AntiHookController,
-    androidPackageController: AndroidPackageController
-): SecurityController =
-    SecurityControllerImpl(
-        configLogic,
-        configSecurityLogic,
-        rootController,
-        antiHookController,
-        androidPackageController
-    )
