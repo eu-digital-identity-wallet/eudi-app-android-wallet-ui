@@ -42,7 +42,6 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
 
-  - Draft 12 issuer: ```https://issuer.eudiw.dev/oidc```
   - Draft 13 issuer: ```https://dev.issuer.eudiw.dev```
 
   - [OpenID4VCI PID and mDL Issuer (python)](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py)
