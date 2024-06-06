@@ -42,7 +42,7 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
 
-  - Draft 13 issuer: ```https://dev.issuer.eudiw.dev```
+  - [EUDI Issuer (Draft 13)](https://issuer.eudiw.dev/)
 
   - [OpenID4VCI PID and mDL Issuer (python)](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py)
  
@@ -136,7 +136,7 @@ Issuance flow (Credential Offer)
 
 1. Open the "Add document" screen or if it's the first time you open the app, you will be redirected there after you enter or set up your PIN.
 2. Tap "SCAN QR".
-3. Scan The QR Code from the issuer's website (e.g. https://dev.issuer.eudiw.dev/credential_offer_choice).
+3. Scan The QR Code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer_choice).
 4. Review the documents contained in the credential offer and tap "Issue".
 5. You will be shown a success screen. Tap "Continue".
 6. You are now on the "Dashboard" screen.
