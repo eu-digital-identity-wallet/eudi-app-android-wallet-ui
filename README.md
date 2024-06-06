@@ -52,11 +52,11 @@ Relying Party functionality:
  
 To support development and testing, one can access a test/demo service for remote presentation at:
 
-  - https://verifier.eudiw.dev. 
+  - [EUDI Verifier](https://verifier.eudiw.dev) 
 
   - [Web verifier source](https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
 
-  - [Verifier restful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt).
+  - [Verifier restful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
  
 To support proximity an Android Proximity Verifier is available as an app that can request PID and mDL with reader authentication available [here](https://install.appcenter.ms/orgs/eu-digital-identity-wallet/apps/mdoc-verifier-testing/distribution_groups/eudi%20verifier%20(testing)%20public)
 
@@ -136,7 +136,7 @@ Issuance flow (Credential Offer)
 
 1. Open the "Add document" screen or if it's the first time you open the app, you will be redirected there after you enter or set up your PIN.
 2. Tap "SCAN QR".
-3. Scan The QR Code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer_choice).
+3. Scan The QR Code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer_choice)
 4. Review the documents contained in the credential offer and tap "Issue".
 5. You will be shown a success screen. Tap "Continue".
 6. You are now on the "Dashboard" screen.
