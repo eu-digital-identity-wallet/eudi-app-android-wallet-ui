@@ -68,7 +68,13 @@ internal class WalletCoreConfigImpl(
                                 )
                             )
                         )
-                        withScheme(BuildConfig.OPENID4VP_SCHEME)
+                        withScheme(
+                            listOf(
+                                BuildConfig.OPENID4VP_SCHEME,
+                                BuildConfig.EUDI_OPENID4VP_SCHEME,
+                                BuildConfig.MDOC_OPENID4VP_SCHEME
+                            )
+                        )
                     }
                     .openId4VciConfig {
                         issuerUrl(issuerUrl = VCI_ISSUER_URL)
