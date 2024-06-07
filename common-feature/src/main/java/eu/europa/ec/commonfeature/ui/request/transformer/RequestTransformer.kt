@@ -70,7 +70,7 @@ object RequestTransformer {
             // Add document item.
             items += RequestDataUi.Document(
                 documentItemUi = DocumentItemUi(
-                    title = requestDocument.docType.toDocumentIdentifier()
+                    title = requestDocument.toDocumentIdentifier()
                         .toUiName(resourceProvider)
                 )
             )
@@ -98,7 +98,7 @@ object RequestTransformer {
                 }
 
                 if (
-                    getMandatoryFields(docType = requestDocument.docType.toDocumentIdentifier())
+                    getMandatoryFields(docType = requestDocument.toDocumentIdentifier())
                         .contains(docItem.elementIdentifier)
                 ) {
                     required.add(

@@ -109,7 +109,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -139,7 +138,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedMdlId,
-                documentType = mockedMdlCodeName
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -169,7 +167,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -197,7 +194,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -241,7 +237,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -286,7 +281,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -315,7 +309,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
             ).runFlowTest {
                 // Then
                 assertEquals(

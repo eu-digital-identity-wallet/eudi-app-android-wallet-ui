@@ -104,7 +104,7 @@ class SuccessViewModel(
                                             flowType
                                         ),
                                         "documentId" to document.id,
-                                        "nameSpace" to document.docType.toDocumentIdentifier().nameSpace,
+                                        "nameSpace" to document.toDocumentIdentifier().nameSpace,
                                     )
                                 )
                             )

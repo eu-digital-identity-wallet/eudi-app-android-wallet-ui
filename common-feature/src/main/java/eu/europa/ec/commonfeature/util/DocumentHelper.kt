@@ -35,7 +35,7 @@ fun extractValueFromDocumentOrEmpty(
     key: String
 ): String {
     return try {
-        val documentIdentifier = document.docType.toDocumentIdentifier()
+        val documentIdentifier = document.toDocumentIdentifier()
         val documentJsonObject =
             document.nameSpacedDataJSONObject.get(documentIdentifier.nameSpace) as? JSONObject
         return documentJsonObject?.getStringFromJsonOrEmpty(key) ?: ""

@@ -44,7 +44,6 @@ sealed class DocumentDetailsInteractorDeleteDocumentPartialState {
 interface DocumentDetailsInteractor {
     fun getDocumentDetails(
         documentId: String,
-        documentType: String,
     ): Flow<DocumentDetailsInteractorPartialState>
 
     fun deleteDocument(
@@ -63,7 +62,6 @@ class DocumentDetailsInteractorImpl(
 
     override fun getDocumentDetails(
         documentId: String,
-        documentType: String
     ): Flow<DocumentDetailsInteractorPartialState> =
         flow {
             val document = walletCoreDocumentsController.getDocumentById(id = documentId)
@@ -71,7 +69,6 @@ class DocumentDetailsInteractorImpl(
                 val itemUi = DocumentDetailsTransformer.transformToUiItem(
                     document = it,
                     resourceProvider = resourceProvider,
-                    docType = documentType
                 )
                 itemUi?.let { documentUi ->
                     emit(

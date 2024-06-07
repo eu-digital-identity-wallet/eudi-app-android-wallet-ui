@@ -16,6 +16,9 @@
 
 package eu.europa.ec.corelogic.model
 
+import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.eudi.wallet.document.Document
+
 sealed interface DocumentIdentifier {
     val nameSpace: String
     val docType: String
@@ -62,12 +65,43 @@ fun DocumentIdentifier.isSupported(): Boolean {
 }
 
 fun String.toDocumentIdentifier(): DocumentIdentifier = when (this) {
-    "eu.europa.ec.eudiw.pid.1" -> DocumentIdentifier.PID
-    "org.iso.18013.5.1.mDL" -> DocumentIdentifier.MDL
-    "load_sample_documents" -> DocumentIdentifier.SAMPLE
-    "eu.europa.ec.eudiw.pseudonym.age_over_18.1" -> DocumentIdentifier.AGE
+    DocumentIdentifier.PID.docType -> DocumentIdentifier.PID
+    DocumentIdentifier.MDL.docType -> DocumentIdentifier.MDL
+    DocumentIdentifier.SAMPLE.docType -> DocumentIdentifier.SAMPLE
     else -> DocumentIdentifier.OTHER(
         nameSpace = this,
         docType = this
     )
+}
+
+fun Document.toDocumentIdentifier(): DocumentIdentifier {
+    val nameSpace = this.nameSpaces.keys.first()
+    val docType = this.docType
+
+    return createDocumentIdentifier(nameSpace, docType)
+}
+
+fun RequestDocument.toDocumentIdentifier(): DocumentIdentifier {
+    val nameSpace = this.docRequest.requestItems.first().namespace
+    val docType = this.docType
+
+    return createDocumentIdentifier(nameSpace, docType)
+}
+
+private fun createDocumentIdentifier(nameSpace: String, docType: String): DocumentIdentifier {
+    return when {
+        nameSpace == DocumentIdentifier.PID.nameSpace
+                && docType == DocumentIdentifier.PID.docType -> DocumentIdentifier.PID
+
+        nameSpace == DocumentIdentifier.MDL.nameSpace
+                && docType == DocumentIdentifier.MDL.docType -> DocumentIdentifier.MDL
+
+        nameSpace == DocumentIdentifier.SAMPLE.nameSpace
+                && docType == DocumentIdentifier.SAMPLE.docType -> DocumentIdentifier.SAMPLE
+
+        else -> DocumentIdentifier.OTHER(
+            nameSpace = nameSpace,
+            docType = docType
+        )
+    }
 }

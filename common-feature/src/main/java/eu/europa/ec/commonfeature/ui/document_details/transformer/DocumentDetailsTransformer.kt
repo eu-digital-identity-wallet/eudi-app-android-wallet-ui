@@ -40,11 +40,13 @@ object DocumentDetailsTransformer {
     fun transformToUiItem(
         document: Document,
         resourceProvider: ResourceProvider,
-        docType: String,
     ): DocumentUi? {
 
+        val documentIdentifierUi = document.toDocumentIdentifier()
+
         // Get the JSON Object from EudiWallerCore.
-        val documentJson = (document.nameSpacedDataJSONObject[docType] as JSONObject)
+        val documentJson =
+            (document.nameSpacedDataJSONObject[documentIdentifierUi.nameSpace] as JSONObject)
 
         // Create a JSON Array with all its keys (i.e. given_name, family_name, etc.) keeping their original order.
         val documentKeysJsonArray = documentJson.names() ?: return null
@@ -69,8 +71,6 @@ object DocumentDetailsTransformer {
                     resourceProvider = resourceProvider
                 )
             }
-
-        val documentIdentifierUi = document.docType.toDocumentIdentifier()
 
         val documentImage = extractValueFromDocumentOrEmpty(
             document = document,
