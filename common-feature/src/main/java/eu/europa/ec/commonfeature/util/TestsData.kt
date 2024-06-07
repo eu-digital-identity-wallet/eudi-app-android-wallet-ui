@@ -78,11 +78,11 @@ object TestsData {
     const val mockedRequestElementIdentifierNotAvailable = "Not available"
 
     const val mockedPidDocType = "eu.europa.ec.eudiw.pid.1"
-    const val mockedPidCodeName = "eu.europa.ec.eudiw.pid.1"
+    const val mockedPidNameSpace = "eu.europa.ec.eudiw.pid.1"
     const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
+    const val mockedMdlNameSpace = "org.iso.18013.5.1"
     const val mockedAgeVerificationDocType = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
-    const val mockedAgeVerificationCodeName = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
-    const val mockedMdlCodeName = "org.iso.18013.5.1"
+    const val mockedAgeVerificationNameSpace = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
 
     val mockedValidReaderAuth = ReaderAuth(
         readerAuth = byteArrayOf(),
@@ -96,43 +96,43 @@ object TestsData {
         docType = mockedPidDocType,
         requestItems = listOf(
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "family_name"
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "given_name"
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "age_over_18"
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "age_over_65"
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "age_birth_year"
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "birth_city"
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "gender"
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "expiry_date"
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "portrait",
             ),
             DocItem(
-                namespace = mockedPidCodeName,
+                namespace = mockedPidNameSpace,
                 elementIdentifier = "issuing_country",
             ),
         ),
@@ -143,35 +143,35 @@ object TestsData {
         docType = mockedMdlDocType,
         requestItems = listOf(
             DocItem(
-                namespace = mockedMdlCodeName,
+                namespace = mockedMdlNameSpace,
                 elementIdentifier = "family_name"
             ),
             DocItem(
-                namespace = mockedMdlCodeName,
+                namespace = mockedMdlNameSpace,
                 elementIdentifier = "given_name"
             ),
             DocItem(
-                namespace = mockedMdlCodeName,
+                namespace = mockedMdlNameSpace,
                 elementIdentifier = "birth_place"
             ),
             DocItem(
-                namespace = mockedMdlCodeName,
+                namespace = mockedMdlNameSpace,
                 elementIdentifier = "expiry_date"
             ),
             DocItem(
-                namespace = mockedMdlCodeName,
+                namespace = mockedMdlNameSpace,
                 elementIdentifier = "portrait"
             ),
             DocItem(
-                namespace = mockedMdlCodeName,
+                namespace = mockedMdlNameSpace,
                 elementIdentifier = "driving_privileges"
             ),
             DocItem(
-                namespace = mockedMdlCodeName,
+                namespace = mockedMdlNameSpace,
                 elementIdentifier = "signature_usual_mark"
             ),
             DocItem(
-                namespace = mockedMdlCodeName,
+                namespace = mockedMdlNameSpace,
                 elementIdentifier = "sex"
             )
         ),
@@ -182,15 +182,15 @@ object TestsData {
         docType = mockedAgeVerificationDocType,
         requestItems = listOf(
             DocItem(
-                namespace = mockedAgeVerificationCodeName,
+                namespace = mockedAgeVerificationNameSpace,
                 elementIdentifier = "age_over_18"
             ),
             DocItem(
-                namespace = mockedAgeVerificationCodeName,
+                namespace = mockedAgeVerificationNameSpace,
                 elementIdentifier = "expiry_date"
             ),
             DocItem(
-                namespace = mockedAgeVerificationCodeName,
+                namespace = mockedAgeVerificationNameSpace,
                 elementIdentifier = "issuing_country",
             )
         ),
@@ -667,21 +667,21 @@ object TestsData {
 
         when (documentIdentifierUi) {
             is DocumentIdentifier.PID -> {
-                namespace = mockedPidCodeName
+                namespace = mockedPidNameSpace
                 docId = mockedPidId
                 docType = mockedPidDocType
                 docRequest = mockedPidWithBasicFieldsDocRequest
             }
 
             is DocumentIdentifier.MDL -> {
-                namespace = mockedMdlCodeName
+                namespace = mockedMdlNameSpace
                 docId = mockedMdlId
                 docType = mockedMdlDocType
                 docRequest = mockedMdlWithBasicFieldsDocRequest
             }
 
             is DocumentIdentifier.AGE -> {
-                namespace = mockedAgeVerificationCodeName
+                namespace = mockedAgeVerificationNameSpace
                 docId = mockedAgeVerificationId
                 docType = mockedAgeVerificationDocType
                 docRequest = mockedAgeVerificationWithBasicFieldsDocRequest

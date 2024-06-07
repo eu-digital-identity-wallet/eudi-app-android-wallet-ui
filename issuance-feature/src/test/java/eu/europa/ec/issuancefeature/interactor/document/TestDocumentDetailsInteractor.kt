@@ -33,13 +33,14 @@ import eu.europa.ec.testfeature.mockedEmptyPid
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedMdlCodeName
+import eu.europa.ec.testfeature.mockedMdlDocType
 import eu.europa.ec.testfeature.mockedMdlId
 import eu.europa.ec.testfeature.mockedMdlWithBasicFields
 import eu.europa.ec.testfeature.mockedOldestPidId
 import eu.europa.ec.testfeature.mockedOldestPidWithBasicFields
-import eu.europa.ec.testfeature.mockedPidCodeName
+import eu.europa.ec.testfeature.mockedPidDocType
 import eu.europa.ec.testfeature.mockedPidId
+import eu.europa.ec.testfeature.mockedPidNameSpace
 import eu.europa.ec.testfeature.mockedPidWithBasicFields
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -227,7 +228,7 @@ class TestDocumentDetailsInteractor {
             mockGetDocumentByIdCall(
                 response = mockedPidWithBasicFields.copy(
                     nameSpacedData = mapOf(
-                        mockedPidCodeName to mapOf(
+                        mockedPidNameSpace to mapOf(
                             "no_data_item" to byteArrayOf(0)
                         )
                     )
@@ -347,7 +348,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
+                documentType = mockedPidDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -379,7 +380,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
+                documentType = mockedPidDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -412,7 +413,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedOldestPidId,
-                documentType = mockedPidCodeName
+                documentType = mockedPidDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -426,7 +427,7 @@ class TestDocumentDetailsInteractor {
     // Case 4:
 
     // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.getAllDocuments(docType: DocumentType) returns more than 1 PIDs
+    // 2. walletCoreDocumentsController.getAllDocuments(docType: DocumentIdentifier) returns more than 1 PIDs
     //      AND the documentId we are about to delete is NOT the one of the oldest PID.
     // 3. walletCoreDocumentsController.deleteDocument() returns Success.
     @Test
@@ -445,7 +446,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
-                documentType = mockedPidCodeName
+                documentType = mockedPidDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -473,7 +474,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
-                documentType = mockedMdlCodeName
+                documentType = mockedMdlDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -499,7 +500,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
-                documentType = mockedMdlCodeName
+                documentType = mockedMdlDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -524,7 +525,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
-                documentType = mockedMdlCodeName
+                documentType = mockedMdlDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -551,7 +552,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
-                documentType = mockedMdlCodeName
+                documentType = mockedMdlDocType
             ).runFlowTest {
                 // Then
                 assertEquals(

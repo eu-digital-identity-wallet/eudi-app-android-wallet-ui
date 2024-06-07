@@ -646,9 +646,9 @@ val mockedMdlBasicFields: Map<String, ByteArray> = mapOf(
 )
 
 const val mockedPidDocType = "eu.europa.ec.eudiw.pid.1"
-const val mockedPidCodeName = "eu.europa.ec.eudiw.pid.1"
+const val mockedPidNameSpace = "eu.europa.ec.eudiw.pid.1"
 const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
-const val mockedMdlCodeName = "org.iso.18013.5.1"
+const val mockedMdlNameSpace = "org.iso.18013.5.1"
 
 val mockedFullPid = Document(
     id = mockedPidId,
@@ -658,13 +658,13 @@ val mockedFullPid = Document(
     createdAt = Instant.parse(mockedDocumentCreationDate),
     requiresUserAuth = false,
     nameSpacedData = mapOf(
-        mockedPidCodeName to mockedPidFields
+        mockedPidNameSpace to mockedPidFields
     )
 )
 
 val mockedPidWithBasicFields = mockedFullPid.copy(
     nameSpacedData = mapOf(
-        mockedPidCodeName to mockedPidBasicFields
+        mockedPidNameSpace to mockedPidBasicFields
     )
 )
 
@@ -675,7 +675,7 @@ val mockedOldestPidWithBasicFields = mockedPidWithBasicFields.copy(
 
 val mockedEmptyPid = mockedFullPid.copy(
     nameSpacedData = mapOf(
-        mockedPidCodeName to emptyMap()
+        mockedPidNameSpace to emptyMap()
     )
 )
 
@@ -687,19 +687,19 @@ val mockedFullMdl = Document(
     createdAt = Instant.parse(mockedDocumentCreationDate),
     requiresUserAuth = false,
     nameSpacedData = mapOf(
-        mockedMdlCodeName to mockedMdlFields
+        mockedMdlNameSpace to mockedMdlFields
     )
 )
 
 val mockedMdlWithBasicFields = mockedFullMdl.copy(
     nameSpacedData = mapOf(
-        mockedMdlCodeName to mockedMdlBasicFields
+        mockedMdlNameSpace to mockedMdlBasicFields
     )
 )
 
 val mockedMdlWithNoExpirationDate: Document = mockedFullMdl.copy(
     nameSpacedData = mapOf(
-        mockedMdlCodeName to
+        mockedMdlNameSpace to
                 mockedMdlFields
                     .minus("expiry_date")
     )
@@ -707,7 +707,7 @@ val mockedMdlWithNoExpirationDate: Document = mockedFullMdl.copy(
 
 val mockedMdlWithNoUserNameAndNoUserImage: Document = mockedFullMdl.copy(
     nameSpacedData = mapOf(
-        mockedMdlCodeName to
+        mockedMdlNameSpace to
                 mockedMdlFields
                     .minus("given_name")
                     .minus("portrait")

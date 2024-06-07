@@ -22,6 +22,7 @@ import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetail
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -48,7 +49,7 @@ interface DocumentDetailsInteractor {
 
     fun deleteDocument(
         documentId: String,
-        documentType: String
+        documentType: DocType
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState>
 }
 
@@ -86,7 +87,7 @@ class DocumentDetailsInteractorImpl(
 
     override fun deleteDocument(
         documentId: String,
-        documentType: String
+        documentType: DocType
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState> =
         flow {
 
