@@ -22,6 +22,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
+import eu.europa.ec.commonfeature.util.TestsData.mockedAgeOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidOptionItemUi
@@ -128,6 +129,9 @@ class TestAddDocumentInteractor {
                             mockedMdlOptionItemUi.copy(
                                 available = false
                             ),
+                            mockedAgeOptionItemUi.copy(
+                                available = false
+                            ),
                             mockedSampleDataOptionItemUi
                         )
                     ),
@@ -160,7 +164,8 @@ class TestAddDocumentInteractor {
                     AddDocumentInteractorPartialState.Success(
                         options = listOf(
                             mockedPidOptionItemUi,
-                            mockedMdlOptionItemUi
+                            mockedMdlOptionItemUi,
+                            mockedAgeOptionItemUi
                         )
                     ),
                     awaitItem()
