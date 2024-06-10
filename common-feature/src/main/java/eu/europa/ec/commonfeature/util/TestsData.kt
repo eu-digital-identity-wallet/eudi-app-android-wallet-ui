@@ -617,7 +617,7 @@ object TestsData {
     ): RequestDataUi.OptionalField<Event> {
         val uniqueId = mockedAgeVerificationDocType + elementIdentifier + docId
         return mockCreateOptionalField(
-            documentIdentifierUi = DocumentIdentifier.MDL,
+            documentIdentifierUi = DocumentIdentifier.AGE,
             uniqueId = uniqueId,
             elementIdentifier = elementIdentifier,
             value = value,
