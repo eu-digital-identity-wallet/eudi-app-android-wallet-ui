@@ -41,6 +41,13 @@ sealed interface DocumentIdentifier {
             get() = "load_sample_documents"
     }
 
+    data object AGE : DocumentIdentifier {
+        override val nameSpace: String
+            get() = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
+        override val docType: String
+            get() = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
+    }
+
     data class OTHER(
         override val nameSpace: String,
         override val docType: String,
@@ -49,7 +56,7 @@ sealed interface DocumentIdentifier {
 
 fun DocumentIdentifier.isSupported(): Boolean {
     return when (this) {
-        is DocumentIdentifier.PID, DocumentIdentifier.MDL -> true
+        is DocumentIdentifier.PID, DocumentIdentifier.MDL, DocumentIdentifier.AGE -> true
         is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> false
     }
 }
@@ -58,6 +65,7 @@ fun String.toDocumentIdentifier(): DocumentIdentifier = when (this) {
     "eu.europa.ec.eudiw.pid.1" -> DocumentIdentifier.PID
     "org.iso.18013.5.1.mDL" -> DocumentIdentifier.MDL
     "load_sample_documents" -> DocumentIdentifier.SAMPLE
+    "eu.europa.ec.eudiw.pseudonym.age_over_18.1" -> DocumentIdentifier.AGE
     else -> DocumentIdentifier.OTHER(
         nameSpace = this,
         docType = this

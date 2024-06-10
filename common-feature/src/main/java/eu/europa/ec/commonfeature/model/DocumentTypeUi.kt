@@ -36,6 +36,7 @@ fun DocumentIdentifier.toUiName(resourceProvider: ResourceProvider): String {
     return when (this) {
         is DocumentIdentifier.PID -> resourceProvider.getString(R.string.pid)
         is DocumentIdentifier.MDL -> resourceProvider.getString(R.string.mdl)
+        is DocumentIdentifier.AGE -> resourceProvider.getString(R.string.age_verification)
         is DocumentIdentifier.SAMPLE -> resourceProvider.getString(R.string.load_sample_data)
         is DocumentIdentifier.OTHER -> docType
     }

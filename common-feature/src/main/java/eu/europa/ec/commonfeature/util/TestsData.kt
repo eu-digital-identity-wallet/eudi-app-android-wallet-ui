@@ -60,10 +60,12 @@ object TestsData {
     const val mockedMdlDocName = "mDL"
     const val mockedPidId = "000001"
     const val mockedMdlId = "000002"
+    const val mockedAgeVerificationId = "000003"
     const val mockedUserFirstName = "JAN"
     const val mockedUserBase64Portrait = "SE"
     const val mockedDocUiNamePid = "National ID"
     const val mockedDocUiNameMdl = "Driving License"
+    const val mockedDocUiNameAge = "Age Verification"
     const val mockedDocUiNameSampleData = "Load Sample Documents"
     const val mockedNoUserFistNameFound = ""
     const val mockedNoUserBase64PortraitFound = ""
@@ -78,6 +80,8 @@ object TestsData {
     const val mockedPidDocType = "eu.europa.ec.eudiw.pid.1"
     const val mockedPidCodeName = "eu.europa.ec.eudiw.pid.1"
     const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
+    const val mockedAgeVerificationDocType = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
+    const val mockedAgeVerificationCodeName = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
     const val mockedMdlCodeName = "org.iso.18013.5.1"
 
     val mockedValidReaderAuth = ReaderAuth(
@@ -169,6 +173,25 @@ object TestsData {
             DocItem(
                 namespace = mockedMdlCodeName,
                 elementIdentifier = "sex"
+            )
+        ),
+        readerAuth = mockedValidReaderAuth
+    )
+
+    val mockedAgeVerificationWithBasicFieldsDocRequest = DocRequest(
+        docType = mockedAgeVerificationDocType,
+        requestItems = listOf(
+            DocItem(
+                namespace = mockedAgeVerificationCodeName,
+                elementIdentifier = "age_over_18"
+            ),
+            DocItem(
+                namespace = mockedAgeVerificationCodeName,
+                elementIdentifier = "expiry_date"
+            ),
+            DocItem(
+                namespace = mockedAgeVerificationCodeName,
+                elementIdentifier = "issuing_country",
             )
         ),
         readerAuth = mockedValidReaderAuth
@@ -364,6 +387,13 @@ object TestsData {
         available = true
     )
 
+    val mockedAgeOptionItemUi = DocumentOptionItemUi(
+        text = mockedDocUiNameAge,
+        icon = AppIcons.Id,
+        type = DocumentIdentifier.AGE,
+        available = true
+    )
+
     val mockedSampleDataOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNameSampleData,
         icon = AppIcons.Id,
@@ -497,6 +527,12 @@ object TestsData {
                         value = testFieldUi.value,
                     )
 
+                    is DocumentIdentifier.AGE -> mockCreateOptionalFieldForAgeVerification(
+                        docId = transformedRequestDataUi.documentId,
+                        elementIdentifier = testFieldUi.elementIdentifier,
+                        value = testFieldUi.value,
+                    )
+
                     is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
                 }
 
@@ -572,6 +608,25 @@ object TestsData {
         )
     }
 
+    private fun mockCreateOptionalFieldForAgeVerification(
+        docId: String,
+        elementIdentifier: String,
+        value: String,
+        checked: Boolean = true,
+        enabled: Boolean = true,
+    ): RequestDataUi.OptionalField<Event> {
+        val uniqueId = mockedAgeVerificationDocType + elementIdentifier + docId
+        return mockCreateOptionalField(
+            documentIdentifierUi = DocumentIdentifier.MDL,
+            uniqueId = uniqueId,
+            elementIdentifier = elementIdentifier,
+            value = value,
+            checked = checked,
+            enabled = enabled,
+            event = Event.UserIdentificationClicked(itemId = uniqueId)
+        )
+    }
+
     private fun mockCreateOptionalField(
         documentIdentifierUi: DocumentIdentifier,
         uniqueId: String,
@@ -623,6 +678,13 @@ object TestsData {
                 docId = mockedMdlId
                 docType = mockedMdlDocType
                 docRequest = mockedMdlWithBasicFieldsDocRequest
+            }
+
+            is DocumentIdentifier.AGE -> {
+                namespace = mockedAgeVerificationCodeName
+                docId = mockedAgeVerificationId
+                docType = mockedAgeVerificationDocType
+                docRequest = mockedAgeVerificationWithBasicFieldsDocRequest
             }
 
             is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException

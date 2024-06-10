@@ -63,6 +63,7 @@
     <!-- Document Types -->
     <string name="pid">National ID</string>
     <string name="mdl">Driving License</string>
+    <string name="age_verification">Age Verification</string>
     <string name="load_sample_data">Load Sample Documents</string>
 
     <!-- Biometric prompt -->
@@ -166,6 +167,7 @@
     <!-- Document Details -->
     <string name="document_details_portrait_readable_identifier">Shown above</string>
     <string name="vehicle_category_code">Vehicle category code</string>
+    <string name="user_pseudonym">User Pseudonym</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
 

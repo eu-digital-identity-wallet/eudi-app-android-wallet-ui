@@ -80,7 +80,13 @@ class AddDocumentInteractorImpl(
                     text = DocumentIdentifier.MDL.toUiName(resourceProvider),
                     icon = AppIcons.Id,
                     type = DocumentIdentifier.MDL,
-                    available = canCreateMdl(flowType)
+                    available = canCreateExtraDocument(flowType)
+                ),
+                DocumentOptionItemUi(
+                    text = DocumentIdentifier.AGE.toUiName(resourceProvider),
+                    icon = AppIcons.Id,
+                    type = DocumentIdentifier.AGE,
+                    available = canCreateExtraDocument(flowType)
                 )
             )
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
@@ -147,6 +153,6 @@ class AddDocumentInteractorImpl(
         }
     }
 
-    private fun canCreateMdl(flowType: IssuanceFlowUiConfig): Boolean =
+    private fun canCreateExtraDocument(flowType: IssuanceFlowUiConfig): Boolean =
         flowType != IssuanceFlowUiConfig.NO_DOCUMENT
 }
