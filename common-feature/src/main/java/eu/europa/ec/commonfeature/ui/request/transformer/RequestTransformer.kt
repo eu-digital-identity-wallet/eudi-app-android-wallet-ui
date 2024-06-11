@@ -39,7 +39,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.json.JSONObject
 
-private fun getMandatoryFields(docType: DocumentIdentifier): List<String> = when (docType) {
+private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> = when (documentIdentifier) {
 
     DocumentIdentifier.PID -> listOf(
         "issuance_date",
@@ -70,7 +70,7 @@ object RequestTransformer {
             // Add document item.
             items += RequestDataUi.Document(
                 documentItemUi = DocumentItemUi(
-                    title = requestDocument.docType.toDocumentIdentifier()
+                    title = requestDocument.toDocumentIdentifier()
                         .toUiName(resourceProvider)
                 )
             )
@@ -86,7 +86,7 @@ object RequestTransformer {
                     val values = StringBuilder()
                     parseKeyValueUi(
                         json = storageDocument.nameSpacedDataJSONObject.getDocObject(
-                            requestDocument.docType.toDocumentIdentifier().nameSpace
+                            nameSpace = requestDocument.toDocumentIdentifier().nameSpace
                         )[docItem.elementIdentifier],
                         groupIdentifier = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
@@ -98,7 +98,7 @@ object RequestTransformer {
                 }
 
                 if (
-                    getMandatoryFields(docType = requestDocument.docType.toDocumentIdentifier())
+                    getMandatoryFields(documentIdentifier = requestDocument.toDocumentIdentifier())
                         .contains(docItem.elementIdentifier)
                 ) {
                     required.add(
@@ -217,6 +217,6 @@ object RequestTransformer {
         )
     }
 
-    private fun JSONObject.getDocObject(docType: String): JSONObject =
-        this[docType] as JSONObject
+    private fun JSONObject.getDocObject(nameSpace: String): JSONObject =
+        this[nameSpace] as JSONObject
 }

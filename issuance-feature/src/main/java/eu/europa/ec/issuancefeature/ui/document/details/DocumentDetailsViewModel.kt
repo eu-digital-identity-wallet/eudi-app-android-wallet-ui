@@ -157,7 +157,6 @@ class DocumentDetailsViewModel(
         viewModelScope.launch {
             documentDetailsInteractor.getDocumentDetails(
                 documentId = documentId,
-                documentType = documentType
             ).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
