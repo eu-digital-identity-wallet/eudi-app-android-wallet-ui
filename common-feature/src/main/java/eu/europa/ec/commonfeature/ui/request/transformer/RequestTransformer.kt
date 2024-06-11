@@ -53,6 +53,13 @@ private fun getMandatoryFields(docType: DocumentIdentifier): List<String> = when
         "portrait_capture_date"
     )
 
+    DocumentIdentifier.AGE -> listOf(
+        "issuance_date",
+        "expiry_date",
+        "issuing_country",
+        "issuing_authority",
+    )
+
     else -> emptyList()
 }
 
