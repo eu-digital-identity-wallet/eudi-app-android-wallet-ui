@@ -53,6 +53,13 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
         "portrait_capture_date"
     )
 
+    DocumentIdentifier.AGE -> listOf(
+        "issuance_date",
+        "expiry_date",
+        "issuing_country",
+        "issuing_authority",
+    )
+
     else -> emptyList()
 }
 
