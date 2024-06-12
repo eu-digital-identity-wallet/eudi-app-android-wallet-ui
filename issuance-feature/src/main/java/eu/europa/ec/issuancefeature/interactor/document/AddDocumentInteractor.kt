@@ -29,6 +29,7 @@ import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -47,7 +48,7 @@ interface AddDocumentInteractor {
 
     fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: String
+        documentType: DocType
     ): Flow<IssueDocumentPartialState>
 
     fun addSampleData(): Flow<AddSampleDataPartialState>
@@ -113,7 +114,7 @@ class AddDocumentInteractorImpl(
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: String
+        documentType: DocType
     ): Flow<IssueDocumentPartialState> =
         walletCoreDocumentsController.issueDocument(
             issuanceMethod = issuanceMethod,

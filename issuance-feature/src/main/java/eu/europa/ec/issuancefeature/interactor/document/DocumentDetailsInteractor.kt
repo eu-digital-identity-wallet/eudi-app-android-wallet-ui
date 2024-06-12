@@ -95,7 +95,7 @@ class DocumentDetailsInteractorImpl(
                 if (documentType.toDocumentIdentifier() == DocumentIdentifier.PID) {
 
                     val allPidDocuments =
-                        walletCoreDocumentsController.getAllDocumentsByType(docType = DocumentIdentifier.PID)
+                        walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)
 
                     if (allPidDocuments.count() > 1) {
                         walletCoreDocumentsController.getMainPidDocument()?.id == documentId

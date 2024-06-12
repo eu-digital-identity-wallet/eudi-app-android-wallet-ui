@@ -19,6 +19,7 @@ package eu.europa.ec.issuancefeature.ui.document.details
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
@@ -92,7 +93,7 @@ class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
     @InjectedParam private val detailsType: IssuanceFlowUiConfig,
     @InjectedParam private val documentId: String,
-    @InjectedParam private val documentType: String,
+    @InjectedParam private val documentType: DocType,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
         detailsType = detailsType,

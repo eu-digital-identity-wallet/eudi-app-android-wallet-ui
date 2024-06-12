@@ -27,6 +27,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -75,7 +76,7 @@ sealed class Event : ViewEvent {
     data object Pop : Event()
     data class NavigateToDocument(
         val documentId: String,
-        val documentType: String,
+        val documentType: DocType,
     ) : Event()
 
     data object OptionsPressed : Event()

@@ -28,6 +28,7 @@ import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
+import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
@@ -75,7 +76,7 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
     data class IssueDocument(
         val issuanceMethod: IssuanceMethod,
-        val documentType: String,
+        val documentType: DocType,
         val context: Context
     ) : Event()
 
@@ -194,7 +195,7 @@ class AddDocumentViewModel(
 
     private fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        docType: String,
+        docType: DocType,
         context: Context
     ) {
         viewModelScope.launch {

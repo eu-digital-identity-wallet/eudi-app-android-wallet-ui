@@ -27,6 +27,7 @@ import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
+import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.DocRequest
@@ -662,7 +663,7 @@ object TestsData {
     ): RequestDocumentItemUi<Event> {
         val namespace: String
         val docId: String
-        val docType: String
+        val docType: DocType
         val docRequest: DocRequest
 
         when (documentIdentifierUi) {

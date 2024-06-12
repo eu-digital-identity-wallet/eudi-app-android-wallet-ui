@@ -19,8 +19,8 @@ package eu.europa.ec.corelogic.controller
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
@@ -112,7 +112,7 @@ interface WalletCoreDocumentsController {
      * */
     fun getAllDocuments(): List<Document>
 
-    fun getAllDocumentsByType(docType: DocumentIdentifier): List<Document>
+    fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<Document>
 
     fun getDocumentById(id: String): Document?
 
@@ -120,7 +120,7 @@ interface WalletCoreDocumentsController {
 
     fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: String
+        documentType: DocType
     ): Flow<IssueDocumentPartialState>
 
     fun issueDocumentsByOfferUri(
@@ -176,20 +176,20 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun getAllDocuments(): List<Document> = eudiWallet.getDocuments()
 
-    override fun getAllDocumentsByType(docType: DocumentIdentifier): List<Document> =
-        getAllDocuments().filter { it.docType.toDocumentIdentifier() == docType }
+    override fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<Document> =
+        getAllDocuments().filter { it.docType == documentIdentifier.docType }
 
     override fun getDocumentById(id: String): Document? {
         return eudiWallet.getDocumentById(documentId = id)
     }
 
     override fun getMainPidDocument(): Document? =
-        getAllDocumentsByType(docType = DocumentIdentifier.PID)
+        getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)
             .minByOrNull { it.createdAt }
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: String
+        documentType: DocType
     ): Flow<IssueDocumentPartialState> = flow {
         when (issuanceMethod) {
 
@@ -358,7 +358,7 @@ class WalletCoreDocumentsControllerImpl(
             )
         }
 
-    private fun issueDocumentWithOpenId4VCI(documentType: String): Flow<IssueDocumentsPartialState> =
+    private fun issueDocumentWithOpenId4VCI(documentType: DocType): Flow<IssueDocumentsPartialState> =
         callbackFlow {
 
             eudiWallet.issueDocumentByDocType(
