@@ -14,9 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.config.LibraryModule
-import eu.europa.ec.euidi.kover.KoverExclusionRules
-import eu.europa.ec.euidi.kover.excludeFromKoverReport
+import project.build.convention.config.LibraryModule
+import project.build.convention.kover.KoverExclusionRules
+import project.build.convention.kover.excludeFromKoverReport
 
 plugins {
     id("project.android.library")

@@ -15,8 +15,8 @@
  */
 
 import com.android.build.api.dsl.ApplicationExtension
-import eu.europa.ec.euidi.configureFlavors
-import eu.europa.ec.euidi.getProperty
+import project.build.convention.configureFlavors
+import project.build.convention.getProperty
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure

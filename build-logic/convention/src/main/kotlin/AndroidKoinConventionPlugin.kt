@@ -17,7 +17,7 @@
 import com.android.build.api.dsl.AndroidSourceSet
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.LibraryExtension
-import eu.europa.ec.euidi.libs
+import project.build.convention.libs
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project

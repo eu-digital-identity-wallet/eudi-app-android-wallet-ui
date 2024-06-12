@@ -15,8 +15,8 @@
  */
 
 import com.android.build.gradle.LibraryExtension
-import eu.europa.ec.euidi.config.LibraryModule
-import eu.europa.ec.euidi.configureGradleManagedDevices
+import project.build.convention.config.LibraryModule
+import project.build.convention.configureGradleManagedDevices
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure

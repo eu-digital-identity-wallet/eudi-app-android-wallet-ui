@@ -16,11 +16,11 @@
 import androidx.baselineprofile.gradle.producer.BaselineProfileProducerExtension
 import com.android.build.api.variant.TestAndroidComponentsExtension
 import com.android.build.gradle.TestExtension
-import eu.europa.ec.euidi.configureFlavors
-import eu.europa.ec.euidi.configureGradleManagedDevices
-import eu.europa.ec.euidi.configureKotlinAndroid
-import eu.europa.ec.euidi.getProperty
-import eu.europa.ec.euidi.libs
+import project.build.convention.configureFlavors
+import project.build.convention.configureGradleManagedDevices
+import project.build.convention.configureKotlinAndroid
+import project.build.convention.getProperty
+import project.build.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure

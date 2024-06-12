@@ -14,24 +14,24 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.config.LibraryModule.AnalyticsLogic
-import eu.europa.ec.euidi.config.LibraryModule.AssemblyLogic
-import eu.europa.ec.euidi.config.LibraryModule.AuthenticationLogic
-import eu.europa.ec.euidi.config.LibraryModule.BusinessLogic
-import eu.europa.ec.euidi.config.LibraryModule.CommonFeature
-import eu.europa.ec.euidi.config.LibraryModule.DashboardFeature
-import eu.europa.ec.euidi.config.LibraryModule.IssuanceFeature
-import eu.europa.ec.euidi.config.LibraryModule.LoginFeature
-import eu.europa.ec.euidi.config.LibraryModule.NetworkLogic
-import eu.europa.ec.euidi.config.LibraryModule.PresentationFeature
-import eu.europa.ec.euidi.config.LibraryModule.ProximityFeature
-import eu.europa.ec.euidi.config.LibraryModule.ResourcesLogic
-import eu.europa.ec.euidi.config.LibraryModule.StartupFeature
-import eu.europa.ec.euidi.config.LibraryModule.UiLogic
-import eu.europa.ec.euidi.config.LibraryModule.CoreLogic
-import eu.europa.ec.euidi.kover.KoverExclusionRules
-import eu.europa.ec.euidi.kover.excludeFromKoverReport
-import eu.europa.ec.euidi.kover.koverModules
+import project.build.convention.config.LibraryModule.AnalyticsLogic
+import project.build.convention.config.LibraryModule.AssemblyLogic
+import project.build.convention.config.LibraryModule.AuthenticationLogic
+import project.build.convention.config.LibraryModule.BusinessLogic
+import project.build.convention.config.LibraryModule.CommonFeature
+import project.build.convention.config.LibraryModule.DashboardFeature
+import project.build.convention.config.LibraryModule.IssuanceFeature
+import project.build.convention.config.LibraryModule.LoginFeature
+import project.build.convention.config.LibraryModule.NetworkLogic
+import project.build.convention.config.LibraryModule.PresentationFeature
+import project.build.convention.config.LibraryModule.ProximityFeature
+import project.build.convention.config.LibraryModule.ResourcesLogic
+import project.build.convention.config.LibraryModule.StartupFeature
+import project.build.convention.config.LibraryModule.UiLogic
+import project.build.convention.config.LibraryModule.CoreLogic
+import project.build.convention.kover.KoverExclusionRules
+import project.build.convention.kover.excludeFromKoverReport
+import project.build.convention.kover.koverModules
 
 plugins {
     id("project.android.library")

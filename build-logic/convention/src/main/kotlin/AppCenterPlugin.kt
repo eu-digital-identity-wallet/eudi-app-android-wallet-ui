@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.libs
+import project.build.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies

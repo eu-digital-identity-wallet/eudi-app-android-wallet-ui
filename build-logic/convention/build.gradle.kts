@@ -20,7 +20,7 @@ plugins {
     `kotlin-dsl`
 }
 
-group = "eu.europa.ec.euidi.buildlogic"
+group = "project.build.convention.buildlogic"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

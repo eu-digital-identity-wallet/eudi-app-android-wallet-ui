@@ -15,7 +15,7 @@
  */
 
 import com.android.build.gradle.LibraryExtension
-import eu.europa.ec.euidi.configureAndroidCompose
+import project.build.convention.configureAndroidCompose
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.getByType

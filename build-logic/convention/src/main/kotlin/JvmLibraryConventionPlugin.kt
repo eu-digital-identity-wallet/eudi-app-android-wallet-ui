@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.configureKotlinJvm
+import project.build.convention.configureKotlinJvm
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 

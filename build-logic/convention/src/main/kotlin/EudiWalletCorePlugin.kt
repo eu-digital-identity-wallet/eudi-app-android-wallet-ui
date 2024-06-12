@@ -14,10 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
+import project.build.convention.libs
 
 class EudiWalletCorePlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -28,7 +28,6 @@ class EudiWalletCorePlugin : Plugin<Project> {
 
             dependencies {
                 add("api", libs.findLibrary("eudi.wallet.core").get())
-                add("implementation", libs.findLibrary("cbor-tree").get())
             }
         }
     }

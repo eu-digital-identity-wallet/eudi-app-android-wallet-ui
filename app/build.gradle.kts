@@ -14,9 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.AppBuildType
-import eu.europa.ec.euidi.config.LibraryModule
-import eu.europa.ec.euidi.getProperty
+import project.build.convention.AppBuildType
+import project.build.convention.config.LibraryModule
+import project.build.convention.getProperty
 
 plugins {
     id("project.android.application")

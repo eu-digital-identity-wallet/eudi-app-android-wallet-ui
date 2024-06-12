@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.getProperty
+import project.build.convention.getProperty
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure

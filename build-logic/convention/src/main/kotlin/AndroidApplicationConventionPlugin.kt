@@ -16,10 +16,10 @@
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import eu.europa.ec.euidi.configureGradleManagedDevices
-import eu.europa.ec.euidi.configureKotlinAndroid
-import eu.europa.ec.euidi.configurePrintApksTask
-import eu.europa.ec.euidi.libs
+import project.build.convention.configureGradleManagedDevices
+import project.build.convention.configureKotlinAndroid
+import project.build.convention.configurePrintApksTask
+import project.build.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
