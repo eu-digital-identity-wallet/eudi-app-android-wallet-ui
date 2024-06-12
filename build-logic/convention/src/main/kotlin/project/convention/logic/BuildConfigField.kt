@@ -14,18 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import project.convention.logic.configureKotlinJvm
+package project.convention.logic
 
-class JvmLibraryConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        with(target) {
-            with(pluginManager) {
-                apply("org.jetbrains.kotlin.jvm")
-                apply("project.android.lint")
-            }
-            configureKotlinJvm()
-        }
-    }
+import com.android.build.api.dsl.VariantDimension
+
+@Suppress("IMPLICIT_CAST_TO_ANY")
+inline fun <reified ValueT> VariantDimension.addConfigField(
+    name: String,
+    value: ValueT
+) {
+    val resolvedValue = when (value) {
+        is String -> "\"$value\""
+        else -> value
+    }.toString()
+    buildConfigField(ValueT::class.java.simpleName, name, resolvedValue)
 }

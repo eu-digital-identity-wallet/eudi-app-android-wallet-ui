@@ -17,21 +17,21 @@
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryExtension
 import com.google.android.libraries.mapsplatform.secrets_gradle_plugin.SecretsPluginExtension
-import project.build.convention.addConfigField
-import project.build.convention.config.LibraryModule
-import project.build.convention.config.LibraryPluginConfig
-import project.build.convention.configureFlavors
-import project.build.convention.configureGradleManagedDevices
-import project.build.convention.configureKotlinAndroid
-import project.build.convention.configurePrintApksTask
-import project.build.convention.disableUnnecessaryAndroidTests
-import project.build.convention.getProperty
-import project.build.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.addConfigField
+import project.convention.logic.config.LibraryModule
+import project.convention.logic.config.LibraryPluginConfig
+import project.convention.logic.configureFlavors
+import project.convention.logic.configureGradleManagedDevices
+import project.convention.logic.configureKotlinAndroid
+import project.convention.logic.configurePrintApksTask
+import project.convention.logic.disableUnnecessaryAndroidTests
+import project.convention.logic.getProperty
+import project.convention.logic.libs
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {

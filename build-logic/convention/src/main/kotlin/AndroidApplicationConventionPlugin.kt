@@ -16,14 +16,14 @@
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import project.build.convention.configureGradleManagedDevices
-import project.build.convention.configureKotlinAndroid
-import project.build.convention.configurePrintApksTask
-import project.build.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.configureGradleManagedDevices
+import project.convention.logic.configureKotlinAndroid
+import project.convention.logic.configurePrintApksTask
+import project.convention.logic.libs
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {

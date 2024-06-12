@@ -14,9 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-import project.build.convention.AppBuildType
-import project.build.convention.config.LibraryModule
-import project.build.convention.getProperty
+import project.convention.logic.AppBuildType
+import project.convention.logic.config.LibraryModule
+import project.convention.logic.getProperty
 
 plugins {
     id("project.android.application")

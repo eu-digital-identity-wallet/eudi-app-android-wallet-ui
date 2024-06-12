@@ -15,12 +15,12 @@
  */
 
 import com.android.build.gradle.LibraryExtension
-import project.build.convention.config.LibraryModule
-import project.build.convention.configureGradleManagedDevices
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.config.LibraryModule
+import project.convention.logic.configureGradleManagedDevices
 
 class AndroidFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {

@@ -14,18 +14,19 @@
  * governing permissions and limitations under the Licence.
  */
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import project.convention.logic.configureKotlinJvm
+package project.convention.logic
 
-class JvmLibraryConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        with(target) {
-            with(pluginManager) {
-                apply("org.jetbrains.kotlin.jvm")
-                apply("project.android.lint")
-            }
-            configureKotlinJvm()
+import org.gradle.api.Project
+import java.util.Properties
+
+@Suppress("UNCHECKED_CAST")
+fun <T> Project.getProperty(key: String, fileName: String = "local.properties"): T? {
+    return try {
+        val properties = Properties().apply {
+            load(rootProject.file(fileName).reader())
         }
+        properties[key] as? T
+    } catch (_: Exception) {
+        null
     }
 }

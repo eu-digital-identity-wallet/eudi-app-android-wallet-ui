@@ -14,18 +14,22 @@
  * governing permissions and limitations under the Licence.
  */
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import project.convention.logic.configureKotlinJvm
+package project.convention.logic.kover
 
-class JvmLibraryConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        with(target) {
-            with(pluginManager) {
-                apply("org.jetbrains.kotlin.jvm")
-                apply("project.android.lint")
+import kotlinx.kover.gradle.plugin.dsl.KoverReportExtension
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
+
+fun Project.excludeFromKoverReport(
+    excludedClasses: List<String>,
+    excludedPackages: List<String>,
+) {
+    configure<KoverReportExtension> {
+        filters {
+            excludes {
+                classes(excludedClasses)
+                packages(excludedPackages)
             }
-            configureKotlinJvm()
         }
     }
 }

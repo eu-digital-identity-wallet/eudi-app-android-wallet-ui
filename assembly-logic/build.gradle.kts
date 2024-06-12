@@ -14,24 +14,24 @@
  * governing permissions and limitations under the Licence.
  */
 
-import project.build.convention.config.LibraryModule.AnalyticsLogic
-import project.build.convention.config.LibraryModule.AssemblyLogic
-import project.build.convention.config.LibraryModule.AuthenticationLogic
-import project.build.convention.config.LibraryModule.BusinessLogic
-import project.build.convention.config.LibraryModule.CommonFeature
-import project.build.convention.config.LibraryModule.DashboardFeature
-import project.build.convention.config.LibraryModule.IssuanceFeature
-import project.build.convention.config.LibraryModule.LoginFeature
-import project.build.convention.config.LibraryModule.NetworkLogic
-import project.build.convention.config.LibraryModule.PresentationFeature
-import project.build.convention.config.LibraryModule.ProximityFeature
-import project.build.convention.config.LibraryModule.ResourcesLogic
-import project.build.convention.config.LibraryModule.StartupFeature
-import project.build.convention.config.LibraryModule.UiLogic
-import project.build.convention.config.LibraryModule.CoreLogic
-import project.build.convention.kover.KoverExclusionRules
-import project.build.convention.kover.excludeFromKoverReport
-import project.build.convention.kover.koverModules
+import project.convention.logic.config.LibraryModule.AnalyticsLogic
+import project.convention.logic.config.LibraryModule.AssemblyLogic
+import project.convention.logic.config.LibraryModule.AuthenticationLogic
+import project.convention.logic.config.LibraryModule.BusinessLogic
+import project.convention.logic.config.LibraryModule.CommonFeature
+import project.convention.logic.config.LibraryModule.CoreLogic
+import project.convention.logic.config.LibraryModule.DashboardFeature
+import project.convention.logic.config.LibraryModule.IssuanceFeature
+import project.convention.logic.config.LibraryModule.LoginFeature
+import project.convention.logic.config.LibraryModule.NetworkLogic
+import project.convention.logic.config.LibraryModule.PresentationFeature
+import project.convention.logic.config.LibraryModule.ProximityFeature
+import project.convention.logic.config.LibraryModule.ResourcesLogic
+import project.convention.logic.config.LibraryModule.StartupFeature
+import project.convention.logic.config.LibraryModule.UiLogic
+import project.convention.logic.kover.KoverExclusionRules
+import project.convention.logic.kover.excludeFromKoverReport
+import project.convention.logic.kover.koverModules
 
 plugins {
     id("project.android.library")

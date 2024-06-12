@@ -16,15 +16,15 @@
 import androidx.baselineprofile.gradle.producer.BaselineProfileProducerExtension
 import com.android.build.api.variant.TestAndroidComponentsExtension
 import com.android.build.gradle.TestExtension
-import project.build.convention.configureFlavors
-import project.build.convention.configureGradleManagedDevices
-import project.build.convention.configureKotlinAndroid
-import project.build.convention.getProperty
-import project.build.convention.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.configureFlavors
+import project.convention.logic.configureGradleManagedDevices
+import project.convention.logic.configureKotlinAndroid
+import project.convention.logic.getProperty
+import project.convention.logic.libs
 
 @Suppress("UnstableApiUsage")
 class AndroidBaseLineProfilePlugin : Plugin<Project> {

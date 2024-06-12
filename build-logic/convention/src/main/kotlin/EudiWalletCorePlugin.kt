@@ -17,7 +17,7 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
-import project.build.convention.libs
+import project.convention.logic.libs
 
 class EudiWalletCorePlugin : Plugin<Project> {
     override fun apply(target: Project) {

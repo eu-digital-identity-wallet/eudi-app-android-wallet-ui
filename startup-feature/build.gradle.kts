@@ -14,9 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-import project.build.convention.config.LibraryModule
-import project.build.convention.kover.KoverExclusionRules
-import project.build.convention.kover.excludeFromKoverReport
+import project.convention.logic.config.LibraryModule
+import project.convention.logic.kover.KoverExclusionRules
+import project.convention.logic.kover.excludeFromKoverReport
 
 plugins {
     id("project.android.feature")

@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-import project.build.convention.config.LibraryModule
+import project.convention.logic.config.LibraryModule
 
 plugins {
     id("project.android.feature.test")
