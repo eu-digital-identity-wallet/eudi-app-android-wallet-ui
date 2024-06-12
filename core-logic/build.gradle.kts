@@ -14,13 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.config.LibraryModule
-import eu.europa.ec.euidi.kover.KoverExclusionRules
-import eu.europa.ec.euidi.kover.excludeFromKoverReport
+import project.convention.logic.config.LibraryModule
+import project.convention.logic.kover.KoverExclusionRules
+import project.convention.logic.kover.excludeFromKoverReport
 
 plugins {
-    id("eudi.android.library")
-    id("eudi.wallet.core")
+    id("project.android.library")
+    id("project.wallet.core")
 }
 
 android {

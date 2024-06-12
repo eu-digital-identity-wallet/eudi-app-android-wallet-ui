@@ -14,10 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.libs
 
 class AppCenterPlugin : Plugin<Project> {
     override fun apply(target: Project) {

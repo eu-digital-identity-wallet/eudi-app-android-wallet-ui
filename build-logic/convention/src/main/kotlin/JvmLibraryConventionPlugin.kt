@@ -14,16 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.configureKotlinJvm
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import project.convention.logic.configureKotlinJvm
 
 class JvmLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
                 apply("org.jetbrains.kotlin.jvm")
-                apply("eudi.android.lint")
+                apply("project.android.lint")
             }
             configureKotlinJvm()
         }

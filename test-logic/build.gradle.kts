@@ -14,10 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.config.LibraryModule
+import project.convention.logic.config.LibraryModule
 
 plugins {
-    id("eudi.android.test")
+    id("project.android.test")
 }
 
 android {

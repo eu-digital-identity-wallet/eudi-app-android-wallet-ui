@@ -16,18 +16,18 @@
 import androidx.baselineprofile.gradle.producer.BaselineProfileProducerExtension
 import com.android.build.api.variant.TestAndroidComponentsExtension
 import com.android.build.gradle.TestExtension
-import eu.europa.ec.euidi.configureFlavors
-import eu.europa.ec.euidi.configureGradleManagedDevices
-import eu.europa.ec.euidi.configureKotlinAndroid
-import eu.europa.ec.euidi.getProperty
-import eu.europa.ec.euidi.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.configureFlavors
+import project.convention.logic.configureGradleManagedDevices
+import project.convention.logic.configureKotlinAndroid
+import project.convention.logic.getProperty
+import project.convention.logic.libs
 
 @Suppress("UnstableApiUsage")
-class BaseLineProfilePlugin : Plugin<Project> {
+class AndroidBaseLineProfilePlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
 

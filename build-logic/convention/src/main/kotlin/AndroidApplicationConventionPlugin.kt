@@ -16,14 +16,14 @@
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import eu.europa.ec.euidi.configureGradleManagedDevices
-import eu.europa.ec.euidi.configureKotlinAndroid
-import eu.europa.ec.euidi.configurePrintApksTask
-import eu.europa.ec.euidi.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.configureGradleManagedDevices
+import project.convention.logic.configureKotlinAndroid
+import project.convention.logic.configurePrintApksTask
+import project.convention.logic.libs
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -31,11 +31,11 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply("com.android.application")
                 apply("org.jetbrains.kotlin.android")
-                apply("eudi.android.application.flavors")
-                apply("eudi.android.koin")
-                apply("eudi.android.lint")
-                apply("eudi.owasp.dependency.check")
-                apply("eudi.sonar")
+                apply("project.android.application.flavors")
+                apply("project.android.koin")
+                apply("project.android.lint")
+                apply("project.owasp.dependency.check")
+                apply("project.sonar")
                 apply("androidx.baselineprofile")
             }
 

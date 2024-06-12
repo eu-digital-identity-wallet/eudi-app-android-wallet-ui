@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.euidi.config
+package project.convention.logic.config
 
 enum class LibraryModule(val path: String) {
     Unspecified(""),

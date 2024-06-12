@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.euidi
+package project.convention.logic
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog

@@ -14,9 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.euidi.kover
+package project.convention.logic.kover
 
-import eu.europa.ec.euidi.config.LibraryModule
+import project.convention.logic.config.LibraryModule
 
 private const val KOIN = "org.koin.*"
 private const val BUILD_CONFIG = "eu.europa.ec.*.BuildConfig"

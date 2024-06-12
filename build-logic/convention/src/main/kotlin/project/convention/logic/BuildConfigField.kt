@@ -14,12 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.euidi
+package project.convention.logic
 
-/**
- * This is shared between :app and modules to provide configurations type safety.
- */
-enum class AppBuildType(val applicationIdSuffix: String? = null) {
-    DEBUG,
-    RELEASE
+import com.android.build.api.dsl.VariantDimension
+
+@Suppress("IMPLICIT_CAST_TO_ANY")
+inline fun <reified ValueT> VariantDimension.addConfigField(
+    name: String,
+    value: ValueT
+) {
+    val resolvedValue = when (value) {
+        is String -> "\"$value\""
+        else -> value
+    }.toString()
+    buildConfigField(ValueT::class.java.simpleName, name, resolvedValue)
 }

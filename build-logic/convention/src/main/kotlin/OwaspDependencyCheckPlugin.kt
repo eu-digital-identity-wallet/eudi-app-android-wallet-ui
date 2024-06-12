@@ -14,11 +14,11 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.getProperty
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension
+import project.convention.logic.getProperty
 
 class OwaspDependencyCheckPlugin : Plugin<Project> {
     override fun apply(target: Project) {

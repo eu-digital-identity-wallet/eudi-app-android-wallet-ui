@@ -14,13 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-import eu.europa.ec.euidi.AppBuildType
-import eu.europa.ec.euidi.config.LibraryModule
-import eu.europa.ec.euidi.getProperty
+import project.convention.logic.AppBuildType
+import project.convention.logic.config.LibraryModule
+import project.convention.logic.getProperty
 
 plugins {
-    id("eudi.android.application")
-    id("eudi.android.application.compose")
+    id("project.android.application")
+    id("project.android.application.compose")
 }
 
 android {

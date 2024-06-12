@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id("eudi.android.base.profile")
+    id("project.android.base.profile")
 }
 
 android {

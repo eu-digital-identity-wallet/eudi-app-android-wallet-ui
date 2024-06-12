@@ -14,22 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.euidi.kover
+package project.convention.logic
 
-import kotlinx.kover.gradle.plugin.dsl.KoverReportExtension
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.configure
-
-fun Project.excludeFromKoverReport(
-    excludedClasses: List<String>,
-    excludedPackages: List<String>,
-) {
-    configure<KoverReportExtension> {
-        filters {
-            excludes {
-                classes(excludedClasses)
-                packages(excludedPackages)
-            }
-        }
-    }
+/**
+ * This is shared between :app and modules to provide configurations type safety.
+ */
+enum class AppBuildType(val applicationIdSuffix: String? = null) {
+    DEBUG,
+    RELEASE
 }

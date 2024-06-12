@@ -17,21 +17,21 @@
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryExtension
 import com.google.android.libraries.mapsplatform.secrets_gradle_plugin.SecretsPluginExtension
-import eu.europa.ec.euidi.addConfigField
-import eu.europa.ec.euidi.config.LibraryModule
-import eu.europa.ec.euidi.config.LibraryPluginConfig
-import eu.europa.ec.euidi.configureFlavors
-import eu.europa.ec.euidi.configureGradleManagedDevices
-import eu.europa.ec.euidi.configureKotlinAndroid
-import eu.europa.ec.euidi.configurePrintApksTask
-import eu.europa.ec.euidi.disableUnnecessaryAndroidTests
-import eu.europa.ec.euidi.getProperty
-import eu.europa.ec.euidi.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.addConfigField
+import project.convention.logic.config.LibraryModule
+import project.convention.logic.config.LibraryPluginConfig
+import project.convention.logic.configureFlavors
+import project.convention.logic.configureGradleManagedDevices
+import project.convention.logic.configureKotlinAndroid
+import project.convention.logic.configurePrintApksTask
+import project.convention.logic.disableUnnecessaryAndroidTests
+import project.convention.logic.getProperty
+import project.convention.logic.libs
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -66,9 +66,9 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             with(pluginManager) {
                 apply("com.android.library")
-                apply("eudi.android.library.kover")
-                apply("eudi.android.lint")
-                apply("eudi.android.koin")
+                apply("project.android.library.kover")
+                apply("project.android.lint")
+                apply("project.android.koin")
                 apply("org.jetbrains.kotlin.android")
                 apply("kotlinx-serialization")
                 apply("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")

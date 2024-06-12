@@ -15,11 +15,11 @@
  */
 
 import com.android.build.api.dsl.ApplicationExtension
-import eu.europa.ec.euidi.configureFlavors
-import eu.europa.ec.euidi.getProperty
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import project.convention.logic.configureFlavors
+import project.convention.logic.getProperty
 
 class AndroidApplicationFlavorsConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {

@@ -16,7 +16,7 @@
 
 @file:Suppress("UnstableApiUsage")
 
-package eu.europa.ec.euidi
+package project.convention.logic
 
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.ManagedVirtualDevice

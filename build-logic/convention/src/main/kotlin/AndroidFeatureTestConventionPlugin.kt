@@ -15,18 +15,18 @@
  */
 
 import com.android.build.gradle.LibraryExtension
-import eu.europa.ec.euidi.config.LibraryModule
-import eu.europa.ec.euidi.configureGradleManagedDevices
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.config.LibraryModule
+import project.convention.logic.configureGradleManagedDevices
 
 class AndroidFeatureTestConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply {
-                apply("eudi.android.library")
+                apply("project.android.library")
             }
             extensions.configure<LibraryExtension> {
                 defaultConfig {

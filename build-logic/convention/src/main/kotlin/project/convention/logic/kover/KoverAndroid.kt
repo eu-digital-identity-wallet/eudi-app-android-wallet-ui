@@ -14,18 +14,22 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.euidi
+package project.convention.logic.kover
 
-import com.android.build.api.dsl.VariantDimension
+import kotlinx.kover.gradle.plugin.dsl.KoverReportExtension
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
 
-@Suppress("IMPLICIT_CAST_TO_ANY")
-inline fun <reified ValueT> VariantDimension.addConfigField(
-    name: String,
-    value: ValueT
+fun Project.excludeFromKoverReport(
+    excludedClasses: List<String>,
+    excludedPackages: List<String>,
 ) {
-    val resolvedValue = when (value) {
-        is String -> "\"$value\""
-        else -> value
-    }.toString()
-    buildConfigField(ValueT::class.java.simpleName, name, resolvedValue)
+    configure<KoverReportExtension> {
+        filters {
+            excludes {
+                classes(excludedClasses)
+                packages(excludedPackages)
+            }
+        }
+    }
 }
