@@ -39,29 +39,30 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.json.JSONObject
 
-private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> = when (documentIdentifier) {
+private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
+    when (documentIdentifier) {
 
-    DocumentIdentifier.PID -> listOf(
-        "issuance_date",
-        "expiry_date",
-        "issuing_authority",
-        "document_number",
-        "administrative_number",
-        "issuing_country",
-        "issuing_jurisdiction",
-        "portrait",
-        "portrait_capture_date"
-    )
+        DocumentIdentifier.PID -> listOf(
+            "issuance_date",
+            "expiry_date",
+            "issuing_authority",
+            "document_number",
+            "administrative_number",
+            "issuing_country",
+            "issuing_jurisdiction",
+            "portrait",
+            "portrait_capture_date"
+        )
 
-    DocumentIdentifier.AGE -> listOf(
-        "issuance_date",
-        "expiry_date",
-        "issuing_country",
-        "issuing_authority",
-    )
+        DocumentIdentifier.AGE -> listOf(
+            "issuance_date",
+            "expiry_date",
+            "issuing_country",
+            "issuing_authority",
+        )
 
-    else -> emptyList()
-}
+        else -> emptyList()
+    }
 
 object RequestTransformer {
 

@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.commonfeature.util.keyIsBase64
+import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.DocRequest
 import eu.europa.ec.eudi.wallet.document.DocumentId
@@ -40,7 +41,7 @@ data class RequestDocumentItemUi<T>(
 
 data class DocumentItemDomainPayload(
     val docId: String,
-    val docType: String,
+    val docType: DocType,
     val docRequest: DocRequest,
     val namespace: String,
     val elementIdentifier: ElementIdentifier

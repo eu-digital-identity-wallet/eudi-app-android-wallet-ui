@@ -427,7 +427,7 @@ class TestDocumentDetailsInteractor {
     // Case 4:
 
     // 1. A documentId and document is PID.
-    // 2. walletCoreDocumentsController.getAllDocuments(docType: DocumentIdentifier) returns more than 1 PIDs
+    // 2. walletCoreDocumentsController.getAllDocuments(documentIdentifier: DocumentIdentifier) returns more than 1 PIDs
     //      AND the documentId we are about to delete is NOT the one of the oldest PID.
     // 3. walletCoreDocumentsController.deleteDocument() returns Success.
     @Test
@@ -573,7 +573,7 @@ class TestDocumentDetailsInteractor {
     }
 
     private fun mockGetAllDocumentsWithTypeCall(response: List<Document>) {
-        whenever(walletCoreDocumentsController.getAllDocumentsByType(docType = any()))
+        whenever(walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = any()))
             .thenReturn(response)
     }
 
