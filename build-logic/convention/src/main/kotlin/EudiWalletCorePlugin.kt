@@ -28,6 +28,7 @@ class EudiWalletCorePlugin : Plugin<Project> {
 
             dependencies {
                 add("api", libs.findLibrary("eudi.wallet.core").get())
+                add("implementation", libs.findLibrary("cbor-tree").get())
             }
         }
     }
