@@ -27,7 +27,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 
 @Suppress("UnstableApiUsage")
-class BaseLineProfilePlugin : Plugin<Project> {
+class AndroidBaseLineProfilePlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
 

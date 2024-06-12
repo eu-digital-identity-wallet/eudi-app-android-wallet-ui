@@ -19,8 +19,8 @@ import eu.europa.ec.euidi.kover.KoverExclusionRules
 import eu.europa.ec.euidi.kover.excludeFromKoverReport
 
 plugins {
-    id("eudi.android.library")
-    id("eudi.android.library.compose")
+    id("project.android.library")
+    id("project.android.library.compose")
 }
 
 android {

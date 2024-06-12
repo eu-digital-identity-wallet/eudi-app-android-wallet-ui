@@ -31,11 +31,11 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply("com.android.application")
                 apply("org.jetbrains.kotlin.android")
-                apply("eudi.android.application.flavors")
-                apply("eudi.android.koin")
-                apply("eudi.android.lint")
-                apply("eudi.owasp.dependency.check")
-                apply("eudi.sonar")
+                apply("project.android.application.flavors")
+                apply("project.android.koin")
+                apply("project.android.lint")
+                apply("project.owasp.dependency.check")
+                apply("project.sonar")
                 apply("androidx.baselineprofile")
             }
 

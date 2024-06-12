@@ -17,8 +17,8 @@
 import eu.europa.ec.euidi.config.LibraryModule
 
 plugins {
-    id("eudi.android.library")
-    id("eudi.android.library.compose")
+    id("project.android.library")
+    id("project.android.library.compose")
 }
 
 android {

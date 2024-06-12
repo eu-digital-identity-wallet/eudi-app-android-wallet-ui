@@ -27,7 +27,7 @@ class AndroidTestConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply {
-                apply("eudi.android.library")
+                apply("project.android.library")
             }
             extensions.configure<LibraryExtension> {
                 defaultConfig {

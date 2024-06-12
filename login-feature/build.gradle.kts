@@ -19,7 +19,7 @@ import eu.europa.ec.euidi.kover.KoverExclusionRules
 import eu.europa.ec.euidi.kover.excludeFromKoverReport
 
 plugins {
-    id("eudi.android.feature")
+    id("project.android.feature")
 }
 
 android {

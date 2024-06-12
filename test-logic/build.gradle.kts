@@ -17,7 +17,7 @@
 import eu.europa.ec.euidi.config.LibraryModule
 
 plugins {
-    id("eudi.android.test")
+    id("project.android.test")
 }
 
 android {

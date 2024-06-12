@@ -66,9 +66,9 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             with(pluginManager) {
                 apply("com.android.library")
-                apply("eudi.android.library.kover")
-                apply("eudi.android.lint")
-                apply("eudi.android.koin")
+                apply("project.android.library.kover")
+                apply("project.android.lint")
+                apply("project.android.koin")
                 apply("org.jetbrains.kotlin.android")
                 apply("kotlinx-serialization")
                 apply("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")

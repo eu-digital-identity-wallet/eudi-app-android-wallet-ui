@@ -34,8 +34,8 @@ import eu.europa.ec.euidi.kover.excludeFromKoverReport
 import eu.europa.ec.euidi.kover.koverModules
 
 plugins {
-    id("eudi.android.library")
-    id("eudi.android.library.compose")
+    id("project.android.library")
+    id("project.android.library.compose")
 }
 
 android {

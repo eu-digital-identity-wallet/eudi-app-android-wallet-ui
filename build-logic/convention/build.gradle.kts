@@ -45,72 +45,72 @@ dependencies {
 gradlePlugin {
     plugins {
         register("androidApplicationCompose") {
-            id = "eudi.android.application.compose"
+            id = "project.android.application.compose"
             implementationClass = "AndroidApplicationComposeConventionPlugin"
         }
         register("androidApplication") {
-            id = "eudi.android.application"
+            id = "project.android.application"
             implementationClass = "AndroidApplicationConventionPlugin"
         }
         register("androidLibraryCompose") {
-            id = "eudi.android.library.compose"
+            id = "project.android.library.compose"
             implementationClass = "AndroidLibraryComposeConventionPlugin"
         }
         register("androidLibrary") {
-            id = "eudi.android.library"
+            id = "project.android.library"
             implementationClass = "AndroidLibraryConventionPlugin"
         }
         register("androidFeature") {
-            id = "eudi.android.feature"
+            id = "project.android.feature"
             implementationClass = "AndroidFeatureConventionPlugin"
         }
         register("androidLibraryKover") {
-            id = "eudi.android.library.kover"
+            id = "project.android.library.kover"
             implementationClass = "AndroidLibraryKoverConventionPlugin"
         }
         register("androidTest") {
-            id = "eudi.android.test"
+            id = "project.android.test"
             implementationClass = "AndroidTestConventionPlugin"
         }
         register("androidFeatureTest") {
-            id = "eudi.android.feature.test"
+            id = "project.android.feature.test"
             implementationClass = "AndroidFeatureTestConventionPlugin"
         }
         register("androidKoin") {
-            id = "eudi.android.koin"
+            id = "project.android.koin"
             implementationClass = "AndroidKoinConventionPlugin"
         }
         register("androidFlavors") {
-            id = "eudi.android.application.flavors"
+            id = "project.android.application.flavors"
             implementationClass = "AndroidApplicationFlavorsConventionPlugin"
         }
         register("androidLint") {
-            id = "eudi.android.lint"
+            id = "project.android.lint"
             implementationClass = "AndroidLintConventionPlugin"
         }
         register("jvmLibrary") {
-            id = "eudi.jvm.library"
+            id = "project.jvm.library"
             implementationClass = "JvmLibraryConventionPlugin"
         }
         register("eudiWalletCore") {
-            id = "eudi.wallet.core"
+            id = "project.wallet.core"
             implementationClass = "EudiWalletCorePlugin"
         }
         register("owaspDependencyCheck") {
-            id = "eudi.owasp.dependency.check"
+            id = "project.owasp.dependency.check"
             implementationClass = "OwaspDependencyCheckPlugin"
         }
         register("appCenter") {
-            id = "eudi.appcenter"
+            id = "project.appcenter"
             implementationClass = "AppCenterPlugin"
         }
         register("sonar") {
-            id = "eudi.sonar"
+            id = "project.sonar"
             implementationClass = "SonarPlugin"
         }
         register("androidBaseProfile") {
-            id = "eudi.android.base.profile"
-            implementationClass = "BaseLineProfilePlugin"
+            id = "project.android.base.profile"
+            implementationClass = "AndroidBaseLineProfilePlugin"
         }
     }
 }

@@ -19,8 +19,8 @@ import eu.europa.ec.euidi.config.LibraryModule
 import eu.europa.ec.euidi.getProperty
 
 plugins {
-    id("eudi.android.application")
-    id("eudi.android.application.compose")
+    id("project.android.application")
+    id("project.android.application.compose")
 }
 
 android {

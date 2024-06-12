@@ -26,8 +26,8 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             pluginManager.apply {
-                apply("eudi.android.library")
-                apply("eudi.android.library.compose")
+                apply("project.android.library")
+                apply("project.android.library.compose")
             }
             extensions.configure<LibraryExtension> {
                 defaultConfig {

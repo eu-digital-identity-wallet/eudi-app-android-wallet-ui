@@ -17,7 +17,7 @@
 import eu.europa.ec.euidi.config.LibraryModule
 
 plugins {
-    id("eudi.android.feature.test")
+    id("project.android.feature.test")
 }
 
 android {
