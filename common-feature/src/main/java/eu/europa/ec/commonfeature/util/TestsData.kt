@@ -78,12 +78,12 @@ object TestsData {
     const val mockedRequestRequiredFieldsTitle = "Verification Data"
     const val mockedRequestElementIdentifierNotAvailable = "Not available"
 
-    const val mockedPidDocType = "eu.europa.ec.eudiw.pid.1"
-    const val mockedPidNameSpace = "eu.europa.ec.eudiw.pid.1"
+    const val mockedPidDocType = "eu.europa.ec.eudi.pid.1"
+    const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
     const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
     const val mockedMdlNameSpace = "org.iso.18013.5.1"
-    const val mockedAgeVerificationDocType = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
-    const val mockedAgeVerificationNameSpace = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
+    const val mockedAgeVerificationDocType = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
+    const val mockedAgeVerificationNameSpace = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
 
     val mockedValidReaderAuth = ReaderAuth(
         readerAuth = byteArrayOf(),

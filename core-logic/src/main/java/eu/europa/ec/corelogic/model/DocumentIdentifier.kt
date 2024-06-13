@@ -27,9 +27,9 @@ sealed interface DocumentIdentifier {
 
     data object PID : DocumentIdentifier {
         override val nameSpace: String
-            get() = "eu.europa.ec.eudiw.pid.1"
+            get() = "eu.europa.ec.eudi.pid.1"
         override val docType: DocType
-            get() = "eu.europa.ec.eudiw.pid.1"
+            get() = "eu.europa.ec.eudi.pid.1"
     }
 
     data object MDL : DocumentIdentifier {
@@ -48,9 +48,9 @@ sealed interface DocumentIdentifier {
 
     data object AGE : DocumentIdentifier {
         override val nameSpace: String
-            get() = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
+            get() = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
         override val docType: DocType
-            get() = "eu.europa.ec.eudiw.pseudonym.age_over_18.1"
+            get() = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
     }
 
     data class OTHER(

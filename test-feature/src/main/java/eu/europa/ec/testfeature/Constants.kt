@@ -645,8 +645,8 @@ val mockedMdlBasicFields: Map<String, ByteArray> = mapOf(
     "sex" to byteArrayOf(1),
 )
 
-const val mockedPidDocType = "eu.europa.ec.eudiw.pid.1"
-const val mockedPidNameSpace = "eu.europa.ec.eudiw.pid.1"
+const val mockedPidDocType = "eu.europa.ec.eudi.pid.1"
+const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
 const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
 const val mockedMdlNameSpace = "org.iso.18013.5.1"
 
