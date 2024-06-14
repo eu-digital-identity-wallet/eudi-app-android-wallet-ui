@@ -106,7 +106,7 @@ class DashboardInteractorImpl(
 
             return@map DocumentUi(
                 documentId = document.id,
-                documentName = document.toDocumentIdentifier().toUiName(resourceProvider),
+                documentName = document.toUiName(resourceProvider),
                 documentIdentifier = document.toDocumentIdentifier(),
                 documentImage = "",
                 documentExpirationDateFormatted = documentExpirationDate,

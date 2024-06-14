@@ -78,8 +78,7 @@ object RequestTransformer {
             // Add document item.
             items += RequestDataUi.Document(
                 documentItemUi = DocumentItemUi(
-                    title = requestDocument.toDocumentIdentifier()
-                        .toUiName(resourceProvider)
+                    title = requestDocument.toUiName(resourceProvider)
                 )
             )
             items += RequestDataUi.Space()
