@@ -86,7 +86,7 @@ object DocumentDetailsTransformer {
 
         return DocumentUi(
             documentId = document.id,
-            documentName = documentIdentifierUi.toUiName(resourceProvider),
+            documentName = document.toUiName(resourceProvider),
             documentIdentifier = documentIdentifierUi,
             documentExpirationDateFormatted = documentExpirationDate.toDateFormatted() ?: "",
             documentHasExpired = docHasExpired,
