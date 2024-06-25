@@ -167,6 +167,21 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
 }
 ```
 
+In the case of an additive change regarding openId4VP, you also need to update the *EudiWalletConfig* for each flavor inside the core-logic module.
+
+```
+.openId4VpConfig {
+    withScheme(
+        listOf(
+                BuildConfig.OPENID4VP_SCHEME,
+                BuildConfig.EUDI_OPENID4VP_SCHEME,
+                BuildConfig.MDOC_OPENID4VP_SCHEME,
+                BuildConfig.YOUR_OWN_OPENID4VP_SCHEME
+            )
+    )
+}
+```
+
 ## Theme configuration
 
 The application allows the configuration of:
