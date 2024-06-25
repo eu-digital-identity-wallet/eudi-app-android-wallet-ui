@@ -52,6 +52,121 @@ https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-lo
 
 You will also find the IACA certificate here. (trusted iaca root certificates).
 
+## DeepLink Schemas configuration
+
+According to the specifications issuance and presentation require deep-linking for the same device flows.
+
+If you want to adjust any schema you can do it by altering the *AndroidLibraryConventionPlugin* inside the build-logic module.
+
+```
+val eudiOpenId4VpScheme = "eudi-openid4vp"
+val eudiOpenid4VpHost = "*"
+
+val mdocOpenId4VpScheme = "mdoc-openid4vp"
+val mdocOpenid4VpHost = "*"
+
+val openId4VpScheme = "openid4vp"
+val openid4VpHost = "*"
+
+val credentialOfferScheme = "openid-credential-offer"
+val credentialOfferHost = "*"
+```
+
+Let's assume you want to change the credential offer schema to custom-my-offer:// the *AndroidLibraryConventionPlugin* should look like this:
+
+```
+val eudiOpenId4VpScheme = "eudi-openid4vp"
+val eudiOpenid4VpHost = "*"
+
+val mdocOpenId4VpScheme = "mdoc-openid4vp"
+val mdocOpenid4VpHost = "*"
+
+val openId4VpScheme = "openid4vp"
+val openid4VpHost = "*"
+
+val credentialOfferScheme = "custom-my-offer"
+val credentialOfferHost = "*"
+```
+
+In case of an additive change, e.g. adding an extra credential offer schema, you need to adjust the following.
+
+AndroidLibraryConventionPlugin:
+
+```
+val credentialOfferScheme = "openid-credential-offer"
+val credentialOfferHost = "*"
+
+val myOwnCredentialOfferScheme = "custom-my-offer"
+val myOwnCredentialOfferHost = "*"
+```
+
+```
+// Manifest placeholders used for OpenId4VCI
+manifestPlaceholders["credentialOfferHost"] = credentialOfferHost
+manifestPlaceholders["credentialOfferScheme"] = credentialOfferScheme
+manifestPlaceholders["myOwnCredentialOfferHost"] = myOwnCredentialOfferHost
+manifestPlaceholders["myOwnCredentialOfferScheme"] = myOwnCredentialOfferScheme
+```
+
+```
+addConfigField("CREDENTIAL_OFFER_SCHEME", credentialOfferScheme)
+addConfigField("MY_OWN_CREDENTIAL_OFFER_SCHEME", myOwnCredentialOfferScheme)
+```
+
+Android Manifest (inside assembly-logic module):
+
+```
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+            android:host="${credentialOfferHost}"
+            android:scheme="${credentialOfferScheme}" />
+
+    </intent-filter>
+
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+            android:host="${myOwnCredentialOfferHost}"
+            android:scheme="${myOwnCredentialOfferScheme}" />
+
+</intent-filter>
+```
+
+DeepLinkType (DeepLinkHelper Object inside ui-logic module):
+
+```
+enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
+
+    OPENID4VP(
+        schemas = listOf(
+            BuildConfig.OPENID4VP_SCHEME,
+            BuildConfig.EUDI_OPENID4VP_SCHEME,
+            BuildConfig.MDOC_OPENID4VP_SCHEME
+        )
+    ),
+    CREDENTIAL_OFFER(
+        schemas = listOf(
+            BuildConfig.CREDENTIAL_OFFER_SCHEME,
+            BuildConfig.MY_OWN_CREDENTIAL_OFFER_SCHEME
+        )
+    ),
+    ISSUANCE(
+        schemas = listOf(BuildConfig.ISSUE_AUTHORIZATION_SCHEME),
+        host = BuildConfig.ISSUE_AUTHORIZATION_HOST
+    ),
+    EXTERNAL(listOf("external"))
+}
+```
+
 ## Theme configuration
 
 The application allows the configuration of:
