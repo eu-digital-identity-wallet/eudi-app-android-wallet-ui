@@ -56,7 +56,7 @@ You will also find the IACA certificate here. (trusted iaca root certificates).
 
 According to the specifications issuance and presentation require deep-linking for the same device flows.
 
-If you want to adjust any schema you can do it by altering the *AndroidLibraryConventionPlugin* inside the build-logic module.
+If you want to adjust any schema, you can alter the *AndroidLibraryConventionPlugin* inside the build-logic module.
 
 ```
 val eudiOpenId4VpScheme = "eudi-openid4vp"
@@ -88,7 +88,7 @@ val credentialOfferScheme = "custom-my-offer"
 val credentialOfferHost = "*"
 ```
 
-In case of an additive change, e.g. adding an extra credential offer schema, you need to adjust the following.
+In case of an additive change, e.g. adding an extra credential offer schema, you must adjust the following.
 
 AndroidLibraryConventionPlugin:
 
@@ -180,6 +180,105 @@ In the case of an additive change regarding openId4VP, you also need to update t
             )
     )
 }
+```
+
+## Scoped Issuance Document Configuration
+
+Currently, the application supports specific docTypes for scoped issuance (On the Add Document screen the pre-configured buttons like *National ID*, *Driving License*, and *Age verification*).
+
+The supported list and user interface are not configurable because, with the credential offer, you can issue any format-supported document.
+
+To extend the supported list and display a new button for your document, please follow the instructions below.
+
+In *DocumentIdentifier*, inside the core-logic module, you must add a new data object to the sealed interface with your namespace and doctype.
+
+Example:
+
+```
+data object YOUR_OWN : DocumentIdentifier {
+    override val nameSpace: String
+        get() = "your_own_name_space"
+    override val docType: DocType
+        get() = "your_own_doc_type"
+}
+```
+
+After completing the above change, please address all compilation errors within the *DocumentIdentifier*. Ensure that all when statements are exhausted, adhering to the established pattern used in the other documents for consistency.
+
+Example:
+
+```
+fun DocumentIdentifier.isSupported(): Boolean {
+    return when (this) {
+        is DocumentIdentifier.PID, DocumentIdentifier.MDL, DocumentIdentifier.AGE, DocumentIdentifier.YOUR_OWN -> true
+        is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> false
+    }
+}
+```
+
+In *strings.xml*. inside resources-logic module, add a new string for document title localization
+
+Example:
+
+```
+<!-- Document Types -->
+<string name="pid">National ID</string>
+<string name="mdl">Driving License</string>
+<string name="age_verification">Age Verification</string>
+<string name="load_sample_data">Load Sample Documents</string>
+<string name="your_own_document_title">Your own document title</string>
+```
+
+In *DocumentTypeUi*, inside the common-feature module, please adjust the extension function *DocumentIdentifier.toUiName* to point to a string localization for the document Title.
+
+Example:
+
+```
+fun DocumentIdentifier.toUiName(resourceProvider: ResourceProvider): String {
+    return when (this) {
+        is DocumentIdentifier.PID -> resourceProvider.getString(R.string.pid)
+        is DocumentIdentifier.MDL -> resourceProvider.getString(R.string.mdl)
+        is DocumentIdentifier.AGE -> resourceProvider.getString(R.string.age_verification)
+        is DocumentIdentifier.SAMPLE -> resourceProvider.getString(R.string.load_sample_data)
+        is DocumentIdentifier.YOUR_OWN -> resourceProvider.getString(R.string.your_own_document_title)
+        is DocumentIdentifier.OTHER -> docType
+    }
+}
+```
+
+In *TestsData*, inside common-feature module, please address all compilation errors. Ensure that all when statements are exhausted, adhering to the established pattern used in the other documents for consistency.
+
+In *AddDocumentInteractor*, inside issuance-feature module, please adjust the *getAddDocumentOption* function to add your new document.
+
+Example:
+
+```
+val options = mutableListOf(
+     DocumentOptionItemUi(
+        text = DocumentIdentifier.PID.toUiName(resourceProvider),
+        icon = AppIcons.Id,
+        type = DocumentIdentifier.PID,
+        available = true
+    ),
+    DocumentOptionItemUi(
+        text = DocumentIdentifier.MDL.toUiName(resourceProvider),
+        icon = AppIcons.Id,
+        type = DocumentIdentifier.MDL,
+        available = canCreateExtraDocument(flowType)
+    ),
+    DocumentOptionItemUi(
+        text = DocumentIdentifier.AGE.toUiName(resourceProvider),
+        icon = AppIcons.Id,
+        type = DocumentIdentifier.AGE,
+        available = canCreateExtraDocument(flowType)
+    ),
+    DocumentOptionItemUi(
+        text = DocumentIdentifier.YOUR_OWN.toUiName(resourceProvider),
+        icon = AppIcons.Id,
+        type = DocumentIdentifier.YOUR_OWN,
+        available = canCreateExtraDocument(flowType)
+    )
+)
 ```
 
 ## Theme configuration
