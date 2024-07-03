@@ -447,7 +447,9 @@ class WalletCoreDocumentsControllerImpl(
                     )
                 }
 
-                is IssueEvent.DocumentDeferred -> {}
+                is IssueEvent.DocumentDeferred -> {
+                    // TODO Not yet implemented
+                }
             }
         }
 
