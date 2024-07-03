@@ -19,7 +19,7 @@ package eu.europa.ec.issuancefeature.ui.success
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.issuancefeature.interactor.SuccessFetchDocumentByIdPartialState
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -34,7 +34,7 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
-    val document: Document? = null,
+    val document: IssuedDocument? = null,
     val documentName: String = "",
     val userFullName: String = "",
 ) : ViewState

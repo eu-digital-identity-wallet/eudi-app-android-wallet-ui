@@ -16,7 +16,7 @@
 
 package eu.europa.ec.testfeature
 
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import java.time.Instant
 
 const val mockedGenericErrorMessage = "resourceProvider's genericErrorMessage"
@@ -650,12 +650,13 @@ const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
 const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
 const val mockedMdlNameSpace = "org.iso.18013.5.1"
 
-val mockedFullPid = Document(
+val mockedFullPid = IssuedDocument(
     id = mockedPidId,
     docType = mockedPidDocType,
     name = mockedPidDocName,
-    hardwareBacked = false,
+    usesStrongBox = false,
     createdAt = Instant.parse(mockedDocumentCreationDate),
+    issuedAt = Instant.parse(mockedDocumentCreationDate),
     requiresUserAuth = false,
     nameSpacedData = mapOf(
         mockedPidNameSpace to mockedPidFields
@@ -679,12 +680,13 @@ val mockedEmptyPid = mockedFullPid.copy(
     )
 )
 
-val mockedFullMdl = Document(
+val mockedFullMdl = IssuedDocument(
     id = mockedMdlId,
     docType = mockedMdlDocType,
     name = mockedMdlDocName,
-    hardwareBacked = false,
+    usesStrongBox = false,
     createdAt = Instant.parse(mockedDocumentCreationDate),
+    issuedAt = Instant.parse(mockedDocumentCreationDate),
     requiresUserAuth = false,
     nameSpacedData = mapOf(
         mockedMdlNameSpace to mockedMdlFields
@@ -697,7 +699,7 @@ val mockedMdlWithBasicFields = mockedFullMdl.copy(
     )
 )
 
-val mockedMdlWithNoExpirationDate: Document = mockedFullMdl.copy(
+val mockedMdlWithNoExpirationDate: IssuedDocument = mockedFullMdl.copy(
     nameSpacedData = mapOf(
         mockedMdlNameSpace to
                 mockedMdlFields
@@ -705,7 +707,7 @@ val mockedMdlWithNoExpirationDate: Document = mockedFullMdl.copy(
     )
 )
 
-val mockedMdlWithNoUserNameAndNoUserImage: Document = mockedFullMdl.copy(
+val mockedMdlWithNoUserNameAndNoUserImage: IssuedDocument = mockedFullMdl.copy(
     nameSpacedData = mapOf(
         mockedMdlNameSpace to
                 mockedMdlFields
@@ -714,6 +716,6 @@ val mockedMdlWithNoUserNameAndNoUserImage: Document = mockedFullMdl.copy(
     )
 )
 
-val mockedFullDocuments: List<Document> = listOf(
+val mockedFullDocuments: List<IssuedDocument> = listOf(
     mockedFullPid, mockedFullMdl
 )

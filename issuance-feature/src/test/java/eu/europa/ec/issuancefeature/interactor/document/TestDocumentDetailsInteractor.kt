@@ -25,7 +25,7 @@ import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemCall
@@ -567,22 +567,22 @@ class TestDocumentDetailsInteractor {
     //endregion
 
     //region helper functions
-    private fun mockGetAllDocumentsCall(response: List<Document>) {
+    private fun mockGetAllDocumentsCall(response: List<IssuedDocument>) {
         whenever(walletCoreDocumentsController.getAllDocuments())
             .thenReturn(response)
     }
 
-    private fun mockGetAllDocumentsWithTypeCall(response: List<Document>) {
+    private fun mockGetAllDocumentsWithTypeCall(response: List<IssuedDocument>) {
         whenever(walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = any()))
             .thenReturn(response)
     }
 
-    private fun mockGetDocumentByIdCall(response: Document?) {
+    private fun mockGetDocumentByIdCall(response: IssuedDocument?) {
         whenever(walletCoreDocumentsController.getDocumentById(anyString()))
             .thenReturn(response)
     }
 
-    private fun mockGetMainPidDocument(response: Document?) {
+    private fun mockGetMainPidDocument(response: IssuedDocument?) {
         whenever(walletCoreDocumentsController.getMainPidDocument())
             .thenReturn(response)
     }

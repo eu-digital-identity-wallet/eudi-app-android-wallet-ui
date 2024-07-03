@@ -33,7 +33,7 @@ import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -67,7 +67,7 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
 object RequestTransformer {
 
     fun transformToUiItems(
-        storageDocuments: List<Document> = emptyList(),
+        storageDocuments: List<IssuedDocument> = emptyList(),
         resourceProvider: ResourceProvider,
         requestDocuments: List<RequestDocument>,
         requiredFieldsTitle: String

@@ -21,7 +21,7 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.isSupported
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
@@ -46,7 +46,7 @@ fun DocumentIdentifier.toUiName(resourceProvider: ResourceProvider): String {
     }
 }
 
-fun Document.toUiName(resourceProvider: ResourceProvider): String {
+fun IssuedDocument.toUiName(resourceProvider: ResourceProvider): String {
     val docIdentifier = this.toDocumentIdentifier()
     return docIdentifier.toUiName(
         fallbackDocName = this.name,

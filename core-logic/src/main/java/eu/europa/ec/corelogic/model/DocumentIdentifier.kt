@@ -17,7 +17,7 @@
 package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 
 typealias DocType = String
 
@@ -81,7 +81,7 @@ fun DocType.toDocumentIdentifier(): DocumentIdentifier = when (this) {
     )
 }
 
-fun Document.toDocumentIdentifier(): DocumentIdentifier {
+fun IssuedDocument.toDocumentIdentifier(): DocumentIdentifier {
     val nameSpace = this.nameSpaces.keys.first()
     val docType = this.docType
 
