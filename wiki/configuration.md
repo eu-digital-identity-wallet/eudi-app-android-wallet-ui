@@ -295,9 +295,79 @@ val options = mutableListOf(
 
 This section describes configuring the application to interact with services utilizing self-signed certificates.
 
-```
-MARK: - TODO
-```
+1. Open the build.gradle.kts file of the "core-logic" module.
+2. In the 'dependencies' block add the following two:
+    ```
+    implementation(libs.ktor.android)
+    implementation(libs.ktor.logging)
+    ```
+3. Now, you need to navigate to the **ConfigWalletCoreImpl.kt** file, either in:
+   *src\dev\java\eu\europa\ec\corelogic\config* or
+   *src\demo\java\eu\europa\ec\corelogic\config*
+   depending on the flavor of your choice.
+4. Here, add these imports:
+    ```
+    import android.annotation.SuppressLint
+    import io.ktor.client.HttpClient
+    import io.ktor.client.engine.android.Android
+    import io.ktor.client.plugins.logging.Logging
+    import java.security.SecureRandom
+    import javax.net.ssl.HostnameVerifier
+    import javax.net.ssl.SSLContext
+    import javax.net.ssl.TrustManager
+    import javax.net.ssl.X509TrustManager
+    import javax.security.cert.CertificateException
+    ```
+5. Add a custom HttpClient that allows self-signed certificates
+    ```
+    object ProvideKtorHttpClient {
+
+        @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
+        fun client(): HttpClient {
+            val trustAllCerts = arrayOf<TrustManager>(
+                object : X509TrustManager {
+                    @Throws(CertificateException::class)
+                    override fun checkClientTrusted(
+                        chain: Array<java.security.cert.X509Certificate>,
+                        authType: String
+                    ) {
+                    }
+
+                    @Throws(CertificateException::class)
+                    override fun checkServerTrusted(
+                        chain: Array<java.security.cert.X509Certificate>,
+                        authType: String
+                    ) {
+                    }
+
+                    override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
+                        return arrayOf()
+                    }
+                }
+            )
+
+            return HttpClient(Android) {
+                install(Logging)
+                engine {
+                    requestConfig
+                    sslManager = { httpsURLConnection ->
+                        httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
+                            init(null, trustAllCerts, SecureRandom())
+                        }.socketFactory
+                        httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
+                    }
+                }
+            }
+        }
+
+    }
+    ```
+6. Finally, add this custom HttpClient to the config, by appending it to the EudiWalletConfig.Builder, with the following lines:
+    ```
+   .ktorHttpClientFactory {
+        ProvideKtorHttpClient.client()
+   }
+    ```
 
 ## Theme configuration
 
