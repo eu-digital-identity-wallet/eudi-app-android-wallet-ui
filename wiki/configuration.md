@@ -56,11 +56,7 @@ _config = EudiWalletConfig.Builder(context)
             .build()
 ```
 
-The application's certificates are located here:
-
-https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw
-
-You will also find the IACA certificate here. (trusted iaca root certificates).
+The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw):
 
 ## DeepLink Schemas configuration
 
