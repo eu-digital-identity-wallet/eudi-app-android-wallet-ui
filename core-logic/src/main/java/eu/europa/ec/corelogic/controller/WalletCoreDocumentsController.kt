@@ -23,7 +23,7 @@ import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.sample.LoadSampleResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
@@ -110,13 +110,13 @@ interface WalletCoreDocumentsController {
     /**
      * @return All the documents from the Database.
      * */
-    fun getAllDocuments(): List<Document>
+    fun getAllDocuments(): List<IssuedDocument>
 
-    fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<Document>
+    fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<IssuedDocument>
 
-    fun getDocumentById(id: String): Document?
+    fun getDocumentById(id: String): IssuedDocument?
 
-    fun getMainPidDocument(): Document?
+    fun getMainPidDocument(): IssuedDocument?
 
     fun issueDocument(
         issuanceMethod: IssuanceMethod,
@@ -174,16 +174,16 @@ class WalletCoreDocumentsControllerImpl(
         AddSampleDataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
     }
 
-    override fun getAllDocuments(): List<Document> = eudiWallet.getDocuments()
+    override fun getAllDocuments(): List<IssuedDocument> = eudiWallet.getDocuments()
 
-    override fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<Document> =
+    override fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<IssuedDocument> =
         getAllDocuments().filter { it.docType == documentIdentifier.docType }
 
-    override fun getDocumentById(id: String): Document? {
-        return eudiWallet.getDocumentById(documentId = id)
+    override fun getDocumentById(id: String): IssuedDocument? {
+        return eudiWallet.getDocumentById(documentId = id) as? IssuedDocument
     }
 
-    override fun getMainPidDocument(): Document? =
+    override fun getMainPidDocument(): IssuedDocument? =
         getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)
             .minByOrNull { it.createdAt }
 
@@ -334,7 +334,7 @@ class WalletCoreDocumentsControllerImpl(
                         is OfferResult.Failure -> {
                             trySendBlocking(
                                 ResolveDocumentOfferPartialState.Failure(
-                                    errorMessage = offerResult.error.localizedMessage
+                                    errorMessage = offerResult.cause.localizedMessage
                                         ?: genericErrorMessage
                                 )
                             )
@@ -446,6 +446,8 @@ class WalletCoreDocumentsControllerImpl(
                         IssueDocumentsPartialState.Start
                     )
                 }
+
+                is IssueEvent.DocumentDeferred -> {}
             }
         }
 

@@ -20,14 +20,14 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class SuccessFetchDocumentByIdPartialState {
     data class Success(
-        val document: Document,
+        val document: IssuedDocument,
         val documentName: String,
         val fullName: String
     ) : SuccessFetchDocumentByIdPartialState()

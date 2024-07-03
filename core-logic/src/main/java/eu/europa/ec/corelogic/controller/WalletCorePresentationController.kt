@@ -226,7 +226,7 @@ class WalletCorePresentationControllerImpl(
                 verifierName =
                     requestedDocuments.firstOrNull()?.docRequest?.readerAuth?.readerCommonName
                 val verifierIsTrusted =
-                    requestedDocuments.firstOrNull()?.docRequest?.readerAuth?.readerSignIsValid == true
+                    requestedDocuments.firstOrNull()?.docRequest?.readerAuth?.isSuccess() == true
                 trySendBlocking(
                     TransferEventPartialState.RequestReceived(
                         requestData = requestedDocuments,

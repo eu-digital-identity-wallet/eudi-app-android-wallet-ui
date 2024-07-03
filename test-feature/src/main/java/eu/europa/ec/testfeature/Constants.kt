@@ -16,9 +16,6 @@
 
 package eu.europa.ec.testfeature
 
-import eu.europa.ec.eudi.wallet.document.Document
-import java.time.Instant
-
 const val mockedGenericErrorMessage = "resourceProvider's genericErrorMessage"
 const val mockedPlainFailureMessage = "failure message"
 
@@ -650,70 +647,70 @@ const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
 const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
 const val mockedMdlNameSpace = "org.iso.18013.5.1"
 
-val mockedFullPid = Document(
-    id = mockedPidId,
-    docType = mockedPidDocType,
-    name = mockedPidDocName,
-    hardwareBacked = false,
-    createdAt = Instant.parse(mockedDocumentCreationDate),
-    requiresUserAuth = false,
-    nameSpacedData = mapOf(
-        mockedPidNameSpace to mockedPidFields
-    )
-)
+//val mockedFullPid = Document(
+//    id = mockedPidId,
+//    docType = mockedPidDocType,
+//    name = mockedPidDocName,
+//    hardwareBacked = false,
+//    createdAt = Instant.parse(mockedDocumentCreationDate),
+//    requiresUserAuth = false,
+//    nameSpacedData = mapOf(
+//        mockedPidNameSpace to mockedPidFields
+//    )
+//)
+//
+//val mockedPidWithBasicFields = mockedFullPid.copy(
+//    nameSpacedData = mapOf(
+//        mockedPidNameSpace to mockedPidBasicFields
+//    )
+//)
 
-val mockedPidWithBasicFields = mockedFullPid.copy(
-    nameSpacedData = mapOf(
-        mockedPidNameSpace to mockedPidBasicFields
-    )
-)
+//val mockedOldestPidWithBasicFields = mockedPidWithBasicFields.copy(
+//    id = mockedOldestPidId,
+//    createdAt = Instant.parse(mockedOldestDocumentCreationDate)
+//)
 
-val mockedOldestPidWithBasicFields = mockedPidWithBasicFields.copy(
-    id = mockedOldestPidId,
-    createdAt = Instant.parse(mockedOldestDocumentCreationDate)
-)
+//val mockedEmptyPid = mockedFullPid.copy(
+//    nameSpacedData = mapOf(
+//        mockedPidNameSpace to emptyMap()
+//    )
+//)
+//
+//val mockedFullMdl = Document(
+//    id = mockedMdlId,
+//    docType = mockedMdlDocType,
+//    name = mockedMdlDocName,
+//    hardwareBacked = false,
+//    createdAt = Instant.parse(mockedDocumentCreationDate),
+//    requiresUserAuth = false,
+//    nameSpacedData = mapOf(
+//        mockedMdlNameSpace to mockedMdlFields
+//    )
+//)
 
-val mockedEmptyPid = mockedFullPid.copy(
-    nameSpacedData = mapOf(
-        mockedPidNameSpace to emptyMap()
-    )
-)
-
-val mockedFullMdl = Document(
-    id = mockedMdlId,
-    docType = mockedMdlDocType,
-    name = mockedMdlDocName,
-    hardwareBacked = false,
-    createdAt = Instant.parse(mockedDocumentCreationDate),
-    requiresUserAuth = false,
-    nameSpacedData = mapOf(
-        mockedMdlNameSpace to mockedMdlFields
-    )
-)
-
-val mockedMdlWithBasicFields = mockedFullMdl.copy(
-    nameSpacedData = mapOf(
-        mockedMdlNameSpace to mockedMdlBasicFields
-    )
-)
-
-val mockedMdlWithNoExpirationDate: Document = mockedFullMdl.copy(
-    nameSpacedData = mapOf(
-        mockedMdlNameSpace to
-                mockedMdlFields
-                    .minus("expiry_date")
-    )
-)
-
-val mockedMdlWithNoUserNameAndNoUserImage: Document = mockedFullMdl.copy(
-    nameSpacedData = mapOf(
-        mockedMdlNameSpace to
-                mockedMdlFields
-                    .minus("given_name")
-                    .minus("portrait")
-    )
-)
-
-val mockedFullDocuments: List<Document> = listOf(
-    mockedFullPid, mockedFullMdl
-)
+//val mockedMdlWithBasicFields = mockedFullMdl.copy(
+//    nameSpacedData = mapOf(
+//        mockedMdlNameSpace to mockedMdlBasicFields
+//    )
+//)
+//
+//val mockedMdlWithNoExpirationDate: Document = mockedFullMdl.copy(
+//    nameSpacedData = mapOf(
+//        mockedMdlNameSpace to
+//                mockedMdlFields
+//                    .minus("expiry_date")
+//    )
+//)
+//
+//val mockedMdlWithNoUserNameAndNoUserImage: Document = mockedFullMdl.copy(
+//    nameSpacedData = mapOf(
+//        mockedMdlNameSpace to
+//                mockedMdlFields
+//                    .minus("given_name")
+//                    .minus("portrait")
+//    )
+//)
+//
+//val mockedFullDocuments: List<Document> = listOf(
+//    mockedFullPid, mockedFullMdl
+//)

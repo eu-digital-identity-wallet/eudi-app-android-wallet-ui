@@ -27,7 +27,7 @@ import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -38,7 +38,7 @@ import org.json.JSONObject
 object DocumentDetailsTransformer {
 
     fun transformToUiItem(
-        document: Document,
+        document: IssuedDocument,
         resourceProvider: ResourceProvider,
     ): DocumentUi? {
 

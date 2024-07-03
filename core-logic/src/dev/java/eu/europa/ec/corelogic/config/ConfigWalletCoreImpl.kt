@@ -19,6 +19,8 @@ package eu.europa.ec.corelogic.config
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
+import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
+import eu.europa.ec.eudi.wallet.logging.Logger
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionMethod
@@ -44,6 +46,7 @@ internal class WalletCoreConfigImpl(
         get() {
             if (_config == null) {
                 _config = EudiWalletConfig.Builder(context)
+                    .logLevel(Logger.LEVEL_DEBUG)
                     .userAuthenticationRequired(AUTHENTICATION_REQUIRED)
                     .openId4VpConfig {
                         withEncryptionAlgorithms(listOf(EncryptionAlgorithm.ECDH_ES))
@@ -82,6 +85,11 @@ internal class WalletCoreConfigImpl(
                         authFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                         useStrongBoxIfSupported(true)
                         useDPoP(true)
+                        parUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+                        proofTypes(
+                            OpenId4VciManager.Config.ProofType.JWT,
+                            OpenId4VciManager.Config.ProofType.CWT
+                        )
                     }
                     .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
                     .build()

@@ -21,7 +21,7 @@ import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -31,7 +31,7 @@ import org.json.JSONObject
 import java.time.LocalDate
 
 fun extractValueFromDocumentOrEmpty(
-    document: Document,
+    document: IssuedDocument,
     key: String
 ): String {
     return try {
@@ -44,7 +44,7 @@ fun extractValueFromDocumentOrEmpty(
     }
 }
 
-fun extractFullNameFromDocumentOrEmpty(document: Document): String {
+fun extractFullNameFromDocumentOrEmpty(document: IssuedDocument): String {
     val firstName = extractValueFromDocumentOrEmpty(
         document = document,
         key = DocumentJsonKeys.FIRST_NAME
