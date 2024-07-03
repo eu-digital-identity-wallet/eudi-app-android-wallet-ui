@@ -1,5 +1,15 @@
 # How to configure the application
 
+## Table of contents
+
+* [General configuration](#general-configuration)
+* [DeepLink Schemas configuration](#deeplink-schemas-configuration)
+* [Scoped Issuance Document Configuration](#scoped-issuance-document-configuration)
+* [How to work with self-signed certificates](#how-to-work-with-self-signed-certificates)
+* [Theme configuration](#theme-configuration)
+* [Pin Storage configuration](#pin-storage-configuration)
+* [Analytics configuration](#analytics-configuration)
+
 ## General configuration
 
 The application allows the configuration of:
@@ -46,11 +56,7 @@ _config = EudiWalletConfig.Builder(context)
             .build()
 ```
 
-The application's certificates are located here:
-
-https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw
-
-You will also find the IACA certificate here. (trusted iaca root certificates).
+The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw):
 
 ## DeepLink Schemas configuration
 
@@ -279,6 +285,14 @@ val options = mutableListOf(
         available = canCreateExtraDocument(flowType)
     )
 )
+```
+
+## How to work with self-signed certificates
+
+This section describes configuring the application to interact with services utilizing self-signed certificates.
+
+```
+MARK: - TODO
 ```
 
 ## Theme configuration
