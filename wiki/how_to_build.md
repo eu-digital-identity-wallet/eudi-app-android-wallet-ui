@@ -2,7 +2,7 @@
 ## Table of contents
 * [Overview](#overview)
 * [Setup Apps](#setup-apps)
-* [How to work with self signed certificates on Android](#how-to-work-with-self-signed-certificates-on-android)
+* [How to work with self signed certificates](#how-to-work-with-self-signed-certificates)
 ## Overview
 This guide aims to assist developers build the Android application.
 
