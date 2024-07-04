@@ -13,6 +13,7 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 * [How to contribute](#how-to-contribute)
 * [Demo videos](#demo-videos)
 * [How to use the application](#how-to-use-the-application)
+* [How to build - Quick start guide](#how-to-build---quick-start-guide)
 * [Application configuration](#application-configuration)
 * [License](#license)
 
@@ -170,6 +171,10 @@ Proximity flow
 5. EUDI Wallet User selects the option to share the attributes.
 6. EUDI Wallet authenticates to share data (quick PIN).
 7. User authorization is accepted - a corresponding message is displayed to the  EUDI Wallet User.
+
+## How to build - Quick start guide
+
+[This document](wiki/how_to_build.md) describes how you can build the application and deploy the issuing and verification services locally.
 
 ## Application configuration
 
