@@ -139,41 +139,6 @@ fun DocumentOfferScreen(
     }
 }
 
-private fun handleNavigationEffect(
-    context: Context,
-    navigationEffect: Effect.Navigation,
-    navController: NavController
-) {
-    when (navigationEffect) {
-        is Effect.Navigation.SwitchScreen -> {
-            navController.navigate(navigationEffect.screenRoute) {
-                if (navigationEffect.shouldPopToSelf) {
-                    popUpTo(IssuanceScreens.DocumentOffer.screenRoute) {
-                        inclusive = true
-                    }
-                }
-            }
-        }
-
-        is Effect.Navigation.PopBackStackUpTo -> {
-            navController.popBackStack(
-                route = navigationEffect.screenRoute,
-                inclusive = navigationEffect.inclusive
-            )
-        }
-
-        is Effect.Navigation.DeepLink -> {
-            context.cacheDeepLink(navigationEffect.link)
-            navController.popBackStack(
-                route = DashboardScreens.Dashboard.screenRoute,
-                inclusive = false
-            )
-        }
-
-        is Effect.Navigation.Pop -> navController.popBackStack()
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
@@ -309,5 +274,40 @@ private fun StickyBottomSection(
         ) {
             Text(text = stringResource(id = R.string.issuance_document_offer_secondary_button_text))
         }
+    }
+}
+
+private fun handleNavigationEffect(
+    context: Context,
+    navigationEffect: Effect.Navigation,
+    navController: NavController
+) {
+    when (navigationEffect) {
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screenRoute) {
+                if (navigationEffect.shouldPopToSelf) {
+                    popUpTo(IssuanceScreens.DocumentOffer.screenRoute) {
+                        inclusive = true
+                    }
+                }
+            }
+        }
+
+        is Effect.Navigation.PopBackStackUpTo -> {
+            navController.popBackStack(
+                route = navigationEffect.screenRoute,
+                inclusive = navigationEffect.inclusive
+            )
+        }
+
+        is Effect.Navigation.DeepLink -> {
+            context.cacheDeepLink(navigationEffect.link)
+            navController.popBackStack(
+                route = DashboardScreens.Dashboard.screenRoute,
+                inclusive = false
+            )
+        }
+
+        is Effect.Navigation.Pop -> navController.popBackStack()
     }
 }
