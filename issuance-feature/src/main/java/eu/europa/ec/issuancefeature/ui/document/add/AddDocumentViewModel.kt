@@ -199,6 +199,14 @@ class AddDocumentViewModel(
         context: Context
     ) {
         viewModelScope.launch {
+
+            setState {
+                copy(
+                    isLoading = true,
+                    error = null
+                )
+            }
+
             addDocumentInteractor.issueDocument(
                 issuanceMethod = issuanceMethod,
                 documentType = docType
@@ -244,13 +252,6 @@ class AddDocumentViewModel(
                                     response.resultHandler.onAuthenticationError()
                                 }
                             )
-                        )
-                    }
-
-                    is IssueDocumentPartialState.Start -> setState {
-                        copy(
-                            isLoading = true,
-                            error = null
                         )
                     }
                 }

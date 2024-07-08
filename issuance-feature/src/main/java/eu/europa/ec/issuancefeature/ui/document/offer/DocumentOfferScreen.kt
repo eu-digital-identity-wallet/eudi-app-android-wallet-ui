@@ -147,8 +147,10 @@ private fun handleNavigationEffect(
     when (navigationEffect) {
         is Effect.Navigation.SwitchScreen -> {
             navController.navigate(navigationEffect.screenRoute) {
-                popUpTo(IssuanceScreens.DocumentOffer.screenRoute) {
-                    inclusive = true
+                if (navigationEffect.shouldPopToSelf) {
+                    popUpTo(IssuanceScreens.DocumentOffer.screenRoute) {
+                        inclusive = true
+                    }
                 }
             }
         }

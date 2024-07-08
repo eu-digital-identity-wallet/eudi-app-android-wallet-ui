@@ -59,6 +59,7 @@
     <string name="content_description_add_icon">Add</string>
     <string name="content_description_edit_icon">Edit</string>
     <string name="content_description_verified_icon">Verified</string>
+    <string name="content_description_message">Message</string>
 
     <!-- Document Types -->
     <string name="pid">National ID</string>
@@ -106,7 +107,6 @@
     <string name="quick_pin_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the home without changing the quick pin</string>
     <string name="quick_pin_bottom_sheet_cancel_primary_button_text">@string/generic_continue_capitalized</string>
     <string name="quick_pin_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
-
 
     <!-- Request Screen -->
     <string name="request_title_before_badge">Verifier</string>
@@ -220,11 +220,19 @@
     <string name="issuance_document_offer_partial_success_subtitle">Your documents from %1$s have been successfully issued except %2$s</string>
     <string name="issuance_document_offer_success_primary_button_text">@string/generic_continue_capitalized</string>
     <string name="issuance_document_offer_error_missing_pid_text">Wallet needs to be activated first with a National ID</string>
+    <string name="issuance_document_offer_error_invalid_txcode_format">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</string>
     <string name="issuance_document_offer_error_no_document">Unable to fetch and process the credential offer</string>
 
     <string name="issuance_document_offer_bottom_sheet_cancel_title">Cancel issuance process?</string>
     <string name="issuance_document_offer_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the documents list with no new documents</string>
     <string name="issuance_document_offer_bottom_sheet_cancel_primary_button_text">CONTINUE ISSUANCE</string>
     <string name="issuance_document_offer_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+
+    <!-- Issuance Document Offer Code -->
+    <string name="issuance_code_title">%1$s requires verification</string>
+    <string name="issuance_code_caption">Type the %1$d-digit transaction code you received</string>
+
+    <!-- Issuance Document Errors -->
+    <string name="issuance_generic_error">Something went wrong issuing your document(s)</string>
 
 </resources>

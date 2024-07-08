@@ -53,8 +53,6 @@ sealed class IssueDocumentPartialState {
         val crypto: BiometricCrypto,
         val resultHandler: DeviceAuthenticationResult
     ) : IssueDocumentPartialState()
-
-    data object Start : IssueDocumentPartialState()
 }
 
 sealed class IssueDocumentsPartialState {
@@ -69,8 +67,6 @@ sealed class IssueDocumentsPartialState {
         val crypto: BiometricCrypto,
         val resultHandler: DeviceAuthenticationResult
     ) : IssueDocumentsPartialState()
-
-    data object Start : IssueDocumentsPartialState()
 }
 
 sealed class AddSampleDataPartialState {
@@ -125,6 +121,7 @@ interface WalletCoreDocumentsController {
 
     fun issueDocumentsByOfferUri(
         offerUri: String,
+        txCode: String? = null
     ): Flow<IssueDocumentsPartialState>
 
     fun deleteDocument(
@@ -143,6 +140,9 @@ class WalletCoreDocumentsControllerImpl(
 
     private val genericErrorMessage
         get() = resourceProvider.genericErrorMessage()
+
+    private val documentErrorMessage
+        get() = resourceProvider.getString(R.string.issuance_generic_error)
 
     override fun loadSampleData(sampleDataByteArray: ByteArray): Flow<LoadSampleDataPartialState> =
         flow {
@@ -198,7 +198,7 @@ class WalletCoreDocumentsControllerImpl(
                     when (response) {
                         is IssueDocumentsPartialState.Failure -> emit(
                             IssueDocumentPartialState.Failure(
-                                errorMessage = response.errorMessage
+                                errorMessage = documentErrorMessage
                             )
                         )
 
@@ -220,29 +220,28 @@ class WalletCoreDocumentsControllerImpl(
                                 response.documentIds.first()
                             )
                         )
-
-                        is IssueDocumentsPartialState.Start -> emit(
-                            IssueDocumentPartialState.Start
-                        )
                     }
                 }
             }
         }
     }.safeAsync {
-        IssueDocumentPartialState.Failure(errorMessage = it.localizedMessage ?: genericErrorMessage)
+        IssueDocumentPartialState.Failure(errorMessage = documentErrorMessage)
     }
 
-    override fun issueDocumentsByOfferUri(offerUri: String): Flow<IssueDocumentsPartialState> =
+    override fun issueDocumentsByOfferUri(
+        offerUri: String,
+        txCode: String?
+    ): Flow<IssueDocumentsPartialState> =
         callbackFlow {
             eudiWallet.issueDocumentByOfferUri(
                 offerUri = offerUri,
-                onEvent = issuanceCallback()
+                onEvent = issuanceCallback(),
+                txCode = txCode
             )
-
             awaitClose()
         }.safeAsync {
             IssueDocumentsPartialState.Failure(
-                errorMessage = it.localizedMessage ?: genericErrorMessage
+                errorMessage = documentErrorMessage
             )
         }
 
@@ -334,8 +333,7 @@ class WalletCoreDocumentsControllerImpl(
                         is OfferResult.Failure -> {
                             trySendBlocking(
                                 ResolveDocumentOfferPartialState.Failure(
-                                    errorMessage = offerResult.cause.localizedMessage
-                                        ?: genericErrorMessage
+                                    errorMessage = offerResult.cause.message ?: genericErrorMessage
                                 )
                             )
                         }
@@ -370,7 +368,7 @@ class WalletCoreDocumentsControllerImpl(
 
         }.safeAsync {
             IssueDocumentsPartialState.Failure(
-                errorMessage = it.localizedMessage ?: genericErrorMessage
+                errorMessage = documentErrorMessage
             )
         }
 
@@ -400,10 +398,9 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Failure -> {
-                    val errorMessage = event.cause.localizedMessage ?: genericErrorMessage
                     trySendBlocking(
                         IssueDocumentsPartialState.Failure(
-                            errorMessage = errorMessage
+                            errorMessage = documentErrorMessage
                         )
                     )
                 }
@@ -413,7 +410,7 @@ class WalletCoreDocumentsControllerImpl(
                     if (event.issuedDocuments.isEmpty()) {
                         trySendBlocking(
                             IssueDocumentsPartialState.Failure(
-                                errorMessage = genericErrorMessage
+                                errorMessage = documentErrorMessage
                             )
                         )
                         return@OnIssueEvent
@@ -442,9 +439,6 @@ class WalletCoreDocumentsControllerImpl(
 
                 is IssueEvent.Started -> {
                     totalDocumentsToBeIssued = event.total
-                    trySendBlocking(
-                        IssueDocumentsPartialState.Start
-                    )
                 }
 
                 is IssueEvent.DocumentDeferred -> {
