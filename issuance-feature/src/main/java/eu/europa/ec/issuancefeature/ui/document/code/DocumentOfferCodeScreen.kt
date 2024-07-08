@@ -69,23 +69,6 @@ fun DocumentOfferCodeScreen(
     }
 }
 
-private fun handleNavigationEffect(
-    navigationEffect: Effect.Navigation,
-    navController: NavController
-) {
-    when (navigationEffect) {
-        is Effect.Navigation.SwitchScreen -> {
-            navController.navigate(navigationEffect.screenRoute) {
-                popUpTo(IssuanceScreens.DocumentOfferCode.screenRoute) {
-                    inclusive = true
-                }
-            }
-        }
-
-        is Effect.Navigation.Pop -> navController.popBackStack()
-    }
-}
-
 @Composable
 private fun Content(
     context: Context,
@@ -130,7 +113,7 @@ private fun Content(
 }
 
 @Composable
-fun CodeFieldLayout(
+private fun CodeFieldLayout(
     state: State,
     onPinInput: (String) -> Unit,
 ) {
@@ -143,4 +126,21 @@ fun CodeFieldLayout(
         pinWidth = 46.dp,
         focusOnCreate = true,
     )
+}
+
+private fun handleNavigationEffect(
+    navigationEffect: Effect.Navigation,
+    navController: NavController
+) {
+    when (navigationEffect) {
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screenRoute) {
+                popUpTo(IssuanceScreens.DocumentOfferCode.screenRoute) {
+                    inclusive = true
+                }
+            }
+        }
+
+        is Effect.Navigation.Pop -> navController.popBackStack()
+    }
 }
