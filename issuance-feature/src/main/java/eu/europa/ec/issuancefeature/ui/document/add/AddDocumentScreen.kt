@@ -138,7 +138,7 @@ fun AddDocumentScreen(
 }
 
 @Composable
-fun Content(
+private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,

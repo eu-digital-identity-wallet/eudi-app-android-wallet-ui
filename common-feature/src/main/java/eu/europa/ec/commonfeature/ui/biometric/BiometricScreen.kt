@@ -151,7 +151,7 @@ fun BiometricScreen(
 }
 
 @Composable
-fun Body(
+private fun Body(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSent: ((event: Event) -> Unit),
@@ -233,7 +233,7 @@ fun Body(
 }
 
 @Composable
-fun PinFieldLayout(
+private fun PinFieldLayout(
     state: State,
     onPinInput: (String) -> Unit,
 ) {
