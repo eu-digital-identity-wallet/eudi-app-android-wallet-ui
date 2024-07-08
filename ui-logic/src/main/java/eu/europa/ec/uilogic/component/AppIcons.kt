@@ -181,4 +181,10 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_verified_icon,
         imageVector = null
     )
+
+    val Message: IconData = IconData(
+        resourceId = R.drawable.ic_message,
+        contentDescriptionId = R.string.content_description_message,
+        imageVector = null
+    )
 }

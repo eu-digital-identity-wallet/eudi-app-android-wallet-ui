@@ -24,9 +24,11 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.issuancefeature.BuildConfig
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
+import eu.europa.ec.issuancefeature.ui.document.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
 import eu.europa.ec.issuancefeature.ui.success.SuccessScreen
@@ -154,6 +156,33 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(OfferUiConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
+            )
+        }
+
+        // Document Offer Code
+        composable(
+            route = IssuanceScreens.DocumentOfferCode.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + IssuanceScreens.DocumentOfferCode.screenRoute
+                }
+            ),
+            arguments = listOf(
+                navArgument(OfferCodeUiConfig.serializedKeyName) {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            DocumentOfferCodeScreen(
+                navController = navController,
+                viewModel = getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(OfferCodeUiConfig.serializedKeyName).orEmpty()
                         )
                     }
                 )
