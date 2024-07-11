@@ -78,6 +78,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 configureKotlinAndroid(this)
                 with(defaultConfig) {
 
+                    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
                     targetSdk = 34
 
                     addConfigField("DEEPLINK", "$walletScheme://")
