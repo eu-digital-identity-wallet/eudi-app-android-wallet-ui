@@ -30,8 +30,7 @@ class AndroidFeatureTestConventionPlugin : Plugin<Project> {
             }
             extensions.configure<LibraryExtension> {
                 defaultConfig {
-                    testInstrumentationRunner =
-                        "androidx.test.runner.AndroidJUnitRunner"
+                    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
                 configureGradleManagedDevices(this)
             }

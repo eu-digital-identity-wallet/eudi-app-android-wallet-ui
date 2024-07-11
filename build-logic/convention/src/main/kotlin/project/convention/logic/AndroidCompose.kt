@@ -67,8 +67,8 @@ internal fun Project.configureAndroidCompose(
         @Suppress("UnstableApiUsage")
         testOptions {
             unitTests {
-                // For Robolectric
                 isIncludeAndroidResources = true
+                isReturnDefaultValues = true
             }
         }
     }
