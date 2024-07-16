@@ -1,7 +1,7 @@
 [versions]
 accompanist = "0.34.0"
 androidDesugarJdkLibs = "2.0.4"
-androidGradlePlugin = "8.5.0"
+androidGradlePlugin = "8.5.1"
 androidxActivity = "1.9.0"
 androidxAppCompat = "1.7.0"
 androidxBrowser = "1.8.0"
@@ -17,7 +17,6 @@ androidxMacroBenchmark = "1.2.4"
 androidxMetrics = "1.0.0-beta01"
 androidxNavigation = "2.7.7"
 androidxProfileinstaller = "1.3.1"
-androidxStartup = "1.1.1"
 androidxTestCore = "1.6.1"
 androidxTestExt = "1.2.1"
 androidxTestRules = "1.6.1"
@@ -39,7 +38,7 @@ kotlinxCoroutines = "1.8.1"
 kotlinxDatetime = "0.4.1"
 kotlinxSerializationJson = "1.6.1"
 ksp = "1.9.23-1.0.20"
-lint = "31.5.0"
+lint = "31.5.1"
 okhttp = "4.12.0"
 protobuf = "3.24.0"
 protobufPlugin = "0.9.4"
@@ -50,7 +49,6 @@ turbine = "1.1.0"
 koin = "3.5.0"
 koinAnnotations = "1.3.0"
 org-jetbrains-kotlin-android = "1.9.23"
-junit = "1.2.1"
 material = "1.12.0"
 mockito = "5.12.0"
 mockitoKotlin = "5.3.1"
@@ -165,8 +163,6 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 secrets-gradlePlugin = { group = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", name = "secrets-gradle-plugin", version.ref = "secrets" }
-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "workTesting" }
-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-camera-core = { group = "androidx.camera", name = "camera-core", version.ref = "cameraCore" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraCore" }
