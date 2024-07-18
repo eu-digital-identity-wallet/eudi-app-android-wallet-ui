@@ -21,12 +21,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -53,7 +51,7 @@ fun DocumentOfferCodeScreen(
     ContentScreen(
         loadingType = state.isLoading,
         contentErrorConfig = state.error,
-        navigatableAction = ScreenNavigateAction.BACKABLE,
+        navigatableAction = ScreenNavigateAction.CANCELABLE,
         onBack = { viewModel.setEvent(Event.Pop) },
     ) { paddingValues ->
         Content(
@@ -78,10 +76,6 @@ private fun Content(
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues
 ) {
-
-    val configuration = LocalConfiguration.current
-    val messageIconSize = (configuration.screenWidthDp / 4).dp
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -93,7 +87,6 @@ private fun Content(
         )
 
         WrapIcon(
-            modifier = Modifier.size(messageIconSize),
             iconData = AppIcons.Message,
             customTint = MaterialTheme.colorScheme.primary
         )
