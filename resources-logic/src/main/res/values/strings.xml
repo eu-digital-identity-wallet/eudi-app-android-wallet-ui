@@ -33,6 +33,11 @@
     <string name="generic_dash">-</string>
     <string name="generic_qr_scan_title">Scan QR</string>
     <string name="generic_qr_scan_subtitle">Place the QR code within the frame to start scanning</string>
+    <string name="generic_deferred_success_title">In progress</string>
+    <string name="generic_bottom_sheet_delete_title">Delete %1$s?</string>
+    <string name="generic_bottom_sheet_delete_subtitle">You will not be able to use your %1$s for future verifications</string>
+    <string name="generic_bottom_sheet_delete_primary_button_text">yes</string>
+    <string name="generic_bottom_sheet_delete_secondary_button_text">no</string>
 
     <!-- Content Description -->
     <string name="content_description_user_image">User image</string>
@@ -60,6 +65,9 @@
     <string name="content_description_edit_icon">Edit</string>
     <string name="content_description_verified_icon">Verified</string>
     <string name="content_description_message">Message</string>
+    <string name="content_description_success">Success</string>
+    <string name="content_description_clock_timer">Clock timer</string>
+    <string name="content_description_arrow_right">Arrow right</string>
 
     <!-- Document Types -->
     <string name="pid">National ID</string>
@@ -77,11 +85,6 @@
     <!-- Biometrics -->
     <string name="biometric_no_hardware">Your device does not support biometric authentication</string>
     <string name="biometric_unknown_error">Something went wrong initializing biometric authentication. Please try again</string>
-
-    <!-- Success Screen -->
-    <string name="content_description_success_screen_icon">Success icon</string>
-    <string name="content_description_success_screen_title">Success</string>
-    <string name="content_description_success_screen_subtitle">You successfully set the quick pin</string>
 
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
@@ -150,8 +153,10 @@
     <string name="dashboard_document_has_expired_one">Expired\ </string>
     <string name="dashboard_document_has_expired_two">on</string>
     <string name="dashboard_document_no_expiration_found">@string/generic_dash</string>
+    <string name="dashboard_document_deferred">Pending</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
+
     <string name="dashboard_bottom_sheet_options_title">More options</string>
     <string name="dashboard_bottom_sheet_options_action_1">Change quick pin</string>
     <string name="dashboard_bottom_sheet_options_action_2">Scan a QR code</string>
@@ -160,6 +165,14 @@
     <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the QR/TAP option</string>
     <string name="dashboard_bottom_sheet_bluetooth_primary_button_text">@string/generic_enable_capitalized</string>
     <string name="dashboard_bottom_sheet_bluetooth_secondary_button_text">@string/generic_cancel_capitalized</string>
+
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_title">@string/generic_bottom_sheet_delete_title</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_subtitle">@string/generic_bottom_sheet_delete_subtitle</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
+
+    <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
+    <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents are ready to be added to your wallet.</string>
 
     <!-- Qr Scan -->
     <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>
@@ -171,10 +184,10 @@
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
 
-    <string name="document_details_bottom_sheet_delete_title">Delete %1$s?</string>
-    <string name="document_details_bottom_sheet_delete_subtitle">You will not be able to use your %1$s for future verifications</string>
-    <string name="document_details_bottom_sheet_delete_primary_button_text">yes</string>
-    <string name="document_details_bottom_sheet_delete_secondary_button_text">no</string>
+    <string name="document_details_bottom_sheet_delete_title">@string/generic_bottom_sheet_delete_title</string>
+    <string name="document_details_bottom_sheet_delete_subtitle">@string/generic_bottom_sheet_delete_subtitle</string>
+    <string name="document_details_bottom_sheet_delete_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
+    <string name="document_details_bottom_sheet_delete_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Show QR or Tap</string>
@@ -194,6 +207,9 @@
     <string name="issuance_add_document_title">Add document</string>
     <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
     <string name="issuance_add_document_user_auth_required">User authentication is required</string>
+    <string name="issuance_add_document_deferred_success_title">@string/generic_deferred_success_title</string>
+    <string name="issuance_add_document_deferred_success_subtitle">Your document has been requested. You will be notified when it has been issued to your wallet.</string>
+    <string name="issuance_add_document_deferred_success_primary_button_text">@string/generic_ok</string>
     <string name="issuance_add_document_qr_scan_section_title">Or</string>
     <string name="issuance_add_document_qr_scan_section_subtitle">SCAN QR</string>
 
@@ -216,9 +232,12 @@
     <string name="issuance_document_offer_primary_button_text">ISSUE</string>
     <string name="issuance_document_offer_secondary_button_text">@string/generic_cancel_capitalized</string>
     <string name="issuance_document_offer_success_title">@string/generic_success</string>
+    <string name="issuance_document_offer_deferred_success_title">@string/generic_deferred_success_title</string>
     <string name="issuance_document_offer_success_subtitle">Your documents from %1$s have been successfully issued.</string>
     <string name="issuance_document_offer_partial_success_subtitle">Your documents from %1$s have been successfully issued except %2$s</string>
+    <string name="issuance_document_offer_deferred_success_subtitle">Your documents from %1$s have been requested. You will be notified when they have been issued to your wallet.</string>
     <string name="issuance_document_offer_success_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="issuance_document_offer_deferred_success_primary_button_text">@string/generic_ok</string>
     <string name="issuance_document_offer_error_missing_pid_text">Wallet needs to be activated first with a National ID</string>
     <string name="issuance_document_offer_error_invalid_txcode_format">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</string>
     <string name="issuance_document_offer_error_no_document">Unable to fetch and process the credential offer</string>

@@ -148,7 +148,9 @@ class PresentationLoadingViewModel(
         return mapOf(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
-                    header = resourceProvider.getString(R.string.loading_success_config_title),
+                    headerConfig = SuccessUIConfig.HeaderConfig(
+                        title = resourceProvider.getString(R.string.loading_success_config_title)
+                    ),
                     content = resourceProvider.getString(
                         R.string.presentation_loading_success_config_subtitle,
                         interactor.verifierName

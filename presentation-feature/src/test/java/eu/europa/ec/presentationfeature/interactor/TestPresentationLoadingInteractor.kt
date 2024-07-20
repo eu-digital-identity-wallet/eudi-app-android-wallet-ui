@@ -85,10 +85,10 @@ class TestPresentationLoadingInteractor {
 
     // Case 1:
     // 1. walletCorePresentationController.events emits:
-    // WalletCorePartialState.Failure, with an error message.
+    // WalletCorePartialState.Failed, with an error message.
 
     // Case 1 Expected Result:
-    // PresentationLoadingObserveResponsePartialState.Failure state, with the same error message.
+    // PresentationLoadingObserveResponsePartialState.Failed state, with the same error message.
 
     @Test
     fun `Given Case 1, When observeResponse is called, Then Case 1 Expected Result is returned`() {
@@ -257,7 +257,7 @@ class TestPresentationLoadingInteractor {
 
     // Case 3:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
-    // BiometricsAvailability.Failure
+    // BiometricsAvailability.Failed
 
     // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.

@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -41,7 +42,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.resourceslogic.theme.values.success
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -126,9 +129,9 @@ private fun SuccessScreenView(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             ContentTitle(
-                title = state.successConfig.header,
+                title = state.successConfig.headerConfig?.title,
                 titleStyle = MaterialTheme.typography.headlineSmall.copy(
-                    color = MaterialTheme.colorScheme.success
+                    color = state.successConfig.headerConfig?.color ?: Color.Unspecified
                 ),
                 subtitle = state.successConfig.content,
             )
@@ -155,8 +158,11 @@ private fun SuccessScreenView(
                 // Image
                 imageConfig.type == SuccessUIConfig.ImageConfig.Type.DRAWABLE && imageConfig.drawableRes != null -> {
                     Image(
+                        modifier = Modifier.fillMaxWidth(0.25f),
                         painter = painterResource(id = imageConfig.drawableRes),
-                        contentDescription = imageConfig.contentDescription
+                        contentDescription = imageConfig.contentDescription,
+                        colorFilter = ColorFilter.tint(imageConfig.tint),
+                        contentScale = ContentScale.FillWidth
                     )
                 }
             }
@@ -224,15 +230,57 @@ private fun ButtonRow(text: String) {
 
 @ThemeModePreviews
 @Composable
-private fun SuccessPreview() {
+private fun SuccessDefaultPreview() {
     PreviewTheme {
         SuccessScreenView(
             state = State(
                 successConfig = SuccessUIConfig(
-                    header = "Success",
-                    content = "",
+                    headerConfig = SuccessUIConfig.HeaderConfig(
+                        title = "Success",
+                    ),
+                    content = "Subtitle",
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.DEFAULT
+                    ),
+                    buttonConfig = listOf(
+                        SuccessUIConfig.ButtonConfig(
+                            text = "back",
+                            style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                            navigation = ConfigNavigation(
+                                navigationType = NavigationType.PopTo(StartupScreens.Splash),
+                            )
+                        )
+                    ),
+                    onBackScreenToNavigate = ConfigNavigation(
+                        navigationType = NavigationType.PopTo(StartupScreens.Splash),
+                    ),
+                )
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSent = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(16.dp)
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun SuccessDrawablePreview() {
+    PreviewTheme {
+        SuccessScreenView(
+            state = State(
+                successConfig = SuccessUIConfig(
+                    headerConfig = SuccessUIConfig.HeaderConfig(
+                        title = "In Progress",
+                        color = ThemeColors.warning
+                    ),
+                    content = "Subtitle",
+                    imageConfig = SuccessUIConfig.ImageConfig(
+                        type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
+                        drawableRes = AppIcons.ClockTimer.resourceId,
+                        tint = ThemeColors.warning,
+                        contentDescription = "contentDescription"
                     ),
                     buttonConfig = listOf(
                         SuccessUIConfig.ButtonConfig(

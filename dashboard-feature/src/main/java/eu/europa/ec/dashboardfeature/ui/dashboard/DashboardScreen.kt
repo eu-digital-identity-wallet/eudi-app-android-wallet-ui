@@ -20,6 +20,7 @@ import android.Manifest
 import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,7 +49,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -56,6 +65,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -68,6 +78,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
+import eu.europa.ec.resourceslogic.theme.values.textDisabledDark
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -80,6 +91,7 @@ import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
@@ -90,9 +102,10 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.FabData
-import eu.europa.ec.uilogic.component.wrap.SheetContent
+import eu.europa.ec.uilogic.component.wrap.GenericBaseSheetContent
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
@@ -162,7 +175,7 @@ fun DashboardScreen(
                     sheetContent = state.sheetContent,
                     state = state,
                     onEventSent = {
-                        viewModel.setEvent(it)
+                        viewModel.setEvent(it as Event)
                     }
                 )
             }
@@ -188,7 +201,14 @@ private fun handleNavigationEffect(
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> context.finish()
-        is Effect.Navigation.SwitchScreen -> navController.navigate(navigationEffect.screenRoute)
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screenRoute) {
+                popUpTo(navigationEffect.popUpToScreenRoute) {
+                    inclusive = navigationEffect.inclusive
+                }
+            }
+        }
+
         is Effect.Navigation.OpenDeepLinkAction -> {
             handleDeepLinkAction(
                 navController,
@@ -221,6 +241,7 @@ private fun Content(
             message = stringResource(id = R.string.dashboard_title),
             userFirstName = state.userFirstName,
             userBase64Image = state.userBase64Image,
+            allowUserInteraction = state.allowUserInteraction,
             onEventSend = onEventSend,
             paddingValues = paddingValues
         )
@@ -238,10 +259,12 @@ private fun Content(
             )
         }
 
-        FabContent(
-            paddingValues = paddingValues,
-            onEventSend = onEventSend
-        )
+        if (state.allowUserInteraction) {
+            FabContent(
+                paddingValues = paddingValues,
+                onEventSend = onEventSend
+            )
+        }
     }
 
     if (state.bleAvailability == BleAvailability.NO_PERMISSION) {
@@ -266,6 +289,10 @@ private fun Content(
                 is Effect.ShowBottomSheet -> {
                     onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                 }
+
+                is Effect.DocumentsFetched -> {
+                    onEventSend(Event.TryIssuingDeferredDocuments)
+                }
             }
         }.collect()
     }
@@ -278,8 +305,8 @@ private fun DashboardSheetContent(
     onEventSent: (event: Event) -> Unit
 ) {
     when (sheetContent) {
-        is DashboardBottomSheetContent.OPTIONS -> {
-            SheetContent(
+        is DashboardBottomSheetContent.Options -> {
+            GenericBaseSheetContent(
                 titleContent = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -366,7 +393,7 @@ private fun DashboardSheetContent(
             )
         }
 
-        is DashboardBottomSheetContent.BLUETOOTH -> {
+        is DashboardBottomSheetContent.Bluetooth -> {
             DialogBottomSheet(
                 title = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_title),
                 message = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_subtitle),
@@ -380,6 +407,43 @@ private fun DashboardSheetContent(
                     )
                 },
                 onNegativeClick = { onEventSent(Event.BottomSheet.Bluetooth.SecondaryButtonPressed) }
+            )
+        }
+
+        is DashboardBottomSheetContent.DeferredDocumentPressed -> {
+            DialogBottomSheet(
+                title = stringResource(
+                    id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title,
+                    sheetContent.documentUi.documentName
+                ),
+                message = stringResource(
+                    id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle,
+                    sheetContent.documentUi.documentName
+                ),
+                positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_primary_button_text),
+                negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text),
+                onPositiveClick = {
+                    onEventSent(
+                        Event.BottomSheet.DeferredDocument.DeferredDocumentPressed.PrimaryButtonPressed(
+                            documentUi = sheetContent.documentUi
+                        )
+                    )
+                },
+                onNegativeClick = {
+                    onEventSent(Event.BottomSheet.DeferredDocument.DeferredDocumentPressed.SecondaryButtonPressed)
+                }
+            )
+        }
+
+        is DashboardBottomSheetContent.DeferredDocumentsReady -> {
+            BottomSheetWithOptionsList(
+                title = stringResource(
+                    id = R.string.dashboard_bottom_sheet_deferred_documents_ready_title
+                ),
+                message = stringResource(
+                    id = R.string.dashboard_bottom_sheet_deferred_documents_ready_subtitle
+                ),
+                options = sheetContent.options,
             )
         }
     }
@@ -441,6 +505,7 @@ private fun Title(
     message: String,
     userFirstName: String,
     userBase64Image: String,
+    allowUserInteraction: Boolean,
     onEventSend: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
@@ -493,6 +558,7 @@ private fun Title(
             WrapIconButton(
                 iconData = AppIcons.VerticalMore,
                 customTint = MaterialTheme.colorScheme.primary,
+                enabled = allowUserInteraction,
                 onClick = {
                     onEventSend(Event.OptionsPressed)
                 }
@@ -526,7 +592,7 @@ private fun DocumentsList(
         }
 
         items(
-            documents.size,
+            count = documents.size,
             key = { documents[it].documentId }
         ) { index ->
             CardListItem(
@@ -550,89 +616,217 @@ private fun CardListItem(
     WrapCard(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .then(
+                if (dataItem.documentIsDeferred) {
+                    val dottedLinesColor = if (isSystemInDarkTheme()) {
+                        MaterialTheme.colorScheme.textSecondaryDark
+                    } else {
+                        MaterialTheme.colorScheme.textDisabledDark
+                    }
+                    Modifier
+                        .dashedBorder(
+                            //color = Color(0x3D000000),
+                            color = dottedLinesColor,
+                            shape = RoundedCornerShape(16.dp),
+                            strokeWidth = 2.dp,
+                            gapLength = SIZE_SMALL.dp
+                        )
+
+                } else {
+                    Modifier
+                }
+            ),
         onClick = {
-            onEventSend(
-                Event.NavigateToDocument(
-                    documentId = dataItem.documentId,
-                    documentType = dataItem.documentIdentifier.docType,
+            if (dataItem.documentIsDeferred) {
+                onEventSend(
+                    Event.BottomSheet.DeferredDocument.DeferredDocumentPressed(
+                        documentUi = dataItem
+                    )
                 )
-            )
+            } else {
+                onEventSend(
+                    Event.NavigateToDocument(
+                        documentId = dataItem.documentId,
+                        documentType = dataItem.documentIdentifier.docType,
+                    )
+                )
+            }
         },
         throttleClicks = true,
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(SPACING_MEDIUM.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box {
-                WrapIcon(
-                    iconData = AppIcons.Id,
-                    customTint = MaterialTheme.colorScheme.primary
-                )
-                if (dataItem.documentHasExpired) {
-                    IconWarningIndicator(
-                        backgroundColor = MaterialTheme.colorScheme.backgroundDefault
-                    )
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .height(28.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                ScalableText(
-                    text = dataItem.documentName,
-                    textStyle = MaterialTheme.typography.titleMedium.copy(
-                        color = MaterialTheme.colorScheme.textPrimaryDark
-                    )
-                )
-            }
-            VSpacer.Small()
-            ExpiryDate(
-                expirationDate = dataItem.documentExpirationDateFormatted,
-                hasExpired = dataItem.documentHasExpired
-            )
+        if (dataItem.documentIsDeferred) {
+            DeferredDocument(dataItem)
+        } else {
+            IssuedDocument(dataItem)
         }
     }
 }
 
 @Composable
-private fun ExpiryDate(
-    expirationDate: String,
-    hasExpired: Boolean
+private fun IssuedDocument(dataItem: DocumentUi) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(SPACING_MEDIUM.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box {
+            WrapIcon(
+                iconData = AppIcons.Id,
+                customTint = MaterialTheme.colorScheme.primary
+            )
+            if (dataItem.documentHasExpired) {
+                IconWarningIndicator(
+                    backgroundColor = MaterialTheme.colorScheme.backgroundDefault
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .wrapContentWidth()
+                .height(28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            ScalableText(
+                text = dataItem.documentName,
+                textStyle = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.textPrimaryDark
+                )
+            )
+        }
+        VSpacer.Small()
+        ExpirationInfo(dataItem)
+    }
+}
+
+fun Modifier.dashedBorder(
+    brush: Brush,
+    shape: Shape,
+    strokeWidth: Dp = 2.dp,
+    dashLength: Dp = 4.dp,
+    gapLength: Dp = 4.dp,
+    cap: StrokeCap = StrokeCap.Round
+) = this.drawWithContent {
+    val outline = shape.createOutline(size, layoutDirection, density = this)
+
+    val dashedStroke = Stroke(
+        cap = cap,
+        width = strokeWidth.toPx(),
+        pathEffect = PathEffect.dashPathEffect(
+            intervals = floatArrayOf(dashLength.toPx(), gapLength.toPx())
+        )
+    )
+
+    // Draw the content
+    drawContent()
+
+    // Draw the border
+    drawOutline(
+        outline = outline,
+        style = dashedStroke,
+        brush = brush
+    )
+}
+
+fun Modifier.dashedBorder(
+    color: Color,
+    shape: Shape,
+    strokeWidth: Dp = 2.dp,
+    dashLength: Dp = 4.dp,
+    gapLength: Dp = 4.dp,
+    cap: StrokeCap = StrokeCap.Round
+) = dashedBorder(brush = SolidColor(color), shape, strokeWidth, dashLength, gapLength, cap)
+
+@Composable
+private fun DeferredDocument(dataItem: DocumentUi) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(SPACING_MEDIUM.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box {
+            WrapIcon(
+                iconData = AppIcons.Id,
+                customTint = MaterialTheme.colorScheme.textDisabledDark,
+                contentAlpha = ALPHA_DISABLED
+            )
+            IconWarningIndicator(
+                iconData = AppIcons.ClockTimer,
+                backgroundColor = MaterialTheme.colorScheme.backgroundDefault
+            )
+        }
+        Box(
+            modifier = Modifier
+                .wrapContentWidth()
+                .height(28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            ScalableText(
+                text = dataItem.documentName,
+                textStyle = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.textDisabledDark
+                )
+            )
+        }
+        VSpacer.Small()
+        ExpirationInfo(dataItem)
+    }
+}
+
+@Composable
+private fun ExpirationInfo(
+    document: DocumentUi,
 ) {
     val textStyle = MaterialTheme.typography.bodySmall
         .copy(color = MaterialTheme.colorScheme.textSecondaryDark)
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (hasExpired) {
-            val annotatedText = buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        fontStyle = MaterialTheme.typography.bodySmall.fontStyle,
-                        color = MaterialTheme.colorScheme.warning
+        with(document) {
+            if (documentIsDeferred) {
+                val annotatedText = buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(
+                            fontStyle = textStyle.fontStyle,
+                            color = MaterialTheme.colorScheme.warning
+                        )
+                    ) {
+                        append(stringResource(id = R.string.dashboard_document_deferred))
+                    }
+                }
+                Text(text = annotatedText, style = textStyle)
+            } else {
+                if (documentHasExpired) {
+                    val annotatedText = buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                fontStyle = textStyle.fontStyle,
+                                color = MaterialTheme.colorScheme.warning
+                            )
+                        ) {
+                            append(stringResource(id = R.string.dashboard_document_has_expired_one))
+                        }
+
+                        append(stringResource(id = R.string.dashboard_document_has_expired_two))
+                    }
+                    Text(text = annotatedText, style = textStyle)
+                } else {
+                    Text(
+                        text = stringResource(id = R.string.dashboard_document_has_not_expired),
+                        style = textStyle
                     )
-                ) {
-                    append(stringResource(id = R.string.dashboard_document_has_expired_one))
                 }
 
-                append(stringResource(id = R.string.dashboard_document_has_expired_two))
+                //Expiration Date
+                Text(text = documentExpirationDateFormatted, style = textStyle)
             }
-            Text(text = annotatedText, style = textStyle)
-        } else {
-            Text(
-                text = stringResource(id = R.string.dashboard_document_has_not_expired),
-                style = textStyle
-            )
         }
-        Text(text = expirationDate, style = textStyle)
     }
 }
 
@@ -731,7 +925,7 @@ private fun RequiredPermissionsAsk(
 private fun SheetContentPreview() {
     PreviewTheme {
         DashboardSheetContent(
-            sheetContent = DashboardBottomSheetContent.OPTIONS,
+            sheetContent = DashboardBottomSheetContent.Options,
             state = State(),
             onEventSent = {}
         )

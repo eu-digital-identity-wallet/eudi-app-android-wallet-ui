@@ -301,6 +301,17 @@ class DocumentOfferViewModel(
                         goToSuccessScreen(route = response.successRoute)
                     }
 
+                    is IssueDocumentsInteractorPartialState.DeferredSuccess -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                error = null,
+                            )
+                        }
+
+                        goToSuccessScreen(route = response.successRoute)
+                    }
+
                     is IssueDocumentsInteractorPartialState.UserAuthRequired -> {
                         documentOfferInteractor.handleUserAuthentication(
                             context = context,

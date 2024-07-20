@@ -17,11 +17,16 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -29,17 +34,30 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.extension.throttledClickable
+
+data class OptionListItemUi(
+    val text: String,
+    val icon: IconData = AppIcons.KeyboardArrowRight,
+    val onClick: () -> Unit
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +80,7 @@ fun WrapModalBottomSheet(
 }
 
 @Composable
-fun SheetContent(
+fun GenericBaseSheetContent(
     title: String,
     bodyContent: @Composable () -> Unit
 ) {
@@ -85,7 +103,7 @@ fun SheetContent(
 }
 
 @Composable
-fun SheetContent(
+fun GenericBaseSheetContent(
     titleContent: @Composable () -> Unit,
     bodyContent: @Composable () -> Unit,
 ) {
@@ -116,37 +134,118 @@ fun DialogBottomSheet(
     onPositiveClick: () -> Unit? = {},
     onNegativeClick: () -> Unit? = {}
 ) {
-    SheetContent(title = title) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.textSecondaryDark
+    GenericBaseSheetContent(
+        title = title,
+        bodyContent = {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.textSecondaryDark
+                )
             )
+            VSpacer.Large()
+            positiveButtonText?.let {
+                WrapPrimaryButton(
+                    onClick = { onPositiveClick.invoke() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = true
+                ) {
+                    Text(
+                        text = positiveButtonText
+                    )
+                }
+            }
+            VSpacer.Medium()
+            negativeButtonText?.let {
+                WrapSecondaryButton(
+                    onClick = { onNegativeClick.invoke() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = true
+                ) {
+                    Text(
+                        text = negativeButtonText
+                    )
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun BottomSheetWithOptionsList(
+    title: String,
+    message: String,
+    options: List<OptionListItemUi>,
+) {
+    if (options.isNotEmpty()){
+        GenericBaseSheetContent(
+            title = title,
+            bodyContent = {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = MaterialTheme.colorScheme.textSecondaryDark
+                    )
+                )
+                VSpacer.Large()
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    OptionsList(
+                        optionItems = options,
+                    )
+                }
+            }
         )
-        VSpacer.Large()
-        positiveButtonText?.let {
-            WrapPrimaryButton(
-                onClick = { onPositiveClick.invoke() },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = true
-            ) {
-                Text(
-                    text = positiveButtonText
-                )
-            }
+    }
+}
+
+@Composable
+fun OptionsList(
+    optionItems: List<OptionListItemUi>,
+) {
+    LazyColumn {
+        items(optionItems) { item ->
+            OptionListItem(
+                item = item,
+                onItemSelected = {
+                    item.onClick()
+                },
+            )
         }
-        VSpacer.Medium()
-        negativeButtonText?.let {
-            WrapSecondaryButton(
-                onClick = { onNegativeClick.invoke() },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = true
-            ) {
-                Text(
-                    text = negativeButtonText
-                )
+    }
+}
+
+@Composable
+fun OptionListItem(
+    item: OptionListItemUi,
+    onItemSelected: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(SIZE_SMALL.dp))
+            .throttledClickable {
+                onItemSelected.invoke()
             }
-        }
+            .padding(vertical = SPACING_EXTRA_SMALL.dp)
+        ,
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = item.text,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        WrapIcon(
+            modifier = Modifier.wrapContentWidth(),
+            iconData = item.icon,
+            customTint = MaterialTheme.colorScheme.primary
+        )
     }
 }
 
@@ -159,6 +258,31 @@ private fun DialogBottomSheetPreview() {
             message = "Message",
             positiveButtonText = "OK",
             negativeButtonText = "Cancel"
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun BottomSheetWithOptionsListPreview() {
+    PreviewTheme {
+        BottomSheetWithOptionsList(
+            title = "Title",
+            message = "Message",
+            options = listOf(
+                OptionListItemUi(
+                    text = "Small Name",
+                    onClick = {}
+                ),
+                OptionListItemUi(
+                    text = "MediumMediumMediumMedium Name",
+                    onClick = {}
+                ),
+                OptionListItemUi(
+                    text = "LargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLarge Name",
+                    onClick = {}
+                ),
+            ),
         )
     }
 }

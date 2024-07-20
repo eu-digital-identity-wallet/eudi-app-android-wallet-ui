@@ -331,7 +331,7 @@ class TestAddDocumentInteractor {
 
     // Case 3:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
-    // BiometricsAvailability.Failure
+    // BiometricsAvailability.Failed
 
     // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.

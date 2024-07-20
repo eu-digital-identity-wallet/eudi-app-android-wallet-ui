@@ -35,6 +35,8 @@ import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer.TxCodeSpec.InputMode
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
@@ -57,6 +59,10 @@ sealed class ResolveDocumentOfferInteractorPartialState {
 
 sealed class IssueDocumentsInteractorPartialState {
     data class Success(
+        val successRoute: String,
+    ) : IssueDocumentsInteractorPartialState()
+
+    data class DeferredSuccess(
         val successRoute: String,
     ) : IssueDocumentsInteractorPartialState()
 
@@ -208,25 +214,27 @@ class DocumentOfferInteractorImpl(
                         )
 
                         IssueDocumentsInteractorPartialState.Success(
-                            successRoute = buildIssuanceSuccessRoute(
-                                resourceProvider.getString(
+                            successRoute = buildGenericSuccessRoute(
+                                type = IssuanceSuccessType.DEFAULT,
+                                subtitle = resourceProvider.getString(
                                     R.string.issuance_document_offer_partial_success_subtitle,
                                     issuerName,
                                     nonIssuedDocsNames
                                 ),
-                                navigation
+                                navigation = navigation
                             )
                         )
                     }
 
                     is IssueDocumentsPartialState.Success -> {
                         IssueDocumentsInteractorPartialState.Success(
-                            successRoute = buildIssuanceSuccessRoute(
-                                resourceProvider.getString(
+                            successRoute = buildGenericSuccessRoute(
+                                type = IssuanceSuccessType.DEFAULT,
+                                subtitle = resourceProvider.getString(
                                     R.string.issuance_document_offer_success_subtitle,
                                     issuerName
                                 ),
-                                navigation
+                                navigation = navigation
                             )
                         )
                     }
@@ -235,6 +243,19 @@ class DocumentOfferInteractorImpl(
                         IssueDocumentsInteractorPartialState.UserAuthRequired(
                             crypto = response.crypto,
                             resultHandler = response.resultHandler
+                        )
+                    }
+
+                    is IssueDocumentsPartialState.DeferredSuccess -> {
+                        IssueDocumentsInteractorPartialState.DeferredSuccess(
+                            successRoute = buildGenericSuccessRoute(
+                                type = IssuanceSuccessType.DEFERRED,
+                                subtitle = resourceProvider.getString(
+                                    R.string.issuance_document_offer_deferred_success_subtitle,
+                                    issuerName
+                                ),
+                                navigation = navigation
+                            )
                         )
                     }
                 }
@@ -277,27 +298,67 @@ class DocumentOfferInteractorImpl(
         }
     }
 
-    private fun buildIssuanceSuccessRoute(subtitle: String, navigation: ConfigNavigation): String {
-        val successScreenArguments = getSuccessScreenArguments(subtitle, navigation)
+    private enum class IssuanceSuccessType {
+        DEFAULT, DEFERRED
+    }
+
+    private fun buildGenericSuccessRoute(
+        type: IssuanceSuccessType,
+        subtitle: String,
+        navigation: ConfigNavigation
+    ): String {
+        val successScreenArguments = getSuccessScreenArguments(type, subtitle, navigation)
         return generateComposableNavigationLink(
             screen = CommonScreens.Success,
             arguments = successScreenArguments
         )
     }
 
-    private fun getSuccessScreenArguments(subtitle: String, navigation: ConfigNavigation): String {
+    private fun getSuccessScreenArguments(
+        type: IssuanceSuccessType,
+        subtitle: String,
+        navigation: ConfigNavigation
+    ): String {
+        val (headerConfig, imageConfig, buttonText) = when (type) {
+            IssuanceSuccessType.DEFAULT -> Triple(
+                first = SuccessUIConfig.HeaderConfig(
+                    title = resourceProvider.getString(R.string.issuance_document_offer_success_title),
+                    color = ThemeColors.success
+                ),
+                second = SuccessUIConfig.ImageConfig(
+                    type = SuccessUIConfig.ImageConfig.Type.DEFAULT,
+                    drawableRes = null,
+                    tint = ThemeColors.success,
+                    contentDescription = resourceProvider.getString(R.string.content_description_success)
+                ),
+                third = resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
+            )
+
+            IssuanceSuccessType.DEFERRED -> Triple(
+                first = SuccessUIConfig.HeaderConfig(
+                    title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
+                    color = ThemeColors.warning
+                ),
+                second = SuccessUIConfig.ImageConfig(
+                    type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
+                    drawableRes = AppIcons.ClockTimer.resourceId,
+                    tint = ThemeColors.warning,
+                    contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
+                ),
+                third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
+            )
+        }
+
         return generateComposableArguments(
             mapOf(
                 SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                     SuccessUIConfig(
-                        header = resourceProvider.getString(R.string.issuance_document_offer_success_title),
+                        headerConfig = headerConfig,
                         content = subtitle,
-                        imageConfig = SuccessUIConfig.ImageConfig(
-                            type = SuccessUIConfig.ImageConfig.Type.DEFAULT
-                        ),
+                        imageConfig = imageConfig,
                         buttonConfig = listOf(
                             SuccessUIConfig.ButtonConfig(
-                                text = resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text),
+                                text = buttonText,
                                 style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                                 navigation = navigation
                             )

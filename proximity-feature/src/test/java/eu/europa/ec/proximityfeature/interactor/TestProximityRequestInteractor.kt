@@ -132,7 +132,7 @@ class TestProximityRequestInteractor {
     // TransferEventPartialState.Error, with an error message.
 
     // Case 2 Expected Result:
-    // ProximityRequestInteractorPartialState.Failure state, with the same error message.
+    // ProximityRequestInteractorPartialState.Failed state, with the same error message.
     @Test
     fun `Given Case 2, When getRequestDocuments is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -552,7 +552,7 @@ class TestProximityRequestInteractor {
     // 4. walletCoreDocumentsController.getAllDocuments() throws an exception with a message.
 
     // Case 11 Expected Result:
-    // ProximityRequestInteractorPartialState.Failure state, with:
+    // ProximityRequestInteractorPartialState.Failed state, with:
     // 1. exception's localized message.
     @Test
     fun `Given Case 11, When getRequestDocuments is called, Then Case 11 Expected Result is returned`() {
@@ -593,7 +593,7 @@ class TestProximityRequestInteractor {
     // 4. walletCoreDocumentsController.getAllDocuments() throws an exception with no message.
 
     // Case 12 Expected Result:
-    // ProximityRequestInteractorPartialState.Failure state, with:
+    // ProximityRequestInteractorPartialState.Failed state, with:
     // 1. the generic error message.
     @Test
     fun `Given Case 12, When getRequestDocuments is called, Then Case 12 Expected Result is returned`() {

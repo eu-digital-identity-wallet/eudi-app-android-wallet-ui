@@ -20,6 +20,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -186,5 +187,17 @@ object AppIcons {
         resourceId = R.drawable.ic_message,
         contentDescriptionId = R.string.content_description_message,
         imageVector = null
+    )
+
+    val ClockTimer: IconData = IconData(
+        resourceId = R.drawable.ic_clock_timer,
+        contentDescriptionId = R.string.content_description_clock_timer,
+        imageVector = null
+    )
+
+    val KeyboardArrowRight: IconData = IconData(
+        resourceId = null,
+        contentDescriptionId = R.string.content_description_arrow_right,
+        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight
     )
 }

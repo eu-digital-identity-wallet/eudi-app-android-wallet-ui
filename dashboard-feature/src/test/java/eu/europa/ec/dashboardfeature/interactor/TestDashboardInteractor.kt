@@ -230,7 +230,7 @@ class TestDashboardInteractor {
 
     // Case 2 Expected Result:
     // DashboardInteractorPartialState.Success state, with:
-    // 1. the Document transformed to DocumentUi object,
+    // 1. the DeferredDocument transformed to DocumentUi object,
     // 2. empty string for the user name, and
     // 3. empty string for the user image.
     @Test
@@ -263,7 +263,7 @@ class TestDashboardInteractor {
 
     // Case 3 Expected Result:
     // DashboardInteractorPartialState.Success state, with:
-    // 1. the Document transformed to DocumentUi object,
+    // 1. the DeferredDocument transformed to DocumentUi object,
     // 2. an actual user name, and
     // 3. an actual (base64 encoded) user image.
     @Test

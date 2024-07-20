@@ -77,7 +77,7 @@ class ProximityRequestInteractorImpl(
                         )
                     } else {
                         val requestDataUi = RequestTransformer.transformToUiItems(
-                            storageDocuments = walletCoreDocumentsController.getAllDocuments(),
+                            storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
                             requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
                             resourceProvider = resourceProvider

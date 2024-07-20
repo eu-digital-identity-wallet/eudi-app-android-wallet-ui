@@ -157,7 +157,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns an empty PID document.
 
     // Case 3 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failure state,
+    // DocumentDetailsInteractorPartialState.Failed state,
     // with the generic error message.
     @Test
     fun `Given Case 3, When getDocumentDetails is called, Then Case 3 Expected Result is returned`() {
@@ -184,7 +184,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns null.
 
     // Case 4 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failure state,
+    // DocumentDetailsInteractorPartialState.Failed state,
     // with the generic error message.
     @Test
     fun `Given Case 4, When getDocumentDetails is called, Then Case 4 Expected Result is returned`() {
@@ -270,7 +270,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() throws an exception with a message.
 
     // Case 6 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failure state,
+    // DocumentDetailsInteractorPartialState.Failed state,
     // with the exception's localized message.
     @Test
     fun `Given Case 6, When getDocumentDetails is called, Then Case 6 Expected Result is returned`() {
@@ -298,7 +298,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() throws an exception with no message.
 
     // Case 7 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failure state,
+    // DocumentDetailsInteractorPartialState.Failed state,
     // with the generic error message.
     @Test
     fun `Given Case 7, When getDocumentDetails is called, Then Case 7 Expected Result is returned`() {
@@ -329,7 +329,7 @@ class TestDocumentDetailsInteractor {
 
     // 1. A documentId and document is PID.
     // 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
-    // 3. walletCoreDocumentsController.deleteAllDocuments() returns Failure.
+    // 3. walletCoreDocumentsController.deleteAllDocuments() returns Failed.
     @Test
     fun `Given Case 1, When deleteDocument is called, Then it returns Failure with failure's error message`() {
         coroutineRule.runTest {
@@ -460,7 +460,7 @@ class TestDocumentDetailsInteractor {
     // Case 5:
 
     // 1. A documentId and document is mDL.
-    // 2. walletCoreDocumentsController.deleteDocument() returns Failure.
+    // 2. walletCoreDocumentsController.deleteDocument() returns Failed.
     @Test
     fun `Given Case 5, When deleteDocument is called, Then it returns Failure with failure's error message`() {
         coroutineRule.runTest {

@@ -23,8 +23,12 @@ import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
+import eu.europa.ec.eudi.wallet.document.Document
+import eu.europa.ec.eudi.wallet.document.Document.State
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.sample.LoadSampleResult
+import eu.europa.ec.eudi.wallet.issue.openid4vci.DeferredIssueResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
@@ -47,6 +51,8 @@ enum class IssuanceMethod {
 
 sealed class IssueDocumentPartialState {
     data class Success(val documentId: String) : IssueDocumentPartialState()
+    data class DeferredSuccess(val deferredDocuments: Map<String, String>) :
+        IssueDocumentPartialState()
 
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
     data class UserAuthRequired(
@@ -57,6 +63,9 @@ sealed class IssueDocumentPartialState {
 
 sealed class IssueDocumentsPartialState {
     data class Success(val documentIds: List<String>) : IssueDocumentsPartialState()
+    data class DeferredSuccess(val deferredDocuments: Map<String, String>) :
+        IssueDocumentsPartialState()
+
     data class PartialSuccess(
         val documentIds: List<String>,
         val nonIssuedDocuments: Map<String, String>
@@ -89,6 +98,25 @@ sealed class ResolveDocumentOfferPartialState {
     data class Failure(val errorMessage: String) : ResolveDocumentOfferPartialState()
 }
 
+sealed class IssueDeferredDocumentPartialState {
+    data class Issued(
+        val documentId: DocumentId,
+        val docType: DocType,
+        val docName: String,
+    ) : IssueDeferredDocumentPartialState()
+
+    data class NotReady(
+        val documentId: DocumentId,
+        val docType: DocType,
+        val docName: String,
+    ) : IssueDeferredDocumentPartialState()
+
+    data class Failed(
+        val documentId: DocumentId,
+        val errorMessage: String
+    ) : IssueDeferredDocumentPartialState()
+}
+
 /**
  * Controller for interacting with internal local storage of Core for CRUD operations on documents
  * */
@@ -106,7 +134,9 @@ interface WalletCoreDocumentsController {
     /**
      * @return All the documents from the Database.
      * */
-    fun getAllDocuments(): List<IssuedDocument>
+    fun getAllDocuments(): List<Document>
+
+    fun getAllIssuedDocuments(): List<IssuedDocument>
 
     fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<IssuedDocument>
 
@@ -131,6 +161,8 @@ interface WalletCoreDocumentsController {
     fun deleteAllDocuments(mainPidDocumentId: String): Flow<DeleteAllDocumentsPartialState>
 
     fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState>
+
+    fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState>
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -174,10 +206,15 @@ class WalletCoreDocumentsControllerImpl(
         AddSampleDataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
     }
 
-    override fun getAllDocuments(): List<IssuedDocument> = eudiWallet.getDocuments()
+    override fun getAllDocuments(): List<Document> = eudiWallet.getAllDocuments()
+        .filter { it.state != State.UNSIGNED }
+
+    override fun getAllIssuedDocuments(): List<IssuedDocument> = eudiWallet.getDocuments()
 
     override fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<IssuedDocument> =
-        getAllDocuments().filter { it.docType == documentIdentifier.docType }
+        getAllDocuments()
+            .filterIsInstance<IssuedDocument>()
+            .filter { it.docType == documentIdentifier.docType }
 
     override fun getDocumentById(id: String): IssuedDocument? {
         return eudiWallet.getDocumentById(documentId = id) as? IssuedDocument
@@ -218,6 +255,12 @@ class WalletCoreDocumentsControllerImpl(
                         is IssueDocumentsPartialState.PartialSuccess -> emit(
                             IssueDocumentPartialState.Success(
                                 response.documentIds.first()
+                            )
+                        )
+
+                        is IssueDocumentsPartialState.DeferredSuccess -> emit(
+                            IssueDocumentPartialState.DeferredSuccess(
+                                response.deferredDocuments
                             )
                         )
                     }
@@ -268,7 +311,7 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun deleteAllDocuments(mainPidDocumentId: String): Flow<DeleteAllDocumentsPartialState> =
         flow {
-            val allDocuments = eudiWallet.getDocuments()
+            val allDocuments = getAllDocuments()
             val mainPidDocument = getMainPidDocument()
 
             mainPidDocument?.let {
@@ -333,7 +376,8 @@ class WalletCoreDocumentsControllerImpl(
                         is OfferResult.Failure -> {
                             trySendBlocking(
                                 ResolveDocumentOfferPartialState.Failure(
-                                    errorMessage = offerResult.cause.message ?: genericErrorMessage
+                                    errorMessage = offerResult.cause.localizedMessage
+                                        ?: genericErrorMessage
                                 )
                             )
                         }
@@ -352,6 +396,53 @@ class WalletCoreDocumentsControllerImpl(
             awaitClose()
         }.safeAsync {
             ResolveDocumentOfferPartialState.Failure(
+                errorMessage = it.localizedMessage ?: genericErrorMessage
+            )
+        }
+
+    override fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState> =
+        callbackFlow {
+            eudiWallet.issueDeferredDocument(
+                documentId = docId,
+                onResult = { deferredIssuanceResult ->
+                    when (deferredIssuanceResult) {
+                        is DeferredIssueResult.DocumentFailed -> {
+                            trySendBlocking(
+                                IssueDeferredDocumentPartialState.Failed(
+                                    documentId = deferredIssuanceResult.documentId,
+                                    errorMessage = deferredIssuanceResult.cause.localizedMessage
+                                        ?: genericErrorMessage
+                                )
+                            )
+                        }
+
+                        is DeferredIssueResult.DocumentIssued -> {
+                            trySendBlocking(
+                                IssueDeferredDocumentPartialState.Issued(
+                                    documentId = deferredIssuanceResult.documentId,
+                                    docType = deferredIssuanceResult.docType,
+                                    docName = deferredIssuanceResult.name
+                                )
+                            )
+                        }
+
+                        is DeferredIssueResult.DocumentNotReady -> {
+                            trySendBlocking(
+                                IssueDeferredDocumentPartialState.NotReady(
+                                    documentId = deferredIssuanceResult.documentId,
+                                    docType = deferredIssuanceResult.docType,
+                                    docName = deferredIssuanceResult.name
+                                )
+                            )
+                        }
+                    }
+                }
+            )
+
+            awaitClose()
+        }.safeAsync {
+            IssueDeferredDocumentPartialState.Failed(
+                documentId = docId,
                 errorMessage = it.localizedMessage ?: genericErrorMessage
             )
         }
@@ -376,6 +467,7 @@ class WalletCoreDocumentsControllerImpl(
 
         var totalDocumentsToBeIssued = 0
         val nonIssuedDocuments: MutableMap<String, String> = mutableMapOf()
+        val deferredDocuments: MutableMap<String, String> = mutableMapOf()
         val issuedDocuments: MutableMap<String, String> = mutableMapOf()
 
         val listener = OpenId4VciManager.OnIssueEvent { event ->
@@ -406,6 +498,11 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Finished -> {
+
+                    if (deferredDocuments.isNotEmpty()) {
+                        trySendBlocking(IssueDocumentsPartialState.DeferredSuccess(deferredDocuments))
+                        return@OnIssueEvent
+                    }
 
                     if (event.issuedDocuments.isEmpty()) {
                         trySendBlocking(
@@ -442,7 +539,16 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.DocumentDeferred -> {
-                    // TODO Not yet implemented
+                    deferredDocuments[event.documentId] = event.docType
+
+                    /*CoroutineScope(Dispatchers.IO).launch {
+                        repeat(5){
+                            delay(5000)
+                            eudiWallet.issueDeferredDocument(event.documentId) {
+                                it
+                            }
+                        }
+                    }*/
                 }
             }
         }
