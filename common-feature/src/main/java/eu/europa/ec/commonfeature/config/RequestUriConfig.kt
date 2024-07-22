@@ -24,8 +24,8 @@ import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
 sealed interface PresentationMode {
-    data class OpenId4Vp(val uri: String) : PresentationMode
-    data object Ble : PresentationMode
+    data class OpenId4Vp(val uri: String, val initiatorRoute: String) : PresentationMode
+    data class Ble(val initiatorRoute: String) : PresentationMode
 }
 
 data class RequestUriConfig(
@@ -46,7 +46,10 @@ data class RequestUriConfig(
 
 fun RequestUriConfig.toDomainConfig(): PresentationControllerConfig {
     return when (mode) {
-        is PresentationMode.Ble -> PresentationControllerConfig.Ble
-        is PresentationMode.OpenId4Vp -> PresentationControllerConfig.OpenId4VP(mode.uri)
+        is PresentationMode.Ble -> PresentationControllerConfig.Ble(mode.initiatorRoute)
+        is PresentationMode.OpenId4Vp -> PresentationControllerConfig.OpenId4VP(
+            mode.uri,
+            mode.initiatorRoute
+        )
     }
 }

@@ -54,7 +54,8 @@ sealed class Effect : ViewSideEffect {
         data object Pop : Navigation()
 
         data class DeepLink(
-            val link: Uri
+            val link: Uri,
+            val routeToPop: String?
         ) : Navigation()
     }
 }
@@ -108,7 +109,8 @@ class SuccessViewModel(
             }
 
             is NavigationType.Deeplink -> Effect.Navigation.DeepLink(
-                nav.link.toUri()
+                nav.link.toUri(),
+                nav.routeToPop
             )
 
             is NavigationType.Pop, NavigationType.Finish -> Effect.Navigation.Pop

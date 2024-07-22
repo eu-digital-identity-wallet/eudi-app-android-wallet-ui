@@ -19,7 +19,9 @@ package eu.europa.ec.uilogic.navigation.helper
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.corelogic.util.CoreActions
@@ -94,40 +96,56 @@ fun handleDeepLinkAction(
     arguments: String? = null
 ) {
     hasDeepLink(uri)?.let { action ->
+        handleDeepLinkAction(navController, action, arguments)
+    }
+}
 
-        val screen: Screen
+fun handleDeepLinkAction(
+    navController: NavController,
+    action: DeepLinkAction,
+    arguments: String? = null
+) {
+    val screen: Screen
 
-        when (action.type) {
-            DeepLinkType.OPENID4VP -> {
-                screen = PresentationScreens.PresentationRequest
-            }
-
-            DeepLinkType.CREDENTIAL_OFFER -> {
-                screen = IssuanceScreens.DocumentOffer
-            }
-
-            DeepLinkType.ISSUANCE -> {
-                EudiWallet.resumeOpenId4VciWithAuthorization(action.link)
-                notifyOnResumeIssuance(navController.context)
-                return@let
-            }
-
-            DeepLinkType.EXTERNAL -> {
-                navController.context.openUrl(action.link)
-                return@let
-            }
+    when (action.type) {
+        DeepLinkType.OPENID4VP -> {
+            screen = PresentationScreens.PresentationRequest
         }
 
-        val navigationLink = arguments?.let {
-            generateComposableNavigationLink(
-                screen = screen,
-                arguments = arguments
+        DeepLinkType.CREDENTIAL_OFFER -> {
+            screen = IssuanceScreens.DocumentOffer
+        }
+
+        DeepLinkType.ISSUANCE -> {
+            EudiWallet.resumeOpenId4VciWithAuthorization(action.link)
+            notify(navController.context, CoreActions.VCI_RESUME_ACTION)
+            return
+        }
+
+        DeepLinkType.EXTERNAL -> {
+            navController.context.openUrl(action.link)
+            return
+        }
+
+        DeepLinkType.DYNAMIC_PRESENTATION -> {
+            notify(
+                navController.context,
+                CoreActions.VCI_DYNAMIC_PRESENTATION,
+                bundleOf(Pair("uri", action.link.toString()))
             )
-        } ?: screen.screenRoute
-
-        navController.navigate(navigationLink) {
-            popUpTo(screen.screenRoute) { inclusive = true }
+            return
         }
+    }
+
+    val navigationLink = arguments?.let {
+        generateComposableNavigationLink(
+            screen = screen,
+            arguments = arguments
+        )
+    } ?: screen.screenRoute
+
+    navController.navigate(navigationLink) {
+        popUpTo(screen.screenRoute) { inclusive = true }
     }
 }
 
@@ -148,7 +166,12 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
         schemas = listOf(BuildConfig.ISSUE_AUTHORIZATION_SCHEME),
         host = BuildConfig.ISSUE_AUTHORIZATION_HOST
     ),
-    EXTERNAL(listOf("external"));
+    EXTERNAL(
+        emptyList()
+    ),
+    DYNAMIC_PRESENTATION(
+        emptyList()
+    );
 
     companion object {
         fun parse(scheme: String, host: String? = null): DeepLinkType = when {
@@ -170,9 +193,10 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
     }
 }
 
-private fun notifyOnResumeIssuance(context: Context) {
+private fun notify(context: Context, action: String, bundle: Bundle? = null) {
     Intent().also { intent ->
-        intent.setAction(CoreActions.VCI_RESUME_ACTION)
+        intent.setAction(action)
+        bundle?.let { intent.putExtras(it) }
         context.sendBroadcast(intent)
     }
 }

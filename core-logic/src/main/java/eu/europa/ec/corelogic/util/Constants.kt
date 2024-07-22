@@ -18,4 +18,5 @@ package eu.europa.ec.corelogic.util
 
 object CoreActions {
     const val VCI_RESUME_ACTION = "vci.resume.eudi.action"
+    const val VCI_DYNAMIC_PRESENTATION = "vci.dynamic.presentation.eudi.action"
 }
