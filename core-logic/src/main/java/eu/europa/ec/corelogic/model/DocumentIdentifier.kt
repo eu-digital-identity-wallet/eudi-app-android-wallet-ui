@@ -83,7 +83,7 @@ fun DocType.toDocumentIdentifier(): DocumentIdentifier = when (this) {
 }
 
 fun Document.toDocumentIdentifier(): DocumentIdentifier {
-    val nameSpace = (this as? IssuedDocument?)?.nameSpaces?.keys?.firstOrNull().orEmpty()
+    val nameSpace = (this as? IssuedDocument)?.nameSpaces?.keys?.firstOrNull().orEmpty()
     val docType = this.docType
 
     return createDocumentIdentifier(nameSpace, docType)

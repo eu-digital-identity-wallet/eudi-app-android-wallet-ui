@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
@@ -46,6 +47,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
@@ -177,7 +179,7 @@ fun BottomSheetWithOptionsList(
     message: String,
     options: List<OptionListItemUi>,
 ) {
-    if (options.isNotEmpty()){
+    if (options.isNotEmpty()) {
         GenericBaseSheetContent(
             title = title,
             bodyContent = {
@@ -207,7 +209,9 @@ fun BottomSheetWithOptionsList(
 fun OptionsList(
     optionItems: List<OptionListItemUi>,
 ) {
-    LazyColumn {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(SIZE_EXTRA_SMALL.dp)
+    ) {
         items(optionItems) { item ->
             OptionListItem(
                 item = item,
@@ -228,11 +232,11 @@ fun OptionListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(SIZE_SMALL.dp))
+            .background(MaterialTheme.colorScheme.backgroundDefault)
             .throttledClickable {
                 onItemSelected.invoke()
             }
-            .padding(vertical = SPACING_EXTRA_SMALL.dp)
-        ,
+            .padding(vertical = SPACING_EXTRA_SMALL.dp),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {

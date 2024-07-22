@@ -22,6 +22,7 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentUiState
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
@@ -34,6 +35,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -50,15 +52,38 @@ import kotlinx.coroutines.withContext
 
 data class DeferredDocNotReadyYetException(override val message: String?) : Exception()
 
-sealed class DashboardInteractorPartialState {
+sealed class DashboardInteractorGetDocumentsPartialState {
     data class Success(
-        val documents: List<DocumentUi>,
+        val documentsUi: List<DocumentUi>,
         val mainPid: IssuedDocument?,
         val userFirstName: String,
         val userBase64Portrait: String,
-    ) : DashboardInteractorPartialState()
+    ) : DashboardInteractorGetDocumentsPartialState()
 
-    data class Failure(val error: String) : DashboardInteractorPartialState()
+    data class Failure(val error: String) : DashboardInteractorGetDocumentsPartialState()
+}
+
+/*sealed class DashboardInteractorGetDocumentPartialState {
+    data class Success(
+        val documentUi: DocumentUi,
+        val mainPid: IssuedDocument?,
+        val userFirstName: String,
+        val userBase64Portrait: String,
+    ) : DashboardInteractorGetDocumentPartialState()
+
+    data class Failure(val error: String) : DashboardInteractorGetDocumentPartialState()
+}*/
+
+sealed class DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState {
+    data class Success(
+        val newlyIssuedDocumentsUi: List<DocumentUi>,
+        val mainPid: IssuedDocument?,
+        val userFirstName: String,
+        val userBase64Portrait: String,
+    ) : DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState()
+
+    data class Failure(val error: String) :
+        DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState()
 }
 
 sealed class DashboardInteractorDeleteDocumentPartialState {
@@ -72,6 +97,11 @@ data class DeferredDocumentData(
     val documentId: DocumentId,
     val docType: DocType,
     val docName: String,
+)
+
+data class UserInfo(
+    val userFirstName: String,
+    val userBase64Portrait: String
 )
 
 sealed class DashboardInteractorRetryIssuingDeferredDocumentPartialState {
@@ -97,13 +127,26 @@ sealed class DashboardInteractorRetryIssuingDeferredDocumentsPartialState {
 }
 
 interface DashboardInteractor {
-    fun getDocuments(): Flow<DashboardInteractorPartialState>
+    fun getDocuments(): Flow<DashboardInteractorGetDocumentsPartialState>
+    /*fun getDocument(
+        documentId: DocumentId,
+        userFirstName: String,
+        userImage: String,
+    ): Flow<DashboardInteractorGetDocumentPartialState>*/
+
+    fun getDocumentsOnlyForTheseIds(
+        documentIds: List<DocumentId>,
+        userFirstName: String,
+        userImage: String,
+    ): Flow<DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState>
+
+    fun getDocumentById(documentId: DocumentId): Document?
     fun isBleAvailable(): Boolean
     fun isBleCentralClientModeEnabled(): Boolean
     fun getAppVersion(): String
     fun deleteDocument(
         documentId: String,
-        documentType: DocType
+        //documentType: DocType
     ): Flow<DashboardInteractorDeleteDocumentPartialState>
 
     suspend fun tryIssuingDeferredDocumentSuspend(deferredDocumentId: DocumentId)
@@ -134,90 +177,181 @@ class DashboardInteractorImpl(
     override fun isBleCentralClientModeEnabled(): Boolean =
         walletCoreConfig.config.bleCentralClientModeEnabled
 
-    override fun getDocuments(): Flow<DashboardInteractorPartialState> = flow {
+    override fun getDocuments(): Flow<DashboardInteractorGetDocumentsPartialState> = flow {
         var userFirstName = ""
         var userImage = ""
         val documents = walletCoreDocumentsController.getAllDocuments()
         val mainPid = walletCoreDocumentsController.getMainPidDocument()
         val documentsUi = documents.map { document ->
-            when (document) {
-                is IssuedDocument -> {
-                    var documentExpirationDate = extractValueFromDocumentOrEmpty(
-                        document = document,
-                        key = DocumentJsonKeys.EXPIRY_DATE
-                    )
+            val (documentUi, userInfo) = document.toDocumentUiAndUserInfo(mainPid)
 
-                    val docHasExpired = documentHasExpired(documentExpirationDate)
-
-                    documentExpirationDate = if (documentExpirationDate.isNotBlank()) {
-                        documentExpirationDate.toDateFormatted().toString()
-                    } else {
-                        resourceProvider.getString(R.string.dashboard_document_no_expiration_found)
-                    }
-
-                    if (userFirstName.isBlank()) {
-                        userFirstName = extractValueFromDocumentOrEmpty(
-                            document = mainPid ?: document,
-                            key = DocumentJsonKeys.FIRST_NAME
-                        )
-                    }
-
-                    if (userImage.isBlank()) {
-                        userImage = extractValueFromDocumentOrEmpty(
-                            document = document,
-                            key = DocumentJsonKeys.PORTRAIT
-                        )
-                    }
-
-                    return@map DocumentUi(
-                        documentId = document.id,
-                        documentName = document.toUiName(resourceProvider),
-                        documentIdentifier = document.toDocumentIdentifier(),
-                        documentImage = "",
-                        documentExpirationDateFormatted = documentExpirationDate,
-                        documentHasExpired = docHasExpired,
-                        documentDetails = emptyList()
-                    )
-                }
-
-                else -> {
-                    return@map DocumentUi(
-                        documentId = document.id,
-                        documentName = document.toUiName(resourceProvider),
-                        documentIdentifier = document.toDocumentIdentifier(),
-                        documentImage = "",
-                        documentExpirationDateFormatted = "",
-                        documentIsDeferred = true,
-                        documentHasExpired = false,
-                        documentDetails = emptyList()
-                    )
-                }
+            if (userFirstName.isBlank()) {
+                userFirstName = userInfo.userFirstName
             }
+            if (userImage.isBlank()) {
+                userImage = userInfo.userBase64Portrait
+            }
+
+            return@map documentUi
         }
         emit(
-            DashboardInteractorPartialState.Success(
-                documents = documentsUi,
+            DashboardInteractorGetDocumentsPartialState.Success(
+                documentsUi = documentsUi,
                 mainPid = mainPid,
                 userFirstName = userFirstName,
                 userBase64Portrait = userImage
             )
         )
     }.safeAsync {
-        DashboardInteractorPartialState.Failure(
+        DashboardInteractorGetDocumentsPartialState.Failure(
             error = it.localizedMessage ?: genericErrorMsg
         )
     }
+
+    override fun getDocumentsOnlyForTheseIds(
+        documentIds: List<DocumentId>,
+        userFirstName: String,
+        userImage: String,
+    ): Flow<DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState> = flow {
+        var usrFirstName = userFirstName
+        var usrImage = userImage
+        val documents = walletCoreDocumentsController.getAllDocuments().filter {
+            documentIds.contains(it.id)
+        }
+        val mainPid = walletCoreDocumentsController.getMainPidDocument()
+        val documentsUi = documents.map { document ->
+            val (documentUi, userInfo) = document.toDocumentUiAndUserInfo(mainPid)
+
+            if (userFirstName.isBlank()) {
+                usrFirstName = userInfo.userFirstName
+            }
+            if (userImage.isBlank()) {
+                usrImage = userInfo.userBase64Portrait
+            }
+
+            return@map documentUi
+        }
+        emit(
+            DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState.Success(
+                newlyIssuedDocumentsUi = documentsUi,
+                mainPid = mainPid,
+                userFirstName = usrFirstName,
+                userBase64Portrait = usrImage
+            )
+        )
+    }.safeAsync {
+        DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState.Failure(
+            error = it.localizedMessage ?: genericErrorMsg
+        )
+    }
+
+    /*override fun getDocument(
+        documentId: DocumentId,
+        userFirstName: String,
+        userImage: String,
+    ): Flow<DashboardInteractorGetDocumentPartialState> =
+        flow {
+            val document = walletCoreDocumentsController.getDocumentById(documentId)
+            val mainPid = walletCoreDocumentsController.getMainPidDocument()
+            document?.let { doc ->
+                val (documentUi, userInfo) = doc.toDocumentUiAndUserInfo(mainPid)
+
+                emit(
+                    DashboardInteractorGetDocumentPartialState.Success(
+                        documentUi = documentUi,
+                        mainPid = mainPid,
+                        userFirstName = userFirstName.ifBlank {
+                            userInfo.userFirstName
+                        },
+                        userBase64Portrait = userImage.ifBlank {
+                            userInfo.userBase64Portrait
+                        }
+                    )
+                )
+            } ?: emit(
+                DashboardInteractorGetDocumentPartialState.Failure(
+                    error = genericErrorMsg
+                )
+            )
+        }.safeAsync {
+            DashboardInteractorGetDocumentPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
+            )
+        }*/
+
+    private fun Document.toDocumentUiAndUserInfo(mainPid: IssuedDocument?): Pair<DocumentUi, UserInfo> {
+        when (this) {
+            is IssuedDocument -> {
+                var documentExpirationDate = extractValueFromDocumentOrEmpty(
+                    document = this,
+                    key = DocumentJsonKeys.EXPIRY_DATE
+                )
+
+                val docHasExpired = documentHasExpired(documentExpirationDate)
+
+                documentExpirationDate = if (documentExpirationDate.isNotBlank()) {
+                    documentExpirationDate.toDateFormatted().toString()
+                } else {
+                    resourceProvider.getString(R.string.dashboard_document_no_expiration_found)
+                }
+
+                val userFirstName = extractValueFromDocumentOrEmpty(
+                    document = mainPid ?: this,
+                    key = DocumentJsonKeys.FIRST_NAME
+                )
+
+
+                val userImage = extractValueFromDocumentOrEmpty(
+                    document = this,
+                    key = DocumentJsonKeys.PORTRAIT
+                )
+
+                return DocumentUi(
+                    documentId = this.id,
+                    documentName = this.toUiName(resourceProvider),
+                    documentIdentifier = this.toDocumentIdentifier(),
+                    documentImage = "",
+                    documentExpirationDateFormatted = documentExpirationDate,
+                    documentHasExpired = docHasExpired,
+                    documentDetails = emptyList(),
+                    documentState = DocumentUiState.Issued
+                ) to UserInfo(
+                    userFirstName = userFirstName,
+                    userBase64Portrait = userImage
+                )
+            }
+
+            else -> {
+                return DocumentUi(
+                    documentId = this.id,
+                    documentName = this.toUiName(resourceProvider),
+                    documentIdentifier = this.toDocumentIdentifier(),
+                    documentImage = "",
+                    documentExpirationDateFormatted = "",
+                    documentHasExpired = false,
+                    documentDetails = emptyList(),
+                    documentState = DocumentUiState.Deferred
+                ) to UserInfo(
+                    userFirstName = "",
+                    userBase64Portrait = ""
+                )
+            }
+        }
+    }
+
+    override fun getDocumentById(documentId: DocumentId): Document? =
+        walletCoreDocumentsController.getDocumentById(documentId)
 
     override fun getAppVersion(): String = configLogic.appVersion
 
     override fun deleteDocument(
         documentId: String,
-        documentType: DocType
     ): Flow<DashboardInteractorDeleteDocumentPartialState> =
         flow {
+            val document = getDocumentById(documentId = documentId)
 
             val shouldDeleteAllDocuments: Boolean =
-                if (documentType.toDocumentIdentifier() == DocumentIdentifier.PID) {
+                if (document?.docType?.toDocumentIdentifier() == DocumentIdentifier.PID) {
 
                     val allPidDocuments =
                         walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)
@@ -289,7 +423,7 @@ class DashboardInteractorImpl(
                     }
                 }.retryWhen { cause, attempt ->
                     println("Giannis Suspend Interactor tried again. Cause: $cause, attempt #$attempt")
-                    kotlinx.coroutines.delay(2000)
+                    kotlinx.coroutines.delay(2000) //TODO Giannis Make it 5000
                     cause is DeferredDocNotReadyYetException
                 }.firstOrNull()
                 ?: DashboardInteractorRetryIssuingDeferredDocumentPartialState.Failure(

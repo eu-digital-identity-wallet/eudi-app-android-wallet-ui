@@ -49,15 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -65,7 +57,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -73,6 +64,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentUiState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
@@ -92,6 +84,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
+import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
@@ -113,6 +106,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryExtendedFab
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryExtendedFab
 import eu.europa.ec.uilogic.extension.IconWarningIndicator
+import eu.europa.ec.uilogic.extension.dashedBorder
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
@@ -175,7 +169,7 @@ fun DashboardScreen(
                     sheetContent = state.sheetContent,
                     state = state,
                     onEventSent = {
-                        viewModel.setEvent(it as Event)
+                        viewModel.setEvent(it)
                     }
                 )
             }
@@ -424,13 +418,17 @@ private fun DashboardSheetContent(
                 negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text),
                 onPositiveClick = {
                     onEventSent(
-                        Event.BottomSheet.DeferredDocument.DeferredDocumentPressed.PrimaryButtonPressed(
+                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.PrimaryButtonPressed(
                             documentUi = sheetContent.documentUi
                         )
                     )
                 },
                 onNegativeClick = {
-                    onEventSent(Event.BottomSheet.DeferredDocument.DeferredDocumentPressed.SecondaryButtonPressed)
+                    onEventSent(
+                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.SecondaryButtonPressed(
+                            documentUi = sheetContent.documentUi
+                        )
+                    )
                 }
             )
         }
@@ -618,48 +616,149 @@ private fun CardListItem(
             .fillMaxWidth()
             .wrapContentHeight()
             .then(
-                if (dataItem.documentIsDeferred) {
-                    val dottedLinesColor = if (isSystemInDarkTheme()) {
-                        MaterialTheme.colorScheme.textSecondaryDark
-                    } else {
-                        MaterialTheme.colorScheme.textDisabledDark
+                when (dataItem.documentState) {
+                    is DocumentUiState.Issued -> {
+                        Modifier
                     }
-                    Modifier
-                        .dashedBorder(
-                            //color = Color(0x3D000000),
-                            color = dottedLinesColor,
-                            shape = RoundedCornerShape(16.dp),
-                            strokeWidth = 2.dp,
-                            gapLength = SIZE_SMALL.dp
-                        )
 
-                } else {
-                    Modifier
+                    is DocumentUiState.Deferred, is DocumentUiState.Failed -> {
+                        val dottedLinesColor = if (isSystemInDarkTheme()) {
+                            MaterialTheme.colorScheme.textSecondaryDark
+                        } else {
+                            MaterialTheme.colorScheme.textDisabledDark
+                        }
+                        Modifier
+                            .dashedBorder(
+                                color = dottedLinesColor,
+                                shape = RoundedCornerShape(16.dp),
+                                strokeWidth = 2.dp,
+                                gapLength = SIZE_SMALL.dp
+                            )
+
+                    }
                 }
             ),
         onClick = {
-            if (dataItem.documentIsDeferred) {
-                onEventSend(
-                    Event.BottomSheet.DeferredDocument.DeferredDocumentPressed(
-                        documentUi = dataItem
+            when (dataItem.documentState) {
+                is DocumentUiState.Issued -> {
+                    onEventSend(
+                        Event.NavigateToDocument(
+                            documentId = dataItem.documentId
+                        )
                     )
-                )
-            } else {
-                onEventSend(
-                    Event.NavigateToDocument(
-                        documentId = dataItem.documentId,
-                        documentType = dataItem.documentIdentifier.docType,
+
+                }
+
+                is DocumentUiState.Deferred, is DocumentUiState.Failed -> {
+                    onEventSend(
+                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
+                            documentUi = dataItem
+                        )
                     )
-                )
+                }
             }
         },
         throttleClicks = true,
     ) {
-        if (dataItem.documentIsDeferred) {
-            DeferredDocument(dataItem)
-        } else {
-            IssuedDocument(dataItem)
+        /*when (dataItem.documentState) {
+            is DocumentUiState.Issued -> {
+                IssuedDocument(dataItem)
+            }
+
+            is DocumentUiState.Deferred -> {
+                DeferredDocument(dataItem)
+            }
+
+            is DocumentUiState.Failed -> {
+                FailedDocument(dataItem)
+            }
+
+        }*/
+
+        DocumentContent(dataItem)
+    }
+}
+
+@Composable
+private fun DocumentContent(dataItem: DocumentUi) {
+    val documentState = dataItem.documentState
+    val iconData = AppIcons.Id
+    val iconTint = when (documentState) {
+        is DocumentUiState.Issued -> MaterialTheme.colorScheme.primary
+        is DocumentUiState.Deferred, is DocumentUiState.Failed -> MaterialTheme.colorScheme.textDisabledDark
+    }
+    val iconAlpha = when (documentState) {
+        is DocumentUiState.Issued -> ALPHA_ENABLED
+        is DocumentUiState.Deferred, is DocumentUiState.Failed -> ALPHA_DISABLED
+    }
+
+    val warningIconData = when (documentState) {
+        is DocumentUiState.Issued -> AppIcons.Warning
+        is DocumentUiState.Deferred -> AppIcons.ClockTimer
+        is DocumentUiState.Failed -> AppIcons.ErrorFilled
+    }
+    val warningIconTint = when (documentState) {
+        is DocumentUiState.Issued, is DocumentUiState.Deferred -> {
+            MaterialTheme.colorScheme.warning
         }
+
+        is DocumentUiState.Failed -> {
+            MaterialTheme.colorScheme.error
+        }
+
+    }
+    val documentNameColor = when (documentState) {
+        is DocumentUiState.Issued -> {
+            MaterialTheme.colorScheme.textPrimaryDark
+        }
+
+        is DocumentUiState.Deferred, is DocumentUiState.Failed -> {
+            MaterialTheme.colorScheme.textDisabledDark
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(SPACING_MEDIUM.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box {
+            WrapIcon(
+                iconData = iconData,
+                customTint = iconTint,
+                contentAlpha = iconAlpha
+            )
+            if (documentState is DocumentUiState.Issued) {
+                if (dataItem.documentHasExpired ){
+                    IconWarningIndicator(
+                        backgroundColor = MaterialTheme.colorScheme.backgroundDefault
+                    )
+                }
+            } else {
+                IconWarningIndicator(
+                    iconData = warningIconData,
+                    customTint = warningIconTint,
+                    backgroundColor = MaterialTheme.colorScheme.backgroundDefault
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .wrapContentWidth()
+                .height(28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            ScalableText(
+                text = dataItem.documentName,
+                textStyle = MaterialTheme.typography.titleMedium.copy(
+                    color = documentNameColor
+                )
+            )
+        }
+        VSpacer.Small()
+        ExpirationInfo(dataItem)
     }
 }
 
@@ -701,44 +800,6 @@ private fun IssuedDocument(dataItem: DocumentUi) {
     }
 }
 
-fun Modifier.dashedBorder(
-    brush: Brush,
-    shape: Shape,
-    strokeWidth: Dp = 2.dp,
-    dashLength: Dp = 4.dp,
-    gapLength: Dp = 4.dp,
-    cap: StrokeCap = StrokeCap.Round
-) = this.drawWithContent {
-    val outline = shape.createOutline(size, layoutDirection, density = this)
-
-    val dashedStroke = Stroke(
-        cap = cap,
-        width = strokeWidth.toPx(),
-        pathEffect = PathEffect.dashPathEffect(
-            intervals = floatArrayOf(dashLength.toPx(), gapLength.toPx())
-        )
-    )
-
-    // Draw the content
-    drawContent()
-
-    // Draw the border
-    drawOutline(
-        outline = outline,
-        style = dashedStroke,
-        brush = brush
-    )
-}
-
-fun Modifier.dashedBorder(
-    color: Color,
-    shape: Shape,
-    strokeWidth: Dp = 2.dp,
-    dashLength: Dp = 4.dp,
-    gapLength: Dp = 4.dp,
-    cap: StrokeCap = StrokeCap.Round
-) = dashedBorder(brush = SolidColor(color), shape, strokeWidth, dashLength, gapLength, cap)
-
 @Composable
 private fun DeferredDocument(dataItem: DocumentUi) {
     Column(
@@ -778,6 +839,45 @@ private fun DeferredDocument(dataItem: DocumentUi) {
 }
 
 @Composable
+private fun FailedDocument(dataItem: DocumentUi) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(SPACING_MEDIUM.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box {
+            WrapIcon(
+                iconData = AppIcons.Id,
+                customTint = MaterialTheme.colorScheme.textDisabledDark,
+                contentAlpha = ALPHA_DISABLED
+            )
+            IconWarningIndicator(
+                iconData = AppIcons.ErrorFilled,
+                customTint = MaterialTheme.colorScheme.error,
+                backgroundColor = MaterialTheme.colorScheme.backgroundDefault
+            )
+        }
+        Box(
+            modifier = Modifier
+                .wrapContentWidth()
+                .height(28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            ScalableText(
+                text = dataItem.documentName,
+                textStyle = MaterialTheme.typography.titleMedium.copy(
+                    color = MaterialTheme.colorScheme.textDisabledDark
+                )
+            )
+        }
+        VSpacer.Small()
+        ExpirationInfo(dataItem)
+    }
+}
+
+@Composable
 private fun ExpirationInfo(
     document: DocumentUi,
 ) {
@@ -789,20 +889,34 @@ private fun ExpirationInfo(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         with(document) {
-            if (documentIsDeferred) {
-                val annotatedText = buildAnnotatedString {
-                    withStyle(
-                        style = SpanStyle(
-                            fontStyle = textStyle.fontStyle,
-                            color = MaterialTheme.colorScheme.warning
+            when (documentState) {
+                is DocumentUiState.Issued -> {
+                    if (documentHasExpired) {
+                        val annotatedText = buildAnnotatedString {
+                            withStyle(
+                                style = SpanStyle(
+                                    fontStyle = textStyle.fontStyle,
+                                    color = MaterialTheme.colorScheme.warning
+                                )
+                            ) {
+                                append(stringResource(id = R.string.dashboard_document_has_expired_one))
+                            }
+
+                            append(stringResource(id = R.string.dashboard_document_has_expired_two))
+                        }
+                        Text(text = annotatedText, style = textStyle)
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.dashboard_document_has_not_expired),
+                            style = textStyle
                         )
-                    ) {
-                        append(stringResource(id = R.string.dashboard_document_deferred))
                     }
+
+                    //Expiration Date
+                    Text(text = documentExpirationDateFormatted, style = textStyle)
                 }
-                Text(text = annotatedText, style = textStyle)
-            } else {
-                if (documentHasExpired) {
+
+                is DocumentUiState.Deferred -> {
                     val annotatedText = buildAnnotatedString {
                         withStyle(
                             style = SpanStyle(
@@ -810,21 +924,26 @@ private fun ExpirationInfo(
                                 color = MaterialTheme.colorScheme.warning
                             )
                         ) {
-                            append(stringResource(id = R.string.dashboard_document_has_expired_one))
+                            append(stringResource(id = R.string.dashboard_document_deferred_pending))
                         }
-
-                        append(stringResource(id = R.string.dashboard_document_has_expired_two))
                     }
                     Text(text = annotatedText, style = textStyle)
-                } else {
-                    Text(
-                        text = stringResource(id = R.string.dashboard_document_has_not_expired),
-                        style = textStyle
-                    )
                 }
 
-                //Expiration Date
-                Text(text = documentExpirationDateFormatted, style = textStyle)
+                is DocumentUiState.Failed -> {
+                    val annotatedText = buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                fontStyle = textStyle.fontStyle,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            append(stringResource(id = R.string.dashboard_document_deferred_failed))
+                        }
+                    }
+                    Text(text = annotatedText, style = textStyle)
+                }
+
             }
         }
     }
@@ -844,6 +963,7 @@ private fun DashboardScreenPreview() {
                 documentHasExpired = false,
                 documentImage = "image1",
                 documentDetails = emptyList(),
+                documentState = DocumentUiState.Issued
             ),
             DocumentUi(
                 documentId = "1",
@@ -853,6 +973,7 @@ private fun DashboardScreenPreview() {
                 documentHasExpired = false,
                 documentImage = "image2",
                 documentDetails = emptyList(),
+                documentState = DocumentUiState.Deferred/*.NoAttemptToIssueYet*/
             ),
             DocumentUi(
                 documentId = "2",
@@ -865,6 +986,7 @@ private fun DashboardScreenPreview() {
                 documentHasExpired = true,
                 documentImage = "image3",
                 documentDetails = emptyList(),
+                documentState = DocumentUiState.Deferred/*.FailedAttemptToIssue*/
             )
         )
         Content(

@@ -26,16 +26,28 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
+sealed interface DocumentUiState {
+    data object Issued : DocumentUiState
+
+    /*sealed interface Deferred : DocumentUiState {
+        data object NoAttemptToIssueYet : Deferred
+        data object FailedAttemptToIssue : Deferred
+    }*/
+    data object Deferred : DocumentUiState
+    data object Failed : DocumentUiState
+}
+
 data class DocumentUi(
-    val documentId: DocumentId,
+    val documentState: DocumentUiState,
     val documentName: String,
     val documentIdentifier: DocumentIdentifier,
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,
-    val documentIsDeferred: Boolean = false,
+    //val documentIsDeferred: Boolean = false,
     val documentImage: String,
     val documentDetails: List<DocumentDetailsUi>,
     val userFullName: String? = null,
+    val documentId: DocumentId,
 )
 
 fun DocumentIdentifier.toUiName(resourceProvider: ResourceProvider): String {

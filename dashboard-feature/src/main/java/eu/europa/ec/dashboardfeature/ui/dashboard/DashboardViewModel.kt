@@ -25,12 +25,14 @@ import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentUiState
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorDeleteDocumentPartialState
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorPartialState
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DeferredDocumentData
 import eu.europa.ec.eudi.wallet.document.Document
@@ -56,6 +58,7 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -85,8 +88,7 @@ sealed class Event : ViewEvent {
     data object TryIssuingDeferredDocuments : Event()
     data object Pop : Event()
     data class NavigateToDocument(
-        val documentId: DocumentId,
-        val documentType: DocType,
+        val documentId: DocumentId
     ) : Event()
 
     data object OptionsPressed : Event()
@@ -111,18 +113,19 @@ sealed class Event : ViewEvent {
         }
 
         sealed class DeferredDocument : BottomSheet() {
-            data class DeferredDocumentPressed(val documentUi: DocumentUi) : DeferredDocument() {
-                data class PrimaryButtonPressed(val documentUi: DocumentUi) : DeferredDocument()
-                data object SecondaryButtonPressed : DeferredDocument()
+            sealed class DeferredNotReadyYet(open val documentUi: DocumentUi) : DeferredDocument() {
+                data class DocumentSelected(override val documentUi: DocumentUi) :
+                    DeferredNotReadyYet(documentUi)
+
+                data class PrimaryButtonPressed(override val documentUi: DocumentUi) :
+                    DeferredNotReadyYet(documentUi)
+
+                data class SecondaryButtonPressed(override val documentUi: DocumentUi) :
+                    DeferredNotReadyYet(documentUi)
             }
 
-            /*data class DeferredDocumentsReady(
-                val documentsUi: List<DocumentUi>
-            ) : DeferredDocument()*/
-
-            data class DeferredDocumentSelected(
-                val documentId: DocumentId,
-                val docType: DocType
+            data class OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
+                val documentId: DocumentId
             ) : DeferredDocument()
         }
     }
@@ -186,13 +189,13 @@ class DashboardViewModel(
             }
 
             is Event.TryIssuingDeferredDocuments -> {
-                tryDeferredDocuments(event)
+                tryIssuingDeferredDocuments(event)
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
             is Event.NavigateToDocument -> {
-                goToDocumentDetails(docId = event.documentId, docType = event.documentType)
+                goToDocumentDetails(docId = event.documentId)
             }
 
             is Event.OptionsPressed -> {
@@ -258,7 +261,7 @@ class DashboardViewModel(
                 setState { copy(bleAvailability = event.availability) }
             }
 
-            is Event.BottomSheet.DeferredDocument.DeferredDocumentPressed -> {
+            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected -> {
                 showBottomSheet(
                     sheetContent = DashboardBottomSheetContent.DeferredDocumentPressed(
                         documentUi = event.documentUi
@@ -266,51 +269,19 @@ class DashboardViewModel(
                 )
             }
 
-            is Event.BottomSheet.DeferredDocument.DeferredDocumentPressed.PrimaryButtonPressed -> {
+            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.PrimaryButtonPressed -> {
                 hideBottomSheet()
-                deleteDocument(event)
+                deleteDocument(event = event, documentId = event.documentUi.documentId)
             }
 
-            is Event.BottomSheet.DeferredDocument.DeferredDocumentPressed.SecondaryButtonPressed -> {
+            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.SecondaryButtonPressed -> {
                 hideBottomSheet()
             }
 
-            /*is Event.BottomSheet.DeferredDocument.DeferredDocumentsReady -> {
-                val successDeferredDocs = event.documentsUi.map { documentUi ->
-                    DeferredDocumentData(
-                        documentId = documentUi.documentId,
-                        docType = documentUi.documentIdentifier.docType,
-                        docName = documentUi.documentName
-                    )
-                }
-
-                val options = event.documentsUi.map { documentUi ->
-                    OptionListItemUi(
-                        text = documentUi.documentName,
-                        onClick = {
-                            setEvent(
-                                Event.BottomSheet.DeferredDocument.DeferredDocumentSelected(
-                                    documentId = documentUi.documentId,
-                                    docType = documentUi.documentIdentifier.docType
-                                )
-                            )
-                        }
-                    )
-                }
-
-                showBottomSheet(
-                    sheetContent = DashboardBottomSheetContent.DeferredDocumentsReady(
-                        successfullyIssuedDeferredDocuments = successDeferredDocs,
-                        options = options
-                    )
-                )
-            }*/
-
-            is Event.BottomSheet.DeferredDocument.DeferredDocumentSelected -> {
-                //hideBottomSheet()
+            is Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected -> {
+                hideBottomSheet()
                 goToDocumentDetails(
-                    docId = event.documentId,
-                    docType = event.docType
+                    docId = event.documentId
                 )
             }
         }
@@ -340,16 +311,15 @@ class DashboardViewModel(
         }
     }
 
-    private fun goToDocumentDetails(docId: DocumentId, docType: DocType) {
+    private fun goToDocumentDetails(docId: DocumentId) {
         setEffect {
             Effect.Navigation.SwitchScreen(
-                generateComposableNavigationLink(
+                screenRoute = generateComposableNavigationLink(
                     screen = IssuanceScreens.DocumentDetails,
                     arguments = generateComposableArguments(
                         mapOf(
                             "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
-                            "documentId" to docId,
-                            "documentType" to docType,
+                            "documentId" to docId
                         )
                     )
                 )
@@ -367,7 +337,7 @@ class DashboardViewModel(
         viewModelScope.launch {
             dashboardInteractor.getDocuments().collect { response ->
                 when (response) {
-                    is DashboardInteractorPartialState.Failure -> {
+                    is DashboardInteractorGetDocumentsPartialState.Failure -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -383,8 +353,8 @@ class DashboardViewModel(
                         }
                     }
 
-                    is DashboardInteractorPartialState.Success -> {
-                        val allDocuments = response.documents
+                    is DashboardInteractorGetDocumentsPartialState.Success -> {
+                        val allDocuments = response.documentsUi
                         val shouldAllowUserInteraction =
                             response.mainPid?.state == Document.State.ISSUED
                         setState {
@@ -405,7 +375,67 @@ class DashboardViewModel(
         }
     }
 
-    private fun tryDeferredDocuments(event: Event) {
+    private suspend fun getDocumentsOnlyForTheseIds(event: Event, docIds: List<DocumentId>) {
+        setState {
+            copy(
+                isLoading = false,
+                error = null
+            )
+        }
+
+        dashboardInteractor.getDocumentsOnlyForTheseIds(
+            documentIds = docIds,
+            userFirstName = viewState.value.userFirstName,
+            userImage = viewState.value.userBase64Image
+        ).collect { response ->
+            when (response) {
+                is DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState.Failure -> {
+                    setState {
+                        copy(
+                            isLoading = false,
+                            error = ContentErrorConfig(
+                                onRetry = { setEvent(event) },
+                                errorSubTitle = response.error,
+                                onCancel = {
+                                    setState { copy(error = null) }
+                                    setEvent(Event.Pop)
+                                }
+                            )
+                        )
+                    }
+                }
+
+                is DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState.Success -> {
+                    val shouldAllowUserInteraction =
+                        response.mainPid?.state == Document.State.ISSUED
+
+                    val currentDocuments = viewState.value.documents
+                    val newDocuments = response.newlyIssuedDocumentsUi
+
+                    val newDocumentsIdSet = newDocuments.map { it.documentId }.toSet()
+
+                    val updatedDocuments = currentDocuments
+                        .filterNot { it.documentId in newDocumentsIdSet }
+                        .plus(newDocuments)
+                        .toMutableList()
+
+
+                    setState {
+                        copy(
+                            isLoading = false,
+                            error = null,
+                            documents = updatedDocuments,
+                            allowUserInteraction = shouldAllowUserInteraction,
+                            userFirstName = response.userFirstName,
+                            userBase64Image = response.userBase64Portrait
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun tryIssuingDeferredDocuments(event: Event) {
         setState {
             copy(
                 isLoading = false,
@@ -416,8 +446,9 @@ class DashboardViewModel(
         retryDeferredDocsJob?.cancel()
         retryDeferredDocsJob = viewModelScope.launch {
             val deferredDocs: MutableMap<DocumentId, DocType> = mutableMapOf()
+
             viewState.value.documents.filter { documentUi ->
-                documentUi.documentIsDeferred
+                documentUi.documentState == DocumentUiState.Deferred/*.NoAttemptToIssueYet*/
             }.forEach { documentUi ->
                 deferredDocs[documentUi.documentId] = documentUi.documentIdentifier.docType
             }
@@ -445,17 +476,46 @@ class DashboardViewModel(
                     }
 
                     is DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result -> {
-                        val options =
-                            getBottomSheetOptions(response.successfullyIssuedDeferredDocuments)
+                        if (response.failedIssuedDeferredDocuments.isNotEmpty()) {
+                            val updatedDocuments = viewState.value.documents
+                                .map { documentUi ->
+                                    if (documentUi.documentId in response.failedIssuedDeferredDocuments) {
+                                        documentUi.copy(
+                                            documentState = DocumentUiState.Failed
+                                        )
+                                    } else {
+                                        documentUi
+                                    }
+                                }
 
-                        showBottomSheet(
-                            sheetContent = DashboardBottomSheetContent.DeferredDocumentsReady(
-                                successfullyIssuedDeferredDocuments = response.successfullyIssuedDeferredDocuments,
-                                options = options
-                                //failedIssuedDeferredDocumentIds = response.failedIssuedDeferredDocuments
+                            setState {
+                                copy(
+                                    documents = updatedDocuments
+                                )
+                            }
+                        }
+
+                        if (response.successfullyIssuedDeferredDocuments.isNotEmpty()) {
+                            val getDocumentsJob = async {
+                                getDocumentsOnlyForTheseIds(
+                                    event = event,
+                                    docIds = response.successfullyIssuedDeferredDocuments.map { it.documentId }
+                                )
+                            }
+
+                            getDocumentsJob.await()
+
+                            showBottomSheet(
+                                sheetContent = DashboardBottomSheetContent.DeferredDocumentsReady(
+                                    successfullyIssuedDeferredDocuments = response.successfullyIssuedDeferredDocuments,
+                                    options = getBottomSheetOptions(
+                                        deferredDocumentsData = response.successfullyIssuedDeferredDocuments
+                                    )
+                                )
                             )
-                        )
-                        getDocuments(event = event, deepLinkUri = null)
+
+                            //getDocuments(event = event, deepLinkUri = null)
+                        }
                     }
                 }
             }
@@ -468,9 +528,8 @@ class DashboardViewModel(
                 text = it.docName,
                 onClick = {
                     setEvent(
-                        Event.BottomSheet.DeferredDocument.DeferredDocumentSelected(
-                            documentId = it.documentId,
-                            docType = it.docType
+                        Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
+                            documentId = it.documentId
                         )
                     )
                 }
@@ -478,7 +537,7 @@ class DashboardViewModel(
         }
     }
 
-    private fun deleteDocument(event: Event.BottomSheet.DeferredDocument.DeferredDocumentPressed.PrimaryButtonPressed) {
+    private fun deleteDocument(event: Event, documentId: DocumentId) {
         setState {
             copy(
                 isLoading = true,
@@ -488,8 +547,7 @@ class DashboardViewModel(
 
         viewModelScope.launch {
             dashboardInteractor.deleteDocument(
-                documentId = event.documentUi.documentId,
-                documentType = event.documentUi.documentIdentifier.docType,
+                documentId = documentId
             ).collect { response ->
                 when (response) {
                     is DashboardInteractorDeleteDocumentPartialState.AllDocumentsDeleted -> {

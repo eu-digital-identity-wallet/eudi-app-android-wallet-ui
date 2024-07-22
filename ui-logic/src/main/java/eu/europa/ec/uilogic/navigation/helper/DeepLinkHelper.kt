@@ -107,6 +107,7 @@ fun handleDeepLinkAction(
             }
 
             DeepLinkType.ISSUANCE -> {
+                //TODO Giannis this throws exceptions..
                 EudiWallet.resumeOpenId4VciWithAuthorization(action.link)
                 notifyOnResumeIssuance(navController.context)
                 return@let

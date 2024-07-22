@@ -48,6 +48,7 @@
     <string name="content_description_close_icon">Close</string>
     <string name="content_description_warning_icon">Warning</string>
     <string name="content_description_error_icon">Error</string>
+    <string name="content_description_error_filled_icon">Error</string>
     <string name="content_description_delete_icon">Delete</string>
     <string name="content_description_touch_id_icon">Touch id</string>
     <string name="content_description_qr_icon">QR</string>
@@ -153,7 +154,8 @@
     <string name="dashboard_document_has_expired_one">Expired\ </string>
     <string name="dashboard_document_has_expired_two">on</string>
     <string name="dashboard_document_no_expiration_found">@string/generic_dash</string>
-    <string name="dashboard_document_deferred">Pending</string>
+    <string name="dashboard_document_deferred_pending">Pending</string>
+    <string name="dashboard_document_deferred_failed">Issuance failed</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
     <string name="dashboard_secondary_fab_text">ADD DOC</string>
 
@@ -172,7 +174,7 @@
     <string name="dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
 
     <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
-    <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents are ready to be added to your wallet.</string>
+    <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
 
     <!-- Qr Scan -->
     <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>

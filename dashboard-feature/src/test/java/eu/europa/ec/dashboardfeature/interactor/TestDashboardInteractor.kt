@@ -195,7 +195,7 @@ class TestDashboardInteractor {
     // a full PID and a full mDL.
 
     // Case 1 Expected Result:
-    // DashboardInteractorPartialState.Success state, with:
+    // DashboardInteractorGetDocumentsPartialState.Success state, with:
     // 1. the list of Documents transformed to DocumentUi objects,
     // 2. an actual user name, and
     // 3. an actual (base64 encoded) user image.
@@ -212,8 +212,8 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Success(
-                        documents = mockedFullDocumentsUi,
+                    DashboardInteractorGetDocumentsPartialState.Success(
+                        documentsUi = mockedFullDocumentsUi,
                         userFirstName = mockedUserFirstName,
                         userBase64Portrait = mockedUserBase64Portrait
                     ),
@@ -229,7 +229,7 @@ class TestDashboardInteractor {
     // no user image.
 
     // Case 2 Expected Result:
-    // DashboardInteractorPartialState.Success state, with:
+    // DashboardInteractorGetDocumentsPartialState.Success state, with:
     // 1. the DeferredDocument transformed to DocumentUi object,
     // 2. empty string for the user name, and
     // 3. empty string for the user image.
@@ -246,8 +246,8 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Success(
-                        documents = listOf(mockedMdlUiWithNoUserNameAndNoUserImage),
+                    DashboardInteractorGetDocumentsPartialState.Success(
+                        documentsUi = listOf(mockedMdlUiWithNoUserNameAndNoUserImage),
                         userFirstName = mockedNoUserFistNameFound,
                         userBase64Portrait = mockedNoUserBase64PortraitFound
                     ),
@@ -262,7 +262,7 @@ class TestDashboardInteractor {
     // an mDL with no expiration date.
 
     // Case 3 Expected Result:
-    // DashboardInteractorPartialState.Success state, with:
+    // DashboardInteractorGetDocumentsPartialState.Success state, with:
     // 1. the DeferredDocument transformed to DocumentUi object,
     // 2. an actual user name, and
     // 3. an actual (base64 encoded) user image.
@@ -279,8 +279,8 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Success(
-                        documents = listOf(mockedMdlUiWithNoExpirationDate),
+                    DashboardInteractorGetDocumentsPartialState.Success(
+                        documentsUi = listOf(mockedMdlUiWithNoExpirationDate),
                         userFirstName = mockedUserFirstName,
                         userBase64Portrait = mockedUserBase64Portrait
                     ),
@@ -303,7 +303,7 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Failure(
+                    DashboardInteractorGetDocumentsPartialState.Failure(
                         error = mockedExceptionWithMessage.localizedMessage!!
                     ),
                     awaitItem()
@@ -325,7 +325,7 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Failure(
+                    DashboardInteractorGetDocumentsPartialState.Failure(
                         error = mockedGenericErrorMessage
                     ),
                     awaitItem()

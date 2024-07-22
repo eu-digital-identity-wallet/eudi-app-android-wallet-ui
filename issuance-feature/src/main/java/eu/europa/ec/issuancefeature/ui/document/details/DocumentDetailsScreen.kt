@@ -47,6 +47,7 @@ import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentUiState
 import eu.europa.ec.commonfeature.ui.document_details.DetailsContent
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.R
@@ -345,7 +346,8 @@ private fun IssuanceDocumentDetailsScreenPreview() {
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image3",
-                documentDetails = emptyList()
+                documentDetails = emptyList(),
+                documentState = DocumentUiState.Issued,
             ),
             headerData = HeaderData(
                 title = "Title",
@@ -388,7 +390,8 @@ private fun DashboardDocumentDetailsScreenPreview() {
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image3",
-                documentDetails = emptyList()
+                documentDetails = emptyList(),
+                documentState = DocumentUiState.Issued,
             ),
             headerData = HeaderData(
                 title = "Title",
