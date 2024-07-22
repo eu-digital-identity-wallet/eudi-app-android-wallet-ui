@@ -41,7 +41,7 @@ These are the contents of the ConfigWalletCoreImpl file (dev flavor) and you don
 private companion object {
         const val OPENID4VP_VERIFIER_API_URI = "https://dev.verifier.eudiw.dev"
         const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
-        const val OPENID4VP_VERIFIER_CLIENT_ID = "wallet-dev"
+        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
         const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-dev"
         const val AUTHENTICATION_REQUIRED = false
@@ -51,9 +51,53 @@ private companion object {
 ### Running with local services
 The first step here is to have all three services running locally on your machine,
 you can follow these Repositories for further instructions:
-* [Issuer](#https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py)
-* [Web Verifier UI](#https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
-* [Web Verifier Endpoint](#https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
+* [Issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py)
+* [Web Verifier UI](https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
+* [Web Verifier Endpoint](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
+
+
+After this, and assuming you are now running everything locally,
+you need to change the contents of the ConfigWalletCoreImpl file, from:
+```
+private companion object {
+        const val OPENID4VP_VERIFIER_API_URI = "https://dev.verifier.eudiw.dev"
+        const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
+        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
+        const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
+        const val VCI_CLIENT_ID = "wallet-dev"
+        const val AUTHENTICATION_REQUIRED = false
+}
+```
+into something like this:
+```
+private companion object {
+        const val OPENID4VP_VERIFIER_API_URI = "local_IP_address_of_verifier_endpoint"
+        const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
+        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
+        const val VCI_ISSUER_URL = "local_IP_address_of_issuer"
+        const val VCI_CLIENT_ID = "wallet-dev"
+        const val AUTHENTICATION_REQUIRED = false
+}
+```
+
+for example:
+```
+private companion object {
+        const val OPENID4VP_VERIFIER_API_URI = "http://192.168.1.1:8080"
+        const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
+        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
+        const val VCI_ISSUER_URL = "https://192.168.1.1:5000"
+        const val VCI_CLIENT_ID = "wallet-dev"
+        const val AUTHENTICATION_REQUIRED = false
+}
+```
+
+Finally, you have to also change the content of ***network_security_config.xml*** file and allow HTTP traffic, to this:
+```
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>
+```
 
 ## How to work with self-signed certificates
 
