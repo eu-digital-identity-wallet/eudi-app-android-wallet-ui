@@ -141,7 +141,7 @@ class PresentationLoadingViewModel(
     private fun getSuccessConfig(uri: URI?): Map<String, String> {
         val deepLinkWithUriOrPopToDashboard = ConfigNavigation(
             navigationType = uri?.let {
-                NavigationType.Deeplink(it.toString())
+                NavigationType.Deeplink(it.toString(), interactor.initiatorRoute)
             } ?: NavigationType.PopTo(DashboardScreens.Dashboard)
         )
 

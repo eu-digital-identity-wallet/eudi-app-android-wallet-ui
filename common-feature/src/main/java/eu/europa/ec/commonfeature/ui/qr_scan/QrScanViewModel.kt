@@ -128,7 +128,12 @@ class QrScanViewModel(
                     arguments = generateComposableArguments(
                         mapOf(
                             RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
-                                RequestUriConfig(PresentationMode.OpenId4Vp(uri = scanResult)),
+                                RequestUriConfig(
+                                    PresentationMode.OpenId4Vp(
+                                        uri = scanResult,
+                                        initiatorRoute = DashboardScreens.Dashboard.screenRoute
+                                    )
+                                ),
                                 RequestUriConfig.Parser
                             )
                         )

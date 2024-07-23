@@ -35,7 +35,7 @@ sealed interface NavigationType {
     data class PushRoute(val route: String) : NavigationType
 
     data class PopTo(val screen: Screen) : NavigationType
-    data class Deeplink(val link: String) : NavigationType
+    data class Deeplink(val link: String, val routeToPop: String? = null) : NavigationType
 }
 
 enum class FlowCompletion {

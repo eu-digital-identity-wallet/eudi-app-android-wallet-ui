@@ -22,7 +22,10 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
+import eu.europa.ec.commonfeature.config.PresentationMode
+import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.document.ResolveDocumentOfferInteractorPartialState
@@ -36,8 +39,11 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -60,10 +66,11 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data object Init : Event()
+    data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
     data object OnPause : Event()
     data object OnResumeIssuance : Event()
+    data class OnDynamicPresentation(val uri: String) : Event()
     data object DismissError : Event()
 
     data class PrimaryButtonPressed(val context: Context) : Event()
@@ -132,7 +139,14 @@ class DocumentOfferViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                resolveDocumentOffer(offerUri = viewState.value.offerUiConfig.offerURI)
+                if (viewState.value.documents.isEmpty()) {
+                    resolveDocumentOffer(
+                        offerUri = viewState.value.offerUiConfig.offerURI,
+                        deepLink = event.deepLink
+                    )
+                } else {
+                    handleDeepLink(event.deepLink)
+                }
             }
 
             is Event.Pop -> {
@@ -182,10 +196,35 @@ class DocumentOfferViewModel(
             is Event.OnResumeIssuance -> setState {
                 copy(isLoading = true)
             }
+
+            is Event.OnDynamicPresentation -> {
+                getOrCreatePresentationScope()
+                setEffect {
+                    Effect.Navigation.SwitchScreen(
+                        generateComposableNavigationLink(
+                            PresentationScreens.PresentationRequest,
+                            generateComposableArguments(
+                                mapOf(
+                                    RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                        RequestUriConfig(
+                                            PresentationMode.OpenId4Vp(
+                                                event.uri,
+                                                IssuanceScreens.DocumentOffer.screenRoute
+                                            )
+                                        ),
+                                        RequestUriConfig
+                                    )
+                                )
+                            )
+                        ),
+                        shouldPopToSelf = false
+                    )
+                }
+            }
         }
     }
 
-    private fun resolveDocumentOffer(offerUri: String) {
+    private fun resolveDocumentOffer(offerUri: String, deepLink: Uri? = null) {
         setState {
             copy(
                 isLoading = documents.isEmpty(),
@@ -226,6 +265,8 @@ class DocumentOfferViewModel(
                                 txCodeLength = response.txCodeLength
                             )
                         }
+
+                        handleDeepLink(deepLink)
                     }
 
                     is ResolveDocumentOfferInteractorPartialState.NoDocument -> {
@@ -413,5 +454,22 @@ class DocumentOfferViewModel(
                 ).orEmpty()
             )
         )
+    }
+
+    private fun handleDeepLink(deepLinkUri: Uri?) {
+        deepLinkUri?.let { uri ->
+            hasDeepLink(uri)?.let {
+                when (it.type) {
+
+                    DeepLinkType.EXTERNAL -> {
+                        setEffect {
+                            Effect.Navigation.DeepLink(uri)
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
+        }
     }
 }
