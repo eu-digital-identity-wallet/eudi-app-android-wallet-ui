@@ -731,7 +731,7 @@ private fun DocumentContent(dataItem: DocumentUi) {
                 contentAlpha = iconAlpha
             )
             if (documentState is DocumentUiState.Issued) {
-                if (dataItem.documentHasExpired ){
+                if (dataItem.documentHasExpired) {
                     IconWarningIndicator(
                         backgroundColor = MaterialTheme.colorScheme.backgroundDefault
                     )
