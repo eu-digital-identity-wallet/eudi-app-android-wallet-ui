@@ -51,7 +51,6 @@ import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -61,8 +60,9 @@ import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.extension.cacheDeepLink
-import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -130,12 +130,25 @@ fun DocumentOfferScreen(
         viewModel.setEvent(Event.OnPause)
     }
 
-    OneTimeLaunchedEffect {
-        viewModel.setEvent(Event.Init)
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
+        viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
     }
 
-    SystemBroadcastReceiver(action = CoreActions.VCI_RESUME_ACTION) {
-        viewModel.setEvent(Event.OnResumeIssuance)
+    SystemBroadcastReceiver(
+        actions = listOf(
+            CoreActions.VCI_RESUME_ACTION,
+            CoreActions.VCI_DYNAMIC_PRESENTATION
+        )
+    ) {
+        when (it?.action) {
+            CoreActions.VCI_RESUME_ACTION -> viewModel.setEvent(Event.OnResumeIssuance)
+            CoreActions.VCI_DYNAMIC_PRESENTATION -> it.extras?.getString("uri")?.let { link ->
+                viewModel.setEvent(Event.OnDynamicPresentation(link))
+            }
+        }
     }
 }
 
@@ -301,11 +314,13 @@ private fun handleNavigationEffect(
         }
 
         is Effect.Navigation.DeepLink -> {
-            context.cacheDeepLink(navigationEffect.link)
-            navController.popBackStack(
-                route = DashboardScreens.Dashboard.screenRoute,
-                inclusive = false
-            )
+            navigationEffect.routeToPop?.let {
+                context.cacheDeepLink(navigationEffect.link)
+                navController.popBackStack(
+                    route = it,
+                    inclusive = false
+                )
+            } ?: handleDeepLinkAction(navController, navigationEffect.link)
         }
 
         is Effect.Navigation.Pop -> navController.popBackStack()

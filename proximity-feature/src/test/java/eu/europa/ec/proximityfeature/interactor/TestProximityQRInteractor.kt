@@ -35,6 +35,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.container.EudiComponentActivity
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.flow
 import org.junit.After
@@ -358,8 +359,9 @@ class TestProximityQRInteractor {
     @Test
     fun `Given a RequestUriConfig with Ble mode, When setConfig is called, Then it calls walletCorePresentationController#setConfig with PresentationControllerConfig_Ble`() {
         // Given
+        val initiator = DashboardScreens.Dashboard.screenRoute
         val config = RequestUriConfig(
-            mode = PresentationMode.Ble
+            mode = PresentationMode.Ble(initiator)
         )
 
         // When
@@ -367,14 +369,15 @@ class TestProximityQRInteractor {
 
         // Then
         verify(walletCorePresentationController, times(1))
-            .setConfig(PresentationControllerConfig.Ble)
+            .setConfig(PresentationControllerConfig.Ble(initiator))
     }
 
     @Test
     fun `Given a RequestUriConfig with OpenId4Vp mode, When setConfig is called, Then it calls walletCorePresentationController#setConfig with PresentationControllerConfig_OpenId4Vp`() {
         // Given
+        val initiator = DashboardScreens.Dashboard.screenRoute
         val config = RequestUriConfig(
-            mode = PresentationMode.OpenId4Vp(uri = "")
+            mode = PresentationMode.OpenId4Vp(uri = "", initiator)
         )
 
         // When
@@ -382,7 +385,7 @@ class TestProximityQRInteractor {
 
         // Then
         verify(walletCorePresentationController, times(1))
-            .setConfig(PresentationControllerConfig.OpenId4VP(uri = ""))
+            .setConfig(PresentationControllerConfig.OpenId4VP(uri = "", initiator))
     }
     //endregion
 

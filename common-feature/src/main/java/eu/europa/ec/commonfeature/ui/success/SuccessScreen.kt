@@ -53,7 +53,6 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -96,10 +95,12 @@ fun SuccessScreen(
 
                     is Effect.Navigation.DeepLink -> {
                         context.cacheDeepLink(navigationEffect.link)
-                        navController.popBackStack(
-                            route = DashboardScreens.Dashboard.screenRoute,
-                            inclusive = false
-                        )
+                        navigationEffect.routeToPop?.let {
+                            navController.popBackStack(
+                                route = it,
+                                inclusive = false
+                            )
+                        } ?: navController.popBackStack()
                     }
 
                     is Effect.Navigation.Pop -> navController.popBackStack()

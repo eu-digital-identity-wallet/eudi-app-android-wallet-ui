@@ -45,9 +45,11 @@ import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
 import java.net.URI
 
-sealed class PresentationControllerConfig {
-    data class OpenId4VP(val uri: String) : PresentationControllerConfig()
-    data object Ble : PresentationControllerConfig()
+sealed class PresentationControllerConfig(val initiatorRoute: String) {
+    data class OpenId4VP(val uri: String, val initiator: String) :
+        PresentationControllerConfig(initiator)
+
+    data class Ble(val initiator: String) : PresentationControllerConfig(initiator)
 }
 
 sealed class TransferEventPartialState {
@@ -120,6 +122,14 @@ interface WalletCorePresentationController {
      * */
     val verifierName: String?
 
+    /**
+     * Who started the presentation
+     * */
+    val initiatorRoute: String
+
+    /**
+     * Set [PresentationControllerConfig]
+     * */
     fun setConfig(config: PresentationControllerConfig)
 
     /**
@@ -187,8 +197,15 @@ class WalletCorePresentationControllerImpl(
 
     override var disclosedDocuments: DisclosedDocuments? = null
         private set
+
     override var verifierName: String? = null
         private set
+
+    override val initiatorRoute: String
+        get() {
+            val config = requireInit { _config }
+            return config.initiatorRoute
+        }
 
     override fun setConfig(config: PresentationControllerConfig) {
         _config = config
