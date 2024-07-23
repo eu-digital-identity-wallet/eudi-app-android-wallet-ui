@@ -28,6 +28,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -149,7 +150,11 @@ class ProximityQRViewModel(
                                     arguments = generateComposableArguments(
                                         mapOf(
                                             RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
-                                                RequestUriConfig(PresentationMode.Ble),
+                                                RequestUriConfig(
+                                                    PresentationMode.Ble(
+                                                        DashboardScreens.Dashboard.screenRoute
+                                                    )
+                                                ),
                                                 RequestUriConfig.Parser
                                             )
                                         )

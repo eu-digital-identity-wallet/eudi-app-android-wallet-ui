@@ -22,12 +22,15 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
+import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
+import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
@@ -45,6 +48,7 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -72,6 +76,7 @@ sealed class Event : ViewEvent {
     data object Pop : Event()
     data object OnPause : Event()
     data object OnResumeIssuance : Event()
+    data class OnDynamicPresentation(val uri: String) : Event()
     data object Finish : Event()
     data object DismissError : Event()
     data class IssueDocument(
@@ -146,6 +151,31 @@ class AddDocumentViewModel(
 
             is Event.OnResumeIssuance -> setState {
                 copy(isLoading = true)
+            }
+
+            is Event.OnDynamicPresentation -> {
+                getOrCreatePresentationScope()
+                setEffect {
+                    Effect.Navigation.SwitchScreen(
+                        generateComposableNavigationLink(
+                            PresentationScreens.PresentationRequest,
+                            generateComposableArguments(
+                                mapOf(
+                                    RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                        RequestUriConfig(
+                                            PresentationMode.OpenId4Vp(
+                                                event.uri,
+                                                IssuanceScreens.AddDocument.screenRoute
+                                            )
+                                        ),
+                                        RequestUriConfig.Parser
+                                    )
+                                )
+                            )
+                        ),
+                        inclusive = false
+                    )
+                }
             }
         }
     }
@@ -414,6 +444,15 @@ class AddDocumentViewModel(
                                         )
                                     )
                                 )
+                            )
+                        }
+                    }
+
+                    DeepLinkType.EXTERNAL -> {
+                        setEffect {
+                            Effect.Navigation.OpenDeepLinkAction(
+                                deepLinkUri = uri,
+                                arguments = null
                             )
                         }
                     }

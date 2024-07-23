@@ -601,7 +601,12 @@ class DashboardViewModel(
                         generateComposableArguments(
                             mapOf(
                                 RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
-                                    RequestUriConfig(PresentationMode.OpenId4Vp(uri.toString())),
+                                    RequestUriConfig(
+                                        PresentationMode.OpenId4Vp(
+                                            uri.toString(),
+                                            DashboardScreens.Dashboard.screenRoute
+                                        )
+                                    ),
                                     RequestUriConfig.Parser
                                 )
                             )
@@ -663,7 +668,7 @@ class DashboardViewModel(
                     arguments = generateComposableArguments(
                         mapOf(
                             RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
-                                RequestUriConfig(PresentationMode.Ble),
+                                RequestUriConfig(PresentationMode.Ble(DashboardScreens.Dashboard.screenRoute)),
                                 RequestUriConfig.Parser
                             )
                         )

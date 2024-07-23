@@ -28,7 +28,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import eu.europa.ec.resourceslogic.theme.ThemeManager
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.RouterHost
+import eu.europa.ec.uilogic.navigation.helper.DeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
@@ -108,6 +110,15 @@ open class EudiComponentActivity : FragmentActivity() {
             ) {
                 cacheDeepLink(intent)
                 routerHost.popToIssuanceOnboardingScreen()
+            } else if (it.type == DeepLinkType.OPENID4VP
+                && routerHost.userIsLoggedInWithDocuments()
+                && (routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.AddDocument)
+                        || routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.DocumentOffer))
+            ) {
+                handleDeepLinkAction(
+                    routerHost.getNavController(),
+                    DeepLinkAction(it.link, DeepLinkType.DYNAMIC_PRESENTATION)
+                )
             } else if (it.type != DeepLinkType.ISSUANCE) {
                 cacheDeepLink(intent)
                 if (routerHost.userIsLoggedInWithDocuments()) {

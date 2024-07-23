@@ -132,8 +132,18 @@ fun AddDocumentScreen(
         viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
     }
 
-    SystemBroadcastReceiver(action = CoreActions.VCI_RESUME_ACTION) {
-        viewModel.setEvent(Event.OnResumeIssuance)
+    SystemBroadcastReceiver(
+        actions = listOf(
+            CoreActions.VCI_RESUME_ACTION,
+            CoreActions.VCI_DYNAMIC_PRESENTATION
+        )
+    ) {
+        when (it?.action) {
+            CoreActions.VCI_RESUME_ACTION -> viewModel.setEvent(Event.OnResumeIssuance)
+            CoreActions.VCI_DYNAMIC_PRESENTATION -> it.extras?.getString("uri")?.let { link ->
+                viewModel.setEvent(Event.OnDynamicPresentation(link))
+            }
+        }
     }
 }
 
