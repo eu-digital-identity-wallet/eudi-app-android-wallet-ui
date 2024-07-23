@@ -239,8 +239,7 @@ class AddDocumentViewModel(
 
             addDocumentInteractor.issueDocument(
                 issuanceMethod = issuanceMethod,
-                // TODO Giannis
-                documentType = "eu.europa.ec.eudi.pseudonym.age_over_18.deferred_endpoint"
+                documentType = docType
             ).collect { response ->
                 when (response) {
                     is IssueDocumentPartialState.Failure -> {

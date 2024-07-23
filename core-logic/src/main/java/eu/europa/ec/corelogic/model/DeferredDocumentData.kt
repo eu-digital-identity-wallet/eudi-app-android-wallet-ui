@@ -22,4 +22,9 @@ data class DeferredDocumentData(
     val documentId: DocumentId,
     val docType: DocType,
     val docName: String,
-)
+){
+
+    override fun toString(): String {
+        return "DeferredDocumentData: Id = $documentId"
+    }
+}

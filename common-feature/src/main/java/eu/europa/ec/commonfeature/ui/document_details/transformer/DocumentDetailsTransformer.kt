@@ -19,7 +19,7 @@ package eu.europa.ec.commonfeature.ui.document_details.transformer
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.businesslogic.util.toList
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.model.DocumentUiState
+import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
@@ -94,7 +94,7 @@ object DocumentDetailsTransformer {
             documentImage = documentImage,
             documentDetails = detailsItems,
             userFullName = extractFullNameFromDocumentOrEmpty(document),
-            documentState = DocumentUiState.Issued,
+            documentIssuanceState = DocumentUiIssuanceState.Issued,
         )
     }
 

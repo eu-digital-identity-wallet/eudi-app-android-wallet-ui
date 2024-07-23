@@ -22,7 +22,7 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.model.DocumentUiState
+import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
@@ -48,7 +48,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.retryWhen
 import kotlinx.coroutines.withContext
 
 data class DeferredDocNotReadyYetException(override val message: String?) : Exception()
@@ -93,6 +92,10 @@ sealed class DashboardInteractorRetryIssuingDeferredDocumentPartialState {
         val deferredDocumentData: DeferredDocumentData
     ) : DashboardInteractorRetryIssuingDeferredDocumentPartialState()
 
+    data class NotReady(
+        val deferredDocumentData: DeferredDocumentData
+    ) : DashboardInteractorRetryIssuingDeferredDocumentPartialState()
+
     data class Failure(
         val documentId: DocumentId,
         val errorMessage: String,
@@ -102,6 +105,7 @@ sealed class DashboardInteractorRetryIssuingDeferredDocumentPartialState {
 sealed class DashboardInteractorRetryIssuingDeferredDocumentsPartialState {
     data class Result(
         val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
+        val notReadyDeferredDocuments: List<DeferredDocumentData>,
         val failedIssuedDeferredDocuments: List<DocumentId>,
     ) : DashboardInteractorRetryIssuingDeferredDocumentsPartialState()
 
@@ -258,7 +262,7 @@ class DashboardInteractorImpl(
                     documentExpirationDateFormatted = documentExpirationDate,
                     documentHasExpired = docHasExpired,
                     documentDetails = emptyList(),
-                    documentState = DocumentUiState.Issued
+                    documentIssuanceState = DocumentUiIssuanceState.Issued
                 ) to UserInfo(
                     userFirstName = userFirstName,
                     userBase64Portrait = userImage
@@ -274,7 +278,7 @@ class DashboardInteractorImpl(
                     documentExpirationDateFormatted = "",
                     documentHasExpired = false,
                     documentDetails = emptyList(),
-                    documentState = DocumentUiState.Deferred
+                    documentIssuanceState = DocumentUiIssuanceState.Pending
                 ) to UserInfo(
                     userFirstName = "",
                     userBase64Portrait = ""
@@ -358,6 +362,38 @@ class DashboardInteractorImpl(
                         }
 
                         is IssueDeferredDocumentPartialState.NotReady -> {
+                            DashboardInteractorRetryIssuingDeferredDocumentPartialState.NotReady(
+                                deferredDocumentData = result.deferredDocumentData
+                            )
+                        }
+                    }
+                }.firstOrNull()
+                ?: DashboardInteractorRetryIssuingDeferredDocumentPartialState.Failure(
+                    documentId = deferredDocumentId,
+                    errorMessage = genericErrorMsg
+                ) // Handle the case where the flow does not emit any items
+        }
+    }
+
+    /*override suspend fun tryIssuingDeferredDocumentSuspend(deferredDocumentId: DocumentId): DashboardInteractorRetryIssuingDeferredDocumentPartialState {
+        return withContext(Dispatchers.IO) {
+            walletCoreDocumentsController.issueDeferredDocument(deferredDocumentId)
+                .map { result ->
+                    when (result) {
+                        is IssueDeferredDocumentPartialState.Failed -> {
+                            DashboardInteractorRetryIssuingDeferredDocumentPartialState.Failure(
+                                documentId = result.documentId,
+                                errorMessage = result.errorMessage
+                            )
+                        }
+
+                        is IssueDeferredDocumentPartialState.Issued -> {
+                            DashboardInteractorRetryIssuingDeferredDocumentPartialState.Success(
+                                deferredDocumentData = result.deferredDocumentData
+                            )
+                        }
+
+                        is IssueDeferredDocumentPartialState.NotReady -> {
                             throw DeferredDocNotReadyYetException("NotReady")
                         }
                     }
@@ -371,7 +407,7 @@ class DashboardInteractorImpl(
                     errorMessage = genericErrorMsg
                 ) // Handle the case where the flow does not emit any items
         }
-    }
+    }*/
 
     override fun tryIssuingDeferredDocumentsFlow(
         deferredDocuments: Map<DocumentId, DocType>,
@@ -380,6 +416,7 @@ class DashboardInteractorImpl(
         println("Giannis tryIssuingDeferredDocuments start.")
 
         val successResults: MutableList<DeferredDocumentData> = mutableListOf()
+        val notReadyResults: MutableList<DeferredDocumentData> = mutableListOf()
         val failedResults: MutableList<DocumentId> = mutableListOf()
 
         /*coroutineScope { */
@@ -399,15 +436,20 @@ class DashboardInteractorImpl(
                     is DashboardInteractorRetryIssuingDeferredDocumentPartialState.Success -> {
                         successResults.add(result.deferredDocumentData)
                     }
+
+                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.NotReady -> {
+                        notReadyResults.add(result.deferredDocumentData)
+                    }
                 }
             }
         }
 
-        println("Giannis tryIssuingDeferredDocuments end. Success: $successResults, Failed: $failedResults")
-        if (successResults.isNotEmpty() || failedResults.isNotEmpty()) {
+        println("Giannis tryIssuingDeferredDocuments end. Success: $successResults, NotReady: $notReadyResults, Failed: $failedResults")
+        if (successResults.isNotEmpty() || notReadyResults.isNotEmpty() || failedResults.isNotEmpty()) {
             emit(
                 DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result(
                     successfullyIssuedDeferredDocuments = successResults,
+                    notReadyDeferredDocuments = notReadyResults,
                     failedIssuedDeferredDocuments = failedResults
                 )
             )

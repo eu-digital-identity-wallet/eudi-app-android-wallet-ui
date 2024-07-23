@@ -397,6 +397,31 @@ class WalletCoreDocumentsControllerImpl(
             )
         }
 
+    /*fun <T> safeCallback(callback: (T) -> Unit): (T) -> Unit {
+        return { result: T ->
+            try {
+                callback(result)
+            } catch (e: Exception) {
+                // Handle the exception, e.g., log it, send it to a callbackFlow, etc.
+                // Here you can define a global way to handle these exceptions
+                println("Giannis safeCallback $e")
+            }
+        }
+    }*/
+
+    fun <T> safeCallback(
+        callback: (T) -> Unit,
+        onExceptionThrown: (Exception) -> Unit
+    ): (T) -> Unit {
+        return { result: T ->
+            try {
+                callback(result)
+            } catch (e: Exception) {
+                onExceptionThrown(e)
+            }
+        }
+    }
+
     override fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState> =
         callbackFlow {
             eudiWallet.issueDeferredDocument(
