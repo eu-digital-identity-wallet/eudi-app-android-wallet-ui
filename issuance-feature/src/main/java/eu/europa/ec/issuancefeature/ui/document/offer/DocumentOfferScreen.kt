@@ -59,6 +59,7 @@ import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
+import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
@@ -94,7 +95,7 @@ fun DocumentOfferScreen(
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController)
+                handleNavigationEffect(context, navigationEffect, navController)
             },
             paddingValues = paddingValues,
             coroutineScope = scope,
@@ -290,6 +291,7 @@ private fun StickyBottomSection(
 }
 
 private fun handleNavigationEffect(
+    context: Context,
     navigationEffect: Effect.Navigation,
     navController: NavController
 ) {
@@ -312,7 +314,13 @@ private fun handleNavigationEffect(
         }
 
         is Effect.Navigation.DeepLink -> {
-            handleDeepLinkAction(navController, navigationEffect.link)
+            navigationEffect.routeToPop?.let {
+                context.cacheDeepLink(navigationEffect.link)
+                navController.popBackStack(
+                    route = it,
+                    inclusive = false
+                )
+            } ?: handleDeepLinkAction(navController, navigationEffect.link)
         }
 
         is Effect.Navigation.Pop -> navController.popBackStack()
