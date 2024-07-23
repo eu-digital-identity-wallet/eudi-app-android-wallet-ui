@@ -80,7 +80,12 @@ sealed class Effect : ViewSideEffect {
         ) : Navigation()
 
         data object LaunchBiometricsSystemScreen : Navigation()
-        data class Deeplink(val link: Uri, val isPreAuthorization: Boolean) : Navigation()
+        data class Deeplink(
+            val link: Uri,
+            val isPreAuthorization: Boolean,
+            val routeToPop: String? = null
+        ) : Navigation()
+
         data object Pop : Navigation()
         data object Finish : Navigation()
     }
@@ -272,7 +277,8 @@ class BiometricViewModel(
 
             is NavigationType.Deeplink -> Effect.Navigation.Deeplink(
                 nav.link.toUri(),
-                viewState.value.config.isPreAuthorization
+                viewState.value.config.isPreAuthorization,
+                nav.routeToPop
             )
 
             is NavigationType.Pop -> Effect.Navigation.Pop

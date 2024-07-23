@@ -52,7 +52,7 @@ import eu.europa.ec.uilogic.extension.resetBackStack
 import eu.europa.ec.uilogic.extension.setBackStackFlowCancelled
 import eu.europa.ec.uilogic.extension.setBackStackFlowSuccess
 import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -122,19 +122,22 @@ fun BiometricScreen(
                     }
 
                     is Effect.Navigation.Deeplink -> {
-
-                        context.cacheDeepLink(navigationEffect.link)
-
-                        if (navigationEffect.isPreAuthorization) {
-                            navController.navigate(DashboardScreens.Dashboard.screenRoute) {
-                                popUpTo(CommonScreens.Biometric.screenRoute) { inclusive = true }
+                        navigationEffect.routeToPop?.let { route ->
+                            context.cacheDeepLink(navigationEffect.link)
+                            if (navigationEffect.isPreAuthorization) {
+                                navController.navigate(route) {
+                                    popUpTo(CommonScreens.Biometric.screenRoute) {
+                                        inclusive = true
+                                    }
+                                }
+                            } else {
+                                navController.popBackStack(
+                                    route = route,
+                                    inclusive = false
+                                )
                             }
-                        } else {
-                            navController.popBackStack(
-                                route = DashboardScreens.Dashboard.screenRoute,
-                                inclusive = false
-                            )
-                        }
+                        } ?: handleDeepLinkAction(navController, navigationEffect.link)
+
                     }
 
                     is Effect.Navigation.Pop -> navController.popBackStack()
