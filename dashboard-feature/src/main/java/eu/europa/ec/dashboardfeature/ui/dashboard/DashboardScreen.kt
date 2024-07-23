@@ -285,7 +285,7 @@ private fun Content(
                 }
 
                 is Effect.DocumentsFetched -> {
-                    onEventSend(Event.TryIssuingDeferredDocuments)
+                    onEventSend(Event.TryIssuingDeferredDocuments(effect.deferredDocs))
                 }
             }
         }.collect()

@@ -28,13 +28,13 @@ import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiState
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorRetryIssuingDeferredDocumentsPartialState
-import eu.europa.ec.dashboardfeature.interactor.DeferredDocumentData
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
@@ -58,7 +58,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
@@ -85,7 +84,7 @@ data class State(
 
 sealed class Event : ViewEvent {
     data class Init(val deepLinkUri: Uri?) : Event()
-    data object TryIssuingDeferredDocuments : Event()
+    data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, DocType>) : Event()
     data object Pop : Event()
     data class NavigateToDocument(
         val documentId: DocumentId
@@ -150,7 +149,7 @@ sealed class Effect : ViewSideEffect {
         data object OnSystemSettings : Navigation()
     }
 
-    data object DocumentsFetched : Effect()
+    data class DocumentsFetched(val deferredDocs: Map<DocumentId, DocType>) : Effect()
 
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
@@ -185,11 +184,14 @@ class DashboardViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                getDocuments(event = event, deepLinkUri = event.deepLinkUri)
+                getDocuments(
+                    event = event,
+                    deepLinkUri = event.deepLinkUri
+                )
             }
 
             is Event.TryIssuingDeferredDocuments -> {
-                tryIssuingDeferredDocuments(event)
+                tryIssuingDeferredDocuments(event, event.deferredDocs)
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
@@ -327,7 +329,12 @@ class DashboardViewModel(
         }
     }
 
-    private fun getDocuments(event: Event, deepLinkUri: Uri?) {
+    private fun getDocuments(
+        event: Event,
+        deepLinkUri: Uri?,
+        alreadyTriedIssuingDeferredDocs: Boolean = false,
+        failedDeferredDocsIds: List<DocumentId> = emptyList()
+    ) {
         setState {
             copy(
                 isLoading = documents.isEmpty(),
@@ -354,9 +361,25 @@ class DashboardViewModel(
                     }
 
                     is DashboardInteractorGetDocumentsPartialState.Success -> {
-                        val allDocuments = response.documentsUi
                         val shouldAllowUserInteraction =
                             response.mainPid?.state == Document.State.ISSUED
+
+                        val allDocuments = if (alreadyTriedIssuingDeferredDocs) {
+                            response.documentsUi
+                                .map { documentUi ->
+                                    if (documentUi.documentId in failedDeferredDocsIds) {
+                                        documentUi.copy(
+                                            documentState = DocumentUiState.Failed
+                                        )
+                                    } else {
+                                        documentUi
+                                    }
+                                }
+                        } else {
+                            response.documentsUi
+
+                        }
+
                         setState {
                             copy(
                                 isLoading = false,
@@ -367,7 +390,18 @@ class DashboardViewModel(
                                 userBase64Image = response.userBase64Portrait
                             )
                         }
-                        setEffect { Effect.DocumentsFetched }
+                        if (!alreadyTriedIssuingDeferredDocs) {
+                            val deferredDocs: MutableMap<DocumentId, DocType> = mutableMapOf()
+
+                            response.documentsUi.filter { documentUi ->
+                                documentUi.documentState == DocumentUiState.Deferred
+                            }.forEach { documentUi ->
+                                deferredDocs[documentUi.documentId] =
+                                    documentUi.documentIdentifier.docType
+                            }
+
+                            setEffect { Effect.DocumentsFetched(deferredDocs) }
+                        }
                         handleDeepLink(deepLinkUri)
                     }
                 }
@@ -435,7 +469,7 @@ class DashboardViewModel(
         }
     }
 
-    private fun tryIssuingDeferredDocuments(event: Event) {
+    private fun tryIssuingDeferredDocuments(event: Event, deferredDocs: Map<DocumentId, DocType>) {
         setState {
             copy(
                 isLoading = false,
@@ -445,14 +479,6 @@ class DashboardViewModel(
 
         retryDeferredDocsJob?.cancel()
         retryDeferredDocsJob = viewModelScope.launch {
-            val deferredDocs: MutableMap<DocumentId, DocType> = mutableMapOf()
-
-            viewState.value.documents.filter { documentUi ->
-                documentUi.documentState == DocumentUiState.Deferred/*.NoAttemptToIssueYet*/
-            }.forEach { documentUi ->
-                deferredDocs[documentUi.documentId] = documentUi.documentIdentifier.docType
-            }
-
             if (deferredDocs.isEmpty()) {
                 return@launch
             }
@@ -476,34 +502,15 @@ class DashboardViewModel(
                     }
 
                     is DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result -> {
-                        if (response.failedIssuedDeferredDocuments.isNotEmpty()) {
-                            val updatedDocuments = viewState.value.documents
-                                .map { documentUi ->
-                                    if (documentUi.documentId in response.failedIssuedDeferredDocuments) {
-                                        documentUi.copy(
-                                            documentState = DocumentUiState.Failed
-                                        )
-                                    } else {
-                                        documentUi
-                                    }
-                                }
-
-                            setState {
-                                copy(
-                                    documents = updatedDocuments
-                                )
-                            }
-                        }
-
                         if (response.successfullyIssuedDeferredDocuments.isNotEmpty()) {
-                            val getDocumentsJob = async {
+                            /*val getDocumentsJob = async {
                                 getDocumentsOnlyForTheseIds(
                                     event = event,
                                     docIds = response.successfullyIssuedDeferredDocuments.map { it.documentId }
                                 )
                             }
 
-                            getDocumentsJob.await()
+                            getDocumentsJob.await()*/
 
                             showBottomSheet(
                                 sheetContent = DashboardBottomSheetContent.DeferredDocumentsReady(
@@ -513,9 +520,14 @@ class DashboardViewModel(
                                     )
                                 )
                             )
-
-                            //getDocuments(event = event, deepLinkUri = null)
                         }
+
+                        getDocuments(
+                            event = event,
+                            deepLinkUri = null,
+                            alreadyTriedIssuingDeferredDocs = true,
+                            failedDeferredDocsIds = response.failedIssuedDeferredDocuments
+                        )
                     }
                 }
             }
@@ -568,7 +580,10 @@ class DashboardViewModel(
                     }
 
                     is DashboardInteractorDeleteDocumentPartialState.SingleDocumentDeleted -> {
-                        getDocuments(event = event, deepLinkUri = null)
+                        getDocuments(
+                            event = event,
+                            deepLinkUri = null
+                        )
                     }
 
                     is DashboardInteractorDeleteDocumentPartialState.Failure -> {

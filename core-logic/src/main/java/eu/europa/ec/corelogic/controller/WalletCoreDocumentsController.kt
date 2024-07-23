@@ -19,6 +19,7 @@ package eu.europa.ec.corelogic.controller
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWallet
@@ -100,15 +101,11 @@ sealed class ResolveDocumentOfferPartialState {
 
 sealed class IssueDeferredDocumentPartialState {
     data class Issued(
-        val documentId: DocumentId,
-        val docType: DocType,
-        val docName: String,
+        val deferredDocumentData: DeferredDocumentData,
     ) : IssueDeferredDocumentPartialState()
 
     data class NotReady(
-        val documentId: DocumentId,
-        val docType: DocType,
-        val docName: String,
+        val deferredDocumentData: DeferredDocumentData
     ) : IssueDeferredDocumentPartialState()
 
     data class Failed(
@@ -419,9 +416,11 @@ class WalletCoreDocumentsControllerImpl(
                         is DeferredIssueResult.DocumentIssued -> {
                             trySendBlocking(
                                 IssueDeferredDocumentPartialState.Issued(
-                                    documentId = deferredIssuanceResult.documentId,
-                                    docType = deferredIssuanceResult.docType,
-                                    docName = deferredIssuanceResult.name
+                                    DeferredDocumentData(
+                                        documentId = deferredIssuanceResult.documentId,
+                                        docType = deferredIssuanceResult.docType,
+                                        docName = deferredIssuanceResult.name
+                                    )
                                 )
                             )
                         }
@@ -429,9 +428,11 @@ class WalletCoreDocumentsControllerImpl(
                         is DeferredIssueResult.DocumentNotReady -> {
                             trySendBlocking(
                                 IssueDeferredDocumentPartialState.NotReady(
-                                    documentId = deferredIssuanceResult.documentId,
-                                    docType = deferredIssuanceResult.docType,
-                                    docName = deferredIssuanceResult.name
+                                    DeferredDocumentData(
+                                        documentId = deferredIssuanceResult.documentId,
+                                        docType = deferredIssuanceResult.docType,
+                                        docName = deferredIssuanceResult.name
+                                    )
                                 )
                             )
                         }

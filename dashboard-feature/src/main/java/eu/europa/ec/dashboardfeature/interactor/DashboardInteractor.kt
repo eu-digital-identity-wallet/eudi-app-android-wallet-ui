@@ -32,6 +32,7 @@ import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
@@ -63,17 +64,6 @@ sealed class DashboardInteractorGetDocumentsPartialState {
     data class Failure(val error: String) : DashboardInteractorGetDocumentsPartialState()
 }
 
-/*sealed class DashboardInteractorGetDocumentPartialState {
-    data class Success(
-        val documentUi: DocumentUi,
-        val mainPid: IssuedDocument?,
-        val userFirstName: String,
-        val userBase64Portrait: String,
-    ) : DashboardInteractorGetDocumentPartialState()
-
-    data class Failure(val error: String) : DashboardInteractorGetDocumentPartialState()
-}*/
-
 sealed class DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState {
     data class Success(
         val newlyIssuedDocumentsUi: List<DocumentUi>,
@@ -92,12 +82,6 @@ sealed class DashboardInteractorDeleteDocumentPartialState {
     data class Failure(val errorMessage: String) :
         DashboardInteractorDeleteDocumentPartialState()
 }
-
-data class DeferredDocumentData(
-    val documentId: DocumentId,
-    val docType: DocType,
-    val docName: String,
-)
 
 data class UserInfo(
     val userFirstName: String,
@@ -128,11 +112,6 @@ sealed class DashboardInteractorRetryIssuingDeferredDocumentsPartialState {
 
 interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorGetDocumentsPartialState>
-    /*fun getDocument(
-        documentId: DocumentId,
-        userFirstName: String,
-        userImage: String,
-    ): Flow<DashboardInteractorGetDocumentPartialState>*/
 
     fun getDocumentsOnlyForTheseIds(
         documentIds: List<DocumentId>,
@@ -145,8 +124,7 @@ interface DashboardInteractor {
     fun isBleCentralClientModeEnabled(): Boolean
     fun getAppVersion(): String
     fun deleteDocument(
-        documentId: String,
-        //documentType: DocType
+        documentId: String
     ): Flow<DashboardInteractorDeleteDocumentPartialState>
 
     suspend fun tryIssuingDeferredDocumentSuspend(deferredDocumentId: DocumentId)
@@ -244,40 +222,6 @@ class DashboardInteractorImpl(
             error = it.localizedMessage ?: genericErrorMsg
         )
     }
-
-    /*override fun getDocument(
-        documentId: DocumentId,
-        userFirstName: String,
-        userImage: String,
-    ): Flow<DashboardInteractorGetDocumentPartialState> =
-        flow {
-            val document = walletCoreDocumentsController.getDocumentById(documentId)
-            val mainPid = walletCoreDocumentsController.getMainPidDocument()
-            document?.let { doc ->
-                val (documentUi, userInfo) = doc.toDocumentUiAndUserInfo(mainPid)
-
-                emit(
-                    DashboardInteractorGetDocumentPartialState.Success(
-                        documentUi = documentUi,
-                        mainPid = mainPid,
-                        userFirstName = userFirstName.ifBlank {
-                            userInfo.userFirstName
-                        },
-                        userBase64Portrait = userImage.ifBlank {
-                            userInfo.userBase64Portrait
-                        }
-                    )
-                )
-            } ?: emit(
-                DashboardInteractorGetDocumentPartialState.Failure(
-                    error = genericErrorMsg
-                )
-            )
-        }.safeAsync {
-            DashboardInteractorGetDocumentPartialState.Failure(
-                error = it.localizedMessage ?: genericErrorMsg
-            )
-        }*/
 
     private fun Document.toDocumentUiAndUserInfo(mainPid: IssuedDocument?): Pair<DocumentUi, UserInfo> {
         when (this) {
@@ -409,11 +353,7 @@ class DashboardInteractorImpl(
 
                         is IssueDeferredDocumentPartialState.Issued -> {
                             DashboardInteractorRetryIssuingDeferredDocumentPartialState.Success(
-                                deferredDocumentData = DeferredDocumentData(
-                                    documentId = result.documentId,
-                                    docType = result.docType,
-                                    docName = result.docName
-                                )
+                                deferredDocumentData = result.deferredDocumentData
                             )
                         }
 
