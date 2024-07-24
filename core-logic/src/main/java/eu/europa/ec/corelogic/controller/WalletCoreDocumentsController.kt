@@ -23,6 +23,7 @@ import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.DeferredDocument
 import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.Document.State
@@ -111,6 +112,10 @@ sealed class IssueDeferredDocumentPartialState {
     data class Failed(
         val documentId: DocumentId,
         val errorMessage: String
+    ) : IssueDeferredDocumentPartialState()
+
+    data class Expired(
+        val documentId: DocumentId,
     ) : IssueDeferredDocumentPartialState()
 }
 
