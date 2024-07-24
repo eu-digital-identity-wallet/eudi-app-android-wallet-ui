@@ -88,6 +88,7 @@ import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
+import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
@@ -621,33 +622,28 @@ private fun CardListItem(
     dataItem: DocumentUi,
     onEventSend: (Event) -> Unit
 ) {
+    val dottedLinesColor = if (isSystemInDarkTheme()) {
+        MaterialTheme.colorScheme.textSecondaryDark
+    } else {
+        MaterialTheme.colorScheme.textDisabledDark
+    }
+
+    val borderModifier = when (dataItem.documentIssuanceState) {
+        DocumentUiIssuanceState.Issued -> Modifier
+        DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> Modifier
+            .dashedBorder(
+                color = dottedLinesColor,
+                shape = RoundedCornerShape(SIZE_MEDIUM.dp),
+                strokeWidth = 2.dp,
+                gapLength = SIZE_SMALL.dp
+            )
+    }
+
     WrapCard(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .then(
-                when (dataItem.documentIssuanceState) {
-                    DocumentUiIssuanceState.Issued -> {
-                        Modifier
-                    }
-
-                    DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> {
-                        val dottedLinesColor = if (isSystemInDarkTheme()) {
-                            MaterialTheme.colorScheme.textSecondaryDark
-                        } else {
-                            MaterialTheme.colorScheme.textDisabledDark
-                        }
-                        Modifier
-                            .dashedBorder(
-                                color = dottedLinesColor,
-                                shape = RoundedCornerShape(16.dp),
-                                strokeWidth = 2.dp,
-                                gapLength = SIZE_SMALL.dp
-                            )
-
-                    }
-                }
-            ),
+            .then(borderModifier),
         onClick = {
             when (dataItem.documentIssuanceState) {
                 DocumentUiIssuanceState.Issued -> {
@@ -656,7 +652,6 @@ private fun CardListItem(
                             documentId = dataItem.documentId
                         )
                     )
-
                 }
 
                 DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> {

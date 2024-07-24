@@ -350,7 +350,9 @@ class DashboardInteractorImpl(
                     }
 
                     is DashboardInteractorRetryIssuingDeferredDocumentPartialState.Expired -> {
-                        deleteDocument(result.documentId)
+                        // TODO Giannis
+                        println("Giannis doc ${result.documentId} has expired. Should delete")
+                        //deleteDocument(result.documentId)
                     }
                 }
             }

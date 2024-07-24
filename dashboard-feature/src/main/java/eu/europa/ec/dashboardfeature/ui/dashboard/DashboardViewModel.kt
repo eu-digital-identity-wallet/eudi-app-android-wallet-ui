@@ -192,7 +192,7 @@ class DashboardViewModel(
                 )
             }
 
-            is Event.OnPause ->{
+            is Event.OnPause -> {
                 retryDeferredDocsJob?.cancel()
             }
 
@@ -338,7 +338,7 @@ class DashboardViewModel(
     private fun getDocuments(
         event: Event,
         deepLinkUri: Uri?,
-        deferredFailedDocIds: List<DocumentId> = emptyList()
+        deferredFailedDocIds: List<DocumentId>,
     ) {
         setState {
             copy(
@@ -423,7 +423,7 @@ class DashboardViewModel(
                 return@launch
             }
 
-            println("Giannis VM delaying for 5 sec...")
+            println("Giannis VM delaying for 2 sec...")
             delay(2000L)
             println("Giannis VM end of delay.")
 
@@ -517,7 +517,8 @@ class DashboardViewModel(
                     is DashboardInteractorDeleteDocumentPartialState.SingleDocumentDeleted -> {
                         getDocuments(
                             event = event,
-                            deepLinkUri = null
+                            deepLinkUri = null,
+                            deferredFailedDocIds = viewState.value.deferredFailedDocIds
                         )
                     }
 
