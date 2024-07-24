@@ -160,6 +160,8 @@ interface WalletCoreDocumentsController {
     fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState>
 
     fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState>
+
+    fun resumeOpenId4VciWithAuthorization(uri: String)
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -172,6 +174,15 @@ class WalletCoreDocumentsControllerImpl(
 
     private val documentErrorMessage
         get() = resourceProvider.getString(R.string.issuance_generic_error)
+
+    private val openId4VciManager by lazy {
+        eudiWallet.config.openId4VciConfig?.let { vciConfig ->
+            OpenId4VciManager(resourceProvider.provideContext()) {
+                documentManager(eudiWallet.documentManager)
+                config(vciConfig)
+            }
+        } ?: throw RuntimeException("No openId4VciManager")
+    }
 
     override fun loadSampleData(sampleDataByteArray: ByteArray): Flow<LoadSampleDataPartialState> =
         flow {
@@ -273,9 +284,9 @@ class WalletCoreDocumentsControllerImpl(
         txCode: String?
     ): Flow<IssueDocumentsPartialState> =
         callbackFlow {
-            eudiWallet.issueDocumentByOfferUri(
+            openId4VciManager.issueDocumentByOfferUri(
                 offerUri = offerUri,
-                onEvent = issuanceCallback(),
+                onIssueEvent = issuanceCallback(),
                 txCode = txCode
             )
             awaitClose()
@@ -366,9 +377,9 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState> =
         callbackFlow {
-            eudiWallet.resolveDocumentOffer(
+            openId4VciManager.resolveDocumentOffer(
                 offerUri = offerUri,
-                onResult = { offerResult ->
+                onResolvedOffer = { offerResult ->
                     when (offerResult) {
                         is OfferResult.Failure -> {
                             trySendBlocking(
@@ -424,45 +435,61 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState> =
         callbackFlow {
-            eudiWallet.issueDeferredDocument(
-                documentId = docId,
-                onResult = { deferredIssuanceResult ->
-                    when (deferredIssuanceResult) {
-                        is DeferredIssueResult.DocumentFailed -> {
-                            trySendBlocking(
-                                IssueDeferredDocumentPartialState.Failed(
-                                    documentId = deferredIssuanceResult.documentId,
-                                    errorMessage = deferredIssuanceResult.cause.localizedMessage
-                                        ?: genericErrorMessage
-                                )
-                            )
-                        }
-
-                        is DeferredIssueResult.DocumentIssued -> {
-                            trySendBlocking(
-                                IssueDeferredDocumentPartialState.Issued(
-                                    DeferredDocumentData(
+            (getDocumentById(docId) as? DeferredDocument)?.let { deferredDoc ->
+                openId4VciManager.issueDeferredDocument(
+                    deferredDocument = deferredDoc,
+                    executor = null,
+                    onIssueResult = { deferredIssuanceResult ->
+                        when (deferredIssuanceResult) {
+                            is DeferredIssueResult.DocumentFailed -> {
+                                trySendBlocking(
+                                    IssueDeferredDocumentPartialState.Failed(
                                         documentId = deferredIssuanceResult.documentId,
-                                        docType = deferredIssuanceResult.docType,
-                                        docName = deferredIssuanceResult.name
+                                        errorMessage = deferredIssuanceResult.cause.localizedMessage
+                                            ?: documentErrorMessage
                                     )
                                 )
-                            )
-                        }
+                            }
 
-                        is DeferredIssueResult.DocumentNotReady -> {
-                            trySendBlocking(
-                                IssueDeferredDocumentPartialState.NotReady(
-                                    DeferredDocumentData(
-                                        documentId = deferredIssuanceResult.documentId,
-                                        docType = deferredIssuanceResult.docType,
-                                        docName = deferredIssuanceResult.name
+                            is DeferredIssueResult.DocumentIssued -> {
+                                trySendBlocking(
+                                    IssueDeferredDocumentPartialState.Issued(
+                                        DeferredDocumentData(
+                                            documentId = deferredIssuanceResult.documentId,
+                                            docType = deferredIssuanceResult.docType,
+                                            docName = deferredIssuanceResult.name
+                                        )
                                     )
                                 )
-                            )
+                            }
+
+                            is DeferredIssueResult.DocumentNotReady -> {
+                                trySendBlocking(
+                                    IssueDeferredDocumentPartialState.NotReady(
+                                        DeferredDocumentData(
+                                            documentId = deferredIssuanceResult.documentId,
+                                            docType = deferredIssuanceResult.docType,
+                                            docName = deferredIssuanceResult.name
+                                        )
+                                    )
+                                )
+                            }
+
+                            is DeferredIssueResult.DocumentExpired -> {
+                                trySendBlocking(
+                                    IssueDeferredDocumentPartialState.Expired(
+                                        documentId = deferredIssuanceResult.documentId
+                                    )
+                                )
+                            }
                         }
                     }
-                }
+                )
+            } ?: trySendBlocking(
+                IssueDeferredDocumentPartialState.Failed(
+                    documentId = docId,
+                    errorMessage = documentErrorMessage
+                )
             )
 
             awaitClose()
@@ -473,12 +500,16 @@ class WalletCoreDocumentsControllerImpl(
             )
         }
 
+    override fun resumeOpenId4VciWithAuthorization(uri: String) {
+        openId4VciManager.resumeWithAuthorization(uri)
+    }
+
     private fun issueDocumentWithOpenId4VCI(documentType: DocType): Flow<IssueDocumentsPartialState> =
         callbackFlow {
 
-            eudiWallet.issueDocumentByDocType(
+            openId4VciManager.issueDocumentByDocType(
                 docType = documentType,
-                onEvent = issuanceCallback()
+                onIssueEvent = issuanceCallback()
             )
 
             awaitClose()
