@@ -186,6 +186,16 @@ fun DashboardScreen(
             )
         )
     }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_PAUSE
+    ) {
+        println("Giannis onPause")
+        viewModel.setEvent(
+            Event.OnPause
+        )
+    }
 }
 
 private fun handleNavigationEffect(

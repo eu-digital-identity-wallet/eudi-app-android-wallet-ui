@@ -86,6 +86,7 @@ data class State(
 
 sealed class Event : ViewEvent {
     data class Init(val deepLinkUri: Uri?) : Event()
+    data object OnPause : Event()
     data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, DocType>) : Event()
     data object Pop : Event()
     data class NavigateToDocument(
@@ -191,6 +192,10 @@ class DashboardViewModel(
                     deepLinkUri = event.deepLinkUri,
                     deferredFailedDocIds = viewState.value.deferredFailedDocIds
                 )
+            }
+
+            is Event.OnPause ->{
+                retryDeferredDocsJob?.cancel()
             }
 
             is Event.TryIssuingDeferredDocuments -> {
@@ -733,5 +738,10 @@ class DashboardViewModel(
         setEffect {
             Effect.CloseBottomSheet
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        retryDeferredDocsJob?.cancel()
     }
 }
