@@ -89,6 +89,8 @@ interface DocumentOfferInteractor {
         crypto: BiometricCrypto,
         resultHandler: DeviceAuthenticationResult
     )
+
+    fun resumeOpenId4VciWithAuthorization(uri: String)
 }
 
 class DocumentOfferInteractorImpl(
@@ -296,6 +298,10 @@ class DocumentOfferInteractorImpl(
                 }
             }
         }
+    }
+
+    override fun resumeOpenId4VciWithAuthorization(uri: String) {
+        walletCoreDocumentsController.resumeOpenId4VciWithAuthorization(uri)
     }
 
     private enum class IssuanceSuccessType {

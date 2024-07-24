@@ -69,7 +69,7 @@ sealed class Event : ViewEvent {
     data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
     data object OnPause : Event()
-    data object OnResumeIssuance : Event()
+    data class OnResumeIssuance(val uri: String) : Event()
     data class OnDynamicPresentation(val uri: String) : Event()
     data object DismissError : Event()
 
@@ -194,8 +194,11 @@ class DocumentOfferViewModel(
                 }
             }
 
-            is Event.OnResumeIssuance -> setState {
-                copy(isLoading = true)
+            is Event.OnResumeIssuance -> {
+                setState {
+                    copy(isLoading = true)
+                }
+                documentOfferInteractor.resumeOpenId4VciWithAuthorization(event.uri)
             }
 
             is Event.OnDynamicPresentation -> {

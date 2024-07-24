@@ -28,13 +28,11 @@ import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.corelogic.config.WalletCoreConfig
-import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
-import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.model.UserInfo
 import eu.europa.ec.eudi.wallet.document.Document
@@ -108,9 +106,6 @@ interface DashboardInteractor {
         documentId: String
     ): Flow<DashboardInteractorDeleteDocumentPartialState>
 
-    suspend fun tryIssuingDeferredDocumentSuspend(deferredDocumentId: DocumentId)
-            : DashboardInteractorRetryIssuingDeferredDocumentPartialState
-
     fun tryIssuingDeferredDocumentsFlow(
         deferredDocuments: Map<DocumentId, DocType>,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -164,6 +159,85 @@ class DashboardInteractorImpl(
     }.safeAsync {
         DashboardInteractorGetDocumentsPartialState.Failure(
             error = it.localizedMessage ?: genericErrorMsg
+        )
+    }
+
+    override fun getAppVersion(): String = configLogic.appVersion
+
+    override fun deleteDocument(
+        documentId: String,
+    ): Flow<DashboardInteractorDeleteDocumentPartialState> =
+        flow {
+            walletCoreDocumentsController.deleteDocument(documentId).collect { response ->
+                when (response) {
+                    is DeleteDocumentPartialState.Failure -> {
+                        emit(
+                            DashboardInteractorDeleteDocumentPartialState.Failure(
+                                errorMessage = response.errorMessage
+                            )
+                        )
+                    }
+
+                    is DeleteDocumentPartialState.Success -> {
+                        if (walletCoreDocumentsController.getAllDocuments().isEmpty()) {
+                            emit(DashboardInteractorDeleteDocumentPartialState.AllDocumentsDeleted)
+                        } else
+                            emit(DashboardInteractorDeleteDocumentPartialState.SingleDocumentDeleted)
+                    }
+                }
+            }
+        }.safeAsync {
+            DashboardInteractorDeleteDocumentPartialState.Failure(
+                errorMessage = it.localizedMessage ?: genericErrorMsg
+            )
+        }
+
+
+    override fun tryIssuingDeferredDocumentsFlow(
+        deferredDocuments: Map<DocumentId, DocType>,
+        dispatcher: CoroutineDispatcher,
+    ): Flow<DashboardInteractorRetryIssuingDeferredDocumentsPartialState> = flow {
+
+        val successResults: MutableList<DeferredDocumentData> = mutableListOf()
+        val failedResults: MutableList<DocumentId> = mutableListOf()
+
+        withContext(dispatcher) {
+            val allJobs = deferredDocuments.keys.map { deferredDocumentId ->
+                async {
+                    tryIssuingDeferredDocumentSuspend(deferredDocumentId)
+                }
+            }
+
+            allJobs.forEach { job ->
+                when (val result = job.await()) {
+                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.Failure -> {
+                        failedResults.add(result.documentId)
+                    }
+
+                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.Success -> {
+                        successResults.add(result.deferredDocumentData)
+                    }
+
+                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.NotReady -> {}
+
+                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.Expired -> {
+                        deleteDocument(result.documentId)
+                    }
+                }
+            }
+        }
+
+        if (successResults.isNotEmpty() || failedResults.isNotEmpty()) {
+            emit(
+                DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result(
+                    successfullyIssuedDeferredDocuments = successResults,
+                    failedIssuedDeferredDocuments = failedResults
+                )
+            )
+        }
+    }.safeAsync {
+        DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Failure(
+            errorMessage = it.localizedMessage ?: genericErrorMsg
         )
     }
 
@@ -227,61 +301,11 @@ class DashboardInteractorImpl(
         }
     }
 
-    override fun getAppVersion(): String = configLogic.appVersion
-
-    override fun deleteDocument(
-        documentId: String,
-    ): Flow<DashboardInteractorDeleteDocumentPartialState> =
-        flow {
-            val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
-
-            val shouldDeleteAllDocuments: Boolean =
-                if (document?.docType?.toDocumentIdentifier() == DocumentIdentifier.PID) {
-
-                    val allPidDocuments =
-                        walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)
-
-                    if (allPidDocuments.count() > 1) {
-                        walletCoreDocumentsController.getMainPidDocument()?.id == documentId
-                    } else {
-                        true
-                    }
-                } else {
-                    false
-                }
-
-            if (shouldDeleteAllDocuments) {
-                walletCoreDocumentsController.deleteAllDocuments(mainPidDocumentId = documentId)
-                    .map {
-                        when (it) {
-                            is DeleteAllDocumentsPartialState.Failure -> DashboardInteractorDeleteDocumentPartialState.Failure(
-                                errorMessage = it.errorMessage
-                            )
-
-                            is DeleteAllDocumentsPartialState.Success -> DashboardInteractorDeleteDocumentPartialState.AllDocumentsDeleted
-                        }
-                    }
-            } else {
-                walletCoreDocumentsController.deleteDocument(documentId = documentId).map {
-                    when (it) {
-                        is DeleteDocumentPartialState.Failure -> DashboardInteractorDeleteDocumentPartialState.Failure(
-                            errorMessage = it.errorMessage
-                        )
-
-                        is DeleteDocumentPartialState.Success -> DashboardInteractorDeleteDocumentPartialState.SingleDocumentDeleted
-                    }
-                }
-            }.collect {
-                emit(it)
-            }
-        }.safeAsync {
-            DashboardInteractorDeleteDocumentPartialState.Failure(
-                errorMessage = it.localizedMessage ?: genericErrorMsg
-            )
-        }
-
-    override suspend fun tryIssuingDeferredDocumentSuspend(deferredDocumentId: DocumentId): DashboardInteractorRetryIssuingDeferredDocumentPartialState {
-        return withContext(Dispatchers.IO) {
+    private suspend fun tryIssuingDeferredDocumentSuspend(
+        deferredDocumentId: DocumentId,
+        dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    ): DashboardInteractorRetryIssuingDeferredDocumentPartialState {
+        return withContext(dispatcher) {
             walletCoreDocumentsController.issueDeferredDocument(deferredDocumentId)
                 .map { result ->
                     when (result) {
@@ -316,60 +340,5 @@ class DashboardInteractorImpl(
                     errorMessage = genericErrorMsg
                 )
         }
-    }
-
-    override fun tryIssuingDeferredDocumentsFlow(
-        deferredDocuments: Map<DocumentId, DocType>,
-        dispatcher: CoroutineDispatcher,
-    ): Flow<DashboardInteractorRetryIssuingDeferredDocumentsPartialState> = flow {
-        println("Giannis tryIssuingDeferredDocuments start.")
-
-        val successResults: MutableList<DeferredDocumentData> = mutableListOf()
-        val notReadyResults: MutableList<DeferredDocumentData> = mutableListOf()
-        val failedResults: MutableList<DocumentId> = mutableListOf()
-
-        withContext(dispatcher) {
-            val allJobs = deferredDocuments.keys.map { deferredDocumentId ->
-                async {
-                    tryIssuingDeferredDocumentSuspend(deferredDocumentId)
-                }
-            }
-
-            allJobs.forEach { job ->
-                when (val result = job.await()) {
-                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.Failure -> {
-                        failedResults.add(result.documentId)
-                    }
-
-                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.Success -> {
-                        successResults.add(result.deferredDocumentData)
-                    }
-
-                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.NotReady -> {
-                        notReadyResults.add(result.deferredDocumentData)
-                    }
-
-                    is DashboardInteractorRetryIssuingDeferredDocumentPartialState.Expired -> {
-                        // TODO Giannis
-                        println("Giannis doc ${result.documentId} has expired. Should delete")
-                        //deleteDocument(result.documentId)
-                    }
-                }
-            }
-        }
-
-        println("Giannis tryIssuingDeferredDocuments end. Success: $successResults, NotReady: $notReadyResults, Failed: $failedResults")
-        if (successResults.isNotEmpty() || notReadyResults.isNotEmpty() || failedResults.isNotEmpty()) {
-            emit(
-                DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result(
-                    successfullyIssuedDeferredDocuments = successResults,
-                    failedIssuedDeferredDocuments = failedResults
-                )
-            )
-        }
-    }.safeAsync {
-        DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Failure(
-            errorMessage = it.localizedMessage ?: genericErrorMsg
-        )
     }
 }

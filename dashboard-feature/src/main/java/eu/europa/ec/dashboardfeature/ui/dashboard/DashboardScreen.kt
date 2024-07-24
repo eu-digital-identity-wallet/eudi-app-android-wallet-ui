@@ -192,7 +192,6 @@ fun DashboardScreen(
         lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_PAUSE
     ) {
-        println("Giannis onPause")
         viewModel.setEvent(
             Event.OnPause
         )

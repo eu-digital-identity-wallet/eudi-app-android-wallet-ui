@@ -103,16 +103,6 @@ class AddDocumentInteractorImpl(
                     icon = AppIcons.Id,
                     type = DocumentIdentifier.AGE,
                     available = canCreateExtraDocument(flowType)
-                ),
-                //TODO Giannis
-                DocumentOptionItemUi(
-                    text = "Age Deferred",
-                    icon = AppIcons.Id,
-                    type = DocumentIdentifier.OTHER(
-                        nameSpace = "eu.europa.ec.eudi.pseudonym.age_over_18.deferred_endpoint",
-                        docType = "eu.europa.ec.eudi.pseudonym.age_over_18.deferred_endpoint"
-                    ),
-                    available = true
                 )
             )
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {

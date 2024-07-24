@@ -423,11 +423,8 @@ class DashboardViewModel(
                 return@launch
             }
 
-            println("Giannis VM delaying for 2 sec...")
-            delay(2000L)
-            println("Giannis VM end of delay.")
+            delay(5000L)
 
-            println("Giannis VM will try deferred docs: ${deferredDocs.keys} again.")
             dashboardInteractor.tryIssuingDeferredDocumentsFlow(deferredDocs).collect { response ->
                 when (response) {
                     is DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Failure -> {
