@@ -41,10 +41,14 @@ fun ScalableText(
     modifier: Modifier = Modifier,
     maxLines: Int = 1,
 ) {
-    var style by remember { mutableStateOf(textStyle) }
-    var readyToDraw by remember { mutableStateOf(false) }
+    val style by remember(text) { mutableStateOf(textStyle) }
+    var readyToDraw by remember(text) { mutableStateOf(false) }
+    var textSize by remember(text) { mutableStateOf(textStyle.fontSize) }
 
     Text(
+        text = text,
+        style = style.copy(fontSize = textSize),
+        maxLines = maxLines,
         modifier = modifier.then(
             Modifier
                 .drawWithContent {
@@ -53,12 +57,9 @@ fun ScalableText(
                     }
                 }
         ),
-        text = text,
-        style = style,
-        maxLines = maxLines,
         onTextLayout = { textLayoutResult ->
             if (!readyToDraw && textLayoutResult.hasVisualOverflow) {
-                style = style.copy(fontSize = style.fontSize * 0.9)
+                textSize *= 0.9 // Reduce the text size
             } else {
                 readyToDraw = true
             }

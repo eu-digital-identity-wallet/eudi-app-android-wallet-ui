@@ -75,7 +75,7 @@ sealed class Event : ViewEvent {
     data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
     data object OnPause : Event()
-    data object OnResumeIssuance : Event()
+    data class OnResumeIssuance(val uri: String) : Event()
     data class OnDynamicPresentation(val uri: String) : Event()
     data object Finish : Event()
     data object DismissError : Event()
@@ -149,8 +149,11 @@ class AddDocumentViewModel(
                 }
             }
 
-            is Event.OnResumeIssuance -> setState {
-                copy(isLoading = true)
+            is Event.OnResumeIssuance -> {
+                setState {
+                    copy(isLoading = true)
+                }
+                addDocumentInteractor.resumeOpenId4VciWithAuthorization(event.uri)
             }
 
             is Event.OnDynamicPresentation -> {
@@ -262,8 +265,22 @@ class AddDocumentViewModel(
                                 isLoading = false
                             )
                         }
-                        navigateToSuccessScreen(
+                        navigateToIssuanceSuccessScreen(
                             documentId = response.documentId
+                        )
+                    }
+
+                    is IssueDocumentPartialState.DeferredSuccess -> {
+                        setState {
+                            copy(
+                                error = null,
+                                isLoading = false
+                            )
+                        }
+                        navigateToGenericSuccessScreen(
+                            route = addDocumentInteractor.buildGenericSuccessRouteForDeferred(
+                                flowType
+                            )
                         )
                     }
 
@@ -326,7 +343,7 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun navigateToSuccessScreen(documentId: String) {
+    private fun navigateToIssuanceSuccessScreen(documentId: String) {
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
@@ -339,6 +356,15 @@ class AddDocumentViewModel(
                     )
                 ),
                 inclusive = false
+            )
+        }
+    }
+
+    private fun navigateToGenericSuccessScreen(route: String) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = route,
+                inclusive = true
             )
         }
     }

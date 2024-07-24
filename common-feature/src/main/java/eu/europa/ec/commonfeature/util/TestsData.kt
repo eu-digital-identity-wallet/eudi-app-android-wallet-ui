@@ -19,6 +19,7 @@ package eu.europa.ec.commonfeature.util
 import androidx.annotation.VisibleForTesting
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
@@ -222,6 +223,7 @@ object TestsData {
         documentHasExpired = mockedDocumentHasExpired,
         documentImage = "",
         documentDetails = emptyList(),
+        documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
 
     val mockedBasicPidUi = mockedFullPidUi.copy(
@@ -294,6 +296,7 @@ object TestsData {
         documentHasExpired = mockedDocumentHasExpired,
         documentImage = "",
         documentDetails = emptyList(),
+        documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
 
     val mockedBasicMdlUi = mockedFullMdlUi.copy(

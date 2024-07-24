@@ -17,6 +17,7 @@
 package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.util.TestsData
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlUi
@@ -33,12 +34,10 @@ import eu.europa.ec.testfeature.mockedEmptyPid
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedMdlDocType
 import eu.europa.ec.testfeature.mockedMdlId
 import eu.europa.ec.testfeature.mockedMdlWithBasicFields
 import eu.europa.ec.testfeature.mockedOldestPidId
 import eu.europa.ec.testfeature.mockedOldestPidWithBasicFields
-import eu.europa.ec.testfeature.mockedPidDocType
 import eu.europa.ec.testfeature.mockedPidId
 import eu.europa.ec.testfeature.mockedPidNameSpace
 import eu.europa.ec.testfeature.mockedPidWithBasicFields
@@ -48,6 +47,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
+import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -57,7 +57,6 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
-import kotlin.test.assertEquals
 
 class TestDocumentDetailsInteractor {
 
@@ -157,7 +156,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns an empty PID document.
 
     // Case 3 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failure state,
+    // DocumentDetailsInteractorPartialState.Failed state,
     // with the generic error message.
     @Test
     fun `Given Case 3, When getDocumentDetails is called, Then Case 3 Expected Result is returned`() {
@@ -184,7 +183,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns null.
 
     // Case 4 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failure state,
+    // DocumentDetailsInteractorPartialState.Failed state,
     // with the generic error message.
     @Test
     fun `Given Case 4, When getDocumentDetails is called, Then Case 4 Expected Result is returned`() {
@@ -257,7 +256,8 @@ class TestDocumentDetailsInteractor {
                                     )
                                 )
                             ),
-                            userFullName = ""
+                            userFullName = "",
+                            documentIssuanceState = DocumentUiIssuanceState.Issued
                         )
                     ),
                     awaitItem()
@@ -270,7 +270,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() throws an exception with a message.
 
     // Case 6 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failure state,
+    // DocumentDetailsInteractorPartialState.Failed state,
     // with the exception's localized message.
     @Test
     fun `Given Case 6, When getDocumentDetails is called, Then Case 6 Expected Result is returned`() {
@@ -298,7 +298,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() throws an exception with no message.
 
     // Case 7 Expected Result:
-    // DocumentDetailsInteractorPartialState.Failure state,
+    // DocumentDetailsInteractorPartialState.Failed state,
     // with the generic error message.
     @Test
     fun `Given Case 7, When getDocumentDetails is called, Then Case 7 Expected Result is returned`() {
@@ -329,7 +329,8 @@ class TestDocumentDetailsInteractor {
 
     // 1. A documentId and document is PID.
     // 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
-    // 3. walletCoreDocumentsController.deleteAllDocuments() returns Failure.
+    // 3. walletCoreDocumentsController.getDocumentById returns that PID Document.
+    // 4. walletCoreDocumentsController.deleteAllDocuments() returns Failed.
     @Test
     fun `Given Case 1, When deleteDocument is called, Then it returns Failure with failure's error message`() {
         coroutineRule.runTest {
@@ -344,11 +345,13 @@ class TestDocumentDetailsInteractor {
                     errorMessage = mockedPlainFailureMessage
                 )
             )
+            mockGetDocumentByIdCall(
+                response = mockedPidWithBasicFields
+            )
 
             // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
-                documentType = mockedPidDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -365,7 +368,8 @@ class TestDocumentDetailsInteractor {
 
     // 1. A documentId and document is PID.
     // 2. walletCoreDocumentsController.getAllDocuments() returns 1 Document and it is PID.
-    // 3. walletCoreDocumentsController.deleteAllDocuments() returns Success.
+    // 3. walletCoreDocumentsController.getDocumentById returns that PID Document.
+    // 4. walletCoreDocumentsController.deleteAllDocuments() returns Success.
     @Test
     fun `Given Case 2, When deleteDocument is called, Then it returns AllDocumentsDeleted`() {
         coroutineRule.runTest {
@@ -376,11 +380,13 @@ class TestDocumentDetailsInteractor {
                 )
             )
             mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
+            mockGetDocumentByIdCall(
+                response = mockedPidWithBasicFields
+            )
 
             // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
-                documentType = mockedPidDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -395,8 +401,8 @@ class TestDocumentDetailsInteractor {
 
     // 1. A documentId and document is PID.
     // 2. walletCoreDocumentsController.getAllDocuments() returns more than 1 PIDs
-    //      AND the documentId we are about to delete IS the one of the oldest PID.
-    // 3. walletCoreDocumentsController.deleteAllDocuments() returns Success.
+    // 3. walletCoreDocumentsController.getDocumentById returns the oldest Document.
+    // 4. walletCoreDocumentsController.deleteAllDocuments() returns Success.
     @Test
     fun `Given Case 3, When deleteDocument is called, Then it returns AllDocumentsDeleted`() {
         coroutineRule.runTest {
@@ -409,11 +415,13 @@ class TestDocumentDetailsInteractor {
                 )
             )
             mockDeleteAllDocumentsCall(response = DeleteAllDocumentsPartialState.Success)
+            mockGetDocumentByIdCall(
+                response = mockedOldestPidWithBasicFields
+            )
 
             // When
             interactor.deleteDocument(
                 documentId = mockedOldestPidId,
-                documentType = mockedPidDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -446,7 +454,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedPidId,
-                documentType = mockedPidDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -460,7 +467,7 @@ class TestDocumentDetailsInteractor {
     // Case 5:
 
     // 1. A documentId and document is mDL.
-    // 2. walletCoreDocumentsController.deleteDocument() returns Failure.
+    // 2. walletCoreDocumentsController.deleteDocument() returns Failed.
     @Test
     fun `Given Case 5, When deleteDocument is called, Then it returns Failure with failure's error message`() {
         coroutineRule.runTest {
@@ -474,7 +481,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
-                documentType = mockedMdlDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -500,7 +506,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
-                documentType = mockedMdlDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -525,7 +530,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
-                documentType = mockedMdlDocType
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -552,7 +556,6 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.deleteDocument(
                 documentId = mockedMdlId,
-                documentType = mockedMdlDocType
             ).runFlowTest {
                 // Then
                 assertEquals(

@@ -31,13 +31,16 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedUserFirstName
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullDocuments
+import eu.europa.ec.testfeature.mockedFullPid
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.mockedMainPid
 import eu.europa.ec.testfeature.mockedMdlWithNoExpirationDate
 import eu.europa.ec.testfeature.mockedMdlWithNoUserNameAndNoUserImage
 import eu.europa.ec.testfeature.walletcore.getMockedEudiWalletConfig
@@ -46,6 +49,7 @@ import eu.europa.ec.testlogic.base.getMockedContext
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -60,7 +64,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowBluetoothAdapter
-import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = TestApplication::class)
@@ -192,18 +195,21 @@ class TestDashboardInteractor {
 
     // Case 1:
     // walletCoreDocumentsController.getAllDocuments() returns
-    // a full PID and a full mDL.
+    // a full PID and a full mDL, and
+    // walletCoreDocumentsController.getMainPidDocument() returns a main PID.
 
     // Case 1 Expected Result:
-    // DashboardInteractorPartialState.Success state, with:
+    // DashboardInteractorGetDocumentsPartialState.Success state, with:
     // 1. the list of Documents transformed to DocumentUi objects,
     // 2. an actual user name, and
-    // 3. an actual (base64 encoded) user image.
+    // 3. an actual (base64 encoded) user image, and
+    // 4. the main PID.
     @Test
     fun `Given Case 1, When getDocuments is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
             mockGetStringForDocumentsCall(resourceProvider)
+            mockGetMainPidDocumentCall(mockedMainPid)
 
             whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(mockedFullDocuments)
@@ -212,10 +218,11 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Success(
-                        documents = mockedFullDocumentsUi,
+                    DashboardInteractorGetDocumentsPartialState.Success(
+                        documentsUi = mockedFullDocumentsUi,
                         userFirstName = mockedUserFirstName,
-                        userBase64Portrait = mockedUserBase64Portrait
+                        userBase64Portrait = mockedUserBase64Portrait,
+                        mainPid = mockedFullPid,
                     ),
                     awaitItem()
                 )
@@ -225,14 +232,16 @@ class TestDashboardInteractor {
 
     // Case 2:
     // walletCoreDocumentsController.getAllDocuments() returns
-    // an mDL with no user name, and
-    // no user image.
+    // an mDL with no user name,
+    // no user image, and
+    // walletCoreDocumentsController.getMainPidDocument() returns null.
 
     // Case 2 Expected Result:
-    // DashboardInteractorPartialState.Success state, with:
-    // 1. the Document transformed to DocumentUi object,
-    // 2. empty string for the user name, and
-    // 3. empty string for the user image.
+    // DashboardInteractorGetDocumentsPartialState.Success state, with:
+    // 1. the DeferredDocument transformed to DocumentUi object,
+    // 2. empty string for the user name,
+    // 3. empty string for the user image, and
+    // 4. null for the main PID.
     @Test
     fun `Given Case 2, When getDocuments is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -246,10 +255,11 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Success(
-                        documents = listOf(mockedMdlUiWithNoUserNameAndNoUserImage),
+                    DashboardInteractorGetDocumentsPartialState.Success(
+                        documentsUi = listOf(mockedMdlUiWithNoUserNameAndNoUserImage),
                         userFirstName = mockedNoUserFistNameFound,
-                        userBase64Portrait = mockedNoUserBase64PortraitFound
+                        userBase64Portrait = mockedNoUserBase64PortraitFound,
+                        mainPid = null,
                     ),
                     awaitItem()
                 )
@@ -262,10 +272,11 @@ class TestDashboardInteractor {
     // an mDL with no expiration date.
 
     // Case 3 Expected Result:
-    // DashboardInteractorPartialState.Success state, with:
-    // 1. the Document transformed to DocumentUi object,
+    // DashboardInteractorGetDocumentsPartialState.Success state, with:
+    // 1. the DeferredDocument transformed to DocumentUi object,
     // 2. an actual user name, and
-    // 3. an actual (base64 encoded) user image.
+    // 3. an actual (base64 encoded) user image, and
+    // 4. null for the main PID.
     @Test
     fun `Given Case 3, When getDocuments is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -279,10 +290,11 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Success(
-                        documents = listOf(mockedMdlUiWithNoExpirationDate),
+                    DashboardInteractorGetDocumentsPartialState.Success(
+                        documentsUi = listOf(mockedMdlUiWithNoExpirationDate),
                         userFirstName = mockedUserFirstName,
-                        userBase64Portrait = mockedUserBase64Portrait
+                        userBase64Portrait = mockedUserBase64Portrait,
+                        mainPid = null,
                     ),
                     awaitItem()
                 )
@@ -303,7 +315,7 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Failure(
+                    DashboardInteractorGetDocumentsPartialState.Failure(
                         error = mockedExceptionWithMessage.localizedMessage!!
                     ),
                     awaitItem()
@@ -325,7 +337,7 @@ class TestDashboardInteractor {
             interactor.getDocuments().runFlowTest {
                 // Then
                 assertEquals(
-                    DashboardInteractorPartialState.Failure(
+                    DashboardInteractorGetDocumentsPartialState.Failure(
                         error = mockedGenericErrorMessage
                     ),
                     awaitItem()
@@ -368,6 +380,11 @@ class TestDashboardInteractor {
 
         whenever(resourceProvider.getString(R.string.dashboard_document_no_expiration_found))
             .thenReturn(mockedNoExpirationDateFound)
+    }
+
+    private fun mockGetMainPidDocumentCall(mainPid: IssuedDocument?) {
+        whenever(walletCoreDocumentsController.getMainPidDocument())
+            .thenReturn(mainPid)
     }
     //endregion
 }

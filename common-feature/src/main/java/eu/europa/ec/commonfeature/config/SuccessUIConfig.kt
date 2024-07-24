@@ -17,8 +17,10 @@
 package eu.europa.ec.commonfeature.config
 
 import androidx.annotation.DrawableRes
+import androidx.compose.ui.graphics.Color
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializable
@@ -26,7 +28,7 @@ import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
 data class SuccessUIConfig(
-    val header: String?,
+    val headerConfig: HeaderConfig?,
     val content: String,
     val imageConfig: ImageConfig,
     val buttonConfig: List<ButtonConfig>,
@@ -36,6 +38,7 @@ data class SuccessUIConfig(
     data class ImageConfig(
         val type: Type,
         @DrawableRes val drawableRes: Int? = null,
+        val tint: Color = ThemeColors.success,
         val contentDescription: String? = null
     ) {
         enum class Type {
@@ -52,6 +55,11 @@ data class SuccessUIConfig(
             PRIMARY, OUTLINE
         }
     }
+
+    data class HeaderConfig(
+        val title: String,
+        val color: Color = ThemeColors.success
+    )
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "successConfig"

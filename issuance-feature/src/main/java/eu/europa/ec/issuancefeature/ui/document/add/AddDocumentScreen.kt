@@ -139,7 +139,10 @@ fun AddDocumentScreen(
         )
     ) {
         when (it?.action) {
-            CoreActions.VCI_RESUME_ACTION -> viewModel.setEvent(Event.OnResumeIssuance)
+            CoreActions.VCI_RESUME_ACTION -> it.extras?.getString("uri")?.let { link ->
+                viewModel.setEvent(Event.OnResumeIssuance(link))
+            }
+
             CoreActions.VCI_DYNAMIC_PRESENTATION -> it.extras?.getString("uri")?.let { link ->
                 viewModel.setEvent(Event.OnDynamicPresentation(link))
             }

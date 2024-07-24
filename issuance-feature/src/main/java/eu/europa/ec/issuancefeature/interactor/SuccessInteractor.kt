@@ -20,6 +20,7 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +37,7 @@ sealed class SuccessFetchDocumentByIdPartialState {
 }
 
 interface SuccessInteractor {
-    fun fetchDocumentById(id: String): Flow<SuccessFetchDocumentByIdPartialState>
+    fun fetchDocumentById(documentId: DocumentId): Flow<SuccessFetchDocumentByIdPartialState>
 }
 
 class SuccessInteractorImpl(
@@ -47,20 +48,22 @@ class SuccessInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun fetchDocumentById(id: String): Flow<SuccessFetchDocumentByIdPartialState> = flow {
-        val document = walletCoreDocumentsController.getDocumentById(id = id)
-        document?.let {
-            emit(
-                SuccessFetchDocumentByIdPartialState.Success(
-                    document = it,
-                    documentName = it.toUiName(resourceProvider),
-                    fullName = extractFullNameFromDocumentOrEmpty(it)
+    override fun fetchDocumentById(documentId: DocumentId): Flow<SuccessFetchDocumentByIdPartialState> =
+        flow {
+            val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
+                    as? IssuedDocument
+            document?.let { issuedDocument ->
+                emit(
+                    SuccessFetchDocumentByIdPartialState.Success(
+                        document = issuedDocument,
+                        documentName = issuedDocument.toUiName(resourceProvider),
+                        fullName = extractFullNameFromDocumentOrEmpty(issuedDocument)
+                    )
                 )
+            } ?: emit(SuccessFetchDocumentByIdPartialState.Failure(genericErrorMsg))
+        }.safeAsync {
+            SuccessFetchDocumentByIdPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
             )
-        } ?: emit(SuccessFetchDocumentByIdPartialState.Failure(genericErrorMsg))
-    }.safeAsync {
-        SuccessFetchDocumentByIdPartialState.Failure(
-            error = it.localizedMessage ?: genericErrorMsg
-        )
-    }
+        }
 }

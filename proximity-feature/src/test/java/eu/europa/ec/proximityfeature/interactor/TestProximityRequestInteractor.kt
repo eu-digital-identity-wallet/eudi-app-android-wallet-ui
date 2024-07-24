@@ -133,7 +133,7 @@ class TestProximityRequestInteractor {
     // TransferEventPartialState.Error, with an error message.
 
     // Case 2 Expected Result:
-    // ProximityRequestInteractorPartialState.Failure state, with the same error message.
+    // ProximityRequestInteractorPartialState.Failed state, with the same error message.
     @Test
     fun `Given Case 2, When getRequestDocuments is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -326,7 +326,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 7, When getRequestDocuments is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsCall(
+            mockGetAllIssuedDocumentsCall(
                 response = listOf(mockedPidWithBasicFields)
             )
             whenever(resourceProvider.getString(R.string.request_required_fields_title))
@@ -382,7 +382,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 8, When getRequestDocuments is called, Then Case 8 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsCall(
+            mockGetAllIssuedDocumentsCall(
                 response = listOf(mockedMdlWithBasicFields)
             )
             whenever(resourceProvider.getString(R.string.request_required_fields_title))
@@ -438,7 +438,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 9, When getRequestDocuments is called, Then Case 9 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsCall(
+            mockGetAllIssuedDocumentsCall(
                 response = listOf(
                     mockedMdlWithBasicFields,
                     mockedPidWithBasicFields
@@ -499,7 +499,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 10, When getRequestDocuments is called, Then Case 10 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetAllDocumentsCall(
+            mockGetAllIssuedDocumentsCall(
                 response = listOf(
                     mockedPidWithBasicFields,
                     mockedMdlWithBasicFields
@@ -550,10 +550,10 @@ class TestProximityRequestInteractor {
     // 1. a list of a PID RequestDocument, with some basic fields,
     // 2. a not null String for verifier name,
     // 3. true for verifierIsTrusted,
-    // 4. walletCoreDocumentsController.getAllDocuments() throws an exception with a message.
+    // 4. walletCoreDocumentsController.getAllIssuedDocuments() throws an exception with a message.
 
     // Case 11 Expected Result:
-    // ProximityRequestInteractorPartialState.Failure state, with:
+    // ProximityRequestInteractorPartialState.Failed state, with:
     // 1. exception's localized message.
     @Test
     fun `Given Case 11, When getRequestDocuments is called, Then Case 11 Expected Result is returned`() {
@@ -568,7 +568,7 @@ class TestProximityRequestInteractor {
                     verifierIsTrusted = mockedVerifierIsTrusted
                 )
             )
-            whenever(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllIssuedDocuments())
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
@@ -591,10 +591,10 @@ class TestProximityRequestInteractor {
     // 1. a list of a PID RequestDocument, with some basic fields,
     // 2. a not null String for verifier name,
     // 3. true for verifierIsTrusted,
-    // 4. walletCoreDocumentsController.getAllDocuments() throws an exception with no message.
+    // 4. walletCoreDocumentsController.getAllIssuedDocuments() throws an exception with no message.
 
     // Case 12 Expected Result:
-    // ProximityRequestInteractorPartialState.Failure state, with:
+    // ProximityRequestInteractorPartialState.Failed state, with:
     // 1. the generic error message.
     @Test
     fun `Given Case 12, When getRequestDocuments is called, Then Case 12 Expected Result is returned`() {
@@ -609,7 +609,7 @@ class TestProximityRequestInteractor {
                     verifierIsTrusted = mockedVerifierIsTrusted
                 )
             )
-            whenever(walletCoreDocumentsController.getAllDocuments())
+            whenever(walletCoreDocumentsController.getAllIssuedDocuments())
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
@@ -706,8 +706,8 @@ class TestProximityRequestInteractor {
             )
     }
 
-    private fun mockGetAllDocumentsCall(response: List<IssuedDocument>) {
-        whenever(walletCoreDocumentsController.getAllDocuments())
+    private fun mockGetAllIssuedDocumentsCall(response: List<IssuedDocument>) {
+        whenever(walletCoreDocumentsController.getAllIssuedDocuments())
             .thenReturn(response)
     }
     //endregion

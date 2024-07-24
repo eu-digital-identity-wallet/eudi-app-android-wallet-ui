@@ -41,12 +41,14 @@ class FeatureIssuanceModule
 fun provideAddDocumentInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
-    deviceAuthenticationInteractor: DeviceAuthenticationInteractor
+    deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
+    uiSerializer: UiSerializer,
 ): AddDocumentInteractor =
     AddDocumentInteractorImpl(
         walletCoreDocumentsController,
         deviceAuthenticationInteractor,
-        resourceProvider
+        resourceProvider,
+        uiSerializer,
     )
 
 @Factory
