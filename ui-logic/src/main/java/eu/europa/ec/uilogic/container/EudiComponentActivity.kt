@@ -18,7 +18,6 @@ package eu.europa.ec.uilogic.container
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -98,40 +97,35 @@ open class EudiComponentActivity : FragmentActivity() {
     }
 
     private fun handleDeepLink(intent: Intent?, coldBoot: Boolean = false) {
-        try {
-            hasDeepLink(intent?.data)?.let {
-                if (it.type == DeepLinkType.ISSUANCE && !coldBoot) {
-                    handleDeepLinkAction(
-                        routerHost.getNavController(),
-                        it.link
-                    )
-                } else if (
-                    it.type == DeepLinkType.CREDENTIAL_OFFER
-                    && !routerHost.userIsLoggedInWithDocuments()
-                    && routerHost.userIsLoggedInWithNoDocuments()
-                ) {
-                    cacheDeepLink(intent)
-                    routerHost.popToIssuanceOnboardingScreen()
-                } else if (it.type == DeepLinkType.OPENID4VP
-                    && routerHost.userIsLoggedInWithDocuments()
-                    && (routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.AddDocument)
-                            || routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.DocumentOffer))
-                ) {
-                    handleDeepLinkAction(
-                        routerHost.getNavController(),
-                        DeepLinkAction(it.link, DeepLinkType.DYNAMIC_PRESENTATION)
-                    )
-                } else if (it.type != DeepLinkType.ISSUANCE) {
-                    cacheDeepLink(intent)
-                    if (routerHost.userIsLoggedInWithDocuments()) {
-                        routerHost.popToDashboardScreen()
-                    }
+        hasDeepLink(intent?.data)?.let {
+            if (it.type == DeepLinkType.ISSUANCE && !coldBoot) {
+                handleDeepLinkAction(
+                    routerHost.getNavController(),
+                    it.link
+                )
+            } else if (
+                it.type == DeepLinkType.CREDENTIAL_OFFER
+                && !routerHost.userIsLoggedInWithDocuments()
+                && routerHost.userIsLoggedInWithNoDocuments()
+            ) {
+                cacheDeepLink(intent)
+                routerHost.popToIssuanceOnboardingScreen()
+            } else if (it.type == DeepLinkType.OPENID4VP
+                && routerHost.userIsLoggedInWithDocuments()
+                && (routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.AddDocument)
+                        || routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.DocumentOffer))
+            ) {
+                handleDeepLinkAction(
+                    routerHost.getNavController(),
+                    DeepLinkAction(it.link, DeepLinkType.DYNAMIC_PRESENTATION)
+                )
+            } else if (it.type != DeepLinkType.ISSUANCE) {
+                cacheDeepLink(intent)
+                if (routerHost.userIsLoggedInWithDocuments()) {
+                    routerHost.popToDashboardScreen()
                 }
-                setIntent(Intent())
             }
-        } catch (e: Exception) {
-            //println("Giannis Exception in handleDeepLink. $e")
-            Log.e("Giannis", "Giannis handleDeepLink: Type: ${hasDeepLink(intent?.data)?.type} Exception is:$e")
+            setIntent(Intent())
         }
     }
 }

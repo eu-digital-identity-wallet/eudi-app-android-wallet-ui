@@ -24,7 +24,6 @@ import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.eudi.wallet.EudiWallet.getDocumentById
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -91,7 +90,7 @@ class DocumentDetailsInteractorImpl(
         documentId: DocumentId
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState> =
         flow {
-            val document = getDocumentById(documentId = documentId)
+            val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
 
             val shouldDeleteAllDocuments: Boolean =
                 if (document?.docType?.toDocumentIdentifier() == DocumentIdentifier.PID) {

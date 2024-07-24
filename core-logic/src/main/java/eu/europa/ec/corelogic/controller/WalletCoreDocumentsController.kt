@@ -413,31 +413,6 @@ class WalletCoreDocumentsControllerImpl(
             )
         }
 
-    /*fun <T> safeCallback(callback: (T) -> Unit): (T) -> Unit {
-        return { result: T ->
-            try {
-                callback(result)
-            } catch (e: Exception) {
-                // Handle the exception, e.g., log it, send it to a callbackFlow, etc.
-                // Here you can define a global way to handle these exceptions
-                println("Giannis safeCallback $e")
-            }
-        }
-    }*/
-
-    fun <T> safeCallback(
-        callback: (T) -> Unit,
-        onExceptionThrown: (Exception) -> Unit
-    ): (T) -> Unit {
-        return { result: T ->
-            try {
-                callback(result)
-            } catch (e: Exception) {
-                onExceptionThrown(e)
-            }
-        }
-    }
-
     override fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState> =
         callbackFlow {
             (getDocumentById(docId) as? DeferredDocument)?.let { deferredDoc ->
@@ -528,9 +503,9 @@ class WalletCoreDocumentsControllerImpl(
     private fun ProducerScope<IssueDocumentsPartialState>.issuanceCallback(): OpenId4VciManager.OnIssueEvent {
 
         var totalDocumentsToBeIssued = 0
-        val nonIssuedDocuments: MutableMap<String, String> = mutableMapOf()
-        val deferredDocuments: MutableMap<String, String> = mutableMapOf()
-        val issuedDocuments: MutableMap<String, String> = mutableMapOf()
+        val nonIssuedDocuments: MutableMap<DocType, String> = mutableMapOf()
+        val deferredDocuments: MutableMap<DocumentId, DocType> = mutableMapOf()
+        val issuedDocuments: MutableMap<DocumentId, DocType> = mutableMapOf()
 
         val listener = OpenId4VciManager.OnIssueEvent { event ->
             when (event) {
@@ -602,15 +577,6 @@ class WalletCoreDocumentsControllerImpl(
 
                 is IssueEvent.DocumentDeferred -> {
                     deferredDocuments[event.documentId] = event.docType
-
-                    /*CoroutineScope(Dispatchers.IO).launch {
-                        repeat(5){
-                            delay(5000)
-                            eudiWallet.issueDeferredDocument(event.documentId) {
-                                it
-                            }
-                        }
-                    }*/
                 }
             }
         }

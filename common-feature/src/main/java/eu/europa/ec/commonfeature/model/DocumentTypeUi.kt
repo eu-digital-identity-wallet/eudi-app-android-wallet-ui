@@ -26,15 +26,8 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
-sealed interface DocumentUiIssuanceState {
-    data object Issued : DocumentUiIssuanceState
-
-    /*sealed interface Pending : DocumentUiIssuanceState {
-        data object NoAttemptToIssueYet : Pending
-        data object FailedAttemptToIssue : Pending
-    }*/
-    data object Pending : DocumentUiIssuanceState
-    data object Failed : DocumentUiIssuanceState
+enum class DocumentUiIssuanceState {
+    Issued, Pending, Failed
 }
 
 data class DocumentUi(
@@ -43,7 +36,6 @@ data class DocumentUi(
     val documentIdentifier: DocumentIdentifier,
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,
-    //val documentIsDeferred: Boolean = false,
     val documentImage: String,
     val documentDetails: List<DocumentDetailsUi>,
     val userFullName: String? = null,

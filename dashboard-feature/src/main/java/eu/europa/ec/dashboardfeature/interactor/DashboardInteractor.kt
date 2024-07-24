@@ -36,6 +36,7 @@ import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.dashboardfeature.model.UserInfo
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -61,29 +62,12 @@ sealed class DashboardInteractorGetDocumentsPartialState {
     data class Failure(val error: String) : DashboardInteractorGetDocumentsPartialState()
 }
 
-sealed class DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState {
-    data class Success(
-        val newlyIssuedDocumentsUi: List<DocumentUi>,
-        val mainPid: IssuedDocument?,
-        val userFirstName: String,
-        val userBase64Portrait: String,
-    ) : DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState()
-
-    data class Failure(val error: String) :
-        DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState()
-}
-
 sealed class DashboardInteractorDeleteDocumentPartialState {
     data object SingleDocumentDeleted : DashboardInteractorDeleteDocumentPartialState()
     data object AllDocumentsDeleted : DashboardInteractorDeleteDocumentPartialState()
     data class Failure(val errorMessage: String) :
         DashboardInteractorDeleteDocumentPartialState()
 }
-
-data class UserInfo(
-    val userFirstName: String,
-    val userBase64Portrait: String
-)
 
 sealed class DashboardInteractorRetryIssuingDeferredDocumentPartialState {
     data class Success(
@@ -107,7 +91,6 @@ sealed class DashboardInteractorRetryIssuingDeferredDocumentPartialState {
 sealed class DashboardInteractorRetryIssuingDeferredDocumentsPartialState {
     data class Result(
         val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
-        val notReadyDeferredDocuments: List<DeferredDocumentData>,
         val failedIssuedDeferredDocuments: List<DocumentId>,
     ) : DashboardInteractorRetryIssuingDeferredDocumentsPartialState()
 
@@ -118,14 +101,6 @@ sealed class DashboardInteractorRetryIssuingDeferredDocumentsPartialState {
 
 interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorGetDocumentsPartialState>
-
-    fun getDocumentsOnlyForTheseIds(
-        documentIds: List<DocumentId>,
-        userFirstName: String,
-        userImage: String,
-    ): Flow<DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState>
-
-    fun getDocumentById(documentId: DocumentId): Document?
     fun isBleAvailable(): Boolean
     fun isBleCentralClientModeEnabled(): Boolean
     fun getAppVersion(): String
@@ -192,43 +167,6 @@ class DashboardInteractorImpl(
         )
     }
 
-    override fun getDocumentsOnlyForTheseIds(
-        documentIds: List<DocumentId>,
-        userFirstName: String,
-        userImage: String,
-    ): Flow<DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState> = flow {
-        var usrFirstName = userFirstName
-        var usrImage = userImage
-        val documents = walletCoreDocumentsController.getAllDocuments().filter {
-            documentIds.contains(it.id)
-        }
-        val mainPid = walletCoreDocumentsController.getMainPidDocument()
-        val documentsUi = documents.map { document ->
-            val (documentUi, userInfo) = document.toDocumentUiAndUserInfo(mainPid)
-
-            if (userFirstName.isBlank()) {
-                usrFirstName = userInfo.userFirstName
-            }
-            if (userImage.isBlank()) {
-                usrImage = userInfo.userBase64Portrait
-            }
-
-            return@map documentUi
-        }
-        emit(
-            DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState.Success(
-                newlyIssuedDocumentsUi = documentsUi,
-                mainPid = mainPid,
-                userFirstName = usrFirstName,
-                userBase64Portrait = usrImage
-            )
-        )
-    }.safeAsync {
-        DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState.Failure(
-            error = it.localizedMessage ?: genericErrorMsg
-        )
-    }
-
     private fun Document.toDocumentUiAndUserInfo(mainPid: IssuedDocument?): Pair<DocumentUi, UserInfo> {
         when (this) {
             is IssuedDocument -> {
@@ -289,16 +227,13 @@ class DashboardInteractorImpl(
         }
     }
 
-    override fun getDocumentById(documentId: DocumentId): Document? =
-        walletCoreDocumentsController.getDocumentById(documentId)
-
     override fun getAppVersion(): String = configLogic.appVersion
 
     override fun deleteDocument(
         documentId: String,
     ): Flow<DashboardInteractorDeleteDocumentPartialState> =
         flow {
-            val document = getDocumentById(documentId = documentId)
+            val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
 
             val shouldDeleteAllDocuments: Boolean =
                 if (document?.docType?.toDocumentIdentifier() == DocumentIdentifier.PID) {
@@ -379,7 +314,7 @@ class DashboardInteractorImpl(
                 ?: DashboardInteractorRetryIssuingDeferredDocumentPartialState.Failure(
                     documentId = deferredDocumentId,
                     errorMessage = genericErrorMsg
-                ) // Handle the case where the flow does not emit any items
+                )
         }
     }
 
@@ -426,7 +361,6 @@ class DashboardInteractorImpl(
             emit(
                 DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result(
                     successfullyIssuedDeferredDocuments = successResults,
-                    notReadyDeferredDocuments = notReadyResults,
                     failedIssuedDeferredDocuments = failedResults
                 )
             )

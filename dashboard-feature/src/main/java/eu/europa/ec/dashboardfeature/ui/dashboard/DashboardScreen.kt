@@ -627,11 +627,11 @@ private fun CardListItem(
             .wrapContentHeight()
             .then(
                 when (dataItem.documentIssuanceState) {
-                    is DocumentUiIssuanceState.Issued -> {
+                    DocumentUiIssuanceState.Issued -> {
                         Modifier
                     }
 
-                    is DocumentUiIssuanceState.Pending, is DocumentUiIssuanceState.Failed -> {
+                    DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> {
                         val dottedLinesColor = if (isSystemInDarkTheme()) {
                             MaterialTheme.colorScheme.textSecondaryDark
                         } else {
@@ -650,7 +650,7 @@ private fun CardListItem(
             ),
         onClick = {
             when (dataItem.documentIssuanceState) {
-                is DocumentUiIssuanceState.Issued -> {
+                DocumentUiIssuanceState.Issued -> {
                     onEventSend(
                         Event.NavigateToDocument(
                             documentId = dataItem.documentId
@@ -659,7 +659,7 @@ private fun CardListItem(
 
                 }
 
-                is DocumentUiIssuanceState.Pending, is DocumentUiIssuanceState.Failed -> {
+                DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> {
                     onEventSend(
                         Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
                             documentUi = dataItem
@@ -670,21 +670,6 @@ private fun CardListItem(
         },
         throttleClicks = true,
     ) {
-        /*when (dataItem.documentState) {
-            is DocumentUiIssuanceState.Issued -> {
-                IssuedDocument(dataItem)
-            }
-
-            is DocumentUiIssuanceState.Pending -> {
-                DeferredDocument(dataItem)
-            }
-
-            is DocumentUiIssuanceState.Failed -> {
-                FailedDocument(dataItem)
-            }
-
-        }*/
-
         DocumentContent(dataItem)
     }
 }
@@ -694,35 +679,35 @@ private fun DocumentContent(dataItem: DocumentUi) {
     val documentState = dataItem.documentIssuanceState
     val iconData = AppIcons.Id
     val iconTint = when (documentState) {
-        is DocumentUiIssuanceState.Issued -> MaterialTheme.colorScheme.primary
-        is DocumentUiIssuanceState.Pending, is DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.textDisabledDark
+        DocumentUiIssuanceState.Issued -> MaterialTheme.colorScheme.primary
+        DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.textDisabledDark
     }
     val iconAlpha = when (documentState) {
-        is DocumentUiIssuanceState.Issued -> ALPHA_ENABLED
-        is DocumentUiIssuanceState.Pending, is DocumentUiIssuanceState.Failed -> ALPHA_DISABLED
+        DocumentUiIssuanceState.Issued -> ALPHA_ENABLED
+        DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> ALPHA_DISABLED
     }
 
     val warningIconData = when (documentState) {
-        is DocumentUiIssuanceState.Issued -> AppIcons.Warning
-        is DocumentUiIssuanceState.Pending -> AppIcons.ClockTimer
-        is DocumentUiIssuanceState.Failed -> AppIcons.ErrorFilled
+        DocumentUiIssuanceState.Issued -> AppIcons.Warning
+        DocumentUiIssuanceState.Pending -> AppIcons.ClockTimer
+        DocumentUiIssuanceState.Failed -> AppIcons.ErrorFilled
     }
     val warningIconTint = when (documentState) {
-        is DocumentUiIssuanceState.Issued, is DocumentUiIssuanceState.Pending -> {
+        DocumentUiIssuanceState.Issued, DocumentUiIssuanceState.Pending -> {
             MaterialTheme.colorScheme.warning
         }
 
-        is DocumentUiIssuanceState.Failed -> {
+        DocumentUiIssuanceState.Failed -> {
             MaterialTheme.colorScheme.error
         }
 
     }
     val documentNameColor = when (documentState) {
-        is DocumentUiIssuanceState.Issued -> {
+        DocumentUiIssuanceState.Issued -> {
             MaterialTheme.colorScheme.textPrimaryDark
         }
 
-        is DocumentUiIssuanceState.Pending, is DocumentUiIssuanceState.Failed -> {
+        DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> {
             MaterialTheme.colorScheme.textDisabledDark
         }
     }
@@ -740,7 +725,7 @@ private fun DocumentContent(dataItem: DocumentUi) {
                 customTint = iconTint,
                 contentAlpha = iconAlpha
             )
-            if (documentState is DocumentUiIssuanceState.Issued) {
+            if (documentState == DocumentUiIssuanceState.Issued) {
                 if (dataItem.documentHasExpired) {
                     IconWarningIndicator(
                         backgroundColor = MaterialTheme.colorScheme.backgroundDefault
@@ -811,83 +796,6 @@ private fun IssuedDocument(dataItem: DocumentUi) {
 }
 
 @Composable
-private fun DeferredDocument(dataItem: DocumentUi) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(SPACING_MEDIUM.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box {
-            WrapIcon(
-                iconData = AppIcons.Id,
-                customTint = MaterialTheme.colorScheme.textDisabledDark,
-                contentAlpha = ALPHA_DISABLED
-            )
-            IconWarningIndicator(
-                iconData = AppIcons.ClockTimer,
-                backgroundColor = MaterialTheme.colorScheme.backgroundDefault
-            )
-        }
-        Box(
-            modifier = Modifier
-                .wrapContentWidth()
-                .height(28.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            ScalableText(
-                text = dataItem.documentName,
-                textStyle = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.textDisabledDark
-                )
-            )
-        }
-        VSpacer.Small()
-        ExpirationInfo(dataItem)
-    }
-}
-
-@Composable
-private fun FailedDocument(dataItem: DocumentUi) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(SPACING_MEDIUM.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box {
-            WrapIcon(
-                iconData = AppIcons.Id,
-                customTint = MaterialTheme.colorScheme.textDisabledDark,
-                contentAlpha = ALPHA_DISABLED
-            )
-            IconWarningIndicator(
-                iconData = AppIcons.ErrorFilled,
-                customTint = MaterialTheme.colorScheme.error,
-                backgroundColor = MaterialTheme.colorScheme.backgroundDefault
-            )
-        }
-        Box(
-            modifier = Modifier
-                .wrapContentWidth()
-                .height(28.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            ScalableText(
-                text = dataItem.documentName,
-                textStyle = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.textDisabledDark
-                )
-            )
-        }
-        VSpacer.Small()
-        ExpirationInfo(dataItem)
-    }
-}
-
-@Composable
 private fun ExpirationInfo(
     document: DocumentUi,
 ) {
@@ -900,7 +808,7 @@ private fun ExpirationInfo(
     ) {
         with(document) {
             when (documentIssuanceState) {
-                is DocumentUiIssuanceState.Issued -> {
+                DocumentUiIssuanceState.Issued -> {
                     if (documentHasExpired) {
                         val annotatedText = buildAnnotatedString {
                             withStyle(
@@ -926,7 +834,7 @@ private fun ExpirationInfo(
                     Text(text = documentExpirationDateFormatted, style = textStyle)
                 }
 
-                is DocumentUiIssuanceState.Pending -> {
+                DocumentUiIssuanceState.Pending -> {
                     val annotatedText = buildAnnotatedString {
                         withStyle(
                             style = SpanStyle(
@@ -940,7 +848,7 @@ private fun ExpirationInfo(
                     Text(text = annotatedText, style = textStyle)
                 }
 
-                is DocumentUiIssuanceState.Failed -> {
+                DocumentUiIssuanceState.Failed -> {
                     val annotatedText = buildAnnotatedString {
                         withStyle(
                             style = SpanStyle(
@@ -983,7 +891,7 @@ private fun DashboardScreenPreview() {
                 documentHasExpired = false,
                 documentImage = "image2",
                 documentDetails = emptyList(),
-                documentIssuanceState = DocumentUiIssuanceState.Pending/*.NoAttemptToIssueYet*/
+                documentIssuanceState = DocumentUiIssuanceState.Pending
             ),
             DocumentUi(
                 documentId = "2",
@@ -996,7 +904,7 @@ private fun DashboardScreenPreview() {
                 documentHasExpired = true,
                 documentImage = "image3",
                 documentDetails = emptyList(),
-                documentIssuanceState = DocumentUiIssuanceState.Pending/*.FailedAttemptToIssue*/
+                documentIssuanceState = DocumentUiIssuanceState.Pending
             )
         )
         Content(

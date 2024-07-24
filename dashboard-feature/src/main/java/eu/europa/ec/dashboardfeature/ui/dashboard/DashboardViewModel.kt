@@ -32,7 +32,6 @@ import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorDeleteDocumentPartialState
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.eudi.wallet.document.Document
@@ -166,7 +165,6 @@ sealed class DashboardBottomSheetContent {
     data class DeferredDocumentsReady(
         val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
         val options: List<OptionListItemUi>,
-        //val failedIssuedDeferredDocumentIds: List<DocumentId>,
     ) : DashboardBottomSheetContent()
 }
 
@@ -340,7 +338,6 @@ class DashboardViewModel(
     private fun getDocuments(
         event: Event,
         deepLinkUri: Uri?,
-        //alreadyTriedIssuingDeferredDocs: Boolean = false,
         deferredFailedDocIds: List<DocumentId> = emptyList()
     ) {
         setState {
@@ -412,66 +409,6 @@ class DashboardViewModel(
         }
     }
 
-    private suspend fun getDocumentsOnlyForTheseIds(event: Event, docIds: List<DocumentId>) {
-        setState {
-            copy(
-                isLoading = false,
-                error = null
-            )
-        }
-
-        dashboardInteractor.getDocumentsOnlyForTheseIds(
-            documentIds = docIds,
-            userFirstName = viewState.value.userFirstName,
-            userImage = viewState.value.userBase64Image
-        ).collect { response ->
-            when (response) {
-                is DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState.Failure -> {
-                    setState {
-                        copy(
-                            isLoading = false,
-                            error = ContentErrorConfig(
-                                onRetry = { setEvent(event) },
-                                errorSubTitle = response.error,
-                                onCancel = {
-                                    setState { copy(error = null) }
-                                    setEvent(Event.Pop)
-                                }
-                            )
-                        )
-                    }
-                }
-
-                is DashboardInteractorGetDocumentsOnlyForTheseIdsPartialState.Success -> {
-                    val shouldAllowUserInteraction =
-                        response.mainPid?.state == Document.State.ISSUED
-
-                    val currentDocuments = viewState.value.documents
-                    val newDocuments = response.newlyIssuedDocumentsUi
-
-                    val newDocumentsIdSet = newDocuments.map { it.documentId }.toSet()
-
-                    val updatedDocuments = currentDocuments
-                        .filterNot { it.documentId in newDocumentsIdSet }
-                        .plus(newDocuments)
-                        .toMutableList()
-
-
-                    setState {
-                        copy(
-                            isLoading = false,
-                            error = null,
-                            documents = updatedDocuments,
-                            allowUserInteraction = shouldAllowUserInteraction,
-                            userFirstName = response.userFirstName,
-                            userBase64Image = response.userBase64Portrait
-                        )
-                    }
-                }
-            }
-        }
-    }
-
     private fun tryIssuingDeferredDocuments(event: Event, deferredDocs: Map<DocumentId, DocType>) {
         setState {
             copy(
@@ -486,7 +423,7 @@ class DashboardViewModel(
                 return@launch
             }
 
-            println("Giannis VM delaying for 2 sec...")
+            println("Giannis VM delaying for 5 sec...")
             delay(2000L)
             println("Giannis VM end of delay.")
 
@@ -511,15 +448,6 @@ class DashboardViewModel(
                     is DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result -> {
                         val successDocs = response.successfullyIssuedDeferredDocuments
                         if (successDocs.isNotEmpty()) {
-                            /*val getDocumentsJob = async {
-                                getDocumentsOnlyForTheseIds(
-                                    event = event,
-                                    docIds = response.successfullyIssuedDeferredDocuments.map { it.documentId }
-                                )
-                            }
-
-                            getDocumentsJob.await()*/
-
                             showBottomSheet(
                                 sheetContent = DashboardBottomSheetContent.DeferredDocumentsReady(
                                     successfullyIssuedDeferredDocuments = successDocs,
@@ -533,7 +461,6 @@ class DashboardViewModel(
                         getDocuments(
                             event = event,
                             deepLinkUri = null,
-                            //alreadyTriedIssuingDeferredDocs = true,
                             deferredFailedDocIds = response.failedIssuedDeferredDocuments
                         )
                     }

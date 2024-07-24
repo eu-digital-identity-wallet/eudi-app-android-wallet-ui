@@ -89,7 +89,6 @@ object AppIcons {
     )
 
     val ErrorFilled: IconData = IconData(
-        //resourceId = R.drawable.ic_error_filled, //TODO why Icon from designs does not work?
         resourceId = null,
         contentDescriptionId = R.string.content_description_error_icon,
         imageVector = Icons.Default.Info
