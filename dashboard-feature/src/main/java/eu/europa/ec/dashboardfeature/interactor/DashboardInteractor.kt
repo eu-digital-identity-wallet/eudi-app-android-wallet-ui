@@ -227,14 +227,13 @@ class DashboardInteractorImpl(
             }
         }
 
-        if (successResults.isNotEmpty() || failedResults.isNotEmpty()) {
-            emit(
-                DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result(
-                    successfullyIssuedDeferredDocuments = successResults,
-                    failedIssuedDeferredDocuments = failedResults
-                )
+        emit(
+            DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result(
+                successfullyIssuedDeferredDocuments = successResults,
+                failedIssuedDeferredDocuments = failedResults
             )
-        }
+        )
+
     }.safeAsync {
         DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Failure(
             errorMessage = it.localizedMessage ?: genericErrorMsg
