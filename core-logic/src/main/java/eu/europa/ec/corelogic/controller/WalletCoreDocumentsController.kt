@@ -181,12 +181,7 @@ class WalletCoreDocumentsControllerImpl(
         get() = resourceProvider.getString(R.string.issuance_generic_error)
 
     private val openId4VciManager by lazy {
-        eudiWallet.config.openId4VciConfig?.let { vciConfig ->
-            OpenId4VciManager(resourceProvider.provideContext()) {
-                documentManager(eudiWallet.documentManager)
-                config(vciConfig)
-            }
-        } ?: throw RuntimeException("No openId4VciManager")
+        eudiWallet.createOpenId4VciManager()
     }
 
     override fun loadSampleData(sampleDataByteArray: ByteArray): Flow<LoadSampleDataPartialState> =
