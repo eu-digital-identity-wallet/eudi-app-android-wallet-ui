@@ -366,7 +366,9 @@ class PinViewModel(
                 mapOf(
                     SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                         SuccessUIConfig(
-                            header = resourceProvider.getString(R.string.quick_pin_success_title),
+                            headerConfig = SuccessUIConfig.HeaderConfig(
+                                title = resourceProvider.getString(R.string.quick_pin_success_title),
+                            ),
                             content = when (pinFlow) {
                                 PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_subtitle)
                                 PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_subtitle)

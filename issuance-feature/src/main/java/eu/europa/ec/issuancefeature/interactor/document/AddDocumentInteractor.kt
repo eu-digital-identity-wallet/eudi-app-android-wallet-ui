@@ -22,6 +22,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.toUiName
@@ -31,8 +32,17 @@ import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -58,12 +68,17 @@ interface AddDocumentInteractor {
         crypto: BiometricCrypto,
         resultHandler: DeviceAuthenticationResult
     )
+
+    fun buildGenericSuccessRouteForDeferred(flowType: IssuanceFlowUiConfig): String
+
+    fun resumeOpenId4VciWithAuthorization(uri: String)
 }
 
 class AddDocumentInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     private val resourceProvider: ResourceProvider,
+    private val uiSerializer: UiSerializer,
 ) : AddDocumentInteractor {
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
@@ -152,6 +167,68 @@ class AddDocumentInteractorImpl(
                 }
             }
         }
+    }
+
+    override fun buildGenericSuccessRouteForDeferred(flowType: IssuanceFlowUiConfig): String {
+        val navigation = when (flowType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> ConfigNavigation(
+                navigationType = NavigationType.PushRoute(route = DashboardScreens.Dashboard.screenRoute),
+            )
+
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ConfigNavigation(
+                navigationType = NavigationType.PopTo(
+                    screen = DashboardScreens.Dashboard
+                )
+            )
+        }
+        val successScreenArguments = getSuccessScreenArgumentsForDeferred(navigation)
+        return generateComposableNavigationLink(
+            screen = CommonScreens.Success,
+            arguments = successScreenArguments
+        )
+    }
+
+    override fun resumeOpenId4VciWithAuthorization(uri: String) {
+        walletCoreDocumentsController.resumeOpenId4VciWithAuthorization(uri)
+    }
+
+    private fun getSuccessScreenArgumentsForDeferred(
+        navigation: ConfigNavigation
+    ): String {
+        val (headerConfig, imageConfig, buttonText) = Triple(
+            first = SuccessUIConfig.HeaderConfig(
+                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
+                color = ThemeColors.warning
+            ),
+            second = SuccessUIConfig.ImageConfig(
+                type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
+                drawableRes = AppIcons.ClockTimer.resourceId,
+                tint = ThemeColors.warning,
+                contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
+            ),
+            third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
+        )
+
+        return generateComposableArguments(
+            mapOf(
+                SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
+                    SuccessUIConfig(
+                        headerConfig = headerConfig,
+                        content = resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle),
+                        imageConfig = imageConfig,
+                        buttonConfig = listOf(
+                            SuccessUIConfig.ButtonConfig(
+                                text = buttonText,
+                                style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                                navigation = navigation
+                            )
+                        ),
+                        onBackScreenToNavigate = navigation,
+                    ),
+                    SuccessUIConfig.Parser
+                ).orEmpty()
+            )
+        )
     }
 
     private fun canCreateExtraDocument(flowType: IssuanceFlowUiConfig): Boolean =

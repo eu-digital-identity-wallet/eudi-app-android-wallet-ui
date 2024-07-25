@@ -25,7 +25,6 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.corelogic.util.CoreActions
-import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.extension.openUrl
@@ -117,8 +116,11 @@ fun handleDeepLinkAction(
         }
 
         DeepLinkType.ISSUANCE -> {
-            EudiWallet.resumeOpenId4VciWithAuthorization(action.link)
-            notify(navController.context, CoreActions.VCI_RESUME_ACTION)
+            notify(
+                navController.context,
+                CoreActions.VCI_RESUME_ACTION,
+                bundleOf(Pair("uri", action.link.toString()))
+            )
             return
         }
 

@@ -663,6 +663,8 @@ val mockedFullPid = IssuedDocument(
     )
 )
 
+val mockedMainPid = mockedFullPid
+
 val mockedPidWithBasicFields = mockedFullPid.copy(
     nameSpacedData = mapOf(
         mockedPidNameSpace to mockedPidBasicFields

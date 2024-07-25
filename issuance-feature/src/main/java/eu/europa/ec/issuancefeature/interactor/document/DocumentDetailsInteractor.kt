@@ -22,9 +22,10 @@ import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetail
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -44,12 +45,11 @@ sealed class DocumentDetailsInteractorDeleteDocumentPartialState {
 
 interface DocumentDetailsInteractor {
     fun getDocumentDetails(
-        documentId: String,
+        documentId: DocumentId,
     ): Flow<DocumentDetailsInteractorPartialState>
 
     fun deleteDocument(
-        documentId: String,
-        documentType: DocType
+        documentId: DocumentId
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState>
 }
 
@@ -62,13 +62,14 @@ class DocumentDetailsInteractorImpl(
         get() = resourceProvider.genericErrorMessage()
 
     override fun getDocumentDetails(
-        documentId: String,
+        documentId: DocumentId,
     ): Flow<DocumentDetailsInteractorPartialState> =
         flow {
-            val document = walletCoreDocumentsController.getDocumentById(id = documentId)
-            document?.let {
+            val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
+                    as? IssuedDocument
+            document?.let { issuedDocument ->
                 val itemUi = DocumentDetailsTransformer.transformToUiItem(
-                    document = it,
+                    document = issuedDocument,
                     resourceProvider = resourceProvider,
                 )
                 itemUi?.let { documentUi ->
@@ -86,13 +87,13 @@ class DocumentDetailsInteractorImpl(
         }
 
     override fun deleteDocument(
-        documentId: String,
-        documentType: DocType
+        documentId: DocumentId
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState> =
         flow {
+            val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
 
             val shouldDeleteAllDocuments: Boolean =
-                if (documentType.toDocumentIdentifier() == DocumentIdentifier.PID) {
+                if (document?.docType?.toDocumentIdentifier() == DocumentIdentifier.PID) {
 
                     val allPidDocuments =
                         walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)

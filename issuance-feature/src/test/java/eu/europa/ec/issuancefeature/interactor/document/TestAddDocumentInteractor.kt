@@ -42,6 +42,8 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.serializer.UiSerializer
+import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -53,7 +55,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import kotlin.test.assertEquals
 
 class TestAddDocumentInteractor {
 
@@ -68,6 +69,9 @@ class TestAddDocumentInteractor {
 
     @Mock
     private lateinit var resourceProvider: ResourceProvider
+
+    @Mock
+    private lateinit var uiSerializer: UiSerializer
 
     @Mock
     private lateinit var context: Context
@@ -89,6 +93,7 @@ class TestAddDocumentInteractor {
             walletCoreDocumentsController = walletCoreDocumentsController,
             deviceAuthenticationInteractor = deviceAuthenticationInteractor,
             resourceProvider = resourceProvider,
+            uiSerializer = uiSerializer,
         )
 
         crypto = BiometricCrypto(cryptoObject = null)
@@ -331,7 +336,7 @@ class TestAddDocumentInteractor {
 
     // Case 3:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
-    // BiometricsAvailability.Failure
+    // BiometricsAvailability.Failed
 
     // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.
