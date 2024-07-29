@@ -47,10 +47,11 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.extension.throttledClickable
 
@@ -209,7 +210,7 @@ fun OptionsList(
     optionItems: List<OptionListItemUi>,
 ) {
     LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(SIZE_SMALL.dp)
+        verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
     ) {
         items(optionItems) { item ->
             OptionListItem(
@@ -236,8 +237,8 @@ fun OptionListItem(
                 onItemSelected.invoke()
             }
             .padding(
-                horizontal = SIZE_SMALL.dp,
-                vertical = SIZE_MEDIUM.dp
+                horizontal = SPACING_SMALL.dp,
+                vertical = SPACING_MEDIUM.dp
             ),
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
