@@ -41,7 +41,7 @@ fun ScalableText(
     modifier: Modifier = Modifier,
     maxLines: Int = 1,
 ) {
-    val style by remember(text) { mutableStateOf(textStyle) }
+    val style by remember(text, textStyle) { mutableStateOf(textStyle) }
     var readyToDraw by remember(text) { mutableStateOf(false) }
     var textSize by remember(text) { mutableStateOf(textStyle.fontSize) }
 
