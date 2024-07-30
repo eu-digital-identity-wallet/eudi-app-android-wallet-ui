@@ -445,8 +445,10 @@ class DashboardViewModel(
                     is DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result -> {
                         val successDocs = response.successfullyIssuedDeferredDocuments
                         if (successDocs.isNotEmpty()
-                            && !viewState.value.isBottomSheetOpen
-                            && viewState.value.sheetContent is DashboardBottomSheetContent.DeferredDocumentsReady
+                            && (!viewState.value.isBottomSheetOpen
+                                    || (viewState.value.isBottomSheetOpen
+                                    && viewState.value.sheetContent !is DashboardBottomSheetContent.DeferredDocumentsReady)
+                                    )
                         ) {
                             showBottomSheet(
                                 sheetContent = DashboardBottomSheetContent.DeferredDocumentsReady(
