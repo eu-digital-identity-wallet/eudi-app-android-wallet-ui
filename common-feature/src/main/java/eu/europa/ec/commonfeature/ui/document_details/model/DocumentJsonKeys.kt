@@ -21,11 +21,10 @@ object DocumentJsonKeys {
     const val LAST_NAME = "family_name"
     const val PORTRAIT = "portrait"
     const val SIGNATURE = "signature_usual_mark"
-    const val VEHICLE_CATEGORY = "vehicle_category_code"
-    const val ISSUE_DATE = "issue_date"
     const val EXPIRY_DATE = "expiry_date"
-    const val GENDER = "gender"
-    const val SEX = "sex"
+    const val USER_PSEUDONYM = "user_pseudonym"
+    private const val GENDER = "gender"
+    private const val SEX = "sex"
 
     val GENDER_KEYS: List<String> = listOf(GENDER, SEX)
     val BASE64_IMAGE_KEYS: List<String> = listOf(PORTRAIT, SIGNATURE)

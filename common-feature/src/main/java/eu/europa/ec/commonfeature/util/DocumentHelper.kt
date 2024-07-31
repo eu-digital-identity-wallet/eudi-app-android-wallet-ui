@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.util
 
+import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.util.getStringFromJsonOrEmpty
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.businesslogic.util.toLocalDate
@@ -67,6 +68,10 @@ fun extractFullNameFromDocumentOrEmpty(document: IssuedDocument): String {
 fun keyIsBase64(key: String): Boolean {
     val listOfBase64Keys = DocumentJsonKeys.BASE64_IMAGE_KEYS
     return listOfBase64Keys.contains(key)
+}
+
+private fun keyIsUserPseudonym(key: String): Boolean {
+    return key == DocumentJsonKeys.USER_PSEUDONYM
 }
 
 private fun keyIsGender(key: String): Boolean {
@@ -145,6 +150,10 @@ fun parseKeyValueUi(
 
                     keyIsGender(groupIdentifier) -> {
                         getGenderValue(json.toString(), resourceProvider)
+                    }
+
+                    keyIsUserPseudonym(groupIdentifier) -> {
+                        json.toString().decodeFromBase64()
                     }
 
                     date != null && keyIdentifier.isEmpty() -> {
