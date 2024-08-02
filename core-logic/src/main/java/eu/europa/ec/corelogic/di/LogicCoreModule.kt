@@ -17,10 +17,13 @@
 package eu.europa.ec.corelogic.di
 
 import android.content.Context
+import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfigImpl
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsControllerImpl
+import eu.europa.ec.corelogic.controller.WalletCoreLogController
+import eu.europa.ec.corelogic.controller.WalletCoreLogControllerImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
@@ -41,9 +44,14 @@ fun provideEudiWalletCore(): EudiWallet = EudiWallet
 
 @Single
 fun provideConfigWalletCore(
-    context: Context
+    context: Context,
+    walletCoreLogController: WalletCoreLogController
 ): WalletCoreConfig =
-    WalletCoreConfigImpl(context)
+    WalletCoreConfigImpl(context, walletCoreLogController)
+
+@Single
+fun provideWalletCoreLogController(logController: LogController): WalletCoreLogController =
+    WalletCoreLogControllerImpl(logController)
 
 @Factory
 fun provideWalletCoreDocumentsController(

@@ -19,7 +19,6 @@ package eu.europa.ec.assemblylogic
 import android.app.Application
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
-import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.theme.ThemeManager
@@ -31,7 +30,6 @@ import org.koin.android.ext.android.inject
 
 class Application : Application() {
 
-    private val logController: LogController by inject()
     private val configWalletCore: WalletCoreConfig by inject()
     private val analyticsController: AnalyticsController by inject()
 
@@ -40,16 +38,11 @@ class Application : Application() {
         setupKoin()
         initializeReporting()
         initializeEudiWallet()
-        initializeLogging()
         initializeTheme()
     }
 
     private fun initializeReporting() {
         analyticsController.initialize(this)
-    }
-
-    private fun initializeLogging() {
-        logController.install()
     }
 
     private fun initializeTheme() {

@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.commonfeature.util.TestsData.mockedFullDocumentsUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlUiWithNoExpirationDate
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlUiWithNoUserNameAndNoUserImage
@@ -84,6 +85,9 @@ class TestDashboardInteractor {
     @Mock
     private lateinit var configLogic: ConfigLogic
 
+    @Mock
+    private lateinit var logController: LogController
+
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var shadowBluetoothAdapter: ShadowBluetoothAdapter
 
@@ -99,7 +103,8 @@ class TestDashboardInteractor {
             resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
             walletCoreConfig = walletCoreConfig,
-            configLogic = configLogic
+            configLogic = configLogic,
+            logController = logController
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)

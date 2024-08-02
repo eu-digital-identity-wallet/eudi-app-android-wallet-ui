@@ -2,7 +2,7 @@
 accompanist = "0.34.0"
 androidDesugarJdkLibs = "2.0.4"
 androidGradlePlugin = "8.5.1"
-androidxActivity = "1.9.0"
+androidxActivity = "1.9.1"
 androidxAppCompat = "1.7.0"
 androidxBrowser = "1.8.0"
 androidxComposeBom = "2024.06.00"
@@ -55,9 +55,7 @@ mockitoKotlin = "5.3.1"
 mockitoInline = "5.2.0"
 ktor = "2.3.12"
 slf4j = "2.0.7"
-rootbeer = "0.1.0"
 gson = "2.10.1"
-logcat = "0.1"
 googlePhoneNumber = "8.13.40"
 zxing = "3.5.2"
 eudiWalletCore = "0.11.0-SNAPSHOT"
@@ -70,6 +68,8 @@ appCenter = "5.0.4"
 kover = "0.7.5"
 sonar = "4.4.1.3373"
 baselineprofile = "1.2.4"
+timber = "5.0.1"
+treessence = "1.1.2"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -146,9 +146,7 @@ mockito-inline = { group = "org.mockito", name = "mockito-inline", version.ref =
 ktor-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
 slf4j = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
-rootbeer = { group = "com.scottyab", name = "rootbeer-lib", version.ref = "rootbeer" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
-logcat = { group = "com.squareup.logcat", name = "logcat", version.ref = "logcat" }
 okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 google-phonenumber = { group = "com.googlecode.libphonenumber", name = "libphonenumber", version.ref = "googlePhoneNumber" }
 zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
@@ -157,6 +155,8 @@ cbor-tree = { group = "com.google.iot.cbor", name = "cbor", version.ref = "cborT
 appcenter-analytics = { group = "com.microsoft.appcenter", name = "appcenter-analytics", version.ref = "appCenter" }
 appcenter-crashes = { group = "com.microsoft.appcenter", name = "appcenter-crashes", version.ref = "appCenter" }
 appcenter-distribute = { group = "com.microsoft.appcenter", name = "appcenter-distribute", version.ref = "appCenter" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+treessence = { group = "com.github.bastienpaulfr", name = "Treessence", version.ref = "treessence" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }

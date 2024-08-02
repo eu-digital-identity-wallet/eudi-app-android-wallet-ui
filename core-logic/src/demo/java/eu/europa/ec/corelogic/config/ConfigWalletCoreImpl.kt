@@ -18,9 +18,9 @@ package eu.europa.ec.corelogic.config
 
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
+import eu.europa.ec.corelogic.controller.WalletCoreLogController
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
-import eu.europa.ec.eudi.wallet.logging.Logger
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionMethod
@@ -28,7 +28,8 @@ import eu.europa.ec.eudi.wallet.transfer.openid4vp.PreregisteredVerifier
 import eu.europa.ec.resourceslogic.R
 
 internal class WalletCoreConfigImpl(
-    private val context: Context
+    private val context: Context,
+    private val walletCoreLogController: WalletCoreLogController
 ) : WalletCoreConfig {
 
     private companion object {
@@ -46,7 +47,7 @@ internal class WalletCoreConfigImpl(
         get() {
             if (_config == null) {
                 _config = EudiWalletConfig.Builder(context)
-                    .logLevel(Logger.OFF)
+                    .logger(walletCoreLogController)
                     .userAuthenticationRequired(AUTHENTICATION_REQUIRED)
                     .openId4VpConfig {
                         withEncryptionAlgorithms(listOf(EncryptionAlgorithm.ECDH_ES))

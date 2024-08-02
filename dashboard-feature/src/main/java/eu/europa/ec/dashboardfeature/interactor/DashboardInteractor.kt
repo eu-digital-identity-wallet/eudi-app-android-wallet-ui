@@ -18,7 +18,9 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.net.Uri
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
@@ -110,13 +112,16 @@ interface DashboardInteractor {
         deferredDocuments: Map<DocumentId, DocType>,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
     ): Flow<DashboardInteractorRetryIssuingDeferredDocumentsPartialState>
+
+    fun retrieveLogFileUris(): ArrayList<Uri>
 }
 
 class DashboardInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val walletCoreConfig: WalletCoreConfig,
-    private val configLogic: ConfigLogic
+    private val configLogic: ConfigLogic,
+    private val logController: LogController
 ) : DashboardInteractor {
 
     private val genericErrorMsg
@@ -238,6 +243,10 @@ class DashboardInteractorImpl(
         DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Failure(
             errorMessage = it.localizedMessage ?: genericErrorMsg
         )
+    }
+
+    override fun retrieveLogFileUris(): ArrayList<Uri> {
+        return ArrayList(logController.retrieveLogFileUris())
     }
 
     private fun Document.toDocumentUiAndUserInfo(mainPid: IssuedDocument?): Pair<DocumentUi, UserInfo> {

@@ -14,23 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-        maven {
-            url = uri("https://jitpack.io")
-        }
-    }
-    versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
-        }
-    }
-}
+package eu.europa.ec.uilogic.component
 
-rootProject.name = "build-logic"
-include(":convention")
+import eu.europa.ec.uilogic.mvi.ViewEvent
+
+data class ModalOptionUi<T : ViewEvent>(
+    val title: String,
+    val icon: IconData,
+    val event: T
+)

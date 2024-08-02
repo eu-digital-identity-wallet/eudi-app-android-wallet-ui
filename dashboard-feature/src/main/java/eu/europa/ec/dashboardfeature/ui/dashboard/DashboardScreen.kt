@@ -75,6 +75,7 @@ import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.ScalableText
 import eu.europa.ec.uilogic.component.UserImageOrPlaceholder
 import eu.europa.ec.uilogic.component.content.ContentGradient
@@ -112,6 +113,7 @@ import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.extension.openBleSettings
+import eu.europa.ec.uilogic.extension.openIntentChooser
 import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.CoroutineScope
@@ -144,6 +146,7 @@ fun DashboardScreen(
         contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
+            context = context,
             state = state,
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
@@ -229,6 +232,7 @@ private fun handleNavigationEffect(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
+    context: Context,
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
@@ -297,6 +301,13 @@ private fun Content(
                 is Effect.DocumentsFetched -> {
                     onEventSend(Event.TryIssuingDeferredDocuments(effect.deferredDocs))
                 }
+
+                is Effect.ShareLogFile -> {
+                    context.openIntentChooser(
+                        effect.intent,
+                        effect.chooserTitle
+                    )
+                }
             }
         }.collect()
     }
@@ -330,61 +341,37 @@ private fun DashboardSheetContent(
                     }
                 },
                 bodyContent = {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.allCorneredShapeSmall)
-                            .throttledClickable(
-                                onClick = { onEventSent(Event.BottomSheet.Options.OpenChangeQuickPin) }
+
+                    for (option in sheetContent.options) {
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.allCorneredShapeSmall)
+                                .throttledClickable(
+                                    onClick = { onEventSent(option.event) }
+                                )
+                                .padding(
+                                    vertical = SPACING_SMALL.dp,
+                                    horizontal = SPACING_EXTRA_SMALL.dp
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            WrapIcon(
+                                iconData = option.icon,
+                                customTint = MaterialTheme.colorScheme.primary
                             )
-                            .padding(
-                                vertical = SPACING_SMALL.dp,
-                                horizontal = SPACING_EXTRA_SMALL.dp
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        WrapIcon(
-                            iconData = AppIcons.Edit,
-                            customTint = MaterialTheme.colorScheme.primary
-                        )
-                        HSpacer.Medium()
-                        Text(
-                            text = stringResource(id = R.string.dashboard_bottom_sheet_options_action_1),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.textPrimaryDark
-                        )
-                    }
-
-                    VSpacer.Medium()
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(MaterialTheme.shapes.allCorneredShapeSmall)
-                            .throttledClickable(
-                                onClick = { onEventSent(Event.BottomSheet.Options.OpenScanQr) }
+                            HSpacer.Medium()
+                            Text(
+                                text = option.title,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.textPrimaryDark
                             )
-                            .padding(
-                                vertical = SPACING_SMALL.dp,
-                                horizontal = SPACING_EXTRA_SMALL.dp
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        WrapIcon(
-                            iconData = AppIcons.QrScanner,
-                            customTint = MaterialTheme.colorScheme.primary
-                        )
-                        HSpacer.Medium()
-                        Text(
-                            text = stringResource(id = R.string.dashboard_bottom_sheet_options_action_2),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.textPrimaryDark
-                        )
-                    }
+                        }
 
-                    VSpacer.Medium()
+                        VSpacer.Medium()
+                    }
 
                     Text(
                         modifier = Modifier.fillMaxWidth(),
@@ -866,6 +853,9 @@ private fun ExpirationInfo(
 @Composable
 private fun DashboardScreenPreview() {
     PreviewTheme {
+
+        val context = LocalContext.current
+
         val documents = listOf(
             DocumentUi(
                 documentId = "0",
@@ -902,6 +892,7 @@ private fun DashboardScreenPreview() {
             )
         )
         Content(
+            context = context,
             state = State(
                 isLoading = false,
                 error = null,
@@ -959,7 +950,15 @@ private fun RequiredPermissionsAsk(
 private fun SheetContentPreview() {
     PreviewTheme {
         DashboardSheetContent(
-            sheetContent = DashboardBottomSheetContent.Options,
+            sheetContent = DashboardBottomSheetContent.Options(
+                listOf(
+                    ModalOptionUi(
+                        title = "Change Quick Pin",
+                        icon = AppIcons.Edit,
+                        event = Event.BottomSheet.Options.OpenChangeQuickPin
+                    )
+                )
+            ),
             state = State(),
             onEventSent = {}
         )
