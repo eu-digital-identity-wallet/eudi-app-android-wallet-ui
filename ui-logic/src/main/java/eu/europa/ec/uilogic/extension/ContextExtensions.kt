@@ -92,3 +92,10 @@ fun Context.openBleSettings() {
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
 }
+
+fun Context.openIntentChooser(intent: Intent, title: String? = null) {
+    try {
+        startActivity(Intent.createChooser(intent, title))
+    } catch (_: Exception) {
+    }
+}

@@ -202,6 +202,12 @@ object AppIcons {
         imageVector = null
     )
 
+    val OpenNew: IconData = IconData(
+        resourceId = R.drawable.ic_open_new,
+        contentDescriptionId = R.string.content_description_open_new,
+        imageVector = null
+    )
+
     val KeyboardArrowRight: IconData = IconData(
         resourceId = null,
         contentDescriptionId = R.string.content_description_arrow_right,

@@ -16,6 +16,7 @@
 
 package eu.europa.ec.businesslogic.di
 
+import android.content.Context
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.config.ConfigLogicImpl
 import eu.europa.ec.businesslogic.controller.crypto.CryptoController
@@ -44,8 +45,8 @@ class LogicBusinessModule
 fun provideConfigLogic(): ConfigLogic = ConfigLogicImpl()
 
 @Single
-fun provideLogController(configLogic: ConfigLogic): LogController =
-    LogControllerImpl(configLogic)
+fun provideLogController(context: Context, configLogic: ConfigLogic): LogController =
+    LogControllerImpl(context, configLogic)
 
 @Single
 fun providePrefsController(resourceProvider: ResourceProvider): PrefsController =

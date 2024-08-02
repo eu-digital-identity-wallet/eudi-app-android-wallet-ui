@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
+import android.content.Intent
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
@@ -38,6 +39,8 @@ import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.OptionListItemUi
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -69,7 +72,7 @@ data class State(
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.Options,
+    val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.Options(emptyList()),
 
     val bleAvailability: BleAvailability = BleAvailability.UNKNOWN,
     val isBleCentralClientModeEnabled: Boolean = false,
@@ -106,6 +109,7 @@ sealed class Event : ViewEvent {
         sealed class Options : BottomSheet() {
             data object OpenChangeQuickPin : Options()
             data object OpenScanQr : Options()
+            data object RetrieveLogs : Options()
         }
 
         sealed class Bluetooth : BottomSheet() {
@@ -152,13 +156,14 @@ sealed class Effect : ViewSideEffect {
     }
 
     data class DocumentsFetched(val deferredDocs: Map<DocumentId, DocType>) : Effect()
+    data class ShareLogFile(val intent: Intent, val chooserTitle: String) : Effect()
 
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
 }
 
 sealed class DashboardBottomSheetContent {
-    data object Options : DashboardBottomSheetContent()
+    data class Options(val options: List<ModalOptionUi<Event>>) : DashboardBottomSheetContent()
 
     data class Bluetooth(val availability: BleAvailability) : DashboardBottomSheetContent()
     data class DeferredDocumentPressed(val documentUi: DocumentUi) : DashboardBottomSheetContent()
@@ -207,7 +212,27 @@ class DashboardViewModel(
             }
 
             is Event.OptionsPressed -> {
-                showBottomSheet(sheetContent = DashboardBottomSheetContent.Options)
+                showBottomSheet(
+                    sheetContent = DashboardBottomSheetContent.Options(
+                        listOf(
+                            ModalOptionUi(
+                                title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_1),
+                                icon = AppIcons.Edit,
+                                event = Event.BottomSheet.Options.OpenChangeQuickPin
+                            ),
+                            ModalOptionUi(
+                                title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_2),
+                                icon = AppIcons.QrScanner,
+                                event = Event.BottomSheet.Options.OpenScanQr
+                            ),
+                            ModalOptionUi(
+                                title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_3),
+                                icon = AppIcons.OpenNew,
+                                event = Event.BottomSheet.Options.RetrieveLogs
+                            )
+                        )
+                    )
+                )
             }
 
             is Event.StartProximityFlow -> {
@@ -249,6 +274,23 @@ class DashboardViewModel(
             is Event.BottomSheet.Options.OpenScanQr -> {
                 hideBottomSheet()
                 navigateToQrScan()
+            }
+
+            is Event.BottomSheet.Options.RetrieveLogs -> {
+                hideBottomSheet()
+                val logs = dashboardInteractor.retrieveLogFileUris()
+                if (logs.isNotEmpty()) {
+                    setEffect {
+                        Effect.ShareLogFile(
+                            intent = Intent().apply {
+                                action = Intent.ACTION_SEND_MULTIPLE
+                                putParcelableArrayListExtra(Intent.EXTRA_STREAM, logs)
+                                type = "text/*"
+                            },
+                            chooserTitle = resourceProvider.getString(R.string.dashboard_intent_chooser_logs_share_title)
+                        )
+                    }
+                }
             }
 
             is Event.BottomSheet.Bluetooth.PrimaryButtonPressed -> {

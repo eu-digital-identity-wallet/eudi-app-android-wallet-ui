@@ -14,23 +14,25 @@
  * governing permissions and limitations under the Licence.
  */
 
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-        maven {
-            url = uri("https://jitpack.io")
-        }
-    }
-    versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
+package eu.europa.ec.corelogic.controller
+
+import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.eudi.wallet.logging.Logger
+
+
+interface WalletCoreLogController : Logger
+
+class WalletCoreLogControllerImpl(
+    private val logController: LogController
+) : WalletCoreLogController {
+
+    override fun log(record: Logger.Record) {
+        when (record.level) {
+            Logger.LEVEL_ERROR -> record.thrown?.let { logController.e(it) }
+                ?: logController.e { record.message }
+
+            Logger.LEVEL_INFO -> logController.i { record.message }
+            Logger.LEVEL_DEBUG -> logController.d { record.message }
         }
     }
 }
-
-rootProject.name = "build-logic"
-include(":convention")

@@ -35,9 +35,9 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.security)
     implementation(libs.androidx.appAuth)
-    implementation(libs.logcat)
     implementation(libs.google.phonenumber)
-    implementation(libs.rootbeer)
+    implementation(libs.timber)
+    implementation(libs.treessence)
 
     testImplementation(project(LibraryModule.TestLogic.path))
     androidTestImplementation(project(LibraryModule.TestLogic.path))
