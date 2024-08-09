@@ -42,7 +42,6 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.OptionListItemUi
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -169,7 +168,7 @@ sealed class DashboardBottomSheetContent {
     data class DeferredDocumentPressed(val documentUi: DocumentUi) : DashboardBottomSheetContent()
     data class DeferredDocumentsReady(
         val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
-        val options: List<OptionListItemUi>,
+        val options: List<ModalOptionUi<Event>>,
     ) : DashboardBottomSheetContent()
 }
 
@@ -513,17 +512,14 @@ class DashboardViewModel(
         }
     }
 
-    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentData>): List<OptionListItemUi> {
+    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentData>): List<ModalOptionUi<Event>> {
         return deferredDocumentsData.map {
-            OptionListItemUi(
-                text = it.docName,
-                onClick = {
-                    setEvent(
-                        Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
-                            documentId = it.documentId
-                        )
-                    )
-                }
+            ModalOptionUi(
+                title = it.docName,
+                icon = AppIcons.KeyboardArrowRight,
+                event = Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
+                    documentId = it.documentId
+                )
             )
         }
     }
