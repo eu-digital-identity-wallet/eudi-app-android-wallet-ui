@@ -43,8 +43,7 @@ import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
-import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -54,12 +53,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.extension.throttledClickable
-
-data class OptionListItemUi(
-    val text: String,
-    val icon: IconData = AppIcons.KeyboardArrowRight,
-    val onClick: () -> Unit
-)
+import eu.europa.ec.uilogic.mvi.ViewEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,10 +168,11 @@ fun DialogBottomSheet(
 }
 
 @Composable
-fun BottomSheetWithOptionsList(
+fun <T : ViewEvent> BottomSheetWithOptionsList(
     title: String,
     message: String,
-    options: List<OptionListItemUi>,
+    options: List<ModalOptionUi<T>>,
+    onEventSent: (T) -> Unit
 ) {
     if (options.isNotEmpty()) {
         GenericBaseSheetContent(
@@ -198,6 +193,7 @@ fun BottomSheetWithOptionsList(
                 ) {
                     OptionsList(
                         optionItems = options,
+                        itemSelected = onEventSent
                     )
                 }
             }
@@ -206,8 +202,9 @@ fun BottomSheetWithOptionsList(
 }
 
 @Composable
-fun OptionsList(
-    optionItems: List<OptionListItemUi>,
+fun <T : ViewEvent> OptionsList(
+    optionItems: List<ModalOptionUi<T>>,
+    itemSelected: (T) -> Unit
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
@@ -215,18 +212,16 @@ fun OptionsList(
         items(optionItems) { item ->
             OptionListItem(
                 item = item,
-                onItemSelected = {
-                    item.onClick()
-                },
+                itemSelected = itemSelected
             )
         }
     }
 }
 
 @Composable
-fun OptionListItem(
-    item: OptionListItemUi,
-    onItemSelected: () -> Unit,
+fun <T : ViewEvent> OptionListItem(
+    item: ModalOptionUi<T>,
+    itemSelected: (T) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -234,7 +229,7 @@ fun OptionListItem(
             .clip(RoundedCornerShape(SIZE_SMALL.dp))
             .background(MaterialTheme.colorScheme.backgroundDefault)
             .throttledClickable {
-                onItemSelected.invoke()
+                itemSelected(item.event)
             }
             .padding(
                 horizontal = SPACING_SMALL.dp,
@@ -245,7 +240,7 @@ fun OptionListItem(
     ) {
         Text(
             modifier = Modifier.weight(1f),
-            text = item.text,
+            text = item.title,
             style = MaterialTheme.typography.bodyMedium
         )
         WrapIcon(
@@ -276,20 +271,8 @@ private fun BottomSheetWithOptionsListPreview() {
         BottomSheetWithOptionsList(
             title = "Title",
             message = "Message",
-            options = listOf(
-                OptionListItemUi(
-                    text = "Small Name",
-                    onClick = {}
-                ),
-                OptionListItemUi(
-                    text = "MediumMediumMediumMedium Name",
-                    onClick = {}
-                ),
-                OptionListItemUi(
-                    text = "LargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLargeLarge Name",
-                    onClick = {}
-                ),
-            ),
+            options = listOf<ModalOptionUi<ViewEvent>>(),
+            onEventSent = {}
         )
     }
 }

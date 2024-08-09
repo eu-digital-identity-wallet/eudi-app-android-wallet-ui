@@ -439,6 +439,7 @@ private fun DashboardSheetContent(
                     id = R.string.dashboard_bottom_sheet_deferred_documents_ready_subtitle
                 ),
                 options = sheetContent.options,
+                onEventSent = onEventSent,
             )
         }
     }
