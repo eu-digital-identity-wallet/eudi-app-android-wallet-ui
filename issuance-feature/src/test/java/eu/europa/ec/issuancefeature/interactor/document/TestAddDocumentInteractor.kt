@@ -24,6 +24,7 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.util.TestsData.mockedAgeOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedPhotoIdOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedSampleDataOptionItemUi
@@ -137,6 +138,9 @@ class TestAddDocumentInteractor {
                             mockedAgeOptionItemUi.copy(
                                 available = false
                             ),
+                            mockedPhotoIdOptionItemUi.copy(
+                                available = false
+                            ),
                             mockedSampleDataOptionItemUi
                         )
                     ),
@@ -170,7 +174,8 @@ class TestAddDocumentInteractor {
                         options = listOf(
                             mockedPidOptionItemUi,
                             mockedMdlOptionItemUi,
-                            mockedAgeOptionItemUi
+                            mockedAgeOptionItemUi,
+                            mockedPhotoIdOptionItemUi
                         )
                     ),
                     awaitItem()
