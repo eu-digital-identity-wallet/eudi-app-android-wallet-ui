@@ -54,6 +54,13 @@ sealed interface DocumentIdentifier {
             get() = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
     }
 
+    data object PHOTOID : DocumentIdentifier {
+        override val nameSpace: String
+            get() = "org.iso.23220.2.photoid.1"
+        override val docType: DocType
+            get() = "org.iso.23220.2.photoid.1"
+    }
+
     data class OTHER(
         override val nameSpace: String,
         override val docType: DocType,
@@ -62,7 +69,7 @@ sealed interface DocumentIdentifier {
 
 fun DocumentIdentifier.isSupported(): Boolean {
     return when (this) {
-        is DocumentIdentifier.PID, DocumentIdentifier.MDL, DocumentIdentifier.AGE -> true
+        is DocumentIdentifier.PID, DocumentIdentifier.MDL, DocumentIdentifier.AGE, DocumentIdentifier.PHOTOID -> true
         is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> false
     }
 }
@@ -76,6 +83,7 @@ fun DocType.toDocumentIdentifier(): DocumentIdentifier = when (this) {
     DocumentIdentifier.MDL.docType -> DocumentIdentifier.MDL
     DocumentIdentifier.SAMPLE.docType -> DocumentIdentifier.SAMPLE
     DocumentIdentifier.AGE.docType -> DocumentIdentifier.AGE
+    DocumentIdentifier.PHOTOID.docType -> DocumentIdentifier.PHOTOID
     else -> DocumentIdentifier.OTHER(
         nameSpace = this,
         docType = this
@@ -109,6 +117,9 @@ private fun createDocumentIdentifier(nameSpace: String, docType: DocType): Docum
 
         nameSpace == DocumentIdentifier.AGE.nameSpace
                 && docType == DocumentIdentifier.AGE.docType -> DocumentIdentifier.AGE
+
+        nameSpace == DocumentIdentifier.PHOTOID.nameSpace
+                && docType == DocumentIdentifier.PHOTOID.docType -> DocumentIdentifier.PHOTOID
 
         else -> DocumentIdentifier.OTHER(
             nameSpace = nameSpace,
