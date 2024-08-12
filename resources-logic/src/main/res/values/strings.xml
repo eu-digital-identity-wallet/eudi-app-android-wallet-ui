@@ -76,6 +76,7 @@
     <string name="mdl">Driving License</string>
     <string name="age_verification">Age Verification</string>
     <string name="load_sample_data">Load Sample Documents</string>
+    <string name="photo_id">Photo ID</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>

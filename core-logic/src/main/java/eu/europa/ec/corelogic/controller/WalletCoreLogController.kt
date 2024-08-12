@@ -19,7 +19,6 @@ package eu.europa.ec.corelogic.controller
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.eudi.wallet.logging.Logger
 
-
 interface WalletCoreLogController : Logger
 
 class WalletCoreLogControllerImpl(

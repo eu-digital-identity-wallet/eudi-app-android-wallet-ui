@@ -48,6 +48,7 @@ fun DocumentIdentifier.toUiName(resourceProvider: ResourceProvider): String {
         is DocumentIdentifier.MDL -> resourceProvider.getString(R.string.mdl)
         is DocumentIdentifier.AGE -> resourceProvider.getString(R.string.age_verification)
         is DocumentIdentifier.SAMPLE -> resourceProvider.getString(R.string.load_sample_data)
+        is DocumentIdentifier.PHOTOID -> resourceProvider.getString(R.string.photo_id)
         is DocumentIdentifier.OTHER -> docType
     }
 }

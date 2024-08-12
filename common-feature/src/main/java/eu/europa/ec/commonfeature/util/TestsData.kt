@@ -63,6 +63,7 @@ object TestsData {
     const val mockedPidId = "000001"
     const val mockedMdlId = "000002"
     const val mockedAgeVerificationId = "000003"
+    const val mockedPhotoId = "000004"
     const val mockedUserFirstName = "JAN"
     const val mockedUserBase64Portrait = "SE"
     const val mockedDocUiNamePid = "National ID"
@@ -85,6 +86,8 @@ object TestsData {
     const val mockedMdlNameSpace = "org.iso.18013.5.1"
     const val mockedAgeVerificationDocType = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
     const val mockedAgeVerificationNameSpace = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
+    const val mockedPhotoIdDocType = "org.iso.23220.2.photoid.1"
+    const val mockedPhotoIdNameSpace = "org.iso.23220.2.photoid.1"
 
     val mockedValidReaderAuth = ReaderAuth(
         readerAuth = byteArrayOf(),
@@ -135,6 +138,45 @@ object TestsData {
             ),
             DocItem(
                 namespace = mockedPidNameSpace,
+                elementIdentifier = "issuing_country",
+            ),
+        ),
+        readerAuth = mockedValidReaderAuth
+    )
+
+    val mockedPhotoIdWithBasicFieldsDocRequest = DocRequest(
+        docType = mockedPhotoIdDocType,
+        requestItems = listOf(
+            DocItem(
+                namespace = mockedPhotoIdNameSpace,
+                elementIdentifier = "family_name"
+            ),
+            DocItem(
+                namespace = mockedPhotoIdNameSpace,
+                elementIdentifier = "given_name"
+            ),
+            DocItem(
+                namespace = mockedPhotoIdNameSpace,
+                elementIdentifier = "age_over_18"
+            ),
+            DocItem(
+                namespace = mockedPhotoIdNameSpace,
+                elementIdentifier = "age_birth_year"
+            ),
+            DocItem(
+                namespace = mockedPhotoIdNameSpace,
+                elementIdentifier = "birth_city"
+            ),
+            DocItem(
+                namespace = mockedPhotoIdNameSpace,
+                elementIdentifier = "expiry_date"
+            ),
+            DocItem(
+                namespace = mockedPhotoIdNameSpace,
+                elementIdentifier = "portrait",
+            ),
+            DocItem(
+                namespace = mockedPhotoIdNameSpace,
                 elementIdentifier = "issuing_country",
             ),
         ),
@@ -537,6 +579,12 @@ object TestsData {
                         value = testFieldUi.value,
                     )
 
+                    is DocumentIdentifier.PHOTOID -> mockCreateOptionalFieldForPhotoId(
+                        docId = transformedRequestDataUi.documentId,
+                        elementIdentifier = testFieldUi.elementIdentifier,
+                        value = testFieldUi.value
+                    )
+
                     is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
                 }
 
@@ -584,6 +632,25 @@ object TestsData {
         val uniqueId = mockedPidDocType + elementIdentifier + docId
         return mockCreateOptionalField(
             documentIdentifierUi = DocumentIdentifier.PID,
+            uniqueId = uniqueId,
+            elementIdentifier = elementIdentifier,
+            value = value,
+            checked = checked,
+            enabled = enabled,
+            event = Event.UserIdentificationClicked(itemId = uniqueId)
+        )
+    }
+
+    private fun mockCreateOptionalFieldForPhotoId(
+        docId: String,
+        elementIdentifier: String,
+        value: String,
+        checked: Boolean = true,
+        enabled: Boolean = true,
+    ): RequestDataUi.OptionalField<Event> {
+        val uniqueId = mockedPhotoIdDocType + elementIdentifier + docId
+        return mockCreateOptionalField(
+            documentIdentifierUi = DocumentIdentifier.PHOTOID,
             uniqueId = uniqueId,
             elementIdentifier = elementIdentifier,
             value = value,
@@ -664,6 +731,7 @@ object TestsData {
         enabled: Boolean,
         event: Event?,
     ): RequestDocumentItemUi<Event> {
+
         val namespace: String
         val docId: String
         val docType: DocType
@@ -689,6 +757,13 @@ object TestsData {
                 docId = mockedAgeVerificationId
                 docType = mockedAgeVerificationDocType
                 docRequest = mockedAgeVerificationWithBasicFieldsDocRequest
+            }
+
+            is DocumentIdentifier.PHOTOID -> {
+                namespace = mockedPhotoIdNameSpace
+                docId = mockedPhotoId
+                docType = mockedPhotoIdDocType
+                docRequest = mockedPhotoIdWithBasicFieldsDocRequest
             }
 
             is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
