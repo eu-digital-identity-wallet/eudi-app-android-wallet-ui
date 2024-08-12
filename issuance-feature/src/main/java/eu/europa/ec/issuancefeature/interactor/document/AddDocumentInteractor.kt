@@ -103,6 +103,12 @@ class AddDocumentInteractorImpl(
                     icon = AppIcons.Id,
                     type = DocumentIdentifier.AGE,
                     available = canCreateExtraDocument(flowType)
+                ),
+                DocumentOptionItemUi(
+                    text = DocumentIdentifier.PHOTOID.toUiName(resourceProvider),
+                    icon = AppIcons.Id,
+                    type = DocumentIdentifier.PHOTOID,
+                    available = canCreateExtraDocument(flowType)
                 )
             )
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
@@ -115,7 +121,6 @@ class AddDocumentInteractorImpl(
                     )
                 )
             }
-
             emit(
                 AddDocumentInteractorPartialState.Success(
                     options = options

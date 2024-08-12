@@ -69,6 +69,7 @@ object TestsData {
     const val mockedDocUiNamePid = "National ID"
     const val mockedDocUiNameMdl = "Driving License"
     const val mockedDocUiNameAge = "Age Verification"
+    const val mockedDocUiNamePhotoId = "Photo ID"
     const val mockedDocUiNameSampleData = "Load Sample Documents"
     const val mockedNoUserFistNameFound = ""
     const val mockedNoUserBase64PortraitFound = ""
@@ -437,6 +438,13 @@ object TestsData {
         text = mockedDocUiNameAge,
         icon = AppIcons.Id,
         type = DocumentIdentifier.AGE,
+        available = true
+    )
+
+    val mockedPhotoIdOptionItemUi = DocumentOptionItemUi(
+        text = mockedDocUiNamePhotoId,
+        icon = AppIcons.Id,
+        type = DocumentIdentifier.PHOTOID,
         available = true
     )
 
