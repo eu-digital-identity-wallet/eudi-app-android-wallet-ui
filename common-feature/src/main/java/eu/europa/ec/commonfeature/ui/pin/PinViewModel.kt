@@ -305,7 +305,7 @@ class PinViewModel(
 
     private fun validateForm(pin: String) {
         viewModelScope.launch {
-            interactor.validateForm(getListOfRules(pin)).collect {
+            interactor.validateFormFlow(getListOfRules(pin)).collect {
                 setState {
                     copy(
                         validationResult = it,

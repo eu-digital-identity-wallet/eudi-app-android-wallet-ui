@@ -16,13 +16,19 @@
 
 package eu.europa.ec.commonfeature.ui.qr_scan
 
+import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.validator.Form
+import eu.europa.ec.businesslogic.validator.Rule
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.commonfeature.interactor.QrScanInteractor
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -35,14 +41,21 @@ import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+
+private const val MAX_ALLOWED_FAILED_SCANS = 5
 
 data class State(
     val hasCameraPermission: Boolean = false,
     val shouldShowPermissionRational: Boolean = false,
     val finishedScanning: Boolean = false,
     val qrScannedConfig: QrScanUiConfig,
+
+    val failedScanAttempts: Int = 0,
+    val showInformativeText: Boolean = false,
+    val informativeText: String = "",
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -63,7 +76,9 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class QrScanViewModel(
+    private val interactor: QrScanInteractor,
     private val uiSerializer: UiSerializer,
+    private val resourceProvider: ResourceProvider,
     @InjectedParam private val qrScannedConfig: String,
 ) : MviViewModel<Event, State, Effect>() {
 
@@ -87,10 +102,7 @@ class QrScanViewModel(
                     copy(finishedScanning = true)
                 }
 
-                calculateNextStep(
-                    qrScanFlow = viewState.value.qrScannedConfig.qrScanFlow,
-                    scanResult = event.resultQr
-                )
+                handleScannedQr(event.resultQr)
             }
 
             is Event.CameraAccessGranted -> {
@@ -109,6 +121,48 @@ class QrScanViewModel(
         }
     }
 
+    private fun handleScannedQr(scannedQr: String) {
+        viewModelScope.launch {
+            val urlIsValid = validateForm(
+                form = Form(
+                    inputs = mapOf(
+                        listOf(
+                            Rule.ValidateProjectUrl(errorMessage = "")
+                        ) to scannedQr
+                    )
+                )
+            )
+
+            if (urlIsValid) {
+                calculateNextStep(
+                    qrScanFlow = viewState.value.qrScannedConfig.qrScanFlow,
+                    scanResult = scannedQr
+                )
+            } else if (viewState.value.failedScanAttempts < MAX_ALLOWED_FAILED_SCANS) {
+                setState {
+                    copy(
+                        failedScanAttempts = viewState.value.failedScanAttempts + 1,
+                        finishedScanning = false
+                    )
+                }
+            } else {
+                setState {
+                    copy(
+                        showInformativeText = true,
+                        informativeText = calculateInformativeText(viewState.value.qrScannedConfig.qrScanFlow)
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun validateForm(form: Form): Boolean {
+        val validationResult = interactor.validateForm(
+            form = form,
+        )
+        return validationResult.isValid
+    }
+
     private fun calculateNextStep(
         qrScanFlow: QrScanFlow,
         scanResult: String,
@@ -116,6 +170,17 @@ class QrScanViewModel(
         when (qrScanFlow) {
             is QrScanFlow.Presentation -> navigateToPresentationRequest(scanResult)
             is QrScanFlow.Issuance -> navigateToDocumentOffer(scanResult, qrScanFlow.issuanceFlow)
+        }
+    }
+
+    private fun calculateInformativeText(
+        qrScanFlow: QrScanFlow,
+    ): String {
+        return with(resourceProvider) {
+            when (qrScanFlow) {
+                is QrScanFlow.Presentation -> getString(R.string.qr_scan_informative_text_presentation_flow)
+                is QrScanFlow.Issuance -> getString(R.string.qr_scan_informative_text_issuance_flow)
+            }
         }
     }
 

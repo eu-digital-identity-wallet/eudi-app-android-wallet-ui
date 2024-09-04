@@ -16,6 +16,7 @@
 
 package eu.europa.ec.businesslogic.validator
 
+import android.net.Uri
 import android.util.Patterns
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import eu.europa.ec.businesslogic.controller.log.LogController
@@ -24,17 +25,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 
 interface FormValidator {
-    fun validateForm(form: Form): Flow<FormValidationResult>
-    fun validateForms(forms: List<Form>): Flow<FormsValidationResult>
+    fun validateFormFlow(form: Form): Flow<FormValidationResult>
+    fun validateFormsFlow(forms: List<Form>): Flow<FormsValidationResult>
+
+    suspend fun validateForm(form: Form): FormValidationResult
+    suspend fun validateForms(forms: List<Form>): FormsValidationResult
 }
 
 class FormValidatorImpl(
     private val logController: LogController
 ) : FormValidator {
 
-    override fun validateForm(form: Form): Flow<FormValidationResult> = flow {
+    override fun validateFormFlow(form: Form): Flow<FormValidationResult> = flow {
         form.inputs.forEach { (rules, value) ->
             rules.forEach { rule ->
                 validateRule(rule, value)?.let {
@@ -46,7 +51,20 @@ class FormValidatorImpl(
         emit(FormValidationResult(isValid = true))
     }.flowOn(Dispatchers.IO)
 
-    override fun validateForms(forms: List<Form>): Flow<FormsValidationResult> = flow {
+    override suspend fun validateForm(form: Form): FormValidationResult =
+        withContext(Dispatchers.IO) {
+            for (input in form.inputs) {
+                val (rules, value) = input
+                for (rule in rules) {
+                    validateRule(rule, value)?.let {
+                        return@withContext it
+                    }
+                }
+            }
+            return@withContext FormValidationResult(isValid = true)
+        }
+
+    override fun validateFormsFlow(forms: List<Form>): Flow<FormsValidationResult> = flow {
         val errors = mutableListOf<String>()
         var isValid = true
         forms.forEach { form ->
@@ -62,9 +80,32 @@ class FormValidatorImpl(
         emit(FormsValidationResult(isValid, errors))
     }.flowOn(Dispatchers.IO)
 
+    override suspend fun validateForms(forms: List<Form>): FormsValidationResult =
+        withContext(Dispatchers.IO) {
+            val errorMessages = mutableListOf<String>()
+            var allValid = true
+            for (form in forms) {
+                for (input in form.inputs) {
+                    val (rules, value) = input
+                    for (rule in rules) {
+                        validateRule(rule, value)?.let {
+                            allValid = false
+                            errorMessages.add(it.message)
+                        }
+                    }
+                }
+            }
+            return@withContext FormsValidationResult(allValid, errorMessages)
+        }
+
     private fun validateRule(rule: Rule, value: String): FormValidationResult? {
         return when (rule) {
             is Rule.ValidateEmail -> checkValidationResult(isEmailValid(value), rule.errorMessage)
+            is Rule.ValidateProjectUrl -> checkValidationResult(
+                isValidProjectUrl(value),
+                rule.errorMessage
+            )
+
             is Rule.ValidatePhoneNumber -> checkValidationResult(
                 isPhoneNumberValid(value, rule.countryCode),
                 rule.errorMessage
@@ -179,6 +220,16 @@ class FormValidatorImpl(
 
     private fun isEmailValid(value: String): Boolean =
         value.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(value).matches()
+
+    private fun isValidProjectUrl(value: String): Boolean {
+        if (value.isEmpty()) return false
+        return try {
+            val uri = Uri.parse(Uri.decode(value))
+            !uri.scheme.isNullOrEmpty() && !uri.host.isNullOrEmpty() && !uri.query.isNullOrEmpty()
+        } catch (e: Exception) {
+            false
+        }
+    }
 
     private fun isPhoneNumberValid(value: String, countryCode: String): Boolean {
         val phoneNumberUtil = PhoneNumberUtil.getInstance()
@@ -301,6 +352,7 @@ data class FormsValidationResult(val isValid: Boolean, val messages: List<String
 sealed class Rule(val errorMsg: String) {
     data class ValidateNotEmpty(val errorMessage: String) : Rule(errorMessage)
     data class ValidateEmail(val errorMessage: String) : Rule(errorMessage)
+    data class ValidateProjectUrl(val errorMessage: String) : Rule(errorMessage)
     data class ValidatePhoneNumber(val errorMessage: String, val countryCode: String) :
         Rule(errorMessage)
 

@@ -72,6 +72,71 @@ class TestFormValidator {
     }
 
     @Test
+    fun testValidateProjectUrlRule() = coroutineRule.runTest {
+        val rules = listOf(Rule.ValidateProjectUrl(plainErrorMessage))
+
+        // Test with invalid URLs
+        validateForm(
+            rules = rules,
+            value = "",
+            validationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "invalid_url",
+            validationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "123456789",
+            validationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "http://example.com",
+            validationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "https://notarealproject.com/otherpath",
+            validationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "https://notarealproject.com/bad_query_param?",
+            validationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "ftp://projectsite.com",
+            validationResult = validationError
+        )
+
+        // Test with valid URLs
+        validateForm(
+            rules = rules,
+            value = "mocked_scheme://mocked_host?mocked_query_param=some_value",
+            validationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "mocked_scheme://mocked_host?mocked_query_param1=some_value1&mocked_query_param2=some_value2",
+            validationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "mocked-scheme://mocked-host?mocked-query-param=some-value",
+            validationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "mocked.scheme://mocked.host?mocked.query.param=some.value",
+            validationResult = validationSuccess
+        )
+    }
+
+
+    @Test
     fun testValidateEmailRule() = coroutineRule.runTest {
         val rules = listOf(Rule.ValidateEmail(plainErrorMessage))
         validateForm(
@@ -627,7 +692,7 @@ class TestFormValidator {
             )
         )
 
-        formValidation.validateForms(forms).collect {
+        formValidation.validateFormsFlow(forms).collect {
             assertEquals(
                 FormsValidationResult(
                     false,
@@ -811,7 +876,7 @@ class TestFormValidator {
         value: String,
         validationResult: FormValidationResult
     ) {
-        formValidation.validateForm(
+        formValidation.validateFormFlow(
             Form(mapOf(rules to value))
         ).collect {
             assertEquals(validationResult, it)
