@@ -22,15 +22,9 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.util.safeLet
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
 interface FormValidator {
-    fun validateFormFlow(form: Form): Flow<FormValidationResult>
-    fun validateFormsFlow(forms: List<Form>): Flow<FormsValidationResult>
-
     suspend fun validateForm(form: Form): FormValidationResult
     suspend fun validateForms(forms: List<Form>): FormsValidationResult
 }
@@ -38,18 +32,6 @@ interface FormValidator {
 class FormValidatorImpl(
     private val logController: LogController
 ) : FormValidator {
-
-    override fun validateFormFlow(form: Form): Flow<FormValidationResult> = flow {
-        form.inputs.forEach { (rules, value) ->
-            rules.forEach { rule ->
-                validateRule(rule, value)?.let {
-                    emit(it)
-                    return@flow
-                }
-            }
-        }
-        emit(FormValidationResult(isValid = true))
-    }.flowOn(Dispatchers.IO)
 
     override suspend fun validateForm(form: Form): FormValidationResult =
         withContext(Dispatchers.IO) {
@@ -63,22 +45,6 @@ class FormValidatorImpl(
             }
             return@withContext FormValidationResult(isValid = true)
         }
-
-    override fun validateFormsFlow(forms: List<Form>): Flow<FormsValidationResult> = flow {
-        val errors = mutableListOf<String>()
-        var isValid = true
-        forms.forEach { form ->
-            form.inputs.forEach { (rules, value) ->
-                rules.forEach { rule ->
-                    validateRule(rule, value)?.let {
-                        isValid = false
-                        errors.add(it.message)
-                    }
-                }
-            }
-        }
-        emit(FormsValidationResult(isValid, errors))
-    }.flowOn(Dispatchers.IO)
 
     override suspend fun validateForms(forms: List<Form>): FormsValidationResult =
         withContext(Dispatchers.IO) {

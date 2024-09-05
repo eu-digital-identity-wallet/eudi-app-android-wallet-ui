@@ -22,7 +22,6 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +30,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,13 +57,12 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
-import eu.europa.ec.commonfeature.config.QrScanFlow
-import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.ui.qr_scan.component.QrCodeAnalyzer
 import eu.europa.ec.commonfeature.ui.qr_scan.component.qrBorderCanvas
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
+import eu.europa.ec.uilogic.component.PreMeasuredContentWithAnimatedVisibility
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -168,7 +167,12 @@ private fun Content(
 
             VSpacer.Large()
 
-            InformativeText(state)
+            PreMeasuredContentWithAnimatedVisibility(
+                modifier = Modifier.fillMaxWidth(),
+                showContent = state.showInformativeText
+            ) {
+                InformativeText(text = state.informativeText)
+            }
         }
     }
 
@@ -294,22 +298,20 @@ private fun OpenCamera(
 }
 
 @Composable
-private fun InformativeText(state: State) {
-    AnimatedVisibility(state.showInformativeText) {
-        WrapCard {
-            Row(
+private fun InformativeText(text: String) {
+    WrapCard {
+        Row(
+            modifier = Modifier.padding(all = SPACING_SMALL.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            WrapIcon(AppIcons.Error)
+            Text(
                 modifier = Modifier.padding(all = SPACING_SMALL.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                WrapIcon(AppIcons.Error)
-                Text(
-                    modifier = Modifier.padding(all = SPACING_SMALL.dp),
-                    text = state.informativeText,
-                    style = MaterialTheme.typography.headlineLarge,
-                    textAlign = TextAlign.Center
-                )
-            }
+                text = text,
+                style = MaterialTheme.typography.headlineLarge,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
@@ -319,11 +321,7 @@ private fun InformativeText(state: State) {
 private fun InformativeTextPreview() {
     PreviewTheme {
         InformativeText(
-            state = State(
-                qrScannedConfig = QrScanUiConfig("title", "subtitle", QrScanFlow.Presentation),
-                showInformativeText = true,
-                informativeText = stringResource(R.string.qr_scan_informative_text_presentation_flow)
-            )
+            text = stringResource(R.string.qr_scan_informative_text_presentation_flow)
         )
     }
 }

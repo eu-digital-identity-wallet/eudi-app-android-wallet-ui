@@ -305,16 +305,15 @@ class PinViewModel(
 
     private fun validateForm(pin: String) {
         viewModelScope.launch {
-            interactor.validateFormFlow(getListOfRules(pin)).collect {
-                setState {
-                    copy(
-                        validationResult = it,
-                        isButtonEnabled = it.isValid,
-                        quickPinError = it.message,
-                        pin = pin,
-                        resetPin = false
-                    )
-                }
+            val validationResult = interactor.validateForm(getListOfRules(pin))
+            setState {
+                copy(
+                    validationResult = validationResult,
+                    isButtonEnabled = validationResult.isValid,
+                    quickPinError = validationResult.message,
+                    pin = pin,
+                    resetPin = false
+                )
             }
         }
     }

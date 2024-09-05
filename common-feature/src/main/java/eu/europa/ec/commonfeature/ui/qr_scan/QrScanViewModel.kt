@@ -55,7 +55,7 @@ data class State(
 
     val failedScanAttempts: Int = 0,
     val showInformativeText: Boolean = false,
-    val informativeText: String = "",
+    val informativeText: String,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -82,13 +82,17 @@ class QrScanViewModel(
     @InjectedParam private val qrScannedConfig: String,
 ) : MviViewModel<Event, State, Effect>() {
 
-    override fun setInitialState(): State = State(
-        qrScannedConfig = uiSerializer.fromBase64(
+    override fun setInitialState(): State {
+        val deserializedConfig: QrScanUiConfig = uiSerializer.fromBase64(
             qrScannedConfig,
             QrScanUiConfig::class.java,
             QrScanUiConfig.Parser
         ) ?: throw RuntimeException("QrScanUiConfig:: is Missing or invalid")
-    )
+        return State(
+            qrScannedConfig = deserializedConfig,
+            informativeText = calculateInformativeText(deserializedConfig.qrScanFlow)
+        )
+    }
 
     override fun handleEvents(event: Event) {
         when (event) {
@@ -123,33 +127,33 @@ class QrScanViewModel(
 
     private fun handleScannedQr(scannedQr: String) {
         viewModelScope.launch {
+            val currentState = viewState.value
+
+            // Validate the scanned QR code
             val urlIsValid = validateForm(
                 form = Form(
                     inputs = mapOf(
-                        listOf(
-                            Rule.ValidateProjectUrl(errorMessage = "")
-                        ) to scannedQr
+                        listOf(Rule.ValidateProjectUrl(errorMessage = "")) to scannedQr
                     )
                 )
             )
 
+            // Handle valid QR code
             if (urlIsValid) {
                 calculateNextStep(
-                    qrScanFlow = viewState.value.qrScannedConfig.qrScanFlow,
+                    qrScanFlow = currentState.qrScannedConfig.qrScanFlow,
                     scanResult = scannedQr
                 )
-            } else if (viewState.value.failedScanAttempts < MAX_ALLOWED_FAILED_SCANS) {
-                setState {
-                    copy(
-                        failedScanAttempts = viewState.value.failedScanAttempts + 1,
-                        finishedScanning = false
-                    )
-                }
             } else {
+                // Increment failed attempts
+                val updatedFailedAttempts = currentState.failedScanAttempts + 1
+                val maxFailedAttemptsExceeded = updatedFailedAttempts > MAX_ALLOWED_FAILED_SCANS
+
                 setState {
                     copy(
-                        showInformativeText = true,
-                        informativeText = calculateInformativeText(viewState.value.qrScannedConfig.qrScanFlow)
+                        failedScanAttempts = updatedFailedAttempts,
+                        showInformativeText = maxFailedAttemptsExceeded,
+                        finishedScanning = false,
                     )
                 }
             }
