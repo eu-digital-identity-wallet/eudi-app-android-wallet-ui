@@ -62,14 +62,99 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "test",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
+
+    @Test
+    fun testValidateProjectUrlRule() = coroutineRule.runTest {
+        val rules = listOf(Rule.ValidateProjectUrl(plainErrorMessage))
+
+        // Test with invalid URLs
+        validateForm(
+            rules = rules,
+            value = "",
+            expectedValidationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "invalid_url",
+            expectedValidationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "123456789",
+            expectedValidationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "http://example.com",
+            expectedValidationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "https://notarealproject.com/otherpath",
+            expectedValidationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "https://notarealproject.com/bad_query_param?",
+            expectedValidationResult = validationError
+        )
+        validateForm(
+            rules = rules,
+            value = "ftp://projectsite.com",
+            expectedValidationResult = validationError
+        )
+
+        // Test with valid URLs
+        validateForm(
+            rules = rules,
+            value = "mocked_scheme://mocked_host?mocked_query_param=some_value",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "mocked_scheme://mocked_host?mocked_query_param1=some_value1&mocked_query_param2=some_value2",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "mocked-scheme://mocked-host?mocked-query-param=some-value",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "mocked.scheme://mocked.host?mocked.query.param=some.value",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "eudi-openid4vp%3A%2F%2Fdev.verifier-backend.eudiw.dev%3Fclient_id%3Ddev.verifier-backend.eudiw.dev%26request_uri%3Dhttps%3A%2F%2Fdev.verifier-backend.eudiw.dev%2Fwallet%2Frequest.jwt%2F1234",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "openid-credential-offer://credential_offer?credential_offer=%7B%22credential_issuer%22:%20%22https://dev.issuer.eudiw.dev%22%2C%20%22credential_configuration_ids%22:%20%5B%22eu.europa.ec.eudi.pid_mdoc%22%5D%2C%20%22grants%22:%20%7B%22urn:ietf:params:oauth:grant-type:pre-authorized_code%22:%20%7B%22pre-authorized_code%22:%20%22some_code%22%2C%20%22tx_code%22:%20%7B%22length%22:%205%2C%20%22input_mode%22:%20%22numeric%22%2C%20%22description%22:%20%22Please%20provide%20the%20one-time%20code.%22%7D%7D%7D%7D",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "eudi-openid4vp://dev.verifier-backend.eudiw.dev?client_id=dev.verifier-backend.eudiw.dev&request_uri=https://dev.verifier-backend.eudiw.dev/wallet/request.jwt/1234",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
+            value = "openid-credential-offer://credential_offer?credential_offer={\"credential_issuer\": \"https://dev.issuer.eudiw.dev\", \"credential_configuration_ids\": [\"eu.europa.ec.eudi.pid_mdoc\"], \"grants\": {\"urn:ietf:params:oauth:grant-type:pre-authorized_code\": {\"pre-authorized_code\": \"some_code\", \"tx_code\": {\"length\": 5, \"input_mode\": \"numeric\", \"description\": \"Please provide the one-time code.\"}}}}",
+            expectedValidationResult = validationSuccess
+        )
+    }
+
 
     @Test
     fun testValidateEmailRule() = coroutineRule.runTest {
@@ -77,12 +162,12 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "test@test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "test@test.com",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -93,27 +178,27 @@ class TestFormValidator {
         validateForm(
             rules = greekPhoneRule,
             value = "1111111111",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = greekPhoneRule,
             value = "15223433333",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = greekPhoneRule,
             value = "6941111111",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = usPhoneRule,
             value = "6941111111",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = usPhoneRule,
             value = "6102458772",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -123,22 +208,22 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "123456789",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "12345678901",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "1234567890",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "123456789012",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -148,22 +233,22 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "aaaaaaaaaaa",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "            ",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "aaaaaaaaa",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "aaaaaaaaaa",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -173,22 +258,22 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "aaaa",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "aaaaa",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "aaaaaaaaa",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -204,64 +289,64 @@ class TestFormValidator {
         validateForm(
             rules = atLeast2DigitsRule,
             value = "Test12",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = atLeast2DigitsRule,
             value = "Test123",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = atLeast2DigitsRule,
             value = "Test1",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = atLeast2DigitsRule,
             value = "Test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
 
         validateForm(
             rules = atLeast2SpecialCharsRule,
             value = "Test!@",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = atLeast2SpecialCharsRule,
             value = "Test!@#",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = atLeast2SpecialCharsRule,
             value = "Test!",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = atLeast2SpecialCharsRule,
             value = "Test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
 
         validateForm(
             rules = atLeast3UppercaseCharactersRule,
             value = "TestAA",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = atLeast3UppercaseCharactersRule,
             value = "TAestAA",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = atLeast3UppercaseCharactersRule,
             value = "TestA",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = atLeast3UppercaseCharactersRule,
             value = "Test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
     }
 
@@ -276,32 +361,32 @@ class TestFormValidator {
         validateForm(
             rules = atLeastOneCapitalLetterRule,
             value = "test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = atLeastOneCapitalLetterRule,
             value = "Test",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = atLeastOneDigitRule,
             value = "test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = atLeastOneDigitRule,
             value = "test1",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = atLeastOneSpecialCharRule,
             value = "test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = atLeastOneSpecialCharRule,
             value = "test1@",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -311,17 +396,17 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "aaaaaaaaaaa",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "aaaaaaaaaa",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -332,37 +417,37 @@ class TestFormValidator {
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "testt",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "t!@#$",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "TEST",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = isCaseSensitiveRule,
             value = "TEST",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = isCaseSensitiveRule,
             value = "",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = isCaseSensitiveRule,
             value = "test",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -374,42 +459,42 @@ class TestFormValidator {
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "TEST",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = isNotCaseSensitiveRule,
             value = "testt",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = isCaseSensitiveRule,
             value = "test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = isCaseSensitiveRule,
             value = "Testss",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = isCaseSensitiveRule,
             value = "TEST",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = isCaseSensitiveRule,
             value = "",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -430,57 +515,57 @@ class TestFormValidator {
         validateForm(
             rules = maxTimesOfConsecutiveOrder2Rule,
             value = "1313",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder2Rule,
             value = "4356754",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder2Rule,
             value = "0191",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder2Rule,
             value = "1225",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder2Rule,
             value = "2332",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder2Rule,
             value = "454545454545454555444455455",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder2Rule,
             value = "0024",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder4Rule,
             value = "0024",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder4Rule,
             value = "0004",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder4Rule,
             value = "0000",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = maxTimesOfConsecutiveOrder4Rule,
             value = "35523456337777",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
     }
 
@@ -490,62 +575,62 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "1234",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "4321",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "9876",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "3210",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "0123",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "1235",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "9875",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "0124",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "0923",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "8834834835939534",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "TEST",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -627,23 +712,22 @@ class TestFormValidator {
             )
         )
 
-        formValidation.validateForms(forms).collect {
-            assertEquals(
-                FormsValidationResult(
-                    false,
-                    listOf(
-                        "ValidateDuplicateCharacterNotInConsecutiveOrder",
-                        "ValidateEmail",
-                        "ValidatePhoneNumber",
-                        "ValidateRegex",
-                        "ValidateEmail",
-                        "ValidateStringNotMatch",
-                        "ValidateDuplicateCharacterNotInConsecutiveOrder",
-                        "ValidateRegex"
-                    )
-                ), it
+        val expectedValidationResult = FormsValidationResult(
+            isValid = false,
+            messages = listOf(
+                "ValidateDuplicateCharacterNotInConsecutiveOrder",
+                "ValidateEmail",
+                "ValidatePhoneNumber",
+                "ValidateRegex",
+                "ValidateEmail",
+                "ValidateStringNotMatch",
+                "ValidateDuplicateCharacterNotInConsecutiveOrder",
+                "ValidateRegex"
             )
-        }
+        )
+        val actualValidationResult = formValidation.validateForms(forms)
+
+        assertEquals(expectedValidationResult, actualValidationResult)
     }
 
     @Test
@@ -652,27 +736,27 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "1.",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "1,",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "1*",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "1.00",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "1,00",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -690,23 +774,23 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "fileame.pdf",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
         validateForm(
             rules = rules,
             value = "asdf",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
 
         validateForm(
             rules = rules,
             value = "lalala.doc",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "lala.ppt",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -723,18 +807,18 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "200",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
 
         validateForm(
             rules = rules,
             value = "100",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
         validateForm(
             rules = rules,
             value = "99",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -750,25 +834,25 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
 
         validateForm(
             rules = rules,
             value = "4",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
 
         validateForm(
             rules = rules,
             value = "5",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
 
         validateForm(
             rules = rules,
             value = "6",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
@@ -784,37 +868,36 @@ class TestFormValidator {
         validateForm(
             rules = rules,
             value = "test",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
 
         validateForm(
             rules = rules,
             value = "6",
-            validationResult = validationError
+            expectedValidationResult = validationError
         )
 
         validateForm(
             rules = rules,
             value = "5",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
 
         validateForm(
             rules = rules,
             value = "4",
-            validationResult = validationSuccess
+            expectedValidationResult = validationSuccess
         )
     }
 
     private suspend fun validateForm(
         rules: List<Rule>,
         value: String,
-        validationResult: FormValidationResult
+        expectedValidationResult: FormValidationResult
     ) {
-        formValidation.validateForm(
+        val actualValidationResult = formValidation.validateForm(
             Form(mapOf(rules to value))
-        ).collect {
-            assertEquals(validationResult, it)
-        }
+        )
+        assertEquals(expectedValidationResult, actualValidationResult)
     }
 }
