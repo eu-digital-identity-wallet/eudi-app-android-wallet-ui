@@ -133,7 +133,7 @@ class QrScanViewModel(
             val urlIsValid = validateForm(
                 form = Form(
                     inputs = mapOf(
-                        listOf(Rule.ValidateProjectUrl(errorMessage = "")) to scannedQr
+                        listOf(Rule.ValidateUrl(errorMessage = "")) to scannedQr
                     )
                 )
             )
