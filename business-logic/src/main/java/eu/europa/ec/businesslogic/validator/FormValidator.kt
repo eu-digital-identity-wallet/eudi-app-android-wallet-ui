@@ -67,8 +67,8 @@ class FormValidatorImpl(
     private fun validateRule(rule: Rule, value: String): FormValidationResult? {
         return when (rule) {
             is Rule.ValidateEmail -> checkValidationResult(isEmailValid(value), rule.errorMessage)
-            is Rule.ValidateProjectUrl -> checkValidationResult(
-                isValidProjectUrl(value),
+            is Rule.ValidateUrl -> checkValidationResult(
+                isValidUrl(value),
                 rule.errorMessage
             )
 
@@ -187,7 +187,7 @@ class FormValidatorImpl(
     private fun isEmailValid(value: String): Boolean =
         value.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(value).matches()
 
-    private fun isValidProjectUrl(value: String): Boolean {
+    private fun isValidUrl(value: String): Boolean {
         if (value.isEmpty()) return false
         return try {
             val uri = Uri.parse(Uri.decode(value))
@@ -318,7 +318,7 @@ data class FormsValidationResult(val isValid: Boolean, val messages: List<String
 sealed class Rule(val errorMsg: String) {
     data class ValidateNotEmpty(val errorMessage: String) : Rule(errorMessage)
     data class ValidateEmail(val errorMessage: String) : Rule(errorMessage)
-    data class ValidateProjectUrl(val errorMessage: String) : Rule(errorMessage)
+    data class ValidateUrl(val errorMessage: String) : Rule(errorMessage)
     data class ValidatePhoneNumber(val errorMessage: String, val countryCode: String) :
         Rule(errorMessage)
 

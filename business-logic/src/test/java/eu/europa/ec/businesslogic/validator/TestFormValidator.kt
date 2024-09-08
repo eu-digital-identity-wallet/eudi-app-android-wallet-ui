@@ -73,7 +73,7 @@ class TestFormValidator {
 
     @Test
     fun testValidateProjectUrlRule() = coroutineRule.runTest {
-        val rules = listOf(Rule.ValidateProjectUrl(plainErrorMessage))
+        val rules = listOf(Rule.ValidateUrl(plainErrorMessage))
 
         // Test with invalid URLs
         validateForm(
