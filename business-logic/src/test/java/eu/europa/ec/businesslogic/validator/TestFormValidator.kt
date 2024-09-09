@@ -72,8 +72,85 @@ class TestFormValidator {
     }
 
     @Test
+    fun testValidateUrlRule() = coroutineRule.runTest {
+        val rules = listOf(
+            Rule.ValidateUrl(
+                shouldValidateSchema = true,
+                shouldValidateHost = true,
+                shouldValidatePath = true,
+                shouldValidateQuery = true,
+                errorMessage = plainErrorMessage
+            )
+        )
+
+        // Valid URL
+        validateForm(
+            rules = rules,
+            value = "https://www.example.com/path/to/resource?query=parameter&another=example",
+            expectedValidationResult = validationSuccess
+        )
+
+        // No schema
+        validateForm(
+            rules = rules,
+            value = "www.example.com/path/to/resource?query=parameter&another=example",
+            expectedValidationResult = validationError
+        )
+
+        // No host
+        validateForm(
+            rules = rules,
+            value = "https:///path/to/resource?query=parameter&another=example",
+            expectedValidationResult = validationError
+        )
+
+        // No path
+        validateForm(
+            rules = rules,
+            value = "https://www.example.com?query=parameter&another=example",
+            expectedValidationResult = validationError
+        )
+
+        // No query
+        validateForm(
+            rules = rules,
+            value = "https://www.example.com/path/to/resource",
+            expectedValidationResult = validationError
+        )
+
+        // Empty URL
+        validateForm(
+            rules = rules,
+            value = "",
+            expectedValidationResult = validationError
+        )
+
+        // Invalid URL #1
+        validateForm(
+            rules = rules,
+            value = "invalid-url",
+            expectedValidationResult = validationError
+        )
+
+        // Invalid URL #2
+        validateForm(
+            rules = rules,
+            value = "123456789",
+            expectedValidationResult = validationError
+        )
+    }
+
+    @Test
     fun testValidateProjectUrlRule() = coroutineRule.runTest {
-        val rules = listOf(Rule.ValidateUrl(plainErrorMessage))
+        val rules = listOf(
+            Rule.ValidateUrl(
+                shouldValidateSchema = true,
+                shouldValidateHost = false,
+                shouldValidatePath = false,
+                shouldValidateQuery = true,
+                errorMessage = plainErrorMessage
+            )
+        )
 
         // Test with invalid URLs
         validateForm(
@@ -115,6 +192,11 @@ class TestFormValidator {
         // Test with valid URLs
         validateForm(
             rules = rules,
+            value = "mocked_scheme://?mocked_query_param=some_value",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
             value = "mocked_scheme://mocked_host?mocked_query_param=some_value",
             expectedValidationResult = validationSuccess
         )
@@ -145,6 +227,11 @@ class TestFormValidator {
         )
         validateForm(
             rules = rules,
+            value = "openid-credential-offer://?credential_offer=%7B%22credential_issuer%22%3A%22https%3A%2F%2Fdev.issuer-backend.eudiw.dev%22%2C%22credential_configuration_ids%22%3A%5B%22eu.europa.ec.eudi.pid_mso_mdoc%22%5D%2C%22grants%22%3A%7B%22authorization_code%22%3A%7B%22authorization_server%22%3A%22https%3A%2F%2Fdev.auth.eudiw.dev%2Frealms%2Fpid-issuer-realm%22%7D%7D%7D",
+            expectedValidationResult = validationSuccess
+        )
+        validateForm(
+            rules = rules,
             value = "eudi-openid4vp://dev.verifier-backend.eudiw.dev?client_id=dev.verifier-backend.eudiw.dev&request_uri=https://dev.verifier-backend.eudiw.dev/wallet/request.jwt/1234",
             expectedValidationResult = validationSuccess
         )
@@ -153,8 +240,12 @@ class TestFormValidator {
             value = "openid-credential-offer://credential_offer?credential_offer={\"credential_issuer\": \"https://dev.issuer.eudiw.dev\", \"credential_configuration_ids\": [\"eu.europa.ec.eudi.pid_mdoc\"], \"grants\": {\"urn:ietf:params:oauth:grant-type:pre-authorized_code\": {\"pre-authorized_code\": \"some_code\", \"tx_code\": {\"length\": 5, \"input_mode\": \"numeric\", \"description\": \"Please provide the one-time code.\"}}}}",
             expectedValidationResult = validationSuccess
         )
+        validateForm(
+            rules = rules,
+            value = "openid-credential-offer://?credential_offer={\"credential_issuer\":\"https://dev.issuer-backend.eudiw.dev\",\"credential_configuration_ids\":[\"eu.europa.ec.eudi.pid_mso_mdoc\"],\"grants\":{\"authorization_code\":{\"authorization_server\":\"https://dev.auth.eudiw.dev/realms/pid-issuer-realm\"}}}",
+            expectedValidationResult = validationSuccess
+        )
     }
-
 
     @Test
     fun testValidateEmailRule() = coroutineRule.runTest {
