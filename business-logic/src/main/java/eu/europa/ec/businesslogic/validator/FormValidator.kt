@@ -68,7 +68,13 @@ class FormValidatorImpl(
         return when (rule) {
             is Rule.ValidateEmail -> checkValidationResult(isEmailValid(value), rule.errorMessage)
             is Rule.ValidateUrl -> checkValidationResult(
-                isValidUrl(value),
+                isValidUrl(
+                    value = value,
+                    shouldValidateSchema = rule.shouldValidateSchema,
+                    shouldValidateHost = rule.shouldValidateHost,
+                    shouldValidatePath = rule.shouldValidatePath,
+                    shouldValidateQuery = rule.shouldValidateQuery,
+                ),
                 rule.errorMessage
             )
 
@@ -187,11 +193,31 @@ class FormValidatorImpl(
     private fun isEmailValid(value: String): Boolean =
         value.isNotEmpty() && Patterns.EMAIL_ADDRESS.matcher(value).matches()
 
-    private fun isValidUrl(value: String): Boolean {
+    private fun isValidUrl(
+        value: String,
+        shouldValidateSchema: Boolean,
+        shouldValidateHost: Boolean,
+        shouldValidatePath: Boolean,
+        shouldValidateQuery: Boolean,
+    ): Boolean {
         if (value.isEmpty()) return false
         return try {
             val uri = Uri.parse(Uri.decode(value))
-            !uri.scheme.isNullOrEmpty() && !uri.host.isNullOrEmpty() && !uri.query.isNullOrEmpty()
+
+            if (shouldValidateSchema && uri.scheme.isNullOrEmpty()) {
+                return false
+            }
+            if (shouldValidateHost && uri.host.isNullOrEmpty()) {
+                return false
+            }
+            if (shouldValidatePath && uri.path.isNullOrEmpty()) {
+                return false
+            }
+            if (shouldValidateQuery && uri.query.isNullOrEmpty()) {
+                return false
+            }
+
+            true
         } catch (e: Exception) {
             false
         }
@@ -318,7 +344,14 @@ data class FormsValidationResult(val isValid: Boolean, val messages: List<String
 sealed class Rule(val errorMsg: String) {
     data class ValidateNotEmpty(val errorMessage: String) : Rule(errorMessage)
     data class ValidateEmail(val errorMessage: String) : Rule(errorMessage)
-    data class ValidateUrl(val errorMessage: String) : Rule(errorMessage)
+    data class ValidateUrl(
+        val shouldValidateSchema: Boolean,
+        val shouldValidateHost: Boolean,
+        val shouldValidatePath: Boolean,
+        val shouldValidateQuery: Boolean,
+        val errorMessage: String
+    ) : Rule(errorMessage)
+
     data class ValidatePhoneNumber(val errorMessage: String, val countryCode: String) :
         Rule(errorMessage)
 
