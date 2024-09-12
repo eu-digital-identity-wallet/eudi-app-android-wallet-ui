@@ -58,6 +58,8 @@ import eu.europa.ec.resourceslogic.theme.values.onSuccess
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.snackbar.Snackbar.Builder
 import eu.europa.ec.uilogic.component.snackbar.Snackbar.SnackbarType
+import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.Z_SNACKBAR
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -262,8 +264,8 @@ class Snackbar private constructor(private val data: SnackbarValue) {
                                 ) {
                                     Box(
                                         modifier = Modifier.padding(
-                                            vertical = 8.dp,
-                                            horizontal = 16.dp
+                                            vertical = SIZE_SMALL.dp,
+                                            horizontal = SIZE_MEDIUM.dp
                                         ),
                                     ) {
                                         if (data.hasAction()) SnackbarSimpleAction(data)
@@ -334,7 +336,7 @@ class Snackbar private constructor(private val data: SnackbarValue) {
         @Composable
         private fun SnackbarSimple(data: SnackbarValue) {
             return Text(
-                modifier = Modifier.padding(vertical = 8.dp),
+                modifier = Modifier.padding(vertical = SIZE_SMALL.dp),
                 text = data.message,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis

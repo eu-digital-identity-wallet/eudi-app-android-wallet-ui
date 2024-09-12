@@ -23,19 +23,12 @@ import org.gradle.kotlin.dsl.dependencies
 import project.convention.logic.configureFlavors
 import project.convention.logic.configureGradleManagedDevices
 import project.convention.logic.configureKotlinAndroid
-import project.convention.logic.getProperty
 import project.convention.logic.libs
 
 @Suppress("UnstableApiUsage")
 class AndroidBaseLineProfilePlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-
-            val storedVersion = getProperty<String>(
-                "VERSION_NAME",
-                "version.properties"
-            ).orEmpty()
-
             with(pluginManager) {
                 apply("com.android.test")
                 apply("org.jetbrains.kotlin.android")
@@ -47,7 +40,7 @@ class AndroidBaseLineProfilePlugin : Plugin<Project> {
                 with(defaultConfig) {
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
-                configureFlavors(this, storedVersion)
+                configureFlavors(this)
                 configureGradleManagedDevices(this)
                 targetProjectPath = ":app"
             }

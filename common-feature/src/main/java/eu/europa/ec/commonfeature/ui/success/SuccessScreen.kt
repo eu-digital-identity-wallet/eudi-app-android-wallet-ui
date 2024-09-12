@@ -50,6 +50,7 @@ import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -260,7 +261,7 @@ private fun SuccessDefaultPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSent = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(16.dp)
+            paddingValues = PaddingValues(SIZE_MEDIUM.dp)
         )
     }
 }
@@ -300,7 +301,7 @@ private fun SuccessDrawablePreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSent = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(16.dp)
+            paddingValues = PaddingValues(SIZE_MEDIUM.dp)
         )
     }
 }
