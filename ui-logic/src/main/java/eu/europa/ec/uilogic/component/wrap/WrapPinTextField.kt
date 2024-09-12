@@ -58,6 +58,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.text.isDigitsOnly
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.EmptyTextToolbar
@@ -184,9 +185,10 @@ fun WrapPinTextField(
                             onValueChange = { newText: String ->
 
                                 if (
-                                    textFieldStateList.all { textField -> textField.value.isEmpty() }
-                                    && currentTextField == fieldsRange.last
-                                    && newText.isNotEmpty()
+                                    !newText.isDigitsOnly()
+                                    || (textFieldStateList.all { textField -> textField.value.isEmpty() }
+                                            && currentTextField == fieldsRange.last
+                                            && newText.isNotEmpty())
                                 ) {
                                     return@OutlinedTextField
                                 }
