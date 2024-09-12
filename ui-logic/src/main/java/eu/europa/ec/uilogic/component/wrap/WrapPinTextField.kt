@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.LocalTextStyle
@@ -38,6 +39,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -45,6 +48,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalTextToolbar
@@ -64,6 +68,7 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WrapPinTextField(
     modifier: Modifier = Modifier.fillMaxWidth(),
@@ -93,7 +98,7 @@ fun WrapPinTextField(
     val focusManager = LocalFocusManager.current
 
     // Init list of all digits.
-    val textFieldStateList = remember {
+    val textFieldStateList = rememberSaveable {
         fieldsRange.map {
             mutableStateOf("")
         }
@@ -133,95 +138,114 @@ fun WrapPinTextField(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 for (currentTextField in fieldsRange) {
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .focusRequester(focusRequesters[currentTextField])
-                            .then(pinWidth?.let { dp ->
-                                Modifier
-                                    .width(dp)
-                                    .padding(vertical = SPACING_SMALL.dp)
-                            } ?: Modifier
-                                .weight(1f)
-                                .wrapContentSize())
-                            .then(
-                                Modifier.onKeyEvent { keyEvent ->
-                                    if (keyEvent.key == Key.Backspace) {
-                                        if (textFieldStateList[currentTextField].value.isNotEmpty()) {
+                    DisableSelection {
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .focusRequester(focusRequesters[currentTextField])
+                                .then(pinWidth?.let { dp ->
+                                    Modifier
+                                        .width(dp)
+                                        .padding(vertical = SPACING_SMALL.dp)
+                                } ?: Modifier
+                                    .weight(1f)
+                                    .wrapContentSize())
+                                .then(
+                                    Modifier.onKeyEvent { keyEvent ->
+                                        if (keyEvent.key == Key.Backspace) {
+                                            if (textFieldStateList[currentTextField].value.isNotEmpty()) {
 
-                                            textFieldStateList[currentTextField].value = ""
+                                                textFieldStateList[currentTextField].value = ""
 
-                                            // Notify listener.
-                                            onPinUpdate.invoke(
-                                                textFieldStateList.joinToString(
-                                                    separator = "",
-                                                    transform = { textField ->
-                                                        textField.value
-                                                    }
+                                                // Notify listener.
+                                                onPinUpdate.invoke(
+                                                    textFieldStateList.joinToString(
+                                                        separator = "",
+                                                        transform = { textField ->
+                                                            textField.value
+                                                        }
+                                                    )
                                                 )
-                                            )
+                                            }
+                                            focusRequesters.requestFocus(currentTextField - 1)
+                                            true
+                                        } else {
+                                            false
                                         }
-                                        focusRequesters.requestFocus(currentTextField - 1)
-                                        true
-                                    } else {
+                                    }
+                                )
+                                .then(
+                                    Modifier.pointerInteropFilter { event ->
+
                                         false
                                     }
+                                ),
+                            shape = RoundedCornerShape(SIZE_SMALL.dp),
+                            value = textFieldStateList[currentTextField].value,
+                            textStyle = LocalTextStyle.current.copy(
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                            ),
+                            colors = OutlinedTextFieldDefaults.colors().copy(
+                                cursorColor = Color.Transparent,
+                                errorCursorColor = Color.Transparent
+                            ),
+                            //visualTransformation = visualTransformation,
+                            isError = hasError,
+                            singleLine = true,
+                            onValueChange = { newText: String ->
+
+                                if (
+                                    textFieldStateList.all { textField -> textField.value.isEmpty() }
+                                    && currentTextField == fieldsRange.last
+                                    && newText.isNotEmpty()
+                                ) {
+                                    return@OutlinedTextField
+                                }
+
+                                if (newText != textFieldStateList[currentTextField].value) {
+                                    textFieldStateList[currentTextField].value =
+                                        newText.replaceFirst(
+                                            textFieldStateList[currentTextField].value,
+                                            ""
+                                        )
+
+                                    // Check if all fields are valid.
+                                    if (
+                                        !textFieldStateList.any { textField -> textField.value.isEmpty() }
+                                        && shouldHideKeyboardOnCompletion
+                                    ) {
+                                        focusManager.clearFocus()
+                                        keyboardController?.hide()
+                                    } else if (currentTextField < fieldsRange.last) {
+                                        focusRequesters.requestFocus(currentTextField + 1)
+                                    }
+                                    // Notify listener.
+                                    onPinUpdate.invoke(
+                                        textFieldStateList.joinToString(
+                                            separator = "",
+                                            transform = { textField ->
+                                                textField.value
+                                            }
+                                        )
+                                    )
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.NumberPassword,
+                                imeAction = when (currentTextField < fieldsRange.last) {
+                                    true -> ImeAction.Next
+                                    false -> ImeAction.Done
                                 }
                             ),
-                        shape = RoundedCornerShape(SIZE_SMALL.dp),
-                        value = textFieldStateList[currentTextField].value,
-                        textStyle = LocalTextStyle.current.copy(
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                        ),
-                        colors = OutlinedTextFieldDefaults.colors().copy(
-                            cursorColor = Color.Transparent,
-                            errorCursorColor = Color.Transparent
-                        ),
-                        visualTransformation = visualTransformation,
-                        isError = hasError,
-                        onValueChange = { newText: String ->
-                            if (newText != textFieldStateList[currentTextField].value) {
-                                textFieldStateList[currentTextField].value = newText.replaceFirst(
-                                    textFieldStateList[currentTextField].value,
-                                    ""
-                                )
-
-                                // Check if all fields are valid.
-                                if (
-                                    !textFieldStateList.any { textField -> textField.value.isEmpty() }
-                                    && shouldHideKeyboardOnCompletion
-                                ) {
-                                    focusManager.clearFocus()
-                                    keyboardController?.hide()
-                                } else if (currentTextField < fieldsRange.last) {
+                            keyboardActions = KeyboardActions(
+                                onNext = {
                                     focusRequesters.requestFocus(currentTextField + 1)
+                                }, onDone = {
+                                    keyboardController?.hide()
                                 }
-                                // Notify listener.
-                                onPinUpdate.invoke(
-                                    textFieldStateList.joinToString(
-                                        separator = "",
-                                        transform = { textField ->
-                                            textField.value
-                                        }
-                                    )
-                                )
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.NumberPassword,
-                            imeAction = when (currentTextField < fieldsRange.last) {
-                                true -> ImeAction.Next
-                                false -> ImeAction.Done
-                            }
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onNext = {
-                                focusRequesters.requestFocus(currentTextField + 1)
-                            }, onDone = {
-                                keyboardController?.hide()
-                            }
+                            )
                         )
-                    )
+                    }
 
                     if (currentTextField != fieldsRange.last) {
                         HSpacer.Small()
