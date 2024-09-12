@@ -19,19 +19,12 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import project.convention.logic.configureFlavors
-import project.convention.logic.getProperty
 
 class AndroidApplicationFlavorsConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
-
-            val storedVersion = getProperty<String>(
-                "VERSION_NAME",
-                "version.properties"
-            ).orEmpty()
-
             extensions.configure<ApplicationExtension> {
-                configureFlavors(this, storedVersion)
+                configureFlavors(this)
             }
         }
     }

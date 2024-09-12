@@ -31,6 +31,7 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,6 +44,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.text.font.FontWeight
@@ -72,15 +75,11 @@ fun WrapPinTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     pinWidth: Dp? = null,
     clearCode: Boolean = false,
-    focusOnCreate: Boolean = false
+    focusOnCreate: Boolean = false,
+    shouldHideKeyboardOnCompletion: Boolean = false
 ) {
 
-    fun List<FocusRequester>.clearFocus() {
-        this.forEach { it.freeFocus() }
-    }
-
     fun List<FocusRequester>.requestFocus(index: Int) {
-        this.clearFocus()
         this.elementAtOrNull(index)?.requestFocus()
     }
 
@@ -89,6 +88,9 @@ fun WrapPinTextField(
 
     // Get keyboard controller.
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    // Get Focus Manager
+    val focusManager = LocalFocusManager.current
 
     // Init list of all digits.
     val textFieldStateList = remember {
@@ -131,7 +133,7 @@ fun WrapPinTextField(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 for (currentTextField in fieldsRange) {
-                    WrapTextField(
+                    OutlinedTextField(
                         modifier = Modifier
                             .focusRequester(focusRequesters[currentTextField])
                             .then(pinWidth?.let { dp ->
@@ -140,29 +142,31 @@ fun WrapPinTextField(
                                     .padding(vertical = SPACING_SMALL.dp)
                             } ?: Modifier
                                 .weight(1f)
-                                .wrapContentSize()),
-                        onKeyEvent = {
-                            if (it.key == Key.Backspace) {
-                                if (textFieldStateList[currentTextField].value.isNotEmpty()) {
+                                .wrapContentSize())
+                            .then(
+                                Modifier.onKeyEvent { keyEvent ->
+                                    if (keyEvent.key == Key.Backspace) {
+                                        if (textFieldStateList[currentTextField].value.isNotEmpty()) {
 
-                                    textFieldStateList[currentTextField].value = ""
+                                            textFieldStateList[currentTextField].value = ""
 
-                                    // Notify listener.
-                                    onPinUpdate.invoke(
-                                        textFieldStateList.joinToString(
-                                            separator = "",
-                                            transform = { textField ->
-                                                textField.value
-                                            }
-                                        )
-                                    )
+                                            // Notify listener.
+                                            onPinUpdate.invoke(
+                                                textFieldStateList.joinToString(
+                                                    separator = "",
+                                                    transform = { textField ->
+                                                        textField.value
+                                                    }
+                                                )
+                                            )
+                                        }
+                                        focusRequesters.requestFocus(currentTextField - 1)
+                                        true
+                                    } else {
+                                        false
+                                    }
                                 }
-                                focusRequesters.requestFocus(currentTextField - 1)
-                                true
-                            } else {
-                                false
-                            }
-                        },
+                            ),
                         shape = RoundedCornerShape(SIZE_SMALL.dp),
                         value = textFieldStateList[currentTextField].value,
                         textStyle = LocalTextStyle.current.copy(
@@ -176,17 +180,18 @@ fun WrapPinTextField(
                         visualTransformation = visualTransformation,
                         isError = hasError,
                         onValueChange = { newText: String ->
-                            // Set new value, only if it is not blank.
-                            if (newText.isNotBlank() && newText != textFieldStateList[currentTextField].value) {
-                                textFieldStateList[currentTextField].value =
-                                    newText.replaceFirst(
-                                        textFieldStateList[currentTextField].value,
-                                        ""
-                                    )
+                            if (newText != textFieldStateList[currentTextField].value) {
+                                textFieldStateList[currentTextField].value = newText.replaceFirst(
+                                    textFieldStateList[currentTextField].value,
+                                    ""
+                                )
 
                                 // Check if all fields are valid.
-                                if (!textFieldStateList.any { textField -> textField.value.isEmpty() }) {
-                                    focusRequesters.clearFocus()
+                                if (
+                                    !textFieldStateList.any { textField -> textField.value.isEmpty() }
+                                    && shouldHideKeyboardOnCompletion
+                                ) {
+                                    focusManager.clearFocus()
                                     keyboardController?.hide()
                                 } else if (currentTextField < fieldsRange.last) {
                                     focusRequesters.requestFocus(currentTextField + 1)

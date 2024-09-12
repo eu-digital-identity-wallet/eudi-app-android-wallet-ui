@@ -118,6 +118,7 @@ private fun CodeFieldLayout(
         visualTransformation = PasswordVisualTransformation(),
         pinWidth = 46.dp,
         focusOnCreate = true,
+        shouldHideKeyboardOnCompletion = true
     )
 }
 
