@@ -16,7 +16,6 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import android.view.MotionEvent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,7 +40,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -49,16 +47,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalTextToolbar
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -71,7 +66,6 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WrapPinTextField(
     modifier: Modifier = Modifier.fillMaxWidth(),
@@ -100,10 +94,10 @@ fun WrapPinTextField(
     // Get Focus Manager
     val focusManager = LocalFocusManager.current
 
-    // Init list of all text field values.
+    // Init list of all digits.
     val textFieldStateList = rememberSaveable {
         fieldsRange.map {
-            mutableStateOf(TextFieldValue(""))
+            mutableStateOf("")
         }
     }
 
@@ -113,16 +107,16 @@ fun WrapPinTextField(
     }
 
     displayCode?.let { otpCode ->
-        // Assign each character from otpCode to the corresponding TextFieldValue
+        // Assign each charter from otpCode to the corresponding TextField
         textFieldStateList.forEachIndexed { index, mutableState ->
-            mutableState.value = TextFieldValue(otpCode[index].toString())
+            mutableState.value = otpCode[index].toString()
         }
         onPinUpdate.invoke(otpCode)
     }
 
     if (clearCode) {
         textFieldStateList.forEach {
-            it.value = TextFieldValue("")
+            it.value = ""
             onPinUpdate.invoke("")
         }
         focusRequesters.requestFocus(0)
@@ -155,16 +149,14 @@ fun WrapPinTextField(
                                 .then(
                                     Modifier.onKeyEvent { keyEvent ->
                                         if (keyEvent.key == Key.Backspace) {
-                                            if (textFieldStateList[currentTextField].value.text.isNotEmpty()) {
-                                                textFieldStateList[currentTextField].value =
-                                                    TextFieldValue("")
-
+                                            if (textFieldStateList[currentTextField].value.isNotEmpty()) {
+                                                textFieldStateList[currentTextField].value = ""
                                                 // Notify listener.
                                                 onPinUpdate.invoke(
                                                     textFieldStateList.joinToString(
                                                         separator = "",
                                                         transform = { textField ->
-                                                            textField.value.text
+                                                            textField.value
                                                         }
                                                     )
                                                 )
@@ -174,18 +166,6 @@ fun WrapPinTextField(
                                         } else {
                                             false
                                         }
-                                    }
-                                )
-                                .then(
-                                    Modifier.pointerInteropFilter { event ->
-                                        if (event.action == MotionEvent.ACTION_DOWN) {
-                                            // Move cursor to position 0 when the text field is touched
-                                            textFieldStateList[currentTextField].value =
-                                                textFieldStateList[currentTextField].value.copy(
-                                                    selection = TextRange(0)
-                                                )
-                                        }
-                                        false
                                     }
                                 ),
                             shape = RoundedCornerShape(SIZE_SMALL.dp),
@@ -201,33 +181,31 @@ fun WrapPinTextField(
                             visualTransformation = visualTransformation,
                             isError = hasError,
                             singleLine = true,
-                            onValueChange = { newText: TextFieldValue ->
+                            onValueChange = { newText: String ->
 
                                 if (
-                                    textFieldStateList.all { textField -> textField.value.text.isEmpty() }
+                                    textFieldStateList.all { textField -> textField.value.isEmpty() }
                                     && currentTextField == fieldsRange.last
-                                    && newText.text.isNotEmpty()
+                                    && newText.isNotEmpty()
                                 ) {
                                     return@OutlinedTextField
                                 }
 
-                                if (newText.text != textFieldStateList[currentTextField].value.text) {
+                                if (newText != textFieldStateList[currentTextField].value) {
                                     textFieldStateList[currentTextField].value =
-                                        TextFieldValue(
-                                            newText.text.replaceFirst(
-                                                textFieldStateList[currentTextField].value.text,
-                                                ""
-                                            )
+                                        newText.replaceFirst(
+                                            textFieldStateList[currentTextField].value,
+                                            ""
                                         )
 
                                     // Check if all fields are valid.
                                     if (
-                                        !textFieldStateList.any { textField -> textField.value.text.isEmpty() }
+                                        !textFieldStateList.any { textField -> textField.value.isEmpty() }
                                         && shouldHideKeyboardOnCompletion
                                     ) {
                                         focusManager.clearFocus()
                                         keyboardController?.hide()
-                                    } else if (currentTextField < fieldsRange.last) {
+                                    } else if (currentTextField < fieldsRange.last && newText.isNotEmpty()) {
                                         focusRequesters.requestFocus(currentTextField + 1)
                                     }
                                     // Notify listener.
@@ -235,7 +213,7 @@ fun WrapPinTextField(
                                         textFieldStateList.joinToString(
                                             separator = "",
                                             transform = { textField ->
-                                                textField.value.text
+                                                textField.value
                                             }
                                         )
                                     )
@@ -279,7 +257,6 @@ fun WrapPinTextField(
         }
     }
 }
-
 
 /**
  * Preview composable of [WrapPinTextField].
