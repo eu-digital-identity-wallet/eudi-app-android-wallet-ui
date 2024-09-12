@@ -24,10 +24,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -36,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -53,6 +58,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.EmptyTextToolbar
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @Composable
@@ -68,6 +74,16 @@ fun WrapPinTextField(
     clearCode: Boolean = false,
     focusOnCreate: Boolean = false
 ) {
+
+    fun List<FocusRequester>.clearFocus() {
+        this.forEach { it.freeFocus() }
+    }
+
+    fun List<FocusRequester>.requestFocus(index: Int) {
+        this.clearFocus()
+        this.elementAtOrNull(index)?.requestFocus()
+    }
+
     // Text field range.
     val fieldsRange = 0 until length
 
@@ -99,11 +115,15 @@ fun WrapPinTextField(
             it.value = ""
             onPinUpdate.invoke("")
         }
-        focusRequesters.first().requestFocus()
+        focusRequesters.requestFocus(0)
     }
 
     CompositionLocalProvider(
-        LocalTextToolbar provides EmptyTextToolbar
+        LocalTextToolbar provides EmptyTextToolbar,
+        LocalTextSelectionColors provides TextSelectionColors(
+            handleColor = Color.Transparent,
+            backgroundColor = Color.Transparent
+        )
     ) {
         Column(modifier = modifier) {
             Row(
@@ -124,52 +144,52 @@ fun WrapPinTextField(
                         onKeyEvent = {
                             if (it.key == Key.Backspace) {
                                 if (textFieldStateList[currentTextField].value.isNotEmpty()) {
+
                                     textFieldStateList[currentTextField].value = ""
-                                } else {
-                                    focusRequesters.elementAtOrNull(currentTextField - 1)
-                                        ?.requestFocus()
-                                }
-                                // Notify listener.
-                                onPinUpdate.invoke(
-                                    textFieldStateList.joinToString(
-                                        separator = "",
-                                        transform = { textField ->
-                                            textField.value
-                                        }
+
+                                    // Notify listener.
+                                    onPinUpdate.invoke(
+                                        textFieldStateList.joinToString(
+                                            separator = "",
+                                            transform = { textField ->
+                                                textField.value
+                                            }
+                                        )
                                     )
-                                )
+                                }
+                                focusRequesters.requestFocus(currentTextField - 1)
                                 true
                             } else {
                                 false
                             }
                         },
+                        shape = RoundedCornerShape(SIZE_SMALL.dp),
                         value = textFieldStateList[currentTextField].value,
                         textStyle = LocalTextStyle.current.copy(
                             fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors().copy(
+                            cursorColor = Color.Transparent,
+                            errorCursorColor = Color.Transparent
                         ),
                         visualTransformation = visualTransformation,
                         isError = hasError,
                         onValueChange = { newText: String ->
                             // Set new value, only if it is not blank.
-                            if (newText.isNotBlank()) {
+                            if (newText.isNotBlank() && newText != textFieldStateList[currentTextField].value) {
                                 textFieldStateList[currentTextField].value =
                                     newText.replaceFirst(
                                         textFieldStateList[currentTextField].value,
                                         ""
                                     )
 
-                                // Move to next cell if we are not on the last one.
-                                if (currentTextField < length - 1) {
-                                    focusRequesters[currentTextField + 1].requestFocus()
-                                }
-
                                 // Check if all fields are valid.
                                 if (!textFieldStateList.any { textField -> textField.value.isEmpty() }) {
+                                    focusRequesters.clearFocus()
                                     keyboardController?.hide()
-                                    focusRequesters.forEach {
-                                        it.freeFocus()
-                                    }
+                                } else if (currentTextField < fieldsRange.last) {
+                                    focusRequesters.requestFocus(currentTextField + 1)
                                 }
                                 // Notify listener.
                                 onPinUpdate.invoke(
@@ -184,15 +204,14 @@ fun WrapPinTextField(
                         },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.NumberPassword,
-                            imeAction = when (currentTextField < length - 1) {
+                            imeAction = when (currentTextField < fieldsRange.last) {
                                 true -> ImeAction.Next
                                 false -> ImeAction.Done
                             }
                         ),
                         keyboardActions = KeyboardActions(
                             onNext = {
-                                focusRequesters.elementAtOrNull(currentTextField + 1)
-                                    ?.requestFocus()
+                                focusRequesters.requestFocus(currentTextField + 1)
                             }, onDone = {
                                 keyboardController?.hide()
                             }
@@ -200,7 +219,7 @@ fun WrapPinTextField(
                     )
 
                     if (currentTextField != fieldsRange.last) {
-                        HSpacer.ExtraSmall()
+                        HSpacer.Small()
                     }
                 }
             }
@@ -214,7 +233,7 @@ fun WrapPinTextField(
 
             OneTimeLaunchedEffect {
                 if (focusOnCreate) {
-                    focusRequesters.first().requestFocus()
+                    focusRequesters.requestFocus(0)
                 }
             }
         }
