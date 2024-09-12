@@ -48,3 +48,6 @@ sign
 .env.demo
 .env.dev
 fastlane/report.xml
+
+# Kotlin
+.kotlin/*
