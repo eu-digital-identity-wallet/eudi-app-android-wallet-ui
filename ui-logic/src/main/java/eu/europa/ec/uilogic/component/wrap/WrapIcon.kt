@@ -22,10 +22,10 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -114,7 +114,7 @@ fun WrapIconButton(
 ) {
     val role = Role.Button
     val rippleSize = if (size == DEFAULT_ICON_SIZE.dp) 40.dp else size
-    val indication = rememberRipple(
+    val indication = ripple(
         bounded = false,
         radius = rippleSize / 2
     )

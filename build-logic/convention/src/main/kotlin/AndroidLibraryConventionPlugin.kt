@@ -30,7 +30,6 @@ import project.convention.logic.configureGradleManagedDevices
 import project.convention.logic.configureKotlinAndroid
 import project.convention.logic.configurePrintApksTask
 import project.convention.logic.disableUnnecessaryAndroidTests
-import project.convention.logic.getProperty
 import project.convention.logic.libs
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
@@ -58,11 +57,6 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             val openId4VciAuthorizationScheme = "eu.europa.ec.euidi"
             val openId4VciAuthorizationHost = "authorization"
-
-            val storedVersion = getProperty<String>(
-                "VERSION_NAME",
-                "version.properties"
-            ).orEmpty()
 
             with(pluginManager) {
                 apply("com.android.library")
@@ -116,7 +110,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     manifestPlaceholders["openId4VciAuthorizationHost"] =
                         openId4VciAuthorizationHost
                 }
-                configureFlavors(this, storedVersion)
+                configureFlavors(this)
                 configureGradleManagedDevices(this)
             }
             extensions.configure<LibraryAndroidComponentsExtension> {

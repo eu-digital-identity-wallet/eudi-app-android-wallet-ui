@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 
 @Composable
@@ -82,7 +83,7 @@ private fun PreviewContentErrorScreen() {
     PreviewTheme {
         ContentError(
             config = ContentErrorConfig(onCancel = {}),
-            paddingValues = PaddingValues(16.dp)
+            paddingValues = PaddingValues(SIZE_MEDIUM.dp)
         )
     }
 }
