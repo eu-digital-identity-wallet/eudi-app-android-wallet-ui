@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -71,7 +72,8 @@ fun WrapModalBottomSheet(
         sheetState = sheetState,
         shape = shape,
         dragHandle = dragHandle,
-        content = sheetContent
+        content = sheetContent,
+        contentWindowInsets = { WindowInsets(0, 0, 0, 0) }
     )
 }
 
