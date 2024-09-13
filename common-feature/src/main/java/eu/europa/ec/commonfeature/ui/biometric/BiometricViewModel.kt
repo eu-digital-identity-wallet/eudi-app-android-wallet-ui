@@ -178,6 +178,7 @@ class BiometricViewModel(
             }
 
             is Event.OnQuickPinEntered -> {
+                println("Stelios" + event.quickPin)
                 setState {
                     copy(quickPin = event.quickPin, quickPinError = null)
                 }

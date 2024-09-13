@@ -186,7 +186,8 @@ fun WrapPinTextField(
 
                                 if (
                                     !newText.isDigitsOnly()
-                                    || (textFieldStateList.all { textField -> textField.value.isEmpty() }
+                                    || ((textFieldStateList.all { textField -> textField.value.isEmpty() }
+                                            || textFieldStateList.all { textField -> textField.value.isNotEmpty() })
                                             && currentTextField == fieldsRange.last
                                             && newText.isNotEmpty())
                                 ) {
