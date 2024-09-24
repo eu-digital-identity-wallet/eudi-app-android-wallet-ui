@@ -39,9 +39,6 @@ depending on the flavor of your choice).
 These are the contents of the ConfigWalletCoreImpl file (dev flavor) and you don't need to change anything:
 ```
 private companion object {
-        const val OPENID4VP_VERIFIER_API_URI = "https://dev.verifier.eudiw.dev"
-        const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
-        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
         const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-dev"
         const val AUTHENTICATION_REQUIRED = false
@@ -60,9 +57,6 @@ After this, and assuming you are now running everything locally,
 you need to change the contents of the ConfigWalletCoreImpl file, from:
 ```
 private companion object {
-        const val OPENID4VP_VERIFIER_API_URI = "https://dev.verifier.eudiw.dev"
-        const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
-        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
         const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-dev"
         const val AUTHENTICATION_REQUIRED = false
@@ -71,9 +65,6 @@ private companion object {
 into something like this:
 ```
 private companion object {
-        const val OPENID4VP_VERIFIER_API_URI = "local_IP_address_of_verifier_endpoint"
-        const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
-        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
         const val VCI_ISSUER_URL = "local_IP_address_of_issuer"
         const val VCI_CLIENT_ID = "wallet-dev"
         const val AUTHENTICATION_REQUIRED = false
@@ -83,9 +74,6 @@ private companion object {
 for example:
 ```
 private companion object {
-        const val OPENID4VP_VERIFIER_API_URI = "http://192.168.1.1:8080"
-        const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
-        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
         const val VCI_ISSUER_URL = "https://192.168.1.1:5000"
         const val VCI_CLIENT_ID = "wallet-dev"
         const val AUTHENTICATION_REQUIRED = false

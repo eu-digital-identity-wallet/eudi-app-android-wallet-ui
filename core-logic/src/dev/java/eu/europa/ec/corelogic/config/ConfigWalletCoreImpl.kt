@@ -24,7 +24,6 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionMethod
-import eu.europa.ec.eudi.wallet.transfer.openid4vp.PreregisteredVerifier
 import eu.europa.ec.resourceslogic.R
 
 internal class WalletCoreConfigImpl(
@@ -33,9 +32,6 @@ internal class WalletCoreConfigImpl(
 ) : WalletCoreConfig {
 
     private companion object {
-        const val OPENID4VP_VERIFIER_API_URI = "https://dev.verifier.eudiw.dev"
-        const val OPENID4VP_VERIFIER_LEGAL_NAME = "EUDI Remote Verifier"
-        const val OPENID4VP_VERIFIER_CLIENT_ID = "Verifier"
         const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-dev"
         const val AUTHENTICATION_REQUIRED = false
@@ -60,16 +56,7 @@ internal class WalletCoreConfigImpl(
 
                         withClientIdSchemes(
                             listOf(
-                                ClientIdScheme.X509SanDns,
-                                ClientIdScheme.Preregistered(
-                                    listOf(
-                                        PreregisteredVerifier(
-                                            clientId = OPENID4VP_VERIFIER_CLIENT_ID,
-                                            verifierApi = OPENID4VP_VERIFIER_API_URI,
-                                            legalName = OPENID4VP_VERIFIER_LEGAL_NAME
-                                        )
-                                    )
-                                )
+                                ClientIdScheme.X509SanDns
                             )
                         )
                         withScheme(
