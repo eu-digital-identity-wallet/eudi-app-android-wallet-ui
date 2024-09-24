@@ -740,44 +740,6 @@ private fun DocumentContent(dataItem: DocumentUi) {
 }
 
 @Composable
-private fun IssuedDocument(dataItem: DocumentUi) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(SPACING_MEDIUM.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Box {
-            WrapIcon(
-                iconData = AppIcons.Id,
-                customTint = MaterialTheme.colorScheme.primary
-            )
-            if (dataItem.documentHasExpired) {
-                IconWarningIndicator(
-                    backgroundColor = MaterialTheme.colorScheme.backgroundDefault
-                )
-            }
-        }
-        Box(
-            modifier = Modifier
-                .wrapContentWidth()
-                .height(28.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            ScalableText(
-                text = dataItem.documentName,
-                textStyle = MaterialTheme.typography.titleMedium.copy(
-                    color = MaterialTheme.colorScheme.textPrimaryDark
-                )
-            )
-        }
-        VSpacer.Small()
-        ExpirationInfo(dataItem)
-    }
-}
-
-@Composable
 private fun ExpirationInfo(
     document: DocumentUi,
 ) {
@@ -890,15 +852,46 @@ private fun DashboardScreenPreview() {
                 documentImage = "image3",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Pending
-            )
+            ),
+            DocumentUi(
+                documentId = "3",
+                documentName = "National ID",
+                documentIdentifier = DocumentIdentifier.PID,
+                documentExpirationDateFormatted = "30 Mar 2050",
+                documentHasExpired = false,
+                documentImage = "image1",
+                documentDetails = emptyList(),
+                documentIssuanceState = DocumentUiIssuanceState.Failed
+            ),
         )
         Content(
             context = context,
             state = State(
+                allowUserInteraction = true,
                 isLoading = false,
                 error = null,
                 userFirstName = "Jane",
-                documents = documents + documents
+                documents = documents,
+                isBottomSheetOpen = true,
+                sheetContent = DashboardBottomSheetContent.Options(
+                    listOf(
+                        ModalOptionUi(
+                            title = stringResource(R.string.dashboard_bottom_sheet_options_action_1),
+                            icon = AppIcons.Edit,
+                            event = Event.BottomSheet.Options.OpenChangeQuickPin
+                        ),
+                        ModalOptionUi(
+                            title = stringResource(R.string.dashboard_bottom_sheet_options_action_2),
+                            icon = AppIcons.QrScanner,
+                            event = Event.BottomSheet.Options.OpenScanQr
+                        ),
+                        ModalOptionUi(
+                            title = stringResource(R.string.dashboard_bottom_sheet_options_action_3),
+                            icon = AppIcons.OpenNew,
+                            event = Event.BottomSheet.Options.RetrieveLogs
+                        )
+                    )
+                )
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
