@@ -90,6 +90,9 @@ object TestsData {
     const val mockedPhotoIdDocType = "org.iso.23220.2.photoid.1"
     const val mockedPhotoIdNameSpace = "org.iso.23220.2.photoid.1"
 
+    const val mockedUriPath1 = "eudi-wallet://example.com/path1"
+    const val mockedUriPath2 = "eudi-wallet://example.com/path2"
+
     val mockedValidReaderAuth = ReaderAuth(
         readerAuth = byteArrayOf(),
         readerSignIsValid = true,
@@ -267,6 +270,17 @@ object TestsData {
         documentImage = "",
         documentDetails = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
+    )
+
+    val mockedPendingDocumentUi = DocumentUi(
+        documentId = mockedPidId,
+        documentName = mockedPidDocName,
+        documentIdentifier = DocumentIdentifier.OTHER("", mockedPidDocType),
+        documentExpirationDateFormatted = "",
+        documentHasExpired = false,
+        documentImage = "",
+        documentDetails = emptyList(),
+        documentIssuanceState = DocumentUiIssuanceState.Pending
     )
 
     val mockedBasicPidUi = mockedFullPidUi.copy(
