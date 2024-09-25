@@ -664,13 +664,13 @@ val mockedFullPid = IssuedDocument(
     )
 )
 
-val mockedUnsignedDocument = UnsignedDocument(
+val mockedUnsignedPid = UnsignedDocument(
     id = mockedPidId,
     name = mockedPidDocName,
     docType = mockedPidDocType,
     usesStrongBox = false,
     requiresUserAuth = false,
-    createdAt = Instant.MIN,
+    createdAt = Instant.parse(mockedDocumentCreationDate),
     certificatesNeedAuth = listOf()
 )
 

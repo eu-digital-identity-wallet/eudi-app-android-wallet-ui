@@ -272,15 +272,18 @@ object TestsData {
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
 
-    val mockedPendingDocumentUi = DocumentUi(
-        documentId = mockedPidId,
-        documentName = mockedPidDocName,
-        documentIdentifier = DocumentIdentifier.OTHER("", mockedPidDocType),
-        documentExpirationDateFormatted = "",
-        documentHasExpired = false,
-        documentImage = "",
-        documentDetails = emptyList(),
+    val mockedPendingPidUi = mockedFullPidUi.copy(
         documentIssuanceState = DocumentUiIssuanceState.Pending
+    )
+
+    val mockedUnsignedPidUi = mockedFullPidUi.copy(
+        documentName = mockedPidDocName,
+        documentIssuanceState = DocumentUiIssuanceState.Pending,
+        documentIdentifier = DocumentIdentifier.OTHER(
+            nameSpace = "",
+            docType = mockedFullPidUi.documentIdentifier.docType
+        ),
+        documentExpirationDateFormatted = ""
     )
 
     val mockedBasicPidUi = mockedFullPidUi.copy(
@@ -354,6 +357,10 @@ object TestsData {
         documentImage = "",
         documentDetails = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
+    )
+
+    val mockedPendingMdlUi = mockedFullMdlUi.copy(
+        documentIssuanceState = DocumentUiIssuanceState.Pending
     )
 
     val mockedBasicMdlUi = mockedFullMdlUi.copy(
