@@ -282,7 +282,6 @@ class TestDashboardInteractor {
     fun `Given Case 3, When deleteDocument is called, Then Case 3 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            //val exceptionMessage = "Unexpected error thrown"
             whenever(walletCoreDocumentsController.deleteDocument(mockDocumentId)).thenThrow(
                 RuntimeException(
                     mockedPlainFailureMessage
@@ -407,7 +406,11 @@ class TestDashboardInteractor {
             val documentId: DocumentId = mockDocumentId
             val deferredDocuments = mapOf(documentId to DocumentIdentifier.SAMPLE.docType)
             val successData =
-                DeferredDocumentData(documentId, DocumentIdentifier.SAMPLE.docType, mockDocumentName)
+                DeferredDocumentData(
+                    documentId,
+                    DocumentIdentifier.SAMPLE.docType,
+                    mockDocumentName
+                )
 
             whenever(walletCoreDocumentsController.issueDeferredDocument(any())).thenReturn(
                 IssueDeferredDocumentPartialState.Issued(successData).toFlow()
@@ -556,7 +559,6 @@ class TestDashboardInteractor {
     @Test
     fun `Given Case 6, When tryIssuingDeferredDocumentsFlow is called, Then Case 6 Expected Result is returned`() =
         coroutineRule.runTest {
-
             // Given
             val documentId: DocumentId = mockDocumentId
             val deferredDocuments = mapOf(documentId to DocumentIdentifier.SAMPLE.docType)
