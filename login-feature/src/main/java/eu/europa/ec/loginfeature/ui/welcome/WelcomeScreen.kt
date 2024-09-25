@@ -42,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -106,7 +105,7 @@ private fun Content(
                 .fillMaxWidth()
                 .fillMaxHeight(animatedWeight)
                 .background(
-                    color = MaterialTheme.colorScheme.backgroundPaper,
+                    color = MaterialTheme.colorScheme.background,
                     shape = MaterialTheme.shapes.bottomCorneredShapeSmall
                 ),
             contentAlignment = Alignment.Center

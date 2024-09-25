@@ -22,7 +22,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.uilogic.component.content.ToolBarActions
 import eu.europa.ec.uilogic.component.content.ToolbarAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -59,7 +58,7 @@ fun ActionTopBar(
 private fun TopBarPreview() {
     PreviewTheme {
         ActionTopBar(
-            contentColor = MaterialTheme.colorScheme.backgroundPaper,
+            contentColor = MaterialTheme.colorScheme.background,
             iconColor = MaterialTheme.colorScheme.primary,
             iconData = AppIcons.Close
         ) {}

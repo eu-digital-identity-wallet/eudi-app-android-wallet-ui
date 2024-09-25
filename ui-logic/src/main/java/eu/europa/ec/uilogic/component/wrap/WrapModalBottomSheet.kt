@@ -20,8 +20,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -41,20 +41,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.mvi.ViewEvent
+
+private val defaultBottomSheetPadding: PaddingValues = PaddingValues(
+    all = SPACING_LARGE.dp
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +75,6 @@ fun WrapModalBottomSheet(
         shape = shape,
         dragHandle = dragHandle,
         content = sheetContent,
-        contentWindowInsets = { WindowInsets(0, 0, 0, 0) }
     )
 }
 
@@ -85,9 +86,9 @@ fun GenericBaseSheetContent(
     Column(
         modifier = Modifier
             .wrapContentHeight()
-            .background(color = MaterialTheme.colorScheme.backgroundPaper)
+            .background(color = MaterialTheme.colorScheme.background)
             .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 48.dp)
+            .padding(defaultBottomSheetPadding)
     ) {
         Text(
             text = title,
@@ -108,14 +109,9 @@ fun GenericBaseSheetContent(
     Column(
         modifier = Modifier
             .wrapContentHeight()
-            .background(color = MaterialTheme.colorScheme.backgroundPaper)
+            .background(color = MaterialTheme.colorScheme.background)
             .fillMaxWidth()
-            .padding(
-                start = SPACING_LARGE.dp,
-                top = SPACING_LARGE.dp,
-                end = SPACING_LARGE.dp,
-                bottom = SPACING_EXTRA_LARGE.dp
-            )
+            .padding(defaultBottomSheetPadding)
     ) {
         titleContent()
         VSpacer.Large()
@@ -204,7 +200,7 @@ fun <T : ViewEvent> BottomSheetWithOptionsList(
 }
 
 @Composable
-fun <T : ViewEvent> OptionsList(
+private fun <T : ViewEvent> OptionsList(
     optionItems: List<ModalOptionUi<T>>,
     itemSelected: (T) -> Unit
 ) {
@@ -221,7 +217,7 @@ fun <T : ViewEvent> OptionsList(
 }
 
 @Composable
-fun <T : ViewEvent> OptionListItem(
+private fun <T : ViewEvent> OptionListItem(
     item: ModalOptionUi<T>,
     itemSelected: (T) -> Unit
 ) {

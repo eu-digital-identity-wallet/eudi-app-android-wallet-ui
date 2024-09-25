@@ -90,7 +90,7 @@ data class ThemeColorsTemplate(
             surfaceContainer = Color.Unspecified,
             surfaceContainerHigh = Color.Unspecified,
             surfaceContainerHighest = Color.Unspecified,
-            surfaceContainerLow = Color.Unspecified,
+            surfaceContainerLow = Color(background),
             surfaceContainerLowest = Color.Unspecified
         )
     }
