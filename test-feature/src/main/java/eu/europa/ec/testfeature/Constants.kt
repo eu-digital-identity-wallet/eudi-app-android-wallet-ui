@@ -17,6 +17,7 @@
 package eu.europa.ec.testfeature
 
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import java.time.Instant
 
 const val mockedGenericErrorMessage = "resourceProvider's genericErrorMessage"
@@ -661,6 +662,16 @@ val mockedFullPid = IssuedDocument(
     nameSpacedData = mapOf(
         mockedPidNameSpace to mockedPidFields
     )
+)
+
+val mockedUnsignedPid = UnsignedDocument(
+    id = mockedPidId,
+    name = mockedPidDocName,
+    docType = mockedPidDocType,
+    usesStrongBox = false,
+    requiresUserAuth = false,
+    createdAt = Instant.parse(mockedDocumentCreationDate),
+    certificatesNeedAuth = listOf()
 )
 
 val mockedMainPid = mockedFullPid
