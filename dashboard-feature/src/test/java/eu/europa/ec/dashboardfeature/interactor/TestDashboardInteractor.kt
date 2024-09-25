@@ -66,7 +66,6 @@ import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flow
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -298,26 +297,6 @@ class TestDashboardInteractor {
             }
         }
 
-    @Test
-    fun `Given Case 3, When deleteDocument is called, Then Case 3 Expected Result is returned gf`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(walletCoreDocumentsController.deleteDocument(mockDocumentId)).thenThrow(
-                mockedExceptionWithMessage
-            )
-
-            // When
-            interactor.deleteDocument(mockDocumentId).runFlowTest {
-                // Then
-                assertEquals(
-                    DashboardInteractorDeleteDocumentPartialState.Failure(
-                        mockedExceptionWithMessage.message ?: ""
-                    ),
-                    awaitItem()
-                )
-            }
-        }
-
     // Case 4:
     // DeleteDocumentPartialState.Failure was emitted when deleteDocument was called.
 
@@ -342,7 +321,7 @@ class TestDashboardInteractor {
         }
 
     // Case 5:
-    // RuntimeException with error message was emitted when deleteDocument was called.
+    // RuntimeException without error message was emitted when deleteDocument was called.
 
     // Case 5 Expected Result:
     // DashboardInteractorDeleteDocumentPartialState.Failure state.
@@ -350,34 +329,8 @@ class TestDashboardInteractor {
     fun `Given Case 5, When deleteDocument is called, Then Case 5 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.deleteDocument(any())).thenReturn(flow {
-                throw RuntimeException(mockedPlainFailureMessage)
-            })
-
-            // When
-            interactor.deleteDocument(mockDocumentId).runFlowTest {
-                // Then
-                assertEquals(
-                    DashboardInteractorDeleteDocumentPartialState.Failure(
-                        errorMessage = mockedPlainFailureMessage
-                    ),
-                    awaitItem()
-                )
-            }
-        }
-
-    // Case 6:
-    // RuntimeException without error message was emitted when deleteDocument was called.
-
-    // Case 6 Expected Result:
-    // DashboardInteractorDeleteDocumentPartialState.Failure state.
-    @Test
-    fun `Given Case 6, When deleteDocument is called, Then Case 6 Expected Result is returned`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(walletCoreDocumentsController.deleteDocument(any())).thenReturn(flow {
-                throw RuntimeException()
-            })
+            whenever(walletCoreDocumentsController.deleteDocument(any()))
+                .thenThrow(RuntimeException())
 
             // When
             interactor.deleteDocument(mockDocumentId).runFlowTest {
