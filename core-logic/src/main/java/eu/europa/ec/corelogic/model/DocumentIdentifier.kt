@@ -56,7 +56,7 @@ sealed interface DocumentIdentifier {
 
     data object PHOTOID : DocumentIdentifier {
         override val nameSpace: String
-            get() = "org.iso.23220.2.photoid.1"
+            get() = "org.iso.23220.photoid.1"
         override val docType: DocType
             get() = "org.iso.23220.2.photoid.1"
     }
