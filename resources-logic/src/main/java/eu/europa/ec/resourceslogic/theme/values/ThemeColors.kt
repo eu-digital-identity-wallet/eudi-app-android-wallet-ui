@@ -55,7 +55,6 @@ class ThemeColors {
         internal const val eudiw_theme_light_textDisabledDark: Long = 0x61000000
         internal const val eudiw_theme_light_dividerDark: Long = 0x1F000000
         internal const val eudiw_theme_light_backgroundDefault: Long = 0xFFF5F5F5
-        const val eudiw_theme_light_backgroundPaper: Long = 0xFFFFFFFF
         internal const val eudiw_theme_light_textSecondaryLight: Long = 0xB3FFFFFF
         internal const val eudiw_theme_light_textDisabledLight: Long = 0x80FFFFFF
 
@@ -64,7 +63,6 @@ class ThemeColors {
         internal const val eudiw_theme_dark_textDisabledDark: Long = 0xFF646670
         internal const val eudiw_theme_dark_dividerDark: Long = 0x1FFFFFFF
         internal const val eudiw_theme_dark_backgroundDefault: Long = 0xFF44474F
-        const val eudiw_theme_dark_backgroundPaper: Long = 0xFF000000
         internal const val eudiw_theme_dark_textSecondaryLight: Long = 0xB3000000
         internal const val eudiw_theme_dark_textDisabledLight: Long = 0x80000000
 
@@ -85,7 +83,7 @@ class ThemeColors {
         private const val eudiw_theme_light_errorContainer: Long = 0xFFFFDAD5
         private const val eudiw_theme_light_onError: Long = white
         private const val eudiw_theme_light_onErrorContainer: Long = 0xFF410002
-        private const val eudiw_theme_light_background: Long = white
+        const val eudiw_theme_light_background: Long = white
         private const val eudiw_theme_light_onBackground: Long = black
         private const val eudiw_theme_light_surface: Long = white
         private const val eudiw_theme_light_onSurface: Long = black
@@ -116,7 +114,7 @@ class ThemeColors {
         private const val eudiw_theme_dark_errorContainer: Long = 0xFF930009
         private const val eudiw_theme_dark_onError: Long = 0xFF690004
         private const val eudiw_theme_dark_onErrorContainer: Long = 0xFFFFDAD5
-        private const val eudiw_theme_dark_background: Long = black
+        const val eudiw_theme_dark_background: Long = black
         private const val eudiw_theme_dark_onBackground: Long = white
         private const val eudiw_theme_dark_surface: Long = black
         private const val eudiw_theme_dark_onSurface: Long = white
@@ -278,13 +276,6 @@ class ThemeColors {
                 Color(eudiw_theme_light_backgroundDefault)
             }
 
-        val backgroundPaper: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_backgroundPaper)
-            } else {
-                Color(eudiw_theme_light_backgroundPaper)
-            }
-
         val textSecondaryLight: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_textSecondaryLight)
@@ -336,13 +327,6 @@ val ColorScheme.backgroundDefault: Color
         Color(ThemeColors.eudiw_theme_dark_backgroundDefault)
     } else {
         Color(ThemeColors.eudiw_theme_light_backgroundDefault)
-    }
-
-val ColorScheme.backgroundPaper: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_backgroundPaper)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_backgroundPaper)
     }
 
 val ColorScheme.textSecondaryLight: Color

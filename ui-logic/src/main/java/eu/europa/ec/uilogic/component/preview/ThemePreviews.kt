@@ -26,10 +26,10 @@ import eu.europa.ec.resourceslogic.theme.values.ThemeColors
  * */
 @Preview(
     name = "Light Mode", showBackground = true, uiMode = UI_MODE_NIGHT_NO,
-    backgroundColor = ThemeColors.eudiw_theme_light_backgroundPaper
+    backgroundColor = ThemeColors.eudiw_theme_light_background
 )
 @Preview(
     name = "Dark Mode", showBackground = true, uiMode = UI_MODE_NIGHT_YES,
-    backgroundColor = ThemeColors.eudiw_theme_dark_backgroundPaper
+    backgroundColor = ThemeColors.eudiw_theme_dark_background
 )
 annotation class ThemeModePreviews

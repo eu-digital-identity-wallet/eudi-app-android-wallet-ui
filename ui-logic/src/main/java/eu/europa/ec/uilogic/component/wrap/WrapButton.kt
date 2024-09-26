@@ -29,7 +29,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.resourceslogic.theme.values.dividerDark
 import eu.europa.ec.resourceslogic.theme.values.textDisabledDark
 import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
@@ -49,7 +48,7 @@ fun WrapPrimaryButton(
     val textColor = if (isSystemInDarkTheme()) {
         Color.White
     } else {
-        MaterialTheme.colorScheme.backgroundPaper
+        MaterialTheme.colorScheme.background
     }
 
     Button(
@@ -81,9 +80,9 @@ fun WrapSecondaryButton(
         onClick = onClick,
         shape = buttonsShape,
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.backgroundPaper,
+            containerColor = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.textPrimaryDark,
-            disabledContainerColor = MaterialTheme.colorScheme.backgroundPaper,
+            disabledContainerColor = MaterialTheme.colorScheme.background,
             disabledContentColor = MaterialTheme.colorScheme.textDisabledDark,
         ),
         border = BorderStroke(

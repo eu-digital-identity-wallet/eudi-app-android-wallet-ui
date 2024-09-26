@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.backgroundPaper
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_LARGE
@@ -42,7 +41,7 @@ enum class GradientEdge {
 @Composable
 fun ContentGradient(
     modifier: Modifier,
-    gradientStartColor: Color = MaterialTheme.colorScheme.backgroundPaper,
+    gradientStartColor: Color = MaterialTheme.colorScheme.background,
     gradientEndColor: Color = Color.Transparent,
     gradientEdge: GradientEdge = GradientEdge.BOTTOM,
     height: Dp = SIZE_EXTRA_LARGE.dp,
@@ -139,7 +138,7 @@ private fun ContentGradientColoredPreview() {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.backgroundPaper)
+                    .background(MaterialTheme.colorScheme.background)
             )
         }
     }
