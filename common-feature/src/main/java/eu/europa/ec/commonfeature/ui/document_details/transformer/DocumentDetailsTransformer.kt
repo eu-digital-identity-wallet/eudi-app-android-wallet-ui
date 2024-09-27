@@ -89,7 +89,7 @@ object DocumentDetailsTransformer {
             documentId = document.id,
             documentName = document.toUiName(resourceProvider),
             documentIdentifier = documentIdentifierUi,
-            documentExpirationDateFormatted = documentExpirationDate.toDateFormatted() ?: "",
+            documentExpirationDateFormatted = documentExpirationDate.toDateFormatted().orEmpty(),
             documentHasExpired = docHasExpired,
             documentImage = documentImage,
             documentDetails = detailsItems,

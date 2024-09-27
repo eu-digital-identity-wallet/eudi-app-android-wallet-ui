@@ -40,7 +40,6 @@ import eu.europa.ec.dashboardfeature.model.UserInfo
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -252,24 +251,21 @@ class DashboardInteractorImpl(
     private fun Document.toDocumentUiAndUserInfo(mainPid: IssuedDocument?): Pair<DocumentUi, UserInfo> {
         when (this) {
             is IssuedDocument -> {
-                var documentExpirationDate = extractValueFromDocumentOrEmpty(
+                var documentExpirationDate: String = extractValueFromDocumentOrEmpty(
                     document = this,
                     key = DocumentJsonKeys.EXPIRY_DATE
                 )
 
                 val docHasExpired = documentHasExpired(documentExpirationDate)
 
-                documentExpirationDate = if (documentExpirationDate.isNotBlank()) {
-                    documentExpirationDate.toDateFormatted().toString()
-                } else {
-                    resourceProvider.getString(R.string.dashboard_document_no_expiration_found)
+                if (documentExpirationDate.isNotBlank()) {
+                    documentExpirationDate = documentExpirationDate.toDateFormatted().orEmpty()
                 }
 
                 val userFirstName = extractValueFromDocumentOrEmpty(
                     document = mainPid ?: this,
                     key = DocumentJsonKeys.FIRST_NAME
                 )
-
 
                 val userImage = extractValueFromDocumentOrEmpty(
                     document = this,

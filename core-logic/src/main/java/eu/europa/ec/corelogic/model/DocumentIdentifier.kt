@@ -98,7 +98,7 @@ fun Document.toDocumentIdentifier(): DocumentIdentifier {
 }
 
 fun RequestDocument.toDocumentIdentifier(): DocumentIdentifier {
-    val nameSpace = this.docRequest.requestItems.first().namespace
+    val nameSpace = this.docRequest.requestItems.firstOrNull()?.namespace.orEmpty()
     val docType = this.docType
 
     return createDocumentIdentifier(nameSpace, docType)

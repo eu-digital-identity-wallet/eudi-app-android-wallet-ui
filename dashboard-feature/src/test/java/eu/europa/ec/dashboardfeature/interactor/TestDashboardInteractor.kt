@@ -26,7 +26,6 @@ import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedFullDocumentsUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlUiWithNoExpirationDate
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlUiWithNoUserNameAndNoUserImage
-import eu.europa.ec.commonfeature.util.TestsData.mockedNoExpirationDateFound
 import eu.europa.ec.commonfeature.util.TestsData.mockedNoUserBase64PortraitFound
 import eu.europa.ec.commonfeature.util.TestsData.mockedNoUserFistNameFound
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
@@ -46,7 +45,6 @@ import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
@@ -829,9 +827,6 @@ class TestDashboardInteractor {
 
     private fun mockGetStringForDocumentsCall(resourceProvider: ResourceProvider) {
         mockDocumentTypeUiToUiNameCall(resourceProvider)
-
-        whenever(resourceProvider.getString(R.string.dashboard_document_no_expiration_found))
-            .thenReturn(mockedNoExpirationDateFound)
     }
 
     private fun mockGetMainPidDocumentCall(mainPid: IssuedDocument?) {
