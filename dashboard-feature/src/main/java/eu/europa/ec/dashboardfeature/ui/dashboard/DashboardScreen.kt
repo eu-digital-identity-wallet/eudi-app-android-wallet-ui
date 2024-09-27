@@ -753,29 +753,31 @@ private fun ExpirationInfo(
         with(document) {
             when (documentIssuanceState) {
                 DocumentUiIssuanceState.Issued -> {
-                    if (documentHasExpired) {
-                        val annotatedText = buildAnnotatedString {
-                            withStyle(
-                                style = SpanStyle(
-                                    fontStyle = textStyle.fontStyle,
-                                    color = MaterialTheme.colorScheme.warning
-                                )
-                            ) {
-                                append(stringResource(id = R.string.dashboard_document_has_expired_one))
+                    if (documentExpirationDateFormatted.isNotBlank()) {
+                        if (documentHasExpired) {
+                            val annotatedText = buildAnnotatedString {
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontStyle = textStyle.fontStyle,
+                                        color = MaterialTheme.colorScheme.warning
+                                    )
+                                ) {
+                                    append(stringResource(id = R.string.dashboard_document_has_expired_one))
+                                }
+
+                                append(stringResource(id = R.string.dashboard_document_has_expired_two))
                             }
-
-                            append(stringResource(id = R.string.dashboard_document_has_expired_two))
+                            Text(text = annotatedText, style = textStyle)
+                        } else {
+                            Text(
+                                text = stringResource(id = R.string.dashboard_document_has_not_expired),
+                                style = textStyle
+                            )
                         }
-                        Text(text = annotatedText, style = textStyle)
-                    } else {
-                        Text(
-                            text = stringResource(id = R.string.dashboard_document_has_not_expired),
-                            style = textStyle
-                        )
-                    }
 
-                    //Expiration Date
-                    Text(text = documentExpirationDateFormatted, style = textStyle)
+                        //Expiration Date
+                        Text(text = documentExpirationDateFormatted, style = textStyle)
+                    }
                 }
 
                 DocumentUiIssuanceState.Pending -> {
@@ -826,22 +828,42 @@ private fun DashboardScreenPreview() {
                 documentIdentifier = DocumentIdentifier.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
-                documentImage = "image1",
+                documentImage = "image0",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Issued
             ),
             DocumentUi(
                 documentId = "1",
+                documentName = "National ID",
+                documentIdentifier = DocumentIdentifier.PID,
+                documentExpirationDateFormatted = "",
+                documentHasExpired = false,
+                documentImage = "image1",
+                documentDetails = emptyList(),
+                documentIssuanceState = DocumentUiIssuanceState.Issued
+            ),
+            DocumentUi(
+                documentId = "2",
+                documentName = "National ID",
+                documentIdentifier = DocumentIdentifier.PID,
+                documentExpirationDateFormatted = "",
+                documentHasExpired = true,
+                documentImage = "image2",
+                documentDetails = emptyList(),
+                documentIssuanceState = DocumentUiIssuanceState.Issued
+            ),
+            DocumentUi(
+                documentId = "3",
                 documentName = "Driving License",
                 documentIdentifier = DocumentIdentifier.MDL,
                 documentExpirationDateFormatted = "25 Dec 2050",
                 documentHasExpired = false,
-                documentImage = "image2",
+                documentImage = "image3",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Pending
             ),
             DocumentUi(
-                documentId = "2",
+                documentId = "4",
                 documentName = "Other",
                 documentIdentifier = DocumentIdentifier.OTHER(
                     nameSpace = "",
@@ -849,17 +871,17 @@ private fun DashboardScreenPreview() {
                 ),
                 documentExpirationDateFormatted = "01 Jun 2020",
                 documentHasExpired = true,
-                documentImage = "image3",
+                documentImage = "image4",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Pending
             ),
             DocumentUi(
-                documentId = "3",
+                documentId = "5",
                 documentName = "National ID",
                 documentIdentifier = DocumentIdentifier.PID,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
-                documentImage = "image1",
+                documentImage = "image5",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Failed
             ),
