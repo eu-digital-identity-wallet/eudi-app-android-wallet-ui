@@ -93,7 +93,7 @@ object RequestTransformer {
                     val values = StringBuilder()
                     parseKeyValueUi(
                         json = storageDocument.nameSpacedDataJSONObject.getDocObject(
-                            nameSpace = requestDocument.toDocumentIdentifier().nameSpace
+                            nameSpace = docItem.namespace
                         )[docItem.elementIdentifier],
                         groupIdentifier = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,

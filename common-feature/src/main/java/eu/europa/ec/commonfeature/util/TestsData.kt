@@ -73,7 +73,7 @@ object TestsData {
     const val mockedDocUiNameSampleData = "Load Sample Documents"
     const val mockedNoUserFistNameFound = ""
     const val mockedNoUserBase64PortraitFound = ""
-    const val mockedNoExpirationDateFound = "-"
+    const val mockedNoExpirationDateFound = ""
     const val mockedFormattedExpirationDate = "30 Mar 2050"
     const val mockedDocumentHasExpired = false
     const val mockedUserAuthentication = false
