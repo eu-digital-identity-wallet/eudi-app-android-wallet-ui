@@ -26,6 +26,7 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -38,7 +39,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = TestApplication::class)
@@ -76,6 +76,8 @@ class TestBiometricInteractor {
         closeable.close()
     }
 
+    //region isPinValid
+
     // Case: isPinValid behaviour
     // When isCurrentPinValid returns QuickPinInteractorPinValidPartialState.Success,
     // the expected result of isPinValid is Success
@@ -94,17 +96,22 @@ class TestBiometricInteractor {
                 assertEquals(expectedResult, awaitItem())
             }
         }
+    //endregion
+
+    //region launchBiometricSystemScreen
 
     // Case: launchBiometricSystemScreen behaviour
     @Test
-    fun `When launchBiometricSystemScreen is called, Then verify function is executed on the controller`() =
-        coroutineRule.runTest {
-            // When
-            interactor.launchBiometricSystemScreen()
+    fun `When launchBiometricSystemScreen is called, Then verify function is executed on the controller`() {
+        // When
+        interactor.launchBiometricSystemScreen()
 
-            // Then
-            verify(biometricAuthenticationController).launchBiometricSystemScreen()
-        }
+        // Then
+        verify(biometricAuthenticationController).launchBiometricSystemScreen()
+    }
+    //endregion
+
+    ///region getBiometricUserSelection
 
     // Case: getBiometricUserSelection behaviour
     // When getUseBiometricsAuth returns true, the expected result of getBiometricUserSelection
@@ -121,6 +128,9 @@ class TestBiometricInteractor {
         assertEquals(true, result)
         verify(biometryStorageController).getUseBiometricsAuth()
     }
+    //endregion
+
+    //region storeBiometricsUsageDecision
 
     // Case: storeBiometricsUsageDecision behaviour
     @Test
@@ -134,6 +144,9 @@ class TestBiometricInteractor {
         // Then
         verify(biometryStorageController).setUseBiometricsAuth(shouldUseBiometrics)
     }
+    //endregion
+
+    //region getBiometricsAvailability
 
     // Case: getBiometricsAvailability behaviour
     @Test
@@ -147,6 +160,9 @@ class TestBiometricInteractor {
         // Then
         verify(biometricAuthenticationController).deviceSupportsBiometrics(mockListener)
     }
+    //endregion
+
+    //region authenticateWithBiometrics
 
     // Case: authenticateWithBiometrics behaviour
     // Defining a mock BiometricsAuthenticate function callback to verify that authenticate function
@@ -166,6 +182,7 @@ class TestBiometricInteractor {
         // Then
         verify(biometricAuthenticationController).authenticate(context, mockListener)
     }
+    //endregion
 
     //region Mocked objects
     private val mockedPin = "1234"

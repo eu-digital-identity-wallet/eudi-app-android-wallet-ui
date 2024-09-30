@@ -39,6 +39,7 @@ class DeviceAuthenticationControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val biometricAuthenticationController: BiometricAuthenticationController
 ) : DeviceAuthenticationController {
+
     override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
         biometricAuthenticationController.deviceSupportsBiometrics(listener)
     }

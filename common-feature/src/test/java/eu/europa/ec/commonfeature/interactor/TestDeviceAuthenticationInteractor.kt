@@ -38,7 +38,7 @@ import org.robolectric.annotation.Config
 class TestDeviceAuthenticationInteractor {
 
     @Mock
-    lateinit var mockDeviceAuthenticationController: DeviceAuthenticationController
+    lateinit var deviceAuthenticationController: DeviceAuthenticationController
 
     @Mock
     private lateinit var resultHandler: DeviceAuthenticationResult
@@ -53,7 +53,7 @@ class TestDeviceAuthenticationInteractor {
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
         interactor = DeviceAuthenticationInteractorImpl(
-            deviceAuthenticationController = mockDeviceAuthenticationController
+            deviceAuthenticationController = deviceAuthenticationController
         )
 
         biometricCrypto = BiometricCrypto(cryptoObject = null)
@@ -76,7 +76,7 @@ class TestDeviceAuthenticationInteractor {
         )
 
         // Then
-        verify(mockDeviceAuthenticationController).deviceSupportsBiometrics(mockListener)
+        verify(deviceAuthenticationController).deviceSupportsBiometrics(mockListener)
     }
 
     // Case: authenticateWithBiometrics behaviour
@@ -93,7 +93,7 @@ class TestDeviceAuthenticationInteractor {
         )
 
         // Then
-        verify(mockDeviceAuthenticationController).authenticate(
+        verify(deviceAuthenticationController).authenticate(
             context = context,
             biometryCrypto = biometricCrypto,
             result = resultHandler
