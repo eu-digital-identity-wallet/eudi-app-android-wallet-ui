@@ -118,6 +118,10 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     open fun updateData(updatedItems: List<RequestDataUi<Event>>, allowShare: Boolean? = null) {
+        val hasVerificationItems = hasVerificationItems(updatedItems)
+
+        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(updatedItems)
+
         setState {
             copy(
                 items = updatedItems,
@@ -126,7 +130,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                             && it.optionalFieldItemUi.requestDocumentItemUi.enabled
                             && !it.optionalFieldItemUi.requestDocumentItemUi.checked
                 },
-                allowShare = allowShare ?: updatedItems.isNotEmpty()
+                allowShare = allowShare ?: (hasAtLeastOneFieldSelected || hasVerificationItems)
             )
         }
     }
@@ -278,13 +282,9 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
         }
 
-        val hasVerificationItems = updatedList.any { it is RequestDataUi.RequiredFields }
+        val hasVerificationItems = hasVerificationItems(updatedList)
 
-        val hasAtLeastOneFieldSelected = updatedList
-            .filterIsInstance<RequestDataUi.OptionalField<Event>>().any {
-                it.optionalFieldItemUi.requestDocumentItemUi.enabled
-                        && it.optionalFieldItemUi.requestDocumentItemUi.checked
-            }
+        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(updatedList)
 
         updateData(
             updatedItems = updatedList,
@@ -309,5 +309,26 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     private fun unsubscribe() {
         viewModelJob?.cancel()
+    }
+
+    private fun hasVerificationItems(list: List<RequestDataUi<Event>>): Boolean {
+        return list
+            .filterIsInstance<RequestDataUi.RequiredFields<Event>>()
+            .any { requiredFields ->
+                requiredFields.requiredFieldsItemUi.requestDocumentItemsUi
+                    .any { itemUi ->
+                        itemUi.checked
+                    }
+            }
+    }
+
+    private fun hasAtLeastOneFieldSelected(list: List<RequestDataUi<Event>>): Boolean {
+        return list
+            .filterIsInstance<RequestDataUi.OptionalField<Event>>()
+            .any { optionalField ->
+                with(optionalField.optionalFieldItemUi.requestDocumentItemUi) {
+                    enabled && checked
+                }
+            }
     }
 }
