@@ -31,8 +31,10 @@ interface DeviceAuthenticationInteractor {
     )
 }
 
-class DeviceAuthenticationInteractorImpl(private val deviceAuthenticationController: DeviceAuthenticationController) :
-    DeviceAuthenticationInteractor {
+class DeviceAuthenticationInteractorImpl(
+    private val deviceAuthenticationController: DeviceAuthenticationController,
+) : DeviceAuthenticationInteractor {
+
     override fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit) {
         deviceAuthenticationController.deviceSupportsBiometrics(listener)
     }
