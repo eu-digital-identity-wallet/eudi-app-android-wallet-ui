@@ -336,6 +336,23 @@ class TestPresentationRequestInteractor {
                 .expectNoEvents()
         }
     }
+
+    // Case 8:
+    // walletCorePresentationController.events emits:
+    // TransferEventPartialState.Connecting
+
+    // Case 8 Expected Result is that no events are emitted
+    @Test
+    fun `Given Case 8, When getRequestDocuments is called, Then Case 8 expected result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.Connecting
+            )
+
+            // When
+            interactor.getRequestDocuments().expectNoEvents()
+        }
     //endregion
 
     //region updateRequestedDocuments
