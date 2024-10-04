@@ -123,7 +123,7 @@ class TestPresentationRequestInteractor {
     // Case 2:
     // walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
-    // 1. an empty list of RequestDocument
+    // 1. an empty list of RequestDocument items
     // 2. a not null String for verifier name,
     // 3. true for verifierIsTrusted
 
@@ -195,18 +195,17 @@ class TestPresentationRequestInteractor {
     fun `Given Case 4, When getRequestDocuments is called, Then Case 4 expected result is returned`() =
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.getAllIssuedDocuments()).thenThrow(
-                mockedExceptionWithNoMessage
-            )
-            // Simulate a request received with some data
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     requestData = listOf(
                         mockedValidMdlWithBasicFieldsRequestDocument
                     ),
                     verifierName = mockedVerifierName,
-                    verifierIsTrusted = true
+                    verifierIsTrusted = mockedVerifierIsTrusted
                 )
+            )
+            whenever(walletCoreDocumentsController.getAllIssuedDocuments()).thenThrow(
+                mockedExceptionWithNoMessage
             )
 
             // When
@@ -222,7 +221,7 @@ class TestPresentationRequestInteractor {
     // Case 5:
     // walletCorePresentationController.events emits:
     // TransferEventPartialState.RequestReceived, with:
-    // 1. a list of a PID RequestDocument and mDL RequestDocument
+    // 1. a list of a PID RequestDocument and a mDL RequestDocument
     // 2. a not null String for verifier name,
     // 3. true for verifierIsTrusted.
 
@@ -316,13 +315,14 @@ class TestPresentationRequestInteractor {
     // walletCorePresentationController.events emits:
     // TransferEventPartialState.Connecting
 
-    // Case 7 Expected Result is null to be returned,
-    // in that case a flow emits no events
+    // Case 7 Expected Result is that no events are emitted
     @Test
     fun `Given Case 7, When getRequestDocuments is called, Then Case 7 expected result is returned`() =
         coroutineRule.runTest {
             // Given
-            mockWalletCorePresentationControllerEventEmission(event = TransferEventPartialState.Connecting)
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.Connecting
+            )
 
             // When
             interactor.getRequestDocuments().expectNoEvents()
@@ -356,8 +356,8 @@ class TestPresentationRequestInteractor {
     // setConfig is called with a request configuration provided as parameter
 
     // Case 1 Expected Result
-    // setConfig is called with:
-    // a PresentationControllerConfig object
+    // setConfig is called with a PresentationControllerConfig argument
+    // derived from RequestUriConfig
     @Test
     fun `Given Case 1, When setConfig is called, Then Case 1 expected result is returned`() {
         // Given
