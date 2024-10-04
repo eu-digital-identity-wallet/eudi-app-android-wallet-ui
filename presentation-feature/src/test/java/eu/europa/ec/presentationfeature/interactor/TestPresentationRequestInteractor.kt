@@ -47,15 +47,18 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.flow.flow
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.net.URI
 
 class TestPresentationRequestInteractor {
 
@@ -174,8 +177,10 @@ class TestPresentationRequestInteractor {
 
             // When
             interactor.getRequestDocuments().runFlowTest {
-                val expectedResult =
-                    PresentationRequestInteractorPartialState.Failure(error = mockedPlainFailureMessage)
+                val expectedResult = PresentationRequestInteractorPartialState.Failure(
+                    error = mockedPlainFailureMessage
+                )
+
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -204,9 +209,8 @@ class TestPresentationRequestInteractor {
                     verifierIsTrusted = mockedVerifierIsTrusted
                 )
             )
-            whenever(walletCoreDocumentsController.getAllIssuedDocuments()).thenThrow(
-                mockedExceptionWithNoMessage
-            )
+            whenever(walletCoreDocumentsController.getAllIssuedDocuments())
+                .thenThrow(mockedExceptionWithNoMessage)
 
             // When
             interactor.getRequestDocuments().runFlowTest {
@@ -299,35 +303,39 @@ class TestPresentationRequestInteractor {
                     verifierIsTrusted = mockedVerifierIsTrusted
                 )
             )
-            whenever(walletCoreDocumentsController.getAllIssuedDocuments()).thenThrow(
-                mockedExceptionWithMessage
-            )
+            whenever(walletCoreDocumentsController.getAllIssuedDocuments())
+                .thenThrow(mockedExceptionWithMessage)
 
             interactor.getRequestDocuments().runFlowTest {
                 val expectedResult = PresentationRequestInteractorPartialState.Failure(
-                    error = mockedExceptionWithMessage.localizedMessage ?: ""
+                    error = mockedExceptionWithMessage.localizedMessage!!
                 )
                 assertEquals(expectedResult, awaitItem())
             }
         }
 
     // Case 7:
-    // walletCorePresentationController.events emits:
-    // TransferEventPartialState.Connecting
+    // 1. walletCorePresentationController.events emits an event that we do not want to react to, i.e:
+    // TransferEventPartialState
+    //  .Connected, or
+    //  .Connecting, or
+    //  .QrEngagementReady, or
+    //  .Redirect, or
+    //  .ResponseSent
 
     // Case 7 Expected Result is that no events are emitted
     @Test
-    fun `Given Case 7, When getRequestDocuments is called, Then Case 7 expected result is returned`() =
+    fun `Given Case 7, When getRequestDocuments is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockWalletCorePresentationControllerEventEmission(
-                event = TransferEventPartialState.Connecting
-            )
+            mockEmissionOfIntentionallyNotHandledEvents()
 
             // When
-            interactor.getRequestDocuments().expectNoEvents()
+            interactor.getRequestDocuments()
+                // Then
+                .expectNoEvents()
         }
-
+    }
     //endregion
 
     //region updateRequestedDocuments
@@ -343,11 +351,12 @@ class TestPresentationRequestInteractor {
 
         interactor.updateRequestedDocuments(items = emptyList())
 
-        verify(walletCorePresentationController).updateRequestedDocuments(
-            disclosedDocuments = DisclosedDocuments(
-                documents = emptyList()
+        verify(walletCorePresentationController, times(1))
+            .updateRequestedDocuments(
+                disclosedDocuments = DisclosedDocuments(
+                    documents = emptyList()
+                )
             )
-        )
     }
     //endregion
 
@@ -368,9 +377,8 @@ class TestPresentationRequestInteractor {
         interactor.setConfig(config = requestConfig)
 
         // Then
-        verify(walletCorePresentationController).setConfig(
-            config = requestConfig.toDomainConfig()
-        )
+        verify(walletCorePresentationController, times(1))
+            .setConfig(config = requestConfig.toDomainConfig())
     }
     //endregion
 
@@ -381,7 +389,8 @@ class TestPresentationRequestInteractor {
         interactor.stopPresentation()
 
         // Then
-        verify(walletCorePresentationController).stopPresentation()
+        verify(walletCorePresentationController, times(1))
+            .stopPresentation()
     }
     //endregion
 
@@ -389,6 +398,19 @@ class TestPresentationRequestInteractor {
     private fun mockWalletCorePresentationControllerEventEmission(event: TransferEventPartialState) {
         whenever(walletCorePresentationController.events)
             .thenReturn(event.toFlow())
+    }
+
+    private fun mockEmissionOfIntentionallyNotHandledEvents() {
+        whenever(walletCorePresentationController.events)
+            .thenReturn(
+                flow {
+                    emit(TransferEventPartialState.Connected)
+                    emit(TransferEventPartialState.Connecting)
+                    emit(TransferEventPartialState.QrEngagementReady(""))
+                    emit(TransferEventPartialState.Redirect(uri = URI("")))
+                    emit(TransferEventPartialState.ResponseSent)
+                }
+            )
     }
 
     private fun mockGetAllIssuedDocumentsCall(response: List<IssuedDocument>) {
