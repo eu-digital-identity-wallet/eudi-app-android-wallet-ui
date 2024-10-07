@@ -297,6 +297,20 @@ class TestPresentationLoadingInteractor {
 
     //endregion
 
+    //region initiatorRoute
+
+    @Test
+    fun `when initiatorRoute on interactor is called then initiatorRoute on controller is expected to be invoked`() {
+        // When
+        interactor.initiatorRoute
+
+        //Then
+        verify(walletCorePresentationController).initiatorRoute
+    }
+
+    //endregion
+
+
     //region helper functions
     private fun mockWalletCorePresentationControllerEventEmission(event: WalletCorePartialState) {
         whenever(walletCorePresentationController.observeSentDocumentsRequest())
