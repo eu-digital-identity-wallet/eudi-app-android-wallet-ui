@@ -257,7 +257,7 @@ class TestPresentationLoadingInteractor {
 
     // Case 3:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
-    // BiometricsAvailability.Failed
+    // BiometricsAvailability.Failure
 
     // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.
@@ -291,8 +291,12 @@ class TestPresentationLoadingInteractor {
 
     @Test
     fun `when interactor stopPresentation is called then it delegates to walletCoreInteractor stopPresentation`() {
+        // When
         interactor.stopPresentation()
-        verify(walletCorePresentationController, times(1)).stopPresentation()
+
+        // Then
+        verify(walletCorePresentationController, times(1))
+            .stopPresentation()
     }
 
     //endregion
