@@ -41,6 +41,9 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import java.net.URI
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @KoinViewModel
 class PresentationLoadingViewModel(
@@ -79,6 +82,8 @@ class PresentationLoadingViewModel(
             )
         )
     }
+
+    override fun getCancellableTimeout(): Duration = 5.toDuration(DurationUnit.SECONDS)
 
     override fun doWork(context: Context) {
         viewModelScope.launch {

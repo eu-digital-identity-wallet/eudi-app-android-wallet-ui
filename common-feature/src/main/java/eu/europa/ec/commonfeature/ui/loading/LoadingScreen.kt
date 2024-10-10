@@ -44,8 +44,16 @@ fun LoadingScreen(
 
     ContentScreen(
         isLoading = state.error != null,
-        navigatableAction = ScreenNavigateAction.CANCELABLE,
-        onBack = { viewModel.setEvent(Event.GoBack) },
+        navigatableAction = if (state.isCancellable) {
+            ScreenNavigateAction.CANCELABLE
+        } else {
+            ScreenNavigateAction.NONE
+        },
+        onBack = if (state.isCancellable) {
+            { viewModel.setEvent(Event.GoBack) }
+        } else {
+            null
+        },
         contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
@@ -74,6 +82,7 @@ fun LoadingScreen(
     }
 
     OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Initialize)
         viewModel.setEvent(Event.DoWork(context))
     }
 }

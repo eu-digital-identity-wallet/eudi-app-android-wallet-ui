@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.ui.loading
 
 import android.content.Context
+import androidx.lifecycle.viewModelScope
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -24,15 +25,20 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.Screen
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.time.Duration
 
 data class State(
     val error: ContentErrorConfig? = null,
     val screenTitle: String,
     val screenSubtitle: String,
+    val isCancellable: Boolean
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data class DoWork(val context: Context) : Event()
+    data object Initialize : Event()
     data object GoBack : Event()
     data object DismissError : Event()
 }
@@ -79,16 +85,26 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
      */
     abstract fun doWork(context: Context)
 
+    /**
+     * Start the Screen without back navigation until timer is run out.
+     * Based on the duration provided.
+     */
+    abstract fun getCancellableTimeout(): Duration
+
     override fun setInitialState(): State {
         return State(
             screenTitle = getTitle(),
             screenSubtitle = getSubtitle(),
-            error = null
+            error = null,
+            isCancellable = !getCancellableTimeout().isPositive()
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
+
+            is Event.Initialize -> initiateCancellableTimeoutIfAvailable()
+
             is Event.DoWork -> doWork(event.context)
 
             is Event.GoBack -> {
@@ -136,6 +152,17 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
 
             is NavigationType.PushRoute -> setEffect {
                 Effect.Navigation.SwitchScreen(navigationType.route)
+            }
+        }
+    }
+
+    private fun initiateCancellableTimeoutIfAvailable() {
+        with(getCancellableTimeout()) {
+            if (isPositive()) {
+                viewModelScope.launch {
+                    delay(this@with.inWholeMilliseconds)
+                    setState { copy(isCancellable = true) }
+                }
             }
         }
     }
