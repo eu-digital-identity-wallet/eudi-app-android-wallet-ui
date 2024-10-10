@@ -53,7 +53,7 @@ import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -696,13 +696,13 @@ class TestProximityRequestInteractor {
     private fun mockEmissionOfIntentionallyNotHandledEvents() {
         whenever(walletCorePresentationController.events)
             .thenReturn(
-                flow {
-                    emit(TransferEventPartialState.Connected)
-                    emit(TransferEventPartialState.Connecting)
-                    emit(TransferEventPartialState.QrEngagementReady(""))
-                    emit(TransferEventPartialState.Redirect(uri = URI("")))
-                    emit(TransferEventPartialState.ResponseSent)
-                }
+                flowOf(
+                    TransferEventPartialState.Connected,
+                    TransferEventPartialState.Connecting,
+                    TransferEventPartialState.QrEngagementReady(""),
+                    TransferEventPartialState.Redirect(uri = URI("")),
+                    TransferEventPartialState.ResponseSent,
+                )
             )
     }
 
