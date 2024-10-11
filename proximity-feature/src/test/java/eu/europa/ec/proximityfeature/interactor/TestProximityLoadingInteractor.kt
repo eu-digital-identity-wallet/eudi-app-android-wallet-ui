@@ -14,21 +14,23 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.presentationfeature.interactor
+package eu.europa.ec.proximityfeature.interactor
 
 import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
+import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
+import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase
+import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -41,7 +43,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.net.URI
 
-class TestPresentationLoadingInteractor {
+class TestProximityLoadingInteractor {
 
     @get:Rule
     val coroutineRule = CoroutineTestRule()
@@ -53,22 +55,22 @@ class TestPresentationLoadingInteractor {
     private lateinit var deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 
     @Mock
-    private lateinit var context: Context
-
-    @Mock
     private lateinit var resultHandler: DeviceAuthenticationResult
 
-    private lateinit var interactor: PresentationLoadingInteractor
+    @Mock
+    private lateinit var context: Context
 
-    private lateinit var closeable: AutoCloseable
+    private lateinit var interactor: ProximityLoadingInteractor
 
     private lateinit var crypto: BiometricCrypto
+
+    private lateinit var closeable: AutoCloseable
 
     @Before
     fun before() {
         closeable = MockitoAnnotations.openMocks(this)
 
-        interactor = PresentationLoadingInteractorImpl(
+        interactor = ProximityLoadingInteractorImpl(
             walletCorePresentationController = walletCorePresentationController,
             deviceAuthenticationInteractor = deviceAuthenticationInteractor
         )
@@ -82,14 +84,12 @@ class TestPresentationLoadingInteractor {
     }
 
     //region observeResponse
-
-    // Case 1:
+    // Case 1
     // 1. walletCorePresentationController.events emits:
-    // WalletCorePartialState.Failed, with an error message.
+    // TransferEventPartialState.Failure, with an error message.
 
     // Case 1 Expected Result:
-    // PresentationLoadingObserveResponsePartialState.Failed state, with the same error message.
-
+    // ProximityLoadingObserveResponsePartialState.Failure state, with the same error message.
     @Test
     fun `Given Case 1, When observeResponse is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -104,8 +104,8 @@ class TestPresentationLoadingInteractor {
             interactor.observeResponse()
                 .runFlowTest {
                     // Then
-                    TestCase.assertEquals(
-                        PresentationLoadingObserveResponsePartialState.Failure(
+                    assertEquals(
+                        ProximityLoadingObserveResponsePartialState.Failure(
                             error = mockedPlainFailureMessage
                         ),
                         awaitItem()
@@ -114,13 +114,12 @@ class TestPresentationLoadingInteractor {
         }
     }
 
-    // Case 2:
+    // Case 2
     // 1. walletCorePresentationController.events emits:
-    // WalletCorePartialState.Success.
+    // WalletCorePartialState.Success
 
     // Case 2 Expected Result:
-    // PresentationLoadingObserveResponsePartialState.Success state.
-
+    // PresentationLoadingObserveResponsePartialState.Success.
     @Test
     fun `Given Case 2, When observeResponse is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -132,9 +131,10 @@ class TestPresentationLoadingInteractor {
             // When
             interactor.observeResponse()
                 .runFlowTest {
+                    val expectedResult = ProximityLoadingObserveResponsePartialState.Success
                     // Then
-                    TestCase.assertEquals(
-                        PresentationLoadingObserveResponsePartialState.Success,
+                    assertEquals(
+                        expectedResult,
                         awaitItem()
                     )
                 }
@@ -142,29 +142,19 @@ class TestPresentationLoadingInteractor {
     }
 
     // Case 3:
-    // 1. walletCorePresentationController.events emits:
-    // WalletCorePartialState.Redirect with a URI.
+    // 1. walletCorePresentationController.events emits an event that we do not want to react to, i.e:
+    // TransferEventPartialState.Redirect
 
-    // Case 3 Expected Result:
-    // PresentationLoadingObserveResponsePartialState.Redirect with the same URI.
-
+    // Case 3 Expected Result is that no events are emitted
     @Test
     fun `Given Case 3, When observeResponse is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockWalletCorePresentationControllerEventEmission(
-                event = WalletCorePartialState.Redirect(uri = URI("uri"))
-            )
+            mockEmissionOfIntentionallyNotHandledEvent()
 
             // When
             interactor.observeResponse()
-                .runFlowTest {
-                    // Then
-                    TestCase.assertEquals(
-                        PresentationLoadingObserveResponsePartialState.Redirect(URI("uri")),
-                        awaitItem()
-                    )
-                }
+                .expectNoEvents()
         }
     }
 
@@ -174,37 +164,32 @@ class TestPresentationLoadingInteractor {
 
     // Case 4 Expected Result:
     // PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired.
-
     @Test
     fun `Given Case 4, When observeResponse is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
-            // Given
             mockWalletCorePresentationControllerEventEmission(
                 event = WalletCorePartialState.UserAuthenticationRequired(
                     crypto = crypto,
-                    resultHandler = DeviceAuthenticationResult()
+                    resultHandler = resultHandler
                 )
             )
 
             // When
             interactor.observeResponse()
                 .runFlowTest {
-                    // Then
-                    TestCase.assertEquals(
-                        PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(
+                    val expectedResult =
+                        ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired(
                             crypto = crypto,
-                            resultHandler = DeviceAuthenticationResult()
-                        ),
-                        awaitItem()
-                    )
+                            resultHandler = resultHandler
+                        )
+                    assertEquals(expectedResult, awaitItem())
                 }
         }
     }
-
     //endregion
 
     //region handleUserAuthentication
-
+    //
     // Case 1:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
     // BiometricsAvailability.CanAuthenticate
@@ -212,7 +197,7 @@ class TestPresentationLoadingInteractor {
     // Case 1 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 1, When handleUserAuthentication is called, Then Case 1 expected result is returned`() {
+    fun `Given case 1, When handleUserAuthentication is called, Then Case 1 Expected Result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.CanAuthenticate
@@ -257,22 +242,21 @@ class TestPresentationLoadingInteractor {
 
     // Case 3:
     // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
-    // BiometricsAvailability.Failure
+    // BiometricsAvailability.Failure with message
 
     // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.
     @Test
     fun `Given case 3, When handleUserAuthentication is called, Then Case 3 expected result is returned`() {
         // Given
-        val mockedOnAuthenticationFailure: () -> Unit = {}
-        whenever(resultHandler.onAuthenticationFailure)
-            .thenReturn(mockedOnAuthenticationFailure)
-
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.Failure(
                 errorMessage = mockedPlainFailureMessage
             )
         )
+        val mockedOnAuthenticationFailure: () -> Unit = {}
+        whenever(resultHandler.onAuthenticationFailure)
+            .thenReturn(mockedOnAuthenticationFailure)
 
         // When
         interactor.handleUserAuthentication(
@@ -285,6 +269,7 @@ class TestPresentationLoadingInteractor {
         verify(resultHandler, times(1))
             .onAuthenticationFailure
     }
+
     //endregion
 
     //region stopPresentation
@@ -301,19 +286,19 @@ class TestPresentationLoadingInteractor {
 
     //endregion
 
-    //region initiatorRoute
+    //region verifierName
 
     @Test
-    fun `when initiatorRoute on interactor is called then initiatorRoute on controller is expected to be invoked`() {
+    fun `when interactor verifierName is called, then verifierName should be invoked on the controller`() {
         // When
-        interactor.initiatorRoute
+        interactor.verifierName
 
-        //Then
-        verify(walletCorePresentationController).initiatorRoute
+        // Then
+        verify(walletCorePresentationController, times(1))
+            .verifierName
     }
 
     //endregion
-
 
     //region helper functions
     private fun mockWalletCorePresentationControllerEventEmission(event: WalletCorePartialState) {
@@ -327,6 +312,12 @@ class TestPresentationLoadingInteractor {
                 val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
                 bioAvailability(response)
             }
+    }
+
+    private fun mockEmissionOfIntentionallyNotHandledEvent() {
+        whenever(walletCorePresentationController.observeSentDocumentsRequest()).thenReturn(
+            WalletCorePartialState.Redirect(uri = URI(mockedUriPath1)).toFlow()
+        )
     }
     //endregion
 }
