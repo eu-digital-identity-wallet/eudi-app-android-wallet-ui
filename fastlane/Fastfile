@@ -42,11 +42,11 @@ platform :android do
 
     buildNumber = build_number(versionNumber: appcenter_build_number)
 
-    calver(buildCode: buildNumber)
-    buildVersion = version_name(buildType: ENV["APP_BUILD_TYPE"])
+    set_version(buildCode: buildNumber)
+    fullVersion = full_version(buildType: ENV["APP_BUILD_TYPE"])
 
     tagVersion = tag_name(
-      buildName: buildVersion,
+      buildName: fullVersion,
       buildNumber: buildNumber,
       brand: ENV["APP_TAG"],
       buildType: ENV["APP_BUILD_TYPE"],
@@ -135,7 +135,7 @@ platform :android do
   end
 
   desc "Get version version From Project"
-  lane :version_name do |values|
+  lane :full_version do |values|
     buildType = values[:buildType]
     versionName = get_properties_value(
       key: "VERSION_NAME",
@@ -164,7 +164,7 @@ platform :android do
   end
 
   desc "Build VersionName based on CalVer"
-  lane :calver do |values|
+  lane :set_version do |values|
     buildCode = values[:buildCode]
     date = DateTime.now
     version = "#{date.strftime("%Y.%m")}.#{buildCode}"
