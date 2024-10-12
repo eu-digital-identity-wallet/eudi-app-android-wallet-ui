@@ -18,7 +18,6 @@ require "date"
 default_platform(:android)
 
 platform :android do
-
   desc "Runs all the unit tests"
   lane :tests do
 
@@ -142,7 +141,7 @@ platform :android do
       path: "version.properties",
     )
     version = "#{versionName}-#{buildType}"
-    puts "Version retrieved from properties: #{version}"
+    puts "Full version based on properties value: #{version}"
     version
   end
 

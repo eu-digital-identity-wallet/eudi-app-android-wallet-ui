@@ -63,10 +63,10 @@ Build Number
 
 Build Tag Name
 
-### android version_name
+### android full_version
 
 ```sh
-[bundle exec] fastlane android version_name
+[bundle exec] fastlane android full_version
 ```
 
 Get version version From Project
@@ -87,10 +87,10 @@ Set versionCode back to default 1
 
 Set versionName back to default yyyy.d.m
 
-### android calver
+### android set_version
 
 ```sh
-[bundle exec] fastlane android calver
+[bundle exec] fastlane android set_version
 ```
 
 Build VersionName based on CalVer
