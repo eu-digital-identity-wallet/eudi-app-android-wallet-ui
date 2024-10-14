@@ -32,7 +32,7 @@ enum class AppFlavor(
     val applicationIdSuffix: String? = null,
     val applicationNameSuffix: String? = null
 ) {
-    Dev(FlavorDimension.contentType, applicationIdSuffix = ".dev", applicationNameSuffix = " Dev"),
+    Dev(FlavorDimension.contentType, applicationIdSuffix = ".dev"),
     Demo(FlavorDimension.contentType)
 }
 
@@ -51,10 +51,9 @@ fun Project.configureFlavors(
         productFlavors {
             AppFlavor.values().forEach {
                 create(it.name.lowercase()) {
-                    val fullVersion = "$version-${it.name}"
                     dimension = it.dimension.name
                     if (this@apply is ApplicationExtension && this is ApplicationProductFlavor) {
-                        versionName = fullVersion
+                        versionName = version
                         if (it.applicationIdSuffix != null) {
                             applicationIdSuffix = it.applicationIdSuffix
                         }
@@ -62,7 +61,7 @@ fun Project.configureFlavors(
                     manifestPlaceholders["appNameSuffix"] = it.applicationNameSuffix.orEmpty()
                     addConfigField(
                         "APP_VERSION",
-                        fullVersion
+                        version
                     )
                     flavorConfigurationBlock(this, it)
                 }
