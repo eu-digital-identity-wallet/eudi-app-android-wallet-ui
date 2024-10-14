@@ -78,6 +78,7 @@ object TestsData {
     const val mockedDocumentHasExpired = false
     const val mockedUserAuthentication = false
     const val mockedVerifierName = "EUDIW Verifier"
+    const val mockedIssuerName = "EUDIW Issuer"
     const val mockedRequestRequiredFieldsTitle = "Verification Data"
     const val mockedRequestElementIdentifierNotAvailable = "Not available"
 

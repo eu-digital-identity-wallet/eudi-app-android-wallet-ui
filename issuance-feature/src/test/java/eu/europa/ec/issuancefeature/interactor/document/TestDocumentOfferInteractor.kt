@@ -23,6 +23,8 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
+import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingPidUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
@@ -41,6 +43,7 @@ import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedMainPid
+import eu.europa.ec.testfeature.mockedPidDocType
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -144,10 +147,9 @@ class TestDocumentOfferInteractor {
 
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
-                val expectedResult =
-                    ResolveDocumentOfferInteractorPartialState.NoDocument(
-                        issuerName = mockedIssuerName
-                    )
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.NoDocument(
+                    issuerName = mockedIssuerName
+                )
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -191,12 +193,11 @@ class TestDocumentOfferInteractor {
                 val expectedList = mockedOfferedDocumentsList.map {
                     DocumentItemUi(title = mockedOfferDocumentName)
                 }
-                val expectedResult =
-                    ResolveDocumentOfferInteractorPartialState.Success(
-                        documents = expectedList,
-                        issuerName = mockedIssuerName,
-                        txCodeLength = mockedTxCodeSpecLength
-                    )
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
+                    documents = expectedList,
+                    issuerName = mockedIssuerName,
+                    txCodeLength = mockedTxCodeSpecLength
+                )
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -213,9 +214,8 @@ class TestDocumentOfferInteractor {
     fun `Given Case 3, When resolveDocumentOffer is called, Then Case 3 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            whenever(walletCoreDocumentsController.resolveDocumentOffer(mockedUriPath1)).thenThrow(
-                mockedExceptionWithNoMessage
-            )
+            whenever(walletCoreDocumentsController.resolveDocumentOffer(mockedUriPath1))
+                .thenThrow(mockedExceptionWithNoMessage)
 
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
@@ -268,10 +268,9 @@ class TestDocumentOfferInteractor {
 
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
-                val expectedResult =
-                    ResolveDocumentOfferInteractorPartialState.Failure(
-                        errorMessage = mockedInvalidCodeFormatMessage
-                    )
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
+                    errorMessage = mockedInvalidCodeFormatMessage
+                )
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -311,10 +310,9 @@ class TestDocumentOfferInteractor {
 
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
-                val expectedResult =
-                    ResolveDocumentOfferInteractorPartialState.Failure(
-                        mockedWalletActivationErrorMessage
-                    )
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
+                    errorMessage = mockedWalletActivationErrorMessage
+                )
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -343,7 +341,7 @@ class TestDocumentOfferInteractor {
             whenever(mockedOfferedDocument.docType)
                 .thenReturn(mockedPidDocType)
             whenever(resourceProvider.getString(R.string.pid))
-                .thenReturn(mockedPidLabel)
+                .thenReturn(mockedDocUiNamePid)
 
             val mockedTxCodeSpecLength = 4
             val mockedOfferTxCodeSpec = Offer.TxCodeSpec(
@@ -362,14 +360,13 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedDocumentsUiList = listOf(
-                    DocumentItemUi(mockedPidLabel)
+                    DocumentItemUi(mockedDocUiNamePid)
                 )
-                val expectedResult =
-                    ResolveDocumentOfferInteractorPartialState.Success(
-                        documents = expectedDocumentsUiList,
-                        issuerName = mockedIssuerName,
-                        txCodeLength = mockedTxCodeSpecLength
-                    )
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
+                    documents = expectedDocumentsUiList,
+                    issuerName = mockedIssuerName,
+                    txCodeLength = mockedTxCodeSpecLength
+                )
 
                 // Then
                 assertEquals(expectedResult, awaitItem())
@@ -422,9 +419,7 @@ class TestDocumentOfferInteractor {
                     offerUri = mockedUriPath1,
                     txCode = mockedTxCode
                 )
-            ).thenThrow(
-                mockedExceptionWithMessage
-            )
+            ).thenThrow(mockedExceptionWithMessage)
 
             // When
             interactor.issueDocuments(
@@ -433,10 +428,9 @@ class TestDocumentOfferInteractor {
                 navigation = mockedConfigNavigation,
                 txCode = mockedTxCode
             ).runFlowTest {
-                val expectedResult =
-                    IssueDocumentsInteractorPartialState.Failure(
-                        errorMessage = mockedExceptionWithMessage.localizedMessage!!
-                    )
+                val expectedResult = IssueDocumentsInteractorPartialState.Failure(
+                    errorMessage = mockedExceptionWithMessage.localizedMessage!!
+                )
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -489,7 +483,9 @@ class TestDocumentOfferInteractor {
         coroutineRule.runTest {
             // Given
             mockWalletDocumentsControllerIssueByUriEventEmission(
-                event = IssueDocumentsPartialState.Failure(errorMessage = mockedPlainFailureMessage)
+                event = IssueDocumentsPartialState.Failure(
+                    errorMessage = mockedPlainFailureMessage
+                )
             )
 
             // When
@@ -522,9 +518,8 @@ class TestDocumentOfferInteractor {
             // Given
             val mockedArgument = "mockedArgument"
             val mockedSuccessSubtitle = "mocked success subtitle"
-            whenever(resourceProvider.getString(R.string.issuance_generic_error)).thenReturn(
-                mockedErrorMessage
-            )
+            whenever(resourceProvider.getString(R.string.issuance_generic_error))
+                .thenReturn(mockedErrorMessage)
             whenever(
                 resourceProvider.getString(
                     R.string.issuance_document_offer_success_subtitle,
@@ -585,12 +580,10 @@ class TestDocumentOfferInteractor {
                 )
             )
 
-            whenever(
-                resourceProvider.getString(R.string.issuance_document_offer_success_title)
-            ).thenReturn(mockedSuccessTitle)
-            whenever(
-                resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
-            ).thenReturn(mockedButtonText)
+            whenever(resourceProvider.getString(R.string.issuance_document_offer_success_title))
+                .thenReturn(mockedSuccessTitle)
+            whenever(resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text))
+                .thenReturn(mockedButtonText)
 
             val mockedTripleObject = Triple(
                 first = SuccessUIConfig.HeaderConfig(
@@ -683,12 +676,10 @@ class TestDocumentOfferInteractor {
                 )
             )
 
-            whenever(
-                resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title)
-            ).thenReturn(mockedSuccessTitle)
-            whenever(
-                resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
-            ).thenReturn(mockedButtonText)
+            whenever(resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title))
+                .thenReturn(mockedSuccessTitle)
+            whenever(resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text))
+                .thenReturn(mockedButtonText)
 
             val mockedTripleObject = Triple(
                 first = SuccessUIConfig.HeaderConfig(
@@ -732,10 +723,9 @@ class TestDocumentOfferInteractor {
                 navigation = mockedConfigNavigation,
                 txCode = mockedTxCode
             ).runFlowTest {
-                val expectedResult =
-                    IssueDocumentsInteractorPartialState.DeferredSuccess(
-                        successRoute = "SUCCESS?successConfig=$mockedArguments"
-                    )
+                val expectedResult = IssueDocumentsInteractorPartialState.DeferredSuccess(
+                    successRoute = "SUCCESS?successConfig=$mockedArguments"
+                )
 
                 // Then
                 assertEquals(expectedResult, awaitItem())
@@ -794,15 +784,12 @@ class TestDocumentOfferInteractor {
                 )
             )
 
-            whenever(
-                resourceProvider.getString(R.string.issuance_document_offer_success_title)
-            ).thenReturn(mockedSuccessTitle)
-            whenever(
-                resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
-            ).thenReturn(mockedButtonText)
-            whenever(resourceProvider.getString(R.string.content_description_success)).thenReturn(
-                mockedContentDescription
-            )
+            whenever(resourceProvider.getString(R.string.issuance_document_offer_success_title))
+                .thenReturn(mockedSuccessTitle)
+            whenever(resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text))
+                .thenReturn(mockedButtonText)
+            whenever(resourceProvider.getString(R.string.content_description_success))
+                .thenReturn(mockedContentDescription)
 
             val mockedTripleObject = Triple(
                 first = SuccessUIConfig.HeaderConfig(
@@ -845,10 +832,9 @@ class TestDocumentOfferInteractor {
                 navigation = mockedConfigNavigation,
                 txCode = mockedTxCode
             ).runFlowTest {
-                val expectedResult =
-                    IssueDocumentsInteractorPartialState.Success(
-                        successRoute = "SUCCESS?successConfig=$mockedArguments"
-                    )
+                val expectedResult = IssueDocumentsInteractorPartialState.Success(
+                    successRoute = "SUCCESS?successConfig=$mockedArguments"
+                )
 
                 // Then
                 assertEquals(expectedResult, awaitItem())
@@ -873,8 +859,8 @@ class TestDocumentOfferInteractor {
             val nonIssuedDeferredDocuments: Map<DocumentId, DocType> = mapOf(
                 mockedDeferredPendingDocId1 to mockDeferredPendingType1
             )
-            whenever(resourceProvider.getString(R.string.pid)).thenReturn(mockedPidLabel)
-            val nonIssuedDocsNames = mockedPidLabel
+            whenever(resourceProvider.getString(R.string.pid)).thenReturn(mockedDocUiNamePid)
+            val nonIssuedDocsNames = mockedDocUiNamePid
             whenever(
                 resourceProvider.getString(
                     R.string.issuance_document_offer_partial_success_subtitle,
@@ -894,12 +880,10 @@ class TestDocumentOfferInteractor {
             val mockedContentDescription = "mocked content description"
             whenever(resourceProvider.getString(R.string.issuance_document_offer_success_title))
                 .thenReturn(mockedOfferSuccessTitle)
-            whenever(resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)).thenReturn(
-                mockedButtonText
-            )
-            whenever(resourceProvider.getString(R.string.content_description_success)).thenReturn(
-                mockedContentDescription
-            )
+            whenever(resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text))
+                .thenReturn(mockedButtonText)
+            whenever(resourceProvider.getString(R.string.content_description_success))
+                .thenReturn(mockedContentDescription)
 
             val mockedTripleObject = Triple(
                 first = SuccessUIConfig.HeaderConfig(
@@ -943,10 +927,9 @@ class TestDocumentOfferInteractor {
                 navigation = mockedConfigNavigation,
                 txCode = mockedTxCode
             ).runFlowTest {
-                val expectedResult =
-                    IssueDocumentsInteractorPartialState.Success(
-                        successRoute = "SUCCESS?successConfig=$mockedArguments"
-                    )
+                val expectedResult = IssueDocumentsInteractorPartialState.Success(
+                    successRoute = "SUCCESS?successConfig=$mockedArguments"
+                )
 
                 // Then
                 assertEquals(expectedResult, awaitItem())
@@ -979,10 +962,9 @@ class TestDocumentOfferInteractor {
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigation
             ).runFlowTest {
-                val expectedResult =
-                    IssueDocumentsInteractorPartialState.Failure(
-                        errorMessage = mockedPlainFailureMessage
-                    )
+                val expectedResult = IssueDocumentsInteractorPartialState.Failure(
+                    errorMessage = mockedPlainFailureMessage
+                )
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -1125,17 +1107,14 @@ class TestDocumentOfferInteractor {
     //region mocked objects
     private val mockedOffer = mock<Offer>()
     private val mockedOfferedDocument = mock<Offer.OfferedDocument>()
-    private val mockedIssuerName = "mockedIssuerName"
     private val mockedOfferDocumentName = "offerDocumentName"
     private val mockedDocType = "mockedDocType"
-    private val mockedPidLabel = "mocked PID label"
     private val mockedInvalidCodeFormatMessage = "mocked invalid code format message"
     private val mockedWalletActivationErrorMessage = "mocked wallet activation error message"
     private val mockedArguments = "mockedArguments"
     private val mockedTxCode = "mockedTxCode"
     private val mockedButtonText = "mocked button text"
     private val mockedErrorMessage = "mocked error message"
-    private val mockedPidDocType = DocumentIdentifier.PID.docType
     private val mockedSampleDocumentType = DocumentIdentifier.SAMPLE.docType
     private val mockedConfigNavigation = ConfigNavigation(navigationType = NavigationType.Pop)
     //endregion

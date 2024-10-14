@@ -400,7 +400,7 @@ class TestAddDocumentInteractor {
 
         val mockedTripleObject = Triple(
             first = SuccessUIConfig.HeaderConfig(
-                title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
+                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
                 color = ThemeColors.warning
             ),
             second = SuccessUIConfig.ImageConfig(
@@ -409,7 +409,7 @@ class TestAddDocumentInteractor {
                 tint = ThemeColors.warning,
                 contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
             ),
-            third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
+            third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
         )
 
         val mockedConfigNavigation =
@@ -461,18 +461,16 @@ class TestAddDocumentInteractor {
 
         val mockedTripleObject = Triple(
             first = SuccessUIConfig.HeaderConfig(
-                title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
+                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
                 color = ThemeColors.warning
             ),
             second = SuccessUIConfig.ImageConfig(
                 type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
                 drawableRes = AppIcons.ClockTimer.resourceId,
                 tint = ThemeColors.warning,
-                contentDescription = resourceProvider.getString(
-                    AppIcons.ClockTimer.contentDescriptionId
-                )
+                contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
             ),
-            third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
+            third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
         )
 
         val mockedConfigNavigation =
@@ -538,24 +536,14 @@ class TestAddDocumentInteractor {
         val mockedButtonText = "mocked button text"
         val mockedContentDescriptionId = "mocked content description id"
 
-        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_title)).thenReturn(
-            mockedSuccessTitle
-        )
-        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)).thenReturn(
-            mockedButtonText
-        )
-        whenever(resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)).thenReturn(
-            mockedContentDescriptionId
-        )
-        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle)).thenReturn(
-            mockedSuccessSubtitle
-        )
-        whenever(
-            resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title)
-        ).thenReturn(mockedSuccessTitle)
-        whenever(
-            resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
-        ).thenReturn(mockedButtonText)
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_title))
+            .thenReturn(mockedSuccessTitle)
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text))
+            .thenReturn(mockedButtonText)
+        whenever(resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId))
+            .thenReturn(mockedContentDescriptionId)
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle))
+            .thenReturn(mockedSuccessSubtitle)
     }
     //endregion
 }
