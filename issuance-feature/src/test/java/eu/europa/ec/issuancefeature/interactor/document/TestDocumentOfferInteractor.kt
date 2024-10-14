@@ -16,6 +16,8 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
+import android.content.Context
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
@@ -49,8 +51,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import junit.framework.TestCase.assertEquals
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -58,6 +60,9 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -83,6 +88,9 @@ class TestDocumentOfferInteractor {
 
     @Mock
     private lateinit var resultHandler: DeviceAuthenticationResult
+
+    @Mock
+    private lateinit var context: Context
 
     private lateinit var interactor: DocumentOfferInteractor
 
@@ -398,6 +406,13 @@ class TestDocumentOfferInteractor {
 
     //region issueDocuments
     // Case 1:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri() is called with:
+    // parameters being mocked
+    // 2. A mockedExceptionWithMessage (RuntimeException) is thrown with message
+
+    // Case 1 Expected Result:
+    // IssueDocumentsInteractorPartialState.Failure state, with:
+    // - errorMessage equal to the localized message of mockedExceptionWithMessage
     @Test
     fun `Given Case 1, When issueDocuments is called, Then Case 1 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -427,6 +442,14 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 2:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri() is called with:
+    // parameters being mocked
+    // 2. A mockedExceptionWithNoMessage (RuntimeException) is thrown
+
+    // Case 2 Expected Result:
+    // IssueDocumentsInteractorPartialState.Failure state, with:
+    // - a mockedGenericErrorMessage
     @Test
     fun `Given Case 2, When issueDocuments is called, Then Case 2 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -453,6 +476,14 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 3:
+    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // IssueDocumentsPartialState.Failure with:
+    // mockedPlainFailureMessage as the error message
+
+    // Case 3 Expected Result:
+    // IssueDocumentsInteractorPartialState.Failure state, with:
+    // - errorMessage equal to mockedPlainFailureMessage
     @Test
     fun `Given Case 3, When issueDocuments is called, Then Case 3 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -476,16 +507,24 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 4:
+    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // IssueDocumentsPartialState.UserAuthRequired with:
+    // biometricCrypto object and resultHandler as DeviceAuthenticationResult
+    // 2. required arguments are mocked
+
+    // Case 4 Expected Result:
+    // IssueDocumentsInteractorPartialState.UserAuthRequired state, with parameters of:
+    // - biometricCrypto object and resultHandler as DeviceAuthenticationResult
     @Test
     fun `Given Case 4, When issueDocuments is called, Then Case 4 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
+            val mockedArgument = "mockedArgument"
+            val mockedSuccessSubtitle = "mocked success subtitle"
             whenever(resourceProvider.getString(R.string.issuance_generic_error)).thenReturn(
                 mockedErrorMessage
             )
-
-            val mockedArgument = "mockedArgument"
-            val mockedSuccessSubtitle = "mocked success subtitle"
             whenever(
                 resourceProvider.getString(
                     R.string.issuance_document_offer_success_subtitle,
@@ -516,6 +555,16 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 5:
+    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // IssueDocumentsPartialState.Success with:
+    // biometricCrypto object and resultHandler as DeviceAuthenticationResult
+    // 2. required strings are mocked
+    // 3. uiSerializer.toBase64() serializes the mockedSuccessUiConfig into mockedArguments
+
+    // Case 5 Expected Result:
+    // IssueDocumentsInteractorPartialState.Success state, with:
+    // - successRoute equal to "SUCCESS?successConfig=mockedArguments"
     @Test
     fun `Given Case 5, When issueDocuments is called, Then Case 5 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -539,7 +588,6 @@ class TestDocumentOfferInteractor {
             whenever(
                 resourceProvider.getString(R.string.issuance_document_offer_success_title)
             ).thenReturn(mockedSuccessTitle)
-
             whenever(
                 resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
             ).thenReturn(mockedButtonText)
@@ -595,6 +643,16 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 6:
+    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // IssueDocumentsPartialState.DeferredSuccess with:
+    // mocked deferred documents
+    // 2. required strings are mocked
+    // 3. uiSerializer.toBase64() serializes the mockedSuccessUiConfig into mockedArguments
+
+    // Case 6 Expected Result:
+    // IssueDocumentsInteractorPartialState.DeferredSuccess state, with:
+    // - successRoute equal to "SUCCESS?successConfig=mockedArguments"
     @Test
     fun `Given Case 6, When issueDocuments is called, Then Case 6 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -628,7 +686,6 @@ class TestDocumentOfferInteractor {
             whenever(
                 resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title)
             ).thenReturn(mockedSuccessTitle)
-
             whenever(
                 resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
             ).thenReturn(mockedButtonText)
@@ -685,6 +742,20 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 7:
+    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    //    IssueDocumentsPartialState.PartialSuccess with:
+    //    - documentIds containing mockedDocumentId.
+    //    - nonIssuedDocuments map containing mockDeferredPendingDocId1 to mockDeferredPendingType1
+    //      and mockDeferredPendingDocId2 to mockDeferredPendingType2.
+    // 2. nonIssuedDocsNames is formed by combining the document types of non-issued documents:
+    //    "eu.europa.ec.eudi.pid.1, org.iso.18013.5.1.mDL"
+    // 3. mocked string resources
+    // 7. uiSerializer.toBase64() serializes the SuccessUIConfig object into mockedArguments.
+
+    // Case 7 Expected Result:
+    // IssueDocumentsInteractorPartialState.Success state, with:
+    // - successRoute equal to "SUCCESS?successConfig=mockedArguments"
     @Test
     fun `Given Case 7, When issueDocuments is called, Then Case 7 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -726,11 +797,9 @@ class TestDocumentOfferInteractor {
             whenever(
                 resourceProvider.getString(R.string.issuance_document_offer_success_title)
             ).thenReturn(mockedSuccessTitle)
-
             whenever(
                 resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
             ).thenReturn(mockedButtonText)
-
             whenever(resourceProvider.getString(R.string.content_description_success)).thenReturn(
                 mockedContentDescription
             )
@@ -786,6 +855,13 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 8:
+    // 1. IssueDocumentsPartialState.PartialSuccess is returned by issueDocumentsByOfferUri
+    // 2. The interactor is called with the given offerUri, issuerName, navigation and txCode.
+
+    // Case 8 Expected Result:
+    // IssueDocumentsInteractorPartialState.Success state, with:
+    // - successRoute equal to "SUCCESS?successConfig=mockedArguments".
     @Test
     fun `Given Case 8, When issueDocuments is called, Then Case 8 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -799,7 +875,6 @@ class TestDocumentOfferInteractor {
             )
             whenever(resourceProvider.getString(R.string.pid)).thenReturn(mockedPidLabel)
             val nonIssuedDocsNames = mockedPidLabel
-
             whenever(
                 resourceProvider.getString(
                     R.string.issuance_document_offer_partial_success_subtitle,
@@ -878,7 +953,13 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 9:
+    // 1. IssueDocumentsPartialState.Failure is returned by issueDocumentsByOfferUri
+    // 2. The interactor is called with a mocked offerUri and null txCode
 
+    // Case 9 Expected Result:
+    // IssueDocumentsInteractorPartialState.Failure state, with:
+    // - errorMessage equal to mockedPlainFailureMessage.
     @Test
     fun `Given Case 9, When issueDocuments is called, Then Case 9 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -909,6 +990,109 @@ class TestDocumentOfferInteractor {
 
     //endregion
 
+    //region handleUserAuthentication
+    //
+    // Case 1:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.CanAuthenticate
+
+    // Case 1 Expected Result:
+    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    @Test
+    fun `Given case 1, When handleUserAuthentication is called, Then Case 1 expected result is returned`() {
+        // Given
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.CanAuthenticate
+        )
+
+        // When
+        interactor.handleUserAuthentication(
+            context = context,
+            crypto = biometricCrypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(deviceAuthenticationInteractor, times(1))
+            .authenticateWithBiometrics(
+                context = context,
+                crypto = biometricCrypto,
+                resultHandler = resultHandler
+            )
+    }
+
+    // Case 2:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.NonEnrolled
+
+    // Case 2 Expected Result:
+    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    @Test
+    fun `Given case 2, When handleUserAuthentication is called, Then Case 2 expected result is returned`() {
+        // Given
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.NonEnrolled
+        )
+
+        // When
+        interactor.handleUserAuthentication(
+            context = context,
+            crypto = biometricCrypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(deviceAuthenticationInteractor, times(1))
+            .authenticateWithBiometrics(
+                context = context,
+                crypto = biometricCrypto,
+                resultHandler = resultHandler
+            )
+    }
+
+    // Case 3:
+    // 1. deviceAuthenticationInteractor.getBiometricsAvailability returns:
+    // BiometricsAvailability.Failure
+
+    // Case 3 Expected Result:
+    // resultHandler.onAuthenticationFailure called once.
+    @Test
+    fun `Given case 3, When handleUserAuthentication is called, Then Case 3 expected result is returned`() {
+        // Given
+        val mockedOnAuthenticationFailure: () -> Unit = {}
+        whenever(resultHandler.onAuthenticationFailure)
+            .thenReturn(mockedOnAuthenticationFailure)
+
+        mockBiometricsAvailabilityResponse(
+            response = BiometricsAvailability.Failure(
+                errorMessage = mockedPlainFailureMessage
+            )
+        )
+
+        // When
+        interactor.handleUserAuthentication(
+            context = context,
+            crypto = biometricCrypto,
+            resultHandler = resultHandler
+        )
+
+        // Then
+        verify(resultHandler, times(1))
+            .onAuthenticationFailure
+    }
+
+    //endregion
+
+    //region resumeOpenId4VciWithAuthorization
+    @Test
+    fun `when interactor resumeOpenId4VciWithAuthorization is called, then resumeOpenId4VciWithAuthorization should be invoked on the controller`() {
+        interactor.resumeOpenId4VciWithAuthorization(mockedUriPath1)
+
+        verify(walletCoreDocumentsController, times(1))
+            .resumeOpenId4VciWithAuthorization(mockedUriPath1)
+    }
+    //endregion
+
     //region helper functions
     private fun mockGetMainPidDocumentCall(mainPid: IssuedDocument?) {
         whenever(walletCoreDocumentsController.getMainPidDocument())
@@ -927,6 +1111,14 @@ class TestDocumentOfferInteractor {
                 txCode = mockedTxCode
             )
         ).thenReturn(event.toFlow())
+    }
+
+    private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
+        whenever(deviceAuthenticationInteractor.getBiometricsAvailability(listener = any()))
+            .thenAnswer {
+                val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
+                bioAvailability(response)
+            }
     }
     //endregion
 

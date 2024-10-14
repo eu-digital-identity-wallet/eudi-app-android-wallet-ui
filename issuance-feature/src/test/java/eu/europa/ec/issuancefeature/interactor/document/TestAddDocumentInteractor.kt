@@ -21,6 +21,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvai
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.util.TestsData.mockedAgeOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlOptionItemUi
@@ -28,27 +29,36 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedPhotoIdOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedSampleDataOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
+import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
@@ -56,7 +66,11 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+@RunWith(RobolectricTestRunner::class)
+@Config(application = TestApplication::class)
 class TestAddDocumentInteractor {
 
     @get:Rule
@@ -371,6 +385,144 @@ class TestAddDocumentInteractor {
     }
     //endregion
 
+    //region buildGenericSuccessRouteForDeferred
+    //
+    // Case 1:
+    // 1. ConfigNavigation with NavigationType.PushRoute
+    // 2. string resources mocked
+    //
+    // when buildGenericSuccessRouteForDeferred is called on the interactor
+    // the expected string result is generated for route definition
+    @Test
+    fun `When buildGenericSuccessRouteForDeferred is called, then the expected string result is returned`() {
+        // Given
+        mockDocumentIssuanceStrings()
+
+        val mockedTripleObject = Triple(
+            first = SuccessUIConfig.HeaderConfig(
+                title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
+                color = ThemeColors.warning
+            ),
+            second = SuccessUIConfig.ImageConfig(
+                type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
+                drawableRes = AppIcons.ClockTimer.resourceId,
+                tint = ThemeColors.warning,
+                contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
+            ),
+            third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
+        )
+
+        val mockedConfigNavigation =
+            ConfigNavigation(
+                navigationType = NavigationType.PushRoute(
+                    route = DashboardScreens.Dashboard.screenRoute
+                )
+            )
+        val config = SuccessUIConfig(
+            headerConfig = mockedTripleObject.first,
+            content = resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle),
+            imageConfig = mockedTripleObject.second,
+            buttonConfig = listOf(
+                SuccessUIConfig.ButtonConfig(
+                    text = mockedTripleObject.third,
+                    style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                    navigation = mockedConfigNavigation
+                )
+            ),
+            onBackScreenToNavigate = mockedConfigNavigation
+        )
+
+        val mockedArguments = "mockedArguments"
+        whenever(
+            uiSerializer.toBase64(
+                model = config,
+                parser = SuccessUIConfig.Parser
+            )
+        ).thenReturn(mockedArguments)
+
+        val flowType = IssuanceFlowUiConfig.NO_DOCUMENT
+        val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
+
+        val expectedResult = "SUCCESS?successConfig=$mockedArguments"
+        assertEquals(expectedResult, result)
+    }
+
+    //
+    // Case 2:
+    // 1. ConfigNavigation with NavigationType.PopRoute
+    // 2. string resources mocked
+
+    // when buildGenericSuccessRouteForDeferred is called on the interactor
+    // the expected string result is generated for route definition
+    @Test
+    fun `When buildGenericSuccessRouteForDeferred (PopRoute) is called, then the expected string result is returned`() {
+        // Given
+        mockDocumentIssuanceStrings()
+
+        val mockedTripleObject = Triple(
+            first = SuccessUIConfig.HeaderConfig(
+                title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
+                color = ThemeColors.warning
+            ),
+            second = SuccessUIConfig.ImageConfig(
+                type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
+                drawableRes = AppIcons.ClockTimer.resourceId,
+                tint = ThemeColors.warning,
+                contentDescription = resourceProvider.getString(
+                    AppIcons.ClockTimer.contentDescriptionId
+                )
+            ),
+            third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
+        )
+
+        val mockedConfigNavigation =
+            ConfigNavigation(navigationType = NavigationType.PopTo(screen = DashboardScreens.Dashboard))
+
+        val config = SuccessUIConfig(
+            headerConfig = mockedTripleObject.first,
+            content = resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle),
+            imageConfig = mockedTripleObject.second,
+            buttonConfig = listOf(
+                SuccessUIConfig.ButtonConfig(
+                    text = mockedTripleObject.third,
+                    style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                    navigation = mockedConfigNavigation
+                )
+            ),
+            onBackScreenToNavigate = mockedConfigNavigation
+        )
+
+        val mockedArguments = "mockedArguments"
+        whenever(
+            uiSerializer.toBase64(
+                model = config,
+                parser = SuccessUIConfig.Parser
+            )
+        ).thenReturn(mockedArguments)
+
+        val flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
+        val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
+
+        val expectedResult = "SUCCESS?successConfig=$mockedArguments"
+        assertEquals(expectedResult, result)
+    }
+    //endregion
+
+    //region resumeOpenId4VciWithAuthorization
+    //
+    // Case of resumeOpenId4VciWithAuthorization being called on the interactor
+    // the expected result is the resumeOpenId4VciWithAuthorization function to be executed on
+    // the walletCoreDocumentsController
+    @Test
+    fun `When interactor resumeOpenId4VciWithAuthorization is called, Then resumeOpenId4VciWithAuthorization should be invoked on the controller`() {
+        // When
+        interactor.resumeOpenId4VciWithAuthorization(mockedUriPath1)
+
+        verify(walletCoreDocumentsController, times(1))
+            .resumeOpenId4VciWithAuthorization(mockedUriPath1)
+    }
+    //endregion
+
     //region helper functions
     private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
         whenever(deviceAuthenticationInteractor.getBiometricsAvailability(listener = any()))
@@ -378,6 +530,32 @@ class TestAddDocumentInteractor {
                 val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
                 bioAvailability(response)
             }
+    }
+
+    private fun mockDocumentIssuanceStrings() {
+        val mockedSuccessTitle = "mocked success title"
+        val mockedSuccessSubtitle = "mocked success subtitle"
+        val mockedButtonText = "mocked button text"
+        val mockedContentDescriptionId = "mocked content description id"
+
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_title)).thenReturn(
+            mockedSuccessTitle
+        )
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)).thenReturn(
+            mockedButtonText
+        )
+        whenever(resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)).thenReturn(
+            mockedContentDescriptionId
+        )
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle)).thenReturn(
+            mockedSuccessSubtitle
+        )
+        whenever(
+            resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title)
+        ).thenReturn(mockedSuccessTitle)
+        whenever(
+            resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
+        ).thenReturn(mockedButtonText)
     }
     //endregion
 }
