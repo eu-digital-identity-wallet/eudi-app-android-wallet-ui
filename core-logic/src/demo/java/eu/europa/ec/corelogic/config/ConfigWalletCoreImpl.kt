@@ -25,6 +25,17 @@ import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionMethod
 import eu.europa.ec.resourceslogic.R
+import android.annotation.SuppressLint
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.logging.Logging
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
+import javax.security.cert.CertificateException
 
 internal class WalletCoreConfigImpl(
     private val context: Context,
@@ -32,9 +43,51 @@ internal class WalletCoreConfigImpl(
 ) : WalletCoreConfig {
 
     private companion object {
-        const val VCI_ISSUER_URL = "https://issuer.eudiw.dev"
-        const val VCI_CLIENT_ID = "wallet-dev"
+        const val VCI_ISSUER_URL = "https://abr.vc.local:8081"
+        const val VCI_CLIENT_ID = "abr.vc.local"
         const val AUTHENTICATION_REQUIRED = false
+    }
+
+    object ProvideKtorHttpClient {
+
+        @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
+        fun client(): HttpClient {
+            val trustAllCerts = arrayOf<TrustManager>(
+                object : X509TrustManager {
+                    @Throws(CertificateException::class)
+                    override fun checkClientTrusted(
+                        chain: Array<X509Certificate>,
+                        authType: String
+                    ) {
+                    }
+
+                    @Throws(CertificateException::class)
+                    override fun checkServerTrusted(
+                        chain: Array<X509Certificate>,
+                        authType: String
+                    ) {
+                    }
+
+                    override fun getAcceptedIssuers(): Array<X509Certificate> {
+                        return arrayOf()
+                    }
+                }
+            )
+
+            return HttpClient(Android) {
+                install(Logging)
+                engine {
+                    requestConfig
+                    sslManager = { httpsURLConnection ->
+                        httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
+                            init(null, trustAllCerts, SecureRandom())
+                        }.socketFactory
+                        httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
+                    }
+                }
+            }
+        }
+
     }
 
     private var _config: EudiWalletConfig? = null
@@ -80,6 +133,9 @@ internal class WalletCoreConfigImpl(
                         )
                     }
                     .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
+                    .ktorHttpClientFactory {
+                        ProvideKtorHttpClient.client()
+                    }
                     .build()
             }
             return _config!!

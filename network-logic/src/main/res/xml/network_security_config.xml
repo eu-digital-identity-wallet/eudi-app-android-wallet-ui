@@ -15,5 +15,8 @@
   -->
 
 <network-security-config>
-    <base-config cleartextTrafficPermitted="false" />
+    <base-config cleartextTrafficPermitted="true" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">abr.vc.local</domain>
+    </domain-config>
 </network-security-config>

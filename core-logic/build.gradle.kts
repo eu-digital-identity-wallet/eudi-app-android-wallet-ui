@@ -37,6 +37,8 @@ dependencies {
     implementation(project(LibraryModule.AuthenticationLogic.path))
 
     implementation(libs.androidx.biometric)
+    implementation(libs.ktor.android)
+    implementation(libs.ktor.logging)
 }
 
 excludeFromKoverReport(
