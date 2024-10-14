@@ -955,7 +955,7 @@ class TestDocumentOfferInteractor {
 
     // Case 9:
     // 1. IssueDocumentsPartialState.Failure is returned by issueDocumentsByOfferUri
-    // 2. The interactor is called with a mocked offerUri and null txCode
+    // 2. The controller issueDocumentsByOfferUri is called with a mocked offerUri and null txCode
 
     // Case 9 Expected Result:
     // IssueDocumentsInteractorPartialState.Failure state, with:
