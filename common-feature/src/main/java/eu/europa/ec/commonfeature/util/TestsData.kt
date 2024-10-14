@@ -89,6 +89,9 @@ object TestsData {
     const val mockedAgeVerificationNameSpace = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
     const val mockedPhotoIdDocType = "org.iso.23220.2.photoid.1"
     const val mockedPhotoIdNameSpace = "org.iso.23220.2.photoid.1"
+    const val mockedAuthorizationDocType = "no.digdir.eudiw.fullmakt.1"
+    const val mockedAuthorizationNameSpace = "no.digdir.eudiw.fullmakt.1"
+    const val mockedAuthorizationId = "000005"
 
     const val mockedUriPath1 = "eudi-wallet://example.com/path1"
     const val mockedUriPath2 = "eudi-wallet://example.com/path2"
@@ -240,6 +243,41 @@ object TestsData {
             DocItem(
                 namespace = mockedAgeVerificationNameSpace,
                 elementIdentifier = "issuing_country",
+            )
+        ),
+        readerAuth = mockedValidReaderAuth
+    )
+
+    val mockedAuthorizationWithBasicFieldsDocRequest = DocRequest(
+        docType = mockedAuthorizationDocType,
+        requestItems = listOf(
+            DocItem(
+                namespace = mockedAuthorizationNameSpace,
+                elementIdentifier = "fullmektig_etternavn"
+            ),
+            DocItem(
+                namespace = mockedAuthorizationNameSpace,
+                elementIdentifier = "fullmaktsgiver"
+            ),
+            DocItem(
+                namespace = mockedAuthorizationNameSpace,
+                elementIdentifier = "fullmektig_rettigheter",
+            ),
+            DocItem(
+                namespace = mockedAuthorizationNameSpace,
+                elementIdentifier = "fullmektig",
+            ),
+            DocItem(
+                namespace = mockedAuthorizationNameSpace,
+                elementIdentifier = "fullmektig_fornavn",
+            ),
+            DocItem(
+                namespace = mockedAuthorizationNameSpace,
+                elementIdentifier = "fullmaktsgiver_fornavn",
+            ),
+            DocItem(
+                namespace = mockedAuthorizationNameSpace,
+                elementIdentifier = "fullmaktsgiver_etternavn",
             )
         ),
         readerAuth = mockedValidReaderAuth
@@ -614,6 +652,12 @@ object TestsData {
                         value = testFieldUi.value
                     )
 
+                    is DocumentIdentifier.AUTHORIZATION -> mockCreateOptionalFieldForAuthorization(
+                        docId = transformedRequestDataUi.documentId,
+                        elementIdentifier = testFieldUi.elementIdentifier,
+                        value = testFieldUi.value
+                    )
+
                     is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
                 }
 
@@ -671,6 +715,25 @@ object TestsData {
     }
 
     private fun mockCreateOptionalFieldForPhotoId(
+        docId: String,
+        elementIdentifier: String,
+        value: String,
+        checked: Boolean = true,
+        enabled: Boolean = true,
+    ): RequestDataUi.OptionalField<Event> {
+        val uniqueId = mockedPhotoIdDocType + elementIdentifier + docId
+        return mockCreateOptionalField(
+            documentIdentifierUi = DocumentIdentifier.PHOTOID,
+            uniqueId = uniqueId,
+            elementIdentifier = elementIdentifier,
+            value = value,
+            checked = checked,
+            enabled = enabled,
+            event = Event.UserIdentificationClicked(itemId = uniqueId)
+        )
+    }
+
+    private fun mockCreateOptionalFieldForAuthorization(
         docId: String,
         elementIdentifier: String,
         value: String,
@@ -793,6 +856,13 @@ object TestsData {
                 docId = mockedPhotoId
                 docType = mockedPhotoIdDocType
                 docRequest = mockedPhotoIdWithBasicFieldsDocRequest
+            }
+
+            is DocumentIdentifier.AUTHORIZATION -> {
+                namespace = mockedAuthorizationNameSpace
+                docId = mockedAuthorizationId
+                docType = mockedAuthorizationDocType
+                docRequest = mockedAuthorizationWithBasicFieldsDocRequest
             }
 
             is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException

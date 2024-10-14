@@ -109,6 +109,12 @@ class AddDocumentInteractorImpl(
                     icon = AppIcons.Id,
                     type = DocumentIdentifier.PHOTOID,
                     available = canCreateExtraDocument(flowType)
+                ),
+                DocumentOptionItemUi(
+                    text = DocumentIdentifier.AUTHORIZATION.toUiName(resourceProvider),
+                    icon = AppIcons.Id,
+                    type = DocumentIdentifier.AUTHORIZATION,
+                    available = canCreateExtraDocument(flowType)
                 )
             )
             if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
