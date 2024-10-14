@@ -54,6 +54,7 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
@@ -104,6 +105,9 @@ class AddDocumentViewModel(
     private val uiSerializer: UiSerializer,
     @InjectedParam private val flowType: IssuanceFlowUiConfig,
 ) : MviViewModel<Event, State, Effect>() {
+
+    var issuanceJob: Job? = null
+
     override fun setInitialState(): State = State(
         navigatableAction = getNavigatableAction(flowType),
         onBackAction = getOnBackAction(flowType),
@@ -231,7 +235,8 @@ class AddDocumentViewModel(
         docType: DocType,
         context: Context
     ) {
-        viewModelScope.launch {
+        issuanceJob?.cancel()
+        issuanceJob = viewModelScope.launch {
 
             setState {
                 copy(

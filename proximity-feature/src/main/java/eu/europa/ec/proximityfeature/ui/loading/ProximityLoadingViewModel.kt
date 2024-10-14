@@ -40,6 +40,9 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 @KoinViewModel
 class ProximityLoadingViewModel(
@@ -78,6 +81,8 @@ class ProximityLoadingViewModel(
             )
         )
     }
+
+    override fun getCancellableTimeout(): Duration = 5.toDuration(DurationUnit.SECONDS)
 
     override fun doWork(context: Context) {
         viewModelScope.launch {
