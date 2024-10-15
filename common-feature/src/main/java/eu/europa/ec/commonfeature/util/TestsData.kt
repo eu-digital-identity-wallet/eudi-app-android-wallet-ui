@@ -34,7 +34,6 @@ import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.DocRequest
 import eu.europa.ec.eudi.iso18013.transfer.ReaderAuth
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
-import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer.TxCodeSpec
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndImageData
@@ -506,7 +505,7 @@ object TestsData {
 
     val mockedOfferTxCodeSpecFourDigits =
         TxCodeSpec(
-            inputMode = Offer.TxCodeSpec.InputMode.NUMERIC,
+            inputMode = TxCodeSpec.InputMode.NUMERIC,
             length = mockedTxCodeSpecFourDigits
         )
 

@@ -21,11 +21,6 @@ import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.resourceslogic.theme.ThemeManager
-import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
-import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
-import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 import org.koin.android.ext.android.inject
 
 class Application : Application() {
@@ -38,25 +33,10 @@ class Application : Application() {
         setupKoin()
         initializeReporting()
         initializeEudiWallet()
-        initializeTheme()
     }
 
     private fun initializeReporting() {
         analyticsController.initialize(this)
-    }
-
-    private fun initializeTheme() {
-        ThemeManager.Builder()
-            .withLightColors(ThemeColors.lightColors)
-            .withDarkColors(ThemeColors.darkColors)
-            .withTypography(ThemeTypography.typo)
-            .withShapes(ThemeShapes.shapes)
-            .withDimensions(
-                ThemeDimensTemplate(
-                    screenPadding = 10.0
-                )
-            )
-            .build()
     }
 
     private fun initializeEudiWallet() {

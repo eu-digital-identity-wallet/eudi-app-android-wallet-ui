@@ -253,7 +253,7 @@ class TestDocumentOfferInteractor {
                 issuerName = mockedIssuerName,
                 offeredDocuments = mockedOfferedDocumentsList,
                 txCodeSpec = mockOfferTxCodeSpec(
-                    inputMode = Offer.TxCodeSpec.InputMode.NUMERIC,
+                    inputMode = TxCodeSpec.InputMode.NUMERIC,
                     length = mockedTxCodeSpecLength
                 )
             )
@@ -1057,7 +1057,7 @@ class TestDocumentOfferInteractor {
     }
 
     private fun mockOfferTxCodeSpec(
-        inputMode: TxCodeSpec.InputMode = Offer.TxCodeSpec.InputMode.NUMERIC,
+        inputMode: TxCodeSpec.InputMode = TxCodeSpec.InputMode.NUMERIC,
         length: Int? = mockedTxCodeSpecFourDigits,
         description: String? = null
     ): TxCodeSpec {
