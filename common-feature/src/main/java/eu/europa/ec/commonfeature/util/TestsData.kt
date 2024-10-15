@@ -34,9 +34,14 @@ import eu.europa.ec.eudi.iso18013.transfer.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.DocRequest
 import eu.europa.ec.eudi.iso18013.transfer.ReaderAuth
 import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
+import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer.TxCodeSpec
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndImageData
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 
 @VisibleForTesting(otherwise = VisibleForTesting.NONE)
 object TestsData {
@@ -62,6 +67,7 @@ object TestsData {
     const val mockedMdlDocName = "mDL"
     const val mockedPidId = "000001"
     const val mockedMdlId = "000002"
+    const val mockedDocumentId = "document_id"
     const val mockedAgeVerificationId = "000003"
     const val mockedPhotoId = "000004"
     const val mockedUserFirstName = "JAN"
@@ -81,6 +87,18 @@ object TestsData {
     const val mockedIssuerName = "EUDIW Issuer"
     const val mockedRequestRequiredFieldsTitle = "Verification Data"
     const val mockedRequestElementIdentifierNotAvailable = "Not available"
+    const val mockedOfferedDocumentName = "Offered Document"
+    const val mockedOfferedDocumentDocType = "mocked_offered_document_doc_type"
+    const val mockedTxCodeSpecFourDigits = 4
+    const val mockedSuccessTitle = "Success title"
+    const val mockedSuccessSubtitle = "Success subtitle"
+    const val mockedSuccessContentDescription = "Content description"
+    const val mockedIssuanceErrorMessage = "Issuance error message"
+    const val mockedInvalidCodeFormatMessage = "Invalid code format message"
+    const val mockedWalletActivationErrorMessage = "Wallet activation error message"
+    const val mockedPrimaryButtonText = "Primary button text"
+    const val mockedRouteArguments = "mockedRouteArguments"
+    const val mockedTxCode = "mockedTxCode"
 
     const val mockedPidDocType = "eu.europa.ec.eudi.pid.1"
     const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
@@ -476,6 +494,21 @@ object TestsData {
         type = DocumentIdentifier.SAMPLE,
         available = true
     )
+
+    val mockedConfigNavigationTypePop = ConfigNavigation(navigationType = NavigationType.Pop)
+    val mockedConfigNavigationTypePush = ConfigNavigation(
+        navigationType = NavigationType.PushRoute(
+            route = DashboardScreens.Dashboard.screenRoute
+        )
+    )
+    val mockedConfigNavigationTypePopToScreen =
+        ConfigNavigation(navigationType = NavigationType.PopTo(screen = DashboardScreens.Dashboard))
+
+    val mockedOfferTxCodeSpecFourDigits =
+        TxCodeSpec(
+            inputMode = Offer.TxCodeSpec.InputMode.NUMERIC,
+            length = mockedTxCodeSpecFourDigits
+        )
 
     val mockedOptionalFieldsForPidWithBasicFields = listOf(
         TestFieldUi(

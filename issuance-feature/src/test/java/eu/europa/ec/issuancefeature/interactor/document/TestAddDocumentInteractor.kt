@@ -24,10 +24,13 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.util.TestsData.mockedAgeOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePopToScreen
+import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePush
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPhotoIdOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedRouteArguments
 import eu.europa.ec.commonfeature.util.TestsData.mockedSampleDataOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
@@ -49,9 +52,6 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.config.ConfigNavigation
-import eu.europa.ec.uilogic.config.NavigationType
-import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import junit.framework.TestCase.assertEquals
 import org.junit.After
@@ -398,26 +398,6 @@ class TestAddDocumentInteractor {
         // Given
         mockDocumentIssuanceStrings()
 
-        val mockedTripleObject = Triple(
-            first = SuccessUIConfig.HeaderConfig(
-                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
-                color = ThemeColors.warning
-            ),
-            second = SuccessUIConfig.ImageConfig(
-                type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
-                drawableRes = AppIcons.ClockTimer.resourceId,
-                tint = ThemeColors.warning,
-                contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
-            ),
-            third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
-        )
-
-        val mockedConfigNavigation =
-            ConfigNavigation(
-                navigationType = NavigationType.PushRoute(
-                    route = DashboardScreens.Dashboard.screenRoute
-                )
-            )
         val config = SuccessUIConfig(
             headerConfig = mockedTripleObject.first,
             content = resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle),
@@ -426,24 +406,23 @@ class TestAddDocumentInteractor {
                 SuccessUIConfig.ButtonConfig(
                     text = mockedTripleObject.third,
                     style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                    navigation = mockedConfigNavigation
+                    navigation = mockedConfigNavigationTypePush
                 )
             ),
-            onBackScreenToNavigate = mockedConfigNavigation
+            onBackScreenToNavigate = mockedConfigNavigationTypePush
         )
 
-        val mockedArguments = "mockedArguments"
         whenever(
             uiSerializer.toBase64(
                 model = config,
                 parser = SuccessUIConfig.Parser
             )
-        ).thenReturn(mockedArguments)
+        ).thenReturn(mockedRouteArguments)
 
         val flowType = IssuanceFlowUiConfig.NO_DOCUMENT
         val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
 
-        val expectedResult = "SUCCESS?successConfig=$mockedArguments"
+        val expectedResult = "SUCCESS?successConfig=$mockedRouteArguments"
         assertEquals(expectedResult, result)
     }
 
@@ -459,23 +438,6 @@ class TestAddDocumentInteractor {
         // Given
         mockDocumentIssuanceStrings()
 
-        val mockedTripleObject = Triple(
-            first = SuccessUIConfig.HeaderConfig(
-                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
-                color = ThemeColors.warning
-            ),
-            second = SuccessUIConfig.ImageConfig(
-                type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
-                drawableRes = AppIcons.ClockTimer.resourceId,
-                tint = ThemeColors.warning,
-                contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
-            ),
-            third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
-        )
-
-        val mockedConfigNavigation =
-            ConfigNavigation(navigationType = NavigationType.PopTo(screen = DashboardScreens.Dashboard))
-
         val config = SuccessUIConfig(
             headerConfig = mockedTripleObject.first,
             content = resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle),
@@ -484,24 +446,23 @@ class TestAddDocumentInteractor {
                 SuccessUIConfig.ButtonConfig(
                     text = mockedTripleObject.third,
                     style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                    navigation = mockedConfigNavigation
+                    navigation = mockedConfigNavigationTypePopToScreen
                 )
             ),
-            onBackScreenToNavigate = mockedConfigNavigation
+            onBackScreenToNavigate = mockedConfigNavigationTypePopToScreen
         )
 
-        val mockedArguments = "mockedArguments"
         whenever(
             uiSerializer.toBase64(
                 model = config,
                 parser = SuccessUIConfig.Parser
             )
-        ).thenReturn(mockedArguments)
+        ).thenReturn(mockedRouteArguments)
 
         val flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
         val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
 
-        val expectedResult = "SUCCESS?successConfig=$mockedArguments"
+        val expectedResult = "SUCCESS?successConfig=$mockedRouteArguments"
         assertEquals(expectedResult, result)
     }
     //endregion
@@ -544,6 +505,24 @@ class TestAddDocumentInteractor {
             .thenReturn(mockedContentDescriptionId)
         whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle))
             .thenReturn(mockedSuccessSubtitle)
+    }
+    //endregion
+
+    //region mocked objects
+    private val mockedTripleObject by lazy {
+        Triple(
+            first = SuccessUIConfig.HeaderConfig(
+                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
+                color = ThemeColors.warning
+            ),
+            second = SuccessUIConfig.ImageConfig(
+                type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
+                drawableRes = AppIcons.ClockTimer.resourceId,
+                tint = ThemeColors.warning,
+                contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
+            ),
+            third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
+        )
     }
     //endregion
 }
