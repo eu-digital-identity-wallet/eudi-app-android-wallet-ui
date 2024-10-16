@@ -25,7 +25,6 @@ import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePop
 import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
-import eu.europa.ec.commonfeature.util.TestsData.mockedDocumentId
 import eu.europa.ec.commonfeature.util.TestsData.mockedInvalidCodeFormatMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuanceErrorMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
@@ -34,6 +33,7 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedOfferedDocumentDocType
 import eu.europa.ec.commonfeature.util.TestsData.mockedOfferedDocumentName
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingPidUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedPrimaryButtonText
 import eu.europa.ec.commonfeature.util.TestsData.mockedRouteArguments
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessContentDescription
@@ -59,9 +59,9 @@ import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedMainPid
+import eu.europa.ec.testfeature.mockedPidDocName
 import eu.europa.ec.testfeature.mockedPidDocType
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
-import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -73,7 +73,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
@@ -81,11 +80,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class TestDocumentOfferInteractor {
 
     @get:Rule
@@ -136,14 +131,14 @@ class TestDocumentOfferInteractor {
     }
 
     //region resolveDocumentOffer
-    //
+
     // Case 1:
-    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns
-    // ResolveDocumentOfferPartialState.Success
+    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
+    // - empty response.offer.offeredDocuments
 
     // Case 1 Expected Result:
     // ResolveDocumentOfferInteractorPartialState.NoDocument state with:
-    // - the issuer name string
+    // - the issuer name
     @Test
     fun `Given Case 1, When resolveDocumentOffer is called, Then Case 1 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -171,81 +166,16 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 2:
-    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns
-    // ResolveDocumentOfferPartialState.Success with:
-    // an Offer item holding a document list of Offer.OfferedDocument
+    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
+    // - valid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.NUMERIC),
+    // - invalid response.offer.txCodeSpec?.length (2), and
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is not supported.
 
     // Case 2 Expected Result:
-    // ResolveDocumentOfferInteractorPartialState.Success state, with:
-    // - DocumentUiItem list
-    // - issuer name (string)
-    // - and txCodeLength (int)
-    @Test
-    fun `Given Case 2, When resolveDocumentOffer is called, Then Case 2 Expected Result is returned`() =
-        coroutineRule.runTest {
-            // Given
-            val mockedOffer = mockOffer(
-                issuerName = mockedIssuerName,
-                offeredDocuments = mockedOfferedDocumentsList,
-                txCodeSpec = mockedOfferTxCodeSpecFourDigits
-            )
-            mockGetMainPidDocumentCall(
-                mainPid = mockedMainPid
-            )
-            mockWalletDocumentsControllerResolveOfferEventEmission(
-                event = ResolveDocumentOfferPartialState.Success(mockedOffer)
-            )
-
-            // When
-            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
-                val expectedList = mockedOfferedDocumentsList.map {
-                    DocumentItemUi(title = mockedOfferedDocumentName)
-                }
-                val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
-                    documents = expectedList,
-                    issuerName = mockedIssuerName,
-                    txCodeLength = mockedOfferTxCodeSpecFourDigits.length
-                )
-                // Then
-                assertEquals(expectedResult, awaitItem())
-            }
-        }
-
-    // Case 3:
-    // 1. walletCoreDocumentsController.resolveDocumentOffer() throws:
-    // a RuntimeException without message
-
-    // Case 3 Expected Result:
-    // ResolveDocumentOfferInteractorPartialState.Failure state, with:
-    // - a generic error message
-    @Test
-    fun `Given Case 3, When resolveDocumentOffer is called, Then Case 3 Expected Result is returned`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(walletCoreDocumentsController.resolveDocumentOffer(mockedUriPath1))
-                .thenThrow(mockedExceptionWithNoMessage)
-
-            // When
-            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
-                // Then
-                val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
-                    errorMessage = mockedGenericErrorMessage
-                )
-                assertEquals(expectedResult, awaitItem())
-            }
-        }
-
-    // Case 4:
-    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns
-    // ResolveDocumentOfferPartialState.Success with:
-    // an Offer item holding a document list of Offer.OfferedDocument items
-    // txCodeSpec with length of 2 (numeric type), less than given limits of 4 to 6 digits length
-
-    // Case 4 Expected Result:
     // ResolveDocumentOfferInteractorPartialState.Failure state, with:
     // - an invalid code format error message
     @Test
-    fun `Given Case 4, When resolveDocumentOffer is called, Then Case 4 Expected Result is returned`() =
+    fun `Given Case 2, When resolveDocumentOffer is called, Then Case 2 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
             val mockedTxCodeSpecLength = 2
@@ -282,17 +212,110 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 3:
+    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
+    // - invalid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.TEXT),
+    // - valid response.offer.txCodeSpec?.length (4), and
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is not supported.
+
+    // Case 3 Expected Result:
+    // ResolveDocumentOfferInteractorPartialState.Failure state, with:
+    // - an invalid code format error message
+    @Test
+    fun `Given Case 3, When resolveDocumentOffer is called, Then Case 3 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedTxCodeSpecLength = 4
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName,
+                offeredDocuments = mockedOfferedDocumentsList,
+                txCodeSpec = mockOfferTxCodeSpec(
+                    inputMode = TxCodeSpec.InputMode.TEXT,
+                    length = mockedTxCodeSpecLength
+                )
+            )
+
+            val codeMinLength = 4
+            val codeMaxLength = 6
+            whenever(
+                resourceProvider.getString(
+                    R.string.issuance_document_offer_error_invalid_txcode_format,
+                    codeMinLength,
+                    codeMaxLength
+                )
+            ).thenReturn(mockedInvalidCodeFormatMessage)
+
+            mockWalletDocumentsControllerResolveOfferEventEmission(
+                event = ResolveDocumentOfferPartialState.Success(mockedOffer)
+            )
+
+            // When
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
+                    errorMessage = mockedInvalidCodeFormatMessage
+                )
+                // Then
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
+
+    // Case 4:
+    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
+    // - valid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.NUMERIC),
+    // - valid response.offer.txCodeSpec?.length (4), and
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is not supported.
+    // 2. walletCoreDocumentsController.getMainPidDocument() returns not null (i.e. hasMainPid == true).
+    // 3. no PID in Offer (i.e hasPidInOffer == false).
+
+    // Case 4 Expected Result:
+    // ResolveDocumentOfferInteractorPartialState.Success state, with:
+    // - DocumentUiItem list, with non-localized document names
+    // - issuer name
+    // - and txCodeLength
+    @Test
+    fun `Given Case 4, When resolveDocumentOffer is called, Then Case 4 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName,
+                offeredDocuments = mockedOfferedDocumentsList,
+                txCodeSpec = mockedOfferTxCodeSpecFourDigits
+            )
+            mockGetMainPidDocumentCall(
+                mainPid = mockedMainPid
+            )
+            mockWalletDocumentsControllerResolveOfferEventEmission(
+                event = ResolveDocumentOfferPartialState.Success(mockedOffer)
+            )
+
+            // When
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                val expectedList = mockedOfferedDocumentsList.map {
+                    DocumentItemUi(title = mockedOfferedDocumentName)
+                }
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
+                    documents = expectedList,
+                    issuerName = mockedIssuerName,
+                    txCodeLength = mockedOfferTxCodeSpecFourDigits.length
+                )
+                // Then
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
+
     // Case 5:
-    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns
-    // ResolveDocumentOfferPartialState.Success with:
-    // an Offer item holding a document list of Offer.OfferedDocument items
-    // one of the OfferedDocument list items with docType of "load_sample_documents"
-    // (isSupported() returns false in this case)
-    // txCodeSpec with length of 4 (numeric type)
+    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
+    // - valid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.NUMERIC),
+    // - valid response.offer.txCodeSpec?.length (4), and
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is supported.
+    // 2. walletCoreDocumentsController.getMainPidDocument() returns null (i.e. hasMainPid == false).
+    // 3. a PID in Offer (i.e hasPidInOffer == true).
 
     // Case 5 Expected Result:
-    // ResolveDocumentOfferInteractorPartialState.Failure state, with:
-    // - an invalid wallet activation error message
+    // ResolveDocumentOfferInteractorPartialState.Success state, with:
+    // - DocumentUiItem list, with localized document names
+    // - issuer name
+    // - and txCodeLength
     @Test
     fun `Given Case 5, When resolveDocumentOffer is called, Then Case 5 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -302,10 +325,59 @@ class TestDocumentOfferInteractor {
                 offeredDocuments = listOf(
                     mockOfferedDocument(
                         name = mockedOfferedDocumentName,
-                        docType = DocumentIdentifier.SAMPLE.docType
+                        docType = mockedPidDocType
                     )
                 ),
                 txCodeSpec = mockedOfferTxCodeSpecFourDigits
+            )
+            mockGetMainPidDocumentCall(
+                mainPid = null
+            )
+            whenever(resourceProvider.getString(R.string.pid))
+                .thenReturn(mockedPidDocName)
+
+            mockWalletDocumentsControllerResolveOfferEventEmission(
+                event = ResolveDocumentOfferPartialState.Success(mockedOffer)
+            )
+
+            // When
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                val expectedDocumentsUiList = listOf(
+                    DocumentItemUi(mockedPidDocName)
+                )
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
+                    documents = expectedDocumentsUiList,
+                    issuerName = mockedIssuerName,
+                    txCodeLength = mockedOffer.txCodeSpec?.length
+                )
+
+                // Then
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
+
+    // Case 6:
+    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
+    // - valid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.NUMERIC),
+    // - valid response.offer.txCodeSpec?.length (4), and
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is not supported.
+    // 2. walletCoreDocumentsController.getMainPidDocument() returns null (i.e. hasMainPid == false).
+    // 3. no PID in Offer (i.e hasPidInOffer == false).
+
+    // Case 6 Expected Result:
+    // ResolveDocumentOfferInteractorPartialState.Failure state, with:
+    // - an invalid wallet activation error message
+    @Test
+    fun `Given Case 6, When resolveDocumentOffer is called, Then Case 6 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName,
+                offeredDocuments = mockedOfferedDocumentsList,
+                txCodeSpec = mockedOfferTxCodeSpecFourDigits
+            )
+            mockGetMainPidDocumentCall(
+                mainPid = null
             )
 
             whenever(resourceProvider.getString(R.string.issuance_document_offer_error_missing_pid_text))
@@ -319,53 +391,6 @@ class TestDocumentOfferInteractor {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
                     errorMessage = mockedWalletActivationErrorMessage
                 )
-                // Then
-                assertEquals(expectedResult, awaitItem())
-            }
-        }
-
-    // Case 6:
-    // 1. walletCoreDocumentsController.resolveDocumentOffer() returns
-    // ResolveDocumentOfferPartialState.Success with:
-    // an Offer item holding a document list of Offer.OfferedDocument items
-    // one of the OfferedDocument list items with docType of PID
-    // txCodeSpec with length of 4 (numeric type)
-
-    // Case 6 Expected Result:
-    // ResolveDocumentOfferInteractorPartialState.Success state, with:
-    // - the expected DocumentItemUi list
-    // - issuer name string and
-    // - txCodeLength (int)
-    @Test
-    fun `Given Case 6, When resolveDocumentOffer is called, Then Case 6 Expected Result is returned`() =
-        coroutineRule.runTest {
-            // Given
-            val mockedOffer = mockOffer(
-                issuerName = mockedIssuerName,
-                offeredDocuments = mockedOfferedDocumentsList,
-                txCodeSpec = mockedOfferTxCodeSpecFourDigits
-            )
-            whenever(resourceProvider.getString(R.string.pid))
-                .thenReturn(mockedOfferedDocumentName)
-
-            mockGetMainPidDocumentCall(
-                mainPid = mockedMainPid
-            )
-            mockWalletDocumentsControllerResolveOfferEventEmission(
-                event = ResolveDocumentOfferPartialState.Success(mockedOffer)
-            )
-
-            // When
-            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
-                val expectedDocumentsUiList = listOf(
-                    DocumentItemUi(mockedOfferedDocumentName)
-                )
-                val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
-                    documents = expectedDocumentsUiList,
-                    issuerName = mockedIssuerName,
-                    txCodeLength = mockedOffer.txCodeSpec?.length
-                )
-
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
@@ -397,87 +422,67 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    // Case 8:
+    // 1. walletCoreDocumentsController.resolveDocumentOffer() throws:
+    // a RuntimeException with a message
+
+    // Case 8 Expected Result:
+    // ResolveDocumentOfferInteractorPartialState.Failure state, with:
+    // - the exception's localized message
+    @Test
+    fun `Given Case 8, When resolveDocumentOffer is called, Then Case 8 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.resolveDocumentOffer(mockedUriPath1))
+                .thenThrow(mockedExceptionWithMessage)
+
+            // When
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                // Then
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
+                    errorMessage = mockedExceptionWithMessage.localizedMessage!!
+                )
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
+
+    // Case 9:
+    // 1. walletCoreDocumentsController.resolveDocumentOffer() throws:
+    // a RuntimeException without message
+
+    // Case 9 Expected Result:
+    // ResolveDocumentOfferInteractorPartialState.Failure state, with:
+    // - the generic error message
+    @Test
+    fun `Given Case 9, When resolveDocumentOffer is called, Then Case 9 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(walletCoreDocumentsController.resolveDocumentOffer(mockedUriPath1))
+                .thenThrow(mockedExceptionWithNoMessage)
+
+            // When
+            interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
+                // Then
+                val expectedResult = ResolveDocumentOfferInteractorPartialState.Failure(
+                    errorMessage = mockedGenericErrorMessage
+                )
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
     //endregion
 
     //region issueDocuments
+
     // Case 1:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri() is called with:
-    // parameters being mocked
-    // 2. A mockedExceptionWithMessage (RuntimeException) is thrown with message
-
-    // Case 1 Expected Result:
-    // IssueDocumentsInteractorPartialState.Failure state, with:
-    // - errorMessage equal to the localized message of mockedExceptionWithMessage
-    @Test
-    fun `Given Case 1, When issueDocuments is called, Then Case 1 Expected Result is returned`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(
-                walletCoreDocumentsController.issueDocumentsByOfferUri(
-                    offerUri = mockedUriPath1,
-                    txCode = mockedTxCode
-                )
-            ).thenThrow(mockedExceptionWithMessage)
-
-            // When
-            interactor.issueDocuments(
-                offerUri = mockedUriPath1,
-                issuerName = mockedIssuerName,
-                navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
-            ).runFlowTest {
-                val expectedResult = IssueDocumentsInteractorPartialState.Failure(
-                    errorMessage = mockedExceptionWithMessage.localizedMessage!!
-                )
-                // Then
-                assertEquals(expectedResult, awaitItem())
-            }
-        }
-
-    // Case 2:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri() is called with:
-    // parameters being mocked
-    // 2. A mockedExceptionWithNoMessage (RuntimeException) is thrown
-
-    // Case 2 Expected Result:
-    // IssueDocumentsInteractorPartialState.Failure state, with:
-    // - a mockedGenericErrorMessage
-    @Test
-    fun `Given Case 2, When issueDocuments is called, Then Case 2 Expected Result is returned`() =
-        coroutineRule.runTest {
-            // Given
-            whenever(
-                walletCoreDocumentsController.issueDocumentsByOfferUri(
-                    offerUri = mockedUriPath1,
-                    txCode = mockedTxCode
-                )
-            ).thenThrow(mockedExceptionWithNoMessage)
-
-            // When
-            interactor.issueDocuments(
-                offerUri = mockedUriPath1,
-                issuerName = mockedIssuerName,
-                navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
-            ).runFlowTest {
-                val expectedResult = IssueDocumentsInteractorPartialState.Failure(
-                    errorMessage = mockedGenericErrorMessage
-                )
-                // Then
-                assertEquals(expectedResult, awaitItem())
-            }
-        }
-
-    // Case 3:
-    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
     // IssueDocumentsPartialState.Failure with:
     // mockedPlainFailureMessage as the error message
 
-    // Case 3 Expected Result:
+    // Case 1 Expected Result:
     // IssueDocumentsInteractorPartialState.Failure state, with:
     // - errorMessage equal to mockedPlainFailureMessage
     @Test
-    fun `Given Case 3, When issueDocuments is called, Then Case 3 Expected Result is returned`() =
+    fun `Given Case 1, When issueDocuments is called, Then Case 1 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
             mockWalletDocumentsControllerIssueByUriEventEmission(
@@ -493,7 +498,7 @@ class TestDocumentOfferInteractor {
                 navigation = mockedConfigNavigationTypePop,
                 txCode = mockedTxCode
             ).runFlowTest {
-
+                // Then
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
                     errorMessage = mockedPlainFailureMessage
                 )
@@ -501,17 +506,52 @@ class TestDocumentOfferInteractor {
             }
         }
 
-    // Case 4:
-    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // Case 2:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
+    // IssueDocumentsPartialState.Failure with:
+    // mockedPlainFailureMessage as the error message
+    // 2. The controller issueDocumentsByOfferUri is called with a mocked offerUri and null txCode
+
+    // Case 2 Expected Result:
+    // IssueDocumentsInteractorPartialState.Failure state, with:
+    // - errorMessage equal to mockedPlainFailureMessage.
+    @Test
+    fun `Given Case 2, When issueDocuments is called, Then Case 2 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            val failureResponse = IssueDocumentsPartialState.Failure(
+                errorMessage = mockedPlainFailureMessage
+            )
+            mockWalletDocumentsControllerIssueByUriEventEmission(
+                event = failureResponse,
+                txCode = null
+            )
+
+            // When
+            interactor.issueDocuments(
+                offerUri = mockedUriPath1,
+                issuerName = mockedIssuerName,
+                navigation = mockedConfigNavigationTypePop
+            ).runFlowTest {
+                val expectedResult = IssueDocumentsInteractorPartialState.Failure(
+                    errorMessage = mockedPlainFailureMessage
+                )
+                // Then
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
+
+    // Case 3:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
     // IssueDocumentsPartialState.UserAuthRequired with:
     // biometricCrypto object and resultHandler as DeviceAuthenticationResult
     // 2. required arguments are mocked
 
-    // Case 4 Expected Result:
+    // Case 3 Expected Result:
     // IssueDocumentsInteractorPartialState.UserAuthRequired state, with parameters of:
     // - biometricCrypto object and resultHandler as DeviceAuthenticationResult
     @Test
-    fun `Given Case 4, When issueDocuments is called, Then Case 4 Expected Result is returned`() =
+    fun `Given Case 3, When issueDocuments is called, Then Case 3 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
             whenever(resourceProvider.getString(R.string.issuance_generic_error))
@@ -537,6 +577,7 @@ class TestDocumentOfferInteractor {
                 navigation = mockedConfigNavigationTypePop,
                 txCode = mockedTxCode
             ).runFlowTest {
+                // Then
                 val expectedResult = IssueDocumentsInteractorPartialState.UserAuthRequired(
                     crypto = biometricCrypto,
                     resultHandler = resultHandler
@@ -546,23 +587,22 @@ class TestDocumentOfferInteractor {
             }
         }
 
-    // Case 5:
-    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // Case 4:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
     // IssueDocumentsPartialState.Success with:
-    // biometricCrypto object and resultHandler as DeviceAuthenticationResult
-    // 2. required strings are mocked
-    // 3. uiSerializer.toBase64() serializes the mockedSuccessUiConfig into mockedArguments
+    // 1. required strings are mocked
+    // 2. uiSerializer.toBase64() serializes the mockedSuccessUiConfig into mockedArguments
 
-    // Case 5 Expected Result:
+    // Case 4 Expected Result:
     // IssueDocumentsInteractorPartialState.Success state, with:
     // - successRoute equal to "SUCCESS?successConfig=mockedArguments"
     @Test
-    fun `Given Case 5, When issueDocuments is called, Then Case 5 Expected Result is returned`() =
+    fun `Given Case 4, When issueDocuments is called, Then Case 4 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
             mockWalletDocumentsControllerIssueByUriEventEmission(
                 event = IssueDocumentsPartialState.Success(
-                    documentIds = listOf(mockedDocumentId)
+                    documentIds = listOf(mockedPidId)
                 )
             )
 
@@ -611,19 +651,19 @@ class TestDocumentOfferInteractor {
             }
         }
 
-    // Case 6:
-    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // Case 5:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
     // IssueDocumentsPartialState.DeferredSuccess with:
     // mocked deferred documents
     // 2. required strings are mocked
     // 3. triple object with warning tint color
     // 4. uiSerializer.toBase64() serializes the mockedSuccessUiConfig into mockedRouteArguments
 
-    // Case 6 Expected Result:
+    // Case 5 Expected Result:
     // IssueDocumentsInteractorPartialState.DeferredSuccess state, with:
     // - successRoute equal to "SUCCESS?successConfig=mockedArguments"
     @Test
-    fun `Given Case 6, When issueDocuments is called, Then Case 6 Expected Result is returned`() =
+    fun `Given Case 5, When issueDocuments is called, Then Case 5 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
             whenever(
@@ -691,10 +731,10 @@ class TestDocumentOfferInteractor {
             }
         }
 
-    // Case 7:
-    // 1. mockWalletDocumentsControllerIssueByUriEventEmission() emits
+    // Case 6:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
     //    IssueDocumentsPartialState.PartialSuccess with:
-    //    - documentIds containing mockedDocumentId.
+    //    - successfully issued documentIds.
     //    - nonIssuedDocuments map containing mockDeferredPendingDocId1 to mockDeferredPendingType1
     //      and mockDeferredPendingDocId2 to mockDeferredPendingType2.
     // 2. nonIssuedDocsNames is formed by combining the document types of non-issued documents:
@@ -702,13 +742,15 @@ class TestDocumentOfferInteractor {
     // 3. mocked string resources
     // 7. uiSerializer.toBase64() serializes the SuccessUIConfig object into mockedArguments.
 
-    // Case 7 Expected Result:
+    // Case 6 Expected Result:
     // IssueDocumentsInteractorPartialState.Success state, with:
     // - successRoute equal to "SUCCESS?successConfig=mockedArguments"
     @Test
-    fun `Given Case 7, When issueDocuments is called, Then Case 7 Expected Result is returned`() =
+    fun `Given Case 6, When issueDocuments is called, Then Case 6 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
+            val mockSuccessfullyIssuedDocId = "0000"
+
             val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
             val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.docType
 
@@ -733,7 +775,7 @@ class TestDocumentOfferInteractor {
 
             mockWalletDocumentsControllerIssueByUriEventEmission(
                 event = IssueDocumentsPartialState.PartialSuccess(
-                    documentIds = listOf(mockedDocumentId),
+                    documentIds = listOf(mockSuccessfullyIssuedDocId),
                     nonIssuedDocuments = nonIssuedDeferredDocuments
                 )
             )
@@ -778,21 +820,23 @@ class TestDocumentOfferInteractor {
             }
         }
 
-    // Case 8:
-    // 1. IssueDocumentsPartialState.PartialSuccess is returned by issueDocumentsByOfferUri
+    // Case 7:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits IssueDocumentsPartialState.PartialSuccess
     // 2. The interactor is called with the given offerUri, issuerName, navigation and txCode.
 
-    // Case 8 Expected Result:
+    // Case 7 Expected Result:
     // IssueDocumentsInteractorPartialState.Success state, with:
     // - successRoute equal to "SUCCESS?successConfig=mockedArguments".
     @Test
-    fun `Given Case 8, When issueDocuments is called, Then Case 8 Expected Result is returned`() =
+    fun `Given Case 7, When issueDocuments is called, Then Case 7 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            val mockedDeferredPendingDocId1 = mockedPidDocType
+            val mockSuccessfullyIssuedDocId = "0000"
+
+            val mockDeferredPendingDocId1 = mockedPidDocType
             val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.docType
             val nonIssuedDeferredDocuments: Map<DocumentId, DocType> = mapOf(
-                mockedDeferredPendingDocId1 to mockDeferredPendingType1
+                mockDeferredPendingDocId1 to mockDeferredPendingType1
             )
 
             val nonIssuedDocsNames = mockedDocUiNamePid
@@ -807,7 +851,7 @@ class TestDocumentOfferInteractor {
 
             mockWalletDocumentsControllerIssueByUriEventEmission(
                 event = IssueDocumentsPartialState.PartialSuccess(
-                    documentIds = listOf(mockedDocumentId),
+                    documentIds = listOf(mockSuccessfullyIssuedDocId),
                     nonIssuedDocuments = nonIssuedDeferredDocuments
                 )
             )
@@ -839,38 +883,69 @@ class TestDocumentOfferInteractor {
             }
         }
 
-    // Case 9:
-    // 1. IssueDocumentsPartialState.Failure is returned by issueDocumentsByOfferUri
-    // 2. The controller issueDocumentsByOfferUri is called with a mocked offerUri and null txCode
+    // Case 8:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri throws an exception with a message.
 
-    // Case 9 Expected Result:
+    // Case 8 Expected Result:
     // IssueDocumentsInteractorPartialState.Failure state, with:
-    // - errorMessage equal to mockedPlainFailureMessage.
+    // - errorMessage equal to exception's localized message.
     @Test
-    fun `Given Case 9, When issueDocuments is called, Then Case 9 Expected Result is returned`() =
+    fun `Given Case 8, When issueDocuments is called, Then Case 8 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            val failureResponse =
-                IssueDocumentsPartialState.Failure(errorMessage = mockedPlainFailureMessage)
-            mockWalletDocumentsControllerIssueByUriEventEmission(
-                event = failureResponse,
-                txCode = null
-            )
+            whenever(
+                walletCoreDocumentsController.issueDocumentsByOfferUri(
+                    offerUri = mockedUriPath1,
+                    txCode = mockedTxCode
+                )
+            ).thenThrow(mockedExceptionWithMessage)
 
             // When
             interactor.issueDocuments(
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
-                navigation = mockedConfigNavigationTypePop
+                navigation = mockedConfigNavigationTypePop,
+                txCode = mockedTxCode
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
-                    errorMessage = mockedPlainFailureMessage
+                    errorMessage = mockedExceptionWithMessage.localizedMessage!!
                 )
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
         }
 
+    // Case 9:
+    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri() throws an exception with no message.
+
+    // Case 9 Expected Result:
+    // IssueDocumentsInteractorPartialState.Failure state, with:
+    // - the generic error message.
+    @Test
+    fun `Given Case 9, When issueDocuments is called, Then Case 9 Expected Result is returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.issueDocumentsByOfferUri(
+                    offerUri = mockedUriPath1,
+                    txCode = mockedTxCode
+                )
+            ).thenThrow(mockedExceptionWithNoMessage)
+
+            // When
+            interactor.issueDocuments(
+                offerUri = mockedUriPath1,
+                issuerName = mockedIssuerName,
+                navigation = mockedConfigNavigationTypePop,
+                txCode = mockedTxCode
+            ).runFlowTest {
+                val expectedResult = IssueDocumentsInteractorPartialState.Failure(
+                    errorMessage = mockedGenericErrorMessage
+                )
+                // Then
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
     //endregion
 
     //region handleUserAuthentication
@@ -882,7 +957,7 @@ class TestDocumentOfferInteractor {
     // Case 1 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 1, When handleUserAuthentication is called, Then Case 1 expected result is returned`() {
+    fun `Given Case 1, When handleUserAuthentication is called, Then Case 1 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.CanAuthenticate
@@ -911,7 +986,7 @@ class TestDocumentOfferInteractor {
     // Case 2 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 2, When handleUserAuthentication is called, Then Case 2 expected result is returned`() {
+    fun `Given Case 2, When handleUserAuthentication is called, Then Case 2 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.NonEnrolled
@@ -940,7 +1015,7 @@ class TestDocumentOfferInteractor {
     // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.
     @Test
-    fun `Given case 3, When handleUserAuthentication is called, Then Case 3 expected result is returned`() {
+    fun `Given Case 3, When handleUserAuthentication is called, Then Case 3 expected result is returned`() {
         // Given
         val mockedOnAuthenticationFailure: () -> Unit = {}
         whenever(resultHandler.onAuthenticationFailure)
@@ -1066,10 +1141,9 @@ class TestDocumentOfferInteractor {
     //endregion
 
     //region mocked objects
-    private val mockedOfferedDocumentsList =
-        listOf(
-            mockOfferedDocument(docType = DocumentIdentifier.SAMPLE.docType)
-        )
+    private val mockedOfferedDocumentsList = listOf(
+        mockOfferedDocument(docType = DocumentIdentifier.SAMPLE.docType)
+    )
 
     private val mockedTripleObject by lazy {
         Triple(

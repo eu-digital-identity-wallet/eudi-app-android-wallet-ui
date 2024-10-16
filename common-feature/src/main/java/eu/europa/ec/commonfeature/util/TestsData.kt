@@ -66,7 +66,6 @@ object TestsData {
     const val mockedMdlDocName = "mDL"
     const val mockedPidId = "000001"
     const val mockedMdlId = "000002"
-    const val mockedDocumentId = "document_id"
     const val mockedAgeVerificationId = "000003"
     const val mockedPhotoId = "000004"
     const val mockedUserFirstName = "JAN"
@@ -500,8 +499,11 @@ object TestsData {
             route = DashboardScreens.Dashboard.screenRoute
         )
     )
-    val mockedConfigNavigationTypePopToScreen =
-        ConfigNavigation(navigationType = NavigationType.PopTo(screen = DashboardScreens.Dashboard))
+    val mockedConfigNavigationTypePopToScreen = ConfigNavigation(
+        navigationType = NavigationType.PopTo(
+            screen = DashboardScreens.Dashboard
+        )
+    )
 
     val mockedOfferTxCodeSpecFourDigits =
         TxCodeSpec(

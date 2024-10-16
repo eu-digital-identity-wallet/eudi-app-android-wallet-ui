@@ -30,8 +30,12 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedMdlOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPhotoIdOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedPrimaryButtonText
 import eu.europa.ec.commonfeature.util.TestsData.mockedRouteArguments
 import eu.europa.ec.commonfeature.util.TestsData.mockedSampleDataOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessContentDescription
+import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessSubtitle
+import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessTitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
@@ -46,7 +50,6 @@ import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
-import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -58,7 +61,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
@@ -66,11 +68,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class TestAddDocumentInteractor {
 
     @get:Rule
@@ -310,7 +308,7 @@ class TestAddDocumentInteractor {
     // Case 1 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 1, When handleUserAuth is called, Then Case 1 expected result is returned`() {
+    fun `Given Case 1, When handleUserAuth is called, Then Case 1 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.CanAuthenticate
@@ -335,7 +333,7 @@ class TestAddDocumentInteractor {
     // Case 2 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 2, When handleUserAuth is called, Then Case 2 expected result is returned`() {
+    fun `Given Case 2, When handleUserAuth is called, Then Case 2 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.NonEnrolled
@@ -360,7 +358,7 @@ class TestAddDocumentInteractor {
     // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.
     @Test
-    fun `Given case 3, When handleUserAuth is called, Then Case 3 expected result is returned`() {
+    fun `Given Case 3, When handleUserAuth is called, Then Case 3 expected result is returned`() {
         // Given
         val mockedOnAuthenticationFailure: () -> Unit = {}
         whenever(resultHandler.onAuthenticationFailure)
@@ -386,15 +384,12 @@ class TestAddDocumentInteractor {
     //endregion
 
     //region buildGenericSuccessRouteForDeferred
-    //
+
     // Case 1:
     // 1. ConfigNavigation with NavigationType.PushRoute
     // 2. string resources mocked
-    //
-    // when buildGenericSuccessRouteForDeferred is called on the interactor
-    // the expected string result is generated for route definition
     @Test
-    fun `When buildGenericSuccessRouteForDeferred is called, then the expected string result is returned`() {
+    fun `Given Case 1, When buildGenericSuccessRouteForDeferred is called, Then the expected string result is returned`() {
         // Given
         mockDocumentIssuanceStrings()
 
@@ -420,19 +415,18 @@ class TestAddDocumentInteractor {
         ).thenReturn(mockedRouteArguments)
 
         val flowType = IssuanceFlowUiConfig.NO_DOCUMENT
+
+        // When
         val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
 
+        // Then
         val expectedResult = "SUCCESS?successConfig=$mockedRouteArguments"
         assertEquals(expectedResult, result)
     }
 
-    //
     // Case 2:
     // 1. ConfigNavigation with NavigationType.PopRoute
     // 2. string resources mocked
-
-    // when buildGenericSuccessRouteForDeferred is called on the interactor
-    // the expected string result is generated for route definition
     @Test
     fun `When buildGenericSuccessRouteForDeferred (PopRoute) is called, then the expected string result is returned`() {
         // Given
@@ -460,15 +454,18 @@ class TestAddDocumentInteractor {
         ).thenReturn(mockedRouteArguments)
 
         val flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
+
+        // When
         val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
 
+        // Then
         val expectedResult = "SUCCESS?successConfig=$mockedRouteArguments"
         assertEquals(expectedResult, result)
     }
     //endregion
 
     //region resumeOpenId4VciWithAuthorization
-    //
+
     // Case of resumeOpenId4VciWithAuthorization being called on the interactor
     // the expected result is the resumeOpenId4VciWithAuthorization function to be executed on
     // the walletCoreDocumentsController
@@ -492,17 +489,12 @@ class TestAddDocumentInteractor {
     }
 
     private fun mockDocumentIssuanceStrings() {
-        val mockedSuccessTitle = "mocked success title"
-        val mockedSuccessSubtitle = "mocked success subtitle"
-        val mockedButtonText = "mocked button text"
-        val mockedContentDescriptionId = "mocked content description id"
-
         whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_title))
             .thenReturn(mockedSuccessTitle)
         whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text))
-            .thenReturn(mockedButtonText)
+            .thenReturn(mockedPrimaryButtonText)
         whenever(resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId))
-            .thenReturn(mockedContentDescriptionId)
+            .thenReturn(mockedSuccessContentDescription)
         whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle))
             .thenReturn(mockedSuccessSubtitle)
     }
