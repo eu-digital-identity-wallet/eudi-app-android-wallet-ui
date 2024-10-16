@@ -21,19 +21,30 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvai
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.util.TestsData.mockedAgeOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePopToScreen
+import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePush
 import eu.europa.ec.commonfeature.util.TestsData.mockedMdlOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPhotoIdOptionItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedPrimaryButtonText
+import eu.europa.ec.commonfeature.util.TestsData.mockedRouteArguments
 import eu.europa.ec.commonfeature.util.TestsData.mockedSampleDataOptionItemUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessContentDescription
+import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessSubtitle
+import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessTitle
+import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
@@ -43,6 +54,7 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import junit.framework.TestCase.assertEquals
 import org.junit.After
@@ -296,7 +308,7 @@ class TestAddDocumentInteractor {
     // Case 1 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 1, When handleUserAuth is called, Then Case 1 expected result is returned`() {
+    fun `Given Case 1, When handleUserAuth is called, Then Case 1 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.CanAuthenticate
@@ -321,7 +333,7 @@ class TestAddDocumentInteractor {
     // Case 2 Expected Result:
     // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
     @Test
-    fun `Given case 2, When handleUserAuth is called, Then Case 2 expected result is returned`() {
+    fun `Given Case 2, When handleUserAuth is called, Then Case 2 expected result is returned`() {
         // Given
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.NonEnrolled
@@ -346,7 +358,7 @@ class TestAddDocumentInteractor {
     // Case 3 Expected Result:
     // resultHandler.onAuthenticationFailure called once.
     @Test
-    fun `Given case 3, When handleUserAuth is called, Then Case 3 expected result is returned`() {
+    fun `Given Case 3, When handleUserAuth is called, Then Case 3 expected result is returned`() {
         // Given
         val mockedOnAuthenticationFailure: () -> Unit = {}
         whenever(resultHandler.onAuthenticationFailure)
@@ -371,6 +383,102 @@ class TestAddDocumentInteractor {
     }
     //endregion
 
+    //region buildGenericSuccessRouteForDeferred
+
+    // Case 1:
+    // 1. ConfigNavigation with NavigationType.PushRoute
+    // 2. string resources mocked
+    @Test
+    fun `Given Case 1, When buildGenericSuccessRouteForDeferred is called, Then the expected string result is returned`() {
+        // Given
+        mockDocumentIssuanceStrings()
+
+        val config = SuccessUIConfig(
+            headerConfig = mockedTripleObject.first,
+            content = resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle),
+            imageConfig = mockedTripleObject.second,
+            buttonConfig = listOf(
+                SuccessUIConfig.ButtonConfig(
+                    text = mockedTripleObject.third,
+                    style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                    navigation = mockedConfigNavigationTypePush
+                )
+            ),
+            onBackScreenToNavigate = mockedConfigNavigationTypePush
+        )
+
+        whenever(
+            uiSerializer.toBase64(
+                model = config,
+                parser = SuccessUIConfig.Parser
+            )
+        ).thenReturn(mockedRouteArguments)
+
+        val flowType = IssuanceFlowUiConfig.NO_DOCUMENT
+
+        // When
+        val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
+
+        // Then
+        val expectedResult = "SUCCESS?successConfig=$mockedRouteArguments"
+        assertEquals(expectedResult, result)
+    }
+
+    // Case 2:
+    // 1. ConfigNavigation with NavigationType.PopRoute
+    // 2. string resources mocked
+    @Test
+    fun `When buildGenericSuccessRouteForDeferred (PopRoute) is called, then the expected string result is returned`() {
+        // Given
+        mockDocumentIssuanceStrings()
+
+        val config = SuccessUIConfig(
+            headerConfig = mockedTripleObject.first,
+            content = resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle),
+            imageConfig = mockedTripleObject.second,
+            buttonConfig = listOf(
+                SuccessUIConfig.ButtonConfig(
+                    text = mockedTripleObject.third,
+                    style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
+                    navigation = mockedConfigNavigationTypePopToScreen
+                )
+            ),
+            onBackScreenToNavigate = mockedConfigNavigationTypePopToScreen
+        )
+
+        whenever(
+            uiSerializer.toBase64(
+                model = config,
+                parser = SuccessUIConfig.Parser
+            )
+        ).thenReturn(mockedRouteArguments)
+
+        val flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
+
+        // When
+        val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
+
+        // Then
+        val expectedResult = "SUCCESS?successConfig=$mockedRouteArguments"
+        assertEquals(expectedResult, result)
+    }
+    //endregion
+
+    //region resumeOpenId4VciWithAuthorization
+
+    // Case of resumeOpenId4VciWithAuthorization being called on the interactor
+    // the expected result is the resumeOpenId4VciWithAuthorization function to be executed on
+    // the walletCoreDocumentsController
+    @Test
+    fun `When interactor resumeOpenId4VciWithAuthorization is called, Then resumeOpenId4VciWithAuthorization should be invoked on the controller`() {
+        // When
+        interactor.resumeOpenId4VciWithAuthorization(mockedUriPath1)
+
+        verify(walletCoreDocumentsController, times(1))
+            .resumeOpenId4VciWithAuthorization(mockedUriPath1)
+    }
+    //endregion
+
     //region helper functions
     private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
         whenever(deviceAuthenticationInteractor.getBiometricsAvailability(listener = any()))
@@ -378,6 +486,35 @@ class TestAddDocumentInteractor {
                 val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
                 bioAvailability(response)
             }
+    }
+
+    private fun mockDocumentIssuanceStrings() {
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_title))
+            .thenReturn(mockedSuccessTitle)
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text))
+            .thenReturn(mockedPrimaryButtonText)
+        whenever(resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId))
+            .thenReturn(mockedSuccessContentDescription)
+        whenever(resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle))
+            .thenReturn(mockedSuccessSubtitle)
+    }
+    //endregion
+
+    //region mocked objects
+    private val mockedTripleObject by lazy {
+        Triple(
+            first = SuccessUIConfig.HeaderConfig(
+                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
+                color = ThemeColors.warning
+            ),
+            second = SuccessUIConfig.ImageConfig(
+                type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
+                drawableRes = AppIcons.ClockTimer.resourceId,
+                tint = ThemeColors.warning,
+                contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
+            ),
+            third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
+        )
     }
     //endregion
 }

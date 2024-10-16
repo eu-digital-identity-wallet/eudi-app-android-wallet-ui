@@ -106,7 +106,7 @@ class AddDocumentViewModel(
     @InjectedParam private val flowType: IssuanceFlowUiConfig,
 ) : MviViewModel<Event, State, Effect>() {
 
-    var issuanceJob: Job? = null
+    private var issuanceJob: Job? = null
 
     override fun setInitialState(): State = State(
         navigatableAction = getNavigatableAction(flowType),

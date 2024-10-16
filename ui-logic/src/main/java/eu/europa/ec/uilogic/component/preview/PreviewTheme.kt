@@ -18,25 +18,10 @@ package eu.europa.ec.uilogic.component.preview
 
 import androidx.compose.runtime.Composable
 import eu.europa.ec.resourceslogic.theme.ThemeManager
-import eu.europa.ec.resourceslogic.theme.templates.ThemeDimensTemplate
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
-import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
-import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 
 @Composable
 fun PreviewTheme(
     content: @Composable () -> Unit
 ) {
-    ThemeManager.Builder()
-        .withLightColors(ThemeColors.lightColors)
-        .withDarkColors(ThemeColors.darkColors)
-        .withTypography(ThemeTypography.typo)
-        .withShapes(ThemeShapes.shapes)
-        .withDimensions(
-            ThemeDimensTemplate(
-                screenPadding = 10.0
-            )
-        )
-        .build()
     ThemeManager.instance.Theme { content() }
 }

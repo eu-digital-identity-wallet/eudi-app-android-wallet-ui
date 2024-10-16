@@ -36,6 +36,9 @@ import eu.europa.ec.resourceslogic.theme.templates.ThemeShapesTemplate
 import eu.europa.ec.resourceslogic.theme.templates.ThemeShapesTemplate.Companion.toShapes
 import eu.europa.ec.resourceslogic.theme.templates.ThemeTypographyTemplate
 import eu.europa.ec.resourceslogic.theme.templates.ThemeTypographyTemplate.Companion.toTypography
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.resourceslogic.theme.values.ThemeShapes
+import eu.europa.ec.resourceslogic.theme.values.ThemeTypography
 
 class ThemeManager {
     /**
@@ -106,9 +109,16 @@ class ThemeManager {
         val instance: ThemeManager
             get() {
                 if (this::_instance.isInitialized.not()) {
-                    throw RuntimeException(
-                        "Theme manager not initialized. Initialize via ThemeManager builder first."
-                    )
+                    _instance = Builder()
+                        .withLightColors(ThemeColors.lightColors)
+                        .withDarkColors(ThemeColors.darkColors)
+                        .withTypography(ThemeTypography.typo)
+                        .withShapes(ThemeShapes.shapes)
+                        .withDimensions(
+                            ThemeDimensTemplate(
+                                screenPadding = 10.0
+                            )
+                        ).build()
                 }
 
                 return _instance
@@ -120,7 +130,7 @@ class ThemeManager {
          */
         fun ThemeManager.build(builder: Builder): ThemeManager {
             set = ThemeSet(
-                isInDarkMode = builder.isInDarkMode ?: false,
+                isInDarkMode = builder.isInDarkMode == true,
                 lightColors = builder.lightColors.toColorScheme(),
                 darkColors = builder.darkColors.toColorScheme(),
                 typo = builder.typography.toTypography(),
