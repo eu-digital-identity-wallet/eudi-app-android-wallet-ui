@@ -138,7 +138,7 @@ internal class WalletCoreConfigImpl(
                             OpenId4VciManager.Config.ProofType.CWT
                         )
                     }
-                    .trustedReaderCertificates(R.raw.sigvald_ca, R.raw.eudi_pid_issuer_ut)
+                    .trustedReaderCertificates(R.raw.sigvald_ca, R.raw.testroot, R.raw.eudi_pid_issuer_ut)
                     .ktorHttpClientFactory {
                         ProvideKtorHttpClient.client()
                     }
