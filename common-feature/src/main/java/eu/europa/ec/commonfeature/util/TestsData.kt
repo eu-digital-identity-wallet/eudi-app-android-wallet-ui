@@ -92,6 +92,9 @@ object TestsData {
     const val mockedAuthorizationDocType = "no.digdir.eudiw.fullmakt.1"
     const val mockedAuthorizationNameSpace = "no.digdir.eudiw.fullmakt.1"
     const val mockedAuthorizationId = "000005"
+    const val mockedCeoDocType = "no.digdir.eudiw.dagligleder.1"
+    const val mockedCeoNameSpace = "no.digdir.eudiw.dagligleder.1"
+    const val mockedCeoId = "000005"
 
     const val mockedUriPath1 = "eudi-wallet://example.com/path1"
     const val mockedUriPath2 = "eudi-wallet://example.com/path2"
@@ -278,6 +281,25 @@ object TestsData {
             DocItem(
                 namespace = mockedAuthorizationNameSpace,
                 elementIdentifier = "fullmaktsgiver_etternavn",
+            )
+        ),
+        readerAuth = mockedValidReaderAuth
+    )
+
+    val mockedCeoWithBasicFieldsDocRequest = DocRequest(
+        docType = mockedCeoDocType,
+        requestItems = listOf(
+            DocItem(
+                namespace = mockedCeoNameSpace,
+                elementIdentifier = "organisasjonsnavn"
+            ),
+            DocItem(
+                namespace = mockedCeoNameSpace,
+                elementIdentifier = "navn"
+            ),
+            DocItem(
+                namespace = mockedCeoNameSpace,
+                elementIdentifier = "organisasjonsnummer",
             )
         ),
         readerAuth = mockedValidReaderAuth
@@ -658,6 +680,12 @@ object TestsData {
                         value = testFieldUi.value
                     )
 
+                    is DocumentIdentifier.CEO -> mockCreateOptionalFieldForAuthorization(
+                        docId = transformedRequestDataUi.documentId,
+                        elementIdentifier = testFieldUi.elementIdentifier,
+                        value = testFieldUi.value
+                    )
+
                     is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
                 }
 
@@ -863,6 +891,13 @@ object TestsData {
                 docId = mockedAuthorizationId
                 docType = mockedAuthorizationDocType
                 docRequest = mockedAuthorizationWithBasicFieldsDocRequest
+            }
+
+            is DocumentIdentifier.CEO -> {
+                namespace = mockedCeoNameSpace
+                docId = mockedCeoId
+                docType = mockedCeoDocType
+                docRequest = mockedCeoWithBasicFieldsDocRequest
             }
 
             is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException

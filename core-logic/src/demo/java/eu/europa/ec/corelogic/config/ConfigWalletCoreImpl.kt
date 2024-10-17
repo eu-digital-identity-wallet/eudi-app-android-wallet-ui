@@ -16,6 +16,7 @@
 
 package eu.europa.ec.corelogic.config
 
+import android.annotation.SuppressLint
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
 import eu.europa.ec.corelogic.controller.WalletCoreLogController
@@ -25,17 +26,18 @@ import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
 import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionMethod
 import eu.europa.ec.resourceslogic.R
-import android.annotation.SuppressLint
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.logging.Logging
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 import javax.security.cert.CertificateException
+
 
 internal class WalletCoreConfigImpl(
     private val context: Context,
@@ -73,6 +75,10 @@ internal class WalletCoreConfigImpl(
                     }
                 }
             )
+
+            HttpsURLConnection.setDefaultSSLSocketFactory(SSLContext.getInstance("TLS").apply {
+                init(null, trustAllCerts, SecureRandom())
+            }.socketFactory)
 
             return HttpClient(Android) {
                 install(Logging)
@@ -132,7 +138,7 @@ internal class WalletCoreConfigImpl(
                             OpenId4VciManager.Config.ProofType.CWT
                         )
                     }
-                    .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
+                    .trustedReaderCertificates(R.raw.sigvald_ca, R.raw.eudi_pid_issuer_ut)
                     .ktorHttpClientFactory {
                         ProvideKtorHttpClient.client()
                     }

@@ -50,6 +50,7 @@ fun DocumentIdentifier.toUiName(resourceProvider: ResourceProvider): String {
         is DocumentIdentifier.SAMPLE -> resourceProvider.getString(R.string.load_sample_data)
         is DocumentIdentifier.PHOTOID -> resourceProvider.getString(R.string.photo_id)
         is DocumentIdentifier.AUTHORIZATION -> resourceProvider.getString(R.string.authorization)
+        is DocumentIdentifier.CEO -> resourceProvider.getString(R.string.ceo)
         is DocumentIdentifier.OTHER -> docType
     }
 }

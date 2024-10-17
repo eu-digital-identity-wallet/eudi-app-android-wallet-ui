@@ -93,27 +93,15 @@ class AddDocumentInteractorImpl(
                     available = true
                 ),
                 DocumentOptionItemUi(
-                    text = DocumentIdentifier.MDL.toUiName(resourceProvider),
-                    icon = AppIcons.Id,
-                    type = DocumentIdentifier.MDL,
-                    available = canCreateExtraDocument(flowType)
-                ),
-                DocumentOptionItemUi(
-                    text = DocumentIdentifier.AGE.toUiName(resourceProvider),
-                    icon = AppIcons.Id,
-                    type = DocumentIdentifier.AGE,
-                    available = canCreateExtraDocument(flowType)
-                ),
-                DocumentOptionItemUi(
-                    text = DocumentIdentifier.PHOTOID.toUiName(resourceProvider),
-                    icon = AppIcons.Id,
-                    type = DocumentIdentifier.PHOTOID,
-                    available = canCreateExtraDocument(flowType)
-                ),
-                DocumentOptionItemUi(
                     text = DocumentIdentifier.AUTHORIZATION.toUiName(resourceProvider),
                     icon = AppIcons.Id,
                     type = DocumentIdentifier.AUTHORIZATION,
+                    available = canCreateExtraDocument(flowType)
+                ),
+                DocumentOptionItemUi(
+                    text = DocumentIdentifier.CEO.toUiName(resourceProvider),
+                    icon = AppIcons.Id,
+                    type = DocumentIdentifier.CEO,
                     available = canCreateExtraDocument(flowType)
                 )
             )
