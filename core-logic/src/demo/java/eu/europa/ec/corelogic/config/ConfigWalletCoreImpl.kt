@@ -45,8 +45,8 @@ internal class WalletCoreConfigImpl(
 ) : WalletCoreConfig {
 
     private companion object {
-        const val VCI_ISSUER_URL = "https://abr.vc.local:8081"
-        const val VCI_CLIENT_ID = "abr.vc.local"
+        const val VCI_ISSUER_URL = "https://demo-vc-issuer.idporten.dev"
+        const val VCI_CLIENT_ID = "demo-vc-issuer.idporten.dev"
         const val AUTHENTICATION_REQUIRED = false
     }
 
