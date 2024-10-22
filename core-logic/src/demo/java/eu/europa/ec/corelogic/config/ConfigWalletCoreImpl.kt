@@ -50,8 +50,8 @@ internal class WalletCoreConfigImpl(
         const val VCI_CLIENT_ID = "abr.vc.local"
         const val AUTHENTICATION_REQUIRED = false
         */
-        const val VCI_ISSUER_URL = "https://demo-vc-issuer.idporten.dev"
-        const val VCI_CLIENT_ID = "demo-vc-issuer.idporten.dev"
+        const val VCI_ISSUER_URL = "https://demo-vc-issuer.test.idporten.no"
+        const val VCI_CLIENT_ID = "demo-vc-issuer.test.idporten.no"
         const val AUTHENTICATION_REQUIRED = false
     }
 
