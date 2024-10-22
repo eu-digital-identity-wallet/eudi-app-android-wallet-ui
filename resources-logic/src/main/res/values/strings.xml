@@ -153,6 +153,7 @@
     <string name="welcome_faq_button_title">READ FAQs</string>
 
     <!-- Dashboard -->
+    <string name="dashboard_title_before_badge">Setlaboki</string>
     <string name="dashboard_title">Welcome back</string>
     <string name="dashboard_document_has_not_expired">Valid until</string>
     <string name="dashboard_document_has_expired_one">Expired\ </string>

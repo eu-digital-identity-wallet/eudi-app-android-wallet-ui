@@ -152,6 +152,7 @@
     <string name="welcome_faq_button_title">LES FAQ</string>
 
     <!-- Dashboard -->
+    <string name="dashboard_title_before_badge">Setlaboki</string>
     <string name="dashboard_title">Velkommen tilbake</string>
     <string name="dashboard_document_has_not_expired">Gyldig til</string>
     <string name="dashboard_document_has_expired_one">Utgått\ </string>

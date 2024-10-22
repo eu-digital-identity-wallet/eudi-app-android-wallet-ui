@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -75,6 +76,7 @@ import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.ScalableText
 import eu.europa.ec.uilogic.component.UserImageOrPlaceholder
@@ -514,7 +516,7 @@ private fun Title(
             )
             .padding(
                 PaddingValues(
-                    top = SPACING_EXTRA_LARGE.dp,
+                    top = SPACING_LARGE.dp,
                     bottom = SPACING_EXTRA_LARGE.dp,
                     start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                     end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
@@ -522,43 +524,89 @@ private fun Title(
             ),
         contentAlignment = Alignment.Center
     ) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
-        ) {
-            UserImageOrPlaceholder(
-                userBase64Image = userBase64Image,
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(SIZE_SMALL.dp))
-            )
+        ){
             Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(start = SPACING_MEDIUM.dp),
-                horizontalAlignment = Alignment.Start
+                    .fillMaxWidth()
             ) {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Black
-                )
-                Text(
-                    text = userFirstName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.Black
-                )
-            }
-
-            WrapIconButton(
-                iconData = AppIcons.VerticalMore,
-                customTint = MaterialTheme.colorScheme.primary,
-                enabled = allowUserInteraction,
-                onClick = {
-                    onEventSend(Event.OptionsPressed)
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = SPACING_SMALL.dp),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    WrapIcon(
+                        iconData = AppIcons.Logo,
+                        contentAlpha = ALPHA_ENABLED,
+                        customTint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(36.dp)
+                    )
+                    Column(
+                        modifier = Modifier
+                            .height(36.dp)
+                            .padding(start = SPACING_EXTRA_SMALL.dp),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.dashboard_title_before_badge),
+                                style = MaterialTheme.typography.titleLarge,
+                                color = Color.Black
+                            )
+                        }
+                    }
                 }
-            )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    UserImageOrPlaceholder(
+                        userBase64Image = userBase64Image,
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(SIZE_SMALL.dp))
+                    )
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = SPACING_MEDIUM.dp)
+                            .height(64.dp),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = userFirstName,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = Color.Black
+                        )
+                    }
+
+                    WrapIconButton(
+                        iconData = AppIcons.VerticalMore,
+                        customTint = MaterialTheme.colorScheme.primary,
+                        enabled = allowUserInteraction,
+                        onClick = {
+                            onEventSend(Event.OptionsPressed)
+                        }
+                    )
+                }
+            }
         }
     }
 }
