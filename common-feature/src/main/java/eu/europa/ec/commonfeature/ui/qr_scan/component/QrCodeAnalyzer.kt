@@ -19,12 +19,10 @@ package eu.europa.ec.commonfeature.ui.qr_scan.component
 import android.graphics.ImageFormat
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
-import com.google.zxing.DecodeHintType
-import com.google.zxing.MultiFormatReader
 import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
+import com.google.zxing.qrcode.QRCodeReader
 import java.nio.ByteBuffer
 
 class QrCodeAnalyzer(
@@ -39,10 +37,11 @@ class QrCodeAnalyzer(
 
     override fun analyze(image: ImageProxy) {
         if (image.format in supportedImageFormats) {
-            val bytes = image.planes.first().buffer.toByteArray()
+            val plane = image.planes.first()
+            val bytes = plane.buffer.toByteArray()
             val source = PlanarYUVLuminanceSource(
                 bytes,
-                image.width,
+                plane.rowStride,
                 image.height,
                 0,
                 0,
@@ -52,15 +51,7 @@ class QrCodeAnalyzer(
             )
             val binaryBmp = BinaryBitmap(HybridBinarizer(source))
             try {
-                val result = MultiFormatReader().apply {
-                    setHints(
-                        mapOf(
-                            DecodeHintType.POSSIBLE_FORMATS to arrayListOf(
-                                BarcodeFormat.QR_CODE
-                            )
-                        )
-                    )
-                }.decode(binaryBmp)
+                val result = QRCodeReader().decode(binaryBmp)
                 onQrCodeScanned(result.text)
             } catch (e: Exception) {
                 e.printStackTrace()
