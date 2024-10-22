@@ -37,7 +37,7 @@ class QrCodeAnalyzer(
 
     override fun analyze(image: ImageProxy) {
         if (image.format in supportedImageFormats) {
-            val plane = image.planes.first();
+            val plane = image.planes.first()
             val bytes = plane.buffer.toByteArray()
             val source = PlanarYUVLuminanceSource(
                 bytes,
