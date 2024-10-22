@@ -16,8 +16,12 @@
 
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
 
-<application android:enableOnBackInvokedCallback="true" />
+<application
+    android:enableOnBackInvokedCallback="true"
+    android:localeConfig="@xml/locales_config"
+    tools:targetApi="tiramisu" />
 
 </manifest>

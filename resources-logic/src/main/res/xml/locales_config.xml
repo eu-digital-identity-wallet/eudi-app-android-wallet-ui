@@ -14,12 +14,9 @@
   ~ governing permissions and limitations under the Licence.
   -->
 
-<manifest xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <application
-        android:enableOnBackInvokedCallback="true"
-        android:localeConfig="@xml/locales_config"
-        tools:targetApi="tiramisu" />
-
-</manifest>
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en-GB"/>
+    <locale android:name="nn-NO"/>
+    <locale android:name="nb-NO"/>
+    <locale android:name="no-NO"/>
+</locale-config>

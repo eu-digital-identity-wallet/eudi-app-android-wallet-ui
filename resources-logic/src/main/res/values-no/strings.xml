@@ -1,0 +1,265 @@
+<!--
+  ~ Copyright (c) 2023 European Commission
+  ~
+  ~ Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
+  ~ Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
+  ~ except in compliance with the Licence.
+  ~
+  ~ You may obtain a copy of the Licence at:
+  ~ https://joinup.ec.europa.eu/software/page/eupl
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software distributed under
+  ~ the Licence is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF
+  ~ ANY KIND, either express or implied. See the Licence for the specific language
+  ~ governing permissions and limitations under the Licence.
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Generic -->
+    <string name="generic_error_message">Auch! Dette gjekk dårleg...</string>
+    <string name="generic_error_description">Om problemet held fram, ta kontakt med kundeservice</string>
+    <string name="generic_error_button_retry">PRØV IGJEN</string>
+    <string name="generic_network_error_message">Du har ikkje internett tilkobling</string>
+    <string name="generic_error_retry">Prøv igjen</string>
+    <string name="generic_cancel">Avbryt</string>
+    <string name="generic_cancel_capitalized" tools:ignore="ButtonCase">AVBRYT</string>
+    <string name="generic_next_capitalized" tools:ignore="ButtonCase">NESTE</string>
+    <string name="generic_confirm_capitalized" tools:ignore="ButtonCase">BEKREFT</string>
+    <string name="generic_continue_capitalized" tools:ignore="ButtonCase">NESTE</string>
+    <string name="generic_enable_capitalized" tools:ignore="ButtonCase">AKTIVER</string>
+    <string name="generic_success">Suksess</string>
+    <string name="generic_ok">OK</string>
+    <string name="generic_dash">-</string>
+    <string name="generic_qr_scan_title">Scan QR</string>
+    <string name="generic_qr_scan_subtitle">Plasser QR-koden i ramma for å scanne</string>
+    <string name="generic_deferred_success_title">Behandler</string>
+    <string name="generic_bottom_sheet_delete_title">Slett %1$s?</string>
+    <string name="generic_bottom_sheet_delete_subtitle">Du vil ikkje lenger kunne bruke %1$s til verifikasjon</string>
+    <string name="generic_bottom_sheet_delete_primary_button_text">ja</string>
+    <string name="generic_bottom_sheet_delete_secondary_button_text">nei</string>
+
+    <!-- Content Description -->
+    <string name="content_description_user_image">Bilete</string>
+    <string name="content_description_user_signature">Signatur</string>
+    <string name="content_description_qr_code">QR-Kode</string>
+    <string name="content_description_more_vert_icon">Fleire vertikale ikon</string>
+    <string name="content_description_arrow_back_icon">Tilbake</string>
+    <string name="content_description_close_icon">Lukk</string>
+    <string name="content_description_warning_icon">Advarsel</string>
+    <string name="content_description_error_icon">Feil</string>
+    <string name="content_description_error_filled_icon">Feil</string>
+    <string name="content_description_delete_icon">Slett</string>
+    <string name="content_description_touch_id_icon">Touch id</string>
+    <string name="content_description_qr_icon">QR</string>
+    <string name="content_description_qr_scanner_icon">QR Scanner</string>
+    <string name="content_description_nfc_icon">NFC</string>
+    <string name="content_description_user_icon">Bruker</string>
+    <string name="content_description_id_icon">Id</string>
+    <string name="content_description_id_stroke_icon">Id signatur</string>
+    <string name="content_description_logo_icon">Logo ikon</string>
+    <string name="content_description_arrow_up_icon">Pil opp</string>
+    <string name="content_description_arrow_down_icon">Pil ned</string>
+    <string name="content_description_visibility_icon">Vis</string>
+    <string name="content_description_visibility_off_icon">Gøym</string>
+    <string name="content_description_add_icon">Legg til</string>
+    <string name="content_description_edit_icon">Endre</string>
+    <string name="content_description_verified_icon">Bekreft</string>
+    <string name="content_description_message">Melding</string>
+    <string name="content_description_success">Suksess</string>
+    <string name="content_description_clock_timer">Tidsur</string>
+    <string name="content_description_arrow_right">Høgre-pil</string>
+    <string name="content_description_open_new">Opne ny</string>
+
+    <!-- Document Types -->
+    <string name="pid">Nasjonal ID</string>
+    <string name="mdl">Førarkort</string>
+    <string name="age_verification">Aldersbevis</string>
+    <string name="load_sample_data">Last testdokumenter</string>
+    <string name="photo_id">Bildebevis</string>
+    <string name="authorization">Fullmakt</string>
+    <string name="ceo">Daglig leder</string>
+
+    <!-- Biometric prompt -->
+    <string name="biometric_prompt_title">Biometrisk autentisering</string>
+    <string name="biometric_prompt_subtitle">Bruk fingeravtrykk/ansiktsgjenkjenning til å autentisere</string>
+    <string name="biometric_login_prompt_title">Logg på</string>
+    <string name="biometric_login_prompt_subtitle">Logg på med fingeravtrykk/ansiktsgjenkjenning</string>
+    <string name="biometric_login_prompt_quickPinOnlySubTitle">Logg på med pin</string>
+
+    <!-- Biometrics -->
+    <string name="biometric_no_hardware">Einingen din støttar ikkje biometrisk autentisering</string>
+    <string name="biometric_unknown_error">Biometrisk autentisering feila. Prøv igjen!</string>
+
+    <!-- Quick Pin -->
+    <string name="quick_pin_invalid_error">Feil pin-kode</string>
+    <string name="quick_pin_numerical_rule_invalid_error_message">Kan berre bruke numeriske verdier</string>
+    <string name="quick_pin_non_match">Feil pin-kode</string>
+
+    <string name="quick_pin_create_title">Velkommen til Digdir si demo-setlabok</string>
+    <string name="quick_pin_create_enter_subtitle">Registrer pin-kode for innlogging</string>
+    <string name="quick_pin_create_reenter_subtitle">Gjenta pin-koden</string>
+
+    <string name="quick_pin_change_title">Endre pin-kode</string>
+    <string name="quick_pin_change_validate_current_subtitle">Noverande pin-kode</string>
+    <string name="quick_pin_change_enter_new_subtitle">Ny pin-kode</string>
+    <string name="quick_pin_change_reenter_new_subtitle">Gjenta pin-kode</string>
+
+    <string name="quick_pin_success_title">@string/generic_success</string>
+    <string name="quick_pin_create_success_subtitle">Ny pin-kode registrert</string>
+    <string name="quick_pin_create_success_btn">@string/generic_continue_capitalized</string>
+    <string name="quick_pin_change_success_subtitle">Ny pin-kode registrert</string>
+    <string name="quick_pin_change_success_btn">TILBAKE</string>
+
+    <string name="quick_pin_bottom_sheet_cancel_title">Avbryte ny pin-kode?</string>
+    <string name="quick_pin_bottom_sheet_cancel_subtitle">Dette vil avbryte registreringen av ny pin-kode.</string>
+    <string name="quick_pin_bottom_sheet_cancel_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="quick_pin_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+
+    <!-- Request Screen -->
+    <string name="request_title_before_badge">Tenesten</string>
+    <string name="request_title_after_badge">\ ber om følgande</string>
+    <string name="request_no_data">Det etterspurte beviset er ikkje tilgjengelig i setlaboki di. Kontakt autorisert utsteder for meir informasjon.</string>
+    <string name="request_subtitle_one">Please review carefully before sharing your data.</string>
+    <string name="request_subtitle_two">\ Why we need your data?</string>
+    <string name="request_warning_text">Your selection of data to be shared may impact the service</string>
+    <string name="request_primary_button_text">SHARE</string>
+    <string name="request_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <string name="request_bottom_sheet_cancel_title">Avbryt deling?</string>
+    <string name="request_bottom_sheet_cancel_subtitle">Dette vil returnere deg til innlogging utan å dele informasjon.</string>
+    <string name="request_bottom_sheet_cancel_primary_button_text">FORTSETT</string>
+    <string name="request_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <string name="request_bottom_sheet_subtitle_title">Vi treng dine data</string>
+    <string name="request_bottom_sheet_subtitle_subtitle">Dette vert brukt til å verifisere din identitet</string>
+    <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
+    <string name="request_bottom_sheet_badge_title">Trusted relying party</string>
+    <string name="request_bottom_sheet_badge_subtitle">A relying party is considered trusted when it meets predefined criteria for security, data protection, compliance, and responsible data handling. Trust is reinforced through assessments, audits, and certifications.</string>
+    <string name="request_bottom_sheet_badge_primary_button_text">@string/generic_ok</string>
+    <string name="request_required_fields_title">Verifikasjonsdata</string>
+    <string name="request_gender_male">mann</string>
+    <string name="request_gender_female">kvinne</string>
+    <string name="request_element_identifier_not_available">Ikkje tilgjengeleg</string>
+
+    <!-- Loading Screen -->
+    <string name="loading_subtitle">Vent litt…</string>
+    <string name="loading_success_config_title">@string/generic_success</string>
+    <string name="loading_success_config_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="loading_biometry_share_subtitle">Bruk biometri for å tillate deling av bevis</string>
+    <string name="loading_quick_pin_share_subtitle">Bruk pin-kode for å tillate deling av bevis</string>
+
+    <!-- Login -->
+    <string name="welcome_login_button_title">LOGG PÅ</string>
+    <string name="welcome_faq_button_title">LES FAQ</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Velkommen tilbake</string>
+    <string name="dashboard_document_has_not_expired">Gyldig til</string>
+    <string name="dashboard_document_has_expired_one">Utgått\ </string>
+    <string name="dashboard_document_has_expired_two">den</string>
+    <string name="dashboard_document_deferred_pending">Venter</string>
+    <string name="dashboard_document_deferred_failed">Utsteding feila</string>
+    <string name="dashboard_primary_fab_text">VIS QR / TAP</string>
+    <string name="dashboard_secondary_fab_text">LEGG TIL</string>
+
+    <string name="dashboard_bottom_sheet_options_title">Meir</string>
+    <string name="dashboard_bottom_sheet_options_action_1">Endre pin-kode</string>
+    <string name="dashboard_bottom_sheet_options_action_2">Scan QR</string>
+    <string name="dashboard_bottom_sheet_options_action_3">Vis logger</string>
+
+    <string name="dashboard_bottom_sheet_bluetooth_title">Skru på blåtann?</string>
+    <string name="dashboard_bottom_sheet_bluetooth_subtitle">Skru på blåtann for å dele bevis med QR/TAP</string>
+    <string name="dashboard_bottom_sheet_bluetooth_primary_button_text">@string/generic_enable_capitalized</string>
+    <string name="dashboard_bottom_sheet_bluetooth_secondary_button_text">@string/generic_cancel_capitalized</string>
+
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_title">@string/generic_bottom_sheet_delete_title</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_subtitle">@string/generic_bottom_sheet_delete_subtitle</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
+    <string name="dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
+
+    <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Bevis utstedt</string>
+    <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">Nye bevis er lagt i setlaboki.</string>
+    <string name="dashboard_intent_chooser_logs_share_title">Del logger</string>
+
+    <!-- Qr Scan -->
+    <string name="qr_scan_permission_not_granted">Mangler tilgang til kamera\nOpne App Instillinger</string>
+    <string name="qr_scan_informative_text_presentation_flow">Problemer med å scanne QR-koden?\nPrøv eit anna alternativ</string>
+    <string name="qr_scan_informative_text_issuance_flow">Problemer med å scanne QR-koden?\nPrøv eit anna alternativ</string>
+
+    <!-- Document Details -->
+    <string name="document_details_portrait_readable_identifier">Sjå ovanfor</string>
+    <string name="vehicle_category_code">Bil kategori</string>
+    <string name="user_pseudonym">Brukers Pseudonym</string>
+    <string name="document_details_boolean_item_true_readable_value">ja</string>
+    <string name="document_details_boolean_item_false_readable_value">nei</string>
+
+    <string name="document_details_bottom_sheet_delete_title">@string/generic_bottom_sheet_delete_title</string>
+    <string name="document_details_bottom_sheet_delete_subtitle">@string/generic_bottom_sheet_delete_subtitle</string>
+    <string name="document_details_bottom_sheet_delete_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
+    <string name="document_details_bottom_sheet_delete_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
+
+    <!-- Proximity QR -->
+    <string name="proximity_qr_title">Vis QR eller Tap</string>
+    <string name="proximity_qr_subtitle">Viser QR-kode for å kunne dele informasjon</string>
+    <string name="proximity_qr_use_nfc">eller bruk NFC</string>
+
+    <!-- Presentation Qr Scan -->
+    <string name="presentation_qr_scan_title">@string/generic_qr_scan_title</string>
+    <string name="presentation_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
+
+    <!-- Presentation Loading Screen -->
+    <string name="presentation_loading_success_config_subtitle">Du har delt bevis med %1$s</string>
+    <string name="presentation_loading_success_config_verifier">Tenesten</string>
+
+    <!-- Issuance Add Document Screen -->
+    <string name="issuance_add_document">@string/generic_continue_capitalized</string>
+    <string name="issuance_add_document_title">Legg til bevis</string>
+    <string name="issuance_add_document_subtitle">Velg eit bevis for å legge det til setlaboki</string>
+    <string name="issuance_add_document_user_auth_required">Autentisering er påkrevd</string>
+    <string name="issuance_add_document_deferred_success_title">@string/generic_deferred_success_title</string>
+    <string name="issuance_add_document_deferred_success_subtitle">Nytt bevis er bestillt. Du vil få beskjed når det er tilgjengeleg i setlaboki.</string>
+    <string name="issuance_add_document_deferred_success_primary_button_text">@string/generic_ok</string>
+    <string name="issuance_add_document_qr_scan_section_title">eller</string>
+    <string name="issuance_add_document_qr_scan_section_subtitle">SCAN QR</string>
+
+    <!-- Issuance Success Screen -->
+    <string name="issuance_success_title">@string/generic_success</string>
+    <string name="issuance_success_subtitle">Du kan nå legge til ditt %1$s</string>
+    <string name="issuance_success_primary_button_text">NESTE</string>
+
+    <!-- Issuance Documents Details Screen -->
+    <string name="issuance_document_details_primary_button_text">@string/generic_continue_capitalized</string>
+
+    <!-- Issuance Qr Scan -->
+    <string name="issuance_qr_scan_title">@string/generic_qr_scan_title</string>
+    <string name="issuance_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
+
+    <!-- Issuance Document Offer -->
+    <string name="issuance_document_offer_default_issuer_name">Issuer</string>
+    <string name="issuance_document_offer_title">%1$s ynskjer å legge til følgande i setlaboki di</string>
+    <string name="issuance_document_offer_subtitle">Bekreft utsteding av</string>
+    <string name="issuance_document_offer_primary_button_text">UTSTED</string>
+    <string name="issuance_document_offer_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <string name="issuance_document_offer_success_title">@string/generic_success</string>
+    <string name="issuance_document_offer_deferred_success_title">@string/generic_deferred_success_title</string>
+    <string name="issuance_document_offer_success_subtitle">Du har fått nye bevis frå %1$s.</string>
+    <string name="issuance_document_offer_partial_success_subtitle">Bevisa dine frå %1$s vart utstedt, med unntak av %2$s</string>
+    <string name="issuance_document_offer_deferred_success_subtitle">Bevisa dine frå %1$s er bestillt. Du vil få beskjed når dei er tilgjengelege i setalboki di.</string>
+    <string name="issuance_document_offer_success_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="issuance_document_offer_deferred_success_primary_button_text">@string/generic_ok</string>
+    <string name="issuance_document_offer_error_missing_pid_text">Setlaboki må først verte aktivert med ein nasjonal id</string>
+    <string name="issuance_document_offer_error_invalid_txcode_format">Ugyldig transaksjonskode format. Lengda må vere mellom %1$d og %2$d nummer, og berre nummer er tillate.</string>
+    <string name="issuance_document_offer_error_no_document">Kunne ikkje hente bevisførespurnad</string>
+
+    <string name="issuance_document_offer_bottom_sheet_cancel_title">Avbryte pågåande utsteding?</string>
+    <string name="issuance_document_offer_bottom_sheet_cancel_subtitle">Dette vil avbryte utsteding, og ta deg tilbake, utan nye bevis.</string>
+    <string name="issuance_document_offer_bottom_sheet_cancel_primary_button_text">FORTSETT</string>
+    <string name="issuance_document_offer_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+
+    <!-- Issuance Document Offer Code -->
+    <string name="issuance_code_title">%1$s ber om bevis</string>
+    <string name="issuance_code_caption">Skriv inn den %1$d-siffra transaksjonskoden du mottok</string>
+
+    <!-- Issuance Document Errors -->
+    <string name="issuance_generic_error">Feil under utsteding av bevis...</string>
+
+</resources>

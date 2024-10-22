@@ -42,11 +42,11 @@ android {
     defaultConfig {
         applicationId = "eu.europa.ec.euidi"
         versionCode = 1
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+        resourceConfigurations.addAll(listOf("en", "no", "nb", "nn"))
     }
 
     buildTypes {

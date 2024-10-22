@@ -3,6 +3,7 @@
 * [Overview](#overview)
 * [Setup Apps](#setup-apps)
 * [How to work with self signed certificates](#how-to-work-with-self-signed-certificates)
+* [Configuring your android emulator to work with local issuer/verifier](how_to_debug_android.md)
 ## Overview
 This guide aims to assist developers build the Android application.
 

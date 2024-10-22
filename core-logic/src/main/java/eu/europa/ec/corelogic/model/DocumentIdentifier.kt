@@ -68,6 +68,13 @@ sealed interface DocumentIdentifier {
             get() = "no.digdir.eudiw.fullmakt.1"
     }
 
+    data object CEO : DocumentIdentifier {
+        override val nameSpace: String
+            get() = "no.digdir.eudiw.dagligleder.1"
+        override val docType: DocType
+            get() = "no.digdir.eudiw.dagligleder.1"
+    }
+
     data class OTHER(
         override val nameSpace: String,
         override val docType: DocType,
@@ -76,7 +83,7 @@ sealed interface DocumentIdentifier {
 
 fun DocumentIdentifier.isSupported(): Boolean {
     return when (this) {
-        is DocumentIdentifier.PID, DocumentIdentifier.MDL, DocumentIdentifier.AGE, DocumentIdentifier.PHOTOID, DocumentIdentifier.AUTHORIZATION -> true
+        is DocumentIdentifier.PID, DocumentIdentifier.MDL, DocumentIdentifier.AGE, DocumentIdentifier.PHOTOID, DocumentIdentifier.AUTHORIZATION, DocumentIdentifier.CEO -> true
         is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> false
     }
 }
@@ -92,6 +99,7 @@ fun DocType.toDocumentIdentifier(): DocumentIdentifier = when (this) {
     DocumentIdentifier.AGE.docType -> DocumentIdentifier.AGE
     DocumentIdentifier.PHOTOID.docType -> DocumentIdentifier.PHOTOID
     DocumentIdentifier.AUTHORIZATION.docType -> DocumentIdentifier.AUTHORIZATION
+    DocumentIdentifier.CEO.docType -> DocumentIdentifier.CEO
     else -> DocumentIdentifier.OTHER(
         nameSpace = this,
         docType = this
@@ -131,6 +139,9 @@ private fun createDocumentIdentifier(nameSpace: String, docType: DocType): Docum
 
         nameSpace == DocumentIdentifier.AUTHORIZATION.nameSpace
                 && docType == DocumentIdentifier.AUTHORIZATION.docType -> DocumentIdentifier.AUTHORIZATION
+
+        nameSpace == DocumentIdentifier.CEO.nameSpace
+                && docType == DocumentIdentifier.CEO.docType -> DocumentIdentifier.CEO
 
         else -> DocumentIdentifier.OTHER(
             nameSpace = nameSpace,
