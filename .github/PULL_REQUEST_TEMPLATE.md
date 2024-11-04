@@ -1,5 +1,5 @@
 # Description of changes
-Add description of the change here
+Add a description of the change here
 
 ## Type of change
 
