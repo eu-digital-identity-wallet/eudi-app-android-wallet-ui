@@ -23,7 +23,7 @@ platform :android do
 
     # Run tests
     gradle(task: "clean")
-    gradle(task: "test#{ENV["APP_BUILD_TYPE"]}DebugUnitTest")
+    gradle(task: "koverHtmlReport#{ENV["APP_BUILD_TYPE"]}Debug")
 
     # Clean Artifacts
     clean_build_artifacts
