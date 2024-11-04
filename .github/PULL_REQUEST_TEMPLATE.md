@@ -20,10 +20,10 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 # Checklist:
 
 - [x] I have performed a self-review of my own code
-- [] I have commented my code, particularly in hard-to-understand areas
-- [] I have made corresponding changes to the readme
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have made corresponding changes to the readme
 - [x] My changes generate no new warnings
-- [] I have added unit tests that prove my fix is effective or that my feature works
+- [ ] I have added unit tests that prove my fix is effective or that my feature works
 - [x] New and existing unit tests pass locally with my changes
-- [] I have checked that my views are *accessible*
+- [ ] I have checked that my views are *accessible*
 - [x] I have checked that my strings are *localized* where applicable
