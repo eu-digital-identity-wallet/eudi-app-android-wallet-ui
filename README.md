@@ -131,19 +131,22 @@ You will also need to download the Android Verifier app. More information can be
 
 While on the "Dashboard" screen you can tap "Add doc" and issue a new document, e.g. "Driving License".
 
-If you want to re-issue a document you must delete it first by tapping on the document in the "Dashboard" screen and tapping the delete icon in the "Document details" view.
+If you want to re-issue a document, you must delete it first by tapping on it in the "Dashboard" screen and tapping the delete icon in the "Document details" view.
 
 ### Presentation (Online authentication/Same device) flow.
 
 1. Go to the browser application on your device and enter "https://verifier.eudiw.dev"
-2. Tap the first option (selectable) and pick the fields you want to share (e.g. "Family Name" and "Given Name")
-3. Tap "Next" and then "Authorize".
-4. When asked to open the wallet app tap "Open".
-5. You will be returned to the app to the "Request" screen. Tap "Share".
-6. Enter the PIN you added in the initial steps.
-7. On success tap "Continue".
-8. A browser will open showing that the Verifier has accepted your request.
-9. Return to the app. You are back to the "Dashboard" screen and the flow is complete.
+2. Select scenario "PID Authentication"
+3. Expand the Person Identification Data (PID) card and select "attributes by" -> "Specific attributes" and "format" -> the format of your choice.
+4. Press next and then "Select Attributes"
+5. Pick the fields you want to share (e.g. "Family Name" and "Given Name")
+6. Review your presentation request and then click next.
+7. When asked to open the wallet app tap "Open".
+8. You will be returned to the app's "Request" screen. Tap "Share."
+9. Enter the PIN you added in the initial steps.
+10. On success tap "Continue".
+11. A browser will open showing that the Verifier has accepted your request.
+12. Return to the app. You are back on the "Dashboard" screen, and the flow is complete.
 
 ### Proximity flow
 
