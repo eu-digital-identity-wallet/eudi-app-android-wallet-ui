@@ -22,6 +22,8 @@ import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
+import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -37,7 +39,7 @@ fun provideDashboardInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     walletCoreConfig: WalletCoreConfig,
     configLogic: ConfigLogic,
-    logController: LogController
+    logController: LogController,
 ): DashboardInteractor =
     DashboardInteractorImpl(
         resourceProvider,
@@ -46,3 +48,7 @@ fun provideDashboardInteractor(
         configLogic,
         logController
     )
+
+@Factory
+fun provideDocumentSignInteractor(): DocumentSignInteractor =
+    DocumentSignInteractorImpl()

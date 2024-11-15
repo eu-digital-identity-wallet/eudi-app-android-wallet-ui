@@ -107,6 +107,7 @@ sealed class Event : ViewEvent {
 
         sealed class Options : BottomSheet() {
             data object OpenChangeQuickPin : Options()
+            data object OpenSignDocument : Options()
             data object OpenScanQr : Options()
             data object RetrieveLogs : Options()
         }
@@ -220,6 +221,11 @@ class DashboardViewModel(
                                 event = Event.BottomSheet.Options.OpenChangeQuickPin
                             ),
                             ModalOptionUi(
+                                title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_4),
+                                icon = AppIcons.Sign,
+                                event = Event.BottomSheet.Options.OpenSignDocument
+                            ),
+                            ModalOptionUi(
                                 title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_2),
                                 icon = AppIcons.QrScanner,
                                 event = Event.BottomSheet.Options.OpenScanQr
@@ -268,6 +274,12 @@ class DashboardViewModel(
             is Event.BottomSheet.Options.OpenChangeQuickPin -> {
                 hideBottomSheet()
                 navigateToChangeQuickPin()
+            }
+
+            is Event.BottomSheet.Options.OpenSignDocument -> {
+                hideBottomSheet()
+                navigateToDocumentSign()
+
             }
 
             is Event.BottomSheet.Options.OpenScanQr -> {
@@ -644,6 +656,14 @@ class DashboardViewModel(
                         mapOf("pinFlow" to PinFlow.UPDATE)
                     )
                 )
+            )
+        }
+    }
+
+    private fun navigateToDocumentSign() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = DashboardScreens.SignDocument.screenRoute
             )
         }
     }

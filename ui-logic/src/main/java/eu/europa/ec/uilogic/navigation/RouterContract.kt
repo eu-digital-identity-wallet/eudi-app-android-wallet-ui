@@ -45,6 +45,8 @@ sealed class CommonScreens {
 
 sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
+    data object SignDocument :
+        Screen(name = "SIGN_DOCUMENT")
 }
 
 sealed class LoginScreens {

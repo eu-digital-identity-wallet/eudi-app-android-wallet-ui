@@ -164,6 +164,7 @@
     <string name="dashboard_bottom_sheet_options_action_1">Change quick pin</string>
     <string name="dashboard_bottom_sheet_options_action_2">Scan a QR code</string>
     <string name="dashboard_bottom_sheet_options_action_3">Retrieve logs</string>
+    <string name="dashboard_bottom_sheet_options_action_4">Sign document</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
     <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the QR/TAP option</string>
@@ -178,6 +179,11 @@
     <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
     <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
     <string name="dashboard_intent_chooser_logs_share_title">Share logs</string>
+
+    <!-- Document Sign -->
+    <string name="document_sign_title">Sign Document</string>
+    <string name="document_sign_subtitle">Select a document from your device to sign electronically.</string>
+    <string name="document_sign_select_document">Select document</string>
 
     <!-- Qr Scan -->
     <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>
