@@ -52,7 +52,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
 @Composable
-fun DocumentSignScreen(
+internal fun DocumentSignScreen(
     navController: NavController,
     viewModel: DocumentSignViewModel,
 ) {
@@ -80,7 +80,7 @@ fun DocumentSignScreen(
 
 
 @Composable
-fun Content(
+private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
@@ -130,7 +130,7 @@ fun Content(
 }
 
 @Composable
-fun SignButton(onEventSend: (Event) -> Unit) {
+private fun SignButton(onEventSend: (Event) -> Unit) {
     WrapCard(
         onClick = {
             onEventSend(
