@@ -60,7 +60,7 @@ internal fun DocumentSignScreen(
 
     ContentScreen(
         isLoading = state.isLoading,
-        navigatableAction = ScreenNavigateAction.BACKABLE,
+        navigatableAction = ScreenNavigateAction.CANCELABLE,
         onBack = { viewModel.setEvent(Event.Pop) },
         contentErrorConfig = state.error
     ) { contentPadding ->
@@ -87,6 +87,9 @@ private fun Content(
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues,
 ) {
+
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -106,11 +109,9 @@ private fun Content(
         contract = ActivityResultContracts.OpenDocument(),
     ) { uri ->
         uri?.let {
-            onEventSend(Event.DocumentUriRetrieved(it))
+            onEventSend(Event.DocumentUriRetrieved(context, it))
         }
     }
-
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->

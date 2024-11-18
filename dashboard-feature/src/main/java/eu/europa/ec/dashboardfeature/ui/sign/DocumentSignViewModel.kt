@@ -16,9 +16,9 @@
 
 package eu.europa.ec.dashboardfeature.ui.sign
 
+import android.content.Context
 import android.net.Uri
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
-import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractorPartialState
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -37,7 +37,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Pop : Event()
     data object OnSelectDocument : Event()
-    data class DocumentUriRetrieved(val uri: Uri) : Event()
+    data class DocumentUriRetrieved(val context: Context, val uri: Uri) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -67,15 +67,10 @@ class DocumentSignViewModel(
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
-            is Event.DocumentUriRetrieved -> {
-                when (documentSignInteractor.launchRQESSdk(event.uri)) {
-                    is DocumentSignInteractorPartialState.LaunchRQES -> setEffect {
-                        Effect.LaunchedRQES(
-                            event.uri
-                        )
-                    }
-                }
-            }
+            is Event.DocumentUriRetrieved -> documentSignInteractor.launchRQESSdk(
+                event.context,
+                event.uri
+            )
         }
     }
 }

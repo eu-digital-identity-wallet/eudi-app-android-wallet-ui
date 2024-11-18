@@ -21,6 +21,7 @@ import project.convention.logic.kover.excludeFromKoverReport
 plugins {
     id("project.android.library")
     id("project.android.library.compose")
+    id("project.rqes.sdk")
 }
 
 android {

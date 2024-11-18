@@ -58,6 +58,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             val openId4VciAuthorizationScheme = "eu.europa.ec.euidi"
             val openId4VciAuthorizationHost = "authorization"
 
+            val rqesScheme = "rqes"
+            val rqesHost = "oauth"
+            val rqesPath = "/callback"
+
             with(pluginManager) {
                 apply("com.android.library")
                 apply("project.android.library.kover")
@@ -87,6 +91,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                         "ISSUE_AUTHORIZATION_DEEPLINK",
                         "$openId4VciAuthorizationScheme://$openId4VciAuthorizationHost"
                     )
+                    addConfigField("RQES_SCHEME", rqesScheme)
+                    addConfigField("RQES_DEEPLINK", "$rqesScheme://$rqesHost$rqesPath")
 
                     // Manifest placeholders for Wallet deepLink
                     manifestPlaceholders["deepLinkScheme"] = walletScheme
@@ -109,6 +115,11 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                         openId4VciAuthorizationScheme
                     manifestPlaceholders["openId4VciAuthorizationHost"] =
                         openId4VciAuthorizationHost
+
+                    // Manifest placeholders used for RQES
+                    manifestPlaceholders["rqesHost"] = rqesHost
+                    manifestPlaceholders["rqesScheme"] = rqesScheme
+                    manifestPlaceholders["rqesPath"] = rqesPath
                 }
                 configureFlavors(this)
                 configureGradleManagedDevices(this)

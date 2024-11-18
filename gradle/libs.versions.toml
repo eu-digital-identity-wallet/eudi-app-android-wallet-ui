@@ -67,6 +67,7 @@ sonar = "5.0.0.4638"
 baselineprofile = "1.3.3"
 timber = "5.0.1"
 treessence = "1.1.2"
+rqesUiSDK = "0.0.1-SNAPSHOT"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -154,6 +155,7 @@ appcenter-crashes = { group = "com.microsoft.appcenter", name = "appcenter-crash
 appcenter-distribute = { group = "com.microsoft.appcenter", name = "appcenter-distribute", version.ref = "appCenter" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 treessence = { group = "com.github.bastienpaulfr", name = "Treessence", version.ref = "treessence" }
+rqes-ui-sdk = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-rqes-ui", version.ref = "rqesUiSDK" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }

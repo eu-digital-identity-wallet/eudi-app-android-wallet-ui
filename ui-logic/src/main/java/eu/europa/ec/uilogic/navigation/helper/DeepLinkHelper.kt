@@ -25,6 +25,7 @@ import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.corelogic.util.CoreActions
+import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.extension.openUrl
@@ -137,6 +138,16 @@ fun handleDeepLinkAction(
             )
             return
         }
+
+        DeepLinkType.RQES -> {
+            action.link.getQueryParameter("code")?.let {
+                EudiRQESUi.resume(
+                    context = navController.context,
+                    authorizationCode = it
+                )
+            }
+            return
+        }
     }
 
     val navigationLink = arguments?.let {
@@ -173,6 +184,9 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
     ),
     DYNAMIC_PRESENTATION(
         emptyList()
+    ),
+    RQES(
+        schemas = listOf(BuildConfig.RQES_SCHEME)
     );
 
     companion object {
@@ -190,6 +204,10 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
                 ISSUANCE
             }
 
+            RQES.schemas.contains(scheme) -> {
+                RQES
+            }
+
             else -> EXTERNAL
         }
     }
@@ -197,7 +215,7 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
 
 private fun notify(context: Context, action: String, bundle: Bundle? = null) {
     Intent().also { intent ->
-        intent.setAction(action)
+        intent.action = action
         bundle?.let { intent.putExtras(it) }
         context.sendBroadcast(intent)
     }

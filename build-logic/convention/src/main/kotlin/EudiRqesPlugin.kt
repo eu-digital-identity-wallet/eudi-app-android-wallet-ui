@@ -14,18 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.interactor
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.libs
 
-import android.content.Context
-import android.net.Uri
-import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
-
-interface DocumentSignInteractor {
-    fun launchRQESSdk(context: Context, uri: Uri)
-}
-
-class DocumentSignInteractorImpl : DocumentSignInteractor {
-    override fun launchRQESSdk(context: Context, uri: Uri) {
-        EudiRQESUi.initiate(context, uri)
+class EudiRqesPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            dependencies {
+                add("implementation", libs.findLibrary("rqes-ui-sdk").get())
+            }
+        }
     }
 }
