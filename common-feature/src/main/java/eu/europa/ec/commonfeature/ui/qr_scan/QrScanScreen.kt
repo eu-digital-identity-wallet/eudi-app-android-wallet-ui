@@ -271,7 +271,7 @@ private fun OpenCamera(
                 modifier = Modifier.throttledClickable { onEventSend(Event.GoToAppSettings) },
                 informativeText = stringResource(id = R.string.qr_scan_permission_not_granted),
                 contentColor = Color.White,
-                iconAlpha = 1f
+                isIconEnabled = true,
             )
         }
 

@@ -47,6 +47,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -701,9 +702,9 @@ private fun DocumentContent(dataItem: DocumentUi) {
     ) {
         Box {
             WrapIcon(
+                modifier = Modifier.alpha(iconAlpha),
                 iconData = iconData,
                 customTint = iconTint,
-                contentAlpha = iconAlpha
             )
             if (documentState == DocumentUiIssuanceState.Issued) {
                 if (dataItem.documentHasExpired) {

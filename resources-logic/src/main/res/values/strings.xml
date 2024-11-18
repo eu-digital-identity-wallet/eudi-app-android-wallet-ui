@@ -43,7 +43,7 @@
     <string name="content_description_user_image">User image</string>
     <string name="content_description_user_signature">User signature</string>
     <string name="content_description_qr_code">QR Code</string>
-    <string name="content_description_more_vert_icon">More Items Vertically</string>
+    <string name="content_description_more_vert_icon">More Items</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
     <string name="content_description_warning_icon">Warning</string>

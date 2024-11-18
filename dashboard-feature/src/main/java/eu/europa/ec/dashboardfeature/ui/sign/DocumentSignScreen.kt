@@ -40,7 +40,6 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapCard
@@ -147,7 +146,6 @@ private fun SignButton(onEventSend: (Event) -> Unit) {
         ) {
 
             val iconsColor = MaterialTheme.colorScheme.primary
-            val iconsAlpha = ALPHA_ENABLED
             val textColor = MaterialTheme.colorScheme.onSurface
 
             Text(
@@ -160,7 +158,6 @@ private fun SignButton(onEventSend: (Event) -> Unit) {
             WrapIcon(
                 iconData = AppIcons.Add,
                 customTint = iconsColor,
-                contentAlpha = iconsAlpha
             )
         }
     }
