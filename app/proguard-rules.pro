@@ -106,3 +106,11 @@
 -keep interface eu.europa.ec.uilogic.serializer.UiSerializable
 -keepclassmembers class * implements eu.europa.ec.uilogic.serializer.UiSerializableParser { *; }
 -keepclassmembers class * implements eu.europa.ec.uilogic.serializer.UiSerializable { *; }
+
+# Bouncycastle
+-keep class org.bouncycastle.** { *; }
+-keep class org.bouncycastle.jce.provider.BouncyCastleProvider { *; }
+
+# Core Libs
+-keep class com.nimbusds.jwt.**{ *; }
+-keep class com.nimbusds.jose.**{ *; }
