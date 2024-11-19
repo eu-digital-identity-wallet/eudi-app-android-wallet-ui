@@ -33,102 +33,99 @@ class ThemeColors {
         private const val white: Long = 0xFFFFFFFF
         private const val black: Long = 0xFF000000
 
-        private const val eudiw_theme_light_primary: Long = 0xFF2A5ED9
-        private const val eudiw_theme_light_secondary: Long = 0xFFD6D9F9
-        internal const val eudiw_theme_light_success: Long = 0xFF55953B
-        internal const val eudiw_theme_light_warning: Long = 0xFFF39626
-        private const val eudiw_theme_light_error: Long = 0xFFDA2C27
-        internal const val eudiw_theme_light_info: Long = 0xFF8145BD
-
-        private const val eudiw_theme_dark_primary: Long = eudiw_theme_light_primary
-        private const val eudiw_theme_dark_secondary: Long = eudiw_theme_light_secondary
-        internal const val eudiw_theme_dark_success: Long = 0xFF93D875
-        internal const val eudiw_theme_dark_warning: Long = 0xFFFFB871
-        private const val eudiw_theme_dark_error: Long = 0xFFFFB4AA
-        internal const val eudiw_theme_dark_info: Long = 0xFFDCB8FF
-
-        internal const val eudiw_theme_light_onSuccess: Long = white
-        internal const val eudiw_theme_dark_onSuccess: Long = 0xFF0E3900
-
-        internal const val eudiw_theme_light_textPrimaryDark: Long = 0xDE000000
-        internal const val eudiw_theme_light_textSecondaryDark: Long = 0x8A000000
-        internal const val eudiw_theme_light_textDisabledDark: Long = 0x61000000
-        internal const val eudiw_theme_light_dividerDark: Long = 0x1F000000
-        internal const val eudiw_theme_light_backgroundDefault: Long = 0xFFF5F5F5
-        internal const val eudiw_theme_light_textSecondaryLight: Long = 0xB3FFFFFF
-        internal const val eudiw_theme_light_textDisabledLight: Long = 0x80FFFFFF
-
-        internal const val eudiw_theme_dark_textPrimaryDark: Long = 0xDEFFFFFF
-        internal const val eudiw_theme_dark_textSecondaryDark: Long = 0x8AFFFFFF
-        internal const val eudiw_theme_dark_textDisabledDark: Long = 0xFF646670
-        internal const val eudiw_theme_dark_dividerDark: Long = 0x1FFFFFFF
-        internal const val eudiw_theme_dark_backgroundDefault: Long = 0xFF44474F
-        internal const val eudiw_theme_dark_textSecondaryLight: Long = 0xB3000000
-        internal const val eudiw_theme_dark_textDisabledLight: Long = 0x80000000
-
+        // Light theme base colors palette.
+        private const val eudiw_theme_light_primary: Long = 0xFF2A5FD9
         private const val eudiw_theme_light_onPrimary: Long = white
-        private const val eudiw_theme_light_primaryContainer: Long = 0xFFDBE1FF
-        private const val eudiw_theme_light_onPrimaryContainer: Long = 0xFF00174B
-
-        private const val eudiw_theme_light_onSecondary: Long = white
-        private const val eudiw_theme_light_secondaryContainer: Long = 0xFFDEE0FF
-        private const val eudiw_theme_light_onSecondaryContainer: Long = 0xFF00115A
-        private const val eudiw_theme_light_tertiary: Long = eudiw_theme_light_secondary
-        private const val eudiw_theme_light_onTertiary: Long = eudiw_theme_light_onSecondary
-        private const val eudiw_theme_light_tertiaryContainer: Long =
-            eudiw_theme_light_secondaryContainer
-        private const val eudiw_theme_light_onTertiaryContainer: Long =
-            eudiw_theme_light_onSecondaryContainer
-
-        private const val eudiw_theme_light_errorContainer: Long = 0xFFFFDAD5
+        private const val eudiw_theme_light_primaryContainer: Long = 0xFFEADDFF
+        private const val eudiw_theme_light_onPrimaryContainer: Long = 0xFF21005D
+        private const val eudiw_theme_light_secondary: Long = 0xFFD6D9F9
+        private const val eudiw_theme_light_onSecondary: Long = 0xF1D192B
+        private const val eudiw_theme_light_secondaryContainer: Long = 0xFFE8DEF8
+        private const val eudiw_theme_light_onSecondaryContainer: Long = 0xFF1D192B
+        private const val eudiw_theme_light_tertiary: Long = 0xFFE4EEE7
+        private const val eudiw_theme_light_onTertiary: Long = 0xFF1D192B
+        private const val eudiw_theme_light_tertiaryContainer: Long = 0xFFFFD8E4
+        private const val eudiw_theme_light_onTertiaryContainer: Long = 0xFF31111D
+        private const val eudiw_theme_light_error: Long = 0xFFB3261E
         private const val eudiw_theme_light_onError: Long = white
-        private const val eudiw_theme_light_onErrorContainer: Long = 0xFF410002
-        const val eudiw_theme_light_background: Long = white
-        private const val eudiw_theme_light_onBackground: Long = black
-        private const val eudiw_theme_light_surface: Long = white
-        private const val eudiw_theme_light_onSurface: Long = black
-        private const val eudiw_theme_light_surfaceVariant: Long = 0xFFE2E2EC
-        private const val eudiw_theme_light_onSurfaceVariant: Long = 0xFF45464F
-        private const val eudiw_theme_light_outline: Long = 0xFF757680
-        private const val eudiw_theme_light_inverseOnSurface: Long = 0xFFF1EFFF
-        private const val eudiw_theme_light_inverseSurface: Long = 0xFF1E2578
-        private const val eudiw_theme_light_inversePrimary: Long = 0xFFADC6FF
-        private const val eudiw_theme_light_surfaceTint: Long = eudiw_theme_light_surface
-        private const val eudiw_theme_light_outlineVariant: Long = 0xFFC4C6D0
+        private const val eudiw_theme_light_errorContainer: Long = 0xFFF9DEDC
+        private const val eudiw_theme_light_onErrorContainer: Long = 0xFF410E0B
+        private const val eudiw_theme_light_surface: Long = 0xFFF7FAFF
+        private const val eudiw_theme_light_onSurface: Long = 0xFF1D1B20
+        private const val eudiw_theme_light_background: Long = eudiw_theme_light_surface
+        private const val eudiw_theme_light_onBackground: Long =
+            eudiw_theme_light_onSurface
+        private const val eudiw_theme_light_surfaceVariant: Long = 0xFFF5DED8
+        private const val eudiw_theme_light_onSurfaceVariant: Long = 0xFF49454F
+        private const val eudiw_theme_light_outline: Long = 0xFF79747E
+        private const val eudiw_theme_light_outlineVariant: Long = 0xFFCAC4D0
         private const val eudiw_theme_light_scrim: Long = black
+        private const val eudiw_theme_light_inverseSurface: Long = 0xFF322F35
+        private const val eudiw_theme_light_inverseOnSurface: Long = 0xFFF5EFF7
+        private const val eudiw_theme_light_inversePrimary: Long = 0xFFD0BCFF
+        private const val eudiw_theme_light_surfaceDim: Long = 0xFFE2E8F3
+        private const val eudiw_theme_light_surfaceBright: Long = 0xFFFEF7FF
+        private const val eudiw_theme_light_surfaceContainerLowest: Long = white
+        private const val eudiw_theme_light_surfaceContainerLow: Long = 0xFFF7F2FA
+        private const val eudiw_theme_light_surfaceContainer: Long = 0xFFEBF1FD
+        private const val eudiw_theme_light_surfaceContainerHigh: Long = 0xFFECE6F0
+        private const val eudiw_theme_light_surfaceContainerHighest: Long = 0xFFE6E0E9
+        private const val eudiw_theme_light_surfaceTint: Long = eudiw_theme_light_surface
 
-        private const val eudiw_theme_dark_onPrimary: Long = 0xFF002A78
-        private const val eudiw_theme_dark_primaryContainer: Long = 0xFF003DA9
-        private const val eudiw_theme_dark_onPrimaryContainer: Long = 0xFFDBE1FF
+        // Light theme extra colors palette.
+        internal const val eudiw_theme_light_success: Long = 0xFF55953B
+        internal const val eudiw_theme_light_warning: Long = 0xFFAB5200
+        internal const val eudiw_theme_light_divider: Long = 0xFFD9D9D9
 
-        private const val eudiw_theme_dark_onSecondary: Long = 0xFF162778
-        private const val eudiw_theme_dark_secondaryContainer: Long = 0xFF303F90
-        private const val eudiw_theme_dark_onSecondaryContainer: Long = 0xFFDEE0FF
-        private const val eudiw_theme_dark_tertiary: Long = eudiw_theme_dark_secondary
-        private const val eudiw_theme_dark_onTertiary: Long = eudiw_theme_dark_onSecondary
-        private const val eudiw_theme_dark_tertiaryContainer: Long =
-            eudiw_theme_dark_secondaryContainer
-        private const val eudiw_theme_dark_onTertiaryContainer: Long =
-            eudiw_theme_dark_onSecondaryContainer
-
-        private const val eudiw_theme_dark_errorContainer: Long = 0xFF930009
-        private const val eudiw_theme_dark_onError: Long = 0xFF690004
-        private const val eudiw_theme_dark_onErrorContainer: Long = 0xFFFFDAD5
-        const val eudiw_theme_dark_background: Long = black
-        private const val eudiw_theme_dark_onBackground: Long = white
-        private const val eudiw_theme_dark_surface: Long = black
-        private const val eudiw_theme_dark_onSurface: Long = white
-        private const val eudiw_theme_dark_surfaceVariant: Long = 0xFF45464F
-        private const val eudiw_theme_dark_onSurfaceVariant: Long = 0xFFC5C6D0
-        private const val eudiw_theme_dark_outline: Long = 0xFF8F909A
-        private const val eudiw_theme_dark_inverseOnSurface: Long = black
-        private const val eudiw_theme_dark_inverseSurface: Long = white
-        private const val eudiw_theme_dark_inversePrimary: Long = 0xFF2B5CAD
+        // Dark theme base colors palette.
+        private const val eudiw_theme_dark_primary: Long = 0xFFB4C5FF
+        private const val eudiw_theme_dark_onPrimary: Long = 0xFF002A77
+        private const val eudiw_theme_dark_primaryContainer: Long = 0xFF1A55CF
+        private const val eudiw_theme_dark_onPrimaryContainer: Long = white
+        private const val eudiw_theme_dark_secondary: Long = white
+        private const val eudiw_theme_dark_onSecondary: Long = 0xFF2B2F47
+        private const val eudiw_theme_dark_secondaryContainer: Long = 0xFFCFD2F2
+        private const val eudiw_theme_dark_onSecondaryContainer: Long = 0xFF3A3E57
+        private const val eudiw_theme_dark_tertiary: Long = 0xFF1F2B25
+        private const val eudiw_theme_dark_onTertiary: Long = 0xFF29322E
+        private const val eudiw_theme_dark_tertiaryContainer: Long = 0xFFCDD7D0
+        private const val eudiw_theme_dark_onTertiaryContainer: Long = 0xFF38413D
+        private const val eudiw_theme_dark_error: Long = 0xFFFFB4AA
+        private const val eudiw_theme_dark_onError: Long = 0xFF690003
+        private const val eudiw_theme_dark_errorContainer: Long = 0xFFA61C16
+        private const val eudiw_theme_dark_onErrorContainer: Long = 0xFFFFF6F5
+        private const val eudiw_theme_dark_surface: Long = 0xFF131313
+        private const val eudiw_theme_dark_onSurface: Long = 0xFFE5E2E1
+        private const val eudiw_theme_dark_background: Long = eudiw_theme_dark_surface
+        private const val eudiw_theme_dark_onBackground: Long = eudiw_theme_dark_onSurface
+        private const val eudiw_theme_dark_surfaceVariant: Long = 0xFF45474B
+        private const val eudiw_theme_dark_onSurfaceVariant: Long = 0xFFC5C6CB
+        private const val eudiw_theme_dark_outline: Long = 0xFF8F9195
+        private const val eudiw_theme_dark_outlineVariant: Long = 0xFF45474B
+        private const val eudiw_theme_dark_scrim: Long = black
+        private const val eudiw_theme_dark_inverseSurface: Long = 0xFFE5E2E1
+        private const val eudiw_theme_dark_inverseOnSurface: Long = 0xFF313030
+        private const val eudiw_theme_dark_inversePrimary: Long = 0xFF1B55CF
+        private const val eudiw_theme_dark_surfaceDim: Long = 0xFF131313
+        private const val eudiw_theme_dark_surfaceBright: Long = 0xFF3A3939
+        private const val eudiw_theme_dark_surfaceContainerLowest: Long = 0xFF0E0E0E
+        private const val eudiw_theme_dark_surfaceContainerLow: Long = 0xFF1C1B1C
+        private const val eudiw_theme_dark_surfaceContainer: Long = 0xFF1C1E2E
+        private const val eudiw_theme_dark_surfaceContainerHigh: Long = 0xFF2A2A2A
+        private const val eudiw_theme_dark_surfaceContainerHighest: Long = 0xFF353535
         private const val eudiw_theme_dark_surfaceTint: Long = eudiw_theme_dark_surface
-        private const val eudiw_theme_dark_outlineVariant: Long = 0xFF44474F
-        private const val eudiw_theme_dark_scrim: Long = white
 
-        val lightColors = ThemeColorsTemplate(
+        // Dark theme extra colors palette.
+        internal const val eudiw_theme_dark_success: Long = 0xFF93D875
+        internal const val eudiw_theme_dark_warning: Long = 0xFFFFB689
+        internal const val eudiw_theme_dark_divider: Long = 0xFFD9D9D9
+
+        const val eudiw_theme_light_background_preview: Long =
+            eudiw_theme_light_surface
+        const val eudiw_theme_dark_background_preview: Long =
+            eudiw_theme_dark_surface
+
+        internal val lightColors = ThemeColorsTemplate(
             primary = eudiw_theme_light_primary,
             onPrimary = eudiw_theme_light_onPrimary,
             primaryContainer = eudiw_theme_light_primaryContainer,
@@ -158,9 +155,16 @@ class ThemeColors {
             surfaceTint = eudiw_theme_light_surfaceTint,
             outlineVariant = eudiw_theme_light_outlineVariant,
             scrim = eudiw_theme_light_scrim,
+            surfaceBright = eudiw_theme_light_surfaceBright,
+            surfaceDim = eudiw_theme_light_surfaceDim,
+            surfaceContainer = eudiw_theme_light_surfaceContainer,
+            surfaceContainerHigh = eudiw_theme_light_surfaceContainerHigh,
+            surfaceContainerHighest = eudiw_theme_light_surfaceContainerHighest,
+            surfaceContainerLow = eudiw_theme_light_surfaceContainerLow,
+            surfaceContainerLowest = eudiw_theme_light_surfaceContainerLowest,
         )
 
-        val darkColors = ThemeColorsTemplate(
+        internal val darkColors = ThemeColorsTemplate(
             primary = eudiw_theme_dark_primary,
             onPrimary = eudiw_theme_dark_onPrimary,
             primaryContainer = eudiw_theme_dark_primaryContainer,
@@ -190,183 +194,55 @@ class ThemeColors {
             surfaceTint = eudiw_theme_dark_surfaceTint,
             outlineVariant = eudiw_theme_dark_outlineVariant,
             scrim = eudiw_theme_dark_scrim,
+            surfaceBright = eudiw_theme_dark_surfaceBright,
+            surfaceDim = eudiw_theme_dark_surfaceDim,
+            surfaceContainer = eudiw_theme_dark_surfaceContainer,
+            surfaceContainerHigh = eudiw_theme_dark_surfaceContainerHigh,
+            surfaceContainerHighest = eudiw_theme_dark_surfaceContainerHighest,
+            surfaceContainerLow = eudiw_theme_dark_surfaceContainerLow,
+            surfaceContainerLowest = eudiw_theme_dark_surfaceContainerLowest,
         )
 
-        val secondary: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_secondary)
-            } else {
-                Color(eudiw_theme_light_secondary)
-            }
-
-        val success: Color
+        internal val success: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_success)
             } else {
                 Color(eudiw_theme_light_success)
             }
 
-        val onSuccess: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_onSuccess)
-            } else {
-                Color(eudiw_theme_light_onSuccess)
-            }
-
-        val error: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_error)
-            } else {
-                Color(eudiw_theme_light_error)
-            }
-
-        val onError: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_onError)
-            } else {
-                Color(eudiw_theme_light_onError)
-            }
-
-        val warning: Color
+        internal val warning: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_warning)
             } else {
                 Color(eudiw_theme_light_warning)
             }
 
-        val info: Color
+        internal val divider: Color
             get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_info)
+                Color(eudiw_theme_dark_divider)
             } else {
-                Color(eudiw_theme_light_info)
+                Color(eudiw_theme_light_divider)
             }
-
-        val textPrimaryDark: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_textPrimaryDark)
-            } else {
-                Color(eudiw_theme_light_textPrimaryDark)
-            }
-
-        val textSecondaryDark: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_textSecondaryDark)
-            } else {
-                Color(eudiw_theme_light_textSecondaryDark)
-            }
-
-        val textDisabledDark: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_textDisabledDark)
-            } else {
-                Color(eudiw_theme_light_textDisabledDark)
-            }
-
-        val dividerDark: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_dividerDark)
-            } else {
-                Color(eudiw_theme_light_dividerDark)
-            }
-
-        val backgroundDefault: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_backgroundDefault)
-            } else {
-                Color(eudiw_theme_light_backgroundDefault)
-            }
-
-        val textSecondaryLight: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_textSecondaryLight)
-            } else {
-                Color(eudiw_theme_light_textSecondaryLight)
-            }
-
-        val textDisabledLight: Color
-            get() = if (isInDarkMode) {
-                Color(eudiw_theme_dark_textDisabledLight)
-            } else {
-                Color(eudiw_theme_light_textDisabledLight)
-            }
-
     }
 }
 
-
-val ColorScheme.textPrimaryDark: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_textPrimaryDark)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_textPrimaryDark)
-    }
-
-val ColorScheme.textSecondaryDark: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_textSecondaryDark)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_textSecondaryDark)
-    }
-
-val ColorScheme.textDisabledDark: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_textDisabledDark)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_textDisabledDark)
-    }
-
-val ColorScheme.dividerDark: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_dividerDark)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_dividerDark)
-    }
-
-val ColorScheme.backgroundDefault: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_backgroundDefault)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_backgroundDefault)
-    }
-
-val ColorScheme.textSecondaryLight: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_textSecondaryLight)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_textSecondaryLight)
-    }
-
-val ColorScheme.textDisabledLight: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_textDisabledLight)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_textDisabledLight)
-    }
-
-val ColorScheme.success: Color
+internal val ColorScheme.success: Color
     @Composable get() = if (isSystemInDarkTheme()) {
         Color(ThemeColors.eudiw_theme_dark_success)
     } else {
         Color(ThemeColors.eudiw_theme_light_success)
     }
 
-val ColorScheme.onSuccess: Color
-    @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_onSuccess)
-    } else {
-        Color(ThemeColors.eudiw_theme_light_onSuccess)
-    }
-
-val ColorScheme.warning: Color
+internal val ColorScheme.warning: Color
     @Composable get() = if (isSystemInDarkTheme()) {
         Color(ThemeColors.eudiw_theme_dark_warning)
     } else {
         Color(ThemeColors.eudiw_theme_light_warning)
     }
 
-val ColorScheme.info: Color
+internal val ColorScheme.divider: Color
     @Composable get() = if (isSystemInDarkTheme()) {
-        Color(ThemeColors.eudiw_theme_dark_info)
+        Color(ThemeColors.eudiw_theme_dark_divider)
     } else {
-        Color(ThemeColors.eudiw_theme_light_info)
+        Color(ThemeColors.eudiw_theme_light_divider)
     }
