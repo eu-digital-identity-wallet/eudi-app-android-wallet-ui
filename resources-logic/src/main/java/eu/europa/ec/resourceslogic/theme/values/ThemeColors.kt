@@ -203,21 +203,21 @@ class ThemeColors {
             surfaceContainerLowest = eudiw_theme_dark_surfaceContainerLowest,
         )
 
-        internal val success: Color
+        val success: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_success)
             } else {
                 Color(eudiw_theme_light_success)
             }
 
-        internal val warning: Color
+        val warning: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_warning)
             } else {
                 Color(eudiw_theme_light_warning)
             }
 
-        internal val divider: Color
+        val divider: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_divider)
             } else {
@@ -226,21 +226,21 @@ class ThemeColors {
     }
 }
 
-internal val ColorScheme.success: Color
+val ColorScheme.success: Color
     @Composable get() = if (isSystemInDarkTheme()) {
         Color(ThemeColors.eudiw_theme_dark_success)
     } else {
         Color(ThemeColors.eudiw_theme_light_success)
     }
 
-internal val ColorScheme.warning: Color
+val ColorScheme.warning: Color
     @Composable get() = if (isSystemInDarkTheme()) {
         Color(ThemeColors.eudiw_theme_dark_warning)
     } else {
         Color(ThemeColors.eudiw_theme_light_warning)
     }
 
-internal val ColorScheme.divider: Color
+val ColorScheme.divider: Color
     @Composable get() = if (isSystemInDarkTheme()) {
         Color(ThemeColors.eudiw_theme_dark_divider)
     } else {

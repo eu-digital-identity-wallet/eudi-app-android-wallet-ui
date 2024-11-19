@@ -58,7 +58,7 @@ fun ActionTopBar(
 private fun TopBarPreview() {
     PreviewTheme {
         ActionTopBar(
-            contentColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.surface,
             iconColor = MaterialTheme.colorScheme.primary,
             iconData = AppIcons.Close
         ) {}

@@ -61,7 +61,7 @@ open class EudiComponentActivity : FragmentActivity() {
         ThemeManager.instance.Theme {
             Surface(
                 modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
+                color = MaterialTheme.colorScheme.surface
             ) {
                 KoinAndroidContext {
                     routerHost.StartFlow {

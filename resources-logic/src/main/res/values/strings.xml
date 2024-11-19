@@ -70,6 +70,7 @@
     <string name="content_description_clock_timer">Clock timer</string>
     <string name="content_description_arrow_right">Arrow right</string>
     <string name="content_description_open_new">Open new</string>
+    <string name="content_description_handle_bar">Handle bar</string>
 
     <!-- Document Types -->
     <string name="pid">National ID</string>

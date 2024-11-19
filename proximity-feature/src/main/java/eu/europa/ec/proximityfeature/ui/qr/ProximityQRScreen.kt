@@ -45,8 +45,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import eu.europa.ec.proximityfeature.ui.qr.component.rememberQrBitmapPainter
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.topCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -187,7 +185,7 @@ private fun NFCSection() {
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = MaterialTheme.colorScheme.backgroundDefault,
+                color = MaterialTheme.colorScheme.surface,
                 shape = MaterialTheme.shapes.topCorneredShapeSmall
             )
             .padding(vertical = SPACING_EXTRA_LARGE.dp, horizontal = SPACING_LARGE.dp),
@@ -197,7 +195,7 @@ private fun NFCSection() {
         Text(
             text = stringResource(id = R.string.proximity_qr_use_nfc),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.textSecondaryDark
+            color = MaterialTheme.colorScheme.onSurface
         )
         VSpacer.Medium()
         WrapIcon(
@@ -224,7 +222,7 @@ private fun QRCode(
     val secondaryPixelsColor = if (isSystemInDarkTheme()) {
         Color.White
     } else {
-        MaterialTheme.colorScheme.background
+        MaterialTheme.colorScheme.surface
     }
 
     if (qrCode.isNotEmpty()) {

@@ -46,8 +46,6 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.topCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
@@ -223,7 +221,7 @@ private fun QrScanSection(
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = MaterialTheme.colorScheme.backgroundDefault.copy(alpha = 0.55f),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
                 shape = MaterialTheme.shapes.topCorneredShapeSmall
             )
             .padding(
@@ -238,7 +236,7 @@ private fun QrScanSection(
         Text(
             text = stringResource(id = R.string.issuance_add_document_qr_scan_section_title),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.textSecondaryDark
+            color = MaterialTheme.colorScheme.onSurface
         )
         VSpacer.Medium()
         InnerSection(
@@ -261,7 +259,7 @@ private fun InnerSection(
             .wrapContentHeight()
             .clip(shape = MaterialTheme.shapes.allCorneredShapeSmall)
             .background(
-                color = MaterialTheme.colorScheme.backgroundDefault
+                color = MaterialTheme.colorScheme.surface
             )
             .throttledClickable(onClick = onClick)
             .padding(vertical = SPACING_MEDIUM.dp),

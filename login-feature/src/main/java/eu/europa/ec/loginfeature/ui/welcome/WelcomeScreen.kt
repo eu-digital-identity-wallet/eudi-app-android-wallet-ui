@@ -105,7 +105,7 @@ private fun Content(
                 .fillMaxWidth()
                 .fillMaxHeight(animatedWeight)
                 .background(
-                    color = MaterialTheme.colorScheme.background,
+                    color = MaterialTheme.colorScheme.surface,
                     shape = MaterialTheme.shapes.bottomCorneredShapeSmall
                 ),
             contentAlignment = Alignment.Center

@@ -64,6 +64,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
@@ -279,16 +280,18 @@ private fun SheetContent(
     onEventSent: (event: Event) -> Unit
 ) {
     DialogBottomSheet(
-        title = stringResource(
-            id = R.string.document_details_bottom_sheet_delete_title,
-            documentTypeUiName
+        textData = BottomSheetTextData(
+            title = stringResource(
+                id = R.string.document_details_bottom_sheet_delete_title,
+                documentTypeUiName
+            ),
+            message = stringResource(
+                id = R.string.document_details_bottom_sheet_delete_subtitle,
+                documentTypeUiName
+            ),
+            positiveButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_primary_button_text),
+            negativeButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_secondary_button_text),
         ),
-        message = stringResource(
-            id = R.string.document_details_bottom_sheet_delete_subtitle,
-            documentTypeUiName
-        ),
-        positiveButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_primary_button_text),
-        negativeButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_secondary_button_text),
         onPositiveClick = { onEventSent(Event.BottomSheet.Delete.PrimaryButtonPressed) },
         onNegativeClick = { onEventSent(Event.BottomSheet.Delete.SecondaryButtonPressed) }
     )

@@ -219,4 +219,11 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_arrow_right,
         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight
     )
+
+    val HandleBar: IconData =
+        IconData(
+            resourceId = R.drawable.ic_handle_bar,
+            contentDescriptionId = R.string.content_description_handle_bar,
+            imageVector = null
+        )
 }

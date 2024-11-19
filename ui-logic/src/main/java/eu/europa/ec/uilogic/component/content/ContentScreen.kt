@@ -29,7 +29,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -46,7 +45,6 @@ import androidx.compose.ui.zIndex
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.loader.LoadingIndicator
-import eu.europa.ec.uilogic.component.snackbar.Snackbar
 import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
 import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.MAX_TOOLBAR_ACTIONS
@@ -87,6 +85,7 @@ fun ContentScreen(
     stickyBottom: @Composable (() -> Unit)? = null,
     fab: @Composable () -> Unit = {},
     fabPosition: FabPosition = FabPosition.End,
+    snackbarHost: @Composable () -> Unit = {},
     contentErrorConfig: ContentErrorConfig? = null,
     bodyContent: @Composable (PaddingValues) -> Unit
 ) {
@@ -100,6 +99,7 @@ fun ContentScreen(
         stickyBottom = stickyBottom,
         fab = fab,
         fabPosition = fabPosition,
+        snackbarHost = snackbarHost,
         contentErrorConfig = contentErrorConfig,
         bodyContent = bodyContent
     )
@@ -116,14 +116,11 @@ fun ContentScreen(
     stickyBottom: @Composable (() -> Unit)? = null,
     fab: @Composable () -> Unit = {},
     fabPosition: FabPosition = FabPosition.End,
+    snackbarHost: @Composable () -> Unit = {},
     contentErrorConfig: ContentErrorConfig? = null,
     bodyContent: @Composable (PaddingValues) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-
-    val snackbarHostState = remember {
-        SnackbarHostState()
-    }
 
     val hasToolBar = contentErrorConfig != null
             || navigatableAction != ScreenNavigateAction.NONE
@@ -147,9 +144,7 @@ fun ContentScreen(
         bottomBar = bottomBar ?: {},
         floatingActionButton = fab,
         floatingActionButtonPosition = fabPosition,
-        snackbarHost = {
-            Snackbar.PlaceHolder(snackbarHostState = snackbarHostState)
-        }
+        snackbarHost = snackbarHost,
     ) { padding ->
 
         Box(

@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.loginfeature.model.FaqUiModel
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -214,7 +213,7 @@ private fun ExpandableListItem(
             Text(
                 text = dataItem.description,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.textSecondaryDark
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         cardTitlePadding = PaddingValues(SPACING_LARGE.dp),

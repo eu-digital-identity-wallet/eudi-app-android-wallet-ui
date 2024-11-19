@@ -47,6 +47,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
@@ -226,28 +227,34 @@ private fun SheetContent(
     when (sheetContent) {
         RequestBottomSheetContent.BADGE -> {
             DialogBottomSheet(
-                title = stringResource(id = R.string.request_bottom_sheet_badge_title),
-                message = stringResource(id = R.string.request_bottom_sheet_badge_subtitle),
-                positiveButtonText = stringResource(id = R.string.request_bottom_sheet_badge_primary_button_text),
+                textData = BottomSheetTextData(
+                    title = stringResource(id = R.string.request_bottom_sheet_badge_title),
+                    message = stringResource(id = R.string.request_bottom_sheet_badge_subtitle),
+                    positiveButtonText = stringResource(id = R.string.request_bottom_sheet_badge_primary_button_text),
+                ),
                 onPositiveClick = { onEventSent(Event.BottomSheet.Badge.PrimaryButtonPressed) },
             )
         }
 
         RequestBottomSheetContent.SUBTITLE -> {
             DialogBottomSheet(
-                title = stringResource(id = R.string.request_bottom_sheet_subtitle_title),
-                message = stringResource(id = R.string.request_bottom_sheet_subtitle_subtitle),
-                positiveButtonText = stringResource(id = R.string.request_bottom_sheet_subtitle_primary_button_text),
+                textData = BottomSheetTextData(
+                    title = stringResource(id = R.string.request_bottom_sheet_subtitle_title),
+                    message = stringResource(id = R.string.request_bottom_sheet_subtitle_subtitle),
+                    positiveButtonText = stringResource(id = R.string.request_bottom_sheet_subtitle_primary_button_text),
+                ),
                 onPositiveClick = { onEventSent(Event.BottomSheet.Subtitle.PrimaryButtonPressed) },
             )
         }
 
         RequestBottomSheetContent.CANCEL -> {
             DialogBottomSheet(
-                title = stringResource(id = R.string.request_bottom_sheet_cancel_title),
-                message = stringResource(id = R.string.request_bottom_sheet_cancel_subtitle),
-                positiveButtonText = stringResource(id = R.string.request_bottom_sheet_cancel_primary_button_text),
-                negativeButtonText = stringResource(id = R.string.request_bottom_sheet_cancel_secondary_button_text),
+                textData = BottomSheetTextData(
+                    title = stringResource(id = R.string.request_bottom_sheet_cancel_title),
+                    message = stringResource(id = R.string.request_bottom_sheet_cancel_subtitle),
+                    positiveButtonText = stringResource(id = R.string.request_bottom_sheet_cancel_primary_button_text),
+                    negativeButtonText = stringResource(id = R.string.request_bottom_sheet_cancel_secondary_button_text),
+                ),
                 onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
                 onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
             )

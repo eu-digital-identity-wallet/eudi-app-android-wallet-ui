@@ -28,8 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
@@ -53,8 +51,8 @@ fun WrapExpandableCard(
         onClick = onCardClick,
         throttleClicks = throttleClicks,
         colors = cardColors ?: CardDefaults.cardColors(
-            contentColor = MaterialTheme.colorScheme.textPrimaryDark,
-            containerColor = MaterialTheme.colorScheme.backgroundDefault
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         enabled = enabled
     ) {

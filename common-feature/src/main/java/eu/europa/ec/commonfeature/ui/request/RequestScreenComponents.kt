@@ -40,7 +40,6 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.CardWithIconAndText
@@ -257,7 +256,7 @@ fun WarningCard(warningText: String) {
             Text(
                 text = warningText,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.textPrimaryDark
+                color = MaterialTheme.colorScheme.onSurface
             )
         },
         icon = {

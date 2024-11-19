@@ -36,8 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -140,7 +138,7 @@ private fun SignButton(onEventSend: (Event) -> Unit) {
         },
         throttleClicks = true,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.backgroundDefault,
+            containerColor = MaterialTheme.colorScheme.surface,
         )
     ) {
         Row(
@@ -150,7 +148,7 @@ private fun SignButton(onEventSend: (Event) -> Unit) {
 
             val iconsColor = MaterialTheme.colorScheme.primary
             val iconsAlpha = ALPHA_ENABLED
-            val textColor = MaterialTheme.colorScheme.textPrimaryDark
+            val textColor = MaterialTheme.colorScheme.onSurface
 
             Text(
                 modifier = Modifier.weight(1f),

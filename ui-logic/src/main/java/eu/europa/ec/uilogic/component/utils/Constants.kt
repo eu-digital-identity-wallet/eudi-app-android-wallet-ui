@@ -31,22 +31,53 @@ const val Z_SNACKBAR = 10f
  */
 const val Z_STICKY = 10f
 
+/** Value 4 */
 const val SPACING_EXTRA_SMALL = 4
+
+/** Value 8 */
 const val SPACING_SMALL = 8
+
+/** Value 16 */
 const val SPACING_MEDIUM = 16
+
+/** Value 24 */
 const val SPACING_LARGE = 24
+
+/** Value 48 */
 const val SPACING_EXTRA_LARGE = 48
 
+/** Value 1.0 */
 const val ALPHA_ENABLED = 1.0f
+
+/** Value 0.38 */
 const val ALPHA_DISABLED = 0.38f
 
+/** Value 24 */
 const val DEFAULT_ICON_SIZE = 24
 
+/** Value 40 */
+const val ICON_SIZE_40 = 40
+
+/** Value 2 */
 const val MAX_TOOLBAR_ACTIONS = 2
 
+/** Size 4 */
 const val SIZE_EXTRA_SMALL = 4
+
+/** Size 8 */
 const val SIZE_SMALL = 8
+
+/** Size 16 */
 const val SIZE_MEDIUM = 16
+
+/** Size 24 */
 const val SIZE_LARGE = 24
+
+/** Size 48 */
 const val SIZE_EXTRA_LARGE = 48
+
+/** Size 62 */
 const val SIZE_XX_LARGE = 62
+
+/** Size 100 */
+const val SIZE_100 = 100

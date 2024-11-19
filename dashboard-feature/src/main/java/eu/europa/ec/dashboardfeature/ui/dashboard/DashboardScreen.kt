@@ -20,7 +20,6 @@ import android.Manifest
 import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -68,11 +67,7 @@ import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.textDisabledDark
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ModalOptionUi
@@ -97,6 +92,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.FabData
@@ -331,7 +327,7 @@ private fun DashboardSheetContent(
                         Text(
                             text = stringResource(id = R.string.dashboard_bottom_sheet_options_title),
                             style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.textPrimaryDark
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         WrapIconButton(
                             iconData = AppIcons.Close,
@@ -359,14 +355,14 @@ private fun DashboardSheetContent(
                             horizontalArrangement = Arrangement.Start
                         ) {
                             WrapIcon(
-                                iconData = option.icon,
+                                iconData = option.icon!!,//TODO Giannis
                                 customTint = MaterialTheme.colorScheme.primary
                             )
                             HSpacer.Medium()
                             Text(
                                 text = option.title,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.textPrimaryDark
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -377,7 +373,7 @@ private fun DashboardSheetContent(
                         modifier = Modifier.fillMaxWidth(),
                         text = state.appVersion,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.textSecondaryDark,
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -386,10 +382,12 @@ private fun DashboardSheetContent(
 
         is DashboardBottomSheetContent.Bluetooth -> {
             DialogBottomSheet(
-                title = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_title),
-                message = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_subtitle),
-                positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_primary_button_text),
-                negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_secondary_button_text),
+                textData = BottomSheetTextData(
+                    title = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_title),
+                    message = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_subtitle),
+                    positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_primary_button_text),
+                    negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_secondary_button_text),
+                ),
                 onPositiveClick = {
                     onEventSent(
                         Event.BottomSheet.Bluetooth.PrimaryButtonPressed(
@@ -403,16 +401,18 @@ private fun DashboardSheetContent(
 
         is DashboardBottomSheetContent.DeferredDocumentPressed -> {
             DialogBottomSheet(
-                title = stringResource(
-                    id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title,
-                    sheetContent.documentUi.documentName
+                textData = BottomSheetTextData(
+                    title = stringResource(
+                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title,
+                        sheetContent.documentUi.documentName
+                    ),
+                    message = stringResource(
+                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle,
+                        sheetContent.documentUi.documentName
+                    ),
+                    positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_primary_button_text),
+                    negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text),
                 ),
-                message = stringResource(
-                    id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle,
-                    sheetContent.documentUi.documentName
-                ),
-                positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_primary_button_text),
-                negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text),
                 onPositiveClick = {
                     onEventSent(
                         Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.PrimaryButtonPressed(
@@ -432,11 +432,13 @@ private fun DashboardSheetContent(
 
         is DashboardBottomSheetContent.DeferredDocumentsReady -> {
             BottomSheetWithOptionsList(
-                title = stringResource(
-                    id = R.string.dashboard_bottom_sheet_deferred_documents_ready_title
-                ),
-                message = stringResource(
-                    id = R.string.dashboard_bottom_sheet_deferred_documents_ready_subtitle
+                textData = BottomSheetTextData(
+                    title = stringResource(
+                        id = R.string.dashboard_bottom_sheet_deferred_documents_ready_title
+                    ),
+                    message = stringResource(
+                        id = R.string.dashboard_bottom_sheet_deferred_documents_ready_subtitle
+                    ),
                 ),
                 options = sheetContent.options,
                 onEventSent = onEventSent,
@@ -609,11 +611,7 @@ private fun CardListItem(
     dataItem: DocumentUi,
     onEventSend: (Event) -> Unit
 ) {
-    val dottedLinesColor = if (isSystemInDarkTheme()) {
-        MaterialTheme.colorScheme.textSecondaryDark
-    } else {
-        MaterialTheme.colorScheme.textDisabledDark
-    }
+    val dottedLinesColor = MaterialTheme.colorScheme.onSurface
 
     val borderModifier = when (dataItem.documentIssuanceState) {
         DocumentUiIssuanceState.Issued -> Modifier
@@ -662,7 +660,7 @@ private fun DocumentContent(dataItem: DocumentUi) {
     val iconData = AppIcons.Id
     val iconTint = when (documentState) {
         DocumentUiIssuanceState.Issued -> MaterialTheme.colorScheme.primary
-        DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.textDisabledDark
+        DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.onSurface
     }
     val iconAlpha = when (documentState) {
         DocumentUiIssuanceState.Issued -> ALPHA_ENABLED
@@ -686,11 +684,11 @@ private fun DocumentContent(dataItem: DocumentUi) {
     }
     val documentNameColor = when (documentState) {
         DocumentUiIssuanceState.Issued -> {
-            MaterialTheme.colorScheme.textPrimaryDark
+            MaterialTheme.colorScheme.onSurface
         }
 
         DocumentUiIssuanceState.Pending, DocumentUiIssuanceState.Failed -> {
-            MaterialTheme.colorScheme.textDisabledDark
+            MaterialTheme.colorScheme.onSurface
         }
     }
 
@@ -710,14 +708,14 @@ private fun DocumentContent(dataItem: DocumentUi) {
             if (documentState == DocumentUiIssuanceState.Issued) {
                 if (dataItem.documentHasExpired) {
                     IconWarningIndicator(
-                        backgroundColor = MaterialTheme.colorScheme.backgroundDefault
+                        backgroundColor = MaterialTheme.colorScheme.surface
                     )
                 }
             } else {
                 IconWarningIndicator(
                     iconData = warningIconData,
                     customTint = warningIconTint,
-                    backgroundColor = MaterialTheme.colorScheme.backgroundDefault
+                    backgroundColor = MaterialTheme.colorScheme.surface
                 )
             }
         }
@@ -744,7 +742,7 @@ private fun ExpirationInfo(
     document: DocumentUi,
 ) {
     val textStyle = MaterialTheme.typography.bodySmall
-        .copy(color = MaterialTheme.colorScheme.textSecondaryDark)
+        .copy(color = MaterialTheme.colorScheme.onSurface)
 
     Column(
         verticalArrangement = Arrangement.Center,

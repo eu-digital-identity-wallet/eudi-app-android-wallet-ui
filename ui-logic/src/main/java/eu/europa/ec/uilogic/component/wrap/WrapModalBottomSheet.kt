@@ -27,9 +27,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -38,11 +39,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.resourceslogic.theme.values.divider
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -58,14 +59,20 @@ private val defaultBottomSheetPadding: PaddingValues = PaddingValues(
     all = SPACING_LARGE.dp
 )
 
+private val bottomSheetDefaultBackgroundColor: Color
+    @Composable get() = MaterialTheme.colorScheme.surfaceContainerLowest
+
+private val bottomSheetDefaultTextColor: Color
+    @Composable get() = MaterialTheme.colorScheme.onSurface
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WrapModalBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     sheetState: SheetState,
-    shape: Shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-    dragHandle: @Composable (() -> Unit)? = null,
+    shape: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+    dragHandle: @Composable (() -> Unit) = { BottomSheetDefaultHandle() },
     sheetContent: @Composable ColumnScope.() -> Unit
 ) {
     ModalBottomSheet(
@@ -86,16 +93,17 @@ fun GenericBaseSheetContent(
     Column(
         modifier = Modifier
             .wrapContentHeight()
-            .background(color = MaterialTheme.colorScheme.background)
+            .background(color = bottomSheetDefaultBackgroundColor)
             .fillMaxWidth()
             .padding(defaultBottomSheetPadding)
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.textPrimaryDark
+            style = MaterialTheme.typography.headlineSmall.copy(
+                color = bottomSheetDefaultTextColor
             )
         )
+
         VSpacer.Small()
         bodyContent()
     }
@@ -109,7 +117,7 @@ fun GenericBaseSheetContent(
     Column(
         modifier = Modifier
             .wrapContentHeight()
-            .background(color = MaterialTheme.colorScheme.background)
+            .background(color = bottomSheetDefaultBackgroundColor)
             .fillMaxWidth()
             .padding(defaultBottomSheetPadding)
     ) {
@@ -119,83 +127,93 @@ fun GenericBaseSheetContent(
     }
 }
 
-@Composable
-fun DialogBottomSheet(
-    title: String,
-    message: String,
-    positiveButtonText: String? = null,
-    negativeButtonText: String? = null,
-    onPositiveClick: () -> Unit? = {},
-    onNegativeClick: () -> Unit? = {}
-) {
-    GenericBaseSheetContent(
-        title = title,
-        bodyContent = {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.textSecondaryDark
-                )
-            )
-            VSpacer.Large()
-            positiveButtonText?.let {
-                WrapPrimaryButton(
-                    onClick = { onPositiveClick.invoke() },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = true
-                ) {
-                    Text(
-                        text = positiveButtonText
-                    )
-                }
-            }
-            VSpacer.Medium()
-            negativeButtonText?.let {
-                WrapSecondaryButton(
-                    onClick = { onNegativeClick.invoke() },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = true
-                ) {
-                    Text(
-                        text = negativeButtonText
-                    )
-                }
-            }
-        }
-    )
-}
+data class BottomSheetTextData(
+    val title: String,
+    val message: String,
+    val positiveButtonText: String? = null,
+    val negativeButtonText: String? = null,
+)
 
 @Composable
-fun <T : ViewEvent> BottomSheetWithOptionsList(
-    title: String,
-    message: String,
-    options: List<ModalOptionUi<T>>,
-    onEventSent: (T) -> Unit
+fun DialogBottomSheet(
+    textData: BottomSheetTextData,
+    onPositiveClick: () -> Unit = {},
+    onNegativeClick: () -> Unit = {},
 ) {
-    if (options.isNotEmpty()) {
+    with(textData) {
         GenericBaseSheetContent(
             title = title,
             bodyContent = {
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.textSecondaryDark
+                        color = bottomSheetDefaultTextColor
                     )
                 )
                 VSpacer.Large()
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.Top,
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    OptionsList(
-                        optionItems = options,
-                        itemSelected = onEventSent
-                    )
+                Row {
+                    negativeButtonText?.let {
+                        WrapSecondaryButton(
+                            onClick = { onNegativeClick.invoke() },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = negativeButtonText
+                            )
+                        }
+                    }
+
+                    eu.europa.ec.uilogic.component.utils.HSpacer.Small()
+
+                    positiveButtonText?.let {
+                        WrapPrimaryButton(
+                            onClick = { onPositiveClick.invoke() },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = positiveButtonText
+                            )
+                        }
+                    }
                 }
             }
         )
+    }
+}
+
+@Composable
+fun <T : ViewEvent> BottomSheetWithOptionsList(
+    textData: BottomSheetTextData,
+    options: List<ModalOptionUi<T>>,
+    onEventSent: (T) -> Unit
+) {
+    if (options.isNotEmpty()) {
+        with(textData) {
+            GenericBaseSheetContent(
+                title = title,
+                bodyContent = {
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = bottomSheetDefaultTextColor
+                        )
+                    )
+                    VSpacer.Large()
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.Top,
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        OptionsList(
+                            optionItems = options,
+                            itemSelected = onEventSent
+                        )
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -207,11 +225,18 @@ private fun <T : ViewEvent> OptionsList(
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
     ) {
-        items(optionItems) { item ->
+        itemsIndexed(optionItems) { index, item ->
+
             OptionListItem(
                 item = item,
                 itemSelected = itemSelected
             )
+
+            if (index < optionItems.lastIndex) {
+                HorizontalDivider(
+                    thickness = 1.dp,
+                )
+            }
         }
     }
 }
@@ -225,7 +250,7 @@ private fun <T : ViewEvent> OptionListItem(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(SIZE_SMALL.dp))
-            .background(MaterialTheme.colorScheme.backgroundDefault)
+            .background(bottomSheetDefaultBackgroundColor)
             .throttledClickable {
                 itemSelected(item.event)
             }
@@ -239,12 +264,34 @@ private fun <T : ViewEvent> OptionListItem(
         Text(
             modifier = Modifier.weight(1f),
             text = item.title,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = bottomSheetDefaultTextColor
+            )
         )
+
+        item.icon?.let {
+            WrapIcon(
+                modifier = Modifier.wrapContentWidth(),
+                iconData = item.icon,
+                customTint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+private fun BottomSheetDefaultHandle() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(bottomSheetDefaultBackgroundColor)
+            .padding(vertical = SPACING_MEDIUM.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         WrapIcon(
-            modifier = Modifier.wrapContentWidth(),
-            iconData = item.icon,
-            customTint = MaterialTheme.colorScheme.primary
+            iconData = AppIcons.HandleBar,
+            customTint = MaterialTheme.colorScheme.divider
         )
     }
 }
@@ -254,23 +301,55 @@ private fun <T : ViewEvent> OptionListItem(
 private fun DialogBottomSheetPreview() {
     PreviewTheme {
         DialogBottomSheet(
-            title = "Title",
-            message = "Message",
-            positiveButtonText = "OK",
-            negativeButtonText = "Cancel"
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message",
+                positiveButtonText = "OK",
+                negativeButtonText = "Cancel"
+            )
         )
     }
 }
+
+private data object DummyEventForPreview :
+    ViewEvent
 
 @ThemeModePreviews
 @Composable
 private fun BottomSheetWithOptionsListPreview() {
     PreviewTheme {
         BottomSheetWithOptionsList(
-            title = "Title",
-            message = "Message",
-            options = listOf<ModalOptionUi<ViewEvent>>(),
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message"
+            ),
+            options = buildList {
+                addAll(
+                    listOf(
+                        ModalOptionUi(
+                            title = "Option 1",
+                            event = DummyEventForPreview
+                        ),
+                        ModalOptionUi(
+                            title = "Option 2",
+                            event = DummyEventForPreview
+                        ),
+                        ModalOptionUi(
+                            title = "Option 3",
+                            event = DummyEventForPreview
+                        ),
+                    )
+                )
+            },
             onEventSent = {}
         )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun BottomSheetDefaultHandlePreview() {
+    PreviewTheme {
+        BottomSheetDefaultHandle()
     }
 }

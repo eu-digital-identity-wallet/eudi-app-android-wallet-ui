@@ -66,7 +66,7 @@ private fun IconWarningIndicatorPreview() {
                 customTint = MaterialTheme.colorScheme.primary
             )
             IconWarningIndicator(
-                backgroundColor = MaterialTheme.colorScheme.background
+                backgroundColor = MaterialTheme.colorScheme.surface
             )
         }
     }

@@ -20,6 +20,6 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 
 data class ModalOptionUi<T : ViewEvent>(
     val title: String,
-    val icon: IconData,
+    val icon: IconData? = null,
     val event: T
 )

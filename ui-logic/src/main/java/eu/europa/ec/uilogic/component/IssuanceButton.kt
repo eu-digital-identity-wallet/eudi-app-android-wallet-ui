@@ -29,9 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.textDisabledDark
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -60,7 +57,7 @@ fun IssuanceButton(
         onClick = onClick,
         throttleClicks = true,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.backgroundDefault,
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
         )
     ) {
         Row(
@@ -71,8 +68,11 @@ fun IssuanceButton(
             val iconsColor = MaterialTheme.colorScheme.primary
             val iconsAlpha = if (enabled) ALPHA_ENABLED else ALPHA_DISABLED
 
-            val textColor = if (enabled) MaterialTheme.colorScheme.textPrimaryDark
-            else MaterialTheme.colorScheme.textDisabledDark
+            val textColor = MaterialTheme.colorScheme.onSurface.also {
+                if (!enabled) {
+                    it.copy(alpha = ALPHA_DISABLED)
+                }
+            }
 
             WrapIcon(
                 modifier = Modifier

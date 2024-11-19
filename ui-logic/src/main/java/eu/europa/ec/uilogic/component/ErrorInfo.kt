@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -39,7 +38,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 fun ErrorInfo(
     informativeText: String,
     modifier: Modifier = Modifier,
-    contentColor: Color = MaterialTheme.colorScheme.textSecondaryDark,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
     iconAlpha: Float = 0.4f,
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp

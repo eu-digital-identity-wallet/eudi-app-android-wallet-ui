@@ -28,8 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.VSpacer
@@ -37,14 +35,14 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 private val defaultInfoNameTextStyle: TextStyle
     @Composable get() =
-        MaterialTheme.typography.bodySmall.copy(
-            color = MaterialTheme.colorScheme.textSecondaryDark
+        MaterialTheme.typography.labelMedium.copy(
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
 private val defaultInfoValueTextStyle: TextStyle
     @Composable get() =
         MaterialTheme.typography.bodyLarge.copy(
-            color = MaterialTheme.colorScheme.textPrimaryDark
+            color = MaterialTheme.colorScheme.onSurface
         )
 
 class InfoTextWithNameAndValueData private constructor(
