@@ -16,6 +16,7 @@
 
 package eu.europa.ec.businesslogic.config
 
+import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import eu.europa.ec.eudi.rqesui.domain.extension.toUri
@@ -48,7 +49,7 @@ private class RqesConfig : EudiRQESUiConfig {
         get() = RqesServiceConfig(
             clientId = "wallet-client",
             clientSecret = "somesecret2",
-            authFlowRedirectionURI = URI.create("rQES://oauth/callback"),
+            authFlowRedirectionURI = URI.create(BuildConfig.RQES_DEEPLINK),
             signingAlgorithm = SigningAlgorithmOID.RSA,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
         )
