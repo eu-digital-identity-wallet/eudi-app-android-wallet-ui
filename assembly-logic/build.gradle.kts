@@ -36,6 +36,7 @@ import project.convention.logic.kover.koverModules
 plugins {
     id("project.android.library")
     id("project.android.library.compose")
+    id("project.rqes.sdk")
 }
 
 android {

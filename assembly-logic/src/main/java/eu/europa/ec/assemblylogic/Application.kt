@@ -19,20 +19,36 @@ package eu.europa.ec.assemblylogic
 import android.app.Application
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import eu.europa.ec.eudi.wallet.EudiWallet
 import org.koin.android.ext.android.inject
+import org.koin.core.KoinApplication
 
 class Application : Application() {
 
     private val configWalletCore: WalletCoreConfig by inject()
     private val analyticsController: AnalyticsController by inject()
+    private val configLogic: ConfigLogic by inject()
 
     override fun onCreate() {
         super.onCreate()
-        setupKoin()
+        initializeKoin().initializeRqes()
         initializeReporting()
         initializeEudiWallet()
+    }
+
+    private fun KoinApplication.initializeRqes() {
+        EudiRQESUi.setup(
+            application = this@Application,
+            config = configLogic.rqesConfig,
+            koinApplication = this@initializeRqes
+        )
+    }
+
+    private fun initializeKoin(): KoinApplication {
+        return setupKoin()
     }
 
     private fun initializeReporting() {

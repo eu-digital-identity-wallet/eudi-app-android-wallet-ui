@@ -166,6 +166,18 @@
                     android:scheme="${openId4VciAuthorizationScheme}" />
 
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="${rqesHost}"
+                    android:path="${rqesPath}"
+                    android:scheme="${rqesScheme}" />
+
+            </intent-filter>
         </activity>
 
     </application>
