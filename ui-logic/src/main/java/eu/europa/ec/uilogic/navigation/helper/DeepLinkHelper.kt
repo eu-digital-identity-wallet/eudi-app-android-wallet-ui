@@ -186,7 +186,8 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
         emptyList()
     ),
     RQES(
-        schemas = listOf(BuildConfig.RQES_SCHEME)
+        schemas = listOf(BuildConfig.RQES_SCHEME),
+        host = BuildConfig.RQES_HOST
     );
 
     companion object {
@@ -204,7 +205,7 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
                 ISSUANCE
             }
 
-            RQES.schemas.contains(scheme) -> {
+            RQES.schemas.contains(scheme) && host == RQES.host -> {
                 RQES
             }
 

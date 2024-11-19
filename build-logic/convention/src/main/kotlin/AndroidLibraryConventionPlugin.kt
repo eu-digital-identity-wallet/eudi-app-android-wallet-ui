@@ -92,6 +92,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                         "$openId4VciAuthorizationScheme://$openId4VciAuthorizationHost"
                     )
                     addConfigField("RQES_SCHEME", rqesScheme)
+                    addConfigField("RQES_HOST", rqesHost)
                     addConfigField("RQES_DEEPLINK", "$rqesScheme://$rqesHost$rqesPath")
 
                     // Manifest placeholders for Wallet deepLink
