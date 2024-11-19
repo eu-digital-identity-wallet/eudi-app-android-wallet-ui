@@ -46,8 +46,8 @@ private class RqesConfig : EudiRQESUiConfig {
 
     override val rqesServiceConfig: RqesServiceConfig
         get() = RqesServiceConfig(
-            clientId = "wallet-client-tester",
-            clientSecret = "somesecrettester2",
+            clientId = "wallet-client",
+            clientSecret = "somesecret2",
             authFlowRedirectionURI = URI.create("rQES://oauth/callback"),
             signingAlgorithm = SigningAlgorithmOID.RSA,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
