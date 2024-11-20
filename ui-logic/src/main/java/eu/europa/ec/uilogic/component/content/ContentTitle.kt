@@ -131,65 +131,67 @@ fun ContentTitle(
                     style = titleStyle,
                 )
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                if (!subtitle.isNullOrEmpty()) {
-                    if (!title.isNullOrEmpty()) {
-                        VSpacer.Small()
-                    }
-
-                    safeLet(
-                        clickableSubtitle,
-                        onSubtitleClick
-                    ) { clickableSubtitle, onSubtitleClick ->
-                        val annotatedSubtitle = buildAnnotatedString {
-                            // Plain, non-clickable text.
-                            append(subtitle)
-
-                            // Clickable part of subtitle.
-                            withStyle(
-                                style = SpanStyle(
-                                    fontStyle = subTitleStyle.fontStyle,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            ) {
-                                pushStringAnnotation(
-                                    tag = clickableSubtitle,
-                                    annotation = clickableSubtitle
-                                )
-                                append(clickableSubtitle)
-                            }
+            if (subtitleTrailingContent != null || !subtitle.isNullOrEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    if (!subtitle.isNullOrEmpty()) {
+                        if (!title.isNullOrEmpty()) {
+                            VSpacer.Small()
                         }
 
-                        ClickableText(
-                            modifier = Modifier
-                                .weight(1f),
-                            text = annotatedSubtitle,
-                            onClick = { offset ->
-                                annotatedSubtitle.getStringAnnotations(offset, offset)
-                                    .firstOrNull()?.let {
-                                        onSubtitleClick()
-                                    }
-                            },
+                        safeLet(
+                            clickableSubtitle,
+                            onSubtitleClick
+                        ) { clickableSubtitle, onSubtitleClick ->
+                            val annotatedSubtitle = buildAnnotatedString {
+                                // Plain, non-clickable text.
+                                append(subtitle)
+
+                                // Clickable part of subtitle.
+                                withStyle(
+                                    style = SpanStyle(
+                                        fontStyle = subTitleStyle.fontStyle,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                ) {
+                                    pushStringAnnotation(
+                                        tag = clickableSubtitle,
+                                        annotation = clickableSubtitle
+                                    )
+                                    append(clickableSubtitle)
+                                }
+                            }
+
+                            ClickableText(
+                                modifier = Modifier
+                                    .weight(1f),
+                                text = annotatedSubtitle,
+                                onClick = { offset ->
+                                    annotatedSubtitle.getStringAnnotations(offset, offset)
+                                        .firstOrNull()?.let {
+                                            onSubtitleClick()
+                                        }
+                                },
+                                style = subTitleStyle,
+                                maxLines = subTitleMaxLines,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        } ?: Text(
+                            modifier = Modifier.weight(1f),
+                            text = subtitle,
                             style = subTitleStyle,
                             maxLines = subTitleMaxLines,
                             overflow = TextOverflow.Ellipsis
                         )
-                    } ?: Text(
-                        modifier = Modifier.weight(1f),
-                        text = subtitle,
-                        style = subTitleStyle,
-                        maxLines = subTitleMaxLines,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                    }
 
-                subtitleTrailingContent?.invoke(this)
+                    subtitleTrailingContent?.invoke(this)
+                }
             }
         }
         trailingLabel?.let {

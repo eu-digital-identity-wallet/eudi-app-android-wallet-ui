@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -85,7 +84,7 @@ fun ContentScreen(
     onBack: (() -> Unit)? = null,
     topBar: @Composable (() -> Unit)? = null,
     bottomBar: @Composable (() -> Unit)? = null,
-    stickyBottom: @Composable (() -> Unit)? = null,
+    stickyBottom: @Composable ((PaddingValues) -> Unit)? = null,
     fab: @Composable () -> Unit = {},
     fabPosition: FabPosition = FabPosition.End,
     snackbarHost: @Composable () -> Unit = {},
@@ -116,7 +115,7 @@ fun ContentScreen(
     onBack: (() -> Unit)? = null,
     topBar: @Composable (() -> Unit)? = null,
     bottomBar: @Composable (() -> Unit)? = null,
-    stickyBottom: @Composable (() -> Unit)? = null,
+    stickyBottom: @Composable ((PaddingValues) -> Unit)? = null,
     fab: @Composable () -> Unit = {},
     fabPosition: FabPosition = FabPosition.End,
     snackbarHost: @Composable () -> Unit = {},
@@ -170,11 +169,10 @@ fun ContentScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(screenPaddings(padding))
                                 .zIndex(Z_STICKY),
                             contentAlignment = Alignment.Center
                         ) {
-                            stickyBottomContent()
+                            stickyBottomContent(screenPaddings(padding))
                         }
                     }
                 }

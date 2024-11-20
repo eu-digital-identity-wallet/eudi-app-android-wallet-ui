@@ -76,19 +76,25 @@ fun PinScreen(
         isLoading = state.isLoading,
         navigatableAction = state.action,
         onBack = { viewModel.setEvent(state.onBackEvent) },
-        stickyBottom = {
-            WrapPrimaryButton(
-                modifier = Modifier.fillMaxWidth(),
-                enabled = state.isButtonEnabled,
-                onClick = {
-                    viewModel.setEvent(
-                        Event.NextButtonPressed(
-                            pin = state.pin
-                        )
-                    )
-                }
+        stickyBottom = { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(paddingValues)
             ) {
-                Text(text = state.buttonText)
+                WrapPrimaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = state.isButtonEnabled,
+                    onClick = {
+                        viewModel.setEvent(
+                            Event.NextButtonPressed(
+                                pin = state.pin
+                            )
+                        )
+                    }
+                ) {
+                    Text(text = state.buttonText)
+                }
             }
         }
     ) { paddingValues ->
