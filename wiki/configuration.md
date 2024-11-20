@@ -14,8 +14,7 @@
 
 The application allows the configuration of:
 
-1. Verifier API
-2. Issuing API
+1. Issuing API
 
 Via the *WalletCoreConfig* interface inside the business-logic module.
 
@@ -34,6 +33,28 @@ You can configure the *EudiWalletConfig* per flavor. You can find both implement
         const val AUTHENTICATION_REQUIRED = false
     }
 ```
+
+2. Trusted certificates
+
+Via the *WalletCoreConfig* interface.
+
+```
+interface WalletCoreConfig {
+    val config: EudiWalletConfig
+}
+```
+
+Same as the Verifier and Issuing APIs you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+
+```
+_config = EudiWalletConfig.Builder(context)
+            .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
+            .build()
+```
+
+The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
+
+3. Preregistered Client Scheme
 
 If you plan to use the *ClientIdScheme.Preregistered* for OpenId4VP configuration, please add the following to the configuration files.
 
@@ -59,25 +80,62 @@ const val OPENID4VP_VERIFIER_CLIENT_ID = "your_verifier_client_id"
 }
 ```
 
-3. Trusted certificates
+4. RQES
 
-Via the *WalletCoreConfig* interface.
+Via the *ConfigLogic* interface inside the business-logic module.
 
 ```
-interface WalletCoreConfig {
-    val config: EudiWalletConfig
+interface ConfigLogic {
+    /**
+     * RQES Config.
+     */
+    val rqesConfig: EudiRQESUiConfig
 }
 ```
 
-Same as the Verifier and Issuing APIs you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+You can configure the *RQESConfig*, which implements the EudiRQESUiConfig interface from the RQESUi SDK, per flavor. You can find both implementations inside the business-logic module at src/demo/config/RQESConfigImpl and src/dev/config/RQESConfigImpl.
 
 ```
-_config = EudiWalletConfig.Builder(context)
-            .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
-            .build()
+class RQESConfigImpl : EudiRQESUiConfig {
+
+    override val translations: Map<String, Map<LocalizableKey, String>> get()
+
+    override val themeManager: ThemeManager get()
+
+    override val rqesServiceConfig: RqesServiceConfig get()
+
+    override val qtsps: List<QtspData> get()
+
+    override val printLogs: Boolean get()
+}
 ```
 
-The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw):
+Example:
+
+```
+class RQESConfigImpl : EudiRQESUiConfig {
+
+    override val rqesServiceConfig: RqesServiceConfig
+        get() = RqesServiceConfig(
+            clientId = "your_clientid",
+            clientSecret = "your_secret",
+            authFlowRedirectionURI = URI.create(your_uri),
+            signingAlgorithm = your_algo,
+            hashAlgorithm = your_algo,
+        )
+
+    override val qtsps: List<QtspData>
+        get() = listOf(
+            QtspData(
+                name = "your_name",
+                endpoint = "your_endpoint".toUri(),
+                scaUrl = "your_sca",
+            )
+        )
+
+    override val printLogs: Boolean get() = BuildConfig.DEBUG
+}
+```
 
 ## DeepLink Schemas configuration
 
