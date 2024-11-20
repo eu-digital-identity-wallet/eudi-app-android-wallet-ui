@@ -14,24 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
-import project.convention.logic.config.LibraryModule
-import project.convention.logic.kover.KoverExclusionRules
-import project.convention.logic.kover.excludeFromKoverReport
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.dependencies
+import project.convention.logic.libs
 
-plugins {
-    id("project.android.feature")
-    id("project.rqes.sdk")
+class EudiRqesPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            dependencies {
+                add("implementation", libs.findLibrary("rqes-ui-sdk").get())
+            }
+        }
+    }
 }
-
-android {
-    namespace = "eu.europa.ec.dashboardfeature"
-}
-
-moduleConfig {
-    module = LibraryModule.DashboardFeature
-}
-
-excludeFromKoverReport(
-    excludedClasses = KoverExclusionRules.DashboardFeature.classes,
-    excludedPackages = KoverExclusionRules.DashboardFeature.packages,
-)

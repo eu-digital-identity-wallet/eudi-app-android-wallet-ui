@@ -14,24 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-import project.convention.logic.config.LibraryModule
-import project.convention.logic.kover.KoverExclusionRules
-import project.convention.logic.kover.excludeFromKoverReport
+package eu.europa.ec.dashboardfeature.interactor
 
-plugins {
-    id("project.android.feature")
-    id("project.rqes.sdk")
+import android.content.Context
+import android.net.Uri
+import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
+
+interface DocumentSignInteractor {
+    fun launchRQESSdk(context: Context, uri: Uri)
 }
 
-android {
-    namespace = "eu.europa.ec.dashboardfeature"
+class DocumentSignInteractorImpl : DocumentSignInteractor {
+    override fun launchRQESSdk(context: Context, uri: Uri) {
+        EudiRQESUi.initiate(context, uri)
+    }
 }
-
-moduleConfig {
-    module = LibraryModule.DashboardFeature
-}
-
-excludeFromKoverReport(
-    excludedClasses = KoverExclusionRules.DashboardFeature.classes,
-    excludedPackages = KoverExclusionRules.DashboardFeature.packages,
-)

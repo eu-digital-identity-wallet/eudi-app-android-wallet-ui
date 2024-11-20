@@ -17,6 +17,7 @@
 package eu.europa.ec.businesslogic.config
 
 import eu.europa.ec.businesslogic.BuildConfig
+import eu.europa.ec.eudi.rqesui.infrastructure.config.EudiRQESUiConfig
 
 interface ConfigLogic {
 
@@ -39,6 +40,11 @@ interface ConfigLogic {
      * Application version.
      */
     val appVersion: String get() = BuildConfig.APP_VERSION
+
+    /**
+     * RQES Config.
+     */
+    val rqesConfig: EudiRQESUiConfig
 }
 
 enum class AppFlavor {

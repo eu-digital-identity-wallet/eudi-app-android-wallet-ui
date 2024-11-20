@@ -178,6 +178,12 @@ object AppIcons {
         imageVector = null
     )
 
+    val Sign: IconData = IconData(
+        resourceId = R.drawable.ic_sign_document,
+        contentDescriptionId = R.string.content_description_edit_icon,
+        imageVector = null
+    )
+
     val QrScanner: IconData = IconData(
         resourceId = R.drawable.ic_qr_scanner,
         contentDescriptionId = R.string.content_description_qr_scanner_icon,
