@@ -16,14 +16,7 @@
 
 package eu.europa.ec.businesslogic.config
 
-import eu.europa.ec.businesslogic.BuildConfig
-import eu.europa.ec.eudi.rqes.HashAlgorithmOID
-import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
-import eu.europa.ec.eudi.rqesui.domain.extension.toUri
 import eu.europa.ec.eudi.rqesui.infrastructure.config.EudiRQESUiConfig
-import eu.europa.ec.eudi.rqesui.infrastructure.config.RqesServiceConfig
-import eu.europa.ec.eudi.rqesui.infrastructure.config.data.QtspData
-import java.net.URI
 
 class ConfigLogicImpl : ConfigLogic {
     override val appFlavor: AppFlavor
@@ -33,7 +26,7 @@ class ConfigLogicImpl : ConfigLogic {
         get() = DevEnvironmentConfig()
 
     override val rqesConfig: EudiRQESUiConfig
-        get() = RqesConfig()
+        get() = RQESConfigImpl()
 }
 
 private class DevEnvironmentConfig : EnvironmentConfig() {
@@ -41,25 +34,4 @@ private class DevEnvironmentConfig : EnvironmentConfig() {
         ServerConfig.Debug -> ""
         ServerConfig.Release -> ""
     }
-}
-
-private class RqesConfig : EudiRQESUiConfig {
-
-    override val rqesServiceConfig: RqesServiceConfig
-        get() = RqesServiceConfig(
-            clientId = "wallet-client",
-            clientSecret = "somesecret2",
-            authFlowRedirectionURI = URI.create(BuildConfig.RQES_DEEPLINK),
-            signingAlgorithm = SigningAlgorithmOID.RSA,
-            hashAlgorithm = HashAlgorithmOID.SHA_256,
-        )
-
-    override val qtsps: List<QtspData>
-        get() = listOf(
-            QtspData(
-                name = "Wallet-Centric",
-                endpoint = "https://walletcentric.signer.eudiw.dev/csc/v2".toUri(),
-                scaUrl = "https://walletcentric.signer.eudiw.dev",
-            )
-        )
 }
