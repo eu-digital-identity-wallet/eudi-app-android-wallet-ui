@@ -334,7 +334,7 @@ class DocumentOfferInteractorImpl(
                     type = SuccessUIConfig.ImageConfig.Type.DEFAULT,
                     drawableRes = null,
                     tint = ThemeColors.success,
-                    contentDescription = resourceProvider.getString(R.string.content_description_success)
+                    contentDescription = resourceProvider.getString(R.string.content_description_success_icon)
                 ),
                 third = resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
             )

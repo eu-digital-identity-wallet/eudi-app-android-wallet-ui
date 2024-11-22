@@ -217,22 +217,22 @@ class DashboardViewModel(
                         listOf(
                             ModalOptionUi(
                                 title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_1),
-                                icon = AppIcons.Edit,
+                                trailingIcon = AppIcons.Edit,
                                 event = Event.BottomSheet.Options.OpenChangeQuickPin
                             ),
                             ModalOptionUi(
                                 title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_2),
-                                icon = AppIcons.QrScanner,
+                                trailingIcon = AppIcons.QrScanner,
                                 event = Event.BottomSheet.Options.OpenScanQr
                             ),
                             ModalOptionUi(
                                 title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_4),
-                                icon = AppIcons.Sign,
+                                trailingIcon = AppIcons.Sign,
                                 event = Event.BottomSheet.Options.OpenSignDocument
                             ),
                             ModalOptionUi(
                                 title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_3),
-                                icon = AppIcons.OpenNew,
+                                trailingIcon = AppIcons.OpenNew,
                                 event = Event.BottomSheet.Options.RetrieveLogs
                             )
                         )
@@ -528,7 +528,7 @@ class DashboardViewModel(
         return deferredDocumentsData.map {
             ModalOptionUi(
                 title = it.docName,
-                icon = AppIcons.KeyboardArrowRight,
+                trailingIcon = AppIcons.KeyboardArrowRight,
                 event = Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
                     documentId = it.documentId
                 )

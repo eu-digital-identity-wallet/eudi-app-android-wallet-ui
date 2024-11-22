@@ -24,8 +24,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -41,13 +41,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.divider
+import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
+import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -56,7 +62,10 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.mvi.ViewEvent
 
 private val defaultBottomSheetPadding: PaddingValues = PaddingValues(
-    all = SPACING_LARGE.dp
+    start = SPACING_LARGE.dp,
+    end = SPACING_LARGE.dp,
+    top = 0.dp,
+    bottom = 20.dp
 )
 
 private val bottomSheetDefaultBackgroundColor: Color
@@ -64,6 +73,15 @@ private val bottomSheetDefaultBackgroundColor: Color
 
 private val bottomSheetDefaultTextColor: Color
     @Composable get() = MaterialTheme.colorScheme.onSurface
+
+data class BottomSheetTextData(
+    val title: String,
+    val message: String,
+    val positiveButtonText: String? = null,
+    val isPositiveButtonWarning: Boolean = false,
+    val negativeButtonText: String? = null,
+    val isNegativeButtonWarning: Boolean = false,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,30 +105,6 @@ fun WrapModalBottomSheet(
 
 @Composable
 fun GenericBaseSheetContent(
-    title: String,
-    bodyContent: @Composable () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .wrapContentHeight()
-            .background(color = bottomSheetDefaultBackgroundColor)
-            .fillMaxWidth()
-            .padding(defaultBottomSheetPadding)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineSmall.copy(
-                color = bottomSheetDefaultTextColor
-            )
-        )
-
-        VSpacer.Small()
-        bodyContent()
-    }
-}
-
-@Composable
-fun GenericBaseSheetContent(
     titleContent: @Composable () -> Unit,
     bodyContent: @Composable () -> Unit,
 ) {
@@ -122,17 +116,10 @@ fun GenericBaseSheetContent(
             .padding(defaultBottomSheetPadding)
     ) {
         titleContent()
-        VSpacer.Large()
+        VSpacer.Medium()
         bodyContent()
     }
 }
-
-data class BottomSheetTextData(
-    val title: String,
-    val message: String,
-    val positiveButtonText: String? = null,
-    val negativeButtonText: String? = null,
-)
 
 @Composable
 fun DialogBottomSheet(
@@ -140,39 +127,128 @@ fun DialogBottomSheet(
     onPositiveClick: () -> Unit = {},
     onNegativeClick: () -> Unit = {},
 ) {
-    with(textData) {
-        GenericBaseSheetContent(
-            title = title,
-            bodyContent = {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = bottomSheetDefaultTextColor
-                    )
-                )
-                VSpacer.Large()
-
-                Row {
-                    negativeButtonText?.let {
-                        WrapSecondaryButton(
-                            onClick = { onNegativeClick.invoke() },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(
-                                text = negativeButtonText
-                            )
-                        }
+    BaseBottomSheetContent(
+        textData = textData,
+        bodyContent = {
+            Row(
+                modifier = Modifier.padding(vertical = SPACING_EXTRA_SMALL.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                textData.negativeButtonText?.let { safeNegativeButtonText ->
+                    WrapSecondaryButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = onNegativeClick,
+                        isWarning = textData.isNegativeButtonWarning,
+                    ) {
+                        Text(text = safeNegativeButtonText)
                     }
+                }
 
-                    eu.europa.ec.uilogic.component.utils.HSpacer.Small()
+                HSpacer.Small()
 
-                    positiveButtonText?.let {
-                        WrapPrimaryButton(
-                            onClick = { onPositiveClick.invoke() },
-                            modifier = Modifier.weight(1f)
+                textData.positiveButtonText?.let { safePositiveButtonText ->
+                    WrapPrimaryButton(
+                        modifier = Modifier.weight(1f),
+                        onClick = onPositiveClick,
+                        isWarning = textData.isPositiveButtonWarning,
+                    ) {
+                        Text(text = safePositiveButtonText)
+                    }
+                }
+            }
+        }
+    )
+}
+
+@Composable
+private fun BaseBottomSheetContent(
+    textData: BottomSheetTextData,
+    leadingIcon: IconData? = null,
+    leadingIconTint: Color? = null,
+    bodyContent: @Composable (() -> Unit)? = null,
+) {
+    Column(
+        modifier = Modifier
+            .wrapContentHeight()
+            .background(color = bottomSheetDefaultBackgroundColor)
+            .fillMaxWidth()
+            .padding(defaultBottomSheetPadding)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Start),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            leadingIcon?.let { safeLeadingIcon ->
+                WrapIcon(
+                    modifier = Modifier.size(DEFAULT_ICON_SIZE.dp),
+                    iconData = safeLeadingIcon,
+                    customTint = leadingIconTint
+                )
+            }
+            Text(
+                text = textData.title,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = bottomSheetDefaultTextColor
+                )
+            )
+        }
+
+        VSpacer.Small()
+
+        Text(
+            text = textData.message,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = bottomSheetDefaultTextColor
+            )
+        )
+
+        bodyContent?.let { safeBodyContent ->
+            VSpacer.Medium()
+            safeBodyContent()
+        }
+    }
+}
+
+@Composable
+fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
+    textData: BottomSheetTextData,
+    options: List<ModalOptionUi<T>>,
+    onEventSent: (T) -> Unit,
+) {
+    if (options.size == 2) {
+        BaseBottomSheetContent(
+            textData = textData,
+            bodyContent = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    options.forEach { item ->
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .throttledClickable {
+                                    onEventSent(item.event)
+                                },
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
+                            item.leadingIcon?.let { safeLeadingIcon ->
+                                WrapIcon(
+                                    //modifier = Modifier.size(80.dp),
+                                    iconData = safeLeadingIcon,
+                                    customTint = item.leadingIconTint,
+                                )
+                            }
                             Text(
-                                text = positiveButtonText
+                                modifier = Modifier.padding(
+                                    top = SPACING_SMALL.dp,
+                                    bottom = SPACING_MEDIUM.dp
+                                ),
+                                text = item.title,
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    color = MaterialTheme.colorScheme.primary
+                                )
                             )
                         }
                     }
@@ -186,34 +262,24 @@ fun DialogBottomSheet(
 fun <T : ViewEvent> BottomSheetWithOptionsList(
     textData: BottomSheetTextData,
     options: List<ModalOptionUi<T>>,
-    onEventSent: (T) -> Unit
+    onEventSent: (T) -> Unit,
 ) {
     if (options.isNotEmpty()) {
-        with(textData) {
-            GenericBaseSheetContent(
-                title = title,
-                bodyContent = {
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = bottomSheetDefaultTextColor
-                        )
+        BaseBottomSheetContent(
+            textData = textData,
+            bodyContent = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    OptionsList(
+                        optionItems = options,
+                        itemSelected = onEventSent
                     )
-                    VSpacer.Large()
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.Top,
-                        horizontalAlignment = Alignment.Start
-                    ) {
-                        OptionsList(
-                            optionItems = options,
-                            itemSelected = onEventSent
-                        )
-                    }
                 }
-            )
-        }
+            }
+        )
     }
 }
 
@@ -255,25 +321,34 @@ private fun <T : ViewEvent> OptionListItem(
                 itemSelected(item.event)
             }
             .padding(
-                horizontal = SPACING_SMALL.dp,
                 vertical = SPACING_MEDIUM.dp
             ),
-        horizontalArrangement = Arrangement.Start,
+        horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Start),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        item.leadingIcon?.let { safeLeadingIcon ->
+            WrapIcon(
+                modifier = Modifier.size(DEFAULT_ICON_SIZE.dp),
+                iconData = safeLeadingIcon,
+                customTint = item.leadingIconTint,
+            )
+        }
+
         Text(
             modifier = Modifier.weight(1f),
             text = item.title,
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = bottomSheetDefaultTextColor
-            )
+            ),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
 
-        item.icon?.let {
+        item.trailingIcon?.let { safeTrailingIcon ->
             WrapIcon(
-                modifier = Modifier.wrapContentWidth(),
-                iconData = item.icon,
-                customTint = MaterialTheme.colorScheme.primary
+                modifier = Modifier.size(DEFAULT_ICON_SIZE.dp),
+                iconData = safeTrailingIcon,
+                customTint = item.trailingIconTint,
             )
         }
     }
@@ -298,6 +373,42 @@ private fun BottomSheetDefaultHandle() {
 
 @ThemeModePreviews
 @Composable
+private fun BottomSheetDefaultHandlePreview() {
+    PreviewTheme {
+        BottomSheetDefaultHandle()
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun BaseBottomSheetContentPreview() {
+    PreviewTheme {
+        BaseBottomSheetContent(
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message",
+            )
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun BaseBottomSheetContentWithLeadingIconPreview() {
+    PreviewTheme {
+        BaseBottomSheetContent(
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message",
+            ),
+            leadingIcon = AppIcons.Warning,
+            leadingIconTint = MaterialTheme.colorScheme.warning,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
 private fun DialogBottomSheetPreview() {
     PreviewTheme {
         DialogBottomSheet(
@@ -311,8 +422,7 @@ private fun DialogBottomSheetPreview() {
     }
 }
 
-private data object DummyEventForPreview :
-    ViewEvent
+private data object DummyEventForPreview : ViewEvent
 
 @ThemeModePreviews
 @Composable
@@ -327,16 +437,36 @@ private fun BottomSheetWithOptionsListPreview() {
                 addAll(
                     listOf(
                         ModalOptionUi(
-                            title = "Option 1",
-                            event = DummyEventForPreview
+                            title = "Option with no icons",
+                            event = DummyEventForPreview,
                         ),
                         ModalOptionUi(
-                            title = "Option 2",
-                            event = DummyEventForPreview
+                            title = "Option with leading icon",
+                            leadingIcon = AppIcons.Verified,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
                         ),
                         ModalOptionUi(
-                            title = "Option 3",
-                            event = DummyEventForPreview
+                            title = "Option with leading icon",
+                            trailingIcon = AppIcons.Edit,
+                            trailingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                        ),
+                        ModalOptionUi(
+                            title = "Option with leading and trailing icon",
+                            leadingIcon = AppIcons.Add,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            trailingIcon = AppIcons.ClockTimer,
+                            trailingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                        ),
+                        ModalOptionUi(
+                            title = "Option with leading and trailing icon and really really really really really long text",
+                            leadingIcon = AppIcons.Add,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            trailingIcon = AppIcons.ClockTimer,
+                            trailingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
                         ),
                     )
                 )
@@ -348,8 +478,32 @@ private fun BottomSheetWithOptionsListPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun BottomSheetDefaultHandlePreview() {
+private fun BottomSheetWithTwoBigIconsPreview() {
     PreviewTheme {
-        BottomSheetDefaultHandle()
+        BottomSheetWithTwoBigIcons(
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message"
+            ),
+            options = buildList {
+                addAll(
+                    listOf(
+                        ModalOptionUi(
+                            title = "Option with leading icon 1",
+                            leadingIcon = AppIcons.PresentDocumentInPerson,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                        ),
+                        ModalOptionUi(
+                            title = "Option with leading icon 2",
+                            leadingIcon = AppIcons.PresentDocumentOnline,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                        ),
+                    )
+                )
+            },
+            onEventSent = {}
+        )
     }
 }

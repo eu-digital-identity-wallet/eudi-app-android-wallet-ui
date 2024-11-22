@@ -30,7 +30,7 @@ fun UserImageOrPlaceholder(userBase64Image: String, modifier: Modifier) {
         WrapImage(
             bitmap = rememberBase64DecodedBitmap(base64Image = userBase64Image),
             modifier = modifier,
-            contentDescription = stringResource(id = R.string.content_description_user_image)
+            contentDescription = stringResource(id = R.string.content_description_user_image_icon)
         )
     } else {
         WrapImage(

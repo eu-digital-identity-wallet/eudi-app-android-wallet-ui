@@ -318,6 +318,31 @@ private fun DashboardSheetContent(
 ) {
     when (sheetContent) {
         is DashboardBottomSheetContent.Options -> {
+            /*BottomSheetWithTwoBigIcons(
+                textData = BottomSheetTextData(
+                    title = "Title",
+                    message = "Message"
+                ),
+                options = buildList {
+                    addAll(
+                        listOf(
+                            ModalOptionUi(
+                                title = "Option with leading icon 1",
+                                leadingIcon = AppIcons.PresentDocumentInPerson,
+                                leadingIconTint = MaterialTheme.colorScheme.primary,
+                                event = Event.OnPause,
+                            ),
+                            ModalOptionUi(
+                                title = "Option with leading icon 2",
+                                leadingIcon = AppIcons.PresentDocumentOnline,
+                                leadingIconTint = MaterialTheme.colorScheme.primary,
+                                event = Event.OnPause,
+                            ),
+                        )
+                    )
+                },
+                onEventSent = {}
+            )*/
             GenericBaseSheetContent(
                 titleContent = {
                     Row(
@@ -356,7 +381,7 @@ private fun DashboardSheetContent(
                             horizontalArrangement = Arrangement.Start
                         ) {
                             WrapIcon(
-                                iconData = option.icon!!,//TODO Giannis
+                                iconData = option.trailingIcon!!,//TODO Giannis
                                 customTint = MaterialTheme.colorScheme.primary
                             )
                             HSpacer.Medium()
@@ -898,17 +923,17 @@ private fun DashboardScreenPreview() {
                     listOf(
                         ModalOptionUi(
                             title = stringResource(R.string.dashboard_bottom_sheet_options_action_1),
-                            icon = AppIcons.Edit,
+                            trailingIcon = AppIcons.Edit,
                             event = Event.BottomSheet.Options.OpenChangeQuickPin
                         ),
                         ModalOptionUi(
                             title = stringResource(R.string.dashboard_bottom_sheet_options_action_2),
-                            icon = AppIcons.QrScanner,
+                            trailingIcon = AppIcons.QrScanner,
                             event = Event.BottomSheet.Options.OpenScanQr
                         ),
                         ModalOptionUi(
                             title = stringResource(R.string.dashboard_bottom_sheet_options_action_3),
-                            icon = AppIcons.OpenNew,
+                            trailingIcon = AppIcons.OpenNew,
                             event = Event.BottomSheet.Options.RetrieveLogs
                         )
                     )
@@ -969,7 +994,7 @@ private fun SheetContentPreview() {
                 listOf(
                     ModalOptionUi(
                         title = "Change Quick Pin",
-                        icon = AppIcons.Edit,
+                        trailingIcon = AppIcons.Edit,
                         event = Event.BottomSheet.Options.OpenChangeQuickPin
                     )
                 )

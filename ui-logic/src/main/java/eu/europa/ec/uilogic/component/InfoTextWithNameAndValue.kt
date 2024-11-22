@@ -197,7 +197,7 @@ private fun InfoTextWithNameAndImagePreview() {
     PreviewTheme {
         InfoTextWithNameAndImage(
             itemData = itemData,
-            contentDescription = stringResource(id = R.string.content_description_user_signature)
+            contentDescription = stringResource(id = R.string.content_description_user_signature_icon)
         )
     }
 }

@@ -234,7 +234,7 @@ private fun QRCode(
                 secondaryPixelsColor = secondaryPixelsColor.toArgb(),
                 size = qrSize
             ),
-            contentDescription = stringResource(id = R.string.content_description_qr_code)
+            contentDescription = stringResource(id = R.string.content_description_qr_code_icon)
         )
     }
 }

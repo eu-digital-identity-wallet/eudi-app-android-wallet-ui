@@ -15,11 +15,11 @@
   -->
 
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp"
-    android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:width="18dp"
+    android:height="18dp"
+    android:viewportWidth="18"
+    android:viewportHeight="18">
     <path
-        android:fillColor="#F39626"
-        android:pathData="M1,21.5H23L12,2.5L1,21.5ZM13,18.5H11V16.5H13V18.5ZM13,14.5H11V10.5H13V14.5Z" />
+        android:fillColor="#ffffff"
+        android:pathData="M9,1.5C4.86,1.5 1.5,4.86 1.5,9C1.5,13.14 4.86,16.5 9,16.5C13.14,16.5 16.5,13.14 16.5,9C16.5,4.86 13.14,1.5 9,1.5ZM9,15C5.693,15 3,12.307 3,9C3,5.693 5.693,3 9,3C12.307,3 15,5.693 15,9C15,12.307 12.307,15 9,15ZM12.443,5.685L7.5,10.627L5.557,8.693L4.5,9.75L7.5,12.75L13.5,6.75L12.443,5.685Z" />
 </vector>

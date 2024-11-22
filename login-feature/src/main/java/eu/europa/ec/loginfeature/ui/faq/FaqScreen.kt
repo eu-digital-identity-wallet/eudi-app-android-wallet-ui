@@ -50,9 +50,7 @@ import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
@@ -193,7 +191,7 @@ private fun ExpandableListItem(
     onHeaderClicked: () -> Unit
 ) {
     WrapExpandableCard(
-        cardTitleContent = {
+        cardCollapsedContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -209,18 +207,19 @@ private fun ExpandableListItem(
                 )
             }
         },
-        cardContent = {
+        cardExpandedContent = {
             Text(
                 text = dataItem.description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
         },
-        cardTitlePadding = PaddingValues(SPACING_LARGE.dp),
-        cardContentPadding = PaddingValues(horizontal = 0.dp, vertical = SPACING_SMALL.dp),
-        onCardClick = { onHeaderClicked() },
+        //cardTitlePadding = PaddingValues(SPACING_LARGE.dp),
+        //cardContentPadding = PaddingValues(horizontal = 0.dp, vertical = SPACING_SMALL.dp),
+        //onCardClick = { onHeaderClicked() },
         throttleClicks = false,
-        expandCard = isExpanded
+        isExpanded = isExpanded,
+        onExpandedChange = { onHeaderClicked() },
     )
 }
 

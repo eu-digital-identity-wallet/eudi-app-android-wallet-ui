@@ -52,7 +52,6 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
@@ -210,7 +209,7 @@ fun <T> RequiredCard(
     if (item.requestDocumentItemsUi.isNotEmpty()) {
         WrapExpandableCard(
             modifier = Modifier.fillMaxWidth(),
-            cardTitleContent = {
+            cardCollapsedContent = {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -231,8 +230,8 @@ fun <T> RequiredCard(
                     )
                 }
             },
-            cardTitlePadding = requiredFieldsTitlePadding,
-            cardContent = {
+            //cardTitlePadding = requiredFieldsTitlePadding,
+            cardExpandedContent = {
                 item.requestDocumentItemsUi.forEach { requiredUserIdentificationUi ->
                     Field(
                         item = requiredUserIdentificationUi,
@@ -241,10 +240,11 @@ fun <T> RequiredCard(
                     )
                 }
             },
-            cardContentPadding = PaddingValues(all = SPACING_SMALL.dp),
-            onCardClick = { onEventSend(item.event) },
+            //cardContentPadding = PaddingValues(all = SPACING_SMALL.dp),
+            //onCardClick = { onEventSend(item.event) },
             throttleClicks = false,
-            expandCard = item.expanded
+            isExpanded = item.expanded,
+            onExpandedChange = { onEventSend(item.event) },
         )
     }
 }

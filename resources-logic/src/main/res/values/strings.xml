@@ -38,11 +38,12 @@
     <string name="generic_bottom_sheet_delete_subtitle">You will not be able to use your %1$s for future verifications</string>
     <string name="generic_bottom_sheet_delete_primary_button_text">yes</string>
     <string name="generic_bottom_sheet_delete_secondary_button_text">no</string>
+    <string name="generic_search_bar_placeholder_text">Search documents</string>
 
     <!-- Content Description -->
-    <string name="content_description_user_image">User image</string>
-    <string name="content_description_user_signature">User signature</string>
-    <string name="content_description_qr_code">QR Code</string>
+    <string name="content_description_user_image_icon">User image</string>
+    <string name="content_description_user_signature_icon">User signature</string>
+    <string name="content_description_qr_code_icon">QR Code</string>
     <string name="content_description_more_vert_icon">More Items</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
@@ -65,12 +66,31 @@
     <string name="content_description_add_icon">Add</string>
     <string name="content_description_edit_icon">Edit</string>
     <string name="content_description_verified_icon">Verified</string>
-    <string name="content_description_message">Message</string>
-    <string name="content_description_success">Success</string>
-    <string name="content_description_clock_timer">Clock timer</string>
-    <string name="content_description_arrow_right">Arrow right</string>
-    <string name="content_description_open_new">Open new</string>
-    <string name="content_description_handle_bar">Handle bar</string>
+    <string name="content_description_message_icon">Message</string>
+    <string name="content_description_success_icon">Success</string>
+    <string name="content_description_clock_timer_icon">Clock timer</string>
+    <string name="content_description_arrow_right_icon">Arrow right</string>
+    <string name="content_description_open_new_icon">Open new</string>
+    <string name="content_description_handle_bar_icon">Handle bar</string>
+    <string name="content_description_search_icon">Search</string>
+    <string name="content_description_present_document_same_device_icon">Present document in person</string>
+    <string name="content_description_present_document_cross_device_icon">Present document online</string>
+    <string name="content_description_add_document_from_list_icon">Add document from list</string>
+    <string name="content_description_add_document_from_qr_icon">Add document from QR</string>
+
+    <string name="content_description_bookmark_icon">Bookmark</string>
+    <string name="content_description_bookmark_filled_icon">Bookmark filled</string>
+    <string name="content_description_certified_icon">Certified</string>
+    <string name="content_description_check_circle_icon">Check circle</string>
+    <string name="content_description_documents_icon">Documents</string>
+    <string name="content_description_download_icon">Download</string>
+    <string name="content_description_filters_icon">Filters</string>
+    <string name="content_description_home_icon">Home</string>
+    <string name="content_description_in_progress_icon">In progress</string>
+    <string name="content_description_notifications_icon">Notifications</string>
+    <string name="content_description_transactions_icon">Transactions</string>
+    <string name="content_description_wallet_activated_icon">Wallet activated</string>
+    <string name="content_description_wallet_secured_icon">Wallet secured</string>
 
     <!-- Document Types -->
     <string name="pid">National ID</string>

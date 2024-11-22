@@ -17,65 +17,46 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Shape
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
-import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 @Composable
 fun WrapExpandableCard(
     modifier: Modifier = Modifier,
-    cardTitleContent: @Composable () -> Unit,
-    cardTitlePadding: PaddingValues? = null,
-    cardContent: @Composable () -> Unit,
-    cardContentPadding: PaddingValues? = null,
-    onCardClick: (() -> Unit)? = null,
+    isExpanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    cardCollapsedContent: @Composable () -> Unit,
+    cardExpandedContent: @Composable ColumnScope.() -> Unit,
+    shape: Shape? = null,
+    colors: CardColors? = null,
     throttleClicks: Boolean = true,
-    cardColors: CardColors? = null,
-    enabled: Boolean = true,
-    expandCard: Boolean,
 ) {
     WrapCard(
         modifier = modifier,
-        onClick = onCardClick,
-        throttleClicks = throttleClicks,
-        colors = cardColors ?: CardDefaults.cardColors(
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        enabled = enabled
+        shape = shape,
+        colors = colors,
+        onClick = { onExpandedChange(!isExpanded) },
+        throttleClicks = throttleClicks
     ) {
-        Column(
-            modifier = Modifier
-                .padding(
-                    paddingValues = cardTitlePadding ?: PaddingValues(
-                        SPACING_MEDIUM.dp
-                    )
-                )
-        ) {
-            cardTitleContent()
+        Column {
+            // Title Section (Always Visible)
+            cardCollapsedContent()
 
-            AnimatedVisibility(visible = expandCard) {
-                Column(
-                    modifier = Modifier.padding(
-                        paddingValues = cardContentPadding ?: PaddingValues(
-                            SPACING_EXTRA_SMALL.dp
-                        )
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
-                ) {
-                    cardContent()
+            // Content Section (Animated Visibility)
+            AnimatedVisibility(visible = isExpanded) {
+                Column {
+                    cardExpandedContent()
                 }
             }
         }
@@ -86,16 +67,19 @@ fun WrapExpandableCard(
 @Composable
 private fun WrapExpandableCardCollapsedPreview() {
     PreviewTheme {
+        var isExpanded by remember { mutableStateOf(false) }
+
         WrapExpandableCard(
-            cardTitleContent = {
+            isExpanded = isExpanded,
+            onExpandedChange = { isExpanded = it },
+            cardCollapsedContent = {
                 Text(text = "Verification Data")
             },
-            cardContent = {
+            cardExpandedContent = {
                 repeat(5) {
                     Text(text = "Data $it")
                 }
             },
-            expandCard = false
         )
     }
 }
@@ -104,16 +88,19 @@ private fun WrapExpandableCardCollapsedPreview() {
 @Composable
 private fun WrapExpandableCardExpandedPreview() {
     PreviewTheme {
+        var isExpanded by remember { mutableStateOf(true) }
+
         WrapExpandableCard(
-            cardTitleContent = {
+            isExpanded = isExpanded,
+            onExpandedChange = { isExpanded = it },
+            cardCollapsedContent = {
                 Text(text = "Verification Data")
             },
-            cardContent = {
+            cardExpandedContent = {
                 repeat(5) {
                     Text(text = "Data $it")
                 }
             },
-            expandCard = true
         )
     }
 }

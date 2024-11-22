@@ -782,7 +782,7 @@ class TestDocumentOfferInteractor {
             )
 
             mockIssuanceDocumentOfferSuccessStrings()
-            whenever(resourceProvider.getString(R.string.content_description_success))
+            whenever(resourceProvider.getString(R.string.content_description_success_icon))
                 .thenReturn(mockedSuccessContentDescription)
 
             val config = SuccessUIConfig(
@@ -858,7 +858,7 @@ class TestDocumentOfferInteractor {
             )
 
             mockIssuanceDocumentOfferSuccessStrings()
-            whenever(resourceProvider.getString(R.string.content_description_success))
+            whenever(resourceProvider.getString(R.string.content_description_success_icon))
                 .thenReturn(mockedSuccessContentDescription)
 
             whenever(
@@ -1156,7 +1156,7 @@ class TestDocumentOfferInteractor {
                 type = SuccessUIConfig.ImageConfig.Type.DEFAULT,
                 drawableRes = null,
                 tint = ThemeColors.success,
-                contentDescription = resourceProvider.getString(R.string.content_description_success)
+                contentDescription = resourceProvider.getString(R.string.content_description_success_icon)
             ),
             third =
             resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)

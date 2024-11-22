@@ -45,20 +45,23 @@ fun WrapPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onClick: () -> Unit,
+    isWarning: Boolean = false,
     content: @Composable RowScope.() -> Unit
 ) {
+    val colors = if (isWarning) {
+        ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.error
+        )
+    } else {
+        ButtonDefaults.buttonColors()
+    }
+
     Button(
         modifier = modifier,
         enabled = enabled,
         onClick = onClick,
         shape = buttonsShape,
-        colors = ButtonDefaults.textButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
-                alpha = 0.12f
-            )
-        ),
+        colors = colors,
         contentPadding = buttonsContentPadding,
         content = content
     )
@@ -69,14 +72,27 @@ fun WrapSecondaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onClick: () -> Unit,
+    isWarning: Boolean = false,
     content: @Composable RowScope.() -> Unit
 ) {
-    val borderColor = if (enabled) {
-        MaterialTheme.colorScheme.primary
-    } else {
+    val borderColor = if (!enabled) {
         MaterialTheme.colorScheme.onSurface.copy(
             alpha = 0.12f
         )
+    } else {
+        if (isWarning) {
+            MaterialTheme.colorScheme.error
+        } else {
+            MaterialTheme.colorScheme.primary
+        }
+    }
+
+    val colors = if (isWarning) {
+        ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.error
+        )
+    } else {
+        ButtonDefaults.outlinedButtonColors()
     }
 
     OutlinedButton(
@@ -84,7 +100,7 @@ fun WrapSecondaryButton(
         enabled = enabled,
         onClick = onClick,
         shape = buttonsShape,
-        colors = ButtonDefaults.outlinedButtonColors(),
+        colors = colors,
         border = BorderStroke(
             width = 1.dp,
             color = borderColor,
@@ -122,6 +138,34 @@ private fun WrapPrimaryButtonDisabledPreview() {
 
 @ThemeModePreviews
 @Composable
+private fun WrapPrimaryButtonEnabledWarningPreview() {
+    PreviewTheme {
+        WrapPrimaryButton(
+            enabled = true,
+            isWarning = true,
+            onClick = { }
+        ) {
+            Text("Enabled Warning Primary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapPrimaryButtonDisabledWarningPreview() {
+    PreviewTheme {
+        WrapPrimaryButton(
+            enabled = false,
+            isWarning = true,
+            onClick = { }
+        ) {
+            Text("Disabled Warning Primary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
 private fun WrapSecondaryButtonEnabledPreview() {
     PreviewTheme {
         WrapSecondaryButton(
@@ -142,6 +186,34 @@ private fun WrapSecondaryButtonDisabledPreview() {
             onClick = { }
         ) {
             Text("Disabled Secondary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSecondaryButtonEnabledWarningPreview() {
+    PreviewTheme {
+        WrapSecondaryButton(
+            enabled = true,
+            isWarning = true,
+            onClick = { }
+        ) {
+            Text("Enabled Warning Secondary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSecondaryButtonDisabledWarningPreview() {
+    PreviewTheme {
+        WrapSecondaryButton(
+            enabled = false,
+            isWarning = true,
+            onClick = { }
+        ) {
+            Text("Disabled Warning Secondary Button")
         }
     }
 }

@@ -66,7 +66,7 @@ fun DetailsContent(
                     InfoTextWithNameAndImage(
                         modifier = Modifier.fillMaxWidth(),
                         itemData = documentDetailsUi.itemData,
-                        contentDescription = stringResource(id = R.string.content_description_user_signature)
+                        contentDescription = stringResource(id = R.string.content_description_user_signature_icon)
                     )
                 }
 

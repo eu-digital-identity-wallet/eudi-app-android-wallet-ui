@@ -38,7 +38,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.extension.clickableNoRipple
 import eu.europa.ec.uilogic.extension.throttledClickable
 
@@ -64,7 +64,7 @@ fun WrapTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     onKeyEvent: ((KeyEvent) -> Boolean)? = null,
     textStyle: TextStyle = LocalTextStyle.current,
-    shape: Shape = RoundedCornerShape(SIZE_MEDIUM.dp),
+    shape: Shape = RoundedCornerShape(SIZE_LARGE.dp),
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors()
 ) {
 

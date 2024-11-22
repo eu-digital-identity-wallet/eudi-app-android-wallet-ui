@@ -18,7 +18,6 @@ package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -38,7 +37,6 @@ data class CheckboxData(
     val onCheckedChange: ((Boolean) -> Unit)?
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WrapCheckbox(
     checkboxData: CheckboxData,
