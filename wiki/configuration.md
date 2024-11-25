@@ -120,7 +120,6 @@ class RQESConfigImpl : EudiRQESUiConfig {
             clientId = "your_clientid",
             clientSecret = "your_secret",
             authFlowRedirectionURI = URI.create(your_uri),
-            signingAlgorithm = your_algo,
             hashAlgorithm = your_algo,
         )
 
