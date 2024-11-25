@@ -37,7 +37,7 @@ The app is configured to use some configuration in the two ***ConfigWalletCoreIm
 depending on the flavor of your choice).
 
 These are the contents of the ConfigWalletCoreImpl file (dev flavor) and you don't need to change anything:
-```
+```Kotlin
 private companion object {
         const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-dev"
@@ -55,7 +55,7 @@ you can follow these Repositories for further instructions:
 
 After this, and assuming you are now running everything locally,
 you need to change the contents of the ConfigWalletCoreImpl file, from:
-```
+```Kotlin
 private companion object {
         const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-dev"
@@ -63,7 +63,7 @@ private companion object {
 }
 ```
 into something like this:
-```
+```Kotlin
 private companion object {
         const val VCI_ISSUER_URL = "local_IP_address_of_issuer"
         const val VCI_CLIENT_ID = "wallet-dev"
@@ -72,7 +72,7 @@ private companion object {
 ```
 
 for example:
-```
+```Kotlin
 private companion object {
         const val VCI_ISSUER_URL = "https://192.168.1.1:5000"
         const val VCI_CLIENT_ID = "wallet-dev"
@@ -81,7 +81,7 @@ private companion object {
 ```
 
 Finally, you have to also change the content of ***network_security_config.xml*** file and allow HTTP traffic, to this:
-```
+```Xml
 <network-security-config>
     <base-config cleartextTrafficPermitted="true" />
 </network-security-config>
@@ -93,7 +93,7 @@ This section describes configuring the application to interact with services uti
 
 1. Open the build.gradle.kts file of the "core-logic" module.
 2. In the 'dependencies' block add the following two:
-    ```
+    ```Gradle
     implementation(libs.ktor.android)
     implementation(libs.ktor.logging)
     ```
@@ -102,7 +102,7 @@ This section describes configuring the application to interact with services uti
    *src\demo\java\eu\europa\ec\corelogic\config*
    depending on the flavor of your choice.
 4. Here, add these imports:
-    ```
+    ```Kotlin
     import android.annotation.SuppressLint
     import io.ktor.client.HttpClient
     import io.ktor.client.engine.android.Android
@@ -115,7 +115,7 @@ This section describes configuring the application to interact with services uti
     import javax.security.cert.CertificateException
     ```
 5. Add a custom HttpClient that allows self-signed certificates
-    ```
+    ```Kotlin
     object ProvideKtorHttpClient {
 
         @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
@@ -159,7 +159,7 @@ This section describes configuring the application to interact with services uti
     }
     ```
 6. Finally, add this custom HttpClient to the config, by appending it to the EudiWalletConfig.Builder, with the following lines:
-    ```
+    ```Kotlin
    .ktorHttpClientFactory {
         ProvideKtorHttpClient.client()
    }
