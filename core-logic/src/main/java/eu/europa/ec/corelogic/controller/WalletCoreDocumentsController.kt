@@ -16,6 +16,9 @@
 
 package eu.europa.ec.corelogic.controller
 
+import com.android.identity.securearea.KeyUnlockData
+import com.android.identity.securearea.software.SoftwareCreateKeySettings
+import com.android.identity.securearea.software.SoftwareSecureArea
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -23,13 +26,14 @@ import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
-import eu.europa.ec.eudi.wallet.document.DeleteDocumentResult
 import eu.europa.ec.eudi.wallet.document.Document
-import eu.europa.ec.eudi.wallet.document.Document.State
+import eu.europa.ec.eudi.wallet.document.DocumentExtensions.DefaultKeyUnlockData
+import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultCreateDocumentSettings
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.sample.LoadSampleResult
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.issue.openid4vci.DeferredIssueResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
@@ -186,10 +190,24 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun loadSampleData(sampleDataByteArray: ByteArray): Flow<LoadSampleDataPartialState> =
         flow {
-            when (val result = eudiWallet.loadSampleData(sampleDataByteArray)) {
-                is LoadSampleResult.Error -> emit(LoadSampleDataPartialState.Failure(result.message))
-                is LoadSampleResult.Success -> emit(LoadSampleDataPartialState.Success)
-            }
+            val result = eudiWallet.loadMdocSampleDocuments(
+                sampleData = sampleDataByteArray,
+                createSettings = CreateDocumentSettings(
+                    secureAreaIdentifier = eudiWallet.secureAreaRepository
+                        .implementations
+                        .filterIsInstance<SoftwareSecureArea>()
+                        .first().identifier,
+                    createKeySettings = SoftwareCreateKeySettings.Builder().build()
+                )
+            ).kotlinResult
+                .onSuccess { emit(LoadSampleDataPartialState.Success) }
+                .onFailure {
+                    emit(
+                        LoadSampleDataPartialState.Failure(
+                            it.message ?: it::class.simpleName!!
+                        )
+                    )
+                }
         }.safeAsync {
             LoadSampleDataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
         }
@@ -214,15 +232,17 @@ class WalletCoreDocumentsControllerImpl(
         AddSampleDataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
     }
 
-    override fun getAllDocuments(): List<Document> = eudiWallet.getAllDocuments()
-        .filter { it.state != State.UNSIGNED }
+    override fun getAllDocuments(): List<Document> =
+        eudiWallet.getDocuments { it is IssuedDocument || it is DeferredDocument }
 
-    override fun getAllIssuedDocuments(): List<IssuedDocument> = eudiWallet.getDocuments()
+    override fun getAllIssuedDocuments(): List<IssuedDocument> =
+        eudiWallet.getDocuments().filterIsInstance<IssuedDocument>()
 
     override fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<IssuedDocument> =
         getAllDocuments()
             .filterIsInstance<IssuedDocument>()
-            .filter { it.docType == documentIdentifier.docType }
+            .filter { it.format is MsoMdocFormat }
+            .filter { (it.format as MsoMdocFormat).docType == documentIdentifier.docType }
 
     override fun getDocumentById(documentId: DocumentId): Document? {
         return eudiWallet.getDocumentById(documentId = documentId)
@@ -287,7 +307,7 @@ class WalletCoreDocumentsControllerImpl(
             openId4VciManager.issueDocumentByOfferUri(
                 offerUri = offerUri,
                 onIssueEvent = issuanceCallback(),
-                txCode = txCode
+                txCode = txCode,
             )
             awaitClose()
         }.safeAsync {
@@ -297,20 +317,17 @@ class WalletCoreDocumentsControllerImpl(
         }
 
     override fun deleteDocument(documentId: String): Flow<DeleteDocumentPartialState> = flow {
-        when (val deleteResult = eudiWallet.deleteDocumentById(documentId = documentId)) {
-            is DeleteDocumentResult.Failure -> {
+        val deleteResult = eudiWallet.deleteDocumentById(documentId = documentId)
+            .kotlinResult
+            .onSuccess { emit(DeleteDocumentPartialState.Success) }
+            .onFailure {
                 emit(
                     DeleteDocumentPartialState.Failure(
-                        errorMessage = deleteResult.throwable.localizedMessage
+                        errorMessage = it.localizedMessage
                             ?: genericErrorMessage
                     )
                 )
             }
-
-            is DeleteDocumentResult.Success -> {
-                emit(DeleteDocumentPartialState.Success)
-            }
-        }
     }.safeAsync {
         DeleteDocumentPartialState.Failure(
             errorMessage = it.localizedMessage ?: genericErrorMessage
@@ -508,14 +525,19 @@ class WalletCoreDocumentsControllerImpl(
                     nonIssuedDocuments[event.docType] = event.name
                 }
 
+                is IssueEvent.DocumentRequiresCreateSettings -> {
+                    event.resume(eudiWallet.getDefaultCreateDocumentSettings())
+                }
+
                 is IssueEvent.DocumentRequiresUserAuth -> {
+                    val keyUnlockData = event.document.DefaultKeyUnlockData
                     trySendBlocking(
                         IssueDocumentsPartialState.UserAuthRequired(
-                            BiometricCrypto(event.cryptoObject),
+                            BiometricCrypto(keyUnlockData?.getCryptoObjectForSigning(event.signingAlgorithm)),
                             DeviceAuthenticationResult(
-                                onAuthenticationSuccess = { event.resume() },
-                                onAuthenticationError = { event.cancel() },
-                                onAuthenticationFailure = { event.cancel() },
+                                onAuthenticationSuccess = { event.resume(keyUnlockData as KeyUnlockData) },
+                                onAuthenticationError = { event.cancel(null) },
+                                onAuthenticationFailure = { event.cancel(null) },
                             )
                         )
                     )

@@ -56,9 +56,9 @@ class Application : Application() {
     }
 
     private fun initializeEudiWallet() {
-        EudiWallet.init(
-            applicationContext,
-            configWalletCore.config
-        )
+//        EudiWallet.init(
+//            applicationContext,
+//            configWalletCore.config
+//        )
     }
 }

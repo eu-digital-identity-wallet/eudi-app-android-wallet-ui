@@ -24,15 +24,16 @@ import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
+import eu.europa.ec.commonfeature.ui.request.model.docType
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
 import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocument
-import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
-import eu.europa.ec.eudi.iso18013.transfer.DocItem
-import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
+import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
+import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
+import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
@@ -69,25 +70,26 @@ object RequestTransformer {
     fun transformToUiItems(
         storageDocuments: List<IssuedDocument> = emptyList(),
         resourceProvider: ResourceProvider,
-        requestDocuments: List<RequestDocument>,
+        requestDocuments: List<RequestedDocument>,
         requiredFieldsTitle: String
     ): List<RequestDataUi<Event>> {
         val items = mutableListOf<RequestDataUi<Event>>()
 
         requestDocuments.forEachIndexed { docIndex, requestDocument ->
+            val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
             // Add document item.
             items += RequestDataUi.Document(
                 documentItemUi = DocumentItemUi(
-                    title = requestDocument.toUiName(resourceProvider)
+                    title = storageDocument.toUiName(resourceProvider)
                 )
             )
             items += RequestDataUi.Space()
 
             val required = mutableListOf<RequestDocumentItemUi<Event>>()
-            val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
+
 
             // Add optional field items.
-            requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
+            requestDocument.requestedItems.keys.forEachIndexed { itemIndex, docItem ->
 
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
@@ -110,14 +112,14 @@ object RequestTransformer {
                 ) {
                     required.add(
                         docItem.toRequestDocumentItemUi(
-                            uID = requestDocument.docRequest.produceDocUID(
+                            uID = requestDocument.produceDocUID(
                                 docItem.elementIdentifier,
-                                requestDocument.documentId
+                                requestDocument.documentId,
+                                storageDocument.docType
                             ),
                             docPayload = DocumentItemDomainPayload(
                                 docId = requestDocument.documentId,
-                                docRequest = requestDocument.docRequest,
-                                docType = requestDocument.docType,
+                                docType = storageDocument.docType,
                                 namespace = docItem.namespace,
                                 elementIdentifier = docItem.elementIdentifier,
                             ),
@@ -129,7 +131,7 @@ object RequestTransformer {
                         )
                     )
                 } else {
-                    val uID = requestDocument.docRequest.produceDocUID(
+                    val uID = requestDocument.produceDocUID(
                         docItem.elementIdentifier,
                         requestDocument.documentId
                     )
@@ -141,8 +143,7 @@ object RequestTransformer {
                                 uID = uID,
                                 docPayload = DocumentItemDomainPayload(
                                     docId = requestDocument.documentId,
-                                    docRequest = requestDocument.docRequest,
-                                    docType = requestDocument.docType,
+                                    docType = storageDocument.docType,
                                     namespace = docItem.namespace,
                                     elementIdentifier = docItem.elementIdentifier,
                                 ),
@@ -155,7 +156,7 @@ object RequestTransformer {
                         )
                     )
 
-                    if (itemIndex != requestDocument.docRequest.requestItems.lastIndex) {
+                    if (itemIndex != requestDocument.requestedItems.keys.toList().lastIndex) {
                         items += RequestDataUi.Space()
                         items += RequestDataUi.Divider()
                     }
@@ -211,14 +212,13 @@ object RequestTransformer {
                 val (document, selectedDocumentItems) = entry
                 DisclosedDocument(
                     documentId = document.docId,
-                    docType = document.docType,
-                    selectedDocItems = selectedDocumentItems.map {
+                    disclosedItems = selectedDocumentItems.map {
                         DocItem(
                             it.domainPayload.namespace,
                             it.domainPayload.elementIdentifier
                         )
                     },
-                    docRequest = document.docRequest
+                    keyUnlockData = null // TODO required if key is locked
                 )
             }
         )

@@ -18,6 +18,7 @@ package eu.europa.ec.corelogic.di
 
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.corelogic.config.WalletCoreBuilderImpl
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfigImpl
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -40,7 +41,12 @@ const val PRESENTATION_SCOPE_ID = "presentation_scope_id"
 class LogicCoreModule
 
 @Single
-fun provideEudiWalletCore(): EudiWallet = EudiWallet
+fun provideEudiWalletCore(
+    context: Context,
+    walletCoreConfig: WalletCoreConfig,
+    walletCoreLogController: WalletCoreLogController
+): EudiWallet =
+    WalletCoreBuilderImpl(context, walletCoreConfig, walletCoreLogController).wallet
 
 @Single
 fun provideConfigWalletCore(

@@ -18,10 +18,12 @@ package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.corelogic.model.DocType
-import eu.europa.ec.eudi.iso18013.transfer.DocItem
-import eu.europa.ec.eudi.iso18013.transfer.DocRequest
+import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
+import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
+import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 
 data class RequestDocumentItemUi<T>(
     val id: String,
@@ -42,7 +44,6 @@ data class RequestDocumentItemUi<T>(
 data class DocumentItemDomainPayload(
     val docId: String,
     val docType: DocType,
-    val docRequest: DocRequest,
     val namespace: String,
     val elementIdentifier: ElementIdentifier
 ) {
@@ -81,5 +82,12 @@ fun <T> DocItem.toRequestDocumentItemUi(
     )
 }
 
-fun DocRequest.produceDocUID(elementIdentifier: ElementIdentifier, documentId: DocumentId): String =
+val Document.docType: String
+    get() = (this.format as? MsoMdocFormat)?.docType ?: ""
+
+fun RequestedDocument.produceDocUID(
+    elementIdentifier: ElementIdentifier,
+    documentId: DocumentId,
+    docType: String? = null
+): String =
     docType + elementIdentifier + documentId
