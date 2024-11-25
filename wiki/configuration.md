@@ -119,8 +119,8 @@ class RQESConfigImpl : EudiRQESUiConfig {
         get() = RqesServiceConfig(
             clientId = "your_clientid",
             clientSecret = "your_secret",
-            authFlowRedirectionURI = URI.create(your_uri),
-            hashAlgorithm = your_algo,
+            authFlowRedirectionURI = URI.create("your_uri"),
+            hashAlgorithm = HashAlgorithmOID.SHA_256,
         )
 
     override val qtsps: List<QtspData>
