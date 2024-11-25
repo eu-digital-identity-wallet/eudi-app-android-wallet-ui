@@ -98,14 +98,17 @@ You can configure the *RQESConfig*, which implements the EudiRQESUiConfig interf
 ```
 class RQESConfigImpl : EudiRQESUiConfig {
 
+    // Optional. Default English translations will be used if not set.
     override val translations: Map<String, Map<LocalizableKey, String>> get()
 
+    // Optional. Default theme will be used if not set.
     override val themeManager: ThemeManager get()
 
     override val rqesServiceConfig: RqesServiceConfig get()
 
     override val qtsps: List<QtspData> get()
 
+    // Optional. Default is false.
     override val printLogs: Boolean get()
 }
 ```
