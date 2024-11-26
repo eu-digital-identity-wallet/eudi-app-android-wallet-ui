@@ -56,7 +56,6 @@ import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.cacheDeepLink
-import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -84,8 +83,10 @@ fun SuccessScreen(
                 when (navigationEffect) {
                     is Effect.Navigation.SwitchScreen -> {
                         navController.navigate(navigationEffect.screenRoute) {
-                            popUpTo(CommonScreens.Success.screenRoute) {
-                                inclusive = true
+                            navigationEffect.popUpRoute?.let { popUpToRoute ->
+                                popUpTo(popUpToRoute) {
+                                    inclusive = true
+                                }
                             }
                         }
                     }

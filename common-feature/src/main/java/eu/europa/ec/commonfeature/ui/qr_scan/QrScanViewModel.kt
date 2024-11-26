@@ -247,7 +247,8 @@ class QrScanViewModel(
             IssuanceFlowUiConfig.NO_DOCUMENT -> {
                 ConfigNavigation(
                     navigationType = NavigationType.PushRoute(
-                        route = DashboardScreens.Dashboard.screenRoute
+                        route = DashboardScreens.Dashboard.screenRoute,
+                        popUpToRoute = IssuanceScreens.AddDocument.screenRoute
                     )
                 )
             }

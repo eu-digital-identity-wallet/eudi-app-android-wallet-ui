@@ -40,6 +40,7 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -177,7 +178,10 @@ class AddDocumentInteractorImpl(
     override fun buildGenericSuccessRouteForDeferred(flowType: IssuanceFlowUiConfig): String {
         val navigation = when (flowType) {
             IssuanceFlowUiConfig.NO_DOCUMENT -> ConfigNavigation(
-                navigationType = NavigationType.PushRoute(route = DashboardScreens.Dashboard.screenRoute),
+                navigationType = NavigationType.PushRoute(
+                    route = DashboardScreens.Dashboard.screenRoute,
+                    popUpToRoute = IssuanceScreens.AddDocument.screenRoute
+                ),
             )
 
             IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ConfigNavigation(

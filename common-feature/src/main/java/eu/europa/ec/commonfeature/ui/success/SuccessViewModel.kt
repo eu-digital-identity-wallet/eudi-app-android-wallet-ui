@@ -43,7 +43,8 @@ sealed class Event : ViewEvent {
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data class SwitchScreen(
-            val screenRoute: String
+            val screenRoute: String,
+            val popUpRoute: String?
         ) : Navigation()
 
         data class PopBackStackUpTo(
@@ -101,10 +102,11 @@ class SuccessViewModel(
 
             is NavigationType.PushScreen -> {
                 Effect.Navigation.SwitchScreen(
-                    generateComposableNavigationLink(
+                    screenRoute = generateComposableNavigationLink(
                         screen = nav.screen,
                         arguments = generateComposableArguments(nav.arguments),
-                    )
+                    ),
+                    popUpRoute = nav.popUpToScreen?.screenRoute
                 )
             }
 
@@ -115,7 +117,10 @@ class SuccessViewModel(
 
             is NavigationType.Pop, NavigationType.Finish -> Effect.Navigation.Pop
 
-            is NavigationType.PushRoute -> Effect.Navigation.SwitchScreen(nav.route)
+            is NavigationType.PushRoute -> Effect.Navigation.SwitchScreen(
+                nav.route,
+                nav.popUpToRoute
+            )
         }
 
         setEffect {
