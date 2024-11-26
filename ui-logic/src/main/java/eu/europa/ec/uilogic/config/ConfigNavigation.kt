@@ -20,7 +20,6 @@ import eu.europa.ec.uilogic.navigation.Screen
 
 data class ConfigNavigation(
     val navigationType: NavigationType,
-    val flags: Int = 0,
     val indicateFlowCompletion: FlowCompletion = FlowCompletion.NONE
 )
 
@@ -29,10 +28,14 @@ sealed interface NavigationType {
     data object Finish : NavigationType
     data class PushScreen(
         val screen: Screen,
-        val arguments: Map<String, String> = emptyMap()
+        val arguments: Map<String, String> = emptyMap(),
+        val popUpToScreen: Screen? = null
     ) : NavigationType
 
-    data class PushRoute(val route: String) : NavigationType
+    data class PushRoute(
+        val route: String,
+        val popUpToRoute: String? = null
+    ) : NavigationType
 
     data class PopTo(val screen: Screen) : NavigationType
     data class Deeplink(val link: String, val routeToPop: String? = null) : NavigationType

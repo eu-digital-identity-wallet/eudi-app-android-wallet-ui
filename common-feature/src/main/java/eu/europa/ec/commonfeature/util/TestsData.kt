@@ -41,6 +41,7 @@ import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 
 @VisibleForTesting(otherwise = VisibleForTesting.NONE)
 object TestsData {
@@ -496,7 +497,8 @@ object TestsData {
     val mockedConfigNavigationTypePop = ConfigNavigation(navigationType = NavigationType.Pop)
     val mockedConfigNavigationTypePush = ConfigNavigation(
         navigationType = NavigationType.PushRoute(
-            route = DashboardScreens.Dashboard.screenRoute
+            route = DashboardScreens.Dashboard.screenRoute,
+            popUpToRoute = IssuanceScreens.AddDocument.screenRoute
         )
     )
     val mockedConfigNavigationTypePopToScreen = ConfigNavigation(

@@ -440,7 +440,8 @@ class AddDocumentViewModel(
                                                 offerURI = it.link.toString(),
                                                 onSuccessNavigation = ConfigNavigation(
                                                     navigationType = NavigationType.PushScreen(
-                                                        screen = DashboardScreens.Dashboard
+                                                        screen = DashboardScreens.Dashboard,
+                                                        popUpToScreen = IssuanceScreens.AddDocument
                                                     )
                                                 ),
                                                 onCancelNavigation = ConfigNavigation(

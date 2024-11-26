@@ -350,8 +350,9 @@ class PinViewModel(
 
         val navigationAfterCreate = ConfigNavigation(
             navigationType = NavigationType.PushScreen(
-                IssuanceScreens.AddDocument,
-                mapOf("flowType" to IssuanceFlowUiConfig.NO_DOCUMENT.name)
+                screen = IssuanceScreens.AddDocument,
+                arguments = mapOf("flowType" to IssuanceFlowUiConfig.NO_DOCUMENT.name),
+                popUpToScreen = CommonScreens.QuickPin
             ),
         )
 
