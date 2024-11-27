@@ -57,16 +57,16 @@ platform :android do
       version_code: buildNumber,
     )
 
-    gradle(task: "clean")
-    gradle(task: "assemble#{ENV["APP_BUILD_TYPE"]}Release")
+    # gradle(task: "clean")
+    # gradle(task: "assemble#{ENV["APP_BUILD_TYPE"]}Release")
 
-    upload_to_appcenter(
-      appName: ENV["APP_CENTER_APP_NAME"],
-      path: ENV["APP_BUILD_TYPE"],
-      appToken: ENV["APP_CENTER_APP_TOKEN"],
-      ownerName: ENV["APP_CENTER_ACCOUNT"],
-      groups: ENV["APP_CENTER_GROUPS"],
-    )
+    # upload_to_appcenter(
+    #   appName: ENV["APP_CENTER_APP_NAME"],
+    #   path: ENV["APP_BUILD_TYPE"],
+    #   appToken: ENV["APP_CENTER_APP_TOKEN"],
+    #   ownerName: ENV["APP_CENTER_ACCOUNT"],
+    #   groups: ENV["APP_CENTER_GROUPS"],
+    # )
 
     clean_build_artifacts
     reset_versioncode
@@ -89,7 +89,7 @@ platform :android do
     end
   end
 
-  desc "Upload to AppCenter"
+  desc "Upload tag to prod remote repo"
   lane :upload_tag_to_prod do |values|
     prodRemoteUrl = values[:prodRemoteUrl]
     devRemoteUrl = values[:devRemoteUrl]

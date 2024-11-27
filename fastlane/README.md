@@ -37,7 +37,7 @@ Build Wallet and upload it to appcenter
 [bundle exec] fastlane android upload_tag_to_prod
 ```
 
-Upload to AppCenter
+Upload tag to prod remote repo
 
 ### android upload_to_appcenter
 
