@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -43,6 +44,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 data class ListItemData(
     val mainText: String,
+    //val mainTextVerticalPadding: Int = SPACING_EXTRA_SMALL,
     val overlineText: String? = null,
     val supportingText: String? = null,
     val leadingIcon: IconData? = null,
@@ -59,14 +61,19 @@ sealed class ListItemTrailingContentData {
 fun ListItem(
     item: ListItemData,
     modifier: Modifier = Modifier,
+    mainTextVerticalPadding: Dp? = null,
 ) {
     val maxSecondaryTextLines = 1
     val textOverflow = TextOverflow.Ellipsis
 
+    val rowVerticalPadding = SPACING_EXTRA_SMALL.dp
+    val columnVerticalPadding = (mainTextVerticalPadding ?: SPACING_EXTRA_SMALL.dp)
+        .minus(rowVerticalPadding)
+
     with(item) {
         Row(
             modifier = modifier.padding(
-                vertical = SPACING_EXTRA_SMALL.dp,
+                vertical = rowVerticalPadding,
                 horizontal = SPACING_MEDIUM.dp
             ),
             horizontalArrangement = Arrangement.Start,
@@ -84,7 +91,7 @@ fun ListItem(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = SPACING_EXTRA_SMALL.dp),
+                    .padding(vertical = columnVerticalPadding),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
             ) {
