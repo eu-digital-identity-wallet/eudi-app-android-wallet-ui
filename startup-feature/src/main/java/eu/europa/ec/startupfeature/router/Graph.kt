@@ -218,19 +218,9 @@ private fun ListItems() {
             item = ListItemData(
                 mainText = "Main text",
             ),
+            mainTextVerticalPadding = 26.dp,
             onItemClick = {
                 println("ListItem0 Clicked")
-            },
-        )
-        WrapListItem(
-            modifier = Modifier.fillMaxWidth(),
-            item = ListItemData(
-                mainText = "Main text",
-                overlineText = "",
-                supportingText = "",
-            ),
-            onItemClick = {
-                println("ListItem1 Clicked")
             },
         )
         WrapListItem(
@@ -245,7 +235,7 @@ private fun ListItems() {
                 ),
             ),
             onItemClick = {
-                println("ListItem2 Clicked")
+                println("ListItem1 Clicked")
             },
         )
         WrapListItem(
@@ -258,7 +248,7 @@ private fun ListItems() {
                 ),
             ),
             onItemClick = {
-                println("ListItem3 Clicked")
+                println("ListItem2 Clicked")
             },
         )
     }
@@ -325,6 +315,7 @@ private fun ExpandableCard() {
                 iconData = if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown
             ),
         ),
+        collapsedMainTextVerticalPadding = 16.dp,
         expanded = listOf(
             ListItemData(
                 overlineText = "Family name",
@@ -347,7 +338,8 @@ private fun ExpandableCard() {
                 overlineText = "Date of birth",
                 mainText = "21 Oct 2023",
             ),
-        )
+        ),
+        expandedMainTextVerticalPadding = 12.dp
     )
 
     ExpandableListItem(
