@@ -35,7 +35,6 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.ICON_SIZE_40
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
@@ -66,14 +65,9 @@ fun ListItem(
     val maxSecondaryTextLines = 1
     val textOverflow = TextOverflow.Ellipsis
 
-    val rowVerticalPadding = SPACING_EXTRA_SMALL.dp
-    val columnVerticalPadding = (mainTextVerticalPadding ?: SPACING_EXTRA_SMALL.dp)
-        .minus(rowVerticalPadding)
-
     with(item) {
         Row(
             modifier = modifier.padding(
-                vertical = rowVerticalPadding,
                 horizontal = SPACING_MEDIUM.dp
             ),
             horizontalArrangement = Arrangement.Start,
@@ -91,7 +85,7 @@ fun ListItem(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = columnVerticalPadding),
+                    .padding(vertical = mainTextVerticalPadding ?: SPACING_SMALL.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
             ) {
