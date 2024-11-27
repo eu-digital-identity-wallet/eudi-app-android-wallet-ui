@@ -31,6 +31,7 @@ platform :android do
 
   desc "Build Wallet and upload it to appcenter"
   lane :deploy do
+
     git_pull
 
     appcenter_build_number = latest_appcenter_release(
@@ -75,7 +76,27 @@ platform :android do
       tag: tagVersion,
     )
 
-    push_git_tags
+    push_git_tags(
+      tag: tagVersion
+    )
+
+    if ENV['PROD_REMOTE_REPO'] && ENV['DEV_REMOTE_REPO']
+      upload_tag_to_prod(
+        prodRemoteUrl: ENV['PROD_REMOTE_REPO'],
+        devRemoteUrl: ENV['DEV_REMOTE_REPO'],
+        tagVersion: tagVersion,
+      )
+    end
+  end
+
+  desc "Upload tag to prod remote repo"
+  lane :upload_tag_to_prod do |values|
+    prodRemoteUrl = values[:prodRemoteUrl]
+    devRemoteUrl = values[:devRemoteUrl]
+    tagVersion = values[:tagVersion]
+    sh("git remote set-url origin #{prodRemoteUrl}")
+    push_git_tags(tag: tagVersion)
+    sh("git remote set-url origin #{devRemoteUrl}")
   end
 
   desc "Upload to AppCenter"

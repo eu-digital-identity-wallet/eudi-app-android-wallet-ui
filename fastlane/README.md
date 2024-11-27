@@ -31,6 +31,14 @@ Runs all the unit tests
 
 Build Wallet and upload it to appcenter
 
+### android upload_tag_to_prod
+
+```sh
+[bundle exec] fastlane android upload_tag_to_prod
+```
+
+Upload tag to prod remote repo
+
 ### android upload_to_appcenter
 
 ```sh
