@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -34,7 +35,9 @@ import eu.europa.ec.uilogic.component.wrap.WrapListItems
 
 data class ExpandableListItemData(
     val collapsed: ListItemData,
+    val collapsedMainTextVerticalPadding: Dp? = null,
     val expanded: List<ListItemData>,
+    val expandedMainTextVerticalPadding: Dp? = null,
 )
 
 @Composable
@@ -51,12 +54,14 @@ fun ExpandableListItem(
         cardCollapsedContent = {
             WrapListItem(
                 item = data.collapsed,
+                mainTextVerticalPadding = data.collapsedMainTextVerticalPadding,
                 onItemClick = { onExpandedChange(!isExpanded) }
             )
         },
         cardExpandedContent = {
             WrapListItems(
                 items = data.expanded,
+                mainTextVerticalPadding = data.expandedMainTextVerticalPadding,
                 shape = RoundedCornerShape(
                     bottomStart = SIZE_SMALL.dp,
                     bottomEnd = SIZE_SMALL.dp,
