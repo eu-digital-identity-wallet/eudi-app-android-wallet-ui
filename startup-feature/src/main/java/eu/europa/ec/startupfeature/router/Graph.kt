@@ -40,10 +40,11 @@ import eu.europa.ec.startupfeature.ui.splash.SplashScreen
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ExpandableListItem
 import eu.europa.ec.uilogic.component.ExpandableListItemData
+import eu.europa.ec.uilogic.component.IssuerDetailsCard
+import eu.europa.ec.uilogic.component.IssuerDetailsCardData
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapChip
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
@@ -90,13 +91,14 @@ fun NavGraphBuilder.featureStartupGraph(navController: NavController) {
                 //Buttons()
                 //SearchBars()
                 //Chips()
-                ListItems()
+                //ListItems()
                 //VSpacer.Medium()
-                ListItemsList()
-                ExpandableCard()
-                repeat(5) {
-                    VSpacer.Medium()
-                }
+                //ListItemsList()
+                //ExpandableCard()
+                //repeat(5) {
+                //    VSpacer.Medium()
+                //}
+                IssuerCard()
             }
         }
     }
@@ -351,5 +353,20 @@ private fun ExpandableCard() {
         onExpandedItemClick = { item ->
             println("Clicked: ${item.mainText}")
         },
+    )
+}
+
+@Composable
+private fun IssuerCard() {
+    val issuerDetails = IssuerDetailsCardData(
+        issuerName = "Hellenic Government",
+        issuerLogo = AppIcons.Sign,
+        issuerCategory = "Government agency",
+        issuerLocation = "Athens - Greece",
+        issuerIsVerified = true,
+    )
+
+    IssuerDetailsCard(
+        item = issuerDetails,
     )
 }
