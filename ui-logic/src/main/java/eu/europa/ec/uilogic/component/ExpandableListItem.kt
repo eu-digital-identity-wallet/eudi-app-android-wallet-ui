@@ -24,7 +24,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -35,9 +34,9 @@ import eu.europa.ec.uilogic.component.wrap.WrapListItems
 
 data class ExpandableListItemData(
     val collapsed: ListItemData,
-    val collapsedMainTextVerticalPadding: Dp? = null,
+    val collapsedMainTextVerticalPadding: Int? = null,
     val expanded: List<ListItemData>,
-    val expandedMainTextVerticalPadding: Dp? = null,
+    val expandedMainTextVerticalPadding: Int? = null,
 )
 
 @Composable

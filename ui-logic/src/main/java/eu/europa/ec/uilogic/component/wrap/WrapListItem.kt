@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItem
@@ -45,7 +44,7 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 fun WrapListItem(
     modifier: Modifier = Modifier,
     item: ListItemData,
-    mainTextVerticalPadding: Dp? = null,
+    mainTextVerticalPadding: Int? = null,
     onItemClick: ((ListItemData) -> Unit)? = null,
 ) {
     WrapCard(
@@ -63,7 +62,7 @@ fun WrapListItem(
 fun WrapListItems(
     modifier: Modifier = Modifier,
     items: List<ListItemData>,
-    mainTextVerticalPadding: Dp? = null,
+    mainTextVerticalPadding: Int? = null,
     clickable: Boolean = false,
     shape: Shape? = null,
     throttleClicks: Boolean = true,

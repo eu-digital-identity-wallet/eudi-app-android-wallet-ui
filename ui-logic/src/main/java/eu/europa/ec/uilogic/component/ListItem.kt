@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -60,7 +59,7 @@ sealed class ListItemTrailingContentData {
 fun ListItem(
     item: ListItemData,
     modifier: Modifier = Modifier,
-    mainTextVerticalPadding: Dp? = null,
+    mainTextVerticalPadding: Int? = null,
 ) {
     val maxSecondaryTextLines = 1
     val textOverflow = TextOverflow.Ellipsis
@@ -85,7 +84,7 @@ fun ListItem(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = mainTextVerticalPadding ?: SPACING_SMALL.dp),
+                    .padding(vertical = mainTextVerticalPadding?.dp ?: SPACING_SMALL.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
             ) {

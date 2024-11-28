@@ -91,6 +91,7 @@
     <string name="content_description_transactions_icon">Transactions</string>
     <string name="content_description_wallet_activated_icon">Wallet activated</string>
     <string name="content_description_wallet_secured_icon">Wallet secured</string>
+    <string name="content_description_info_icon">Info</string>
 
     <!-- Document Types -->
     <string name="pid">National ID</string>

@@ -334,4 +334,10 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_wallet_secured_icon,
         imageVector = null
     )
+
+    val Info: IconData = IconData(
+        resourceId = R.drawable.ic_info,
+        contentDescriptionId = R.string.content_description_info_icon,
+        imageVector = null
+    )
 }
