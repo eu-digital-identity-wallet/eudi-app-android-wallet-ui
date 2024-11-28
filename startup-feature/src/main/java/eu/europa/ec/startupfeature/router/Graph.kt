@@ -47,6 +47,7 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapChip
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
@@ -94,7 +95,11 @@ fun NavGraphBuilder.featureStartupGraph(navController: NavController) {
                 //ListItems()
                 //VSpacer.Medium()
                 //ListItemsList()
-                //ExpandableCard()
+                var hideSensitiveContent by rememberSaveable { mutableStateOf(false) }
+                WrapIconButton(iconData = AppIcons.Close, throttleClicks = false) {
+                    hideSensitiveContent = !hideSensitiveContent
+                }
+                ExpandableCard(hideSensitiveContent = hideSensitiveContent)
                 //repeat(5) {
                 //    VSpacer.Medium()
                 //}
@@ -304,7 +309,7 @@ private fun ListItemsList() {
 }
 
 @Composable
-private fun ExpandableCard() {
+private fun ExpandableCard(hideSensitiveContent: Boolean) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 
     var item1Checked by rememberSaveable { mutableStateOf(false) }
@@ -319,6 +324,11 @@ private fun ExpandableCard() {
         ),
         collapsedMainTextVerticalPadding = 16,
         expanded = listOf(
+            ListItemData(
+                leadingIcon = AppIcons.Sign,
+                overlineText = "Portrait",
+                mainText = "",
+            ),
             ListItemData(
                 overlineText = "Family name",
                 mainText = "Doe",
@@ -345,8 +355,9 @@ private fun ExpandableCard() {
     )
 
     ExpandableListItem(
-        //modifier = Modifier.heightIn(max = 1500.dp),
         data = data,
+        //modifier = Modifier.heightIn(max = 1500.dp),
+        hideSensitiveContent = hideSensitiveContent,
         isExpanded = isExpanded,
         isClickableWhenExpanded = true,
         onExpandedChange = { isExpanded = it },
