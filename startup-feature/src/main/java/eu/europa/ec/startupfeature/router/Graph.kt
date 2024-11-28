@@ -218,7 +218,7 @@ private fun ListItems() {
             item = ListItemData(
                 mainText = "Main text",
             ),
-            mainTextVerticalPadding = 26.dp,
+            mainTextVerticalPadding = 26,
             onItemClick = {
                 println("ListItem0 Clicked")
             },
@@ -315,7 +315,7 @@ private fun ExpandableCard() {
                 iconData = if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown
             ),
         ),
-        collapsedMainTextVerticalPadding = 16.dp,
+        collapsedMainTextVerticalPadding = 16,
         expanded = listOf(
             ListItemData(
                 overlineText = "Family name",
@@ -339,7 +339,7 @@ private fun ExpandableCard() {
                 mainText = "21 Oct 2023",
             ),
         ),
-        expandedMainTextVerticalPadding = 12.dp
+        expandedMainTextVerticalPadding = 12
     )
 
     ExpandableListItem(
