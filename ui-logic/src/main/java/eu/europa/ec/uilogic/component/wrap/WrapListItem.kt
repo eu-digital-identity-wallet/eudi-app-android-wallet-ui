@@ -42,8 +42,9 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 
 @Composable
 fun WrapListItem(
-    modifier: Modifier = Modifier,
     item: ListItemData,
+    modifier: Modifier = Modifier,
+    hideSensitiveContent: Boolean = false,
     mainTextVerticalPadding: Int? = null,
     onItemClick: ((ListItemData) -> Unit)? = null,
 ) {
@@ -53,6 +54,7 @@ fun WrapListItem(
     ) {
         ListItem(
             item = item,
+            hideSensitiveContent = hideSensitiveContent,
             mainTextVerticalPadding = mainTextVerticalPadding,
         )
     }
@@ -60,8 +62,9 @@ fun WrapListItem(
 
 @Composable
 fun WrapListItems(
-    modifier: Modifier = Modifier,
     items: List<ListItemData>,
+    modifier: Modifier = Modifier,
+    hideSensitiveContent: Boolean = false,
     mainTextVerticalPadding: Int? = null,
     clickable: Boolean = false,
     shape: Shape? = null,
@@ -95,6 +98,7 @@ fun WrapListItems(
                 ListItem(
                     item = item,
                     modifier = itemModifier,
+                    hideSensitiveContent = hideSensitiveContent,
                     mainTextVerticalPadding = mainTextVerticalPadding,
                 )
 

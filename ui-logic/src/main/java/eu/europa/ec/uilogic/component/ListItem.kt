@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.component
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,8 +26,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -39,15 +44,14 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 data class ListItemData(
     val mainText: String,
-    //val mainTextVerticalPadding: Int = SPACING_EXTRA_SMALL,
     val overlineText: String? = null,
     val supportingText: String? = null,
     val leadingIcon: IconData? = null,
     val trailingContentData: ListItemTrailingContentData? = null,
-    //val onClick: (() -> Unit)? = null,
 )
 
 sealed class ListItemTrailingContentData {
@@ -59,10 +63,38 @@ sealed class ListItemTrailingContentData {
 fun ListItem(
     item: ListItemData,
     modifier: Modifier = Modifier,
+    hideSensitiveContent: Boolean = false,
     mainTextVerticalPadding: Int? = null,
+    overlineTextStyle: TextStyle = MaterialTheme.typography.labelMedium.copy(
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    ),
 ) {
     val maxSecondaryTextLines = 1
     val textOverflow = TextOverflow.Ellipsis
+    val mainTextStyle = MaterialTheme.typography.bodyLarge.copy(
+        color = MaterialTheme.colorScheme.onSurface
+    )
+
+    // API check
+    val supportsBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val blurModifier = remember(hideSensitiveContent) {
+        if (supportsBlur && hideSensitiveContent) {
+            Modifier.blur(10.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+        } else {
+            Modifier
+        }
+    }
+
+    // Replace leading icon with "User" (default) icon if hiding sensitive content on unsupported APIs
+    val leadingIconData: IconData? = remember(hideSensitiveContent, item.leadingIcon) {
+        item.leadingIcon?.let { safeLeadingIcon ->
+            if (hideSensitiveContent && !supportsBlur) {
+                AppIcons.User
+            } else {
+                safeLeadingIcon
+            }
+        }
+    }
 
     with(item) {
         Row(
@@ -72,12 +104,14 @@ fun ListItem(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            leadingIcon?.let { safeLeadingIcon ->
-                WrapIcon(
-                    iconData = safeLeadingIcon,
+            // Leading Icon
+            leadingIconData?.let { safeLeadingIcon ->
+                WrapImage(
                     modifier = Modifier
                         .padding(end = SIZE_MEDIUM.dp)
-                        .size(ICON_SIZE_40.dp),
+                        .size(ICON_SIZE_40.dp)
+                        .then(blurModifier),
+                    iconData = safeLeadingIcon,
                 )
             }
 
@@ -88,26 +122,28 @@ fun ListItem(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
             ) {
+                // Overline Text
                 overlineText?.let { safeOverlineText ->
                     Text(
                         text = safeOverlineText,
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
+                        style = if (hideSensitiveContent && !supportsBlur) mainTextStyle else overlineTextStyle,
                         maxLines = maxSecondaryTextLines,
                         overflow = textOverflow,
                     )
                 }
 
-                Text(
-                    text = mainText,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface
-                    ),
-                    maxLines = 2,
-                    overflow = textOverflow,
-                )
+                // Main Text
+                if (!hideSensitiveContent || supportsBlur) {
+                    Text(
+                        modifier = blurModifier,
+                        text = mainText,
+                        style = mainTextStyle,
+                        maxLines = 2,
+                        overflow = textOverflow,
+                    )
+                }
 
+                // Supporting Text
                 supportingText?.let { safeSupportingText ->
                     Text(
                         text = safeSupportingText,
@@ -120,6 +156,7 @@ fun ListItem(
                 }
             }
 
+            // Trailing Content
             trailingContentData?.let { safeTrailingContentData ->
                 when (safeTrailingContentData) {
                     is ListItemTrailingContentData.Checkbox -> WrapCheckbox(
@@ -128,10 +165,10 @@ fun ListItem(
                     )
 
                     is ListItemTrailingContentData.Icon -> WrapIcon(
-                        iconData = safeTrailingContentData.iconData,
                         modifier = Modifier
                             .padding(start = SIZE_MEDIUM.dp)
                             .size(DEFAULT_ICON_SIZE.dp),
+                        iconData = safeTrailingContentData.iconData,
                         customTint = MaterialTheme.colorScheme.primary,
                     )
                 }

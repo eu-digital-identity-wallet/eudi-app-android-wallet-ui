@@ -41,11 +41,12 @@ data class ExpandableListItemData(
 
 @Composable
 fun ExpandableListItem(
+    data: ExpandableListItemData,
     modifier: Modifier = Modifier,
+    hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     isClickableWhenExpanded: Boolean = false,
-    data: ExpandableListItemData,
     onExpandedItemClick: ((ListItemData) -> Unit)? = null
 ) {
     WrapExpandableCard(
@@ -53,6 +54,7 @@ fun ExpandableListItem(
         cardCollapsedContent = {
             WrapListItem(
                 item = data.collapsed,
+                hideSensitiveContent = false,
                 mainTextVerticalPadding = data.collapsedMainTextVerticalPadding,
                 onItemClick = { onExpandedChange(!isExpanded) }
             )
@@ -60,6 +62,7 @@ fun ExpandableListItem(
         cardExpandedContent = {
             WrapListItems(
                 items = data.expanded,
+                hideSensitiveContent = hideSensitiveContent,
                 mainTextVerticalPadding = data.expandedMainTextVerticalPadding,
                 shape = RoundedCornerShape(
                     bottomStart = SIZE_SMALL.dp,
