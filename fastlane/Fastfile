@@ -76,27 +76,27 @@ platform :android do
       tag: tagVersion,
     )
 
-    push_git_tags(
-      tag: tagVersion
-    )
-
-    if ENV['PROD_REMOTE_REPO'] && ENV['DEV_REMOTE_REPO']
-      upload_tag_to_prod(
-        prodRemoteUrl: ENV['PROD_REMOTE_REPO'],
-        devRemoteUrl: ENV['DEV_REMOTE_REPO'],
-        tagVersion: tagVersion,
+    if ENV['PROD_REMOTE_REPO']
+      upload_tag(
+        remoteUrl: ENV['PROD_REMOTE_REPO'],
+        tag: tagVersion,
+      )
+    end
+  
+    if ENV['DEV_REMOTE_REPO']
+      upload_tag(
+        remoteUrl: ENV['DEV_REMOTE_REPO'],
+        tag: tagVersion,
       )
     end
   end
 
-  desc "Upload tag to prod remote repo"
-  lane :upload_tag_to_prod do |values|
-    prodRemoteUrl = values[:prodRemoteUrl]
-    devRemoteUrl = values[:devRemoteUrl]
+  desc "Upload tag to remote repo"
+  lane :upload_tag do |values|
+    remoteUrl = values[:remoteUrl]
     tagVersion = values[:tagVersion]
-    sh("git remote set-url origin #{prodRemoteUrl}")
+    sh("git remote set-url origin #{remoteUrl}")
     push_git_tags(tag: tagVersion)
-    sh("git remote set-url origin #{devRemoteUrl}")
   end
 
   desc "Upload to AppCenter"
