@@ -16,17 +16,11 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
@@ -37,8 +31,6 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.extension.throttledClickable
 
 @Composable
 fun WrapListItem(
@@ -60,55 +52,6 @@ fun WrapListItem(
     }
 }
 
-@Composable
-fun WrapListItems(
-    items: List<ListItemData>,
-    modifier: Modifier = Modifier,
-    hideSensitiveContent: Boolean = false,
-    mainTextVerticalPadding: Int? = null,
-    clickable: Boolean = false,
-    shape: Shape? = null,
-    throttleClicks: Boolean = true,
-    onItemClick: ((ListItemData) -> Unit)? = null,
-) {
-    WrapCard(shape = shape) {
-        LazyColumn(
-            modifier = modifier,
-            userScrollEnabled = false,
-        ) {
-            itemsIndexed(items) { index, item ->
-                val itemModifier = Modifier
-                    .then(
-                        if (clickable) {
-                            if (throttleClicks) {
-                                Modifier.throttledClickable { onItemClick?.invoke(item) }
-                            } else {
-                                Modifier.clickable { onItemClick?.invoke(item) }
-                            }
-                        } else {
-                            Modifier
-                        }
-                    )
-                    //.throttledClickable { onItemClick?.invoke(item) }
-                    .padding(
-                        top = if (index == 0) SPACING_SMALL.dp else 0.dp,
-                        bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
-                    )
-
-                ListItem(
-                    item = item,
-                    modifier = itemModifier,
-                    hideSensitiveContent = hideSensitiveContent,
-                    mainTextVerticalPadding = mainTextVerticalPadding,
-                )
-
-                if (index < items.lastIndex) {
-                    HorizontalDivider()
-                }
-            }
-        }
-    }
-}
 
 @ThemeModePreviews
 @Composable
@@ -156,68 +99,5 @@ private fun WrapListItemPreview(
                 )
             )
         }
-    }
-}
-
-@ThemeModePreviews
-@Composable
-private fun WrapListItemsPreview(
-    @PreviewParameter(TextLengthPreviewProvider::class) text: String
-) {
-    PreviewTheme {
-        val items = listOf(
-            ListItemData(
-                mainText = "Main text $text",
-            ),
-            ListItemData(
-                mainText = "Main text $text",
-                overlineText = "",
-                supportingText = "",
-            ),
-            ListItemData(
-                mainText = "Main text $text",
-                overlineText = "Overline text $text",
-                supportingText = "Supporting text $text",
-                leadingIcon = AppIcons.Sign,
-                trailingContentData = ListItemTrailingContentData.Icon(
-                    iconData = AppIcons.KeyboardArrowRight,
-                ),
-            ),
-            ListItemData(
-                mainText = "Main text $text",
-                overlineText = "Overline text $text",
-                supportingText = "Supporting text $text",
-                leadingIcon = AppIcons.Sign,
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
-                        isChecked = true,
-                        enabled = true,
-                        onCheckedChange = null,
-                    ),
-                ),
-            ),
-            ListItemData(
-                mainText = "Main text $text",
-                supportingText = "Supporting text $text",
-                trailingContentData = ListItemTrailingContentData.Icon(
-                    iconData = AppIcons.KeyboardArrowRight,
-                ),
-            ),
-            ListItemData(
-                mainText = "Main text $text",
-                supportingText = "Supporting text $text",
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
-                        isChecked = true,
-                        enabled = true,
-                        onCheckedChange = null,
-                    ),
-                ),
-            ),
-        )
-
-        WrapListItems(
-            items = items,
-        )
     }
 }

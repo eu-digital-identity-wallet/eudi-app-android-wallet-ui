@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.uilogic.component
+package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,12 +25,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
-import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
-import eu.europa.ec.uilogic.component.wrap.WrapListItem
-import eu.europa.ec.uilogic.component.wrap.WrapListItems
 
 data class ExpandableListItemData(
     val collapsed: ListItemData,
@@ -40,13 +40,14 @@ data class ExpandableListItemData(
 )
 
 @Composable
-fun ExpandableListItem(
+fun WrapExpandableListItem(
     data: ExpandableListItemData,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     isClickableWhenExpanded: Boolean = false,
+    throttleClicks: Boolean = true,
     onExpandedItemClick: ((ListItemData) -> Unit)? = null
 ) {
     WrapExpandableCard(
@@ -56,7 +57,7 @@ fun ExpandableListItem(
                 item = data.collapsed,
                 hideSensitiveContent = false,
                 mainTextVerticalPadding = data.collapsedMainTextVerticalPadding,
-                onItemClick = { onExpandedChange(!isExpanded) }
+                onItemClick = { onExpandedChange(!isExpanded) },
             )
         },
         cardExpandedContent = {
@@ -74,13 +75,13 @@ fun ExpandableListItem(
         },
         isExpanded = isExpanded,
         onExpandedChange = onExpandedChange,
-        throttleClicks = true,
+        throttleClicks = throttleClicks,
     )
 }
 
 @ThemeModePreviews
 @Composable
-private fun ExpandableListItemPreview() {
+private fun WrapExpandableListItemPreview() {
     PreviewTheme {
         var isExpanded by rememberSaveable { mutableStateOf(false) }
 
@@ -108,7 +109,7 @@ private fun ExpandableListItemPreview() {
             )
         )
 
-        ExpandableListItem(
+        WrapExpandableListItem(
             modifier = Modifier.heightIn(max = 1500.dp),
             data = data,
             isExpanded = isExpanded,

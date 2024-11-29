@@ -38,15 +38,15 @@ import androidx.navigation.navDeepLink
 import eu.europa.ec.startupfeature.BuildConfig
 import eu.europa.ec.startupfeature.ui.splash.SplashScreen
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ExpandableListItem
-import eu.europa.ec.uilogic.component.ExpandableListItemData
 import eu.europa.ec.uilogic.component.IssuerDetailsCard
 import eu.europa.ec.uilogic.component.IssuerDetailsCardData
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.WrapChip
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
@@ -87,7 +87,7 @@ fun NavGraphBuilder.featureStartupGraph(navController: NavController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(SPACING_MEDIUM.dp)
-                //.verticalScroll(rememberScrollState())
+                    //.verticalScroll(rememberScrollState())
             ) {
                 //Buttons()
                 //SearchBars()
@@ -95,15 +95,22 @@ fun NavGraphBuilder.featureStartupGraph(navController: NavController) {
                 //ListItems()
                 //VSpacer.Medium()
                 //ListItemsList()
+
                 var hideSensitiveContent by rememberSaveable { mutableStateOf(false) }
                 WrapIconButton(iconData = AppIcons.Close, throttleClicks = false) {
                     hideSensitiveContent = !hideSensitiveContent
                 }
-                ExpandableCard(hideSensitiveContent = hideSensitiveContent)
+                ExpandableCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        /*.weight(1f)*/,
+                    hideSensitiveContent = hideSensitiveContent
+                )
+
                 //repeat(5) {
                 //    VSpacer.Medium()
                 //}
-                IssuerCard()
+                //IssuerCard()
             }
         }
     }
@@ -309,7 +316,7 @@ private fun ListItemsList() {
 }
 
 @Composable
-private fun ExpandableCard(hideSensitiveContent: Boolean) {
+private fun ExpandableCard(modifier: Modifier, hideSensitiveContent: Boolean) {
     var isExpanded by rememberSaveable { mutableStateOf(false) }
 
     var item1Checked by rememberSaveable { mutableStateOf(false) }
@@ -354,17 +361,19 @@ private fun ExpandableCard(hideSensitiveContent: Boolean) {
         expandedMainTextVerticalPadding = 12
     )
 
-    ExpandableListItem(
-        data = data,
-        //modifier = Modifier.heightIn(max = 1500.dp),
-        hideSensitiveContent = hideSensitiveContent,
-        isExpanded = isExpanded,
-        isClickableWhenExpanded = true,
-        onExpandedChange = { isExpanded = it },
-        onExpandedItemClick = { item ->
-            println("Clicked: ${item.mainText}")
-        },
-    )
+    Column(modifier = modifier) {
+        WrapExpandableListItem(
+            data = data,
+            //modifier = Modifier.heightIn(max = 1500.dp),
+            hideSensitiveContent = hideSensitiveContent,
+            isExpanded = isExpanded,
+            isClickableWhenExpanded = true,
+            onExpandedChange = { isExpanded = it },
+            onExpandedItemClick = { item ->
+                println("Clicked: ${item.mainText}")
+            },
+        )
+    }
 }
 
 @Composable
