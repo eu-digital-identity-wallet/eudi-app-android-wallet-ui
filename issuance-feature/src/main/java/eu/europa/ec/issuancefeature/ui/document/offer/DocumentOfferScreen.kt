@@ -56,10 +56,11 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
-import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
@@ -278,18 +279,24 @@ private fun StickyBottomSection(
 ) {
     Column {
 
-        WrapPrimaryButton(
+        WrapButton(
             modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading && !state.noDocument,
-            onClick = { onEventSend(Event.PrimaryButtonPressed(context)) }
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = !state.isLoading && !state.noDocument,
+                onClick = { onEventSend(Event.PrimaryButtonPressed(context)) }
+            )
         ) {
             Text(text = stringResource(id = R.string.issuance_document_offer_primary_button_text))
         }
         VSpacer.Medium()
 
-        WrapSecondaryButton(
+        WrapButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { onEventSend(Event.SecondaryButtonPressed) }
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                onClick = { onEventSend(Event.SecondaryButtonPressed) }
+            )
         ) {
             Text(text = stringResource(id = R.string.issuance_document_offer_secondary_button_text))
         }

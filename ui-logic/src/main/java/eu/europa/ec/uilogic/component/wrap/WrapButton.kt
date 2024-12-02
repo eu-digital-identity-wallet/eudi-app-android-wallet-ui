@@ -27,11 +27,17 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_100
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+
+enum class ButtonType {
+    PRIMARY,
+    SECONDARY,
+}
 
 private val buttonsShape: RoundedCornerShape = RoundedCornerShape(SIZE_100.dp)
 
@@ -40,15 +46,43 @@ private val buttonsContentPadding: PaddingValues = PaddingValues(
     horizontal = SPACING_LARGE.dp
 )
 
+data class ButtonConfig(
+    val type: ButtonType,
+    val enabled: Boolean = true,
+    val onClick: () -> Unit,
+    val isWarning: Boolean = false,
+    val shape: Shape = buttonsShape,
+    val contentPadding: PaddingValues = buttonsContentPadding,
+)
+
 @Composable
-fun WrapPrimaryButton(
+fun WrapButton(
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-    isWarning: Boolean = false,
-    content: @Composable RowScope.() -> Unit
+    buttonConfig: ButtonConfig,
+    content: @Composable RowScope.() -> Unit,
 ) {
-    val colors = if (isWarning) {
+    when (buttonConfig.type) {
+        ButtonType.PRIMARY -> WrapPrimaryButton(
+            modifier = modifier,
+            buttonConfig = buttonConfig,
+            content = content,
+        )
+
+        ButtonType.SECONDARY -> WrapSecondaryButton(
+            modifier = modifier,
+            buttonConfig = buttonConfig,
+            content = content,
+        )
+    }
+}
+
+@Composable
+private fun WrapPrimaryButton(
+    modifier: Modifier = Modifier,
+    buttonConfig: ButtonConfig,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val colors = if (buttonConfig.isWarning) {
         ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.error
         )
@@ -58,36 +92,34 @@ fun WrapPrimaryButton(
 
     Button(
         modifier = modifier,
-        enabled = enabled,
-        onClick = onClick,
-        shape = buttonsShape,
+        enabled = buttonConfig.enabled,
+        onClick = buttonConfig.onClick,
+        shape = buttonConfig.shape,
         colors = colors,
-        contentPadding = buttonsContentPadding,
+        contentPadding = buttonConfig.contentPadding,
         content = content
     )
 }
 
 @Composable
-fun WrapSecondaryButton(
+private fun WrapSecondaryButton(
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-    isWarning: Boolean = false,
-    content: @Composable RowScope.() -> Unit
+    buttonConfig: ButtonConfig,
+    content: @Composable RowScope.() -> Unit,
 ) {
-    val borderColor = if (!enabled) {
+    val borderColor = if (!buttonConfig.enabled) {
         MaterialTheme.colorScheme.onSurface.copy(
             alpha = 0.12f
         )
     } else {
-        if (isWarning) {
+        if (buttonConfig.isWarning) {
             MaterialTheme.colorScheme.error
         } else {
             MaterialTheme.colorScheme.primary
         }
     }
 
-    val colors = if (isWarning) {
+    val colors = if (buttonConfig.isWarning) {
         ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.error
         )
@@ -97,15 +129,15 @@ fun WrapSecondaryButton(
 
     OutlinedButton(
         modifier = modifier,
-        enabled = enabled,
-        onClick = onClick,
-        shape = buttonsShape,
+        enabled = buttonConfig.enabled,
+        onClick = buttonConfig.onClick,
+        shape = buttonConfig.shape,
         colors = colors,
         border = BorderStroke(
             width = 1.dp,
             color = borderColor,
         ),
-        contentPadding = buttonsContentPadding,
+        contentPadding = buttonConfig.contentPadding,
         content = content
     )
 }
@@ -114,9 +146,12 @@ fun WrapSecondaryButton(
 @Composable
 private fun WrapPrimaryButtonEnabledPreview() {
     PreviewTheme {
-        WrapPrimaryButton(
-            enabled = true,
-            onClick = { }
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = true,
+                onClick = { }
+            ),
         ) {
             Text("Enabled Primary Button")
         }
@@ -127,9 +162,12 @@ private fun WrapPrimaryButtonEnabledPreview() {
 @Composable
 private fun WrapPrimaryButtonDisabledPreview() {
     PreviewTheme {
-        WrapPrimaryButton(
-            enabled = false,
-            onClick = { }
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = false,
+                onClick = { }
+            ),
         ) {
             Text("Disabled Primary Button")
         }
@@ -140,10 +178,13 @@ private fun WrapPrimaryButtonDisabledPreview() {
 @Composable
 private fun WrapPrimaryButtonEnabledWarningPreview() {
     PreviewTheme {
-        WrapPrimaryButton(
-            enabled = true,
-            isWarning = true,
-            onClick = { }
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = true,
+                isWarning = true,
+                onClick = { }
+            )
         ) {
             Text("Enabled Warning Primary Button")
         }
@@ -154,10 +195,13 @@ private fun WrapPrimaryButtonEnabledWarningPreview() {
 @Composable
 private fun WrapPrimaryButtonDisabledWarningPreview() {
     PreviewTheme {
-        WrapPrimaryButton(
-            enabled = false,
-            isWarning = true,
-            onClick = { }
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = false,
+                isWarning = true,
+                onClick = { }
+            )
         ) {
             Text("Disabled Warning Primary Button")
         }
@@ -168,9 +212,12 @@ private fun WrapPrimaryButtonDisabledWarningPreview() {
 @Composable
 private fun WrapSecondaryButtonEnabledPreview() {
     PreviewTheme {
-        WrapSecondaryButton(
-            enabled = true,
-            onClick = { }
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                enabled = true,
+                onClick = { }
+            )
         ) {
             Text("Enabled Secondary Button")
         }
@@ -181,9 +228,12 @@ private fun WrapSecondaryButtonEnabledPreview() {
 @Composable
 private fun WrapSecondaryButtonDisabledPreview() {
     PreviewTheme {
-        WrapSecondaryButton(
-            enabled = false,
-            onClick = { }
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                enabled = false,
+                onClick = { }
+            )
         ) {
             Text("Disabled Secondary Button")
         }
@@ -194,10 +244,13 @@ private fun WrapSecondaryButtonDisabledPreview() {
 @Composable
 private fun WrapSecondaryButtonEnabledWarningPreview() {
     PreviewTheme {
-        WrapSecondaryButton(
-            enabled = true,
-            isWarning = true,
-            onClick = { }
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                enabled = true,
+                isWarning = true,
+                onClick = { }
+            )
         ) {
             Text("Enabled Warning Secondary Button")
         }
@@ -208,10 +261,13 @@ private fun WrapSecondaryButtonEnabledWarningPreview() {
 @Composable
 private fun WrapSecondaryButtonDisabledWarningPreview() {
     PreviewTheme {
-        WrapSecondaryButton(
-            enabled = false,
-            isWarning = true,
-            onClick = { }
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                enabled = false,
+                isWarning = true,
+                onClick = { }
+            )
         ) {
             Text("Disabled Warning Secondary Button")
         }

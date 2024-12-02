@@ -48,11 +48,12 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
-import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -279,18 +280,24 @@ private fun StickyBottomSection(
             }
         }
 
-        WrapPrimaryButton(
+        WrapButton(
             modifier = Modifier.fillMaxWidth(),
-            enabled = !state.isLoading && state.allowShare,
-            onClick = { onEventSend(Event.PrimaryButtonPressed) }
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = !state.isLoading && state.allowShare,
+                onClick = { onEventSend(Event.PrimaryButtonPressed) }
+            )
         ) {
             Text(text = stringResource(id = R.string.request_primary_button_text))
         }
         VSpacer.Medium()
 
-        WrapSecondaryButton(
+        WrapButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { onEventSend(Event.SecondaryButtonPressed) }
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                onClick = { onEventSend(Event.SecondaryButtonPressed) }
+            )
         ) {
             Text(text = stringResource(id = R.string.request_secondary_button_text))
         }

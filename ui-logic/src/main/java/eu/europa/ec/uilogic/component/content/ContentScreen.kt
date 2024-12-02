@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.zIndex
@@ -51,6 +52,7 @@ import eu.europa.ec.uilogic.component.utils.MAX_TOOLBAR_ACTIONS
 import eu.europa.ec.uilogic.component.utils.TopSpacing
 import eu.europa.ec.uilogic.component.utils.Z_STICKY
 import eu.europa.ec.uilogic.component.utils.screenPaddings
+import eu.europa.ec.uilogic.component.utils.stickyBottomPaddings
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 
@@ -172,7 +174,12 @@ fun ContentScreen(
                                 .zIndex(Z_STICKY),
                             contentAlignment = Alignment.Center
                         ) {
-                            stickyBottomContent(screenPaddings(padding))
+                            stickyBottomContent(
+                                stickyBottomPaddings(
+                                    contentScreenPaddings = screenPaddings(padding),
+                                    layoutDirection = LocalLayoutDirection.current
+                                )
+                            )
                         }
                     }
                 }

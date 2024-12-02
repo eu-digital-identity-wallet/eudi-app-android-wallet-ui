@@ -43,10 +43,14 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
+import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import kotlinx.coroutines.CoroutineScope
@@ -77,24 +81,27 @@ fun PinScreen(
         navigatableAction = state.action,
         onBack = { viewModel.setEvent(state.onBackEvent) },
         stickyBottom = { paddingValues ->
-            Column(
-                modifier = Modifier
+            WrapStickyBottomContent(
+                stickyBottomModifier = Modifier
                     .fillMaxWidth()
-                    .padding(paddingValues)
-            ) {
-                WrapPrimaryButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = state.isButtonEnabled,
-                    onClick = {
-                        viewModel.setEvent(
-                            Event.NextButtonPressed(
-                                pin = state.pin
-                            )
+                    .padding(paddingValues),
+                stickyBottomConfig = StickyBottomConfig(
+                    type = StickyBottomType.OneButton(
+                        config = ButtonConfig(
+                            type = ButtonType.PRIMARY,
+                            enabled = state.isButtonEnabled,
+                            onClick = {
+                                viewModel.setEvent(
+                                    Event.NextButtonPressed(
+                                        pin = state.pin
+                                    )
+                                )
+                            }
                         )
-                    }
-                ) {
-                    Text(text = state.buttonText)
-                }
+                    )
+                )
+            ) {
+                Text(text = state.buttonText)
             }
         }
     ) { paddingValues ->

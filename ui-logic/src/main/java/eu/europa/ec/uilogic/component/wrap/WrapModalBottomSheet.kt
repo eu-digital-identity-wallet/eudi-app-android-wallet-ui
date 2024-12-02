@@ -135,10 +135,13 @@ fun DialogBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 textData.negativeButtonText?.let { safeNegativeButtonText ->
-                    WrapSecondaryButton(
+                    WrapButton(
                         modifier = Modifier.weight(1f),
-                        onClick = onNegativeClick,
-                        isWarning = textData.isNegativeButtonWarning,
+                        buttonConfig = ButtonConfig(
+                            type = ButtonType.SECONDARY,
+                            onClick = onNegativeClick,
+                            isWarning = textData.isNegativeButtonWarning,
+                        )
                     ) {
                         Text(text = safeNegativeButtonText)
                     }
@@ -147,10 +150,13 @@ fun DialogBottomSheet(
                 HSpacer.Small()
 
                 textData.positiveButtonText?.let { safePositiveButtonText ->
-                    WrapPrimaryButton(
+                    WrapButton(
                         modifier = Modifier.weight(1f),
-                        onClick = onPositiveClick,
-                        isWarning = textData.isPositiveButtonWarning,
+                        buttonConfig = ButtonConfig(
+                            type = ButtonType.PRIMARY,
+                            onClick = onPositiveClick,
+                            isWarning = textData.isPositiveButtonWarning,
+                        )
                     ) {
                         Text(text = safePositiveButtonText)
                     }

@@ -51,8 +51,9 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
-import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.cacheDeepLink
@@ -201,8 +202,11 @@ private fun Button(
 ) {
     when (config.style) {
         SuccessUIConfig.ButtonConfig.Style.PRIMARY -> {
-            WrapPrimaryButton(
-                onClick = { onEventSent(Event.ButtonClicked(config)) },
+            WrapButton(
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.PRIMARY,
+                    onClick = { onEventSent(Event.ButtonClicked(config)) },
+                ),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 ButtonRow(text = config.text)
@@ -210,8 +214,11 @@ private fun Button(
         }
 
         SuccessUIConfig.ButtonConfig.Style.OUTLINE -> {
-            WrapSecondaryButton(
-                onClick = { onEventSent(Event.ButtonClicked(config)) },
+            WrapButton(
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.SECONDARY,
+                    onClick = { onEventSent(Event.ButtonClicked(config)) },
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 ButtonRow(text = config.text)

@@ -48,9 +48,10 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapImage
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
-import eu.europa.ec.uilogic.component.wrap.WrapSecondaryButton
 import eu.europa.ec.uilogic.navigation.LoginScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -120,10 +121,13 @@ private fun Content(
             verticalArrangement = Arrangement.Center
         ) {
 
-            WrapPrimaryButton(
+            WrapButton(
                 modifier = Modifier
                     .fillMaxWidth(),
-                onClick = { onEventSend(Event.NavigateToLogin) }
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.PRIMARY,
+                    onClick = { onEventSend(Event.NavigateToLogin) }
+                )
             ) {
                 Text(
                     text = stringResource(id = R.string.welcome_login_button_title),
@@ -133,10 +137,13 @@ private fun Content(
 
             VSpacer.Medium()
 
-            WrapSecondaryButton(
+            WrapButton(
                 modifier = Modifier
                     .fillMaxWidth(),
-                onClick = { onEventSend(Event.NavigateToFaq) }
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.SECONDARY,
+                    onClick = { onEventSend(Event.NavigateToFaq) }
+                )
             ) {
                 Text(
                     text = stringResource(id = R.string.welcome_faq_button_title),

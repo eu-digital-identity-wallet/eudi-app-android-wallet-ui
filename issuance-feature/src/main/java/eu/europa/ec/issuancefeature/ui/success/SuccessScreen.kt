@@ -47,7 +47,9 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -183,9 +185,12 @@ private fun UserImageAndIcon(
 @Composable
 private fun StickyBottomSection(onEventSend: (Event) -> Unit) {
     Column {
-        WrapPrimaryButton(
+        WrapButton(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { onEventSend(Event.PrimaryButtonPressed) }
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                onClick = { onEventSend(Event.PrimaryButtonPressed) }
+            )
         ) {
             Text(text = stringResource(id = R.string.issuance_success_primary_button_text))
         }

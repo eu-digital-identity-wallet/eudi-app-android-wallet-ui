@@ -65,9 +65,11 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -231,16 +233,19 @@ private fun Content(
 
             // Sticky Button
             if (state.shouldShowPrimaryButton) {
-                WrapPrimaryButton(
+                WrapButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
                             start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
                             end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
                         ),
-                    onClick = {
-                        onEventSend(Event.PrimaryButtonPressed)
-                    }
+                    buttonConfig = ButtonConfig(
+                        type = ButtonType.PRIMARY,
+                        onClick = {
+                            onEventSend(Event.PrimaryButtonPressed)
+                        }
+                    )
                 ) {
                     Text(
                         text = stringResource(id = R.string.issuance_document_details_primary_button_text),
