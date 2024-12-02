@@ -318,31 +318,6 @@ private fun DashboardSheetContent(
 ) {
     when (sheetContent) {
         is DashboardBottomSheetContent.Options -> {
-            /*BottomSheetWithTwoBigIcons(
-                textData = BottomSheetTextData(
-                    title = "Title",
-                    message = "Message"
-                ),
-                options = buildList {
-                    addAll(
-                        listOf(
-                            ModalOptionUi(
-                                title = "Option with leading icon 1",
-                                leadingIcon = AppIcons.PresentDocumentInPerson,
-                                leadingIconTint = MaterialTheme.colorScheme.primary,
-                                event = Event.OnPause,
-                            ),
-                            ModalOptionUi(
-                                title = "Option with leading icon 2",
-                                leadingIcon = AppIcons.PresentDocumentOnline,
-                                leadingIconTint = MaterialTheme.colorScheme.primary,
-                                event = Event.OnPause,
-                            ),
-                        )
-                    )
-                },
-                onEventSent = {}
-            )*/
             GenericBaseSheetContent(
                 titleContent = {
                     Row(
@@ -380,11 +355,13 @@ private fun DashboardSheetContent(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Start
                         ) {
-                            WrapIcon(
-                                iconData = option.trailingIcon!!,//TODO Giannis
-                                customTint = MaterialTheme.colorScheme.primary
-                            )
-                            HSpacer.Medium()
+                            option.trailingIcon?.let { safeTrailingIcon ->
+                                WrapIcon(
+                                    iconData = safeTrailingIcon,
+                                    customTint = MaterialTheme.colorScheme.primary
+                                )
+                                HSpacer.Medium()
+                            }
                             Text(
                                 text = option.title,
                                 style = MaterialTheme.typography.bodyLarge,

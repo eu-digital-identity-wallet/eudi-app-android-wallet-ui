@@ -114,9 +114,7 @@ private fun WrapExpandableListItemPreview() {
             data = data,
             isExpanded = isExpanded,
             onExpandedChange = { isExpanded = it },
-            onExpandedItemClick = { item ->
-                println("Clicked: ${item.mainText}")
-            },
+            onExpandedItemClick = {},
         )
     }
 }

@@ -24,21 +24,24 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 
 @Composable
 fun WrapSearchBar(
-    modifier: Modifier,
-    value: String,
-    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    searchText: String,
+    onSearchTextChanged: (String) -> Unit,
     colors: TextFieldColors? = null,
+    maxLines: Int = 1,
 ) {
     WrapTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = searchText,
+        onValueChange = onSearchTextChanged,
         modifier = modifier,
         leadingIcon = {
             WrapIcon(
@@ -50,18 +53,33 @@ fun WrapSearchBar(
         },
         colors = colors ?: OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
-        )
+        ),
+        maxLines = maxLines,
     )
 }
 
 @ThemeModePreviews
 @Composable
-private fun WrapSearchBarPreview() {
+private fun WrapSearchBarWithTextPreview(
+    @PreviewParameter(TextLengthPreviewProvider::class) text: String
+) {
     PreviewTheme {
         WrapSearchBar(
             modifier = Modifier.fillMaxWidth(),
-            value = "",
-            onValueChange = {}
+            searchText = text,
+            onSearchTextChanged = {}
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSearchBarWithNoTextPreview() {
+    PreviewTheme {
+        WrapSearchBar(
+            modifier = Modifier.fillMaxWidth(),
+            searchText = "",
+            onSearchTextChanged = {}
         )
     }
 }
