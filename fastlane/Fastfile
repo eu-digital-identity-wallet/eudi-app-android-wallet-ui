@@ -94,9 +94,9 @@ platform :android do
   desc "Upload tag to remote repo"
   lane :upload_tag do |values|
     remoteUrl = values[:remoteUrl]
-    tagVersion = values[:tagVersion]
+    tag = values[:tag]
     sh("git remote set-url origin #{remoteUrl}")
-    push_git_tags(tag: tagVersion)
+    push_git_tags(tag: tag)
   end
 
   desc "Upload to AppCenter"
