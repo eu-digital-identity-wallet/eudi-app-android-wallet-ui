@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
 import eu.europa.ec.resourceslogic.R
@@ -228,9 +227,9 @@ object AppIcons {
     )
 
     val Search: IconData = IconData(
-        resourceId = null,
+        resourceId = R.drawable.ic_search,
         contentDescriptionId = R.string.content_description_search_icon,
-        imageVector = Icons.Default.Search
+        imageVector = null
     )
 
     val PresentDocumentInPerson: IconData = IconData(
