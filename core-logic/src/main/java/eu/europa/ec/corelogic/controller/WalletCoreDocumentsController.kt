@@ -17,8 +17,6 @@
 package eu.europa.ec.corelogic.controller
 
 import com.android.identity.securearea.KeyUnlockData
-import com.android.identity.securearea.software.SoftwareCreateKeySettings
-import com.android.identity.securearea.software.SoftwareSecureArea
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -26,7 +24,6 @@ import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.DefaultKeyUnlockData
@@ -190,21 +187,15 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun loadSampleData(sampleDataByteArray: ByteArray): Flow<LoadSampleDataPartialState> =
         flow {
-            val result = eudiWallet.loadMdocSampleDocuments(
+            eudiWallet.loadMdocSampleDocuments(
                 sampleData = sampleDataByteArray,
-                createSettings = CreateDocumentSettings(
-                    secureAreaIdentifier = eudiWallet.secureAreaRepository
-                        .implementations
-                        .filterIsInstance<SoftwareSecureArea>()
-                        .first().identifier,
-                    createKeySettings = SoftwareCreateKeySettings.Builder().build()
-                )
+                createSettings = eudiWallet.getDefaultCreateDocumentSettings()
             ).kotlinResult
                 .onSuccess { emit(LoadSampleDataPartialState.Success) }
                 .onFailure {
                     emit(
                         LoadSampleDataPartialState.Failure(
-                            it.message ?: it::class.simpleName!!
+                            error = it.message ?: genericErrorMessage
                         )
                     )
                 }

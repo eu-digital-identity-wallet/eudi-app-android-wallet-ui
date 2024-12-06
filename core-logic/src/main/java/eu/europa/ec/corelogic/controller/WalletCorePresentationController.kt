@@ -19,7 +19,6 @@ package eu.europa.ec.corelogic.controller
 import android.net.Uri
 import androidx.activity.ComponentActivity
 import com.android.identity.crypto.Algorithm
-import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.addOrReplace
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -42,6 +41,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
@@ -120,7 +120,7 @@ interface WalletCorePresentationController {
      *
      * @return Hot Flow that emits the Core's status callback.
      * */
-    val events: Flow<TransferEventPartialState>
+    val events: SharedFlow<TransferEventPartialState>
 
     /**
      * User selection data for request step
@@ -225,7 +225,7 @@ class WalletCorePresentationControllerImpl(
         _config = config
     }
 
-    override val events = callbackFlow {
+    override val events: SharedFlow<TransferEventPartialState> = callbackFlow {
         val eventListenerWrapper = EudiWalletListenerWrapper(
             onQrEngagementReady = { qrCode ->
                 trySendBlocking(
@@ -346,27 +346,25 @@ class WalletCorePresentationControllerImpl(
     }
 
     override fun sendRequestedDocuments(): SendRequestedDocumentsPartialState {
-        if (disclosedDocuments.isNullOrEmpty()) {
-            return SendRequestedDocumentsPartialState.Failure(
-                error = genericErrorMessage
-            )
-        }
-        var result: SendRequestedDocumentsPartialState =
-            SendRequestedDocumentsPartialState.RequestSent
-        processedRequest?.generateResponse(DisclosedDocuments(disclosedDocuments!!.toList()))
-            ?.toKotlinResult()
-            ?.onFailure {
-                val errorMessage = it.localizedMessage ?: genericErrorMessage
-                result = SendRequestedDocumentsPartialState.Failure(
-                    error = errorMessage
-                )
-            }
-            ?.onSuccess {
-                eudiWallet.sendResponse(it.response)
-                result = SendRequestedDocumentsPartialState.RequestSent
-            }
-
-        return result
+        return disclosedDocuments?.let { safeDisclosedDocuments ->
+            var result: SendRequestedDocumentsPartialState =
+                SendRequestedDocumentsPartialState.RequestSent
+            processedRequest?.generateResponse(DisclosedDocuments(safeDisclosedDocuments.toList()))
+                ?.toKotlinResult()
+                ?.onFailure {
+                    val errorMessage = it.localizedMessage ?: genericErrorMessage
+                    result = SendRequestedDocumentsPartialState.Failure(
+                        error = errorMessage
+                    )
+                }
+                ?.onSuccess {
+                    eudiWallet.sendResponse(it.response)
+                    result = SendRequestedDocumentsPartialState.RequestSent
+                }
+            result
+        } ?: SendRequestedDocumentsPartialState.Failure(
+            error = genericErrorMessage
+        )
     }
 
     override fun mappedCallbackStateFlow(): Flow<ResponseReceivedPartialState> {

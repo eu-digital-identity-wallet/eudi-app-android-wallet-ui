@@ -74,21 +74,21 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-<!--        <service-->
-<!--            android:name="eu.europa.ec.eudi.wallet.util.DefaultNfcEngagementService"-->
-<!--            android:exported="true"-->
-<!--            android:label="@string/nfc_engagement_service_desc"-->
-<!--            android:permission="android.permission.BIND_NFC_SERVICE">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.nfc.action.NDEF_DISCOVERED" />-->
-<!--                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE" />-->
-<!--            </intent-filter>-->
+        <service
+            android:name=".NfcEngagementService"
+            android:exported="true"
+            android:label="@string/nfc_engagement_service_desc"
+            android:permission="android.permission.BIND_NFC_SERVICE">
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE" />
+            </intent-filter>
 
-<!--            &lt;!&ndash; the following "@xml/nfc_engagement_apdu_service" in meta-data is provided by the library &ndash;&gt;-->
-<!--            <meta-data-->
-<!--                android:name="android.nfc.cardemulation.host_apdu_service"-->
-<!--                android:resource="@xml/nfc_engagement_apdu_service" />-->
-<!--        </service>-->
+            <!-- the following "@xml/nfc_engagement_apdu_service" in meta-data is provided by the library -->
+            <meta-data
+                android:name="android.nfc.cardemulation.host_apdu_service"
+                android:resource="@xml/nfc_engagement_apdu_service" />
+        </service>
 
         <activity
             android:name=".ui.MainActivity"
