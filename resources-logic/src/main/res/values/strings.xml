@@ -139,14 +139,14 @@
     <string name="quick_pin_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
 
     <!-- Request Screen -->
+    <string name="request_header_description">The following transaction requires your permission and authentication.</string>
+    <string name="request_header_main_text">DATA SHARING REQUEST</string>
+    <string name="request_warning_text">Please review carefully before sharing your data.</string>
     <string name="request_title_before_badge">Verifier</string>
     <string name="request_title_after_badge">\ requests the following</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
-    <string name="request_subtitle_one">Please review carefully before sharing your data.</string>
-    <string name="request_subtitle_two">\ Why we need your data?</string>
-    <string name="request_warning_text">Your selection of data to be shared may impact the service</string>
-    <string name="request_primary_button_text">SHARE</string>
+    <string name="request_sticky_button_text">Share</string>
     <string name="request_secondary_button_text">@string/generic_cancel_capitalized</string>
     <string name="request_bottom_sheet_cancel_title">Cancel information sharing?</string>
     <string name="request_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the login without sharing any information</string>

@@ -27,7 +27,9 @@ import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.TitleWithBadge
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -48,20 +50,17 @@ class ProximityRequestViewModel(
     @InjectedParam private val requestUriConfigRaw: String
 ) : RequestViewModel() {
 
-    override fun getScreenSubtitle(): String {
-        return resourceProvider.getString(R.string.request_subtitle_one)
-    }
-
-    override fun getScreenClickableSubtitle(): String {
-        return resourceProvider.getString(R.string.request_subtitle_two)
-    }
-
-    override fun getWarningText(): String {
-        return resourceProvider.getString(R.string.request_warning_text)
-    }
-
-    override fun getScreenTitle(): TitleWithBadge {
-        return constructTitle()
+    override fun getHeaderConfig(): ContentHeaderConfig {
+        return ContentHeaderConfig(
+            description = resourceProvider.getString(R.string.request_header_description),
+            mainText = resourceProvider.getString(R.string.request_header_main_text),
+            //relyingPartyData = interactor.getRelyingPartyData() //TODO()
+            relyingPartyData = RelyingPartyData(
+                isVerified = true,
+                name = "Relying Party",
+                description = "requests the following",
+            )
+        )
     }
 
     override fun getNextScreen(): String {
@@ -71,7 +70,8 @@ class ProximityRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = viewState.value.screenTitle.plainText,
+                            //title = viewState.value.screenTitle.plainText, //TODO
+                            title = "",
                             subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
@@ -132,10 +132,6 @@ class ProximityRequestViewModel(
                                 isLoading = false,
                                 error = null,
                                 verifierName = response.verifierName,
-                                screenTitle = constructTitle(
-                                    verifierName = response.verifierName,
-                                    verifierIsTrusted = response.verifierIsTrusted
-                                ),
                                 items = response.requestDocuments
                             )
                         }
@@ -151,10 +147,6 @@ class ProximityRequestViewModel(
                                 isLoading = false,
                                 error = null,
                                 verifierName = response.verifierName,
-                                screenTitle = constructTitle(
-                                    verifierName = response.verifierName,
-                                    verifierIsTrusted = response.verifierIsTrusted
-                                ),
                                 noItems = true,
                             )
                         }

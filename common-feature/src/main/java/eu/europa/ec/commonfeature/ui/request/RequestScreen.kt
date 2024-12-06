@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -33,27 +32,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.content.ContentHeader
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.content.TitleWithBadge
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapButton
-import eu.europa.ec.uilogic.component.wrap.WrapIconButton
+import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
+import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -80,6 +80,26 @@ fun RequestScreen(
         navigatableAction = ScreenNavigateAction.NONE,
         isLoading = state.isLoading,
         onBack = { viewModel.setEvent(Event.SecondaryButtonPressed) },
+        stickyBottom = { paddingValues ->
+            WrapStickyBottomContent(
+                stickyBottomModifier = Modifier
+                    .fillMaxWidth()
+                    .padding(paddingValues)
+                    //.background(Color.Blue)
+                    ,
+                stickyBottomConfig = StickyBottomConfig(
+                    type = StickyBottomType.OneButton(
+                        config = ButtonConfig(
+                            type = ButtonType.PRIMARY,
+                            enabled = !state.isLoading && state.allowShare,
+                            onClick = { viewModel.setEvent(Event.PrimaryButtonPressed) }
+                        )
+                    )
+                )
+            ) {
+                Text(text = stringResource(R.string.request_sticky_button_text))
+            }
+        },
         contentErrorConfig = state.error
     ) { paddingValues ->
         Content(
@@ -153,47 +173,21 @@ private fun Content(
             .padding(paddingValues),
         verticalArrangement = Arrangement.Top
     ) {
-
-        // Screen Title.
-        ContentTitle(
-            titleWithBadge = state.screenTitle,
-            onTitleWithBadgeClick = if (state.screenTitle.isTrusted) {
-                { onEventSend(Event.BadgeClicked) }
-            } else {
-                null
-            },
-            subtitle = state.screenSubtitle,
-            clickableSubtitle = state.screenClickableSubtitle,
-            onSubtitleClick = { onEventSend(Event.SubtitleClicked) },
-            subtitleTrailingContent = {
-                val icon = when (state.isShowingFullUserInfo) {
-                    true -> AppIcons.VisibilityOff
-                    false -> AppIcons.Visibility
-                }
-                WrapIconButton(
-                    iconData = icon,
-                    enabled = !state.isLoading,
-                    customTint = MaterialTheme.colorScheme.primary,
-                    onClick = { onEventSend(Event.ChangeContentVisibility) }
-                )
-            }
+        // Screen Header.
+        ContentHeader(
+            modifier = Modifier.fillMaxWidth(),
+            config = state.headerConfig,
         )
 
         // Screen Main Content.
         Request(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).background(Color.Red),
             items = state.items,
             noData = state.noItems,
             isShowingFullUserInfo = state.isShowingFullUserInfo,
             onEventSend = onEventSend,
             listState = rememberLazyListState(),
             contentPadding = paddingValues
-        )
-
-        // Sticky Bottom Section.
-        StickyBottomSection(
-            state = state,
-            onEventSend = onEventSend
         )
     }
 
@@ -263,47 +257,6 @@ private fun SheetContent(
     }
 }
 
-@Composable
-private fun StickyBottomSection(
-    state: State,
-    onEventSend: (Event) -> Unit,
-) {
-    Column {
-        VSpacer.ExtraSmall()
-
-        AnimatedVisibility(
-            visible = state.showWarningCard
-        ) {
-            Column {
-                WarningCard(warningText = state.warningText)
-                VSpacer.Medium()
-            }
-        }
-
-        WrapButton(
-            modifier = Modifier.fillMaxWidth(),
-            buttonConfig = ButtonConfig(
-                type = ButtonType.PRIMARY,
-                enabled = !state.isLoading && state.allowShare,
-                onClick = { onEventSend(Event.PrimaryButtonPressed) }
-            )
-        ) {
-            Text(text = stringResource(id = R.string.request_primary_button_text))
-        }
-        VSpacer.Medium()
-
-        WrapButton(
-            modifier = Modifier.fillMaxWidth(),
-            buttonConfig = ButtonConfig(
-                type = ButtonType.SECONDARY,
-                onClick = { onEventSend(Event.SecondaryButtonPressed) }
-            )
-        ) {
-            Text(text = stringResource(id = R.string.request_secondary_button_text))
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @ThemeModePreviews
 @Composable
@@ -311,10 +264,15 @@ private fun ContentPreview() {
     PreviewTheme {
         Content(
             state = State(
-                screenTitle = TitleWithBadge(isTrusted = false),
-                screenSubtitle = "Subtitle ",
-                screenClickableSubtitle = "clickable subtitle",
-                warningText = "Warning",
+                headerConfig = ContentHeaderConfig(
+                    description = stringResource(R.string.request_header_description),
+                    mainText = stringResource(R.string.request_header_main_text),
+                    relyingPartyData = RelyingPartyData(
+                        isVerified = true,
+                        name = "Relying Party",
+                        description = "requests the following"
+                    )
+                )
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
@@ -344,22 +302,6 @@ private fun SheetContentSubtitlePreview() {
         SheetContent(
             sheetContent = RequestBottomSheetContent.SUBTITLE,
             onEventSent = {}
-        )
-    }
-}
-
-@ThemeModePreviews
-@Composable
-private fun StickyBottomSectionPreview() {
-    PreviewTheme {
-        StickyBottomSection(
-            state = State(
-                screenTitle = TitleWithBadge(isTrusted = false),
-                screenSubtitle = "Subtitle ",
-                screenClickableSubtitle = "clickable subtitle",
-                warningText = "Warning",
-            ),
-            onEventSend = {}
         )
     }
 }

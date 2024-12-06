@@ -19,7 +19,7 @@ package eu.europa.ec.commonfeature.ui.request
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.TitleWithBadge
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -30,15 +30,12 @@ import kotlinx.coroutines.Job
 data class State(
     val isLoading: Boolean = true,
     val isShowingFullUserInfo: Boolean = false,
+    val headerConfig: ContentHeaderConfig,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.SUBTITLE,
 
     val verifierName: String? = null,
-    val screenTitle: TitleWithBadge,
-    val screenSubtitle: String,
-    val screenClickableSubtitle: String?,
-    val warningText: String,
 
     val items: List<RequestDataUi<Event>> = emptyList(),
     val noItems: Boolean = false,
@@ -100,10 +97,7 @@ enum class RequestBottomSheetContent {
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     protected var viewModelJob: Job? = null
 
-    abstract fun getScreenSubtitle(): String
-    abstract fun getScreenTitle(): TitleWithBadge
-    abstract fun getScreenClickableSubtitle(): String?
-    abstract fun getWarningText(): String
+    abstract fun getHeaderConfig(): ContentHeaderConfig
     abstract fun getNextScreen(): String
     abstract fun doWork()
 
@@ -137,10 +131,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State {
         return State(
-            screenTitle = getScreenTitle(),
-            screenSubtitle = getScreenSubtitle(),
-            screenClickableSubtitle = getScreenClickableSubtitle(),
-            warningText = getWarningText(),
+            headerConfig = getHeaderConfig(),
             error = null,
             verifierName = null
         )
