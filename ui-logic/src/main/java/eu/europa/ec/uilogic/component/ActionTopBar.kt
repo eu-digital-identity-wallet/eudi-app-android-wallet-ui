@@ -21,9 +21,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import eu.europa.ec.uilogic.component.content.ToolBarActions
 import eu.europa.ec.uilogic.component.content.ToolbarAction
+import eu.europa.ec.uilogic.component.content.precomputeToolbarActions
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
@@ -37,6 +39,12 @@ fun ActionTopBar(
     toolbarActions: List<ToolbarAction>? = null,
     onClick: () -> Unit
 ) {
+    val precomputedToolbarActions = remember(toolbarActions) {
+        return@remember precomputeToolbarActions(
+            toolBarActions = toolbarActions
+        )
+    }
+
     TopAppBar(
         title = {},
         navigationIcon = {
@@ -47,7 +55,7 @@ fun ActionTopBar(
             )
         },
         actions = {
-            ToolBarActions(toolBarActions = toolbarActions)
+            ToolBarActions(precomputedToolbarActions = precomputedToolbarActions)
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = contentColor)
     )

@@ -204,6 +204,28 @@ private fun DefaultToolBar(
     keyboardController: SoftwareKeyboardController?,
     toolbarConfig: ToolbarConfig?,
 ) {
+    // Precompute toolbar actions
+    val precomputedToolbarActions = remember(toolbarConfig?.actions, navigatableAction, onBack) {
+        val additionalActions: List<ToolbarAction> = buildList {
+            // Add Cancelable action if needed
+            if (navigatableAction == ScreenNavigateAction.CANCELABLE) {
+                add(
+                    ToolbarAction(
+                        icon = AppIcons.Close,
+                        order = Int.MAX_VALUE,// Ensure it appears as the rightmost action
+                        onClick = {
+                            onBack?.invoke()
+                            keyboardController?.hide()
+                        }
+                    )
+                )
+            }
+        }
+
+        return@remember precomputeToolbarActions(
+            toolBarActions = (toolbarConfig?.actions.orEmpty() + additionalActions)
+        )
+    }
 
     TopAppBar(
         title = {
@@ -213,15 +235,10 @@ private fun DefaultToolBar(
             )
         },
         navigationIcon = {
-            // Check if we should add back/close button.
-            if (navigatableAction != ScreenNavigateAction.NONE) {
-                val navigationIcon = when (navigatableAction) {
-                    ScreenNavigateAction.CANCELABLE -> AppIcons.Close
-                    else -> AppIcons.ArrowBack
-                }
-
+            // Show navigation icon for BACKABLE action only
+            if (navigatableAction == ScreenNavigateAction.BACKABLE) {
                 WrapIconButton(
-                    iconData = navigationIcon,
+                    iconData = AppIcons.ArrowBack,
                     onClick = {
                         onBack?.invoke()
                         keyboardController?.hide()
@@ -232,53 +249,58 @@ private fun DefaultToolBar(
         },
         // Add toolbar actions.
         actions = {
-            ToolBarActions(toolBarActions = toolbarConfig?.actions)
+            ToolBarActions(precomputedToolbarActions = precomputedToolbarActions)
         }
     )
 }
 
+/**
+ * Renders the toolbar actions for a screen.
+ *
+ * This composable displays toolbar actions based on the provided [PrecomputedToolbarActions].
+ * It handles rendering visible actions, overflow actions (in a dropdown menu), and the close action.
+ *
+ * Visible actions are displayed directly on the toolbar.
+ * Overflow actions, if any, are grouped under a "More" icon (vertical ellipsis) in a dropdown menu.
+ * The close action, if provided, is displayed as the rightmost icon on the toolbar.
+ *
+ * @param precomputedToolbarActions The pre-calculated toolbar actions to render. This includes
+ * visible actions, overflow actions, and the close action.
+ */
 @Composable
 internal fun ToolBarActions(
-    toolBarActions: List<ToolbarAction>?,
-    maxActionsShown: Int = MAX_TOOLBAR_ACTIONS,
+    precomputedToolbarActions: PrecomputedToolbarActions
 ) {
-    toolBarActions?.let { actions ->
+    var dropDownMenuExpanded by remember { mutableStateOf(false) }
 
-        var dropDownMenuExpanded by remember {
-            mutableStateOf(false)
-        }
+    // Render visible actions
+    precomputedToolbarActions.visibleActions.forEach { action ->
+        ToolbarIcon(toolbarAction = action)
+    }
 
-        // Show first [MAX_TOOLBAR_ACTIONS] actions.
-        actions
-            .sortedByDescending { it.order }
-            .take(maxActionsShown)
-            .map { visibleToolbarAction ->
-                ToolbarIcon(toolbarAction = visibleToolbarAction)
-            }
-
-        // Check if there are more actions to show.
-        if (actions.size > maxActionsShown) {
-            Box {
-                val iconMore = AppIcons.VerticalMore
-                WrapIconButton(
-                    onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
-                    iconData = iconMore,
-                    enabled = true,
-                    customTint = MaterialTheme.colorScheme.primary
-                )
-                DropdownMenu(
-                    expanded = dropDownMenuExpanded,
-                    onDismissRequest = { dropDownMenuExpanded = false }
-                ) {
-                    actions
-                        .sortedByDescending { it.order }
-                        .drop(maxActionsShown)
-                        .map { dropDownMenuToolbarAction ->
-                            ToolbarIcon(toolbarAction = dropDownMenuToolbarAction)
-                        }
+    // Render Vertical More if overflow exists
+    if (precomputedToolbarActions.actionsOverflow) {
+        Box {
+            WrapIconButton(
+                onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
+                iconData = AppIcons.VerticalMore,
+                enabled = true,
+                customTint = MaterialTheme.colorScheme.primary
+            )
+            DropdownMenu(
+                expanded = dropDownMenuExpanded,
+                onDismissRequest = { dropDownMenuExpanded = false }
+            ) {
+                precomputedToolbarActions.overflowActions.forEach { overflowAction ->
+                    ToolbarIcon(toolbarAction = overflowAction)
                 }
             }
         }
+    }
+
+    // Render Close action as the rightmost icon, if present
+    precomputedToolbarActions.closeAction?.let {
+        ToolbarIcon(toolbarAction = it)
     }
 }
 
@@ -302,6 +324,54 @@ private fun ToolbarIcon(toolbarAction: ToolbarAction) {
             customTint = customIconTint,
         )
     }
+}
+
+data class PrecomputedToolbarActions(
+    val visibleActions: List<ToolbarAction>,
+    val overflowActions: List<ToolbarAction>,
+    val closeAction: ToolbarAction?,
+    val actionsOverflow: Boolean,
+)
+
+/**
+ * Precomputes the toolbar actions to be displayed, separating them into visible, overflow, and close actions.
+ *
+ * This function takes a list of [ToolbarAction]s and determines which actions should be visible on the toolbar,
+ * which should be placed in the overflow menu, and which action represents the close action.
+ *
+ * @param toolBarActions The list of toolbar actions to precompute.
+ * @param maxActionsShown The maximum number of actions to show directly on the toolbar. Defaults to [MAX_TOOLBAR_ACTIONS].
+ *
+ * @return A [PrecomputedToolbarActions] object containing the visible actions, overflow actions, close action,
+ * and a flag indicating if there are actions in the overflow menu.
+ */
+fun precomputeToolbarActions(
+    toolBarActions: List<ToolbarAction>?,
+    maxActionsShown: Int = MAX_TOOLBAR_ACTIONS,
+): PrecomputedToolbarActions {
+    if (toolBarActions.isNullOrEmpty()) {
+        return PrecomputedToolbarActions(
+            visibleActions = emptyList(),
+            overflowActions = emptyList(),
+            closeAction = null,
+            actionsOverflow = false,
+        )
+    }
+
+    val (closeActions, otherActions) = toolBarActions.partition { it.icon == AppIcons.Close }
+    val closeAction = closeActions.firstOrNull()
+
+    val sortedActions = otherActions.sortedByDescending { it.order }
+    val visibleActions = sortedActions.take(maxActionsShown)
+    val overflowActions = sortedActions.drop(maxActionsShown)
+    val actionsOverflow = overflowActions.isNotEmpty()
+
+    return PrecomputedToolbarActions(
+        visibleActions = visibleActions,
+        overflowActions = overflowActions,
+        closeAction = closeAction,
+        actionsOverflow = actionsOverflow,
+    )
 }
 
 @ThemeModePreviews
@@ -336,45 +406,6 @@ private fun ToolbarIconNotClickablePreview() {
 
 @ThemeModePreviews
 @Composable
-private fun ToolBarActionsWithTwoActionsPreview() {
-    PreviewTheme {
-        val toolBarActions = listOf(
-            ToolbarAction(
-                icon = AppIcons.Verified,
-                onClick = {},
-                enabled = true,
-                clickable = true,
-            ),
-            ToolbarAction(
-                icon = AppIcons.Verified,
-                onClick = {},
-                enabled = false,
-                clickable = true,
-            ),
-            ToolbarAction(
-                icon = AppIcons.Verified,
-                onClick = {},
-                enabled = true,
-                clickable = false,
-            ),
-            ToolbarAction(
-                icon = AppIcons.Verified,
-                onClick = {},
-                enabled = false,
-                clickable = false,
-            )
-        )
-        Row {
-            ToolBarActions(
-                toolBarActions = toolBarActions,
-                maxActionsShown = MAX_TOOLBAR_ACTIONS,
-            )
-        }
-    }
-}
-
-@ThemeModePreviews
-@Composable
 private fun ToolBarActionsWithFourActionsPreview() {
     PreviewTheme {
         val toolBarActions = listOf(
@@ -403,10 +434,13 @@ private fun ToolBarActionsWithFourActionsPreview() {
                 clickable = false,
             )
         )
+        val precomputedToolbarActions = precomputeToolbarActions(
+            toolBarActions = toolBarActions
+        )
+
         Row {
             ToolBarActions(
-                toolBarActions = toolBarActions,
-                maxActionsShown = 4,
+                precomputedToolbarActions = precomputedToolbarActions
             )
         }
     }
