@@ -53,7 +53,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapText
  * @property relyingPartyData Data for displaying information about the relying party, if applicable.
  */
 data class ContentHeaderConfig(
-    val appIconAndTextData: AppIconAndTextData,
+    val appIconAndTextData: AppIconAndTextData = AppIconAndTextData(),
     val description: String,
     val descriptionTextConfig: TextConfig? = null,
     val mainText: String? = null,
@@ -141,8 +141,8 @@ private fun ContentHeaderPreview(
         ContentHeader(
             config = ContentHeaderConfig(
                 appIconAndTextData = AppIconAndTextData(
-                    appIcon = AppIcons.Logo,
-                    appText = AppIcons.Logo,
+                    appIcon = AppIcons.LogoPlain,
+                    appText = AppIcons.LogoText,
                 ),
                 description = "Description: $text",
                 mainText = "Title: $text",

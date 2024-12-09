@@ -21,13 +21,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 data class AppIconAndTextData(
-    val appIcon: IconData,
-    val appText: IconData,
+    val appIcon: IconData = AppIcons.LogoPlain,
+    val appText: IconData = AppIcons.LogoText,
 )
 
 @Composable
@@ -37,8 +39,11 @@ fun AppIconAndText(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalArrangement = Arrangement.spacedBy(
+            space = SPACING_SMALL.dp,
+            alignment = Alignment.CenterHorizontally
+        ),
+        verticalAlignment = Alignment.Top
     ) {
         WrapImage(iconData = appIconAndTextData.appIcon)
         WrapImage(iconData = appIconAndTextData.appText)
@@ -51,8 +56,8 @@ private fun AppIconAndTextPreview() {
     PreviewTheme {
         AppIconAndText(
             appIconAndTextData = AppIconAndTextData(
-                appIcon = AppIcons.Logo,
-                appText = AppIcons.Logo,
+                appIcon = AppIcons.LogoPlain,
+                appText = AppIcons.LogoText,
             )
         )
     }

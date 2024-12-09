@@ -111,7 +111,7 @@ private fun Content(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            WrapImage(iconData = AppIcons.Logo)
+            WrapImage(iconData = AppIcons.LogoFull)
         }
         Column(
             modifier = Modifier
