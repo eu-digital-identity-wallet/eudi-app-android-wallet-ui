@@ -87,6 +87,7 @@
 -dontwarn org.zeroturnaround.javarebel.ReloaderFactory
 -dontwarn com.eygraber.uri.JvmUriKt
 -dontwarn org.slf4j.impl.StaticLoggerBinder
+-dontwarn org.slf4j.impl.StaticMDCBinder
 
 # Retrofit
 -keep,allowobfuscation,allowshrinking interface retrofit2.Call
@@ -104,6 +105,7 @@
 # UI Config
 -keep interface eu.europa.ec.uilogic.serializer.UiSerializableParser
 -keep interface eu.europa.ec.uilogic.serializer.UiSerializable
+-keepclassmembers class * implements eu.europa.ec.uilogic.serializer.adapter.SerializableAdapterType { *; }
 -keepclassmembers class * implements eu.europa.ec.uilogic.serializer.UiSerializableParser { *; }
 -keepclassmembers class * implements eu.europa.ec.uilogic.serializer.UiSerializable { *; }
 
