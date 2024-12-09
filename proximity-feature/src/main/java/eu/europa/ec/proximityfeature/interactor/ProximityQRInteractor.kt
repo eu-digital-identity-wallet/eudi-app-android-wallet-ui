@@ -26,6 +26,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onSubscription
 
 sealed class ProximityQRPartialState {
     data class QrReady(val qrCode: String) : ProximityQRPartialState()
@@ -58,30 +59,32 @@ class ProximityQRInteractorImpl(
     }
 
     override fun startQrEngagement(): Flow<ProximityQRPartialState> = flow {
-        walletCorePresentationController.startQrEngagement()
-        walletCorePresentationController.events.mapNotNull {
-            when (it) {
-                is TransferEventPartialState.Connected -> {
-                    ProximityQRPartialState.Connected
-                }
+        walletCorePresentationController.events
+            .onSubscription {
+                walletCorePresentationController.startQrEngagement()
+            }.mapNotNull {
+                when (it) {
+                    is TransferEventPartialState.Connected -> {
+                        ProximityQRPartialState.Connected
+                    }
 
-                is TransferEventPartialState.Error -> {
-                    ProximityQRPartialState.Error(error = it.error)
-                }
+                    is TransferEventPartialState.Error -> {
+                        ProximityQRPartialState.Error(error = it.error)
+                    }
 
-                is TransferEventPartialState.QrEngagementReady -> {
-                    ProximityQRPartialState.QrReady(qrCode = it.qrCode)
-                }
+                    is TransferEventPartialState.QrEngagementReady -> {
+                        ProximityQRPartialState.QrReady(qrCode = it.qrCode)
+                    }
 
-                is TransferEventPartialState.Disconnected -> {
-                    ProximityQRPartialState.Disconnected
-                }
+                    is TransferEventPartialState.Disconnected -> {
+                        ProximityQRPartialState.Disconnected
+                    }
 
-                else -> null
+                    else -> null
+                }
+            }.collect {
+                emit(it)
             }
-        }.collect {
-            emit(it)
-        }
     }.safeAsync {
         ProximityQRPartialState.Error(error = it.localizedMessage ?: genericErrorMsg)
     }

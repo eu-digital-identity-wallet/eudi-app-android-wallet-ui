@@ -75,7 +75,7 @@
         </provider>
 
         <service
-            android:name="eu.europa.ec.eudi.wallet.util.DefaultNfcEngagementService"
+            android:name="eu.europa.ec.corelogic.service.NfcEngagementService"
             android:exported="true"
             android:label="@string/nfc_engagement_service_desc"
             android:permission="android.permission.BIND_NFC_SERVICE">

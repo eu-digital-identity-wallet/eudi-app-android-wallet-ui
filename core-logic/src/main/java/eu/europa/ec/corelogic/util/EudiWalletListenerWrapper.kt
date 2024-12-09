@@ -16,8 +16,8 @@
 
 package eu.europa.ec.corelogic.util
 
-import eu.europa.ec.eudi.iso18013.transfer.RequestedDocumentData
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
+import eu.europa.ec.eudi.iso18013.transfer.response.RequestProcessor
 import java.net.URI
 
 class EudiWalletListenerWrapper(
@@ -26,7 +26,7 @@ class EudiWalletListenerWrapper(
     private val onDisconnected: () -> Unit,
     private val onError: (String) -> Unit,
     private val onQrEngagementReady: (String) -> Unit,
-    private val onRequestReceived: (RequestedDocumentData) -> Unit,
+    private val onRequestReceived: (RequestProcessor.ProcessedRequest) -> Unit,
     private val onResponseSent: () -> Unit,
     private val onRedirect: (URI) -> Unit,
 ) : TransferEvent.Listener {
@@ -37,7 +37,7 @@ class EudiWalletListenerWrapper(
             is TransferEvent.Disconnected -> onDisconnected()
             is TransferEvent.Error -> onError(event.error.message ?: "")
             is TransferEvent.QrEngagementReady -> onQrEngagementReady(event.qrCode.content)
-            is TransferEvent.RequestReceived -> onRequestReceived(event.requestedDocumentData)
+            is TransferEvent.RequestReceived -> onRequestReceived(event.processedRequest)
             is TransferEvent.ResponseSent -> onResponseSent()
             is TransferEvent.Redirect -> onRedirect(event.redirectUri)
         }

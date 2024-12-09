@@ -133,7 +133,7 @@ class DashboardInteractorImpl(
     }
 
     override fun isBleCentralClientModeEnabled(): Boolean =
-        walletCoreConfig.config.bleCentralClientModeEnabled
+        walletCoreConfig.config.enableBleCentralMode
 
     override fun getDocuments(): Flow<DashboardInteractorGetDocumentsPartialState> = flow {
         var userFirstName = ""

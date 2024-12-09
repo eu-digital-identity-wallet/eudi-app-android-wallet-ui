@@ -41,7 +41,6 @@ import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocType
-import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -186,7 +185,7 @@ class TestDashboardInteractor {
         val expectedBleCentralClientModeEnabled = true
 
         val mockedConfig = getMockedEudiWalletConfig {
-            bleTransferMode(EudiWalletConfig.BLE_CLIENT_CENTRAL_MODE)
+            configureProximityPresentation(enableBleCentralMode = true)
         }
 
         whenever(walletCoreConfig.config).thenReturn(mockedConfig)
@@ -206,7 +205,7 @@ class TestDashboardInteractor {
         val expectedBleCentralClientModeEnabled = false
 
         val mockedConfig = getMockedEudiWalletConfig {
-            bleTransferMode(EudiWalletConfig.BLE_SERVER_PERIPHERAL_MODE)
+            configureProximityPresentation(enableBlePeripheralMode = true)
         }
 
         whenever(walletCoreConfig.config).thenReturn(mockedConfig)

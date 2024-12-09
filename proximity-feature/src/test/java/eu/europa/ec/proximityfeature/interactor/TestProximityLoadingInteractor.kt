@@ -24,6 +24,7 @@ import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -167,10 +168,17 @@ class TestProximityLoadingInteractor {
     @Test
     fun `Given Case 4, When observeResponse is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
+
+            val mockedAuthenticationData = listOf(
+                AuthenticationData(
+                    crypto = crypto,
+                    onAuthenticationSuccess = {}
+                )
+            )
+
             mockWalletCorePresentationControllerEventEmission(
                 event = WalletCorePartialState.UserAuthenticationRequired(
-                    crypto = crypto,
-                    resultHandler = resultHandler
+                    authenticationData = mockedAuthenticationData
                 )
             )
 
@@ -179,8 +187,7 @@ class TestProximityLoadingInteractor {
                 .runFlowTest {
                     val expectedResult =
                         ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired(
-                            crypto = crypto,
-                            resultHandler = resultHandler
+                            authenticationData = mockedAuthenticationData
                         )
                     assertEquals(expectedResult, awaitItem())
                 }

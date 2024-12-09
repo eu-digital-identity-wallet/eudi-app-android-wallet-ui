@@ -24,8 +24,10 @@ import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityLoadingObserveResponsePartialState
+import eu.europa.ec.proximityfeature.interactor.ProximityLoadingSendRequestedDocumentPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -38,6 +40,7 @@ import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import kotlin.time.Duration
@@ -104,14 +107,7 @@ class ProximityLoadingViewModel(
                     }
 
                     is ProximityLoadingObserveResponsePartialState.Success -> {
-                        setState {
-                            copy(
-                                error = null
-                            )
-                        }
-                        interactor.stopPresentation()
-                        getOrCreatePresentationScope().close()
-                        doNavigation(NavigationType.PushRoute(getNextScreen()))
+                        onSuccess()
                     }
 
                     is ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
@@ -119,19 +115,84 @@ class ProximityLoadingViewModel(
                             screenRoute = ProximityScreens.Request.screenRoute,
                             inclusive = false
                         )
-                        interactor.handleUserAuthentication(
-                            context = context,
-                            crypto = it.crypto,
-                            resultHandler = DeviceAuthenticationResult(
-                                onAuthenticationSuccess = { it.resultHandler.onAuthenticationSuccess() },
-                                onAuthenticationFailure = { setEffect { popEffect } },
-                                onAuthenticationError = { setEffect { popEffect } }
-                            )
+                        openAuthenticationPrompt(context,
+                            popEffect,
+                            it.authenticationData,
+                            {
+                                when (val result = interactor.sendRequestedDocuments()) {
+                                    is ProximityLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
+                                    }
+
+                                    is ProximityLoadingSendRequestedDocumentPartialState.Failure -> {
+                                        setState {
+                                            copy(
+                                                error = ContentErrorConfig(
+                                                    onRetry = { setEvent(Event.DoWork(context)) },
+                                                    errorSubTitle = result.error,
+                                                    onCancel = {
+                                                        setEvent(Event.DismissError)
+                                                        doNavigation(
+                                                            NavigationType.PopTo(
+                                                                getPreviousScreen()
+                                                            )
+                                                        )
+                                                    }
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         )
                     }
                 }
             }
         }
+    }
+
+    private fun openAuthenticationPrompt(
+        context: Context,
+        popEffect: Effect,
+        authenticationDataList: List<AuthenticationData>,
+        sendRequestedDocumentsAction: suspend () -> Unit,
+        index: Int = 0,
+    ) {
+        val authenticationData = authenticationDataList[index]
+        val isFinalAuthentication = index == authenticationDataList.lastIndex
+        interactor.handleUserAuthentication(
+            context = context,
+            crypto = authenticationData.crypto,
+            resultHandler = DeviceAuthenticationResult(
+                onAuthenticationSuccess = {
+                    authenticationData.onAuthenticationSuccess()
+                    if (isFinalAuthentication) {
+                        sendRequestedDocumentsAction()
+                    } else {
+                        delay(500)
+                        openAuthenticationPrompt(
+                            context,
+                            popEffect,
+                            authenticationDataList,
+                            sendRequestedDocumentsAction,
+                            index + 1
+                        )
+                    }
+                },
+                onAuthenticationError = { setEffect { popEffect } },
+                onAuthenticationFailure = { setEffect { popEffect } }
+            )
+        )
+    }
+
+    private fun onSuccess() {
+        setState {
+            copy(
+                error = null
+            )
+        }
+        interactor.stopPresentation()
+        getOrCreatePresentationScope().close()
+        doNavigation(NavigationType.PushRoute(getNextScreen()))
     }
 
     private fun getSuccessConfig(): Map<String, String> {

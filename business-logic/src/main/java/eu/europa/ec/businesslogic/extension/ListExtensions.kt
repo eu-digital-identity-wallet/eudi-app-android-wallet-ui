@@ -14,9 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.testfeature.walletcore
+package eu.europa.ec.businesslogic.extension
 
-import eu.europa.ec.eudi.wallet.EudiWalletConfig
-
-fun getMockedEudiWalletConfig(configure: EudiWalletConfig.() -> Unit): EudiWalletConfig =
-    EudiWalletConfig().apply(configure)
+fun <T> MutableList<T>.addOrReplace(value: T, replaceCondition: (T) -> Boolean) {
+    for (i in indices) {
+        if (replaceCondition(this[i])) {
+            this[i] = value
+        }
+    }
+}

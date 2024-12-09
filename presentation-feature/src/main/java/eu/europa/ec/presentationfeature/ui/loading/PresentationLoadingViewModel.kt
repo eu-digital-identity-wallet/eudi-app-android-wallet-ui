@@ -24,8 +24,10 @@ import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingObserveResponsePartialState
+import eu.europa.ec.presentationfeature.interactor.PresentationLoadingSendRequestedDocumentPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -38,6 +40,7 @@ import eu.europa.ec.uilogic.navigation.Screen
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import java.net.URI
@@ -113,14 +116,35 @@ class PresentationLoadingViewModel(
                             screenRoute = PresentationScreens.PresentationRequest.screenRoute,
                             inclusive = false
                         )
-                        interactor.handleUserAuthentication(
-                            context = context,
-                            crypto = it.crypto,
-                            resultHandler = DeviceAuthenticationResult(
-                                onAuthenticationSuccess = { it.resultHandler.onAuthenticationSuccess() },
-                                onAuthenticationError = { setEffect { popEffect } },
-                                onAuthenticationFailure = { setEffect { popEffect } }
-                            )
+
+                        openAuthenticationPrompt(
+                            context,
+                            popEffect,
+                            it.authenticationData,
+                            {
+                                when (val result = interactor.sendRequestedDocuments()) {
+                                    is PresentationLoadingSendRequestedDocumentPartialState.Success -> {}
+
+                                    is PresentationLoadingSendRequestedDocumentPartialState.Failure -> {
+                                        setState {
+                                            copy(
+                                                error = ContentErrorConfig(
+                                                    onRetry = { setEvent(Event.DoWork(context)) },
+                                                    errorSubTitle = result.error,
+                                                    onCancel = {
+                                                        setEvent(Event.DismissError)
+                                                        doNavigation(
+                                                            NavigationType.PopTo(
+                                                                getPreviousScreen()
+                                                            )
+                                                        )
+                                                    }
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         )
                     }
 
@@ -130,6 +154,40 @@ class PresentationLoadingViewModel(
                 }
             }
         }
+    }
+
+    private fun openAuthenticationPrompt(
+        context: Context,
+        popEffect: Effect,
+        authenticationDataList: List<AuthenticationData>,
+        sendRequestedDocumentsAction: () -> Unit,
+        index: Int = 0,
+    ) {
+        val authenticationData = authenticationDataList[index]
+        val isFinalAuthentication = index == authenticationDataList.lastIndex
+        interactor.handleUserAuthentication(
+            context = context,
+            crypto = authenticationData.crypto,
+            resultHandler = DeviceAuthenticationResult(
+                onAuthenticationSuccess = {
+                    authenticationData.onAuthenticationSuccess()
+                    if (isFinalAuthentication) {
+                        sendRequestedDocumentsAction()
+                    } else {
+                        delay(500)
+                        openAuthenticationPrompt(
+                            context,
+                            popEffect,
+                            authenticationDataList,
+                            sendRequestedDocumentsAction,
+                            index + 1
+                        )
+                    }
+                },
+                onAuthenticationError = { setEffect { popEffect } },
+                onAuthenticationFailure = { setEffect { popEffect } }
+            )
+        )
     }
 
     private fun onSuccess(uri: URI? = null) {

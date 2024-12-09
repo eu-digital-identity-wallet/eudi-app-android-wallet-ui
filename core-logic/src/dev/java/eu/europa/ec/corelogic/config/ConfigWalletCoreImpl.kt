@@ -18,17 +18,15 @@ package eu.europa.ec.corelogic.config
 
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
-import eu.europa.ec.corelogic.controller.WalletCoreLogController
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
-import eu.europa.ec.eudi.wallet.transfer.openid4vp.ClientIdScheme
-import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionAlgorithm
-import eu.europa.ec.eudi.wallet.transfer.openid4vp.EncryptionMethod
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.EncryptionAlgorithm
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.EncryptionMethod
 import eu.europa.ec.resourceslogic.R
 
 internal class WalletCoreConfigImpl(
-    private val context: Context,
-    private val walletCoreLogController: WalletCoreLogController
+    private val context: Context
 ) : WalletCoreConfig {
 
     private companion object {
@@ -42,10 +40,13 @@ internal class WalletCoreConfigImpl(
     override val config: EudiWalletConfig
         get() {
             if (_config == null) {
-                _config = EudiWalletConfig.Builder(context)
-                    .logger(walletCoreLogController)
-                    .userAuthenticationRequired(AUTHENTICATION_REQUIRED)
-                    .openId4VpConfig {
+                _config = EudiWalletConfig {
+                    configureDocumentKeyCreation(
+                        userAuthenticationRequired = AUTHENTICATION_REQUIRED,
+                        userAuthenticationTimeout = 30_000L,
+                        useStrongBoxForKeys = true
+                    )
+                    configureOpenId4Vp {
                         withEncryptionAlgorithms(listOf(EncryptionAlgorithm.ECDH_ES))
                         withEncryptionMethods(
                             listOf(
@@ -55,11 +56,9 @@ internal class WalletCoreConfigImpl(
                         )
 
                         withClientIdSchemes(
-                            listOf(
-                                ClientIdScheme.X509SanDns
-                            )
+                            listOf(ClientIdScheme.X509SanDns)
                         )
-                        withScheme(
+                        withSchemes(
                             listOf(
                                 BuildConfig.OPENID4VP_SCHEME,
                                 BuildConfig.EUDI_OPENID4VP_SCHEME,
@@ -67,20 +66,17 @@ internal class WalletCoreConfigImpl(
                             )
                         )
                     }
-                    .openId4VciConfig {
-                        issuerUrl(issuerUrl = VCI_ISSUER_URL)
-                        clientId(clientId = VCI_CLIENT_ID)
-                        authFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-                        useStrongBoxIfSupported(true)
-                        useDPoP(true)
-                        parUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-                        proofTypes(
-                            OpenId4VciManager.Config.ProofType.JWT,
-                            OpenId4VciManager.Config.ProofType.CWT
-                        )
+
+                    configureOpenId4Vci {
+                        withIssuerUrl(issuerUrl = VCI_ISSUER_URL)
+                        withClientId(clientId = VCI_CLIENT_ID)
+                        withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+                        withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+                        withUseDPoPIfSupported(true)
                     }
-                    .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
-                    .build()
+
+                    configureReaderTrustStore(context, R.raw.eudi_pid_issuer_ut)
+                }
             }
             return _config!!
         }

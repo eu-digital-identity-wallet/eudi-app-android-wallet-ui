@@ -76,7 +76,7 @@ class DeviceAuthenticationControllerImpl(
 }
 
 data class DeviceAuthenticationResult(
-    val onAuthenticationSuccess: () -> Unit = {},
+    val onAuthenticationSuccess: suspend () -> Unit = {},
     val onAuthenticationError: () -> Unit = {},
     val onAuthenticationFailure: () -> Unit = {},
 )

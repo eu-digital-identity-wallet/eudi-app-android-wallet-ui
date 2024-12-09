@@ -70,7 +70,7 @@ class ProximityRequestInteractorImpl(
         walletCorePresentationController.events.mapNotNull { response ->
             when (response) {
                 is TransferEventPartialState.RequestReceived -> {
-                    if (response.requestData.all { it.docRequest.requestItems.isEmpty() }) {
+                    if (response.requestData.all { it.requestedItems.isEmpty() }) {
                         ProximityRequestInteractorPartialState.NoData(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
@@ -112,6 +112,6 @@ class ProximityRequestInteractorImpl(
 
     override fun updateRequestedDocuments(items: List<RequestDataUi<Event>>) {
         val disclosedDocuments = RequestTransformer.transformToDomainItems(items)
-        walletCorePresentationController.updateRequestedDocuments(disclosedDocuments)
+        walletCorePresentationController.updateRequestedDocuments(disclosedDocuments.toMutableList())
     }
 }

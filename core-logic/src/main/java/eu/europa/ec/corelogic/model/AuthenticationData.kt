@@ -14,9 +14,11 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.testfeature.walletcore
+package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.eudi.wallet.EudiWalletConfig
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 
-fun getMockedEudiWalletConfig(configure: EudiWalletConfig.() -> Unit): EudiWalletConfig =
-    EudiWalletConfig().apply(configure)
+data class AuthenticationData(
+    val crypto: BiometricCrypto,
+    val onAuthenticationSuccess: () -> Unit
+)

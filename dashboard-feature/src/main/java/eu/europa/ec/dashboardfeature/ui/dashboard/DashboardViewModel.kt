@@ -35,8 +35,8 @@ import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorRetryIssuingDeferredDocumentsPartialState
-import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -420,7 +420,7 @@ class DashboardViewModel(
 
                     is DashboardInteractorGetDocumentsPartialState.Success -> {
                         val shouldAllowUserInteraction =
-                            response.mainPid?.state == Document.State.ISSUED
+                            response.mainPid is IssuedDocument
 
                         val documents = response.documentsUi
                             .map { documentUi ->
