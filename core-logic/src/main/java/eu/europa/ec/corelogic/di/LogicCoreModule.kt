@@ -45,15 +45,12 @@ fun provideEudiWalletCore(
     context: Context,
     walletCoreConfig: WalletCoreConfig,
     walletCoreLogController: WalletCoreLogController
-): EudiWallet =
-    WalletCoreBuilderImpl(context, walletCoreConfig, walletCoreLogController).wallet
+): EudiWallet = WalletCoreBuilderImpl(context, walletCoreConfig, walletCoreLogController).wallet
 
 @Single
 fun provideConfigWalletCore(
     context: Context,
-    walletCoreLogController: WalletCoreLogController
-): WalletCoreConfig =
-    WalletCoreConfigImpl(context, walletCoreLogController)
+): WalletCoreConfig = WalletCoreConfigImpl(context)
 
 @Single
 fun provideWalletCoreLogController(logController: LogController): WalletCoreLogController =

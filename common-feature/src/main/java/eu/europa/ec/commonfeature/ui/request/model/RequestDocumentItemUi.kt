@@ -82,7 +82,7 @@ fun <T> DocItem.toRequestDocumentItemUi(
 }
 
 val Document.docType: String
-    get() = (this.format as? MsoMdocFormat)?.docType ?: ""
+    get() = (this.format as? MsoMdocFormat)?.docType.orEmpty()
 
 fun produceDocUID(
     elementIdentifier: ElementIdentifier,

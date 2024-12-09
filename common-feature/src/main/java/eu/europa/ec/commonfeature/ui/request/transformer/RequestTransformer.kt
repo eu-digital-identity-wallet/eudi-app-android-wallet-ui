@@ -24,6 +24,7 @@ import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
+import eu.europa.ec.commonfeature.ui.request.model.docType
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
 import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.parseKeyValueUi

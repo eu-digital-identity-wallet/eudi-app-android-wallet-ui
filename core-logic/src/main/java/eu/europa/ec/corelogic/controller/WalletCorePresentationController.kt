@@ -208,12 +208,10 @@ class WalletCorePresentationControllerImpl(
     private lateinit var _config: PresentationControllerConfig
 
     override var disclosedDocuments: MutableList<DisclosedDocument>? = null
-        private set
 
     private var processedRequest: RequestProcessor.ProcessedRequest.Success? = null
 
     override var verifierName: String? = null
-        private set
 
     override val initiatorRoute: String
         get() {

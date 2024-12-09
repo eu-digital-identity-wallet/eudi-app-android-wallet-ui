@@ -18,7 +18,6 @@ package eu.europa.ec.corelogic.config
 
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
-import eu.europa.ec.corelogic.controller.WalletCoreLogController
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
@@ -27,14 +26,13 @@ import eu.europa.ec.eudi.wallet.transfer.openId4vp.EncryptionMethod
 import eu.europa.ec.resourceslogic.R
 
 internal class WalletCoreConfigImpl(
-    private val context: Context,
-    private val walletCoreLogController: WalletCoreLogController,
+    private val context: Context
 ) : WalletCoreConfig {
 
     private companion object {
         const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-dev"
-        const val AUTHENTICATION_REQUIRED = true
+        const val AUTHENTICATION_REQUIRED = false
     }
 
     private var _config: EudiWalletConfig? = null

@@ -27,6 +27,8 @@ class WalletCoreBuilderImpl(
 ) : WalletCoreBuilder {
 
     override val wallet: EudiWallet by lazy {
-        EudiWallet(context, walletCoreConfig.config)
+        EudiWallet(context, walletCoreConfig.config) {
+            withLogger(walletCoreLogController)
+        }
     }
 }
