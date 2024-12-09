@@ -80,8 +80,6 @@ sealed class CheckKeyUnlockPartialState {
     data class UserAuthenticationRequired(
         val authenticationData: List<AuthenticationData>,
     ) : CheckKeyUnlockPartialState()
-
-    data object RequestSent : CheckKeyUnlockPartialState()
 }
 
 sealed class SendRequestedDocumentsPartialState {
@@ -307,7 +305,9 @@ class WalletCorePresentationControllerImpl(
 
     override fun checkForKeyUnlock() = flow {
         disclosedDocuments?.let { documents ->
+
             val authenticationData = mutableListOf<AuthenticationData>()
+
             if (eudiWallet.config.userAuthenticationRequired) {
 
                 val keyUnlockDataMap = documents.associateWith {
@@ -332,9 +332,9 @@ class WalletCorePresentationControllerImpl(
                         authenticationData
                     )
                 )
+
             } else {
-                disclosedDocuments?.clear()
-                disclosedDocuments?.addAll(documents)
+                sendRequestedDocuments()
             }
         }
     }.safeAsync {
@@ -417,10 +417,6 @@ class WalletCorePresentationControllerImpl(
                     WalletCorePartialState.Redirect(
                         uri = it.uri
                     )
-                }
-
-                is CheckKeyUnlockPartialState.RequestSent -> {
-                    null
                 }
 
                 else -> {

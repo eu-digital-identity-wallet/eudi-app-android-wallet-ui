@@ -123,8 +123,7 @@ class PresentationLoadingViewModel(
                             it.authenticationData,
                             {
                                 when (val result = interactor.sendRequestedDocuments()) {
-                                    is PresentationLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
-                                    }
+                                    is PresentationLoadingSendRequestedDocumentPartialState.Success -> {}
 
                                     is PresentationLoadingSendRequestedDocumentPartialState.Failure -> {
                                         setState {

@@ -32,7 +32,7 @@ internal class WalletCoreConfigImpl(
     private companion object {
         const val VCI_ISSUER_URL = "https://issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-dev"
-        const val AUTHENTICATION_REQUIRED = true
+        const val AUTHENTICATION_REQUIRED = false
     }
 
     private var _config: EudiWalletConfig? = null
