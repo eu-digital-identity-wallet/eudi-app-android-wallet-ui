@@ -60,7 +60,7 @@ sealed class IssueDocumentPartialState {
     data class Failure(val errorMessage: String) : IssueDocumentPartialState()
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
-        val resultHandler: DeviceAuthenticationResult
+        val resultHandler: DeviceAuthenticationResult,
     ) : IssueDocumentPartialState()
 }
 
@@ -71,13 +71,13 @@ sealed class IssueDocumentsPartialState {
 
     data class PartialSuccess(
         val documentIds: List<String>,
-        val nonIssuedDocuments: Map<String, String>
+        val nonIssuedDocuments: Map<String, String>,
     ) : IssueDocumentsPartialState()
 
     data class Failure(val errorMessage: String) : IssueDocumentsPartialState()
     data class UserAuthRequired(
         val crypto: BiometricCrypto,
-        val resultHandler: DeviceAuthenticationResult
+        val resultHandler: DeviceAuthenticationResult,
     ) : IssueDocumentsPartialState()
 }
 
@@ -107,12 +107,12 @@ sealed class IssueDeferredDocumentPartialState {
     ) : IssueDeferredDocumentPartialState()
 
     data class NotReady(
-        val deferredDocumentData: DeferredDocumentData
+        val deferredDocumentData: DeferredDocumentData,
     ) : IssueDeferredDocumentPartialState()
 
     data class Failed(
         val documentId: DocumentId,
-        val errorMessage: String
+        val errorMessage: String,
     ) : IssueDeferredDocumentPartialState()
 
     data class Expired(
@@ -149,16 +149,16 @@ interface WalletCoreDocumentsController {
 
     fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: DocType
+        documentType: DocType,
     ): Flow<IssueDocumentPartialState>
 
     fun issueDocumentsByOfferUri(
         offerUri: String,
-        txCode: String? = null
+        txCode: String? = null,
     ): Flow<IssueDocumentsPartialState>
 
     fun deleteDocument(
-        documentId: String
+        documentId: String,
     ): Flow<DeleteDocumentPartialState>
 
     fun deleteAllDocuments(mainPidDocumentId: String): Flow<DeleteAllDocumentsPartialState>
@@ -172,7 +172,7 @@ interface WalletCoreDocumentsController {
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet
+    private val eudiWallet: EudiWallet,
 ) : WalletCoreDocumentsController {
 
     private val genericErrorMessage
@@ -245,7 +245,7 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: DocType
+        documentType: DocType,
     ): Flow<IssueDocumentPartialState> = flow {
         when (issuanceMethod) {
 
@@ -292,7 +292,7 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun issueDocumentsByOfferUri(
         offerUri: String,
-        txCode: String?
+        txCode: String?,
     ): Flow<IssueDocumentsPartialState> =
         callbackFlow {
             openId4VciManager.issueDocumentByOfferUri(
@@ -308,7 +308,7 @@ class WalletCoreDocumentsControllerImpl(
         }
 
     override fun deleteDocument(documentId: String): Flow<DeleteDocumentPartialState> = flow {
-        val deleteResult = eudiWallet.deleteDocumentById(documentId = documentId)
+        eudiWallet.deleteDocumentById(documentId = documentId)
             .kotlinResult
             .onSuccess { emit(DeleteDocumentPartialState.Success) }
             .onFailure {

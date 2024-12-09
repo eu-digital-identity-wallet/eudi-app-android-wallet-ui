@@ -219,7 +219,7 @@ object RequestTransformer {
                             it.domainPayload.elementIdentifier
                         )
                     },
-                    keyUnlockData = null // TODO required if key is locked
+                    keyUnlockData = null
                 )
             }
         )
