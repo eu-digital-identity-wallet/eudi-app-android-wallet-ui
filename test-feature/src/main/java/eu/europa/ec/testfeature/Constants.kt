@@ -741,9 +741,9 @@ val mockedMdlWithNoExpirationDate: IssuedDocument = mockedFullMdl.copy(
 val mockedMdlWithNoUserNameAndNoUserImage: IssuedDocument = mockedFullMdl.copy(
     nameSpacedData = createMockedNamespaceData(
         mockedMdlNameSpace,
-                mockedMdlFields
-                    .minus("given_name")
-                    .minus("portrait")
+        mockedMdlFields
+            .minus("given_name")
+            .minus("portrait")
     )
 )
 

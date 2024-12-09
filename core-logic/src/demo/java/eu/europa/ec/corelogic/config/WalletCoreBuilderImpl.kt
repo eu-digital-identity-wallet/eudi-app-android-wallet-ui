@@ -17,8 +17,6 @@
 package eu.europa.ec.corelogic.config
 
 import android.content.Context
-import com.android.identity.securearea.software.SoftwareSecureArea
-import com.android.identity.storage.EphemeralStorageEngine
 import eu.europa.ec.corelogic.controller.WalletCoreLogController
 import eu.europa.ec.eudi.wallet.EudiWallet
 
