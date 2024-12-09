@@ -19,18 +19,15 @@ package eu.europa.ec.presentationfeature.interactor
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
-import eu.europa.ec.commonfeature.util.TestsData.createTransformedRequestDataUi
+import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.commonfeature.util.TestsData.mockedRequestElementIdentifierNotAvailable
 import eu.europa.ec.commonfeature.util.TestsData.mockedRequestRequiredFieldsTitle
-import eu.europa.ec.commonfeature.util.TestsData.mockedTransformedRequestDataUiForMdlWithBasicFields
-import eu.europa.ec.commonfeature.util.TestsData.mockedTransformedRequestDataUiForPidWithBasicFields
 import eu.europa.ec.commonfeature.util.TestsData.mockedValidMdlWithBasicFieldsRequestDocument
 import eu.europa.ec.commonfeature.util.TestsData.mockedValidPidWithBasicFieldsRequestDocument
 import eu.europa.ec.commonfeature.util.TestsData.mockedVerifierName
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.eudi.iso18013.transfer.DisclosedDocuments
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -48,7 +45,9 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.shareIn
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -263,11 +262,14 @@ class TestPresentationRequestInteractor {
             interactor.getRequestDocuments()
                 .runFlowTest {
                     val expectedResult = PresentationRequestInteractorPartialState.Success(
-                        requestDocuments = createTransformedRequestDataUi(
-                            items = listOf(
-                                mockedTransformedRequestDataUiForPidWithBasicFields,
-                                mockedTransformedRequestDataUiForMdlWithBasicFields
-                            )
+                        requestDocuments = RequestTransformer.transformToUiItems(
+                            storageDocuments = listOf(mockedPidWithBasicFields, mockedMdlWithBasicFields),
+                            resourceProvider = resourceProvider,
+                            requestDocuments = listOf(
+                                mockedValidPidWithBasicFieldsRequestDocument,
+                                mockedValidMdlWithBasicFieldsRequestDocument
+                            ),
+                            requiredFieldsTitle = mockedRequestRequiredFieldsTitle
                         ),
                         verifierName = mockedVerifierName,
                         verifierIsTrusted = mockedVerifierIsTrusted
@@ -370,9 +372,7 @@ class TestPresentationRequestInteractor {
 
         verify(walletCorePresentationController, times(1))
             .updateRequestedDocuments(
-                disclosedDocuments = DisclosedDocuments(
-                    documents = emptyList()
-                )
+                disclosedDocuments = mutableListOf()
             )
     }
     //endregion
@@ -420,13 +420,13 @@ class TestPresentationRequestInteractor {
     private fun mockEmissionOfIntentionallyNotHandledEvents() {
         whenever(walletCorePresentationController.events)
             .thenReturn(
-                flowOf(
-                    TransferEventPartialState.Connected,
-                    TransferEventPartialState.Connecting,
-                    TransferEventPartialState.QrEngagementReady(""),
-                    TransferEventPartialState.Redirect(uri = URI("")),
-                    TransferEventPartialState.ResponseSent,
-                )
+                flow {
+                    emit(TransferEventPartialState.Connected)
+                    emit(TransferEventPartialState.Connecting)
+                    emit(TransferEventPartialState.QrEngagementReady(""))
+                    emit(TransferEventPartialState.Redirect(uri = URI("")))
+                    emit(TransferEventPartialState.ResponseSent)
+                }.shareIn(coroutineRule.testScope, SharingStarted.Lazily, 2)
             )
     }
 

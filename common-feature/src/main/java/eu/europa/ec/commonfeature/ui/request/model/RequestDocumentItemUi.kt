@@ -19,7 +19,6 @@ package eu.europa.ec.commonfeature.ui.request.model
 import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
-import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
@@ -85,9 +84,9 @@ fun <T> DocItem.toRequestDocumentItemUi(
 val Document.docType: String
     get() = (this.format as? MsoMdocFormat)?.docType ?: ""
 
-fun RequestedDocument.produceDocUID(
+fun produceDocUID(
     elementIdentifier: ElementIdentifier,
     documentId: DocumentId,
-    docType: String? = null
+    docType: String
 ): String =
     docType + elementIdentifier + documentId

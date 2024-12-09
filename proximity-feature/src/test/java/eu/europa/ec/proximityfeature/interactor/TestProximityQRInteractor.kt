@@ -37,7 +37,9 @@ import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.shareIn
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -249,6 +251,9 @@ class TestProximityQRInteractor {
     fun `Given Case 6, When startQrEngagement is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.Connected
+            )
             whenever(walletCorePresentationController.startQrEngagement())
                 .thenThrow(mockedExceptionWithMessage)
 
@@ -276,6 +281,9 @@ class TestProximityQRInteractor {
     fun `Given Case 7, When startQrEngagement is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            mockWalletCorePresentationControllerEventEmission(
+                event = TransferEventPartialState.Connected
+            )
             whenever(walletCorePresentationController.startQrEngagement())
                 .thenThrow(mockedExceptionWithNoMessage)
 
@@ -398,18 +406,22 @@ class TestProximityQRInteractor {
     private fun mockEmissionOfIntentionallyNotHandledEvents() {
         whenever(walletCorePresentationController.events)
             .thenReturn(
-                flowOf(
-                    TransferEventPartialState.Connecting,
-                    TransferEventPartialState.RequestReceived(
-                        requestData = emptyList(),
-                        verifierName = null,
-                        verifierIsTrusted = false
-                    ),
-                    TransferEventPartialState.ResponseSent,
-                    TransferEventPartialState.Redirect(
-                        uri = URI("")
+                flow {
+                    emit(TransferEventPartialState.Connecting)
+                    emit(
+                        TransferEventPartialState.RequestReceived(
+                            requestData = emptyList(),
+                            verifierName = null,
+                            verifierIsTrusted = false
+                        )
                     )
-                )
+                    emit(TransferEventPartialState.ResponseSent)
+                    emit(
+                        TransferEventPartialState.Redirect(
+                            uri = URI("")
+                        )
+                    )
+                }.shareIn(coroutineRule.testScope, SharingStarted.Lazily, 2)
             )
     }
 

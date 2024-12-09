@@ -112,7 +112,7 @@ object RequestTransformer {
                 ) {
                     required.add(
                         docItem.toRequestDocumentItemUi(
-                            uID = requestDocument.produceDocUID(
+                            uID = produceDocUID(
                                 docItem.elementIdentifier,
                                 requestDocument.documentId,
                                 storageDocument.docType
@@ -131,9 +131,10 @@ object RequestTransformer {
                         )
                     )
                 } else {
-                    val uID = requestDocument.produceDocUID(
+                    val uID = produceDocUID(
                         docItem.elementIdentifier,
-                        requestDocument.documentId
+                        requestDocument.documentId,
+                        storageDocument.docType
                     )
 
                     items += RequestDataUi.Space()
