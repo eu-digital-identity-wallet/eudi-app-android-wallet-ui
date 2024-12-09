@@ -18,9 +18,9 @@ package project.convention.logic.kover
 
 import project.convention.logic.config.LibraryModule
 
-private const val KOIN = "org.koin.*"
-private const val BUILD_CONFIG = "eu.europa.ec.*.BuildConfig"
-private const val SCREEN_COMPOSABLES = "eu.europa.ec.*.ui.*.*Screen*"
+private const val KOIN = "*.ksp.*"
+private const val BUILD_CONFIG = "*BuildConfig*"
+private const val SCREEN_COMPOSABLES = "*Screen*"
 private const val MODELS = "eu.europa.ec.*.model"
 private const val DI = "eu.europa.ec.*.di"
 private const val ROUTER_GRAPH = "eu.europa.ec.*.router"
@@ -40,13 +40,13 @@ val koverModules: Map<LibraryModule, KoverExclusionRules> = mapOf(
 sealed interface KoverExclusionRules {
     val commonClasses: List<String>
         get() = listOf(
-            KOIN,
             BUILD_CONFIG,
             SCREEN_COMPOSABLES,
         )
 
     val commonPackages: List<String>
         get() = listOf(
+            KOIN,
             DI,
             MODELS,
             ROUTER_GRAPH,
