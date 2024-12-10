@@ -16,26 +16,29 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
-import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 
 //TODO should probably rename data class
 data class RequestDocumentItemUi<T>(
     val id: String,
-    val domainPayload: DocumentItemDomainPayload,
-    val documentDetailsUiItem: ListItemData,
-    val event: T? = null
+    val item: ExpandableDocumentItemUi<T>
 ) {
-    val keyIsBase64: Boolean
-        get() {
-            return keyIsBase64(domainPayload.elementIdentifier)
-        }
+    //val keyIsBase64: Boolean
+    //    get() {
+    //        return keyIsBase64(domainPayload.elementIdentifier)
+    //    }
 }
+
+data class ExpandableDocumentItemUi<T>(
+    val expandableListItem: ExpandableListItemData,
+    val domainPayload: DocumentItemDomainPayload,
+    val event: T? = null
+)
 
 data class DocumentItemDomainPayload(
     val docId: String,
@@ -59,15 +62,11 @@ data class DocumentItemDomainPayload(
 
 fun <T> toRequestDocumentItemUi(
     uID: String,
-    docPayload: DocumentItemDomainPayload,
-    documentDetailsUiItem: ListItemData,
-    event: T?
+    expandableListItem: ExpandableDocumentItemUi<T>
 ): RequestDocumentItemUi<T> {
     return RequestDocumentItemUi(
         id = uID,
-        domainPayload = docPayload,
-        documentDetailsUiItem = documentDetailsUiItem,
-        event = event,
+        item = expandableListItem
     )
 }
 

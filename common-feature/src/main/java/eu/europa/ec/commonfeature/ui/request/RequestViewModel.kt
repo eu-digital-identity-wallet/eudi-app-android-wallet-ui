@@ -253,51 +253,68 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         val updatedList: List<RequestDocumentsUi<Event>> = items.map { requestDocumentsUi ->
             // Update each RequestDocumentItemUi in documentsUi
             val updatedDocumentsUi = requestDocumentsUi.documentsUi.map { documentItem ->
-                // Check if the trailingContentData is a Checkbox and itemId matches
-                if (documentItem.documentDetailsUiItem.itemId == listItemId &&
-                    documentItem.documentDetailsUiItem.trailingContentData is ListItemTrailingContentData.Checkbox
+                val expandableListItem = documentItem.item.expandableListItem
+
+                // Check if the collapsed or expanded items contain the matching ID
+                val updatedExpandedItems = expandableListItem.expanded.map { listItem ->
+                    if (listItem.itemId == listItemId &&
+                        listItem.trailingContentData is ListItemTrailingContentData.Checkbox
+                    ) {
+                        val currentCheckBoxData =
+                            listItem.trailingContentData as ListItemTrailingContentData.Checkbox
+
+                        // Flip the isChecked value
+                        val updatedCheckboxData = currentCheckBoxData.copy(
+                            checkboxData = currentCheckBoxData.checkboxData.copy(
+                                isChecked = !currentCheckBoxData.checkboxData.isChecked
+                            )
+                        )
+
+                        // Return the updated ListItemData
+                        listItem.copy(trailingContentData = updatedCheckboxData)
+                    } else {
+                        // Return the item unchanged
+                        listItem
+                    }
+                }
+
+                // Check if the collapsed item matches the ID (optional)
+                val updatedCollapsedItem = if (expandableListItem.collapsed.itemId == listItemId &&
+                    expandableListItem.collapsed.trailingContentData is ListItemTrailingContentData.Checkbox
                 ) {
                     val currentCheckBoxData =
-                        documentItem.documentDetailsUiItem.trailingContentData as ListItemTrailingContentData.Checkbox
-                    // Flip the isChecked value
+                        expandableListItem.collapsed.trailingContentData as ListItemTrailingContentData.Checkbox
+
                     val updatedCheckboxData = currentCheckBoxData.copy(
                         checkboxData = currentCheckBoxData.checkboxData.copy(
                             isChecked = !currentCheckBoxData.checkboxData.isChecked
                         )
                     )
-                    // Return a copy of the document item with updated checkbox data
-                    documentItem.copy(
-                        documentDetailsUiItem = documentItem.documentDetailsUiItem.copy(
-                            trailingContentData = updatedCheckboxData
-                        )
-                    )
+
+                    expandableListItem.collapsed.copy(trailingContentData = updatedCheckboxData)
                 } else {
-                    // Return the item unchanged
-                    documentItem
+                    expandableListItem.collapsed
                 }
+
+                // Create updated ExpandableListItemData
+                val updatedExpandableListItem = expandableListItem.copy(
+                    collapsed = updatedCollapsedItem,
+                    expanded = updatedExpandedItems
+                )
+
+                // Return the updated RequestDocumentItemUi
+                documentItem.copy(
+                    item = documentItem.item.copy(
+                        expandableListItem = updatedExpandableListItem
+                    )
+                )
             }
+
             // Return a copy of the RequestDocumentsUi with updated documentsUi
             requestDocumentsUi.copy(documentsUi = updatedDocumentsUi)
-
-            //updatedList.add
-            //if (item is RequestDocumentsUi.OptionalField
-            //    && listItemId == item.optionalFieldItemUi.requestDocumentItemUi.id
-            //) {
-            //    val itemCurrentCheckedState = item.optionalFieldItemUi.requestDocumentItemUi.checked
-            //    val updatedUiItem = item.optionalFieldItemUi.requestDocumentItemUi.copy(
-            //        checked = !itemCurrentCheckedState
-            //    )
-            //    item.copy(
-            //        optionalFieldItemUi = item.optionalFieldItemUi
-            //            .copy(requestDocumentItemUi = updatedUiItem)
-            //    )
-            //} else {
-            //    item
-            //}
         }
 
         val hasVerificationItems = hasVerificationItems(updatedList)
-
         val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(updatedList)
 
         updateData(
@@ -334,20 +351,36 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     private fun hasVerificationItems(list: List<RequestDocumentsUi<Event>>): Boolean {
         return list.any { requestDocumentsUi ->
             requestDocumentsUi.documentsUi.any { documentItem ->
-                val trailingContent = documentItem.documentDetailsUiItem.trailingContentData
-                trailingContent is ListItemTrailingContentData.Checkbox && trailingContent.checkboxData.isChecked
+                val expandableListItem = documentItem.item.expandableListItem
+                // Check both collapsed and expanded items for a checked checkbox
+                expandableListItem.expanded.any { listItem ->
+                    val trailingContent = listItem.trailingContentData
+                    trailingContent is ListItemTrailingContentData.Checkbox && trailingContent.checkboxData.isChecked
+                } || (expandableListItem.collapsed.trailingContentData is ListItemTrailingContentData.Checkbox &&
+                        (expandableListItem.collapsed.trailingContentData as ListItemTrailingContentData.Checkbox)
+                            .checkboxData.isChecked)
             }
         }
     }
 
+
     private fun hasAtLeastOneFieldSelected(list: List<RequestDocumentsUi<Event>>): Boolean {
         return list.any { requestDocumentsUi ->
             requestDocumentsUi.documentsUi.any { documentItem ->
-                val trailingContent = documentItem.documentDetailsUiItem.trailingContentData
-                trailingContent is ListItemTrailingContentData.Checkbox &&
-                        trailingContent.checkboxData.isChecked &&
-                        trailingContent.checkboxData.enabled
+                val expandableListItem = documentItem.item.expandableListItem
+                // Check both collapsed and expanded items for a checked and enabled checkbox
+                expandableListItem.expanded.any { listItem ->
+                    val trailingContent = listItem.trailingContentData
+                    trailingContent is ListItemTrailingContentData.Checkbox &&
+                            trailingContent.checkboxData.isChecked &&
+                            trailingContent.checkboxData.enabled
+                } || (expandableListItem.collapsed.trailingContentData is ListItemTrailingContentData.Checkbox &&
+                        (expandableListItem.collapsed.trailingContentData as ListItemTrailingContentData.Checkbox)
+                            .checkboxData.isChecked &&
+                        (expandableListItem.collapsed.trailingContentData as ListItemTrailingContentData.Checkbox)
+                            .checkboxData.enabled)
             }
         }
     }
+
 }
