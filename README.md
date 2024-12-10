@@ -240,7 +240,8 @@ graph TD;
   resources-logic -->common-feature
   analytics-logic -->common-feature 
   authentication-logic -->common-feature 
-  core-logic -->common-feature 
+  core-logic -->common-feature
+  storage-logic -->common-feature 
 
   business-logic -->core-logic
   resources-logic -->core-logic
