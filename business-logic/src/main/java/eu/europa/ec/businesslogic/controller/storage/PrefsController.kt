@@ -19,6 +19,7 @@ package eu.europa.ec.businesslogic.controller.storage
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import eu.europa.ec.businesslogic.extension.decodeFromPemBase64String
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 interface PrefsController {
@@ -310,6 +311,8 @@ class PrefsControllerImpl(
 interface PrefKeys {
     fun getBiometricAlias(): String
     fun setBiometricAlias(value: String)
+    fun getStorageKey(): ByteArray?
+    fun setStorageKey(key: String)
 }
 
 class PrefKeysImpl(
@@ -330,5 +333,14 @@ class PrefKeysImpl(
      */
     override fun setBiometricAlias(value: String) {
         prefsController.setString("BiometricAlias", value)
+    }
+
+    override fun setStorageKey(key: String) {
+        prefsController.setString("StorageKey", key)
+    }
+
+    override fun getStorageKey(): ByteArray? {
+        val key = prefsController.getString("StorageKey", "")
+        return if (key.isNotEmpty()) key.decodeFromPemBase64String() else null
     }
 }

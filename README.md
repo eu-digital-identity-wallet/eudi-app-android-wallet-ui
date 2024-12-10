@@ -197,6 +197,8 @@ The released software is an initial development release version:
 
 *core-logic*: Wallet core logic.
 
+*storage-logic*: Persistent storage cache.
+
 *authentication-logic*: Pin/Biometry Storage and System Biometrics Logic.
 
 *ui-logic*: Common UI components.
@@ -249,6 +251,8 @@ graph TD;
   analytics-logic -->ui-logic
 
   business-logic -->network-logic
+  
+  business-logic -->storage-logic
 
   resources-logic -->business-logic
 
