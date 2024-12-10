@@ -23,6 +23,7 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -179,10 +180,16 @@ class TestPresentationLoadingInteractor {
     fun `Given Case 4, When observeResponse is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            val mockedAuthenticationData = listOf(
+                AuthenticationData(
+                    crypto = crypto,
+                    onAuthenticationSuccess = {}
+                )
+            )
+
             mockWalletCorePresentationControllerEventEmission(
                 event = WalletCorePartialState.UserAuthenticationRequired(
-                    crypto = crypto,
-                    resultHandler = DeviceAuthenticationResult()
+                    authenticationData = mockedAuthenticationData
                 )
             )
 
@@ -192,8 +199,7 @@ class TestPresentationLoadingInteractor {
                     // Then
                     TestCase.assertEquals(
                         PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired(
-                            crypto = crypto,
-                            resultHandler = DeviceAuthenticationResult()
+                            authenticationData = mockedAuthenticationData
                         ),
                         awaitItem()
                     )

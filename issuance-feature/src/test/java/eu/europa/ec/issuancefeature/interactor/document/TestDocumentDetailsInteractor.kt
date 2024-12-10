@@ -30,6 +30,7 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemCall
+import eu.europa.ec.testfeature.createMockedNamespaceData
 import eu.europa.ec.testfeature.mockedEmptyPid
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
@@ -163,6 +164,8 @@ class TestDocumentDetailsInteractor {
         coroutineRule.runTest {
             // Given
             mockGetDocumentByIdCall(response = mockedEmptyPid)
+            whenever(walletCoreDocumentsController.getDocumentById(mockedPidId))
+                .thenThrow(mockedExceptionWithMessage)
 
             // When
             interactor.getDocumentDetails(
@@ -171,7 +174,7 @@ class TestDocumentDetailsInteractor {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Failure(
-                        error = mockedGenericErrorMessage
+                        error = mockedExceptionWithMessage.localizedMessage!!
                     ),
                     awaitItem()
                 )
@@ -226,8 +229,8 @@ class TestDocumentDetailsInteractor {
 
             mockGetDocumentByIdCall(
                 response = mockedPidWithBasicFields.copy(
-                    nameSpacedData = mapOf(
-                        mockedPidNameSpace to mapOf(
+                    nameSpacedData = createMockedNamespaceData(
+                        mockedPidNameSpace, mapOf(
                             "no_data_item" to byteArrayOf(0)
                         )
                     )

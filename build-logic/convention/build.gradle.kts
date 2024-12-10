@@ -116,5 +116,9 @@ gradlePlugin {
             id = "project.rqes.sdk"
             implementationClass = "EudiRqesPlugin"
         }
+        register("kotlinRealm") {
+            id = "project.kotlin.realm"
+            implementationClass = "RealmPlugin"
+        }
     }
 }

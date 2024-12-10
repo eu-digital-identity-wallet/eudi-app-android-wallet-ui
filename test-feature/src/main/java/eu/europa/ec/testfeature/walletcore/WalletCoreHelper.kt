@@ -17,17 +17,6 @@
 package eu.europa.ec.testfeature.walletcore
 
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
-import eu.europa.ec.testlogic.base.getMockedContext
 
-fun getMockedEudiWalletConfig(extras: (EudiWalletConfig.Builder.() -> EudiWalletConfig.Builder)? = null): EudiWalletConfig {
-    return if (extras != null) {
-        EudiWalletConfig
-            .Builder(getMockedContext())
-            .extras()
-            .build()
-    } else {
-        EudiWalletConfig
-            .Builder(getMockedContext())
-            .build()
-    }
-}
+fun getMockedEudiWalletConfig(configure: EudiWalletConfig.() -> Unit): EudiWalletConfig =
+    EudiWalletConfig().apply(configure)

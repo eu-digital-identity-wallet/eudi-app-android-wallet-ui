@@ -26,6 +26,7 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -92,8 +93,9 @@ class DocumentDetailsInteractorImpl(
         flow {
             val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
 
+            val format = document?.format as? MsoMdocFormat
             val shouldDeleteAllDocuments: Boolean =
-                if (document?.docType?.toDocumentIdentifier() == DocumentIdentifier.PID) {
+                if (format?.docType?.toDocumentIdentifier() == DocumentIdentifier.PID) {
 
                     val allPidDocuments =
                         walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)

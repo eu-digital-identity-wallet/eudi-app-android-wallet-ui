@@ -21,19 +21,10 @@ import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
-import eu.europa.ec.commonfeature.ui.request.Event
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
-import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.eudi.iso18013.transfer.DocItem
-import eu.europa.ec.eudi.iso18013.transfer.DocRequest
-import eu.europa.ec.eudi.iso18013.transfer.ReaderAuth
-import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
+import eu.europa.ec.eudi.iso18013.transfer.response.ReaderAuth
+import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer.TxCodeSpec
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndImageData
@@ -45,23 +36,6 @@ import eu.europa.ec.uilogic.navigation.IssuanceScreens
 
 @VisibleForTesting(otherwise = VisibleForTesting.NONE)
 object TestsData {
-
-    data class TestFieldUi(
-        val elementIdentifier: String,
-        val value: String,
-        val isAvailable: Boolean = true,
-    )
-
-    data class TestTransformedRequestDataUi(
-        val documentId: String,
-        val documentIdentifierUi: DocumentIdentifier,
-        val documentTitle: String,
-        val optionalFields: List<TestFieldUi>,
-        val requiredFields: List<TestFieldUi>
-    )
-
-    val NotSupportedDocumentTypeException =
-        RuntimeException("Currently not supported Document Type")
 
     const val mockedPidDocName = "EU PID"
     const val mockedMdlDocName = "mDL"
@@ -119,165 +93,95 @@ object TestsData {
         readerCommonName = mockedVerifierName
     )
 
-    val mockedPidWithBasicFieldsDocRequest = DocRequest(
-        docType = mockedPidDocType,
-        requestItems = listOf(
+    val mockedPidWithBasicFieldsDocRequest = RequestedDocument(
+        documentId = mockedPidId,
+        requestedItems = mapOf(
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "family_name"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "given_name"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "age_over_18"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "age_over_65"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "age_birth_year"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "birth_city"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "gender"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "expiry_date"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "portrait",
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedPidNameSpace,
                 elementIdentifier = "issuing_country",
-            ),
+            ) to false,
         ),
         readerAuth = mockedValidReaderAuth
     )
 
-    val mockedPhotoIdWithBasicFieldsDocRequest = DocRequest(
-        docType = mockedPhotoIdDocType,
-        requestItems = listOf(
-            DocItem(
-                namespace = mockedPhotoIdNameSpace,
-                elementIdentifier = "family_name"
-            ),
-            DocItem(
-                namespace = mockedPhotoIdNameSpace,
-                elementIdentifier = "given_name"
-            ),
-            DocItem(
-                namespace = mockedPhotoIdNameSpace,
-                elementIdentifier = "age_over_18"
-            ),
-            DocItem(
-                namespace = mockedPhotoIdNameSpace,
-                elementIdentifier = "age_birth_year"
-            ),
-            DocItem(
-                namespace = mockedPhotoIdNameSpace,
-                elementIdentifier = "birth_city"
-            ),
-            DocItem(
-                namespace = mockedPhotoIdNameSpace,
-                elementIdentifier = "expiry_date"
-            ),
-            DocItem(
-                namespace = mockedPhotoIdNameSpace,
-                elementIdentifier = "portrait",
-            ),
-            DocItem(
-                namespace = mockedPhotoIdNameSpace,
-                elementIdentifier = "issuing_country",
-            ),
-        ),
-        readerAuth = mockedValidReaderAuth
-    )
-
-    val mockedMdlWithBasicFieldsDocRequest = DocRequest(
-        docType = mockedMdlDocType,
-        requestItems = listOf(
+    val mockedMdlWithBasicFieldsDocRequest = RequestedDocument(
+        documentId = mockedMdlId,
+        requestedItems = mapOf(
             DocItem(
                 namespace = mockedMdlNameSpace,
                 elementIdentifier = "family_name"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedMdlNameSpace,
                 elementIdentifier = "given_name"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedMdlNameSpace,
                 elementIdentifier = "birth_place"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedMdlNameSpace,
                 elementIdentifier = "expiry_date"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedMdlNameSpace,
                 elementIdentifier = "portrait"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedMdlNameSpace,
                 elementIdentifier = "driving_privileges"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedMdlNameSpace,
                 elementIdentifier = "signature_usual_mark"
-            ),
+            ) to false,
             DocItem(
                 namespace = mockedMdlNameSpace,
                 elementIdentifier = "sex"
-            )
+            ) to false,
         ),
         readerAuth = mockedValidReaderAuth
     )
 
-    val mockedAgeVerificationWithBasicFieldsDocRequest = DocRequest(
-        docType = mockedAgeVerificationDocType,
-        requestItems = listOf(
-            DocItem(
-                namespace = mockedAgeVerificationNameSpace,
-                elementIdentifier = "age_over_18"
-            ),
-            DocItem(
-                namespace = mockedAgeVerificationNameSpace,
-                elementIdentifier = "expiry_date"
-            ),
-            DocItem(
-                namespace = mockedAgeVerificationNameSpace,
-                elementIdentifier = "issuing_country",
-            )
-        ),
-        readerAuth = mockedValidReaderAuth
-    )
+    val mockedValidPidWithBasicFieldsRequestDocument = mockedPidWithBasicFieldsDocRequest
 
-    val mockedValidPidWithBasicFieldsRequestDocument = RequestDocument(
-        documentId = mockedPidId,
-        docType = mockedPidDocType,
-        docName = mockedPidDocName,
-        userAuthentication = mockedUserAuthentication,
-        docRequest = mockedPidWithBasicFieldsDocRequest
-    )
-
-    val mockedValidMdlWithBasicFieldsRequestDocument = RequestDocument(
-        documentId = mockedMdlId,
-        docType = mockedMdlDocType,
-        docName = mockedMdlDocName,
-        userAuthentication = mockedUserAuthentication,
-        docRequest = mockedMdlWithBasicFieldsDocRequest
-    )
+    val mockedValidMdlWithBasicFieldsRequestDocument = mockedMdlWithBasicFieldsDocRequest
 
     val mockedFullPidUi = DocumentUi(
         documentId = mockedPidId,
@@ -512,379 +416,4 @@ object TestsData {
             inputMode = TxCodeSpec.InputMode.NUMERIC,
             length = mockedTxCodeSpecFourDigits
         )
-
-    val mockedOptionalFieldsForPidWithBasicFields = listOf(
-        TestFieldUi(
-            elementIdentifier = "family_name",
-            value = "ANDERSSON",
-        ),
-        TestFieldUi(
-            elementIdentifier = "given_name",
-            value = "JAN",
-        ),
-        TestFieldUi(
-            elementIdentifier = "age_over_18",
-            value = "yes",
-        ),
-        TestFieldUi(
-            elementIdentifier = "age_over_65",
-            value = "no",
-        ),
-        TestFieldUi(
-            elementIdentifier = "age_birth_year",
-            value = "1985",
-        ),
-        TestFieldUi(
-            elementIdentifier = "birth_city",
-            value = "KATRINEHOLM",
-        ),
-        TestFieldUi(
-            elementIdentifier = "gender",
-            value = "male",
-        ),
-    )
-
-    val mockedRequiredFieldsForPidWithBasicFields = listOf(
-        TestFieldUi(
-            elementIdentifier = "expiry_date",
-            value = mockedFormattedExpirationDate,
-            isAvailable = true
-        ),
-        TestFieldUi(
-            elementIdentifier = "portrait",
-            value = mockedRequestElementIdentifierNotAvailable,
-            isAvailable = false
-        ),
-        TestFieldUi(
-            elementIdentifier = "issuing_country",
-            value = mockedRequestElementIdentifierNotAvailable,
-            isAvailable = false
-        ),
-    )
-
-    val mockedOptionalFieldsForMdlWithBasicFields = listOf(
-        TestFieldUi(
-            elementIdentifier = "family_name",
-            value = "ANDERSSON",
-        ),
-        TestFieldUi(
-            elementIdentifier = "given_name",
-            value = "JAN",
-        ),
-        TestFieldUi(
-            elementIdentifier = "birth_place",
-            value = "SWEDEN",
-        ),
-        TestFieldUi(
-            elementIdentifier = "expiry_date",
-            value = mockedFormattedExpirationDate,
-        ),
-        TestFieldUi(
-            elementIdentifier = "portrait",
-            value = "SE",
-        ),
-        TestFieldUi(
-            elementIdentifier = "driving_privileges",
-            value = "issue_date: 1 Jul 2010\n" +
-                    "expiry_date: 30 Mar 2050\n" +
-                    "vehicle_category_code: A\n" +
-                    "issue_date: 19 May 2008\n" +
-                    "expiry_date: 30 Mar 2050\n" +
-                    "vehicle_category_code: B",
-        ),
-        TestFieldUi(
-            elementIdentifier = "signature_usual_mark",
-            value = "SE",
-        ),
-        TestFieldUi(
-            elementIdentifier = "sex",
-            value = "male",
-        ),
-    )
-
-    val mockedTransformedRequestDataUiForPidWithBasicFields = TestTransformedRequestDataUi(
-        documentId = mockedPidId,
-        documentIdentifierUi = DocumentIdentifier.PID,
-        documentTitle = mockedDocUiNamePid,
-        optionalFields = mockedOptionalFieldsForPidWithBasicFields,
-        requiredFields = mockedRequiredFieldsForPidWithBasicFields
-    )
-
-    fun createTransformedRequestDataUi(
-        items: List<TestTransformedRequestDataUi>
-    ): List<RequestDataUi<Event>> {
-        val resultList = mutableListOf<RequestDataUi<Event>>()
-
-        items.forEachIndexed { itemsIndex, transformedRequestDataUi ->
-            resultList.add(
-                RequestDataUi.Document(
-                    documentItemUi = DocumentItemUi(
-                        title = transformedRequestDataUi.documentTitle
-                    )
-                )
-            )
-            resultList.add(RequestDataUi.Space())
-
-            transformedRequestDataUi.optionalFields.forEachIndexed { index, testFieldUi ->
-                val optionalField = when (transformedRequestDataUi.documentIdentifierUi) {
-                    is DocumentIdentifier.PID -> mockCreateOptionalFieldForPid(
-                        docId = transformedRequestDataUi.documentId,
-                        elementIdentifier = testFieldUi.elementIdentifier,
-                        value = testFieldUi.value
-                    )
-
-                    is DocumentIdentifier.MDL -> mockCreateOptionalFieldForMdl(
-                        docId = transformedRequestDataUi.documentId,
-                        elementIdentifier = testFieldUi.elementIdentifier,
-                        value = testFieldUi.value,
-                    )
-
-                    is DocumentIdentifier.AGE -> mockCreateOptionalFieldForAgeVerification(
-                        docId = transformedRequestDataUi.documentId,
-                        elementIdentifier = testFieldUi.elementIdentifier,
-                        value = testFieldUi.value,
-                    )
-
-                    is DocumentIdentifier.PHOTOID -> mockCreateOptionalFieldForPhotoId(
-                        docId = transformedRequestDataUi.documentId,
-                        elementIdentifier = testFieldUi.elementIdentifier,
-                        value = testFieldUi.value
-                    )
-
-                    is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
-                }
-
-                resultList.add(RequestDataUi.Space())
-                resultList.add(optionalField)
-
-                if (index != (transformedRequestDataUi.optionalFields.size + transformedRequestDataUi.requiredFields.size) - 1) {
-                    resultList.add(RequestDataUi.Space())
-                    resultList.add(RequestDataUi.Divider())
-                }
-            }
-
-            resultList.add(RequestDataUi.Space())
-
-            if (transformedRequestDataUi.requiredFields.isNotEmpty()) {
-                resultList.add(
-                    mockCreateRequiredFieldsForPid(
-                        docId = transformedRequestDataUi.documentId,
-                        requiredFieldsWholeSectionId = itemsIndex,
-                        requiredFields = transformedRequestDataUi.requiredFields
-                    )
-                )
-                resultList.add(RequestDataUi.Space())
-            }
-        }
-
-        return resultList
-    }
-
-    val mockedTransformedRequestDataUiForMdlWithBasicFields = TestTransformedRequestDataUi(
-        documentId = mockedMdlId,
-        documentIdentifierUi = DocumentIdentifier.MDL,
-        documentTitle = mockedDocUiNameMdl,
-        optionalFields = mockedOptionalFieldsForMdlWithBasicFields,
-        requiredFields = emptyList()
-    )
-
-    private fun mockCreateOptionalFieldForPid(
-        docId: String,
-        elementIdentifier: String,
-        value: String,
-        checked: Boolean = true,
-        enabled: Boolean = true,
-    ): RequestDataUi.OptionalField<Event> {
-        val uniqueId = mockedPidDocType + elementIdentifier + docId
-        return mockCreateOptionalField(
-            documentIdentifierUi = DocumentIdentifier.PID,
-            uniqueId = uniqueId,
-            elementIdentifier = elementIdentifier,
-            value = value,
-            checked = checked,
-            enabled = enabled,
-            event = Event.UserIdentificationClicked(itemId = uniqueId)
-        )
-    }
-
-    private fun mockCreateOptionalFieldForPhotoId(
-        docId: String,
-        elementIdentifier: String,
-        value: String,
-        checked: Boolean = true,
-        enabled: Boolean = true,
-    ): RequestDataUi.OptionalField<Event> {
-        val uniqueId = mockedPhotoIdDocType + elementIdentifier + docId
-        return mockCreateOptionalField(
-            documentIdentifierUi = DocumentIdentifier.PHOTOID,
-            uniqueId = uniqueId,
-            elementIdentifier = elementIdentifier,
-            value = value,
-            checked = checked,
-            enabled = enabled,
-            event = Event.UserIdentificationClicked(itemId = uniqueId)
-        )
-    }
-
-    private fun mockCreateOptionalFieldForMdl(
-        docId: String,
-        elementIdentifier: String,
-        value: String,
-        checked: Boolean = true,
-        enabled: Boolean = true,
-    ): RequestDataUi.OptionalField<Event> {
-        val uniqueId = mockedMdlDocType + elementIdentifier + docId
-        return mockCreateOptionalField(
-            documentIdentifierUi = DocumentIdentifier.MDL,
-            uniqueId = uniqueId,
-            elementIdentifier = elementIdentifier,
-            value = value,
-            checked = checked,
-            enabled = enabled,
-            event = Event.UserIdentificationClicked(itemId = uniqueId)
-        )
-    }
-
-    private fun mockCreateOptionalFieldForAgeVerification(
-        docId: String,
-        elementIdentifier: String,
-        value: String,
-        checked: Boolean = true,
-        enabled: Boolean = true,
-    ): RequestDataUi.OptionalField<Event> {
-        val uniqueId = mockedAgeVerificationDocType + elementIdentifier + docId
-        return mockCreateOptionalField(
-            documentIdentifierUi = DocumentIdentifier.AGE,
-            uniqueId = uniqueId,
-            elementIdentifier = elementIdentifier,
-            value = value,
-            checked = checked,
-            enabled = enabled,
-            event = Event.UserIdentificationClicked(itemId = uniqueId)
-        )
-    }
-
-    private fun mockCreateOptionalField(
-        documentIdentifierUi: DocumentIdentifier,
-        uniqueId: String,
-        elementIdentifier: String,
-        value: String,
-        checked: Boolean,
-        enabled: Boolean,
-        event: Event,
-    ): RequestDataUi.OptionalField<Event> {
-        return RequestDataUi.OptionalField(
-            optionalFieldItemUi = OptionalFieldItemUi(
-                requestDocumentItemUi = mockCreateRequestDocumentItemUi(
-                    documentIdentifierUi = documentIdentifierUi,
-                    uniqueId = uniqueId,
-                    elementIdentifier = elementIdentifier,
-                    value = value,
-                    checked = checked,
-                    enabled = enabled,
-                    event = event
-                )
-            )
-        )
-    }
-
-    private fun mockCreateRequestDocumentItemUi(
-        documentIdentifierUi: DocumentIdentifier,
-        uniqueId: String,
-        elementIdentifier: String,
-        value: String,
-        checked: Boolean,
-        enabled: Boolean,
-        event: Event?,
-    ): RequestDocumentItemUi<Event> {
-
-        val namespace: String
-        val docId: String
-        val docType: DocType
-        val docRequest: DocRequest
-
-        when (documentIdentifierUi) {
-            is DocumentIdentifier.PID -> {
-                namespace = mockedPidNameSpace
-                docId = mockedPidId
-                docType = mockedPidDocType
-                docRequest = mockedPidWithBasicFieldsDocRequest
-            }
-
-            is DocumentIdentifier.MDL -> {
-                namespace = mockedMdlNameSpace
-                docId = mockedMdlId
-                docType = mockedMdlDocType
-                docRequest = mockedMdlWithBasicFieldsDocRequest
-            }
-
-            is DocumentIdentifier.AGE -> {
-                namespace = mockedAgeVerificationNameSpace
-                docId = mockedAgeVerificationId
-                docType = mockedAgeVerificationDocType
-                docRequest = mockedAgeVerificationWithBasicFieldsDocRequest
-            }
-
-            is DocumentIdentifier.PHOTOID -> {
-                namespace = mockedPhotoIdNameSpace
-                docId = mockedPhotoId
-                docType = mockedPhotoIdDocType
-                docRequest = mockedPhotoIdWithBasicFieldsDocRequest
-            }
-
-            is DocumentIdentifier.SAMPLE, is DocumentIdentifier.OTHER -> throw NotSupportedDocumentTypeException
-        }
-
-        return RequestDocumentItemUi(
-            id = uniqueId,
-            domainPayload = DocumentItemDomainPayload(
-                docId = docId,
-                docType = docType,
-                docRequest = docRequest,
-                namespace = namespace,
-                elementIdentifier = elementIdentifier
-            ),
-            readableName = elementIdentifier,
-            value = value,
-            checked = checked,
-            enabled = enabled,
-            docItem = DocItem(
-                namespace = namespace,
-                elementIdentifier = elementIdentifier
-            ),
-            event = event
-        )
-    }
-
-    private fun mockCreateRequiredFieldsForPid(
-        docId: String,
-        requiredFieldsWholeSectionId: Int,
-        requiredFields: List<TestFieldUi>,
-    ): RequestDataUi.RequiredFields<Event> {
-        val requestDocumentItemsUi: MutableList<RequestDocumentItemUi<Event>> = mutableListOf()
-        requiredFields.forEach {
-            val uniqueId = mockedPidDocType + it.elementIdentifier + docId
-            requestDocumentItemsUi.add(
-                mockCreateRequestDocumentItemUi(
-                    documentIdentifierUi = DocumentIdentifier.PID,
-                    uniqueId = uniqueId,
-                    elementIdentifier = it.elementIdentifier,
-                    value = it.value,
-                    checked = it.isAvailable,
-                    enabled = false,
-                    event = null
-                )
-            )
-        }
-
-        return RequestDataUi.RequiredFields(
-            requiredFieldsItemUi = RequiredFieldsItemUi(
-                id = requiredFieldsWholeSectionId,
-                requestDocumentItemsUi = requestDocumentItemsUi,
-                expanded = false,
-                title = mockedRequestRequiredFieldsTitle,
-                event = Event.ExpandOrCollapseRequiredDataList(id = requiredFieldsWholeSectionId)
-            )
-        )
-    }
 }
