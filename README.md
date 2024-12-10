@@ -255,6 +255,8 @@ graph TD;
   
   business-logic -->storage-logic
 
+  resources-logic -->storage-logic
+
   resources-logic -->business-logic
 
   resources-logic --> authentication-logic
