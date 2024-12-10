@@ -24,7 +24,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
@@ -88,7 +90,7 @@ private fun WrapExpandableListItemPreview() {
         val data = ExpandableListItemData(
             collapsed = ListItemData(
                 mainText = "Digital ID",
-                supportingText = "View details",
+                supportingText = stringResource(R.string.request_collapsed_supporting_text),
                 trailingContentData = ListItemTrailingContentData.Icon(
                     iconData = if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown
                 ),

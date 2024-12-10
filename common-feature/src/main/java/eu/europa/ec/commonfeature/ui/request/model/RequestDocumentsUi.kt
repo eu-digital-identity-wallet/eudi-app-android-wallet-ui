@@ -16,27 +16,21 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
-import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+data class RequestDocumentsUi<T>(
+    val documentsUi: List<RequestDocumentItemUi<T>>
+)
 
-sealed interface RequestDataUi<T> {
+data class RequestDocumentDomain(
+    val id: String,
+    val collapsedItem: RequestItemDomain,
+    val expandedItems: List<RequestItemDomain>,
+)
 
-    data class Document<T>(
-        val documentItemUi: DocumentItemUi
-    ) : RequestDataUi<T>
-
-    data class OptionalField<T>(
-        val optionalFieldItemUi: OptionalFieldItemUi<T>
-    ) : RequestDataUi<T>
-
-    data class RequiredFields<T>(
-        val requiredFieldsItemUi: RequiredFieldsItemUi<T>
-    ) : RequestDataUi<T>
-
-    data class Space<T>(
-        val space: Int = SPACING_MEDIUM
-    ) : RequestDataUi<T>
-
-    data class Divider<T>(
-        val width: Int = -1
-    ) : RequestDataUi<T>
-}
+data class RequestItemDomain(
+    val id: String?,
+    val mainText: String,
+    val overlineText: String? = null,
+    val supportingText: String? = null,
+    val corePayloadDomain: DocumentItemDomainPayload?,
+    val onClick: ((String) -> Unit)? = null,
+)

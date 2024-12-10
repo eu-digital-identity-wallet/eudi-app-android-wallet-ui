@@ -47,6 +47,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 data class ListItemData(
+    val itemId: String? = null,
     val mainText: String,
     val overlineText: String? = null,
     val supportingText: String? = null,

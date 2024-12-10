@@ -19,12 +19,24 @@ package eu.europa.ec.presentationfeature.interactor
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
+import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.Event
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentDomain
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentsUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestItemDomain
+import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
+import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer.getDocObject
+import eu.europa.ec.commonfeature.ui.request.transformer.getMandatoryFields
+import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.eudi.iso18013.transfer.RequestDocument
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
@@ -34,7 +46,7 @@ sealed class PresentationRequestInteractorPartialState {
     data class Success(
         val verifierName: String? = null,
         val verifierIsTrusted: Boolean,
-        val requestDocuments: List<RequestDataUi<Event>>
+        val requestDocuments: List<RequestDocumentsUi<Event>>
     ) : PresentationRequestInteractorPartialState()
 
     data class NoData(
@@ -49,7 +61,7 @@ sealed class PresentationRequestInteractorPartialState {
 interface PresentationRequestInteractor {
     fun getRequestDocuments(): Flow<PresentationRequestInteractorPartialState>
     fun stopPresentation()
-    fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
+    fun updateRequestedDocuments(items: List<RequestDocumentsUi<Event>>)
     fun setConfig(config: RequestUriConfig)
 }
 
@@ -76,12 +88,21 @@ class PresentationRequestInteractorImpl(
                             verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
+                        val requestDataDomain: List<RequestDocumentDomain> = toDomainItems(
+                            storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
+                            requestDocuments = response.requestData,
+                            resourceProvider = resourceProvider,
+                        )
                         val requestDataUi = RequestTransformer.transformToUiItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
-                            requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
-                            resourceProvider = resourceProvider
+                            resourceProvider = resourceProvider,
                         )
+                        /*val requestDataUi = RequestTransformer.transformToUiItems(
+                            storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
+                            requestDocuments = response.requestData,
+                            resourceProvider = resourceProvider,
+                        )*/
                         PresentationRequestInteractorPartialState.Success(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
@@ -110,8 +131,91 @@ class PresentationRequestInteractorImpl(
         walletCorePresentationController.stopPresentation()
     }
 
-    override fun updateRequestedDocuments(items: List<RequestDataUi<Event>>) {
+    override fun updateRequestedDocuments(items: List<RequestDocumentsUi<Event>>) {
         val disclosedDocuments = RequestTransformer.transformToDomainItems(items)
         walletCorePresentationController.updateRequestedDocuments(disclosedDocuments.toMutableList())
+    }
+
+    private fun toDomainItems(
+        storageDocuments: List<IssuedDocument>,
+        requestDocuments: List<RequestDocument>,
+        resourceProvider: ResourceProvider,
+    ): List<RequestDocumentDomain> {
+
+        val resultItems = mutableListOf<RequestDocumentDomain>()
+
+        requestDocuments.forEachIndexed { docIndex, requestDocument ->
+            val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
+
+            val expandedItemsDomain = mutableListOf<RequestItemDomain>()
+
+            requestDocument.docRequest.requestItems.forEachIndexed { itemIndex, docItem ->
+
+                //TODO isAvailable needed in Domain level or no?
+                val (value, isAvailable) = try {
+                    val values = StringBuilder()
+                    parseKeyValueUi(
+                        json = storageDocument.nameSpacedDataJSONObject.getDocObject(
+                            nameSpace = docItem.namespace
+                        )[docItem.elementIdentifier],
+                        groupIdentifier = docItem.elementIdentifier,
+                        resourceProvider = resourceProvider,
+                        allItems = values
+                    )
+                    (values.toString() to true)
+                } catch (ex: Exception) {
+                    (resourceProvider.getString(R.string.request_element_identifier_not_available) to false)
+                }
+
+                val itemId = requestDocument.docRequest.produceDocUID(
+                    elementIdentifier = docItem.elementIdentifier,
+                    documentId = requestDocument.documentId
+                )
+
+                //TODO optional needed in Domain level or no?
+                val optional = !getMandatoryFields(
+                    documentIdentifier = requestDocument.toDocumentIdentifier()
+                ).contains(docItem.elementIdentifier)
+
+                val requestItemDomain = RequestItemDomain(
+                    id = itemId,
+                    mainText = value,
+                    overlineText = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                    supportingText = null,
+                    onClick = { id ->
+                        println("Giannis - requestItemDomain onClick itemId: $id or $itemId")
+                        //TODO needed or not?
+                    },
+                    corePayloadDomain = DocumentItemDomainPayload(
+                        docId = requestDocument.documentId,
+                        docRequest = requestDocument.docRequest,
+                        docType = requestDocument.docType,
+                        namespace = docItem.namespace,
+                        elementIdentifier = docItem.elementIdentifier,
+                    )
+                )
+
+                expandedItemsDomain.add(requestItemDomain)
+            }
+
+            val requestDocumentDomain = RequestDocumentDomain(
+                id = docIndex.toString(),
+                collapsedItem = RequestItemDomain(
+                    id = null,
+                    mainText = requestDocument.toUiName(resourceProvider),
+                    overlineText = null,
+                    supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
+                    corePayloadDomain = null,
+                    onClick = {
+                        println("Giannis - requestDocumentDomain onClick itemId: $docIndex")
+                        //TODO
+                    }
+                ),
+                expandedItems = expandedItemsDomain,
+            )
+            resultItems.add(requestDocumentDomain)
+        }
+
+        return resultItems
     }
 }

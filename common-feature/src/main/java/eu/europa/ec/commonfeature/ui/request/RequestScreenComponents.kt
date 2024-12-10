@@ -24,9 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,31 +34,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentsUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.CardWithIconAndText
-import eu.europa.ec.uilogic.component.CheckboxWithContent
 import eu.europa.ec.uilogic.component.ErrorInfo
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndIconData
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 @Composable
 fun <T> Request(
     modifier: Modifier = Modifier,
-    items: List<RequestDataUi<T>>,
+    items: List<RequestDocumentsUi<T>>,
     noData: Boolean,
     isShowingFullUserInfo: Boolean,
     onEventSend: (T) -> Unit,
@@ -79,19 +71,19 @@ fun <T> Request(
             verticalArrangement = Arrangement.Top
         ) {
 
-            items(items) { item ->
+            /*items(items) { item ->
                 when (item) {
-                    is RequestDataUi.Divider -> {
+                    is RequestDocumentsUi.Divider -> {
                         HorizontalDivider()
                     }
 
-                    is RequestDataUi.Document -> {
+                    is RequestDocumentsUi.Document -> {
                         DocumentCard(
                             cardText = item.documentItemUi.title,
                         )
                     }
 
-                    is RequestDataUi.OptionalField -> {
+                    is RequestDocumentsUi.OptionalField -> {
                         Field(
                             item = item.optionalFieldItemUi.requestDocumentItemUi,
                             showFullDetails = isShowingFullUserInfo,
@@ -99,7 +91,7 @@ fun <T> Request(
                         )
                     }
 
-                    is RequestDataUi.RequiredFields -> {
+                    is RequestDocumentsUi.RequiredFields -> {
                         RequiredCard(
                             item = item.requiredFieldsItemUi,
                             showFullDetails = isShowingFullUserInfo,
@@ -108,11 +100,11 @@ fun <T> Request(
                         )
                     }
 
-                    is RequestDataUi.Space -> {
+                    is RequestDocumentsUi.Space -> {
                         VSpacer.Custom(space = item.space)
                     }
                 }
-            }
+            }*/
         }
     }
 }
@@ -149,7 +141,7 @@ fun <T> Field(
     showFullDetails: Boolean,
     onEventSend: (T) -> Unit,
 ) {
-    CheckboxWithContent(
+    /*CheckboxWithContent(
         modifier = Modifier.fillMaxWidth(),
         checkboxData = CheckboxData(
             isChecked = item.checked,
@@ -190,7 +182,7 @@ fun <T> Field(
                 style = infoValueStyle
             )
         }
-    }
+    }*/
 }
 
 @Composable

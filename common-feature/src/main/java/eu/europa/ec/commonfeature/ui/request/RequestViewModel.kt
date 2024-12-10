@@ -16,8 +16,9 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentsUi
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.NavigationType
@@ -37,9 +38,8 @@ data class State(
 
     val verifierName: String? = null,
 
-    val items: List<RequestDataUi<Event>> = emptyList(),
+    val items: List<RequestDocumentsUi<Event>> = emptyList(),
     val noItems: Boolean = false,
-    val showWarningCard: Boolean = false,
     val allowShare: Boolean = false
 ) : ViewState
 
@@ -111,7 +111,10 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         getOrCreatePresentationScope().close()
     }
 
-    open fun updateData(updatedItems: List<RequestDataUi<Event>>, allowShare: Boolean? = null) {
+    open fun updateData(
+        updatedItems: List<RequestDocumentsUi<Event>>,
+        allowShare: Boolean? = null
+    ) {
         val hasVerificationItems = hasVerificationItems(updatedItems)
 
         val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(updatedItems)
@@ -119,11 +122,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         setState {
             copy(
                 items = updatedItems,
-                showWarningCard = updatedItems.any {
-                    it is RequestDataUi.OptionalField
-                            && it.optionalFieldItemUi.requestDocumentItemUi.enabled
-                            && !it.optionalFieldItemUi.requestDocumentItemUi.checked
-                },
                 allowShare = allowShare ?: (hasAtLeastOneFieldSelected || hasVerificationItems)
             )
         }
@@ -165,7 +163,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.UserIdentificationClicked -> {
-                updateUserIdentificationItem(id = event.itemId)
+                updateUserIdentificationItem(listItemId = event.itemId)
             }
 
             is Event.BadgeClicked -> {
@@ -234,39 +232,68 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun expandOrCollapseRequiredDataList(id: Int) {
-        val items = viewState.value.items
-        val updatedItems = items.map { item ->
-            if (item is RequestDataUi.RequiredFields
-                && id == item.requiredFieldsItemUi.id
-            ) {
-                item.copy(
-                    requiredFieldsItemUi = item.requiredFieldsItemUi
-                        .copy(expanded = !item.requiredFieldsItemUi.expanded)
-                )
-            } else {
-                item
-            }
-        }
-        updateData(updatedItems, viewState.value.allowShare)
+        //val items = viewState.value.items
+        //val updatedItems = items.map { item ->
+        //    if (item is RequestDocumentsUi.RequiredFields
+        //        && id == item.requiredFieldsItemUi.id
+        //    ) {
+        //        item.copy(
+        //            requiredFieldsItemUi = item.requiredFieldsItemUi
+        //                .copy(expanded = !item.requiredFieldsItemUi.expanded)
+        //        )
+        //    } else {
+        //        item
+        //    }
+        //}
+        //updateData(updatedItems, viewState.value.allowShare)
     }
 
-    private fun updateUserIdentificationItem(id: String) {
-        val items: List<RequestDataUi<Event>> = viewState.value.items
-        val updatedList = items.map { item ->
-            if (item is RequestDataUi.OptionalField
-                && id == item.optionalFieldItemUi.requestDocumentItemUi.id
-            ) {
-                val itemCurrentCheckedState = item.optionalFieldItemUi.requestDocumentItemUi.checked
-                val updatedUiItem = item.optionalFieldItemUi.requestDocumentItemUi.copy(
-                    checked = !itemCurrentCheckedState
-                )
-                item.copy(
-                    optionalFieldItemUi = item.optionalFieldItemUi
-                        .copy(requestDocumentItemUi = updatedUiItem)
-                )
-            } else {
-                item
+    private fun updateUserIdentificationItem(listItemId: String) {
+        val items: List<RequestDocumentsUi<Event>> = viewState.value.items
+        val updatedList: List<RequestDocumentsUi<Event>> = items.map { requestDocumentsUi ->
+            // Update each RequestDocumentItemUi in documentsUi
+            val updatedDocumentsUi = requestDocumentsUi.documentsUi.map { documentItem ->
+                // Check if the trailingContentData is a Checkbox and itemId matches
+                if (documentItem.documentDetailsUiItem.itemId == listItemId &&
+                    documentItem.documentDetailsUiItem.trailingContentData is ListItemTrailingContentData.Checkbox
+                ) {
+                    val currentCheckBoxData =
+                        documentItem.documentDetailsUiItem.trailingContentData as ListItemTrailingContentData.Checkbox
+                    // Flip the isChecked value
+                    val updatedCheckboxData = currentCheckBoxData.copy(
+                        checkboxData = currentCheckBoxData.checkboxData.copy(
+                            isChecked = !currentCheckBoxData.checkboxData.isChecked
+                        )
+                    )
+                    // Return a copy of the document item with updated checkbox data
+                    documentItem.copy(
+                        documentDetailsUiItem = documentItem.documentDetailsUiItem.copy(
+                            trailingContentData = updatedCheckboxData
+                        )
+                    )
+                } else {
+                    // Return the item unchanged
+                    documentItem
+                }
             }
+            // Return a copy of the RequestDocumentsUi with updated documentsUi
+            requestDocumentsUi.copy(documentsUi = updatedDocumentsUi)
+
+            //updatedList.add
+            //if (item is RequestDocumentsUi.OptionalField
+            //    && listItemId == item.optionalFieldItemUi.requestDocumentItemUi.id
+            //) {
+            //    val itemCurrentCheckedState = item.optionalFieldItemUi.requestDocumentItemUi.checked
+            //    val updatedUiItem = item.optionalFieldItemUi.requestDocumentItemUi.copy(
+            //        checked = !itemCurrentCheckedState
+            //    )
+            //    item.copy(
+            //        optionalFieldItemUi = item.optionalFieldItemUi
+            //            .copy(requestDocumentItemUi = updatedUiItem)
+            //    )
+            //} else {
+            //    item
+            //}
         }
 
         val hasVerificationItems = hasVerificationItems(updatedList)
@@ -304,24 +331,23 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         cleanUp()
     }
 
-    private fun hasVerificationItems(list: List<RequestDataUi<Event>>): Boolean {
-        return list
-            .filterIsInstance<RequestDataUi.RequiredFields<Event>>()
-            .any { requiredFields ->
-                requiredFields.requiredFieldsItemUi.requestDocumentItemsUi
-                    .any { itemUi ->
-                        itemUi.checked
-                    }
+    private fun hasVerificationItems(list: List<RequestDocumentsUi<Event>>): Boolean {
+        return list.any { requestDocumentsUi ->
+            requestDocumentsUi.documentsUi.any { documentItem ->
+                val trailingContent = documentItem.documentDetailsUiItem.trailingContentData
+                trailingContent is ListItemTrailingContentData.Checkbox && trailingContent.checkboxData.isChecked
             }
+        }
     }
 
-    private fun hasAtLeastOneFieldSelected(list: List<RequestDataUi<Event>>): Boolean {
-        return list
-            .filterIsInstance<RequestDataUi.OptionalField<Event>>()
-            .any { optionalField ->
-                with(optionalField.optionalFieldItemUi.requestDocumentItemUi) {
-                    enabled && checked
-                }
+    private fun hasAtLeastOneFieldSelected(list: List<RequestDocumentsUi<Event>>): Boolean {
+        return list.any { requestDocumentsUi ->
+            requestDocumentsUi.documentsUi.any { documentItem ->
+                val trailingContent = documentItem.documentDetailsUiItem.trailingContentData
+                trailingContent is ListItemTrailingContentData.Checkbox &&
+                        trailingContent.checkboxData.isChecked &&
+                        trailingContent.checkboxData.enabled
             }
+        }
     }
 }

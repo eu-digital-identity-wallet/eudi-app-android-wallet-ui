@@ -142,6 +142,7 @@
     <string name="request_header_description">The following transaction requires your permission and authentication.</string>
     <string name="request_header_main_text">DATA SHARING REQUEST</string>
     <string name="request_warning_text">Please review carefully before sharing your data.</string>
+    <string name="request_collapsed_supporting_text">View details</string>
     <string name="request_title_before_badge">Verifier</string>
     <string name="request_title_after_badge">\ requests the following</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.

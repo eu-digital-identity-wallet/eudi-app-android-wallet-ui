@@ -16,14 +16,12 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -32,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -52,6 +49,7 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
+import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import kotlinx.coroutines.CoroutineScope
@@ -180,7 +178,7 @@ private fun Content(
         )
 
         // Screen Main Content.
-        Request(
+        /*Request(
             modifier = Modifier.weight(1f).background(Color.Red),
             items = state.items,
             noData = state.noItems,
@@ -188,6 +186,25 @@ private fun Content(
             onEventSend = onEventSend,
             listState = rememberLazyListState(),
             contentPadding = paddingValues
+        )*/
+
+        /*WrapExpandableListItem(
+            data = ExpandableListItemData(
+                collapsed = ListItemData(
+                    mainText = "Digital ID", //TODO
+                    supportingText = stringResource(R.string.request_collapsed_supporting_text),
+                )
+            )
+        )*/
+
+        WrapListItems(
+            modifier = Modifier.weight(1f)/*.background(Color.Red)*/,
+            items = state.items.flatMap {
+                it.documentsUi.map {
+                    it.documentDetailsUiItem
+                }
+            },
+            mainTextVerticalPadding = 12,
         )
     }
 

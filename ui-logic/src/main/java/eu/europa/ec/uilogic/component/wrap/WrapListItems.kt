@@ -50,7 +50,7 @@ fun WrapListItems(
     WrapCard(shape = shape) {
         LazyColumn(
             modifier = modifier,
-            userScrollEnabled = false,
+            userScrollEnabled = true,
         ) {
             itemsIndexed(items) { index, item ->
                 val itemModifier = Modifier

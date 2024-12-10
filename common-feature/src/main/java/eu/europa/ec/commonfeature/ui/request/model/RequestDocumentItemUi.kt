@@ -18,25 +18,22 @@ package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.corelogic.model.DocType
-import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.uilogic.component.ListItemData
 
+//TODO should probably rename data class
 data class RequestDocumentItemUi<T>(
     val id: String,
     val domainPayload: DocumentItemDomainPayload,
-    val readableName: String,
-    val value: String,
-    val checked: Boolean,
-    val enabled: Boolean,
-    val docItem: DocItem,
+    val documentDetailsUiItem: ListItemData,
     val event: T? = null
 ) {
     val keyIsBase64: Boolean
         get() {
-            return keyIsBase64(docItem.elementIdentifier)
+            return keyIsBase64(domainPayload.elementIdentifier)
         }
 }
 
@@ -60,24 +57,17 @@ data class DocumentItemDomainPayload(
     }
 }
 
-fun <T> DocItem.toRequestDocumentItemUi(
+fun <T> toRequestDocumentItemUi(
     uID: String,
     docPayload: DocumentItemDomainPayload,
-    readableName: String,
-    value: String,
-    optional: Boolean,
-    isChecked: Boolean,
+    documentDetailsUiItem: ListItemData,
     event: T?
 ): RequestDocumentItemUi<T> {
     return RequestDocumentItemUi(
         id = uID,
         domainPayload = docPayload,
-        checked = isChecked,
-        enabled = optional,
-        readableName = readableName,
-        docItem = this,
+        documentDetailsUiItem = documentDetailsUiItem,
         event = event,
-        value = value
     )
 }
 

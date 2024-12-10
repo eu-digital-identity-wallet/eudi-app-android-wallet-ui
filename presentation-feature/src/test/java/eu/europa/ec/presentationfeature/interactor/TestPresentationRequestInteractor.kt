@@ -230,7 +230,7 @@ class TestPresentationRequestInteractor {
 
     // Case 5 Expected Result:
     // ProximityRequestInteractorPartialState.Success state, with:
-    // 1. a list with the transformed basic fields to RequestDataUi items,
+    // 1. a list with the transformed basic fields to RequestDocumentsUi items,
     // 2. the same not null String for verifier name,
     // 3. true for verifierIsTrusted.
     @Test
