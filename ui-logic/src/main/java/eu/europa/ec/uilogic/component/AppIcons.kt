@@ -203,7 +203,7 @@ object AppIcons {
     )
 
     val Verified: IconData = IconData(
-        resourceId = R.drawable.ic_verified,
+        resourceId = R.drawable.ic_verified_textured,
         contentDescriptionId = R.string.content_description_verified_icon,
         imageVector = null
     )
@@ -349,6 +349,12 @@ object AppIcons {
     val Info: IconData = IconData(
         resourceId = R.drawable.ic_info,
         contentDescriptionId = R.string.content_description_info_icon,
+        imageVector = null
+    )
+
+    val IssuerPlaceholder: IconData = IconData(
+        resourceId = R.drawable.issuer_placeholder,
+        contentDescriptionId = R.string.content_description_issuer_icon,
         imageVector = null
     )
 }

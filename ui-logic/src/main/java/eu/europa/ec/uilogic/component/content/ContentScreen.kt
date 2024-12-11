@@ -71,7 +71,8 @@ data class ToolbarAction(
 
 data class ToolbarConfig(
     val title: String = "",
-    val actions: List<ToolbarAction> = listOf()
+    val actions: List<ToolbarAction> = listOf(),
+    val navigationIconTint: Color? = null,
 )
 
 enum class ScreenNavigateAction {
@@ -244,7 +245,7 @@ private fun DefaultToolBar(
                             onBack?.invoke()
                             keyboardController?.hide()
                         },
-                        customTint = null,
+                        customTint = toolbarConfig?.navigationIconTint
                     )
                 )
             }
@@ -288,7 +289,7 @@ internal fun ToolBarActions(
                     icon = AppIcons.VerticalMore,
                     onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
                     enabled = true,
-                    customTint = null,
+                    customTint = MaterialTheme.colorScheme.primary
                 )
             )
             DropdownMenu(

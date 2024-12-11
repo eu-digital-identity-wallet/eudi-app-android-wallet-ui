@@ -14,24 +14,28 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.model
+package eu.europa.ec.commonfeature.ui.document_details.domain
 
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.eudi.wallet.document.ElementIdentifier
+import eu.europa.ec.eudi.wallet.document.NameSpace
 
-enum class DocumentUiIssuanceState {
-    Issued, Pending, Failed
-}
+data class DocumentItem(
+    val elementIdentifier: ElementIdentifier,
+    val value: String,
+    val readableName: String,
+    val docId: DocumentId
+)
 
-data class DocumentUi(
-    val documentIssuanceState: DocumentUiIssuanceState,
-    val documentName: String,
+data class DocumentDetailsDomain(
+    val docName: String,
+    val docId: DocumentId,
+    val docNamespace: NameSpace,
     val documentIdentifier: DocumentIdentifier,
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,
     val documentImage: String,
-    val documentDetails: List<ListItemData>,
-    val userFullName: String? = null,
-    val documentId: DocumentId,
+    val userFullName: String?,
+    val detailsItems: List<DocumentItem>
 )

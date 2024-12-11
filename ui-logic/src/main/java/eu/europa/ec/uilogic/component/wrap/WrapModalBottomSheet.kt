@@ -125,11 +125,15 @@ fun GenericBaseSheetContent(
 @Composable
 fun DialogBottomSheet(
     textData: BottomSheetTextData,
+    leadingIcon: IconData? = null,
+    leadingIconTint: Color? = null,
     onPositiveClick: () -> Unit = {},
     onNegativeClick: () -> Unit = {},
 ) {
     BaseBottomSheetContent(
         textData = textData,
+        leadingIcon = leadingIcon,
+        leadingIconTint = leadingIconTint,
         bodyContent = {
             Row(
                 modifier = Modifier.padding(vertical = SPACING_EXTRA_SMALL.dp),

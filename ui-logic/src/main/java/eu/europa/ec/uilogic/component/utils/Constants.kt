@@ -58,6 +58,9 @@ const val DEFAULT_ICON_SIZE = 24
 /** Value 40 */
 const val ICON_SIZE_40 = 40
 
+/** Value 56 */
+const val ICON_SIZE_56 = 56
+
 /** Value 2 */
 const val MAX_TOOLBAR_ACTIONS = 2
 

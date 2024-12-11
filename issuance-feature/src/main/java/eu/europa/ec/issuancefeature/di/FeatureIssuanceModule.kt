@@ -27,6 +27,7 @@ import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteracto
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -53,9 +54,14 @@ fun provideAddDocumentInteractor(
 @Factory
 fun provideDocumentDetailsInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
-    resourceProvider: ResourceProvider
+    bookmarkStorageController: BookmarkStorageController,
+    resourceProvider: ResourceProvider,
 ): DocumentDetailsInteractor =
-    DocumentDetailsInteractorImpl(walletCoreDocumentsController, resourceProvider)
+    DocumentDetailsInteractorImpl(
+        walletCoreDocumentsController,
+        bookmarkStorageController,
+        resourceProvider
+    )
 
 @Factory
 fun provideSuccessInteractor(

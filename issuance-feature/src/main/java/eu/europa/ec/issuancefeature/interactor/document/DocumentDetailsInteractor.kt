@@ -17,7 +17,7 @@
 package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
@@ -29,12 +29,16 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.BookmarkStorageController
+import eu.europa.ec.storagelogic.model.Bookmark
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 sealed class DocumentDetailsInteractorPartialState {
-    data class Success(val documentUi: DocumentUi) : DocumentDetailsInteractorPartialState()
+    data class Success(val documentDetailsDomain: DocumentDetailsDomain) :
+        DocumentDetailsInteractorPartialState()
+
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
 }
 
@@ -45,19 +49,51 @@ sealed class DocumentDetailsInteractorDeleteDocumentPartialState {
         DocumentDetailsInteractorDeleteDocumentPartialState()
 }
 
+sealed class DocumentDetailsInteractorStoreBookmarkPartialState {
+    data class Success(val bookmarkId: String) :
+        DocumentDetailsInteractorStoreBookmarkPartialState()
+
+    data object Failure : DocumentDetailsInteractorStoreBookmarkPartialState()
+}
+
+sealed class DocumentDetailsInteractorDeleteBookmarkPartialState {
+    data object Success : DocumentDetailsInteractorDeleteBookmarkPartialState()
+    data object Failure : DocumentDetailsInteractorDeleteBookmarkPartialState()
+}
+
+sealed class DocumentDetailsInteractorRetrieveBookmarkPartialState {
+    data object Success : DocumentDetailsInteractorRetrieveBookmarkPartialState()
+    data object NoBookmarkRetrieved : DocumentDetailsInteractorRetrieveBookmarkPartialState()
+
+    data object Failure : DocumentDetailsInteractorRetrieveBookmarkPartialState()
+}
+
 interface DocumentDetailsInteractor {
     fun getDocumentDetails(
         documentId: DocumentId,
     ): Flow<DocumentDetailsInteractorPartialState>
 
     fun deleteDocument(
-        documentId: DocumentId
+        documentId: String
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState>
+
+    fun storeBookmark(
+        bookmarkId: String
+    ): Flow<DocumentDetailsInteractorStoreBookmarkPartialState>
+
+    fun deleteBookmark(
+        bookmarkId: String
+    ): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState>
+
+    fun retrieveBookmark(
+        bookmarkId: String
+    ): Flow<DocumentDetailsInteractorRetrieveBookmarkPartialState>
 }
 
 class DocumentDetailsInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val resourceProvider: ResourceProvider,
+    private val bookmarkStorageController: BookmarkStorageController,
+    private val resourceProvider: ResourceProvider
 ) : DocumentDetailsInteractor {
 
     private val genericErrorMsg
@@ -67,19 +103,22 @@ class DocumentDetailsInteractorImpl(
         documentId: DocumentId,
     ): Flow<DocumentDetailsInteractorPartialState> =
         flow {
+            val issuedDocument =
+                walletCoreDocumentsController.getDocumentById(documentId = documentId)
+                        as? IssuedDocument
 
-            val document =
-                walletCoreDocumentsController.getDocumentById(documentId = documentId) as? IssuedDocument
+            issuedDocument?.let { safeIssuedDocument ->
+                val documentDetailsDomainResult =
+                    DocumentDetailsTransformer.transformToDocumentDetailsDomain(
+                        document = safeIssuedDocument,
+                        resourceProvider = resourceProvider
+                    )
 
-            document?.let { issuedDocument ->
-                val itemUi = DocumentDetailsTransformer.transformToUiItem(
-                    document = issuedDocument,
-                    resourceProvider = resourceProvider,
-                )
-                itemUi?.let { documentUi ->
+                val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
+                documentDetailsDomain?.let { safeDocumentDetailsDomain ->
                     emit(
                         DocumentDetailsInteractorPartialState.Success(
-                            documentUi = documentUi
+                            documentDetailsDomain = safeDocumentDetailsDomain
                         )
                     )
                 } ?: emit(DocumentDetailsInteractorPartialState.Failure(error = genericErrorMsg))
@@ -146,5 +185,33 @@ class DocumentDetailsInteractorImpl(
             DocumentDetailsInteractorDeleteDocumentPartialState.Failure(
                 errorMessage = it.localizedMessage ?: genericErrorMsg
             )
+        }
+
+    override fun storeBookmark(bookmarkId: DocumentId): Flow<DocumentDetailsInteractorStoreBookmarkPartialState> =
+        flow {
+            bookmarkStorageController.store(Bookmark(identifier = bookmarkId))
+            emit(DocumentDetailsInteractorStoreBookmarkPartialState.Success(bookmarkId = bookmarkId))
+        }.safeAsync {
+            DocumentDetailsInteractorStoreBookmarkPartialState.Failure
+        }
+
+    override fun deleteBookmark(bookmarkId: DocumentId): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState> =
+        flow {
+            bookmarkStorageController.delete(bookmarkId)
+            emit(DocumentDetailsInteractorDeleteBookmarkPartialState.Success)
+        }.safeAsync {
+            DocumentDetailsInteractorDeleteBookmarkPartialState.Failure
+        }
+
+    override fun retrieveBookmark(bookmarkId: String): Flow<DocumentDetailsInteractorRetrieveBookmarkPartialState> =
+        flow {
+            val bookmark = bookmarkStorageController.retrieve(bookmarkId)
+            bookmark?.let {
+                emit(DocumentDetailsInteractorRetrieveBookmarkPartialState.Success)
+            } ?: run {
+                emit(DocumentDetailsInteractorRetrieveBookmarkPartialState.NoBookmarkRetrieved)
+            }
+        }.safeAsync {
+            DocumentDetailsInteractorRetrieveBookmarkPartialState.Failure
         }
 }

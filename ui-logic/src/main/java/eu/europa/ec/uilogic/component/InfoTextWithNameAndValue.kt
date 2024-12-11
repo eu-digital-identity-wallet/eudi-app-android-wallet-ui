@@ -90,6 +90,11 @@ data class InfoTextWithNameAndImageData(
     val base64Image: String
 )
 
+data class PortraitWithImageData(
+    val title: String,
+    val base64Image: String,
+)
+
 @Composable
 fun InfoTextWithNameAndValue(
     itemData: InfoTextWithNameAndValueData,

@@ -20,44 +20,43 @@ import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
+import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
+import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
+import eu.europa.ec.commonfeature.ui.request.model.generateUniqueFieldId
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
+import eu.europa.ec.commonfeature.util.keyIsPortrait
+import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndImageData
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.MainContentData
 
 object DocumentDetailsTransformer {
 
-    fun transformToUiItem(
+    fun transformToDocumentDetailsDomain(
         document: IssuedDocument,
-        resourceProvider: ResourceProvider,
-    ): DocumentUi? {
+        resourceProvider: ResourceProvider
+    ): Result<DocumentDetailsDomain?> = runCatching {
 
-        val documentIdentifierUi = document.toDocumentIdentifier()
-
-        val detailsItems = document.data.claims
+        val detailsDocumentItems = document.data.claims
             .map { claim ->
-                transformToDocumentDetailsUi(
+                transformToDocumentDetailsDocumentItem(
                     displayKey = claim.metadata?.display?.firstOrNull {
                         resourceProvider.getLocale().compareLocaleLanguage(it.locale)
                     }?.name,
                     key = claim.identifier,
                     item = claim.value ?: "",
-                    resourceProvider = resourceProvider
+                    resourceProvider = resourceProvider,
+                    documentId = document.id
                 )
             }
-
-        val documentImage = extractValueFromDocumentOrEmpty(
-            document = document,
-            key = DocumentJsonKeys.PORTRAIT
-        )
 
         val documentExpirationDate = extractValueFromDocumentOrEmpty(
             document = document,
@@ -66,66 +65,102 @@ object DocumentDetailsTransformer {
 
         val docHasExpired = documentHasExpired(documentExpirationDate)
 
-        return DocumentUi(
-            documentId = document.id,
-            documentName = document.name,
-            documentIdentifier = documentIdentifierUi,
+        val documentImage = extractValueFromDocumentOrEmpty(
+            document = document,
+            key = DocumentJsonKeys.PORTRAIT
+        )
+
+        val docNamespace = (document.data as MsoMdocData).nameSpaces.keys.first()
+
+        return@runCatching DocumentDetailsDomain(
+            docName = document.name,
+            docId = document.id,
+            docNamespace = docNamespace,
+            documentIdentifier = document.toDocumentIdentifier(),
             documentExpirationDateFormatted = documentExpirationDate.toDateFormatted().orEmpty(),
             documentHasExpired = docHasExpired,
             documentImage = documentImage,
-            documentDetails = detailsItems,
             userFullName = extractFullNameFromDocumentOrEmpty(document),
+            detailsItems = detailsDocumentItems
+        )
+    }
+
+    fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentUi {
+        val documentDetailsListItemData = this.detailsItems.map { documentItem ->
+            documentItem.toListItemData()
+        }
+        return DocumentUi(
+            documentId = this.docId,
+            documentName = this.docName,
+            documentIdentifier = this.documentIdentifier,
+            documentExpirationDateFormatted = this.documentExpirationDateFormatted,
+            documentHasExpired = this.documentHasExpired,
+            documentImage = this.documentImage,
+            documentDetails = documentDetailsListItemData,
+            userFullName = this.userFullName,
             documentIssuanceState = DocumentUiIssuanceState.Issued,
         )
     }
 
+    private fun DocumentItem.toListItemData(): ListItemData {
+
+        val mainTextContentData = when {
+            keyIsPortrait(key = this.elementIdentifier) -> {
+                MainContentData.Text(text = "")
+            }
+
+            keyIsSignature(key = this.elementIdentifier) -> {
+                MainContentData.Image(base64Image = this.value)
+            }
+
+            else -> {
+                MainContentData.Text(text = this.value)
+            }
+        }
+
+        val itemId = generateUniqueFieldId(
+            elementIdentifier = this.elementIdentifier,
+            documentId = this.docId
+        )
+
+        val leadingContent = if (keyIsPortrait(key = this.elementIdentifier)) {
+            ListItemLeadingContentData.UserImage(userBase64Image = this.value)
+        } else {
+            null
+        }
+
+        return ListItemData(
+            itemId = itemId,
+            mainContentData = mainTextContentData,
+            overlineText = this.readableName,
+            leadingContentData = leadingContent
+        )
+    }
 }
 
-private fun transformToDocumentDetailsUi(
+private fun transformToDocumentDetailsDocumentItem(
     key: String,
     displayKey: String?,
     item: Any,
-    resourceProvider: ResourceProvider
-): DocumentDetailsUi {
+    resourceProvider: ResourceProvider,
+    documentId: String
+): DocumentItem {
 
     val values = StringBuilder()
     val localizedKey = displayKey ?: key
 
-
     parseKeyValueUi(
-        item = item,
+        json = item,
         groupIdentifier = localizedKey,
         resourceProvider = resourceProvider,
         allItems = values
     )
     val groupedValues = values.toString()
 
-    return when (key) {
-        DocumentJsonKeys.SIGNATURE -> {
-            DocumentDetailsUi.SignatureItem(
-                itemData = InfoTextWithNameAndImageData(
-                    title = localizedKey,
-                    base64Image = groupedValues
-                )
-            )
-        }
-
-        DocumentJsonKeys.PORTRAIT -> {
-            DocumentDetailsUi.DefaultItem(
-                itemData = InfoTextWithNameAndValueData.create(
-                    title = localizedKey,
-                    infoValues = arrayOf(resourceProvider.getString(R.string.document_details_portrait_readable_identifier))
-                )
-            )
-        }
-
-        else -> {
-            DocumentDetailsUi.DefaultItem(
-                itemData = InfoTextWithNameAndValueData.create(
-                    title = localizedKey,
-                    infoValues = arrayOf(groupedValues)
-                )
-            )
-        }
-    }
+    return DocumentItem(
+        elementIdentifier = key,
+        value = groupedValues,
+        readableName = localizedKey,
+        docId = documentId
+    )
 }

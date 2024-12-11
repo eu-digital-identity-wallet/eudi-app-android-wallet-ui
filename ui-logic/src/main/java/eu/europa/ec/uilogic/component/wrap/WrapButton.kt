@@ -53,6 +53,7 @@ data class ButtonConfig(
     val isWarning: Boolean = false,
     val shape: Shape = buttonsShape,
     val contentPadding: PaddingValues = buttonsContentPadding,
+    val isWithoutContainerBackground: Boolean = false,
 )
 
 @Composable
@@ -86,6 +87,8 @@ private fun WrapPrimaryButton(
         ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.error
         )
+    } else if (buttonConfig.isWithoutContainerBackground) {
+        ButtonDefaults.filledTonalButtonColors(containerColor = MaterialTheme.colorScheme.background)
     } else {
         ButtonDefaults.buttonColors()
     }

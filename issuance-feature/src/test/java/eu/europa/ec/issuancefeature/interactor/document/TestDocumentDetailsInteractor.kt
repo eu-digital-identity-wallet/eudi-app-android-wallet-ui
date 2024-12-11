@@ -18,7 +18,8 @@ package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
+import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsItemData
+import eu.europa.ec.commonfeature.ui.document_details.model.toListItemData
 import eu.europa.ec.commonfeature.util.TestsData
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidUi
@@ -30,8 +31,11 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.BookmarkStorageController
+import eu.europa.ec.storagelogic.model.Bookmark
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemCall
 import eu.europa.ec.testfeature.createMockedNamespaceData
+import eu.europa.ec.testfeature.mockedBookmarkId
 import eu.europa.ec.testfeature.mockedEmptyPid
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
@@ -69,6 +73,9 @@ class TestDocumentDetailsInteractor {
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     @Mock
+    private lateinit var bookmarkStorageController: BookmarkStorageController
+
+    @Mock
     private lateinit var resourceProvider: ResourceProvider
 
     private lateinit var interactor: DocumentDetailsInteractor
@@ -81,6 +88,7 @@ class TestDocumentDetailsInteractor {
 
         interactor = DocumentDetailsInteractorImpl(
             walletCoreDocumentsController = walletCoreDocumentsController,
+            bookmarkStorageController = bookmarkStorageController,
             resourceProvider = resourceProvider,
         )
 
@@ -254,12 +262,12 @@ class TestDocumentDetailsInteractor {
                             documentHasExpired = TestsData.mockedDocumentHasExpired,
                             documentImage = "",
                             documentDetails = listOf(
-                                DocumentDetailsUi.DefaultItem(
+                                DocumentDetailsItemData.DocumentItemFieldWithValue(
                                     itemData = InfoTextWithNameAndValueData.create(
                                         title = "no_data_item",
                                         infoValues = arrayOf("0")
                                     )
-                                )
+                                ).itemData.toListItemData()
                             ),
                             userFullName = "",
                             documentIssuanceState = DocumentUiIssuanceState.Issued
@@ -574,6 +582,178 @@ class TestDocumentDetailsInteractor {
     }
     //endregion
 
+    //region storeBookmark()
+    // Case 1:
+    // 1. A valid bookmarkId is provided.
+    // 2. bookmarkStorageController.store() succeeds.
+    // Expected result:
+    // DocumentDetailsInteractorStoreBookmarkPartialState.Success state is returned with the bookmarkId.
+    @Test
+    fun `Given Case 1, When storeBookmark is called, Then the expected result is returned`() {
+        coroutineRule.runTest {
+            // Arrange
+            mockStoreBookmarkCall(bookmarkId = mockedBookmarkId)
+
+            // Act
+            interactor.storeBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+                // Assert
+                assertEquals(
+                    DocumentDetailsInteractorStoreBookmarkPartialState.Success(
+                        bookmarkId = mockedBookmarkId
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 2:
+    // 1. A valid bookmarkId is provided.
+    // 2. When bookmarkStorageController.store() is called, an exception is thrown.
+    // Expected result:
+    // DocumentDetailsInteractorStoreBookmarkPartialState.Failure state is returned.
+    @Test
+    fun `Given Case 2, When storeBookmark is called, Then the expected result is returned`() {
+        coroutineRule.runTest {
+            // Arrange
+            mockStoreBookmarkCall(
+                bookmarkId = mockedBookmarkId,
+                throwable = mockedExceptionWithMessage
+            )
+
+            // Act
+            interactor.storeBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+                // Assert
+                assertEquals(
+                    DocumentDetailsInteractorStoreBookmarkPartialState.Failure,
+                    awaitItem()
+                )
+            }
+        }
+    }
+    //endregion
+
+    //region deleteBookmark()
+    // Case 1:
+    // 1. A valid bookmarkId is provided.
+    // 2. bookmarkStorageController.delete() succeeds.
+    // Expected result:
+    // DocumentDetailsInteractorDeleteBookmarkPartialState.Success state is returned.
+    @Test
+    fun `Given Case 1, When deleteBookmark is called, Then the expected result is returned`() {
+        coroutineRule.runTest {
+            // Arrange
+            mockDeleteBookmarkCall(bookmarkId = mockedBookmarkId)
+
+            // Act
+            interactor.deleteBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+                // Assert
+                assertEquals(
+                    DocumentDetailsInteractorDeleteBookmarkPartialState.Success,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 2:
+    // 1. A valid bookmarkId is provided for the bookmark to be deleted.
+    // 2. When bookmarkStorageController.delete() is called, an exception is thrown.
+    // Expected result:
+    // DocumentDetailsInteractorDeleteBookmarkPartialState.Failure state is returned.
+    @Test
+    fun `Given Case 2, When deleteBookmark is called, Then the expected result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            mockDeleteBookmarkCall(
+                bookmarkId = mockedBookmarkId,
+                throwable = mockedExceptionWithMessage
+            )
+
+            // When
+            interactor.deleteBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+                // Then
+                assertEquals(
+                    DocumentDetailsInteractorDeleteBookmarkPartialState.Failure,
+                    awaitItem()
+                )
+            }
+        }
+    }
+    //endregion
+
+    //region retrieveBookmark()
+    // Case 1:
+    // 1. A valid bookmarkId is provided.
+    // 2. bookmarkStorageController.retrieve() succeeds.
+    // Expected result:
+    // DocumentDetailsInteractorRetrieveBookmarkPartialState.Success state is returned.
+    @Test
+    fun `Given Case 1, When retrieveBookmark is called, Then the expected result is returned`() {
+        coroutineRule.runTest {
+            // Arrange
+            mockRetrieveBookmarkCall(bookmarkId = mockedBookmarkId)
+
+            // Act
+            interactor.retrieveBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+                // Assert
+                assertEquals(
+                    DocumentDetailsInteractorRetrieveBookmarkPartialState.Success,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 2:
+    // 1. A valid bookmarkId is provided.
+    // 2. bookmarkStorageController.retrieve() fails.
+    // Expected result:
+    // DocumentDetailsInteractorRetrieveBookmarkPartialState.Failure state is returned.
+    @Test
+    fun `Given Case 2, When retrieveBookmark is called, Then the expected result is returned`() {
+        coroutineRule.runTest {
+            // Arrange
+            mockRetrieveBookmarkCall(
+                bookmarkId = mockedBookmarkId,
+                throwable = mockedExceptionWithMessage
+            )
+
+            // Act
+            interactor.retrieveBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+                // Assert
+                assertEquals(
+                    DocumentDetailsInteractorRetrieveBookmarkPartialState.Failure,
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 3:
+    // 1. A valid bookmarkId is provided.
+    // 2. bookmarkStorageController.retrieve() returns null bookmark, indicating that bookmark was not
+    // stored before for the specific document.
+    // Expected result:
+    // DocumentDetailsInteractorRetrieveBookmarkPartialState.NoBookmarkRetrieved state is returned.
+    @Test
+    fun `Given Case 3, When retrieveBookmark is called, Then the expected result is returned`() {
+        coroutineRule.runTest {
+            // Arrange
+            whenever(bookmarkStorageController.retrieve(mockedBookmarkId)).thenReturn(null)
+
+            // Act
+            interactor.retrieveBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+                // Assert
+                assertEquals(
+                    DocumentDetailsInteractorRetrieveBookmarkPartialState.NoBookmarkRetrieved,
+                    awaitItem()
+                )
+            }
+        }
+    }
+    //endregion
+
     //region helper functions
     private fun mockGetAllDocumentsCall(response: List<IssuedDocument>) {
         whenever(walletCoreDocumentsController.getAllDocuments())
@@ -603,6 +783,30 @@ class TestDocumentDetailsInteractor {
     private fun mockDeleteDocumentCall(response: DeleteDocumentPartialState) {
         whenever(walletCoreDocumentsController.deleteDocument(anyString()))
             .thenReturn(response.toFlow())
+    }
+
+    private suspend fun mockStoreBookmarkCall(bookmarkId: String, throwable: Throwable? = null) {
+        whenever(bookmarkStorageController.store(Bookmark(bookmarkId)))
+            .thenAnswer {
+                throwable?.let { throw throwable }
+                Unit
+            }
+    }
+
+    private suspend fun mockDeleteBookmarkCall(bookmarkId: String, throwable: Throwable? = null) {
+        whenever(bookmarkStorageController.delete(bookmarkId))
+            .thenAnswer {
+                throwable?.let { throw throwable }
+                Unit
+            }
+    }
+
+    private suspend fun mockRetrieveBookmarkCall(bookmarkId: String, throwable: Throwable? = null) {
+        whenever(bookmarkStorageController.retrieve(bookmarkId))
+            .thenAnswer {
+                throwable?.let { throw throwable }
+                Bookmark(identifier = bookmarkId)
+            }
     }
     //endregion
 }
