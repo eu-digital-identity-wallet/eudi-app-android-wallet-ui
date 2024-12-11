@@ -20,7 +20,6 @@ import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.isSupported
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
@@ -57,14 +56,6 @@ fun Document.toUiName(resourceProvider: ResourceProvider): String {
     val docIdentifier = this.toDocumentIdentifier()
     return docIdentifier.toUiName(
         fallbackDocName = this.name,
-        resourceProvider = resourceProvider
-    )
-}
-
-fun RequestedDocument.toUiName(resourceProvider: ResourceProvider): String {
-    val docIdentifier = this.toDocumentIdentifier()
-    return docIdentifier.toUiName(
-        fallbackDocName = this.documentId,
         resourceProvider = resourceProvider
     )
 }
