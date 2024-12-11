@@ -18,15 +18,11 @@ package eu.europa.ec.commonfeature.ui.request.transformer
 
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.Event
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
-import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
+import eu.europa.ec.commonfeature.ui.request.model.ExpandableFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.commonfeature.ui.request.model.docType
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
-import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
+import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
@@ -38,6 +34,11 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import org.json.JSONObject
 
 private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
@@ -70,27 +71,20 @@ object RequestTransformer {
     fun transformToUiItems(
         storageDocuments: List<IssuedDocument> = emptyList(),
         resourceProvider: ResourceProvider,
-        requestDocuments: List<RequestedDocument>,
-        requiredFieldsTitle: String
+        requestDocuments: List<RequestedDocument>
     ): List<RequestDataUi<Event>> {
         val items = mutableListOf<RequestDataUi<Event>>()
 
         requestDocuments.forEachIndexed { docIndex, requestDocument ->
-            val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
-            // Add document item.
-            items += RequestDataUi.Document(
-                documentItemUi = DocumentItemUi(
-                    title = storageDocument.toUiName(resourceProvider)
-                )
-            )
-            items += RequestDataUi.Space()
+            val storageDocument =
+                storageDocuments.firstOrNull { it.id == requestDocument.documentId }
+                    ?: return@forEachIndexed
 
-            val required = mutableListOf<RequestDocumentItemUi<Event>>()
+            // Prepare expanded items (both required and optional)
+            val expandedItems = mutableListOf<ListItemData>()
+            val requiredFields = getMandatoryFields(storageDocument.toDocumentIdentifier())
 
-
-            // Add optional field items.
-            requestDocument.requestedItems.keys.forEachIndexed { itemIndex, docItem ->
-
+            requestDocument.requestedItems.keys.forEach { docItem ->
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
                     parseKeyValueUi(
@@ -101,122 +95,94 @@ object RequestTransformer {
                         resourceProvider = resourceProvider,
                         allItems = values
                     )
-                    (values.toString() to true)
+                    values.toString() to true
                 } catch (ex: Exception) {
-                    (resourceProvider.getString(R.string.request_element_identifier_not_available) to false)
+                    resourceProvider.getString(R.string.request_element_identifier_not_available) to false
                 }
 
-                if (
-                    getMandatoryFields(documentIdentifier = storageDocument.toDocumentIdentifier())
-                        .contains(docItem.elementIdentifier)
-                ) {
-                    required.add(
-                        docItem.toRequestDocumentItemUi(
-                            uID = produceDocUID(
-                                elementIdentifier = docItem.elementIdentifier,
-                                documentId = storageDocument.id,
-                                docType = storageDocument.docType
-                            ),
-                            docPayload = DocumentItemDomainPayload(
-                                docId = storageDocument.id,
-                                docType = storageDocument.docType,
-                                namespace = docItem.namespace,
-                                elementIdentifier = docItem.elementIdentifier,
-                            ),
-                            optional = false,
+                val itemId = produceDocUID(
+                    docItem.elementIdentifier,
+                    storageDocument.id,
+                    storageDocument.docType
+                )
+
+                val isRequired = requiredFields.contains(docItem.elementIdentifier)
+                val listItem = ListItemData(
+                    itemId = itemId,
+                    mainText = value,
+                    overlineText = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                    supportingText = null,
+                    leadingIcon = if (keyIsBase64(key = docItem.elementIdentifier)) AppIcons.User else null,
+                    trailingContentData = ListItemTrailingContentData.Checkbox(
+                        checkboxData = CheckboxData(
                             isChecked = isAvailable,
-                            event = null,
-                            readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
-                            value = value
+                            enabled = !isRequired,
+                            onCheckedChange = {
+                                println("Checked changed for $itemId")
+                                Event.UserIdentificationClicked(itemId = itemId)
+                            }
                         )
-                    )
-                } else {
-                    val uID = produceDocUID(
-                        elementIdentifier = docItem.elementIdentifier,
-                        documentId = storageDocument.id,
-                        docType = storageDocument.docType
-                    )
-
-                    items += RequestDataUi.Space()
-                    items += RequestDataUi.OptionalField(
-                        optionalFieldItemUi = OptionalFieldItemUi(
-                            requestDocumentItemUi = docItem.toRequestDocumentItemUi(
-                                uID = uID,
-                                docPayload = DocumentItemDomainPayload(
-                                    docId = storageDocument.id,
-                                    docType = storageDocument.docType,
-                                    namespace = docItem.namespace,
-                                    elementIdentifier = docItem.elementIdentifier,
-                                ),
-                                optional = isAvailable,
-                                isChecked = isAvailable,
-                                event = Event.UserIdentificationClicked(itemId = uID),
-                                readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
-                                value = value
-                            )
-                        )
-                    )
-
-                    if (itemIndex != requestDocument.requestedItems.keys.toList().lastIndex) {
-                        items += RequestDataUi.Space()
-                        items += RequestDataUi.Divider()
-                    }
-                }
-            }
-
-            items += RequestDataUi.Space()
-
-            // Add required fields item.
-            if (required.isNotEmpty()) {
-                items += RequestDataUi.RequiredFields(
-                    requiredFieldsItemUi = RequiredFieldsItemUi(
-                        id = docIndex,
-                        requestDocumentItemsUi = required,
-                        expanded = false,
-                        title = requiredFieldsTitle,
-                        event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
                     )
                 )
-                items += RequestDataUi.Space()
+
+                expandedItems.add(listItem)
             }
+
+            // Create a collapsed item for the document
+            val collapsedItem = ListItemData(
+                itemId = docIndex.toString(),
+                mainText = storageDocument.toUiName(resourceProvider),
+                overlineText = null,
+                supportingText = "${expandedItems.size} fields requested",
+                trailingContentData = null
+            )
+
+            // Add to the list as a single expandable card
+            items += RequestDataUi.ExpandableField(
+                expandableFieldItemUi = ExpandableFieldItemUi(
+                    expandableListItem = ExpandableListItemData(
+                        collapsed = collapsedItem,
+                        expanded = expandedItems
+                    ),
+                    event = Event.ExpandOrCollapseRequiredDataList(docIndex)
+                )
+            )
         }
 
         return items
     }
 
     fun transformToDomainItems(uiItems: List<RequestDataUi<Event>>): DisclosedDocuments {
+        // Extract selected items from ExpandableField
         val selectedUiItems = uiItems
             .flatMap {
                 when (it) {
-                    is RequestDataUi.RequiredFields -> {
-                        it.requiredFieldsItemUi.requestDocumentItemsUi
+                    is RequestDataUi.ExpandableField -> {
+                        val expandableList = it.expandableFieldItemUi.expandableListItem
+                        expandableList.expanded.filter { listItem ->
+                            listItem.trailingContentData is ListItemTrailingContentData.Checkbox &&
+                                    (listItem.trailingContentData as ListItemTrailingContentData.Checkbox).checkboxData.isChecked
+                        }
                     }
 
-                    is RequestDataUi.OptionalField -> {
-                        listOf(it.optionalFieldItemUi.requestDocumentItemUi)
-                    }
-
-                    else -> {
-                        emptyList()
-                    }
+                    else -> emptyList()
                 }
             }
-            // Get selected
-            .filter { it.checked }
-            // Create a Map with document as a key
-            .groupBy {
-                it.domainPayload
+            // Map selected items to their domain payloads
+            .groupBy { listItem ->
+                listItem.itemId // Use itemId to group items by their document
             }
 
+        // Convert grouped data into domain model
         return DisclosedDocuments(
             selectedUiItems.map { entry ->
-                val (document, selectedDocumentItems) = entry
+                val (documentId, selectedListItems) = entry
                 DisclosedDocument(
-                    documentId = document.docId,
-                    disclosedItems = selectedDocumentItems.map {
+                    documentId = documentId!!,
+                    disclosedItems = selectedListItems.map { listItem ->
                         DocItem(
-                            it.domainPayload.namespace,
-                            it.domainPayload.elementIdentifier
+                            namespace = listItem.itemId!!, // Extract namespace if stored in ListItemData
+                            elementIdentifier = listItem.mainText // Replace with appropriate field
                         )
                     },
                     keyUnlockData = null

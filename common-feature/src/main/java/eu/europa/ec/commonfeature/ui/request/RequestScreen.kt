@@ -22,8 +22,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -51,7 +50,6 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
-import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import kotlinx.coroutines.CoroutineScope
@@ -180,17 +178,17 @@ private fun Content(
         )
 
         // Screen Main Content.
-        /*Request(
-            modifier = Modifier.weight(1f).background(Color.Red),
+        Request(
+            modifier = Modifier.weight(1f)/*.background(Color.Red)*/,
             items = state.items,
             noData = state.noItems,
             isShowingFullUserInfo = state.isShowingFullUserInfo,
             onEventSend = onEventSend,
             listState = rememberLazyListState(),
             contentPadding = paddingValues
-        )*/
+        )
 
-        LazyColumn(
+        /*LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
             items(state.items) { requestDocumentsUi ->
@@ -198,14 +196,14 @@ private fun Content(
                     WrapExpandableListItem(
                         data = documentUiItem.item.expandableListItem,
                         isExpanded = false, // Track expand state if needed
-                        onExpandedChange = { /* Handle expand state */ },
+                        onExpandedChange = { *//* Handle expand state *//* },
                         onExpandedItemClick = { listItemData ->
                             onEventSend(documentUiItem.item.event ?: return@WrapExpandableListItem)
                         },
                     )
                 }
             }
-        }
+        }*/
 
         /*WrapExpandableListItem(
             data = ExpandableListItemData(

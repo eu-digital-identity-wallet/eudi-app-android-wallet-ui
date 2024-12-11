@@ -17,9 +17,8 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -48,11 +47,12 @@ fun WrapListItems(
     onItemClick: ((ListItemData) -> Unit)? = null,
 ) {
     WrapCard(shape = shape) {
-        LazyColumn(
+        Column(
             modifier = modifier,
-            userScrollEnabled = true,
+            //userScrollEnabled = true,
         ) {
-            itemsIndexed(items) { index, item ->
+            //itemsIndexed(items) { index, item ->
+            items.forEachIndexed { index, item ->
                 val itemModifier = Modifier
                     .then(
                         if (clickable) {

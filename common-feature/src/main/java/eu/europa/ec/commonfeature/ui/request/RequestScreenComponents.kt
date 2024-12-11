@@ -24,18 +24,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentsUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -46,19 +52,22 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 @Composable
 fun <T> Request(
     modifier: Modifier = Modifier,
-    items: List<RequestDocumentsUi<T>>,
+    items: List<RequestDataUi<T>>,
     noData: Boolean,
     isShowingFullUserInfo: Boolean,
     onEventSend: (T) -> Unit,
     listState: LazyListState,
     contentPadding: PaddingValues = PaddingValues(all = 0.dp),
 ) {
+    var isExpanded by remember { mutableStateOf(false) } //TODO
     if (noData) {
         ErrorInfo(
             informativeText = stringResource(id = R.string.request_no_data),
@@ -71,19 +80,19 @@ fun <T> Request(
             verticalArrangement = Arrangement.Top
         ) {
 
-            /*items(items) { item ->
+            items(items) { item ->
                 when (item) {
-                    is RequestDocumentsUi.Divider -> {
+                    is RequestDataUi.Divider -> {
                         HorizontalDivider()
                     }
 
-                    is RequestDocumentsUi.Document -> {
+                    is RequestDataUi.Document -> {
                         DocumentCard(
                             cardText = item.documentItemUi.title,
                         )
                     }
 
-                    is RequestDocumentsUi.OptionalField -> {
+                    /*is RequestDataUi.OptionalField -> {
                         Field(
                             item = item.optionalFieldItemUi.requestDocumentItemUi,
                             showFullDetails = isShowingFullUserInfo,
@@ -91,20 +100,35 @@ fun <T> Request(
                         )
                     }
 
-                    is RequestDocumentsUi.RequiredFields -> {
+                    is RequestDataUi.RequiredFields -> {
                         RequiredCard(
                             item = item.requiredFieldsItemUi,
                             showFullDetails = isShowingFullUserInfo,
                             onEventSend = onEventSend,
                             contentPadding = contentPadding,
                         )
+                    }*/
+
+                    is RequestDataUi.ExpandableField -> {
+                        WrapExpandableListItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            data = item.expandableFieldItemUi.expandableListItem,
+                            isExpanded = isExpanded, // Track expand/collapse state //TODO
+                            onExpandedChange = { //TODO
+                            /* Handle state change */
+                                isExpanded = it
+                            },
+                            onExpandedItemClick = { listItemData ->
+                                onEventSend(item.expandableFieldItemUi.event ?: return@WrapExpandableListItem)
+                            }
+                        )
                     }
 
-                    is RequestDocumentsUi.Space -> {
+                    is RequestDataUi.Space -> {
                         VSpacer.Custom(space = item.space)
                     }
                 }
-            }*/
+            }
         }
     }
 }

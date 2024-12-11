@@ -22,7 +22,7 @@ import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentsUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -156,7 +156,7 @@ class PresentationRequestViewModel(
         }
     }
 
-    override fun updateData(updatedItems: List<RequestDocumentsUi<Event>>, allowShare: Boolean?) {
+    override fun updateData(updatedItems: List<RequestDataUi<Event>>, allowShare: Boolean?) {
         super.updateData(updatedItems, allowShare)
         interactor.updateRequestedDocuments(updatedItems)
     }
