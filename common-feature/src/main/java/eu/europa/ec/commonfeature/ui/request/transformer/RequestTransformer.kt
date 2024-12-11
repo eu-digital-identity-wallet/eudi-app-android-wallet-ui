@@ -107,18 +107,18 @@ object RequestTransformer {
                 }
 
                 if (
-                    getMandatoryFields(documentIdentifier = requestDocument.toDocumentIdentifier())
+                    getMandatoryFields(documentIdentifier = storageDocument.toDocumentIdentifier())
                         .contains(docItem.elementIdentifier)
                 ) {
                     required.add(
                         docItem.toRequestDocumentItemUi(
                             uID = produceDocUID(
-                                docItem.elementIdentifier,
-                                requestDocument.documentId,
-                                storageDocument.docType
+                                elementIdentifier = docItem.elementIdentifier,
+                                documentId = storageDocument.id,
+                                docType = storageDocument.docType
                             ),
                             docPayload = DocumentItemDomainPayload(
-                                docId = requestDocument.documentId,
+                                docId = storageDocument.id,
                                 docType = storageDocument.docType,
                                 namespace = docItem.namespace,
                                 elementIdentifier = docItem.elementIdentifier,
@@ -132,9 +132,9 @@ object RequestTransformer {
                     )
                 } else {
                     val uID = produceDocUID(
-                        docItem.elementIdentifier,
-                        requestDocument.documentId,
-                        storageDocument.docType
+                        elementIdentifier = docItem.elementIdentifier,
+                        documentId = storageDocument.id,
+                        docType = storageDocument.docType
                     )
 
                     items += RequestDataUi.Space()
@@ -143,7 +143,7 @@ object RequestTransformer {
                             requestDocumentItemUi = docItem.toRequestDocumentItemUi(
                                 uID = uID,
                                 docPayload = DocumentItemDomainPayload(
-                                    docId = requestDocument.documentId,
+                                    docId = storageDocument.id,
                                     docType = storageDocument.docType,
                                     namespace = docItem.namespace,
                                     elementIdentifier = docItem.elementIdentifier,
