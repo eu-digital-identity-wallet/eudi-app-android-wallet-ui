@@ -403,6 +403,8 @@ class WalletCorePresentationControllerImpl(
                     }
                 }
 
+                is TransferEventPartialState.ResponseSent -> ResponseReceivedPartialState.Success
+
                 else -> null
             }
         }.safeAsync {
