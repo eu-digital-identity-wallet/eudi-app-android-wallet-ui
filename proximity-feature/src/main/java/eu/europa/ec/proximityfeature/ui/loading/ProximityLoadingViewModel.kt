@@ -110,6 +110,10 @@ class ProximityLoadingViewModel(
                         onSuccess()
                     }
 
+                    is ProximityLoadingObserveResponsePartialState.RequestReadyToBeSent -> {
+                        sendRequestedDocuments(event = Event.DoWork(context))
+                    }
+
                     is ProximityLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
                         val popEffect = Effect.Navigation.PopBackStackUpTo(
                             screenRoute = ProximityScreens.Request.screenRoute,
@@ -119,32 +123,37 @@ class ProximityLoadingViewModel(
                             popEffect,
                             it.authenticationData,
                             {
-                                when (val result = interactor.sendRequestedDocuments()) {
-                                    is ProximityLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
-                                    }
-
-                                    is ProximityLoadingSendRequestedDocumentPartialState.Failure -> {
-                                        setState {
-                                            copy(
-                                                error = ContentErrorConfig(
-                                                    onRetry = { setEvent(Event.DoWork(context)) },
-                                                    errorSubTitle = result.error,
-                                                    onCancel = {
-                                                        setEvent(Event.DismissError)
-                                                        doNavigation(
-                                                            NavigationType.PopTo(
-                                                                getPreviousScreen()
-                                                            )
-                                                        )
-                                                    }
-                                                )
-                                            )
-                                        }
-                                    }
-                                }
+                                sendRequestedDocuments(event = Event.DoWork(context))
                             }
                         )
                     }
+                }
+            }
+        }
+    }
+
+    private fun sendRequestedDocuments(event: Event) {
+
+        when (val result = interactor.sendRequestedDocuments()) {
+            is ProximityLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
+            }
+
+            is ProximityLoadingSendRequestedDocumentPartialState.Failure -> {
+                setState {
+                    copy(
+                        error = ContentErrorConfig(
+                            onRetry = { setEvent(event) },
+                            errorSubTitle = result.error,
+                            onCancel = {
+                                setEvent(Event.DismissError)
+                                doNavigation(
+                                    NavigationType.PopTo(
+                                        getPreviousScreen()
+                                    )
+                                )
+                            }
+                        )
+                    )
                 }
             }
         }

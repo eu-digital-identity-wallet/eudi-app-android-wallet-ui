@@ -80,6 +80,8 @@ sealed class CheckKeyUnlockPartialState {
     data class UserAuthenticationRequired(
         val authenticationData: List<AuthenticationData>,
     ) : CheckKeyUnlockPartialState()
+
+    data object RequestIsReadyToBeSent : CheckKeyUnlockPartialState()
 }
 
 sealed class SendRequestedDocumentsPartialState {
@@ -101,6 +103,7 @@ sealed class WalletCorePartialState {
     data class Failure(val error: String) : WalletCorePartialState()
     data object Success : WalletCorePartialState()
     data class Redirect(val uri: URI) : WalletCorePartialState()
+    data object RequestIsReadyToBeSent : WalletCorePartialState()
 }
 
 sealed class LoadSampleDataPartialState {
@@ -245,7 +248,9 @@ class WalletCorePresentationControllerImpl(
             },
             onError = { errorMessage ->
                 trySendBlocking(
-                    TransferEventPartialState.Error(error = errorMessage)
+                    TransferEventPartialState.Error(
+                        error = errorMessage.ifEmpty { genericErrorMessage }
+                    )
                 )
             },
             onRequestReceived = { requestedDocumentData ->
@@ -339,7 +344,9 @@ class WalletCorePresentationControllerImpl(
                 )
 
             } else {
-                sendRequestedDocuments()
+                emit(
+                    CheckKeyUnlockPartialState.RequestIsReadyToBeSent
+                )
             }
         }
     }.safeAsync {
@@ -424,6 +431,10 @@ class WalletCorePresentationControllerImpl(
                     WalletCorePartialState.Redirect(
                         uri = it.uri
                     )
+                }
+
+                is CheckKeyUnlockPartialState.RequestIsReadyToBeSent -> {
+                    WalletCorePartialState.RequestIsReadyToBeSent
                 }
 
                 else -> {

@@ -35,6 +35,7 @@ sealed class ProximityLoadingObserveResponsePartialState {
 
     data class Failure(val error: String) : ProximityLoadingObserveResponsePartialState()
     data object Success : ProximityLoadingObserveResponsePartialState()
+    data object RequestReadyToBeSent : ProximityLoadingObserveResponsePartialState()
 }
 
 sealed class ProximityLoadingSendRequestedDocumentPartialState {
@@ -77,6 +78,8 @@ class ProximityLoadingInteractorImpl(
                         response.authenticationData
                     )
                 }
+
+                is WalletCorePartialState.RequestIsReadyToBeSent -> ProximityLoadingObserveResponsePartialState.RequestReadyToBeSent
             }
         }
 

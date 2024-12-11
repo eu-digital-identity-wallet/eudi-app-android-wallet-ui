@@ -111,6 +111,14 @@ class PresentationLoadingViewModel(
                         onSuccess()
                     }
 
+                    is PresentationLoadingObserveResponsePartialState.Redirect -> {
+                        onSuccess(it.uri)
+                    }
+
+                    is PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent -> {
+                        sendRequestedDocuments(Event.DoWork(context))
+                    }
+
                     is PresentationLoadingObserveResponsePartialState.UserAuthenticationRequired -> {
                         val popEffect = Effect.Navigation.PopBackStackUpTo(
                             screenRoute = PresentationScreens.PresentationRequest.screenRoute,
@@ -122,35 +130,37 @@ class PresentationLoadingViewModel(
                             popEffect,
                             it.authenticationData,
                             {
-                                when (val result = interactor.sendRequestedDocuments()) {
-                                    is PresentationLoadingSendRequestedDocumentPartialState.Success -> {}
-
-                                    is PresentationLoadingSendRequestedDocumentPartialState.Failure -> {
-                                        setState {
-                                            copy(
-                                                error = ContentErrorConfig(
-                                                    onRetry = { setEvent(Event.DoWork(context)) },
-                                                    errorSubTitle = result.error,
-                                                    onCancel = {
-                                                        setEvent(Event.DismissError)
-                                                        doNavigation(
-                                                            NavigationType.PopTo(
-                                                                getPreviousScreen()
-                                                            )
-                                                        )
-                                                    }
-                                                )
-                                            )
-                                        }
-                                    }
-                                }
+                                sendRequestedDocuments(Event.DoWork(context))
                             }
                         )
                     }
+                }
+            }
+        }
+    }
 
-                    is PresentationLoadingObserveResponsePartialState.Redirect -> {
-                        onSuccess(it.uri)
-                    }
+    private fun sendRequestedDocuments(event: Event) {
+
+        when (val result = interactor.sendRequestedDocuments()) {
+            is PresentationLoadingSendRequestedDocumentPartialState.Success -> { /*no op*/
+            }
+
+            is PresentationLoadingSendRequestedDocumentPartialState.Failure -> {
+                setState {
+                    copy(
+                        error = ContentErrorConfig(
+                            onRetry = { setEvent(event) },
+                            errorSubTitle = result.error,
+                            onCancel = {
+                                setEvent(Event.DismissError)
+                                doNavigation(
+                                    NavigationType.PopTo(
+                                        getPreviousScreen()
+                                    )
+                                )
+                            }
+                        )
+                    )
                 }
             }
         }

@@ -37,6 +37,7 @@ sealed class PresentationLoadingObserveResponsePartialState {
     data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
     data object Success : PresentationLoadingObserveResponsePartialState()
     data class Redirect(val uri: URI) : PresentationLoadingObserveResponsePartialState()
+    data object RequestReadyToBeSent : PresentationLoadingObserveResponsePartialState()
 }
 
 sealed class PresentationLoadingSendRequestedDocumentPartialState {
@@ -88,6 +89,8 @@ class PresentationLoadingInteractorImpl(
                         response.authenticationData
                     )
                 }
+
+                is WalletCorePartialState.RequestIsReadyToBeSent -> PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent
             }
         }
 
