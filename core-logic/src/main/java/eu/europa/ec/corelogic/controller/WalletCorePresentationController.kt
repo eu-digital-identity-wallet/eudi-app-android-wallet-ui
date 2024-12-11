@@ -249,18 +249,23 @@ class WalletCorePresentationControllerImpl(
                 )
             },
             onRequestReceived = { requestedDocumentData ->
-                val requestedDocuments = requestedDocumentData.getOrThrow()
-                processedRequest = requestedDocuments
-                verifierName =
-                    requestedDocuments.requestedDocuments.firstOrNull()?.readerAuth?.readerCommonName
-                val verifierIsTrusted =
-                    requestedDocuments.requestedDocuments.firstOrNull()?.readerAuth?.isVerified == true
                 trySendBlocking(
-                    TransferEventPartialState.RequestReceived(
-                        requestData = requestedDocuments.requestedDocuments,
-                        verifierName = verifierName,
-                        verifierIsTrusted = verifierIsTrusted
-                    )
+                    requestedDocumentData.getOrNull()?.let { requestedDocuments ->
+
+                        processedRequest = requestedDocuments
+
+                        verifierName = requestedDocuments.requestedDocuments
+                            .firstOrNull()?.readerAuth?.readerCommonName
+
+                        val verifierIsTrusted = requestedDocuments.requestedDocuments
+                            .firstOrNull()?.readerAuth?.isVerified == true
+
+                        TransferEventPartialState.RequestReceived(
+                            requestData = requestedDocuments.requestedDocuments,
+                            verifierName = verifierName,
+                            verifierIsTrusted = verifierIsTrusted
+                        )
+                    } ?: TransferEventPartialState.Error(error = genericErrorMessage)
                 )
             },
             onResponseSent = {
@@ -345,8 +350,10 @@ class WalletCorePresentationControllerImpl(
 
     override fun sendRequestedDocuments(): SendRequestedDocumentsPartialState {
         return disclosedDocuments?.let { safeDisclosedDocuments ->
+
             var result: SendRequestedDocumentsPartialState =
                 SendRequestedDocumentsPartialState.RequestSent
+
             processedRequest?.generateResponse(DisclosedDocuments(safeDisclosedDocuments.toList()))
                 ?.toKotlinResult()
                 ?.onFailure {

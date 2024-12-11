@@ -50,6 +50,7 @@ interface ProximityLoadingInteractor {
     fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult,
     )
 }
@@ -82,6 +83,7 @@ class ProximityLoadingInteractorImpl(
     override fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult,
     ) {
         deviceAuthenticationInteractor.getBiometricsAvailability {
@@ -90,16 +92,13 @@ class ProximityLoadingInteractorImpl(
                     deviceAuthenticationInteractor.authenticateWithBiometrics(
                         context = context,
                         crypto = crypto,
+                        notifyOnAuthenticationFailure = notifyOnAuthenticationFailure,
                         resultHandler = resultHandler
                     )
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
-                    deviceAuthenticationInteractor.authenticateWithBiometrics(
-                        context = context,
-                        crypto = crypto,
-                        resultHandler = resultHandler
-                    )
+                    deviceAuthenticationInteractor.launchBiometricSystemScreen()
                 }
 
                 is BiometricsAvailability.Failure -> {

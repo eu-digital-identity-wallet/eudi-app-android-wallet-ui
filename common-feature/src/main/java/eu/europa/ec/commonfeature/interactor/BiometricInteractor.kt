@@ -29,6 +29,7 @@ interface BiometricInteractor {
     fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean)
     fun authenticateWithBiometrics(
         context: Context,
+        notifyOnAuthenticationFailure: Boolean,
         listener: (BiometricsAuthenticate) -> Unit
     )
 
@@ -59,9 +60,14 @@ class BiometricInteractorImpl(
 
     override fun authenticateWithBiometrics(
         context: Context,
+        notifyOnAuthenticationFailure: Boolean,
         listener: (BiometricsAuthenticate) -> Unit
     ) {
-        biometricAuthenticationController.authenticate(context, listener)
+        biometricAuthenticationController.authenticate(
+            context,
+            notifyOnAuthenticationFailure,
+            listener
+        )
     }
 
     override fun launchBiometricSystemScreen() {

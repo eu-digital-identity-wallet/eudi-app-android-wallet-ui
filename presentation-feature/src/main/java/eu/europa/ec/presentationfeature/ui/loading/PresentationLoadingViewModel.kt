@@ -168,6 +168,7 @@ class PresentationLoadingViewModel(
         interactor.handleUserAuthentication(
             context = context,
             crypto = authenticationData.crypto,
+            notifyOnAuthenticationFailure = viewState.value.notifyOnAuthenticationFailure,
             resultHandler = DeviceAuthenticationResult(
                 onAuthenticationSuccess = {
                     authenticationData.onAuthenticationSuccess()
@@ -184,8 +185,7 @@ class PresentationLoadingViewModel(
                         )
                     }
                 },
-                onAuthenticationError = { setEffect { popEffect } },
-                onAuthenticationFailure = { setEffect { popEffect } }
+                onAuthenticationError = { setEffect { popEffect } }
             )
         )
     }

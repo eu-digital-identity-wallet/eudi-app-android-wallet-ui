@@ -62,6 +62,7 @@ data class State(
     val quickPin: String = "",
     val userBiometricsAreEnabled: Boolean = false,
     val isCancellable: Boolean = false,
+    val notifyOnAuthenticationFailure: Boolean = true,
     val quickPinSize: Int = 6
 ) : ViewState
 
@@ -213,7 +214,10 @@ class BiometricViewModel(
     }
 
     private fun authenticate(context: Context) {
-        biometricInteractor.authenticateWithBiometrics(context) {
+        biometricInteractor.authenticateWithBiometrics(
+            context = context,
+            notifyOnAuthenticationFailure = viewState.value.notifyOnAuthenticationFailure
+        ) {
             when (it) {
                 is BiometricsAuthenticate.Success -> {
                     authenticationSuccess()

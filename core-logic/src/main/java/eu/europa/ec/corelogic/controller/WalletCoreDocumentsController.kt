@@ -527,8 +527,7 @@ class WalletCoreDocumentsControllerImpl(
                             BiometricCrypto(keyUnlockData?.getCryptoObjectForSigning(event.signingAlgorithm)),
                             DeviceAuthenticationResult(
                                 onAuthenticationSuccess = { event.resume(keyUnlockData as KeyUnlockData) },
-                                onAuthenticationError = { event.cancel(null) },
-                                onAuthenticationFailure = { event.cancel(null) },
+                                onAuthenticationError = { event.cancel(null) }
                             )
                         )
                     )

@@ -162,6 +162,7 @@ class ProximityLoadingViewModel(
         interactor.handleUserAuthentication(
             context = context,
             crypto = authenticationData.crypto,
+            notifyOnAuthenticationFailure = viewState.value.notifyOnAuthenticationFailure,
             resultHandler = DeviceAuthenticationResult(
                 onAuthenticationSuccess = {
                     authenticationData.onAuthenticationSuccess()
@@ -178,8 +179,7 @@ class ProximityLoadingViewModel(
                         )
                     }
                 },
-                onAuthenticationError = { setEffect { popEffect } },
-                onAuthenticationFailure = { setEffect { popEffect } }
+                onAuthenticationError = { setEffect { popEffect } }
             )
         )
     }

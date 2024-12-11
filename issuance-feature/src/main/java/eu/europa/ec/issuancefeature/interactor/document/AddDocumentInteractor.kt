@@ -67,6 +67,7 @@ interface AddDocumentInteractor {
     fun handleUserAuth(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult
     )
 
@@ -148,24 +149,22 @@ class AddDocumentInteractorImpl(
     override fun handleUserAuth(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult
     ) {
         deviceAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
                     deviceAuthenticationInteractor.authenticateWithBiometrics(
-                        context,
-                        crypto,
-                        resultHandler
+                        context = context,
+                        crypto = crypto,
+                        notifyOnAuthenticationFailure = notifyOnAuthenticationFailure,
+                        resultHandler = resultHandler
                     )
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
-                    deviceAuthenticationInteractor.authenticateWithBiometrics(
-                        context,
-                        crypto,
-                        resultHandler
-                    )
+                    deviceAuthenticationInteractor.launchBiometricSystemScreen()
                 }
 
                 is BiometricsAvailability.Failure -> {

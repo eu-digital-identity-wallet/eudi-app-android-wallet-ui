@@ -38,6 +38,7 @@ const val mockedMdlId = "000002"
 const val mockedPidDocName = "EU PID"
 const val mockedMdlDocName = "mDL"
 const val mockedVerifierIsTrusted = true
+const val mockedNotifyOnAuthenticationFailure = false
 val mockedPidFields: Map<String, ByteArray> = mapOf(
     "family_name" to byteArrayOf(105, 65, 78, 68, 69, 82, 83, 83, 79, 78),
     "given_name" to byteArrayOf(99, 74, 65, 78),
