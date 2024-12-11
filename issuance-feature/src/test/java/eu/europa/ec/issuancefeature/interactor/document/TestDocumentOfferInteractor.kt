@@ -59,6 +59,7 @@ import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedMainPid
+import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.mockedPidDocName
 import eu.europa.ec.testfeature.mockedPidDocType
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
@@ -967,6 +968,7 @@ class TestDocumentOfferInteractor {
         interactor.handleUserAuthentication(
             context = context,
             crypto = biometricCrypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 
@@ -975,6 +977,7 @@ class TestDocumentOfferInteractor {
             .authenticateWithBiometrics(
                 context = context,
                 crypto = biometricCrypto,
+                notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
                 resultHandler = resultHandler
             )
     }
@@ -984,7 +987,7 @@ class TestDocumentOfferInteractor {
     // BiometricsAvailability.NonEnrolled
 
     // Case 2 Expected Result:
-    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    // deviceAuthenticationInteractor.launchBiometricSystemScreen called once.
     @Test
     fun `Given Case 2, When handleUserAuthentication is called, Then Case 2 expected result is returned`() {
         // Given
@@ -996,16 +999,13 @@ class TestDocumentOfferInteractor {
         interactor.handleUserAuthentication(
             context = context,
             crypto = biometricCrypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 
         // Then
         verify(deviceAuthenticationInteractor, times(1))
-            .authenticateWithBiometrics(
-                context = context,
-                crypto = biometricCrypto,
-                resultHandler = resultHandler
-            )
+            .launchBiometricSystemScreen()
     }
 
     // Case 3:
@@ -1031,6 +1031,7 @@ class TestDocumentOfferInteractor {
         interactor.handleUserAuthentication(
             context = context,
             crypto = biometricCrypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 

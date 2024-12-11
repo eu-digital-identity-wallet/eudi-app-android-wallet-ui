@@ -27,13 +27,20 @@ interface DeviceAuthenticationInteractor {
     fun authenticateWithBiometrics(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult
     )
+
+    fun launchBiometricSystemScreen()
 }
 
 class DeviceAuthenticationInteractorImpl(
     private val deviceAuthenticationController: DeviceAuthenticationController,
 ) : DeviceAuthenticationInteractor {
+
+    override fun launchBiometricSystemScreen() {
+        deviceAuthenticationController.launchBiometricSystemScreen()
+    }
 
     override fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit) {
         deviceAuthenticationController.deviceSupportsBiometrics(listener)
@@ -42,11 +49,13 @@ class DeviceAuthenticationInteractorImpl(
     override fun authenticateWithBiometrics(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult
     ) {
         deviceAuthenticationController.authenticate(
             context,
             crypto,
+            notifyOnAuthenticationFailure,
             resultHandler
         )
     }

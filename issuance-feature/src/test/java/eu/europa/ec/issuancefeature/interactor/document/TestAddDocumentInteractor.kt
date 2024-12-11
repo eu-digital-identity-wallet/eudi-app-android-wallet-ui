@@ -49,6 +49,7 @@ import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentT
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -318,12 +319,18 @@ class TestAddDocumentInteractor {
         interactor.handleUserAuth(
             context = context,
             crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 
         // Then
         verify(deviceAuthenticationInteractor, times(1))
-            .authenticateWithBiometrics(context, crypto, resultHandler)
+            .authenticateWithBiometrics(
+                context,
+                crypto,
+                mockedNotifyOnAuthenticationFailure,
+                resultHandler
+            )
     }
 
     // Case 2:
@@ -331,7 +338,7 @@ class TestAddDocumentInteractor {
     // BiometricsAvailability.NonEnrolled
 
     // Case 2 Expected Result:
-    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    // deviceAuthenticationInteractor.launchBiometricSystemScreen called once.
     @Test
     fun `Given Case 2, When handleUserAuth is called, Then Case 2 expected result is returned`() {
         // Given
@@ -343,12 +350,13 @@ class TestAddDocumentInteractor {
         interactor.handleUserAuth(
             context = context,
             crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 
         // Then
         verify(deviceAuthenticationInteractor, times(1))
-            .authenticateWithBiometrics(context, crypto, resultHandler)
+            .launchBiometricSystemScreen()
     }
 
     // Case 3:
@@ -374,6 +382,7 @@ class TestAddDocumentInteractor {
         interactor.handleUserAuth(
             context = context,
             crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 

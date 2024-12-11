@@ -37,6 +37,7 @@ sealed class PresentationLoadingObserveResponsePartialState {
     data class Failure(val error: String) : PresentationLoadingObserveResponsePartialState()
     data object Success : PresentationLoadingObserveResponsePartialState()
     data class Redirect(val uri: URI) : PresentationLoadingObserveResponsePartialState()
+    data object RequestReadyToBeSent : PresentationLoadingObserveResponsePartialState()
 }
 
 sealed class PresentationLoadingSendRequestedDocumentPartialState {
@@ -53,6 +54,7 @@ interface PresentationLoadingInteractor {
     fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult,
     )
 }
@@ -87,6 +89,8 @@ class PresentationLoadingInteractorImpl(
                         response.authenticationData
                     )
                 }
+
+                is WalletCorePartialState.RequestIsReadyToBeSent -> PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent
             }
         }
 
@@ -102,24 +106,22 @@ class PresentationLoadingInteractorImpl(
     override fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult,
     ) {
         deviceAuthenticationInteractor.getBiometricsAvailability {
             when (it) {
                 is BiometricsAvailability.CanAuthenticate -> {
                     deviceAuthenticationInteractor.authenticateWithBiometrics(
-                        context,
-                        crypto,
-                        resultHandler
+                        context = context,
+                        crypto = crypto,
+                        notifyOnAuthenticationFailure = notifyOnAuthenticationFailure,
+                        resultHandler = resultHandler
                     )
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
-                    deviceAuthenticationInteractor.authenticateWithBiometrics(
-                        context,
-                        crypto,
-                        resultHandler
-                    )
+                    deviceAuthenticationInteractor.launchBiometricSystemScreen()
                 }
 
                 is BiometricsAvailability.Failure -> {

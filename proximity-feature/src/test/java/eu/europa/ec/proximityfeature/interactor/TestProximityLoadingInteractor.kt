@@ -25,6 +25,7 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.model.AuthenticationData
+import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -214,12 +215,18 @@ class TestProximityLoadingInteractor {
         interactor.handleUserAuthentication(
             context = context,
             crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 
         // Then
         verify(deviceAuthenticationInteractor, times(1))
-            .authenticateWithBiometrics(context, crypto, resultHandler)
+            .authenticateWithBiometrics(
+                context,
+                crypto,
+                mockedNotifyOnAuthenticationFailure,
+                resultHandler
+            )
     }
 
     // Case 2:
@@ -227,7 +234,7 @@ class TestProximityLoadingInteractor {
     // BiometricsAvailability.NonEnrolled
 
     // Case 2 Expected Result:
-    // deviceAuthenticationInteractor.authenticateWithBiometrics called once.
+    // deviceAuthenticationInteractor.launchBiometricSystemScreen called once.
     @Test
     fun `Given case 2, When handleUserAuthentication is called, Then Case 2 expected result is returned`() {
         // Given
@@ -239,12 +246,13 @@ class TestProximityLoadingInteractor {
         interactor.handleUserAuthentication(
             context = context,
             crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 
         // Then
         verify(deviceAuthenticationInteractor, times(1))
-            .authenticateWithBiometrics(context, crypto, resultHandler)
+            .launchBiometricSystemScreen()
     }
 
     // Case 3:
@@ -269,6 +277,7 @@ class TestProximityLoadingInteractor {
         interactor.handleUserAuthentication(
             context = context,
             crypto = crypto,
+            notifyOnAuthenticationFailure = mockedNotifyOnAuthenticationFailure,
             resultHandler = resultHandler
         )
 

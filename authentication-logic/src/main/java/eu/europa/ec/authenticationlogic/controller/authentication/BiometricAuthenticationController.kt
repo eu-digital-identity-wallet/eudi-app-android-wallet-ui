@@ -50,11 +50,17 @@ enum class BiometricsAuthError(val code: Int) {
 
 interface BiometricAuthenticationController {
     fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit)
-    fun authenticate(context: Context, listener: (BiometricsAuthenticate) -> Unit)
+    fun authenticate(
+        context: Context,
+        notifyOnAuthenticationFailure: Boolean,
+        listener: (BiometricsAuthenticate) -> Unit
+    )
+
     suspend fun authenticate(
         activity: FragmentActivity,
         biometryCrypto: BiometricCrypto,
-        promptInfo: BiometricPrompt.PromptInfo
+        promptInfo: BiometricPrompt.PromptInfo,
+        notifyOnAuthenticationFailure: Boolean,
     ): BiometricPromptData
 
     fun launchBiometricSystemScreen()
@@ -79,7 +85,11 @@ class BiometricAuthenticationControllerImpl(
         }
     }
 
-    override fun authenticate(context: Context, listener: (BiometricsAuthenticate) -> Unit) {
+    override fun authenticate(
+        context: Context,
+        notifyOnAuthenticationFailure: Boolean,
+        listener: (BiometricsAuthenticate) -> Unit
+    ) {
         (context as? FragmentActivity)?.let { activity ->
 
             activity.lifecycleScope.launch {
@@ -102,7 +112,8 @@ class BiometricAuthenticationControllerImpl(
                         .setTitle(activity.getString(R.string.biometric_prompt_title))
                         .setSubtitle(activity.getString(R.string.biometric_prompt_subtitle))
                         .setNegativeButtonText(activity.getString(R.string.generic_cancel))
-                        .build()
+                        .build(),
+                    notifyOnAuthenticationFailure = notifyOnAuthenticationFailure
                 )
 
                 if (data.authenticationResult != null) {
@@ -116,7 +127,7 @@ class BiometricAuthenticationControllerImpl(
                     data.errorCode != BiometricsAuthError.Cancel.code &&
                     data.errorCode != BiometricsAuthError.CancelByUser.code
                 ) {
-                    authenticate(context, listener)
+                    authenticate(context, notifyOnAuthenticationFailure, listener)
                 } else {
                     listener.invoke(BiometricsAuthenticate.Cancelled)
                 }
@@ -142,7 +153,8 @@ class BiometricAuthenticationControllerImpl(
     override suspend fun authenticate(
         activity: FragmentActivity,
         biometryCrypto: BiometricCrypto,
-        promptInfo: BiometricPrompt.PromptInfo
+        promptInfo: BiometricPrompt.PromptInfo,
+        notifyOnAuthenticationFailure: Boolean
     ): BiometricPromptData = suspendCancellableCoroutine { continuation ->
         val prompt = BiometricPrompt(
             activity,
@@ -163,7 +175,7 @@ class BiometricAuthenticationControllerImpl(
                 }
 
                 override fun onAuthenticationFailed() {
-                    if (continuation.isActive) {
+                    if (continuation.isActive && notifyOnAuthenticationFailure) {
                         continuation.resume(BiometricPromptData(null))
                     }
                 }

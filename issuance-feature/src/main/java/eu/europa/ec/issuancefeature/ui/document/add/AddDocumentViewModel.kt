@@ -66,6 +66,7 @@ data class State(
     val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val isInitialised: Boolean = false,
+    val notifyOnAuthenticationFailure: Boolean = false,
 
     val title: String = "",
     val subtitle: String = "",
@@ -293,12 +294,10 @@ class AddDocumentViewModel(
                         addDocumentInteractor.handleUserAuth(
                             context = context,
                             crypto = response.crypto,
+                            notifyOnAuthenticationFailure = viewState.value.notifyOnAuthenticationFailure,
                             resultHandler = DeviceAuthenticationResult(
                                 onAuthenticationSuccess = {
                                     response.resultHandler.onAuthenticationSuccess()
-                                },
-                                onAuthenticationFailure = {
-                                    response.resultHandler.onAuthenticationFailure()
                                 },
                                 onAuthenticationError = {
                                     response.resultHandler.onAuthenticationError()

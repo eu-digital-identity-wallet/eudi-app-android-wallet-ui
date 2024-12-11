@@ -33,7 +33,8 @@ data class State(
     val error: ContentErrorConfig? = null,
     val screenTitle: String,
     val screenSubtitle: String,
-    val isCancellable: Boolean
+    val isCancellable: Boolean,
+    val notifyOnAuthenticationFailure: Boolean = false
 ) : ViewState
 
 sealed class Event : ViewEvent {

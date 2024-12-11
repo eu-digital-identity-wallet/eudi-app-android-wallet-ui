@@ -56,6 +56,7 @@ data class State(
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
     val isInitialised: Boolean = false,
+    val notifyOnAuthenticationFailure: Boolean = false,
 
     val issuerName: String,
     val screenTitle: String,
@@ -361,6 +362,7 @@ class DocumentOfferViewModel(
                         documentOfferInteractor.handleUserAuthentication(
                             context = context,
                             crypto = response.crypto,
+                            notifyOnAuthenticationFailure = viewState.value.notifyOnAuthenticationFailure,
                             resultHandler = response.resultHandler
                         )
                     }

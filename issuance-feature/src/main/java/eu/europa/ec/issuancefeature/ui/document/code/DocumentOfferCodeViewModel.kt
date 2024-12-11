@@ -41,6 +41,7 @@ data class State(
 
     val isLoading: LoadingType = LoadingType.NONE,
     val error: ContentErrorConfig? = null,
+    val notifyOnAuthenticationFailure: Boolean = false,
 
     val screenTitle: String,
     val screenSubtitle: String
@@ -156,6 +157,7 @@ class DocumentOfferCodeViewModel(
                         documentOfferInteractor.handleUserAuthentication(
                             context = context,
                             crypto = response.crypto,
+                            notifyOnAuthenticationFailure = viewState.value.notifyOnAuthenticationFailure,
                             resultHandler = response.resultHandler
                         )
                     }

@@ -80,6 +80,8 @@ sealed class CheckKeyUnlockPartialState {
     data class UserAuthenticationRequired(
         val authenticationData: List<AuthenticationData>,
     ) : CheckKeyUnlockPartialState()
+
+    data object RequestIsReadyToBeSent : CheckKeyUnlockPartialState()
 }
 
 sealed class SendRequestedDocumentsPartialState {
@@ -101,6 +103,7 @@ sealed class WalletCorePartialState {
     data class Failure(val error: String) : WalletCorePartialState()
     data object Success : WalletCorePartialState()
     data class Redirect(val uri: URI) : WalletCorePartialState()
+    data object RequestIsReadyToBeSent : WalletCorePartialState()
 }
 
 sealed class LoadSampleDataPartialState {
@@ -245,22 +248,29 @@ class WalletCorePresentationControllerImpl(
             },
             onError = { errorMessage ->
                 trySendBlocking(
-                    TransferEventPartialState.Error(error = errorMessage)
+                    TransferEventPartialState.Error(
+                        error = errorMessage.ifEmpty { genericErrorMessage }
+                    )
                 )
             },
             onRequestReceived = { requestedDocumentData ->
-                val requestedDocuments = requestedDocumentData.getOrThrow()
-                processedRequest = requestedDocuments
-                verifierName =
-                    requestedDocuments.requestedDocuments.firstOrNull()?.readerAuth?.readerCommonName
-                val verifierIsTrusted =
-                    requestedDocuments.requestedDocuments.firstOrNull()?.readerAuth?.isVerified == true
                 trySendBlocking(
-                    TransferEventPartialState.RequestReceived(
-                        requestData = requestedDocuments.requestedDocuments,
-                        verifierName = verifierName,
-                        verifierIsTrusted = verifierIsTrusted
-                    )
+                    requestedDocumentData.getOrNull()?.let { requestedDocuments ->
+
+                        processedRequest = requestedDocuments
+
+                        verifierName = requestedDocuments.requestedDocuments
+                            .firstOrNull()?.readerAuth?.readerCommonName
+
+                        val verifierIsTrusted = requestedDocuments.requestedDocuments
+                            .firstOrNull()?.readerAuth?.isVerified == true
+
+                        TransferEventPartialState.RequestReceived(
+                            requestData = requestedDocuments.requestedDocuments,
+                            verifierName = verifierName,
+                            verifierIsTrusted = verifierIsTrusted
+                        )
+                    } ?: TransferEventPartialState.Error(error = genericErrorMessage)
                 )
             },
             onResponseSent = {
@@ -334,7 +344,9 @@ class WalletCorePresentationControllerImpl(
                 )
 
             } else {
-                sendRequestedDocuments()
+                emit(
+                    CheckKeyUnlockPartialState.RequestIsReadyToBeSent
+                )
             }
         }
     }.safeAsync {
@@ -345,8 +357,10 @@ class WalletCorePresentationControllerImpl(
 
     override fun sendRequestedDocuments(): SendRequestedDocumentsPartialState {
         return disclosedDocuments?.let { safeDisclosedDocuments ->
+
             var result: SendRequestedDocumentsPartialState =
                 SendRequestedDocumentsPartialState.RequestSent
+
             processedRequest?.generateResponse(DisclosedDocuments(safeDisclosedDocuments.toList()))
                 ?.toKotlinResult()
                 ?.onFailure {
@@ -417,6 +431,10 @@ class WalletCorePresentationControllerImpl(
                     WalletCorePartialState.Redirect(
                         uri = it.uri
                     )
+                }
+
+                is CheckKeyUnlockPartialState.RequestIsReadyToBeSent -> {
+                    WalletCorePartialState.RequestIsReadyToBeSent
                 }
 
                 else -> {

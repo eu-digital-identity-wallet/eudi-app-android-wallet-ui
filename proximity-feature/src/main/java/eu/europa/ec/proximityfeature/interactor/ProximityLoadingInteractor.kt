@@ -35,6 +35,7 @@ sealed class ProximityLoadingObserveResponsePartialState {
 
     data class Failure(val error: String) : ProximityLoadingObserveResponsePartialState()
     data object Success : ProximityLoadingObserveResponsePartialState()
+    data object RequestReadyToBeSent : ProximityLoadingObserveResponsePartialState()
 }
 
 sealed class ProximityLoadingSendRequestedDocumentPartialState {
@@ -50,6 +51,7 @@ interface ProximityLoadingInteractor {
     fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult,
     )
 }
@@ -76,12 +78,15 @@ class ProximityLoadingInteractorImpl(
                         response.authenticationData
                     )
                 }
+
+                is WalletCorePartialState.RequestIsReadyToBeSent -> ProximityLoadingObserveResponsePartialState.RequestReadyToBeSent
             }
         }
 
     override fun handleUserAuthentication(
         context: Context,
         crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult,
     ) {
         deviceAuthenticationInteractor.getBiometricsAvailability {
@@ -90,16 +95,13 @@ class ProximityLoadingInteractorImpl(
                     deviceAuthenticationInteractor.authenticateWithBiometrics(
                         context = context,
                         crypto = crypto,
+                        notifyOnAuthenticationFailure = notifyOnAuthenticationFailure,
                         resultHandler = resultHandler
                     )
                 }
 
                 is BiometricsAvailability.NonEnrolled -> {
-                    deviceAuthenticationInteractor.authenticateWithBiometrics(
-                        context = context,
-                        crypto = crypto,
-                        resultHandler = resultHandler
-                    )
+                    deviceAuthenticationInteractor.launchBiometricSystemScreen()
                 }
 
                 is BiometricsAvailability.Failure -> {
