@@ -16,7 +16,6 @@
 
 package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
@@ -94,13 +93,6 @@ fun DocType.toDocumentIdentifier(): DocumentIdentifier = when (this) {
 fun Document.toDocumentIdentifier(): DocumentIdentifier {
     val nameSpace = (this as? IssuedDocument)?.nameSpaces?.keys?.firstOrNull().orEmpty()
     val docType = (this.format as? MsoMdocFormat)?.docType.orEmpty()
-
-    return createDocumentIdentifier(nameSpace, docType)
-}
-
-fun RequestedDocument.toDocumentIdentifier(): DocumentIdentifier {
-    val nameSpace = this.requestedItems.keys.firstOrNull()?.namespace.orEmpty()
-    val docType = ""
 
     return createDocumentIdentifier(nameSpace, docType)
 }
