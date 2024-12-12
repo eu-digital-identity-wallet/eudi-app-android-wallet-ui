@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,7 +30,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -50,6 +55,7 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import kotlinx.coroutines.CoroutineScope
@@ -83,8 +89,8 @@ fun RequestScreen(
                 stickyBottomModifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues)
-                    //.background(Color.Blue)
-                    ,
+                //.background(Color.Blue)
+                ,
                 stickyBottomConfig = StickyBottomConfig(
                     type = StickyBottomType.OneButton(
                         config = ButtonConfig(
@@ -177,6 +183,22 @@ private fun Content(
             config = state.headerConfig,
         )
 
+        var isExpanded by remember { mutableStateOf(false) }
+
+        state.newItems?.let { newItems ->
+            WrapExpandableListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 800.dp),
+                data = newItems,
+                isExpanded = isExpanded,
+                onExpandedChange = {
+                    isExpanded = it
+                },
+                onEventSend = onEventSend,
+            )
+        }
+
         // Screen Main Content.
         Request(
             modifier = Modifier.weight(1f)/*.background(Color.Red)*/,
@@ -187,42 +209,6 @@ private fun Content(
             listState = rememberLazyListState(),
             contentPadding = paddingValues
         )
-
-        /*LazyColumn(
-            modifier = Modifier.weight(1f)
-        ) {
-            items(state.items) { requestDocumentsUi ->
-                requestDocumentsUi.documentsUi.forEach { documentUiItem ->
-                    WrapExpandableListItem(
-                        data = documentUiItem.item.expandableListItem,
-                        isExpanded = false, // Track expand state if needed
-                        onExpandedChange = { *//* Handle expand state *//* },
-                        onExpandedItemClick = { listItemData ->
-                            onEventSend(documentUiItem.item.event ?: return@WrapExpandableListItem)
-                        },
-                    )
-                }
-            }
-        }*/
-
-        /*WrapExpandableListItem(
-            data = ExpandableListItemData(
-                collapsed = ListItemData(
-                    mainText = "Digital ID", //TODO
-                    supportingText = stringResource(R.string.request_collapsed_supporting_text),
-                )
-            )
-        )*/
-
-        /*WrapListItems(
-            modifier = Modifier.weight(1f)*//*.background(Color.Red)*//*,
-            items = state.items.flatMap {
-                it.documentsUi.map {
-                    it.documentDetailsUiItem
-                }
-            },
-            mainTextVerticalPadding = 12,
-        )*/
     }
 
     LaunchedEffect(Unit) {

@@ -16,41 +16,31 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.preview.PreviewTheme
-import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 
-data class ExpandableListItemData(
-    val collapsed: ListItemData,
+data class ExpandableListItemData<T>(
+    val collapsed: ListItemData<T>,
     val collapsedMainTextVerticalPadding: Int? = null,
-    val expanded: List<ListItemData>,
+    val expanded: List<ListItemData<T>>,
     val expandedMainTextVerticalPadding: Int? = null,
 )
 
 @Composable
-fun WrapExpandableListItem(
-    data: ExpandableListItemData,
+fun <T> WrapExpandableListItem(
+    data: ExpandableListItemData<T>,
+    onEventSend: (T) -> Unit,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     isClickableWhenExpanded: Boolean = false,
     throttleClicks: Boolean = true,
-    onExpandedItemClick: ((ListItemData) -> Unit)? = null
+    //onExpandedItemClick: ((ListItemData) -> Unit)? = null
 ) {
     WrapExpandableCard(
         modifier = modifier,
@@ -59,7 +49,11 @@ fun WrapExpandableListItem(
                 item = data.collapsed,
                 hideSensitiveContent = false,
                 mainTextVerticalPadding = data.collapsedMainTextVerticalPadding,
-                onItemClick = { onExpandedChange(!isExpanded) },
+                //onItemClick = { onExpandedChange(!isExpanded) },
+                onEventSend = { event ->
+                    onEventSend(event)
+                    onExpandedChange(!isExpanded)
+                }
             )
         },
         cardExpandedContent = {
@@ -71,8 +65,9 @@ fun WrapExpandableListItem(
                     bottomStart = SIZE_SMALL.dp,
                     bottomEnd = SIZE_SMALL.dp,
                 ),
-                onItemClick = onExpandedItemClick,
+                //onItemClick = onExpandedItemClick,
                 clickable = isClickableWhenExpanded,
+                onEventSend = onEventSend
             )
         },
         isExpanded = isExpanded,
@@ -81,6 +76,7 @@ fun WrapExpandableListItem(
     )
 }
 
+/*
 @ThemeModePreviews
 @Composable
 private fun WrapExpandableListItemPreview() {
@@ -119,4 +115,4 @@ private fun WrapExpandableListItemPreview() {
             onExpandedItemClick = {},
         )
     }
-}
+}*/

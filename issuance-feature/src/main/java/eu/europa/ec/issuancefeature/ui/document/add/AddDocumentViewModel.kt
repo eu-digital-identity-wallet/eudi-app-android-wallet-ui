@@ -37,8 +37,11 @@ import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -68,12 +71,18 @@ data class State(
     val isInitialised: Boolean = false,
     val notifyOnAuthenticationFailure: Boolean = false,
 
+    val newItems: ExpandableListItemData<Event>? = null,
+    val itemsAreExpanded: Boolean = false,
+
     val title: String = "",
     val subtitle: String = "",
     val options: List<DocumentOptionItemUi> = emptyList()
 ) : ViewState
 
 sealed class Event : ViewEvent {
+    data class CollapsedItemClicked(val name: String) : Event()
+    data class ExpandedItemClicked(val name: String) : Event()
+    data class ExpandOrCollapse(val isExpanded: Boolean) : Event()
     data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
     data object OnPause : Event()
@@ -118,6 +127,106 @@ class AddDocumentViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
+            is Event.CollapsedItemClicked -> {
+                println("Giannis CollapsedItemClicked sth: ${event.name}")
+
+                /*viewState.value.newItems?.let { safeItems ->
+                    if (safeItems.collapsed.trailingContentData is ListItemTrailingContentData.Icon) {
+                        val trailingContentData =
+                            safeItems.collapsed.trailingContentData as ListItemTrailingContentData.Icon
+
+                        val updatedTrailingContentData = trailingContentData.copy(
+                            iconData = if (trailingContentData.iconData == AppIcons.KeyboardArrowUp){
+                                AppIcons.KeyboardArrowDown
+                            }else{
+                                AppIcons.KeyboardArrowUp
+                            }
+                        )
+
+                        setState {
+                            copy(
+                                newItems = safeItems.copy(
+                                    collapsed = safeItems.collapsed.copy(
+                                        trailingContentData = updatedTrailingContentData
+                                    )
+                                )
+                            )
+                        }
+                    }
+                }*/
+            }
+
+            is Event.ExpandedItemClicked -> {
+                println("Giannis ExpandedItemClicked: ${event.name}")
+
+                viewState.value.newItems?.let { currentItems ->
+                    // Find the index of the matching item
+                    val itemIndex = currentItems.expanded.indexOfFirst { it.itemId == event.name }
+
+                    if (itemIndex != -1) { // Check if a match was found
+                        val matchedItem = currentItems.expanded[itemIndex]
+
+                        // Update the matched item's checkbox state
+                        val updatedItem = if (matchedItem.trailingContentData is ListItemTrailingContentData.Checkbox) {
+                            val currentCheckboxData =
+                                (matchedItem.trailingContentData as ListItemTrailingContentData.Checkbox).checkboxData
+
+                            matchedItem.copy(
+                                trailingContentData = ListItemTrailingContentData.Checkbox(
+                                    checkboxData = currentCheckboxData.copy(
+                                        isChecked = !currentCheckboxData.isChecked
+                                    )
+                                )
+                            )
+                        } else {
+                            matchedItem
+                        }
+
+                        // Create a new list with the updated item
+                        val updatedExpandedItems = currentItems.expanded.toMutableList()
+                        updatedExpandedItems[itemIndex] = updatedItem
+
+                        // Update the state
+                        setState {
+                            copy(
+                                newItems = currentItems.copy(
+                                    expanded = updatedExpandedItems
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            is Event.ExpandOrCollapse -> {
+                println("Giannis ExpandOrCollapse: ${event.isExpanded}")
+
+                viewState.value.newItems?.let { currentItems ->
+                    val updatedTrailingContentData = (currentItems.collapsed.trailingContentData
+                            as? ListItemTrailingContentData.Icon)?.copy(
+                        iconData = if (event.isExpanded) {
+                            AppIcons.KeyboardArrowUp
+                        } else {
+                            AppIcons.KeyboardArrowDown
+                        }
+                    )
+
+                    val updatedCollapsedItem = currentItems.collapsed.copy(
+                        trailingContentData = updatedTrailingContentData
+                            ?: currentItems.collapsed.trailingContentData
+                    )
+
+                    setState {
+                        copy(
+                            itemsAreExpanded = event.isExpanded,
+                            newItems = currentItems.copy(
+                                collapsed = updatedCollapsedItem
+                            )
+                        )
+                    }
+                }
+            }
+
             is Event.Init -> {
                 if (viewState.value.options.isEmpty()) {
                     getOptions(event, event.deepLink)
@@ -176,7 +285,7 @@ class AddDocumentViewModel(
                                                 IssuanceScreens.AddDocument.screenRoute
                                             )
                                         ),
-                                        RequestUriConfig.Parser
+                                        RequestUriConfig
                                     )
                                 )
                             )
@@ -206,7 +315,8 @@ class AddDocumentViewModel(
                                 error = null,
                                 options = response.options,
                                 isInitialised = true,
-                                isLoading = false
+                                isLoading = false,
+                                newItems = addDocumentInteractor.getDummyData()
                             )
                         }
                         handleDeepLink(deepLinkUri)

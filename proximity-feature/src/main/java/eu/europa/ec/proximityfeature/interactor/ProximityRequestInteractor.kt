@@ -25,6 +25,7 @@ import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -78,6 +79,7 @@ class ProximityRequestInteractorImpl(
                         val requestDataUi = RequestTransformer.transformToUiItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
+                            requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
                             resourceProvider = resourceProvider
                         )
                         ProximityRequestInteractorPartialState.Success(

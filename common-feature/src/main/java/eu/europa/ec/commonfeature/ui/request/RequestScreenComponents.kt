@@ -30,10 +30,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -47,14 +43,18 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.CardWithIconAndText
+import eu.europa.ec.uilogic.component.CheckboxWithContent
 import eu.europa.ec.uilogic.component.ErrorInfo
+import eu.europa.ec.uilogic.component.InfoTextWithNameAndIconData
+import eu.europa.ec.uilogic.component.InfoTextWithNameAndValue
+import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
-import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 @Composable
@@ -67,7 +67,6 @@ fun <T> Request(
     listState: LazyListState,
     contentPadding: PaddingValues = PaddingValues(all = 0.dp),
 ) {
-    var isExpanded by remember { mutableStateOf(false) } //TODO
     if (noData) {
         ErrorInfo(
             informativeText = stringResource(id = R.string.request_no_data),
@@ -92,7 +91,7 @@ fun <T> Request(
                         )
                     }
 
-                    /*is RequestDataUi.OptionalField -> {
+                    is RequestDataUi.OptionalField -> {
                         Field(
                             item = item.optionalFieldItemUi.requestDocumentItemUi,
                             showFullDetails = isShowingFullUserInfo,
@@ -106,21 +105,6 @@ fun <T> Request(
                             showFullDetails = isShowingFullUserInfo,
                             onEventSend = onEventSend,
                             contentPadding = contentPadding,
-                        )
-                    }*/
-
-                    is RequestDataUi.ExpandableField -> {
-                        WrapExpandableListItem(
-                            modifier = Modifier.fillMaxWidth(),
-                            data = item.expandableFieldItemUi.expandableListItem,
-                            isExpanded = isExpanded, // Track expand/collapse state //TODO
-                            onExpandedChange = { //TODO
-                            /* Handle state change */
-                                isExpanded = it
-                            },
-                            onExpandedItemClick = { listItemData ->
-                                onEventSend(item.expandableFieldItemUi.event ?: return@WrapExpandableListItem)
-                            }
                         )
                     }
 
@@ -165,7 +149,7 @@ fun <T> Field(
     showFullDetails: Boolean,
     onEventSend: (T) -> Unit,
 ) {
-    /*CheckboxWithContent(
+    CheckboxWithContent(
         modifier = Modifier.fillMaxWidth(),
         checkboxData = CheckboxData(
             isChecked = item.checked,
@@ -206,7 +190,7 @@ fun <T> Field(
                 style = infoValueStyle
             )
         }
-    }*/
+    }
 }
 
 @Composable

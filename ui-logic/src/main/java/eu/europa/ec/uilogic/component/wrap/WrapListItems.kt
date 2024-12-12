@@ -16,35 +16,27 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.preview.PreviewTheme
-import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
-import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.extension.throttledClickable
 
 @Composable
-fun WrapListItems(
-    items: List<ListItemData>,
+fun <T> WrapListItems(
+    items: List<ListItemData<T>>,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     mainTextVerticalPadding: Int? = null,
     clickable: Boolean = false,
     shape: Shape? = null,
     throttleClicks: Boolean = true,
-    onItemClick: ((ListItemData) -> Unit)? = null,
+    onEventSend: (T) -> Unit
 ) {
     WrapCard(shape = shape) {
         Column(
@@ -54,27 +46,37 @@ fun WrapListItems(
             //itemsIndexed(items) { index, item ->
             items.forEachIndexed { index, item ->
                 val itemModifier = Modifier
-                    .then(
-                        if (clickable) {
-                            if (throttleClicks) {
-                                Modifier.throttledClickable { onItemClick?.invoke(item) }
-                            } else {
-                                Modifier.clickable { onItemClick?.invoke(item) }
-                            }
-                        } else {
-                            Modifier
-                        }
-                    )
+                    //.then(
+                    //    if (clickable) {
+                    //        if (throttleClicks) {
+                    //            Modifier.throttledClickable {
+                    //                onEventSend(item.event)
+                    //                //onItemClick?.invoke(item)
+                    //            }
+                    //        } else {
+                    //            Modifier.clickable {
+                    //                onEventSend(item.event)
+                    //                //onItemClick?.invoke(item)
+                    //            }
+                    //        }
+                    //    } else {
+                    //        Modifier
+                    //    }
+                    //)
                     .padding(
                         top = if (index == 0) SPACING_SMALL.dp else 0.dp,
                         bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
                     )
+                //.clickable {
+                //    onEventSend(item.event) //TODO is this ok? the same event twice?
+                //}
 
                 ListItem(
                     item = item,
                     modifier = itemModifier,
                     hideSensitiveContent = hideSensitiveContent,
                     mainTextVerticalPadding = mainTextVerticalPadding,
+                    onEventSend = onEventSend
                 )
 
                 if (index < items.lastIndex) {
@@ -85,6 +87,7 @@ fun WrapListItems(
     }
 }
 
+/*
 @ThemeModePreviews
 @Composable
 private fun WrapListItemsPreview(
@@ -146,4 +149,4 @@ private fun WrapListItemsPreview(
             items = items,
         )
     }
-}
+}*/

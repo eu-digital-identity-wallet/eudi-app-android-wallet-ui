@@ -34,7 +34,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 data class CheckboxData(
     val isChecked: Boolean,
     val enabled: Boolean = true,
-    val onCheckedChange: ((Boolean) -> Unit)?
+    val onCheckedChange: ((Boolean) -> Unit)? = null,
 )
 
 @Composable

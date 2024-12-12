@@ -17,7 +17,6 @@
 package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 
 sealed interface RequestDataUi<T> {
 
@@ -25,8 +24,12 @@ sealed interface RequestDataUi<T> {
         val documentItemUi: DocumentItemUi
     ) : RequestDataUi<T>
 
-    data class ExpandableField<T>(
-        val expandableFieldItemUi: ExpandableFieldItemUi<T>
+    data class OptionalField<T>(
+        val optionalFieldItemUi: OptionalFieldItemUi<T>
+    ) : RequestDataUi<T>
+
+    data class RequiredFields<T>(
+        val requiredFieldsItemUi: RequiredFieldsItemUi<T>
     ) : RequestDataUi<T>
 
     data class Space<T>(
@@ -37,8 +40,3 @@ sealed interface RequestDataUi<T> {
         val width: Int = -1
     ) : RequestDataUi<T>
 }
-
-data class ExpandableFieldItemUi<T>(
-    val expandableListItem: ExpandableListItemData,
-    val event: T? = null
-)

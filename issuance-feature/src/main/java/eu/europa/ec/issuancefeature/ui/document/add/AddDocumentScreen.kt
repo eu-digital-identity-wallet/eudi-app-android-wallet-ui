@@ -62,6 +62,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
@@ -171,6 +172,20 @@ private fun Content(
                 title = state.title,
                 subtitle = state.subtitle
             )
+
+            state.newItems?.let { newItems ->
+                WrapExpandableListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    data = newItems,
+                    isExpanded = state.itemsAreExpanded,
+                    onExpandedChange = { newIsExpanded ->
+                        onEventSend(Event.ExpandOrCollapse(isExpanded = newIsExpanded))
+                    },
+                    onEventSend = onEventSend,
+                )
+
+                VSpacer.Medium()
+            }
 
             LazyColumn {
                 state.options.forEach { option ->

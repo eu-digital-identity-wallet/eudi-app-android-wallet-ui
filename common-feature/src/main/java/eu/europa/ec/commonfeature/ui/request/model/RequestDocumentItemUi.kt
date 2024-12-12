@@ -16,29 +16,29 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
+import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.corelogic.model.DocType
+import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 
-//TODO should probably rename data class
 data class RequestDocumentItemUi<T>(
     val id: String,
-    val item: ExpandableDocumentItemUi<T>
-) {
-    //val keyIsBase64: Boolean
-    //    get() {
-    //        return keyIsBase64(domainPayload.elementIdentifier)
-    //    }
-}
-
-data class ExpandableDocumentItemUi<T>(
-    val expandableListItem: ExpandableListItemData,
     val domainPayload: DocumentItemDomainPayload,
+    val readableName: String,
+    val value: String,
+    val checked: Boolean,
+    val enabled: Boolean,
+    val docItem: DocItem,
     val event: T? = null
-)
+) {
+    val keyIsBase64: Boolean
+        get() {
+            return keyIsBase64(docItem.elementIdentifier)
+        }
+}
 
 data class DocumentItemDomainPayload(
     val docId: String,
@@ -60,13 +60,24 @@ data class DocumentItemDomainPayload(
     }
 }
 
-fun <T> toRequestDocumentItemUi(
+fun <T> DocItem.toRequestDocumentItemUi(
     uID: String,
-    expandableListItem: ExpandableDocumentItemUi<T>
+    docPayload: DocumentItemDomainPayload,
+    readableName: String,
+    value: String,
+    optional: Boolean,
+    isChecked: Boolean,
+    event: T?
 ): RequestDocumentItemUi<T> {
     return RequestDocumentItemUi(
         id = uID,
-        item = expandableListItem
+        domainPayload = docPayload,
+        checked = isChecked,
+        enabled = optional,
+        readableName = readableName,
+        docItem = this,
+        event = event,
+        value = value
     )
 }
 

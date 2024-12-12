@@ -17,10 +17,10 @@
 package eu.europa.ec.uilogic.component
 
 import android.os.Build
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
@@ -34,8 +34,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.uilogic.component.preview.PreviewTheme
-import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.ICON_SIZE_40
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
@@ -46,7 +44,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 
-data class ListItemData(
+data class ListItemData<T>(
+    val event: T, //todo val event: T? = null, is this better?
     val itemId: String? = null,
     val mainText: String,
     val overlineText: String? = null,
@@ -60,15 +59,22 @@ sealed class ListItemTrailingContentData {
     data class Checkbox(val checkboxData: CheckboxData) : ListItemTrailingContentData()
 }
 
+enum class ListItemClickArea {
+    WHOLE_ROW,
+    TRAILING_CONTENT
+}
+
 @Composable
-fun ListItem(
-    item: ListItemData,
+fun <T> ListItem(
+    item: ListItemData<T>,
+    onEventSend: ((T) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     mainTextVerticalPadding: Int? = null,
     overlineTextStyle: TextStyle = MaterialTheme.typography.labelMedium.copy(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     ),
+    //clickAreas: List<ListItemClickArea> = listOf(ListItemClickArea.TRAILING_CONTENT, ListItemClickArea.WHOLE_ROW)
 ) {
     val maxSecondaryTextLines = 1
     val textOverflow = TextOverflow.Ellipsis
@@ -99,9 +105,17 @@ fun ListItem(
 
     with(item) {
         Row(
-            modifier = modifier.padding(
-                horizontal = SPACING_MEDIUM.dp
-            ),
+            modifier = modifier
+                //.then(
+                //    if (clickAreas.contains(ListItemClickArea.WHOLE_ROW)) {
+                //        Modifier.clickable {
+                //            onEventSend?.invoke(item.event)
+                //        }
+                //    } else {
+                //        Modifier
+                //    }
+                //)
+                .padding(horizontal = SPACING_MEDIUM.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -160,15 +174,38 @@ fun ListItem(
             // Trailing Content
             trailingContentData?.let { safeTrailingContentData ->
                 when (safeTrailingContentData) {
-                    is ListItemTrailingContentData.Checkbox -> WrapCheckbox(
+                    /*is ListItemTrailingContentData.Checkbox -> WrapCheckbox(
+                        checkboxData = safeTrailingContentData.checkboxData.copy(
+                            onCheckedChange = {
+                                onEventSend(item.event)
+                            }
+                        ),
+                        modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
+                    )*/
+
+                    is ListItemTrailingContentData.Checkbox -> WrapEventCheckbox(
                         checkboxData = safeTrailingContentData.checkboxData,
+                        onEventSend = {
+                            if (onEventSend != null) {
+                                onEventSend(item.event)
+                            }
+                        },
                         modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
                     )
 
                     is ListItemTrailingContentData.Icon -> WrapIcon(
                         modifier = Modifier
                             .padding(start = SIZE_MEDIUM.dp)
-                            .size(DEFAULT_ICON_SIZE.dp),
+                            .size(DEFAULT_ICON_SIZE.dp)
+                            .then(
+                                if (onEventSend != null) {
+                                    Modifier.clickable {
+                                        onEventSend(item.event)
+                                    }
+                                } else {
+                                    Modifier
+                                }
+                            ),
                         iconData = safeTrailingContentData.iconData,
                         customTint = MaterialTheme.colorScheme.primary,
                     )
@@ -178,6 +215,37 @@ fun ListItem(
     }
 }
 
+
+/**
+ * A wrapper for [WrapCheckbox] that triggers an event when the checkbox state changes.
+ *
+ * This composable function wraps the [WrapCheckbox] and adds a layer of event handling.
+ * When the checkbox state changes, it invokes the provided `onEventSend` lambda function,
+ * allowing you to send an event or perform other actions in response to the change.
+ *
+ * @param checkboxData The data for the checkbox, including the label, checked state, and
+ * optional `onCheckedChange` callback.
+ * @param onEventSend A lambda function that is called when the checkbox state changes.
+ * @param modifier Modifier used to decorate the checkbox.
+ */
+@Composable
+fun WrapEventCheckbox(
+    checkboxData: CheckboxData,
+    onEventSend: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    WrapCheckbox(
+        checkboxData = checkboxData.copy(
+            onCheckedChange = {
+                checkboxData.onCheckedChange?.invoke(it)
+                onEventSend()
+            }
+        ),
+        modifier = modifier,
+    )
+}
+
+/*
 @ThemeModePreviews
 @Composable
 private fun ListItemPreview() {
@@ -255,4 +323,4 @@ private fun ListItemPreview() {
             )
         }
     }
-}
+}*/

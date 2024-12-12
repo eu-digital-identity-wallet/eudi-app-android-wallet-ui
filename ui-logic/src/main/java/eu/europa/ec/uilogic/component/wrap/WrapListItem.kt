@@ -16,43 +16,35 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.unit.dp
-import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.preview.PreviewTheme
-import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
-import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 @Composable
-fun WrapListItem(
-    item: ListItemData,
+fun <T> WrapListItem(
+    item: ListItemData<T>,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     mainTextVerticalPadding: Int? = null,
-    onItemClick: ((ListItemData) -> Unit)? = null,
+    onEventSend: (T) -> Unit
 ) {
     WrapCard(
         modifier = modifier,
-        onClick = { onItemClick?.invoke(item) },
+        onClick = { onEventSend(item.event) }, //TODO is this ok, 2 times the same event?
     ) {
         ListItem(
             item = item,
             hideSensitiveContent = hideSensitiveContent,
             mainTextVerticalPadding = mainTextVerticalPadding,
+            onEventSend = null,
+            //clickAreas = emptyList()
         )
     }
 }
 
 
+/*
 @ThemeModePreviews
 @Composable
 private fun WrapListItemPreview(
@@ -100,4 +92,4 @@ private fun WrapListItemPreview(
             )
         }
     }
-}
+}*/

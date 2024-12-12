@@ -32,10 +32,15 @@ import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.issuancefeature.ui.document.add.Event
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -74,6 +79,8 @@ interface AddDocumentInteractor {
     fun buildGenericSuccessRouteForDeferred(flowType: IssuanceFlowUiConfig): String
 
     fun resumeOpenId4VciWithAuthorization(uri: String)
+
+    fun getDummyData(): ExpandableListItemData<Event>
 }
 
 class AddDocumentInteractorImpl(
@@ -198,6 +205,54 @@ class AddDocumentInteractorImpl(
 
     override fun resumeOpenId4VciWithAuthorization(uri: String) {
         walletCoreDocumentsController.resumeOpenId4VciWithAuthorization(uri)
+    }
+
+    override fun getDummyData(): ExpandableListItemData<Event> {
+        val collapsedItem = ListItemData<Event>(
+            event = Event.CollapsedItemClicked("collapsed_id"),
+            itemId = "collapsed_id",
+            mainText = "Collapsed Title",
+            supportingText = "Click to expand",
+            trailingContentData = ListItemTrailingContentData.Icon(
+                iconData = AppIcons.KeyboardArrowDown
+            ),
+        )
+
+        val expandedItems = listOf(
+            ListItemData<Event>(
+                event = Event.ExpandedItemClicked("item1"),
+                itemId = "item1",
+                mainText = "Expanded Item 1",
+                supportingText = "Details about item 1",
+                trailingContentData = ListItemTrailingContentData.Checkbox(
+                    checkboxData = CheckboxData(
+                        isChecked = false,
+                        enabled = true,
+                        onCheckedChange = null
+                    )
+                )
+            ),
+            ListItemData<Event>(
+                event = Event.ExpandedItemClicked("item2"),
+                itemId = "item2",
+                mainText = "Expanded Item 2",
+                supportingText = "Details about item 2",
+                trailingContentData = ListItemTrailingContentData.Checkbox(
+                    checkboxData = CheckboxData(
+                        isChecked = true,
+                        enabled = true,
+                        onCheckedChange = {
+                            println("Giannis checkbox clicked")
+                        }
+                    )
+                )
+            )
+        )
+
+        return ExpandableListItemData(
+            collapsed = collapsedItem,
+            expanded = expandedItems
+        )
     }
 
     private fun getSuccessScreenArgumentsForDeferred(
