@@ -173,17 +173,23 @@ private fun Content(
                 subtitle = state.subtitle
             )
 
-            state.newItems?.let { newItems ->
+            state.newItems.forEach { expandableItem ->
+                val isExpanded = state.expandedItemsState[expandableItem.collapsed.itemId] ?: false
+
                 WrapExpandableListItem(
                     modifier = Modifier.fillMaxWidth(),
-                    data = newItems,
-                    isExpanded = state.itemsAreExpanded,
+                    data = expandableItem,
+                    isExpanded = isExpanded,
                     onExpandedChange = { newIsExpanded ->
-                        onEventSend(Event.ExpandOrCollapse(isExpanded = newIsExpanded))
+                        onEventSend(
+                            Event.ExpandOrCollapse(
+                                isExpanded = newIsExpanded,
+                                name = expandableItem.collapsed.itemId
+                            )
+                        )
                     },
                     onEventSend = onEventSend,
                 )
-
                 VSpacer.Medium()
             }
 

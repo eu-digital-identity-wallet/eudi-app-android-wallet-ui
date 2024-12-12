@@ -117,7 +117,7 @@ class PresentationRequestViewModel(
 
         val collapsedItem = ListItemData<Event>(
             event = Event.SthClicked("collapsed_id"),
-            //itemId = "collapsed_id",
+            itemId = "collapsed_id",
             mainText = "Collapsed Title",
             supportingText = "Click to expand",
             trailingContentData = ListItemTrailingContentData.Icon(
@@ -128,7 +128,7 @@ class PresentationRequestViewModel(
         val expandedItems = listOf(
             ListItemData<Event>(
                 event = Event.SthClicked("item1"),
-                //itemId = "item1",
+                itemId = "item1",
                 mainText = "Expanded Item 1",
                 supportingText = "Details about item 1",
                 trailingContentData = ListItemTrailingContentData.Checkbox(
@@ -141,7 +141,7 @@ class PresentationRequestViewModel(
             ),
             ListItemData<Event>(
                 event = Event.SthClicked("item2"),
-                //itemId = "item2",
+                itemId = "item2",
                 mainText = "Expanded Item 2",
                 supportingText = "Details about item 2",
                 trailingContentData = ListItemTrailingContentData.Checkbox(

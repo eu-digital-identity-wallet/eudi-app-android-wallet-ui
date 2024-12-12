@@ -46,7 +46,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 data class ListItemData<T>(
     val event: T, //todo val event: T? = null, is this better?
-    val itemId: String? = null,
+    val itemId: String,
     val mainText: String,
     val overlineText: String? = null,
     val supportingText: String? = null,

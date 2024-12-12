@@ -71,8 +71,8 @@ data class State(
     val isInitialised: Boolean = false,
     val notifyOnAuthenticationFailure: Boolean = false,
 
-    val newItems: ExpandableListItemData<Event>? = null,
-    val itemsAreExpanded: Boolean = false,
+    val newItems: List<ExpandableListItemData<Event>> = emptyList(),
+    val expandedItemsState: Map<String, Boolean> = emptyMap(), // Tracks expanded/collapsed states by item ID
 
     val title: String = "",
     val subtitle: String = "",
@@ -82,7 +82,7 @@ data class State(
 sealed class Event : ViewEvent {
     data class CollapsedItemClicked(val name: String) : Event()
     data class ExpandedItemClicked(val name: String) : Event()
-    data class ExpandOrCollapse(val isExpanded: Boolean) : Event()
+    data class ExpandOrCollapse(val isExpanded: Boolean, val name: String) : Event()
     data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
     data object OnPause : Event()
@@ -157,71 +157,79 @@ class AddDocumentViewModel(
             }
 
             is Event.ExpandedItemClicked -> {
-                println("Giannis ExpandedItemClicked: ${event.name}")
+                println("ExpandedItemClicked: ${event.name}")
 
-                viewState.value.newItems?.let { currentItems ->
-                    // Find the index of the matching item
-                    val itemIndex = currentItems.expanded.indexOfFirst { it.itemId == event.name }
+                viewState.value.newItems.let { currentItems ->
+                    val updatedItems = currentItems.map { expandableItem ->
+                        // Find the expandable item that contains the expanded list with the matching `itemId`
+                        val updatedExpandedList = expandableItem.expanded.map { listItem ->
+                            if (listItem.itemId == event.name &&
+                                listItem.trailingContentData is ListItemTrailingContentData.Checkbox
+                            ) {
+                                val currentCheckboxData =
+                                    (listItem.trailingContentData as ListItemTrailingContentData.Checkbox).checkboxData
 
-                    if (itemIndex != -1) { // Check if a match was found
-                        val matchedItem = currentItems.expanded[itemIndex]
-
-                        // Update the matched item's checkbox state
-                        val updatedItem = if (matchedItem.trailingContentData is ListItemTrailingContentData.Checkbox) {
-                            val currentCheckboxData =
-                                (matchedItem.trailingContentData as ListItemTrailingContentData.Checkbox).checkboxData
-
-                            matchedItem.copy(
-                                trailingContentData = ListItemTrailingContentData.Checkbox(
-                                    checkboxData = currentCheckboxData.copy(
-                                        isChecked = !currentCheckboxData.isChecked
+                                listItem.copy(
+                                    trailingContentData = ListItemTrailingContentData.Checkbox(
+                                        checkboxData = currentCheckboxData.copy(
+                                            isChecked = !currentCheckboxData.isChecked
+                                        )
                                     )
                                 )
-                            )
+                            } else {
+                                listItem
+                            }
+                        }
+
+                        // Update only the matching expandable item's expanded list
+                        if (expandableItem.expanded.any { it.itemId == event.name }) {
+                            expandableItem.copy(expanded = updatedExpandedList)
                         } else {
-                            matchedItem
+                            expandableItem
                         }
+                    }
 
-                        // Create a new list with the updated item
-                        val updatedExpandedItems = currentItems.expanded.toMutableList()
-                        updatedExpandedItems[itemIndex] = updatedItem
-
-                        // Update the state
-                        setState {
-                            copy(
-                                newItems = currentItems.copy(
-                                    expanded = updatedExpandedItems
-                                )
-                            )
-                        }
+                    setState {
+                        copy(newItems = updatedItems)
                     }
                 }
             }
 
             is Event.ExpandOrCollapse -> {
-                println("Giannis ExpandOrCollapse: ${event.isExpanded}")
+                println("ExpandOrCollapse: ${event.isExpanded}")
 
-                viewState.value.newItems?.let { currentItems ->
-                    val updatedTrailingContentData = (currentItems.collapsed.trailingContentData
-                            as? ListItemTrailingContentData.Icon)?.copy(
-                        iconData = if (event.isExpanded) {
-                            AppIcons.KeyboardArrowUp
+                viewState.value.newItems.let { currentItems ->
+                    val updatedItems = currentItems.map { expandableItem ->
+                        // Check if this is the expandable item to update
+                        if (expandableItem.collapsed.itemId == event.name) {
+                            val updatedTrailingContentData = (expandableItem.collapsed.trailingContentData
+                                    as? ListItemTrailingContentData.Icon)?.copy(
+                                iconData = if (event.isExpanded) {
+                                    AppIcons.KeyboardArrowUp
+                                } else {
+                                    AppIcons.KeyboardArrowDown
+                                }
+                            )
+
+                            expandableItem.copy(
+                                collapsed = expandableItem.collapsed.copy(
+                                    trailingContentData = updatedTrailingContentData
+                                        ?: expandableItem.collapsed.trailingContentData
+                                )
+                            )
                         } else {
-                            AppIcons.KeyboardArrowDown
+                            expandableItem // Leave unchanged
                         }
-                    )
+                    }
 
-                    val updatedCollapsedItem = currentItems.collapsed.copy(
-                        trailingContentData = updatedTrailingContentData
-                            ?: currentItems.collapsed.trailingContentData
-                    )
+                    // Update the map tracking expand/collapse state
+                    val updatedExpandedItemsState = viewState.value.expandedItemsState.toMutableMap()
+                    updatedExpandedItemsState[event.name] = event.isExpanded
 
                     setState {
                         copy(
-                            itemsAreExpanded = event.isExpanded,
-                            newItems = currentItems.copy(
-                                collapsed = updatedCollapsedItem
-                            )
+                            newItems = updatedItems,
+                            expandedItemsState = updatedExpandedItemsState
                         )
                     }
                 }
