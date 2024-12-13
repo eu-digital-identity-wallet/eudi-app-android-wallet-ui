@@ -16,6 +16,7 @@
 
 package eu.europa.ec.corelogic.model
 
+import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.eudi.wallet.document.DocumentId
 
 data class DeferredDocumentData(

@@ -31,13 +31,12 @@ import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -82,7 +81,7 @@ data class State(
 sealed class Event : ViewEvent {
     data class CollapsedItemClicked(val name: String) : Event()
     data class ExpandedItemClicked(val name: String) : Event()
-    data class ExpandOrCollapse(val isExpanded: Boolean, val name: String) : Event()
+    data class ExpandOrCollapse(val name: String) : Event()
     data class Init(val deepLink: Uri?) : Event()
     data object Pop : Event()
     data object OnPause : Event()
@@ -196,43 +195,43 @@ class AddDocumentViewModel(
             }
 
             is Event.ExpandOrCollapse -> {
-                println("ExpandOrCollapse: ${event.isExpanded}")
+                println("ExpandOrCollapse: $event")
 
-                viewState.value.newItems.let { currentItems ->
-                    val updatedItems = currentItems.map { expandableItem ->
-                        // Check if this is the expandable item to update
-                        if (expandableItem.collapsed.itemId == event.name) {
-                            val updatedTrailingContentData = (expandableItem.collapsed.trailingContentData
-                                    as? ListItemTrailingContentData.Icon)?.copy(
-                                iconData = if (event.isExpanded) {
-                                    AppIcons.KeyboardArrowUp
-                                } else {
-                                    AppIcons.KeyboardArrowDown
-                                }
-                            )
-
-                            expandableItem.copy(
-                                collapsed = expandableItem.collapsed.copy(
-                                    trailingContentData = updatedTrailingContentData
-                                        ?: expandableItem.collapsed.trailingContentData
-                                )
-                            )
-                        } else {
-                            expandableItem // Leave unchanged
-                        }
-                    }
-
-                    // Update the map tracking expand/collapse state
-                    val updatedExpandedItemsState = viewState.value.expandedItemsState.toMutableMap()
-                    updatedExpandedItemsState[event.name] = event.isExpanded
-
-                    setState {
-                        copy(
-                            newItems = updatedItems,
-                            expandedItemsState = updatedExpandedItemsState
-                        )
-                    }
-                }
+                //viewState.value.newItems.let { currentItems ->
+                //    val updatedItems = currentItems.map { expandableItem ->
+                //        // Check if this is the expandable item to update
+                //        if (expandableItem.collapsed.itemId == event.name) {
+                //            val updatedTrailingContentData = (expandableItem.collapsed.trailingContentData
+                //                    as? ListItemTrailingContentData.Icon)?.copy(
+                //                iconData = if (event.isExpanded) {
+                //                    AppIcons.KeyboardArrowUp
+                //                } else {
+                //                    AppIcons.KeyboardArrowDown
+                //                }
+                //            )
+//
+                //            expandableItem.copy(
+                //                collapsed = expandableItem.collapsed.copy(
+                //                    trailingContentData = updatedTrailingContentData
+                //                        ?: expandableItem.collapsed.trailingContentData
+                //                )
+                //            )
+                //        } else {
+                //            expandableItem // Leave unchanged
+                //        }
+                //    }
+//
+                //    // Update the map tracking expand/collapse state
+                //    val updatedExpandedItemsState = viewState.value.expandedItemsState.toMutableMap()
+                //    updatedExpandedItemsState[event.name] = event.isExpanded
+//
+                //    setState {
+                //        copy(
+                //            newItems = updatedItems,
+                //            expandedItemsState = updatedExpandedItemsState
+                //        )
+                //    }
+                //}
             }
 
             is Event.Init -> {

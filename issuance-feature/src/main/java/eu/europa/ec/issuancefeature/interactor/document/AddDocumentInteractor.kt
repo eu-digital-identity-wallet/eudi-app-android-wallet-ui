@@ -30,8 +30,8 @@ import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.issuancefeature.ui.document.add.Event
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider

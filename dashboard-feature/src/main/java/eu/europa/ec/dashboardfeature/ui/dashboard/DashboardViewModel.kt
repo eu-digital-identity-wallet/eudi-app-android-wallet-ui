@@ -30,11 +30,11 @@ import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.DeferredDocumentData
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorRetryIssuingDeferredDocumentsPartialState
+import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R

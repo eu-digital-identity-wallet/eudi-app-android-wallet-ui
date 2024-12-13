@@ -35,7 +35,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 fun WrapExpandableCard(
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
+    onExpandedChange: () -> Unit,
     cardCollapsedContent: @Composable () -> Unit,
     cardExpandedContent: @Composable ColumnScope.() -> Unit,
     shape: Shape? = null,
@@ -46,7 +46,7 @@ fun WrapExpandableCard(
         modifier = modifier,
         shape = shape,
         colors = colors,
-        onClick = { onExpandedChange(!isExpanded) },
+        onClick = onExpandedChange,
         throttleClicks = throttleClicks
     ) {
         Column {
@@ -71,7 +71,7 @@ private fun WrapExpandableCardCollapsedPreview() {
 
         WrapExpandableCard(
             isExpanded = isExpanded,
-            onExpandedChange = { isExpanded = it },
+            onExpandedChange = { isExpanded = !isExpanded },
             cardCollapsedContent = {
                 Text(text = "Verification Data")
             },
@@ -92,7 +92,7 @@ private fun WrapExpandableCardExpandedPreview() {
 
         WrapExpandableCard(
             isExpanded = isExpanded,
-            onExpandedChange = { isExpanded = it },
+            onExpandedChange = { isExpanded = !isExpanded },
             cardCollapsedContent = {
                 Text(text = "Verification Data")
             },

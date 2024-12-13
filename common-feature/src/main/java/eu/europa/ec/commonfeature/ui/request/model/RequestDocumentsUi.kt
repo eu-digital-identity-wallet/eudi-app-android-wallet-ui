@@ -20,17 +20,17 @@ data class RequestDocumentsUi<T>(
     val documentsUi: List<RequestDocumentItemUi<T>>
 )
 
-data class RequestDocumentDomain(
+/*data class RequestDocumentDomain(
     val id: String,
     val collapsedItem: RequestItemDomain,
     val expandedItems: List<RequestItemDomain>,
-)
+)*/
 
 data class RequestItemDomain(
     val id: String?,
     val mainText: String,
     val overlineText: String? = null,
     val supportingText: String? = null,
-    val corePayloadDomain: DocumentItemDomainPayload?,
+    val corePayloadDomain: DocumentDomainPayload?,
     val onClick: ((String) -> Unit)? = null,
 )

@@ -262,7 +262,7 @@ class TestPresentationRequestInteractor {
             interactor.getRequestDocuments()
                 .runFlowTest {
                     val expectedResult = PresentationRequestInteractorPartialState.Success(
-                        requestDocuments = RequestTransformer.transformToUiItems(
+                        requestDocuments = RequestTransformer.transformToDomainItems(
                             storageDocuments = listOf(
                                 mockedPidWithBasicFields,
                                 mockedMdlWithBasicFields

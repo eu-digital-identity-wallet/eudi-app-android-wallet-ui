@@ -21,9 +21,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -39,7 +39,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -53,9 +55,11 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import kotlinx.coroutines.CoroutineScope
@@ -174,6 +178,7 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(paddingValues),
         verticalArrangement = Arrangement.Top
     ) {
@@ -183,31 +188,30 @@ private fun Content(
             config = state.headerConfig,
         )
 
-        var isExpanded by remember { mutableStateOf(false) }
-
-        state.newItems?.let { newItems ->
-            WrapExpandableListItem(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 800.dp),
-                data = newItems,
-                isExpanded = isExpanded,
-                onExpandedChange = {
-                    isExpanded = it
-                },
-                onEventSend = onEventSend,
-            )
-        }
-
         // Screen Main Content.
-        Request(
-            modifier = Modifier.weight(1f)/*.background(Color.Red)*/,
+        /*Request(
+            modifier = Modifier.weight(1f),
             items = state.items,
             noData = state.noItems,
             isShowingFullUserInfo = state.isShowingFullUserInfo,
             onEventSend = onEventSend,
             listState = rememberLazyListState(),
             contentPadding = paddingValues
+        )*/
+
+        var hideOrNot by remember { mutableStateOf(false) }
+        WrapIconButton(
+            iconData = AppIcons.VisibilityOff,
+            onClick = { hideOrNot = !hideOrNot }
+        )
+
+        DisplayRequestItems(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = SPACING_MEDIUM.dp),
+            items = state.items,
+            onEventSend = onEventSend,
+            hideOrNot
         )
     }
 
@@ -233,6 +237,34 @@ private fun Content(
         }.collect()
     }
 }
+
+@Composable
+fun DisplayRequestItems(
+    modifier: Modifier,
+    items: List<RequestDocumentItemUi2<Event>>,
+    onEventSend: (Event) -> Unit,
+    hideOrNot: Boolean
+) {
+
+    Column {
+        items.forEach { requestItem ->
+            WrapExpandableListItem(
+                data = ExpandableListItemData(
+                    collapsed = requestItem.uiCollapsedItem.uiItem,
+                    expanded = requestItem.uiExpandedItems.map { it.uiItem }
+                ),
+                onEventSend = onEventSend,
+                hideSensitiveContent = hideOrNot,
+                modifier = modifier,
+                isExpanded = requestItem.uiCollapsedItem.isExpanded,
+                onExpandedChange = {
+                    onEventSend(requestItem.uiCollapsedItem.uiItem.event)
+                }
+            )
+        }
+    }
+}
+
 
 @Composable
 private fun SheetContent(

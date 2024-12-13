@@ -345,7 +345,7 @@ class TestProximityRequestInteractor {
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            RequestTransformer.transformToUiItems(
+                            RequestTransformer.transformToDomainItems(
                                 storageDocuments = listOf(
                                     mockedPidWithBasicFields
                                 ),
@@ -406,7 +406,7 @@ class TestProximityRequestInteractor {
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToUiItems(
+                            requestDocuments = RequestTransformer.transformToDomainItems(
                                 storageDocuments = listOf(mockedMdlWithBasicFields),
                                 resourceProvider = resourceProvider,
                                 requestDocuments = listOf(
@@ -470,7 +470,7 @@ class TestProximityRequestInteractor {
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToUiItems(
+                            requestDocuments = RequestTransformer.transformToDomainItems(
                                 storageDocuments = listOf(
                                     mockedMdlWithBasicFields,
                                     mockedPidWithBasicFields
@@ -538,7 +538,7 @@ class TestProximityRequestInteractor {
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToUiItems(
+                            requestDocuments = RequestTransformer.transformToDomainItems(
                                 storageDocuments = listOf(
                                     mockedMdlWithBasicFields,
                                     mockedPidWithBasicFields

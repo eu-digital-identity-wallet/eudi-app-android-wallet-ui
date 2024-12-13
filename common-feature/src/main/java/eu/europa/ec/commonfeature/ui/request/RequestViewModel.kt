@@ -16,11 +16,12 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -38,8 +39,8 @@ data class State(
 
     val verifierName: String? = null,
 
-    val items: List<RequestDataUi<Event>> = emptyList(),
-    val newItems: ExpandableListItemData<Event>? = null,
+    val items: List<RequestDocumentItemUi2<Event>> = emptyList(),
+    //val newItems: ExpandableListItemData<Event>? = null,
     val noItems: Boolean = false,
     val allowShare: Boolean = false
 ) : ViewState
@@ -50,7 +51,8 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
     data object GoBack : Event()
     data object ChangeContentVisibility : Event()
-    data class ExpandOrCollapseRequiredDataList(val id: Int) : Event()
+    data class ExpandOrCollapseRequiredDataList(val itemId: String) : Event()
+
     data class UserIdentificationClicked(val itemId: String) : Event()
 
     data object BadgeClicked : Event()
@@ -113,10 +115,13 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         getOrCreatePresentationScope().close()
     }
 
-    open fun updateData(updatedItems: List<RequestDataUi<Event>>, allowShare: Boolean? = null) {
-        val hasVerificationItems = hasVerificationItems(updatedItems)
-
-        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(updatedItems)
+    open fun updateData(
+        updatedItems: List<RequestDocumentItemUi2<Event>>,
+        allowShare: Boolean? = null
+    ) {
+        val (hasVerificationItems, hasAtLeastOneFieldSelected) = hasVerificationItemsOrAtLeastOneFieldSelected(
+            list = updatedItems
+        )
 
         setState {
             copy(
@@ -162,7 +167,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.ExpandOrCollapseRequiredDataList -> {
-                expandOrCollapseRequiredDataList(id = event.id)
+                expandOrCollapseRequiredDataList(id = event.itemId)
             }
 
             is Event.UserIdentificationClicked -> {
@@ -234,15 +239,29 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         }
     }
 
-    private fun expandOrCollapseRequiredDataList(id: Int) {
-        val items = viewState.value.items
-        val updatedItems = items.map { item ->
-            if (item is RequestDataUi.RequiredFields
-                && id == item.requiredFieldsItemUi.id
-            ) {
+    private fun expandOrCollapseRequiredDataList(id: String) {
+        val currentItems = viewState.value.items
+        val updatedItems = currentItems.map { item ->
+            if (item.uiCollapsedItem.uiItem.itemId == id) {
+
+                val newIsExpanded = !item.uiCollapsedItem.isExpanded
+
+                // Change the Icon based on the new isExpanded state
+                val newIconData = if (newIsExpanded) {
+                    AppIcons.KeyboardArrowUp
+                } else {
+                    AppIcons.KeyboardArrowDown
+                }
+
                 item.copy(
-                    requiredFieldsItemUi = item.requiredFieldsItemUi
-                        .copy(expanded = !item.requiredFieldsItemUi.expanded)
+                    uiCollapsedItem = item.uiCollapsedItem.copy(
+                        isExpanded = newIsExpanded,
+                        uiItem = item.uiCollapsedItem.uiItem.copy(
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = newIconData
+                            )
+                        )
+                    )
                 )
             } else {
                 item
@@ -252,27 +271,40 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun updateUserIdentificationItem(id: String) {
-        val items: List<RequestDataUi<Event>> = viewState.value.items
-        val updatedList = items.map { item ->
-            if (item is RequestDataUi.OptionalField
-                && id == item.optionalFieldItemUi.requestDocumentItemUi.id
-            ) {
-                val itemCurrentCheckedState = item.optionalFieldItemUi.requestDocumentItemUi.checked
-                val updatedUiItem = item.optionalFieldItemUi.requestDocumentItemUi.copy(
-                    checked = !itemCurrentCheckedState
-                )
-                item.copy(
-                    optionalFieldItemUi = item.optionalFieldItemUi
-                        .copy(requestDocumentItemUi = updatedUiItem)
-                )
-            } else {
-                item
+        val currentItems = viewState.value.items
+
+        // Iterate over the items and modify the matching expanded item
+        val updatedList: List<RequestDocumentItemUi2<Event>> = currentItems.map { item ->
+            val updatedExpandedItems = item.uiExpandedItems.map { expandedItem ->
+                if (expandedItem.uiItem.itemId == id
+                    && expandedItem.uiItem.trailingContentData is ListItemTrailingContentData.Checkbox
+                ) {
+                    val checkboxData =
+                        (expandedItem.uiItem.trailingContentData as ListItemTrailingContentData.Checkbox).checkboxData
+
+                    expandedItem.copy(
+                        uiItem = expandedItem.uiItem.copy(
+                            trailingContentData = ListItemTrailingContentData.Checkbox(
+                                checkboxData = checkboxData.copy(
+                                    isChecked = !checkboxData.isChecked
+                                )
+                            )
+                        )
+                    )
+                } else {
+                    expandedItem
+                }
             }
+
+            // Return the updated item with its expanded items updated
+            item.copy(
+                uiExpandedItems = updatedExpandedItems
+            )
         }
 
-        val hasVerificationItems = hasVerificationItems(updatedList)
-
-        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(updatedList)
+        val (hasVerificationItems, hasAtLeastOneFieldSelected) = hasVerificationItemsOrAtLeastOneFieldSelected(
+            list = updatedList
+        )
 
         updateData(
             updatedItems = updatedList,
@@ -299,25 +331,33 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         viewModelJob?.cancel()
     }
 
-    private fun hasVerificationItems(list: List<RequestDataUi<Event>>): Boolean {
-        return list
-            .filterIsInstance<RequestDataUi.RequiredFields<Event>>()
-            .any { requiredFields ->
-                requiredFields.requiredFieldsItemUi.requestDocumentItemsUi
-                    .any { itemUi ->
-                        itemUi.checked
-                    }
-            }
-    }
+    private fun hasVerificationItemsOrAtLeastOneFieldSelected(
+        list: List<RequestDocumentItemUi2<Event>>
+    ): Pair<Boolean, Boolean> {
 
-    private fun hasAtLeastOneFieldSelected(list: List<RequestDataUi<Event>>): Boolean {
-        return list
-            .filterIsInstance<RequestDataUi.OptionalField<Event>>()
-            .any { optionalField ->
-                with(optionalField.optionalFieldItemUi.requestDocumentItemUi) {
-                    enabled && checked
+        var hasVerificationItems = false
+        var hasAtLeastOneFieldSelected = false
+
+        for (item in list) {
+            for (expandedItem in item.uiExpandedItems) {
+                val trailingContentData = expandedItem.uiItem.trailingContentData
+                if (trailingContentData is ListItemTrailingContentData.Checkbox) {
+                    val checkbox = trailingContentData.checkboxData
+                    if (checkbox.isChecked) {
+                        hasVerificationItems = true
+                    }
+                    if (checkbox.isChecked && checkbox.enabled) {
+                        hasAtLeastOneFieldSelected = true
+                    }
+                }
+                // Exit early if both conditions are true
+                if (hasVerificationItems && hasAtLeastOneFieldSelected) {
+                    return Pair(true, true)
                 }
             }
+        }
+
+        return Pair(hasVerificationItems, hasAtLeastOneFieldSelected)
     }
 
     override fun onCleared() {

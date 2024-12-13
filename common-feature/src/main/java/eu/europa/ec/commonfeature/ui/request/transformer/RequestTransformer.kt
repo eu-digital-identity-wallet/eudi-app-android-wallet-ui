@@ -18,15 +18,14 @@ package eu.europa.ec.commonfeature.ui.request.transformer
 
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.Event
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
-import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
-import eu.europa.ec.commonfeature.ui.request.model.docType
+import eu.europa.ec.commonfeature.ui.request.model.DocumentDetailsDomain
+import eu.europa.ec.commonfeature.ui.request.model.DocumentDomainPayload
+import eu.europa.ec.commonfeature.ui.request.model.DocumentItem
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
+import eu.europa.ec.commonfeature.ui.request.model.UiCollapsedPayload
+import eu.europa.ec.commonfeature.ui.request.model.UiExpandedPayload
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
-import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
+import eu.europa.ec.commonfeature.util.keyIsBase64
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
@@ -38,6 +37,11 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import org.json.JSONObject
 
 private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
@@ -67,29 +71,26 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
 
 object RequestTransformer {
 
-    fun transformToUiItems(
+    fun transformToDomainItems(
         storageDocuments: List<IssuedDocument> = emptyList(),
         resourceProvider: ResourceProvider,
         requestDocuments: List<RequestedDocument>,
-        requiredFieldsTitle: String
-    ): List<RequestDataUi<Event>> {
-        val items = mutableListOf<RequestDataUi<Event>>()
+    ): Result<List<DocumentDomainPayload>> = runCatching {
+        val resultList: MutableList<DocumentDomainPayload> = mutableListOf()
 
-        requestDocuments.forEachIndexed { docIndex, requestDocument ->
+        requestDocuments.forEach { requestDocument ->
             val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
-            // Add document item.
-            items += RequestDataUi.Document(
-                documentItemUi = DocumentItemUi(
-                    title = storageDocument.toUiName(resourceProvider)
-                )
-            )
-            items += RequestDataUi.Space()
 
-            val required = mutableListOf<RequestDocumentItemUi<Event>>()
+            val docName = storageDocument.toUiName(resourceProvider)
+            val docId = storageDocument.id
+            val docNamespace = storageDocument.nameSpaces.keys.first()
+            val documentItems: MutableList<DocumentItem> = mutableListOf()
 
+            requestDocument.requestedItems.keys.forEach { docItem ->
 
-            // Add optional field items.
-            requestDocument.requestedItems.keys.forEachIndexed { itemIndex, docItem ->
+                val isRequired = getMandatoryFields(
+                    documentIdentifier = storageDocument.toDocumentIdentifier()
+                ).contains(docItem.elementIdentifier)
 
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
@@ -101,128 +102,135 @@ object RequestTransformer {
                         resourceProvider = resourceProvider,
                         allItems = values
                     )
-                    (values.toString() to true)
+                    values.toString() to true
                 } catch (ex: Exception) {
-                    (resourceProvider.getString(R.string.request_element_identifier_not_available) to false)
+                    resourceProvider.getString(R.string.request_element_identifier_not_available) to false
                 }
 
-                if (
-                    getMandatoryFields(documentIdentifier = storageDocument.toDocumentIdentifier())
-                        .contains(docItem.elementIdentifier)
-                ) {
-                    required.add(
-                        docItem.toRequestDocumentItemUi(
-                            uID = produceDocUID(
-                                elementIdentifier = docItem.elementIdentifier,
-                                documentId = storageDocument.id,
-                                docType = storageDocument.docType
-                            ),
-                            docPayload = DocumentItemDomainPayload(
-                                docId = storageDocument.id,
-                                docType = storageDocument.docType,
-                                namespace = docItem.namespace,
-                                elementIdentifier = docItem.elementIdentifier,
-                            ),
-                            optional = false,
-                            isChecked = isAvailable,
-                            event = null,
-                            readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
-                            value = value
-                        )
-                    )
-                } else {
-                    val uID = produceDocUID(
+                documentItems.add(
+                    DocumentItem(
                         elementIdentifier = docItem.elementIdentifier,
-                        documentId = storageDocument.id,
-                        docType = storageDocument.docType
+                        value = value,
+                        readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                        isRequired = isRequired,
+                        isAvailable = isAvailable
                     )
+                )
+            }
 
-                    items += RequestDataUi.Space()
-                    items += RequestDataUi.OptionalField(
-                        optionalFieldItemUi = OptionalFieldItemUi(
-                            requestDocumentItemUi = docItem.toRequestDocumentItemUi(
-                                uID = uID,
-                                docPayload = DocumentItemDomainPayload(
-                                    docId = storageDocument.id,
-                                    docType = storageDocument.docType,
-                                    namespace = docItem.namespace,
-                                    elementIdentifier = docItem.elementIdentifier,
-                                ),
-                                optional = isAvailable,
-                                isChecked = isAvailable,
-                                event = Event.UserIdentificationClicked(itemId = uID),
-                                readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
-                                value = value
+            resultList.add(
+                DocumentDomainPayload(
+                    docName = docName,
+                    docId = docId,
+                    docNamespace = docNamespace,
+                    documentDetailsDomain = DocumentDetailsDomain(
+                        items = documentItems
+                    )
+                )
+            )
+        }
+
+        return@runCatching resultList
+    }
+
+    fun transformToUiItems(
+        documentsDomain: List<DocumentDomainPayload>,
+        resourceProvider: ResourceProvider,
+    ): List<RequestDocumentItemUi2<Event>> {
+        return documentsDomain.map { documentDomainPayload ->
+
+            val collapsedItemId = documentDomainPayload.docId
+
+            val expandedItems = documentDomainPayload.documentDetailsDomain.items.map { docItem ->
+                val expandedItemId = produceDocUID(
+                    elementIdentifier = docItem.elementIdentifier,
+                    documentId = documentDomainPayload.docId,
+                )
+
+                val leadingContent = if (keyIsBase64(docItem.elementIdentifier)) {
+                    ListItemLeadingContentData.UserImage(userBase64Image = docItem.value)
+                } else {
+                    null
+                }
+
+                val mainText = if (keyIsBase64(docItem.elementIdentifier) && docItem.isAvailable) {
+                    ""
+                } else {
+                    docItem.value
+                }
+
+                UiExpandedPayload(
+                    domainPayload = documentDomainPayload,
+                    uiItem = ListItemData<Event>(
+                        event = Event.UserIdentificationClicked(itemId = expandedItemId),
+                        itemId = expandedItemId,
+                        mainText = mainText,
+                        overlineText = docItem.readableName,
+                        leadingContentData = leadingContent,
+                        trailingContentData = ListItemTrailingContentData.Checkbox(
+                            checkboxData = CheckboxData(
+                                isChecked = docItem.isAvailable,
+                                enabled = docItem.isAvailable && !docItem.isRequired,
+                                onCheckedChange = null,
                             )
                         )
                     )
-
-                    if (itemIndex != requestDocument.requestedItems.keys.toList().lastIndex) {
-                        items += RequestDataUi.Space()
-                        items += RequestDataUi.Divider()
-                    }
-                }
+                )
             }
 
-            items += RequestDataUi.Space()
+            RequestDocumentItemUi2(
+                uiCollapsedItem = UiCollapsedPayload(
+                    uiItem = ListItemData(
+                        event = Event.ExpandOrCollapseRequiredDataList(itemId = collapsedItemId),
+                        itemId = collapsedItemId,
+                        mainText = documentDomainPayload.docName,
+                        supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowDown
+                        )
+                    ),
+                    isExpanded = false
+                ),
+                uiExpandedItems = expandedItems
+            )
+        }
+    }
 
-            // Add required fields item.
-            if (required.isNotEmpty()) {
-                items += RequestDataUi.RequiredFields(
-                    requiredFieldsItemUi = RequiredFieldsItemUi(
-                        id = docIndex,
-                        requestDocumentItemsUi = required,
-                        expanded = false,
-                        title = requiredFieldsTitle,
-                        event = Event.ExpandOrCollapseRequiredDataList(id = docIndex)
-                    )
-                )
-                items += RequestDataUi.Space()
+
+    fun createDisclosedDocuments(items: List<RequestDocumentItemUi2<Event>>): DisclosedDocuments {
+        // Collect all selected expanded items from the list
+        val selectedItems = items.flatMap { requestItem ->
+            requestItem.uiExpandedItems.filter { uiPayload ->
+                // Filter only the items the user has selected
+                uiPayload.uiItem.trailingContentData is ListItemTrailingContentData.Checkbox &&
+                        (uiPayload.uiItem.trailingContentData as ListItemTrailingContentData.Checkbox)
+                            .checkboxData.isChecked
             }
         }
 
-        return items
-    }
+        // Group the selected items by their domain payload (document-level grouping)
+        val groupedByDocument = selectedItems.groupBy { it.domainPayload }
 
-    fun transformToDomainItems(uiItems: List<RequestDataUi<Event>>): DisclosedDocuments {
-        val selectedUiItems = uiItems
-            .flatMap {
-                when (it) {
-                    is RequestDataUi.RequiredFields -> {
-                        it.requiredFieldsItemUi.requestDocumentItemsUi
-                    }
-
-                    is RequestDataUi.OptionalField -> {
-                        listOf(it.optionalFieldItemUi.requestDocumentItemUi)
-                    }
-
-                    else -> {
-                        emptyList()
-                    }
+        // Convert to the format required by DisclosedDocuments
+        val disclosedDocuments =
+            groupedByDocument.map { (documentPayload, selectedItemsForDocument) ->
+                val disclosedItems = selectedItemsForDocument.map { selectedItem ->
+                    DocItem(
+                        namespace = documentPayload.docNamespace,
+                        elementIdentifier = documentPayload.documentDetailsDomain.items
+                            .find { it.value == selectedItem.uiItem.mainText }
+                            ?.elementIdentifier ?: ""
+                    )
                 }
-            }
-            // Get selected
-            .filter { it.checked }
-            // Create a Map with document as a key
-            .groupBy {
-                it.domainPayload
-            }
 
-        return DisclosedDocuments(
-            selectedUiItems.map { entry ->
-                val (document, selectedDocumentItems) = entry
                 DisclosedDocument(
-                    documentId = document.docId,
-                    disclosedItems = selectedDocumentItems.map {
-                        DocItem(
-                            it.domainPayload.namespace,
-                            it.domainPayload.elementIdentifier
-                        )
-                    },
+                    documentId = documentPayload.docId,
+                    disclosedItems = disclosedItems,
                     keyUnlockData = null
                 )
             }
-        )
+
+        return DisclosedDocuments(disclosedDocuments)
     }
 
     private fun JSONObject.getDocObject(nameSpace: String): JSONObject =

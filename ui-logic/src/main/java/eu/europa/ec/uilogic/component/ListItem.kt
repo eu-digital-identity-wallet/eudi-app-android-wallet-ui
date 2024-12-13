@@ -50,9 +50,14 @@ data class ListItemData<T>(
     val mainText: String,
     val overlineText: String? = null,
     val supportingText: String? = null,
-    val leadingIcon: IconData? = null,
+    val leadingContentData: ListItemLeadingContentData? = null,
     val trailingContentData: ListItemTrailingContentData? = null,
 )
+
+sealed class ListItemLeadingContentData {
+    data class Icon(val iconData: IconData) : ListItemLeadingContentData()
+    data class UserImage(val userBase64Image: String) : ListItemLeadingContentData()
+}
 
 sealed class ListItemTrailingContentData {
     data class Icon(val iconData: IconData) : ListItemTrailingContentData()
@@ -93,15 +98,17 @@ fun <T> ListItem(
     }
 
     // Replace leading icon with "User" (default) icon if hiding sensitive content on unsupported APIs
-    val leadingIconData: IconData? = remember(hideSensitiveContent, item.leadingIcon) {
-        item.leadingIcon?.let { safeLeadingIcon ->
-            if (hideSensitiveContent && !supportsBlur) {
-                AppIcons.User
-            } else {
-                safeLeadingIcon
+    val leadingContentData: ListItemLeadingContentData? =
+        remember(hideSensitiveContent, item.leadingContentData) {
+            item.leadingContentData?.let { safeLeadingContentData ->
+                if (hideSensitiveContent && !supportsBlur) {
+                    ListItemLeadingContentData.Icon(AppIcons.User)
+                    //ListItemLeadingContentData.UserImage(AppIcons.User)
+                } else {
+                    safeLeadingContentData
+                }
             }
         }
-    }
 
     with(item) {
         Row(
@@ -119,15 +126,25 @@ fun <T> ListItem(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Leading Icon
-            leadingIconData?.let { safeLeadingIcon ->
-                WrapImage(
-                    modifier = Modifier
-                        .padding(end = SIZE_MEDIUM.dp)
-                        .size(ICON_SIZE_40.dp)
-                        .then(blurModifier),
-                    iconData = safeLeadingIcon,
-                )
+            // Leading Content
+            leadingContentData?.let { safeLeadingContentData ->
+
+                val leadingContentModifier = Modifier
+                    .padding(end = SIZE_MEDIUM.dp)
+                    .size(ICON_SIZE_40.dp)
+                    .then(blurModifier)
+
+                when (safeLeadingContentData) {
+                    is ListItemLeadingContentData.Icon -> WrapImage(
+                        modifier = leadingContentModifier,
+                        iconData = safeLeadingContentData.iconData,
+                    )
+
+                    is ListItemLeadingContentData.UserImage -> UserImageOrPlaceholder(
+                        modifier = leadingContentModifier,
+                        userBase64Image = safeLeadingContentData.userBase64Image,
+                    )
+                }
             }
 
             Column(

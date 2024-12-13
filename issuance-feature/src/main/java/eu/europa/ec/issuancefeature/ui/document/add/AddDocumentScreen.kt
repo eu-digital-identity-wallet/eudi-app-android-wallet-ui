@@ -180,10 +180,9 @@ private fun Content(
                     modifier = Modifier.fillMaxWidth(),
                     data = expandableItem,
                     isExpanded = isExpanded,
-                    onExpandedChange = { newIsExpanded ->
+                    onExpandedChange = {
                         onEventSend(
                             Event.ExpandOrCollapse(
-                                isExpanded = newIsExpanded,
                                 name = expandableItem.collapsed.itemId
                             )
                         )

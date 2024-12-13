@@ -16,11 +16,10 @@
 
 package eu.europa.ec.corelogic.model
 
+import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
-
-typealias DocType = String
 
 sealed interface DocumentIdentifier {
     val nameSpace: String

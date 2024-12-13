@@ -25,9 +25,7 @@ import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 
 data class ExpandableListItemData<T>(
     val collapsed: ListItemData<T>,
-    val collapsedMainTextVerticalPadding: Int? = null,
     val expanded: List<ListItemData<T>>,
-    val expandedMainTextVerticalPadding: Int? = null,
 )
 
 @Composable
@@ -37,9 +35,11 @@ fun <T> WrapExpandableListItem(
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
+    onExpandedChange: () -> Unit,
     isClickableWhenExpanded: Boolean = false,
     throttleClicks: Boolean = true,
+    collapsedMainTextVerticalPadding: Int = 16,
+    expandedMainTextVerticalPadding: Int = 12,
     //onExpandedItemClick: ((ListItemData) -> Unit)? = null
 ) {
     WrapExpandableCard(
@@ -48,11 +48,10 @@ fun <T> WrapExpandableListItem(
             WrapListItem(
                 item = data.collapsed,
                 hideSensitiveContent = false,
-                mainTextVerticalPadding = data.collapsedMainTextVerticalPadding,
+                mainTextVerticalPadding = collapsedMainTextVerticalPadding,
                 //onItemClick = { onExpandedChange(!isExpanded) },
                 onEventSend = { event ->
                     onEventSend(event)
-                    onExpandedChange(!isExpanded)
                 }
             )
         },
@@ -60,7 +59,7 @@ fun <T> WrapExpandableListItem(
             WrapListItems(
                 items = data.expanded,
                 hideSensitiveContent = hideSensitiveContent,
-                mainTextVerticalPadding = data.expandedMainTextVerticalPadding,
+                mainTextVerticalPadding = expandedMainTextVerticalPadding,
                 shape = RoundedCornerShape(
                     bottomStart = SIZE_SMALL.dp,
                     bottomEnd = SIZE_SMALL.dp,

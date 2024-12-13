@@ -46,8 +46,8 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedWalletActivationErrorMess
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer

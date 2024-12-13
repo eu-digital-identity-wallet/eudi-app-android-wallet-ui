@@ -17,16 +17,17 @@
 package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.commonfeature.util.keyIsBase64
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
+import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.uilogic.component.ListItemData
 
 data class RequestDocumentItemUi<T>(
     val id: String,
-    val domainPayload: DocumentItemDomainPayload,
+    val domainPayload: DocumentDomainPayload,
     val readableName: String,
     val value: String,
     val checked: Boolean,
@@ -40,15 +41,43 @@ data class RequestDocumentItemUi<T>(
         }
 }
 
-data class DocumentItemDomainPayload(
-    val docId: String,
-    val docType: DocType,
-    val namespace: String,
-    val elementIdentifier: ElementIdentifier
+data class RequestDocumentItemUi2<T>(
+    val uiCollapsedItem: UiCollapsedPayload<T>,
+    val uiExpandedItems: List<UiExpandedPayload<T>>
+)
+
+data class UiCollapsedPayload<T>(
+    val isExpanded: Boolean,
+    val uiItem: ListItemData<T>,
+)
+
+data class UiExpandedPayload<T>(
+    val domainPayload: DocumentDomainPayload,
+    val uiItem: ListItemData<T>,
+)
+
+data class DocumentItem(
+    val elementIdentifier: ElementIdentifier,
+    val value: String,
+    val readableName: String,
+    val isRequired: Boolean,
+    val isAvailable: Boolean,
+)
+
+data class DocumentDetailsDomain(
+    val items: List<DocumentItem>
+)
+
+data class DocumentDomainPayload(
+    val docName: String,
+    val docId: DocumentId,
+    val docNamespace: NameSpace,
+    //val docType: DocType,
+    val documentDetailsDomain: DocumentDetailsDomain
 ) {
     // We need to override equals in order for "groupBy" internal comparisons
     override fun equals(other: Any?): Boolean {
-        return if (other is DocumentItemDomainPayload) {
+        return if (other is DocumentDomainPayload) {
             other.docId == this.docId
         } else {
             false
@@ -62,7 +91,7 @@ data class DocumentItemDomainPayload(
 
 fun <T> DocItem.toRequestDocumentItemUi(
     uID: String,
-    docPayload: DocumentItemDomainPayload,
+    docPayload: DocumentDomainPayload,
     readableName: String,
     value: String,
     optional: Boolean,
@@ -87,6 +116,5 @@ val Document.docType: String
 fun produceDocUID(
     elementIdentifier: ElementIdentifier,
     documentId: DocumentId,
-    docType: String
 ): String =
-    docType + elementIdentifier + documentId
+    elementIdentifier + documentId

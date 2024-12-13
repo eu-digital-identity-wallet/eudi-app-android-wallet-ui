@@ -21,10 +21,10 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.model.DeferredDocumentData
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
+import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.DefaultKeyUnlockData
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultCreateDocumentSettings
