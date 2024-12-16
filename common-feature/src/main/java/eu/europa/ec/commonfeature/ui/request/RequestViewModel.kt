@@ -35,7 +35,8 @@ data class State(
     val headerConfig: ContentHeaderConfig,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.SUBTITLE,
+    val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.CANCEL,
+    val hasWarnedUser: Boolean = false,
 
     val verifierName: String? = null,
 
@@ -55,8 +56,6 @@ sealed class Event : ViewEvent {
 
     data class UserIdentificationClicked(val itemId: String) : Event()
 
-    data object BadgeClicked : Event()
-    data object SubtitleClicked : Event()
     data object PrimaryButtonPressed : Event()
     data object SecondaryButtonPressed : Event()
 
@@ -66,14 +65,6 @@ sealed class Event : ViewEvent {
         sealed class Cancel : BottomSheet() {
             data object PrimaryButtonPressed : Cancel()
             data object SecondaryButtonPressed : Cancel()
-        }
-
-        sealed class Subtitle : BottomSheet() {
-            data object PrimaryButtonPressed : Subtitle()
-        }
-
-        sealed class Badge : BottomSheet() {
-            data object PrimaryButtonPressed : Subtitle()
         }
     }
 }
@@ -95,7 +86,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 enum class RequestBottomSheetContent {
-    BADGE, SUBTITLE, CANCEL
+    CANCEL, WARNING
 }
 
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
@@ -171,15 +162,14 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is Event.UserIdentificationClicked -> {
-                updateUserIdentificationItem(id = event.itemId)
-            }
-
-            is Event.BadgeClicked -> {
-                showBottomSheet(sheetContent = RequestBottomSheetContent.BADGE)
-            }
-
-            is Event.SubtitleClicked -> {
-                showBottomSheet(sheetContent = RequestBottomSheetContent.SUBTITLE)
+                if (viewState.value.hasWarnedUser) {
+                    updateUserIdentificationItem(id = event.itemId)
+                } else {
+                    setState {
+                        copy(hasWarnedUser = true)
+                    }
+                    showBottomSheet(sheetContent = RequestBottomSheetContent.WARNING)
+                }
             }
 
             is Event.PrimaryButtonPressed -> {
@@ -203,14 +193,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
                 hideBottomSheet()
                 doNavigation(NavigationType.Pop)
-            }
-
-            is Event.BottomSheet.Subtitle.PrimaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.Badge.PrimaryButtonPressed -> {
-                hideBottomSheet()
             }
         }
     }

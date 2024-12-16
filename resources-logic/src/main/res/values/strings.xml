@@ -153,12 +153,8 @@
     <string name="request_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the login without sharing any information</string>
     <string name="request_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
     <string name="request_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
-    <string name="request_bottom_sheet_subtitle_title">Why we need your data</string>
-    <string name="request_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
-    <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
-    <string name="request_bottom_sheet_badge_title">Trusted relying party</string>
-    <string name="request_bottom_sheet_badge_subtitle">A relying party is considered trusted when it meets predefined criteria for security, data protection, compliance, and responsible data handling. Trust is reinforced through assessments, audits, and certifications.</string>
-    <string name="request_bottom_sheet_badge_primary_button_text">@string/generic_ok</string>
+    <string name="request_bottom_sheet_warning_title">Warning</string>
+    <string name="request_bottom_sheet_warning_subtitle">Choosing not to share certain data may result in failure to issue the requested document.</string>
     <string name="request_required_fields_title">Verification Data</string>
     <string name="request_gender_male">male</string>
     <string name="request_gender_female">female</string>

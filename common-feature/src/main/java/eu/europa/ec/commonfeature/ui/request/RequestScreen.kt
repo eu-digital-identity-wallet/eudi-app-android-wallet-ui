@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeader
@@ -51,6 +53,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.wrap.BaseBottomSheetContent
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
@@ -272,28 +275,6 @@ private fun SheetContent(
     onEventSent: (event: Event) -> Unit
 ) {
     when (sheetContent) {
-        RequestBottomSheetContent.BADGE -> {
-            DialogBottomSheet(
-                textData = BottomSheetTextData(
-                    title = stringResource(id = R.string.request_bottom_sheet_badge_title),
-                    message = stringResource(id = R.string.request_bottom_sheet_badge_subtitle),
-                    positiveButtonText = stringResource(id = R.string.request_bottom_sheet_badge_primary_button_text),
-                ),
-                onPositiveClick = { onEventSent(Event.BottomSheet.Badge.PrimaryButtonPressed) },
-            )
-        }
-
-        RequestBottomSheetContent.SUBTITLE -> {
-            DialogBottomSheet(
-                textData = BottomSheetTextData(
-                    title = stringResource(id = R.string.request_bottom_sheet_subtitle_title),
-                    message = stringResource(id = R.string.request_bottom_sheet_subtitle_subtitle),
-                    positiveButtonText = stringResource(id = R.string.request_bottom_sheet_subtitle_primary_button_text),
-                ),
-                onPositiveClick = { onEventSent(Event.BottomSheet.Subtitle.PrimaryButtonPressed) },
-            )
-        }
-
         RequestBottomSheetContent.CANCEL -> {
             DialogBottomSheet(
                 textData = BottomSheetTextData(
@@ -304,6 +285,17 @@ private fun SheetContent(
                 ),
                 onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
                 onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
+            )
+        }
+
+        RequestBottomSheetContent.WARNING -> {
+            BaseBottomSheetContent(
+                textData = BottomSheetTextData(
+                    title = stringResource(id = R.string.request_bottom_sheet_warning_title),
+                    message = stringResource(id = R.string.request_bottom_sheet_warning_subtitle),
+                ),
+                leadingIcon = AppIcons.Warning,
+                leadingIconTint = MaterialTheme.colorScheme.warning
             )
         }
     }
@@ -349,10 +341,10 @@ private fun SheetContentCancelPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun SheetContentSubtitlePreview() {
+private fun SheetContentWarningPreview() {
     PreviewTheme {
         SheetContent(
-            sheetContent = RequestBottomSheetContent.SUBTITLE,
+            sheetContent = RequestBottomSheetContent.WARNING,
             onEventSent = {}
         )
     }
