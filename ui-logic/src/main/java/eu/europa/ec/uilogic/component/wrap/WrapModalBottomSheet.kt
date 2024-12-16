@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.divider
@@ -65,7 +66,7 @@ private val defaultBottomSheetPadding: PaddingValues = PaddingValues(
     start = SPACING_LARGE.dp,
     end = SPACING_LARGE.dp,
     top = 0.dp,
-    bottom = 20.dp
+    bottom = SPACING_LARGE.dp
 )
 
 private val bottomSheetDefaultBackgroundColor: Color
@@ -143,7 +144,7 @@ fun DialogBottomSheet(
                             isWarning = textData.isNegativeButtonWarning,
                         )
                     ) {
-                        Text(text = safeNegativeButtonText)
+                        Text(text = safeNegativeButtonText, textAlign = TextAlign.Center)
                     }
                 }
 
@@ -158,7 +159,7 @@ fun DialogBottomSheet(
                             isWarning = textData.isPositiveButtonWarning,
                         )
                     ) {
-                        Text(text = safePositiveButtonText)
+                        Text(text = safePositiveButtonText, textAlign = TextAlign.Center)
                     }
                 }
             }
@@ -167,7 +168,7 @@ fun DialogBottomSheet(
 }
 
 @Composable
-private fun BaseBottomSheetContent(
+fun BaseBottomSheetContent(
     textData: BottomSheetTextData,
     leadingIcon: IconData? = null,
     leadingIconTint: Color? = null,
@@ -178,7 +179,8 @@ private fun BaseBottomSheetContent(
             .wrapContentHeight()
             .background(color = bottomSheetDefaultBackgroundColor)
             .fillMaxWidth()
-            .padding(defaultBottomSheetPadding)
+            .padding(defaultBottomSheetPadding),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Start),
@@ -199,8 +201,6 @@ private fun BaseBottomSheetContent(
             )
         }
 
-        VSpacer.Small()
-
         Text(
             text = textData.message,
             style = MaterialTheme.typography.bodyMedium.copy(
@@ -209,7 +209,6 @@ private fun BaseBottomSheetContent(
         )
 
         bodyContent?.let { safeBodyContent ->
-            VSpacer.Medium()
             safeBodyContent()
         }
     }

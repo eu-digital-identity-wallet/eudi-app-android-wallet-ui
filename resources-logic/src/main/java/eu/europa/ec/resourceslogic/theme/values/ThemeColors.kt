@@ -74,7 +74,7 @@ class ThemeColors {
 
         // Light theme extra colors palette.
         internal const val eudiw_theme_light_success: Long = 0xFF55953B
-        internal const val eudiw_theme_light_warning: Long = 0xFFAB5200
+        internal const val eudiw_theme_light_warning: Long = 0xFFF39626
         internal const val eudiw_theme_light_divider: Long = 0xFFD9D9D9
 
         // Dark theme base colors palette.
