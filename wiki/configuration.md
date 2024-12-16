@@ -378,11 +378,8 @@ This section describes configuring the application to interact with services uti
     implementation(libs.ktor.android)
     implementation(libs.ktor.logging)
     ```
-3. Now, you need to navigate to the **ConfigWalletCoreImpl.kt** file, either in:
-   *src\dev\java\eu\europa\ec\corelogic\config* or
-   *src\demo\java\eu\europa\ec\corelogic\config*
-   depending on the flavor of your choice.
-4. Here, add these imports:
+3. Now, you need to create a new kotlin file *ProvideKtorHttpClient* and place it into the *src\main\java\eu\europa\ec\corelogic\config* package.
+4. Copy and paste the following into your newly created *ProvideKtorHttpClient* kotlin file.
     ```Kotlin
     import android.annotation.SuppressLint
     import io.ktor.client.HttpClient
@@ -394,9 +391,7 @@ This section describes configuring the application to interact with services uti
     import javax.net.ssl.TrustManager
     import javax.net.ssl.X509TrustManager
     import javax.security.cert.CertificateException
-    ```
-5. Add a custom HttpClient that allows self-signed certificates
-    ```Kotlin
+    
     object ProvideKtorHttpClient {
 
         @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
@@ -439,11 +434,20 @@ This section describes configuring the application to interact with services uti
 
     }
     ```
-6. Finally, add this custom HttpClient to the config, by appending it to the EudiWalletConfig.Builder, with the following lines:
+5. Finally, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
     ```Kotlin
-   .ktorHttpClientFactory {
-        ProvideKtorHttpClient.client()
-   }
+    @Single
+    fun provideEudiWallet(
+    context: Context,
+    walletCoreConfig: WalletCoreConfig,
+    walletCoreLogController: WalletCoreLogController
+    ): EudiWallet = EudiWallet(context, walletCoreConfig.config) {
+        withLogger(walletCoreLogController)
+        // Custom HttpClient
+        withKtorHttpClientFactory {
+            ProvideKtorHttpClient.client()
+        }
+    }
     ```
 
 ## Theme configuration
