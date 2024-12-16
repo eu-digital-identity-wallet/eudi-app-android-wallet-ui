@@ -41,13 +41,11 @@ data class State(
     val verifierName: String? = null,
 
     val items: List<RequestDocumentItemUi2<Event>> = emptyList(),
-    //val newItems: ExpandableListItemData<Event>? = null,
     val noItems: Boolean = false,
     val allowShare: Boolean = false
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data class SthClicked(val name: String) : Event()
     data object DoWork : Event()
     data object DismissError : Event()
     data object GoBack : Event()
@@ -132,10 +130,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.SthClicked -> {
-                println("Giannis clicked sth: ${event.name}")
-            }
-
             is Event.DoWork -> doWork()
 
             is Event.DismissError -> {

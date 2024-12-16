@@ -57,7 +57,7 @@ class PresentationRequestViewModel(
             //relyingPartyData = interactor.getRelyingPartyData() //TODO()
             relyingPartyData = RelyingPartyData(
                 isVerified = true,
-                name = "Relying Party",
+                name = "(placeholder) Relying Party",
                 description = "requests the following",
             )
         )
@@ -133,7 +133,6 @@ class PresentationRequestViewModel(
                                 error = null,
                                 verifierName = response.verifierName,
                                 items = response.requestDocuments,
-                                //newItems = expandableData
                             )
                         }
                     }

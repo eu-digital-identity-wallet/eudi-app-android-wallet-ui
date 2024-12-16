@@ -22,6 +22,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
@@ -30,13 +31,13 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 @Composable
 fun <T> WrapListItems(
     items: List<ListItemData<T>>,
+    onItemClick: ((T) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
-    mainTextVerticalPadding: Int? = null,
+    mainContentVerticalPadding: Dp? = null,
     clickable: Boolean = false,
     shape: Shape? = null,
-    throttleClicks: Boolean = true,
-    onEventSend: (T) -> Unit
+    throttleClicks: Boolean = true
 ) {
     WrapCard(shape = shape) {
         Column(
@@ -45,38 +46,17 @@ fun <T> WrapListItems(
         ) {
             //itemsIndexed(items) { index, item ->
             items.forEachIndexed { index, item ->
-                val itemModifier = Modifier
-                    //.then(
-                    //    if (clickable) {
-                    //        if (throttleClicks) {
-                    //            Modifier.throttledClickable {
-                    //                onEventSend(item.event)
-                    //                //onItemClick?.invoke(item)
-                    //            }
-                    //        } else {
-                    //            Modifier.clickable {
-                    //                onEventSend(item.event)
-                    //                //onItemClick?.invoke(item)
-                    //            }
-                    //        }
-                    //    } else {
-                    //        Modifier
-                    //    }
-                    //)
-                    .padding(
-                        top = if (index == 0) SPACING_SMALL.dp else 0.dp,
-                        bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
-                    )
-                //.clickable {
-                //    onEventSend(item.event) //TODO is this ok? the same event twice?
-                //}
+                val itemModifier = Modifier.padding(
+                    top = if (index == 0) SPACING_SMALL.dp else 0.dp,
+                    bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
+                )
 
                 ListItem(
                     item = item,
+                    onItemClick = onItemClick,
                     modifier = itemModifier,
                     hideSensitiveContent = hideSensitiveContent,
-                    mainTextVerticalPadding = mainTextVerticalPadding,
-                    onEventSend = onEventSend
+                    mainContentVerticalPadding = mainContentVerticalPadding,
                 )
 
                 if (index < items.lastIndex) {

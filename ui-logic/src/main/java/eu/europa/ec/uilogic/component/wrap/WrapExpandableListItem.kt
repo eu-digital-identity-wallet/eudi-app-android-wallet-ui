@@ -19,6 +19,7 @@ package eu.europa.ec.uilogic.component.wrap
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -31,42 +32,37 @@ data class ExpandableListItemData<T>(
 @Composable
 fun <T> WrapExpandableListItem(
     data: ExpandableListItemData<T>,
-    onEventSend: (T) -> Unit,
+    onItemClick: ((T) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
     onExpandedChange: () -> Unit,
     isClickableWhenExpanded: Boolean = false,
     throttleClicks: Boolean = true,
-    collapsedMainTextVerticalPadding: Int = 16,
-    expandedMainTextVerticalPadding: Int = 12,
-    //onExpandedItemClick: ((ListItemData) -> Unit)? = null
+    collapsedMainContentVerticalPadding: Dp = 16.dp,
+    expandedMainContentVerticalPadding: Dp = 12.dp,
 ) {
     WrapExpandableCard(
         modifier = modifier,
         cardCollapsedContent = {
             WrapListItem(
                 item = data.collapsed,
+                onItemClick = onItemClick,
                 hideSensitiveContent = false,
-                mainTextVerticalPadding = collapsedMainTextVerticalPadding,
-                //onItemClick = { onExpandedChange(!isExpanded) },
-                onEventSend = { event ->
-                    onEventSend(event)
-                }
+                mainContentVerticalPadding = collapsedMainContentVerticalPadding,
             )
         },
         cardExpandedContent = {
             WrapListItems(
                 items = data.expanded,
+                onItemClick = onItemClick,
                 hideSensitiveContent = hideSensitiveContent,
-                mainTextVerticalPadding = expandedMainTextVerticalPadding,
+                mainContentVerticalPadding = expandedMainContentVerticalPadding,
                 shape = RoundedCornerShape(
                     bottomStart = SIZE_SMALL.dp,
                     bottomEnd = SIZE_SMALL.dp,
                 ),
-                //onItemClick = onExpandedItemClick,
                 clickable = isClickableWhenExpanded,
-                onEventSend = onEventSend
             )
         },
         isExpanded = isExpanded,

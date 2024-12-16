@@ -35,7 +35,11 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.businesslogic.util.safeLet
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Checkbox
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Icon
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.ICON_SIZE_40
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
@@ -46,8 +50,24 @@ import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 
+/**
+ * Represents the data displayed within a single item in a list.
+ *
+ * This class encapsulates all the information needed to render a list item,
+ * including its content, optional visual elements like leading/trailing icons or checkboxes,
+ * and an associated event (e.g., a click event).
+ *
+ * @param T The type of event associated with the list item (e.g., a click event).
+ * @param event The event triggered when the list item is interacted with. This can be null if no event is associated.
+ * @param itemId A unique identifier for this specific list item.
+ * @param mainContentData The primary content displayed in the list item. This is typically text but could be other UI elements. See [MainContentData] for details.
+ * @param overlineText Optional text displayed above the `mainContentData`, providing context or a brief heading.
+ * @param supportingText Optional text displayed below the `mainContentData`, offering additional details or description.
+ * @param leadingContentData Optional data for content displayed at the beginning of the list item. This could be an icon, image, or other visual element. See [ListItemLeadingContentData] for details.
+ * @param trailingContentData Optional data for content displayed at the end of the list item. This could be an icon. checkbox, or other interactive element. See [ListItemTrailingContentData] for details.
+ */
 data class ListItemData<T>(
-    val event: T, //todo val event: T? = null, is this better?
+    val event: T?,
     val itemId: String,
     val mainContentData: MainContentData,
     val overlineText: String? = null,
@@ -56,37 +76,60 @@ data class ListItemData<T>(
     val trailingContentData: ListItemTrailingContentData? = null,
 )
 
+/**
+ * Represents the data that can be displayed in the main content area.
+ * This can be either text or an image in base64 format.
+ */
 sealed class MainContentData {
     data class Text(val text: String) : MainContentData()
     data class Image(val base64Image: String) : MainContentData()
 }
 
+/**
+ * Represents the data that can be displayed as leading content in a list item.
+ * This can be either an icon or a User image in base64 format.
+ */
 sealed class ListItemLeadingContentData {
     data class Icon(val iconData: IconData) : ListItemLeadingContentData()
     data class UserImage(val userBase64Image: String) : ListItemLeadingContentData()
 }
 
+/**
+ * Represents the data that can be displayed in the trailing content of a list item.
+ *
+ * This sealed class offers two options for the trailing content:
+ * - [Icon]: Displays an icon.
+ * - [Checkbox]: Displays a checkbox with associated data.
+ */
 sealed class ListItemTrailingContentData {
     data class Icon(val iconData: IconData) : ListItemTrailingContentData()
     data class Checkbox(val checkboxData: CheckboxData) : ListItemTrailingContentData()
 }
 
-enum class ListItemClickArea {
-    WHOLE_ROW,
-    TRAILING_CONTENT
-}
-
+/**
+ * A composable function that displays a list item with various content options.
+ *
+ * This function allows for customization of the list item's content, including leading and trailing elements,
+ * as well as the main and supporting text. It also supports hiding sensitive content by blurring it.
+ *
+ * @param T The type of the item data.
+ * @param item The [ListItemData] object containing the data to display in the list item.
+ * @param onItemClick An optional lambda function that is invoked when the item is clicked. It receives the item data as a parameter.
+ * @param modifier A [Modifier] that can be used to customize the appearance of the list item.
+ * @param hideSensitiveContent A boolean flag indicating whether to hide sensitive content by blurring it.
+ * @param mainContentVerticalPadding An optional value specifying the vertical padding for the main content.
+ * @param overlineTextStyle The [TextStyle] to be applied to the overline text.
+ */
 @Composable
 fun <T> ListItem(
     item: ListItemData<T>,
-    onEventSend: ((T) -> Unit)?,
+    onItemClick: ((T) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
-    mainTextVerticalPadding: Int? = null,
+    mainContentVerticalPadding: Dp? = null,
     overlineTextStyle: TextStyle = MaterialTheme.typography.labelMedium.copy(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     ),
-    //clickAreas: List<ListItemClickArea> = listOf(ListItemClickArea.TRAILING_CONTENT, ListItemClickArea.WHOLE_ROW)
 ) {
     val maxSecondaryTextLines = 1
     val textOverflow = TextOverflow.Ellipsis
@@ -104,14 +147,11 @@ fun <T> ListItem(
         }
     }
 
-    // Replace leading icon with "User" (default) icon if hiding sensitive content on unsupported APIs
     val leadingContentData: ListItemLeadingContentData? =
         remember(hideSensitiveContent, item.leadingContentData) {
             item.leadingContentData?.let { safeLeadingContentData ->
                 if (hideSensitiveContent && !supportsBlur) {
                     null
-                    //ListItemLeadingContentData.Icon(AppIcons.User)
-                    //ListItemLeadingContentData.UserImage(AppIcons.User)
                 } else {
                     safeLeadingContentData
                 }
@@ -121,15 +161,6 @@ fun <T> ListItem(
     with(item) {
         Row(
             modifier = modifier
-                //.then(
-                //    if (clickAreas.contains(ListItemClickArea.WHOLE_ROW)) {
-                //        Modifier.clickable {
-                //            onEventSend?.invoke(item.event)
-                //        }
-                //    } else {
-                //        Modifier
-                //    }
-                //)
                 .padding(horizontal = SPACING_MEDIUM.dp),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
@@ -158,7 +189,7 @@ fun <T> ListItem(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(vertical = mainTextVerticalPadding?.dp ?: SPACING_SMALL.dp),
+                    .padding(vertical = mainContentVerticalPadding ?: SPACING_SMALL.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.Start
             ) {
@@ -172,9 +203,9 @@ fun <T> ListItem(
                     )
                 }
 
-                // Main Text
+                // Main Content
                 if (!hideSensitiveContent || supportsBlur) {
-                    when (val mainContentData = mainContentData) {
+                    when (mainContentData) {
                         is MainContentData.Image -> ImageOrPlaceholder(
                             modifier = Modifier
                                 .wrapContentWidth()
@@ -188,7 +219,6 @@ fun <T> ListItem(
                             modifier = blurModifier,
                             text = mainContentData.text,
                             style = mainTextStyle,
-                            //maxLines = 2,
                             overflow = textOverflow,
                         )
                     }
@@ -210,20 +240,11 @@ fun <T> ListItem(
             // Trailing Content
             trailingContentData?.let { safeTrailingContentData ->
                 when (safeTrailingContentData) {
-                    /*is ListItemTrailingContentData.Checkbox -> WrapCheckbox(
-                        checkboxData = safeTrailingContentData.checkboxData.copy(
-                            onCheckedChange = {
-                                onEventSend(item.event)
-                            }
-                        ),
-                        modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
-                    )*/
-
                     is ListItemTrailingContentData.Checkbox -> WrapEventCheckbox(
                         checkboxData = safeTrailingContentData.checkboxData,
-                        onEventSend = {
-                            if (onEventSend != null) {
-                                onEventSend(item.event)
+                        onItemClick = {
+                            safeLet(onItemClick, event) { safeOnItemClick, safeEvent ->
+                                safeOnItemClick(safeEvent)
                             }
                         },
                         modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
@@ -234,13 +255,11 @@ fun <T> ListItem(
                             .padding(start = SIZE_MEDIUM.dp)
                             .size(DEFAULT_ICON_SIZE.dp)
                             .then(
-                                if (onEventSend != null) {
+                                other = safeLet(onItemClick, event) { safeOnItemClick, safeEvent ->
                                     Modifier.clickable {
-                                        onEventSend(item.event)
+                                        safeOnItemClick(safeEvent)
                                     }
-                                } else {
-                                    Modifier
-                                }
+                                } ?: Modifier
                             ),
                         iconData = safeTrailingContentData.iconData,
                         customTint = MaterialTheme.colorScheme.primary,
@@ -261,20 +280,20 @@ fun <T> ListItem(
  *
  * @param checkboxData The data for the checkbox, including the label, checked state, and
  * optional `onCheckedChange` callback.
- * @param onEventSend A lambda function that is called when the checkbox state changes.
+ * @param onItemClick A lambda function that is called when the checkbox state changes.
  * @param modifier Modifier used to decorate the checkbox.
  */
 @Composable
 fun WrapEventCheckbox(
     checkboxData: CheckboxData,
-    onEventSend: () -> Unit,
+    onItemClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     WrapCheckbox(
         checkboxData = checkboxData.copy(
             onCheckedChange = {
                 checkboxData.onCheckedChange?.invoke(it)
-                onEventSend()
+                onItemClick()
             }
         ),
         modifier = modifier,

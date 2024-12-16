@@ -18,27 +18,32 @@ package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 
 @Composable
 fun <T> WrapListItem(
     item: ListItemData<T>,
+    onItemClick: ((T) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
-    mainTextVerticalPadding: Int? = null,
-    onEventSend: (T) -> Unit
+    mainContentVerticalPadding: Dp? = null
 ) {
     WrapCard(
         modifier = modifier,
-        onClick = { onEventSend(item.event) }, //TODO is this ok, 2 times the same event?
+        onClick = {
+            safeLet(onItemClick, item.event) { safeOnItemClick, safeEvent ->
+                safeOnItemClick(safeEvent)
+            }
+        },
     ) {
         ListItem(
             item = item,
+            onItemClick = null,
             hideSensitiveContent = hideSensitiveContent,
-            mainTextVerticalPadding = mainTextVerticalPadding,
-            onEventSend = null,
-            //clickAreas = emptyList()
+            mainContentVerticalPadding = mainContentVerticalPadding,
         )
     }
 }

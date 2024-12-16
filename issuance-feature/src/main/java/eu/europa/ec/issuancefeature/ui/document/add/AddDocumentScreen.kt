@@ -187,7 +187,7 @@ private fun Content(
                             )
                         )
                     },
-                    onEventSend = onEventSend,
+                    onItemClick = onEventSend,
                 )
                 VSpacer.Medium()
             }

@@ -202,7 +202,7 @@ private fun Content(
             contentPadding = paddingValues
         )*/
 
-        var hideOrNot by remember { mutableStateOf(false) }
+        var hideOrNot by remember { mutableStateOf(false) } //TODO Giannis remove later
         WrapIconButton(
             iconData = AppIcons.VisibilityOff,
             onClick = { hideOrNot = !hideOrNot }
@@ -214,7 +214,7 @@ private fun Content(
                 .padding(top = SPACING_MEDIUM.dp),
             items = state.items,
             onEventSend = onEventSend,
-            hideOrNot
+            hideOrNot = hideOrNot,
         )
     }
 
@@ -248,7 +248,6 @@ fun DisplayRequestItems(
     onEventSend: (Event) -> Unit,
     hideOrNot: Boolean
 ) {
-
     Column {
         items.forEach { requestItem ->
             WrapExpandableListItem(
@@ -256,12 +255,14 @@ fun DisplayRequestItems(
                     collapsed = requestItem.uiCollapsedItem.uiItem,
                     expanded = requestItem.uiExpandedItems.map { it.uiItem }
                 ),
-                onEventSend = onEventSend,
+                onItemClick = onEventSend,
                 hideSensitiveContent = hideOrNot,
                 modifier = modifier,
                 isExpanded = requestItem.uiCollapsedItem.isExpanded,
                 onExpandedChange = {
-                    onEventSend(requestItem.uiCollapsedItem.uiItem.event)
+                    requestItem.uiCollapsedItem.uiItem.event?.let { safeEvent ->
+                        onEventSend(safeEvent)
+                    }
                 }
             )
         }
