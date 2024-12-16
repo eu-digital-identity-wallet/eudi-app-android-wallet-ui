@@ -18,6 +18,7 @@ package eu.europa.ec.uilogic.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -25,27 +26,33 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 @Composable
-fun UserImageOrPlaceholder(userBase64Image: String, modifier: Modifier) {
-    if (userBase64Image.isNotBlank()) {
+fun ImageOrPlaceholder(
+    modifier: Modifier,
+    base64Image: String,
+    contentScale: ContentScale? = null,
+    fallbackIcon: IconData = AppIcons.User,
+) {
+    if (base64Image.isNotBlank()) {
         WrapImage(
-            bitmap = rememberBase64DecodedBitmap(base64Image = userBase64Image),
             modifier = modifier,
-            contentDescription = stringResource(id = R.string.content_description_user_image_icon)
+            bitmap = rememberBase64DecodedBitmap(base64Image = base64Image),
+            contentDescription = stringResource(id = R.string.content_description_image_or_placeholder_icon),
+            contentScale = contentScale,
         )
     } else {
         WrapImage(
-            iconData = AppIcons.User,
             modifier = modifier,
+            iconData = fallbackIcon,
         )
     }
 }
 
 @ThemeModePreviews
 @Composable
-private fun UserImageOrPlaceholderPreview() {
+private fun ImageOrPlaceholderPreview() {
     PreviewTheme {
-        UserImageOrPlaceholder(
-            userBase64Image = "",
+        ImageOrPlaceholder(
+            base64Image = "",
             modifier = Modifier
         )
     }

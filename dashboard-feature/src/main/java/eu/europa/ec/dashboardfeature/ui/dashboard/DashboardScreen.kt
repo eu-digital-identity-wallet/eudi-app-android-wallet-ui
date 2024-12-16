@@ -71,9 +71,9 @@ import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ImageOrPlaceholder
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.ScalableText
-import eu.europa.ec.uilogic.component.UserImageOrPlaceholder
 import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.GradientEdge
@@ -532,8 +532,8 @@ private fun Title(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            UserImageOrPlaceholder(
-                userBase64Image = userBase64Image,
+            ImageOrPlaceholder(
+                base64Image = userBase64Image,
                 modifier = Modifier
                     .size(64.dp)
                     .clip(RoundedCornerShape(SIZE_SMALL.dp))

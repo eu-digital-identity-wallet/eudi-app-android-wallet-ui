@@ -39,6 +39,7 @@ import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -211,7 +212,7 @@ class AddDocumentInteractorImpl(
         val collapsedItem1 = ListItemData<Event>(
             event = Event.CollapsedItemClicked("collapsed_id1"),
             itemId = "collapsed_id1",
-            mainText = "Collapsed Title",
+            mainContentData = MainContentData.Text(text = "Collapsed Title"),
             supportingText = "Click to expand",
             trailingContentData = ListItemTrailingContentData.Icon(
                 iconData = AppIcons.KeyboardArrowDown
@@ -222,7 +223,7 @@ class AddDocumentInteractorImpl(
             ListItemData<Event>(
                 event = Event.ExpandedItemClicked("item11"),
                 itemId = "item11",
-                mainText = "Expanded Item 11",
+                mainContentData = MainContentData.Text(text = "Expanded Item 11"),
                 supportingText = "Details about item 11",
                 trailingContentData = ListItemTrailingContentData.Checkbox(
                     checkboxData = CheckboxData(
@@ -235,7 +236,7 @@ class AddDocumentInteractorImpl(
             ListItemData<Event>(
                 event = Event.ExpandedItemClicked("item12"),
                 itemId = "item12",
-                mainText = "Expanded Item 12",
+                mainContentData = MainContentData.Text(text = "Expanded Item 12"),
                 supportingText = "Details about item 12",
                 trailingContentData = ListItemTrailingContentData.Checkbox(
                     checkboxData = CheckboxData(
@@ -252,7 +253,7 @@ class AddDocumentInteractorImpl(
         val collapsedItem2 = ListItemData<Event>(
             event = Event.CollapsedItemClicked("collapsed_id2"),
             itemId = "collapsed_id2",
-            mainText = "Collapsed Title",
+            mainContentData = MainContentData.Text(text = "Collapsed Title"),
             supportingText = "Click to expand",
             trailingContentData = ListItemTrailingContentData.Icon(
                 iconData = AppIcons.KeyboardArrowDown
@@ -263,7 +264,7 @@ class AddDocumentInteractorImpl(
             ListItemData<Event>(
                 event = Event.ExpandedItemClicked("item21"),
                 itemId = "item21",
-                mainText = "Expanded Item 21",
+                mainContentData = MainContentData.Text(text = "Expanded Item 21"),
                 supportingText = "Details about item 21",
                 trailingContentData = ListItemTrailingContentData.Checkbox(
                     checkboxData = CheckboxData(
@@ -276,7 +277,7 @@ class AddDocumentInteractorImpl(
             ListItemData<Event>(
                 event = Event.ExpandedItemClicked("item22"),
                 itemId = "item22",
-                mainText = "Expanded Item 22",
+                mainContentData = MainContentData.Text(text = "Expanded Item 22"),
                 supportingText = "Details about item 22",
                 trailingContentData = ListItemTrailingContentData.Checkbox(
                     checkboxData = CheckboxData(

@@ -25,7 +25,8 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
 import eu.europa.ec.commonfeature.ui.request.model.UiCollapsedPayload
 import eu.europa.ec.commonfeature.ui.request.model.UiExpandedPayload
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
-import eu.europa.ec.commonfeature.util.keyIsBase64
+import eu.europa.ec.commonfeature.util.keyIsPortrait
+import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
@@ -41,6 +42,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import org.json.JSONObject
 
@@ -147,16 +149,24 @@ object RequestTransformer {
                     documentId = documentDomainPayload.docId,
                 )
 
-                val leadingContent = if (keyIsBase64(docItem.elementIdentifier)) {
+                val leadingContent = if (keyIsPortrait(key = docItem.elementIdentifier)) {
                     ListItemLeadingContentData.UserImage(userBase64Image = docItem.value)
                 } else {
                     null
                 }
 
-                val mainText = if (keyIsBase64(docItem.elementIdentifier) && docItem.isAvailable) {
-                    ""
-                } else {
-                    docItem.value
+                val mainText = when {
+                    keyIsPortrait(key = docItem.elementIdentifier) && docItem.isAvailable -> {
+                        MainContentData.Text(text = "")
+                    }
+
+                    keyIsSignature(key = docItem.elementIdentifier) && docItem.isAvailable -> {
+                        MainContentData.Image(base64Image = docItem.value)
+                    }
+
+                    else -> {
+                        MainContentData.Text(text = docItem.value)
+                    }
                 }
 
                 UiExpandedPayload(
@@ -164,7 +174,7 @@ object RequestTransformer {
                     uiItem = ListItemData<Event>(
                         event = Event.UserIdentificationClicked(itemId = expandedItemId),
                         itemId = expandedItemId,
-                        mainText = mainText,
+                        mainContentData = mainText,
                         overlineText = docItem.readableName,
                         leadingContentData = leadingContent,
                         trailingContentData = ListItemTrailingContentData.Checkbox(
@@ -183,7 +193,7 @@ object RequestTransformer {
                     uiItem = ListItemData(
                         event = Event.ExpandOrCollapseRequiredDataList(itemId = collapsedItemId),
                         itemId = collapsedItemId,
-                        mainText = documentDomainPayload.docName,
+                        mainContentData = MainContentData.Text(text = documentDomainPayload.docName),
                         supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowDown
@@ -215,10 +225,15 @@ object RequestTransformer {
         val disclosedDocuments =
             groupedByDocument.map { (documentPayload, selectedItemsForDocument) ->
                 val disclosedItems = selectedItemsForDocument.map { selectedItem ->
+                    val mainContentValue =
+                        when (val mainContentData = selectedItem.uiItem.mainContentData) {
+                            is MainContentData.Image -> mainContentData.base64Image
+                            is MainContentData.Text -> mainContentData.text
+                        }
                     DocItem(
                         namespace = documentPayload.docNamespace,
                         elementIdentifier = documentPayload.documentDetailsDomain.items
-                            .find { it.value == selectedItem.uiItem.mainText }
+                            .find { it.value == mainContentValue }
                             ?.elementIdentifier ?: ""
                     )
                 }

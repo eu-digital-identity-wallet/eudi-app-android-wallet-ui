@@ -70,6 +70,14 @@ fun keyIsBase64(key: String): Boolean {
     return listOfBase64Keys.contains(key)
 }
 
+fun keyIsPortrait(key: String): Boolean {
+    return key == DocumentJsonKeys.PORTRAIT
+}
+
+fun keyIsSignature(key: String): Boolean {
+    return key == DocumentJsonKeys.SIGNATURE
+}
+
 private fun keyIsUserPseudonym(key: String): Boolean {
     return key == DocumentJsonKeys.USER_PSEUDONYM
 }

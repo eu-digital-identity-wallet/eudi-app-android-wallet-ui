@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,12 +49,17 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
 data class ListItemData<T>(
     val event: T, //todo val event: T? = null, is this better?
     val itemId: String,
-    val mainText: String,
+    val mainContentData: MainContentData,
     val overlineText: String? = null,
     val supportingText: String? = null,
     val leadingContentData: ListItemLeadingContentData? = null,
     val trailingContentData: ListItemTrailingContentData? = null,
 )
+
+sealed class MainContentData {
+    data class Text(val text: String) : MainContentData()
+    data class Image(val base64Image: String) : MainContentData()
+}
 
 sealed class ListItemLeadingContentData {
     data class Icon(val iconData: IconData) : ListItemLeadingContentData()
@@ -102,7 +109,8 @@ fun <T> ListItem(
         remember(hideSensitiveContent, item.leadingContentData) {
             item.leadingContentData?.let { safeLeadingContentData ->
                 if (hideSensitiveContent && !supportsBlur) {
-                    ListItemLeadingContentData.Icon(AppIcons.User)
+                    null
+                    //ListItemLeadingContentData.Icon(AppIcons.User)
                     //ListItemLeadingContentData.UserImage(AppIcons.User)
                 } else {
                     safeLeadingContentData
@@ -140,9 +148,9 @@ fun <T> ListItem(
                         iconData = safeLeadingContentData.iconData,
                     )
 
-                    is ListItemLeadingContentData.UserImage -> UserImageOrPlaceholder(
+                    is ListItemLeadingContentData.UserImage -> ImageOrPlaceholder(
                         modifier = leadingContentModifier,
-                        userBase64Image = safeLeadingContentData.userBase64Image,
+                        base64Image = safeLeadingContentData.userBase64Image,
                     )
                 }
             }
@@ -166,13 +174,24 @@ fun <T> ListItem(
 
                 // Main Text
                 if (!hideSensitiveContent || supportsBlur) {
-                    Text(
-                        modifier = blurModifier,
-                        text = mainText,
-                        style = mainTextStyle,
-                        maxLines = 2,
-                        overflow = textOverflow,
-                    )
+                    when (val mainContentData = mainContentData) {
+                        is MainContentData.Image -> ImageOrPlaceholder(
+                            modifier = Modifier
+                                .wrapContentWidth()
+                                .padding(top = SPACING_SMALL.dp)
+                                .then(blurModifier),
+                            base64Image = mainContentData.base64Image,
+                            contentScale = ContentScale.Fit,
+                        )
+
+                        is MainContentData.Text -> Text(
+                            modifier = blurModifier,
+                            text = mainContentData.text,
+                            style = mainTextStyle,
+                            //maxLines = 2,
+                            overflow = textOverflow,
+                        )
+                    }
                 }
 
                 // Supporting Text

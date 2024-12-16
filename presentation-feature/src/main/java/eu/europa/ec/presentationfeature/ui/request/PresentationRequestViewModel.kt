@@ -27,15 +27,10 @@ import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.TitleWithBadge
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -113,54 +108,6 @@ class PresentationRequestViewModel(
         ) ?: throw RuntimeException("RequestUriConfig:: is Missing or invalid")
 
         interactor.setConfig(requestUriConfig)
-
-
-        val collapsedItem = ListItemData<Event>(
-            event = Event.SthClicked("collapsed_id"),
-            itemId = "collapsed_id",
-            mainText = "Collapsed Title",
-            supportingText = "Click to expand",
-            trailingContentData = ListItemTrailingContentData.Icon(
-                iconData = AppIcons.KeyboardArrowDown
-            )
-        )
-
-        val expandedItems = listOf(
-            ListItemData<Event>(
-                event = Event.SthClicked("item1"),
-                itemId = "item1",
-                mainText = "Expanded Item 1",
-                supportingText = "Details about item 1",
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
-                        isChecked = false,
-                        enabled = true,
-                        onCheckedChange = null
-                    )
-                )
-            ),
-            ListItemData<Event>(
-                event = Event.SthClicked("item2"),
-                itemId = "item2",
-                mainText = "Expanded Item 2",
-                supportingText = "Details about item 2",
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
-                        isChecked = true,
-                        enabled = true,
-                        onCheckedChange = {
-                            println("Giannis checkbox clicked")
-                        }
-                    )
-                )
-            )
-        )
-
-        val expandableData: ExpandableListItemData<Event> = ExpandableListItemData(
-            collapsed = collapsedItem,
-            expanded = expandedItems
-        )
-
 
         viewModelJob = viewModelScope.launch {
             interactor.getRequestDocuments().collect { response ->

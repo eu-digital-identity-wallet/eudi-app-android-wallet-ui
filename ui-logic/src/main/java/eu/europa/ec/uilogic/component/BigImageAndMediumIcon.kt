@@ -55,8 +55,8 @@ fun BigImageAndMediumIcon(
                 start.linkTo(parent.start)
             }
 
-        UserImageOrPlaceholder(
-            userBase64Image = base64Image,
+        ImageOrPlaceholder(
+            base64Image = base64Image,
             modifier = imageModifier
         )
 

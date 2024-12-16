@@ -41,7 +41,7 @@
     <string name="generic_search_bar_placeholder_text">Search documents</string>
 
     <!-- Content Description -->
-    <string name="content_description_user_image_icon">User image</string>
+    <string name="content_description_image_or_placeholder_icon">Image or placeholder icon</string>
     <string name="content_description_user_signature_icon">User signature</string>
     <string name="content_description_qr_code_icon">QR Code</string>
     <string name="content_description_more_vert_icon">More Items</string>
