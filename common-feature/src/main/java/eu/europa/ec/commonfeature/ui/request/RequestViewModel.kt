@@ -226,16 +226,12 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             }
 
             is NavigationType.Pop, NavigationType.Finish -> {
-                unsubscribe()
-                cleanUp()
                 setEffect { Effect.Navigation.Pop }
             }
 
             is NavigationType.Deeplink -> {}
 
             is NavigationType.PopTo -> {
-                unsubscribe()
-                cleanUp()
                 setEffect { Effect.Navigation.PopTo(navigationType.screen.screenRoute) }
             }
 
@@ -309,6 +305,12 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     private fun unsubscribe() {
         viewModelJob?.cancel()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        unsubscribe()
+        cleanUp()
     }
 
     private fun hasVerificationItems(list: List<RequestDataUi<Event>>): Boolean {
