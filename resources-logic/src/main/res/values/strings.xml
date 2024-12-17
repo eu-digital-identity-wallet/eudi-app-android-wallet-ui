@@ -193,6 +193,16 @@
     <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
     <string name="dashboard_intent_chooser_logs_share_title">Share logs</string>
 
+    <!-- Home Screen -->
+    <string name="home_screen_title">Home</string>
+
+
+    <!-- Documents Screen -->
+    <string name="documents_screen_title">Documents</string>
+
+    <!-- Transactions Screen -->
+    <string name="transactions_screen_title">Transactions</string>
+
     <!-- Document Sign -->
     <string name="document_sign_title">Sign Document</string>
     <string name="document_sign_subtitle">Select a document from your device to sign electronically.</string>
