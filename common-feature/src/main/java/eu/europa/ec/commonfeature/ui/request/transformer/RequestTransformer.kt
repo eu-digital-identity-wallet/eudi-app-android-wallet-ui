@@ -16,7 +16,6 @@
 
 package eu.europa.ec.commonfeature.ui.request.transformer
 
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
@@ -78,7 +77,7 @@ object RequestTransformer {
             // Add document item.
             items += RequestDataUi.Document(
                 documentItemUi = DocumentItemUi(
-                    title = storageDocument.toUiName()
+                    title = storageDocument.name
                 )
             )
             items += RequestDataUi.Space()

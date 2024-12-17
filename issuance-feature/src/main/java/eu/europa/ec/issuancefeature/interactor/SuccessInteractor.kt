@@ -17,7 +17,6 @@
 package eu.europa.ec.issuancefeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.eudi.wallet.document.DocumentId
@@ -56,7 +55,7 @@ class SuccessInteractorImpl(
                 emit(
                     SuccessFetchDocumentByIdPartialState.Success(
                         document = issuedDocument,
-                        documentName = issuedDocument.toUiName(),
+                        documentName = issuedDocument.name,
                         fullName = extractFullNameFromDocumentOrEmpty(issuedDocument)
                     )
                 )

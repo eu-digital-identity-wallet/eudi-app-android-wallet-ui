@@ -25,7 +25,6 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
@@ -274,7 +273,7 @@ class DashboardInteractorImpl(
 
                 return DocumentUi(
                     documentId = this.id,
-                    documentName = this.toUiName(),
+                    documentName = this.name,
                     documentIdentifier = this.toDocumentIdentifier(),
                     documentImage = "",
                     documentExpirationDateFormatted = documentExpirationDate,
@@ -290,7 +289,7 @@ class DashboardInteractorImpl(
             else -> {
                 return DocumentUi(
                     documentId = this.id,
-                    documentName = this.toUiName(),
+                    documentName = this.name,
                     documentIdentifier = this.toDocumentIdentifier(),
                     documentImage = "",
                     documentExpirationDateFormatted = "",

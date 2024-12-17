@@ -18,7 +18,6 @@ package eu.europa.ec.commonfeature.model
 
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 
 enum class DocumentUiIssuanceState {
@@ -36,5 +35,3 @@ data class DocumentUi(
     val userFullName: String? = null,
     val documentId: DocumentId,
 )
-
-fun Document.toUiName(): String = this.name

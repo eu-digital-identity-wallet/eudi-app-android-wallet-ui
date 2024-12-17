@@ -19,7 +19,6 @@ package eu.europa.ec.commonfeature.ui.document_details.transformer
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
@@ -65,7 +64,7 @@ object DocumentDetailsTransformer {
 
         return DocumentUi(
             documentId = document.id,
-            documentName = document.toUiName(),
+            documentName = document.name,
             documentIdentifier = documentIdentifierUi,
             documentExpirationDateFormatted = documentExpirationDate.toDateFormatted().orEmpty(),
             documentHasExpired = docHasExpired,
