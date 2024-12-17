@@ -25,7 +25,8 @@ import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.uilogic.component.ListItemData
 
-data class RequestDocumentItemUi<T>(
+//TODO Giannis To be removed
+data class RequestDocumentItemUiOld<T>(
     val id: String,
     val domainPayload: DocumentDomainPayload,
     val readableName: String,
@@ -41,38 +42,25 @@ data class RequestDocumentItemUi<T>(
         }
 }
 
-data class RequestDocumentItemUi2<T>(
-    val uiCollapsedItem: UiCollapsedPayload<T>,
-    val uiExpandedItems: List<UiExpandedPayload<T>>
+data class RequestDocumentItemUi(
+    val collapsedUiItem: CollapsedUiItem,
+    val expandedUiItems: List<ExpandedUiItem>
 )
 
-data class UiCollapsedPayload<T>(
+data class CollapsedUiItem(
     val isExpanded: Boolean,
-    val uiItem: ListItemData<T>,
+    val uiItem: ListItemData,
 )
 
-data class UiExpandedPayload<T>(
+data class ExpandedUiItem(
     val domainPayload: DocumentDomainPayload,
-    val uiItem: ListItemData<T>,
-)
-
-data class DocumentItem(
-    val elementIdentifier: ElementIdentifier,
-    val value: String,
-    val readableName: String,
-    val isRequired: Boolean,
-    val isAvailable: Boolean,
-)
-
-data class DocumentDetailsDomain(
-    val items: List<DocumentItem>
+    val uiItem: ListItemData,
 )
 
 data class DocumentDomainPayload(
     val docName: String,
     val docId: DocumentId,
     val docNamespace: NameSpace,
-    //val docType: DocType,
     val documentDetailsDomain: DocumentDetailsDomain
 ) {
     // We need to override equals in order for "groupBy" internal comparisons
@@ -89,31 +77,23 @@ data class DocumentDomainPayload(
     }
 }
 
-fun <T> DocItem.toRequestDocumentItemUi(
-    uID: String,
-    docPayload: DocumentDomainPayload,
-    readableName: String,
-    value: String,
-    optional: Boolean,
-    isChecked: Boolean,
-    event: T?
-): RequestDocumentItemUi<T> {
-    return RequestDocumentItemUi(
-        id = uID,
-        domainPayload = docPayload,
-        checked = isChecked,
-        enabled = optional,
-        readableName = readableName,
-        docItem = this,
-        event = event,
-        value = value
-    )
-}
+//TODO Giannis Should this be in other package?
+data class DocumentDetailsDomain(
+    val items: List<DocumentItemDomain>
+)
+
+data class DocumentItemDomain(
+    val elementIdentifier: ElementIdentifier,
+    val value: String,
+    val readableName: String,
+    val isRequired: Boolean,
+    val isAvailable: Boolean,
+)
 
 val Document.docType: String
     get() = (this.format as? MsoMdocFormat)?.docType.orEmpty()
 
-fun produceDocUID(
+fun generateUniqueFieldId(
     elementIdentifier: ElementIdentifier,
     documentId: DocumentId,
 ): String =

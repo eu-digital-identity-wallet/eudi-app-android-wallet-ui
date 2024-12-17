@@ -19,8 +19,7 @@ package eu.europa.ec.proximityfeature.interactor
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
-import eu.europa.ec.commonfeature.ui.request.Event
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer.transformToUiItems
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
@@ -34,7 +33,7 @@ sealed class ProximityRequestInteractorPartialState {
     data class Success(
         val verifierName: String? = null,
         val verifierIsTrusted: Boolean,
-        val requestDocuments: List<RequestDocumentItemUi2<Event>>
+        val requestDocuments: List<RequestDocumentItemUi>
     ) : ProximityRequestInteractorPartialState()
 
     data class NoData(
@@ -49,7 +48,7 @@ sealed class ProximityRequestInteractorPartialState {
 interface ProximityRequestInteractor {
     fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState>
     fun stopPresentation()
-    fun updateRequestedDocuments(items: List<RequestDocumentItemUi2<Event>>)
+    fun updateRequestedDocuments(items: List<RequestDocumentItemUi>)
     fun setConfig(config: RequestUriConfig)
 }
 
@@ -112,7 +111,7 @@ class ProximityRequestInteractorImpl(
         walletCorePresentationController.stopPresentation()
     }
 
-    override fun updateRequestedDocuments(items: List<RequestDocumentItemUi2<Event>>) {
+    override fun updateRequestedDocuments(items: List<RequestDocumentItemUi>) {
         val disclosedDocuments = RequestTransformer.createDisclosedDocuments(items)
         walletCorePresentationController.updateRequestedDocuments(disclosedDocuments.toMutableList())
     }

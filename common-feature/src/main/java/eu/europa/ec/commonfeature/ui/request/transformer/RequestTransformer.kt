@@ -17,14 +17,13 @@
 package eu.europa.ec.commonfeature.ui.request.transformer
 
 import eu.europa.ec.commonfeature.model.toUiName
-import eu.europa.ec.commonfeature.ui.request.Event
+import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.commonfeature.ui.request.model.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.ui.request.model.DocumentDomainPayload
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItem
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
-import eu.europa.ec.commonfeature.ui.request.model.UiCollapsedPayload
-import eu.europa.ec.commonfeature.ui.request.model.UiExpandedPayload
-import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
+import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomain
+import eu.europa.ec.commonfeature.ui.request.model.ExpandedUiItem
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.commonfeature.ui.request.model.generateUniqueFieldId
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
@@ -86,7 +85,7 @@ object RequestTransformer {
             val docName = storageDocument.toUiName(resourceProvider)
             val docId = storageDocument.id
             val docNamespace = storageDocument.nameSpaces.keys.first()
-            val documentItems: MutableList<DocumentItem> = mutableListOf()
+            val documentItemsDomain: MutableList<DocumentItemDomain> = mutableListOf()
 
             requestDocument.requestedItems.keys.forEach { docItem ->
 
@@ -109,8 +108,8 @@ object RequestTransformer {
                     resourceProvider.getString(R.string.request_element_identifier_not_available) to false
                 }
 
-                documentItems.add(
-                    DocumentItem(
+                documentItemsDomain.add(
+                    DocumentItemDomain(
                         elementIdentifier = docItem.elementIdentifier,
                         value = value,
                         readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
@@ -126,7 +125,7 @@ object RequestTransformer {
                     docId = docId,
                     docNamespace = docNamespace,
                     documentDetailsDomain = DocumentDetailsDomain(
-                        items = documentItems
+                        items = documentItemsDomain
                     )
                 )
             )
@@ -138,13 +137,13 @@ object RequestTransformer {
     fun transformToUiItems(
         documentsDomain: List<DocumentDomainPayload>,
         resourceProvider: ResourceProvider,
-    ): List<RequestDocumentItemUi2<Event>> {
+    ): List<RequestDocumentItemUi> {
         return documentsDomain.map { documentDomainPayload ->
 
             val collapsedItemId = documentDomainPayload.docId
 
             val expandedItems = documentDomainPayload.documentDetailsDomain.items.map { docItem ->
-                val expandedItemId = produceDocUID(
+                val expandedItemId = generateUniqueFieldId(
                     elementIdentifier = docItem.elementIdentifier,
                     documentId = documentDomainPayload.docId,
                 )
@@ -169,10 +168,9 @@ object RequestTransformer {
                     }
                 }
 
-                UiExpandedPayload(
+                ExpandedUiItem(
                     domainPayload = documentDomainPayload,
-                    uiItem = ListItemData<Event>(
-                        event = Event.UserIdentificationClicked(itemId = expandedItemId),
+                    uiItem = ListItemData(
                         itemId = expandedItemId,
                         mainContentData = mainText,
                         overlineText = docItem.readableName,
@@ -188,10 +186,9 @@ object RequestTransformer {
                 )
             }
 
-            RequestDocumentItemUi2(
-                uiCollapsedItem = UiCollapsedPayload(
+            RequestDocumentItemUi(
+                collapsedUiItem = CollapsedUiItem(
                     uiItem = ListItemData(
-                        event = Event.ExpandOrCollapseRequiredDataList(itemId = collapsedItemId),
                         itemId = collapsedItemId,
                         mainContentData = MainContentData.Text(text = documentDomainPayload.docName),
                         supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
@@ -201,16 +198,15 @@ object RequestTransformer {
                     ),
                     isExpanded = false
                 ),
-                uiExpandedItems = expandedItems
+                expandedUiItems = expandedItems
             )
         }
     }
 
-
-    fun createDisclosedDocuments(items: List<RequestDocumentItemUi2<Event>>): DisclosedDocuments {
+    fun createDisclosedDocuments(items: List<RequestDocumentItemUi>): DisclosedDocuments {
         // Collect all selected expanded items from the list
         val selectedItems = items.flatMap { requestItem ->
-            requestItem.uiExpandedItems.filter { uiPayload ->
+            requestItem.expandedUiItems.filter { uiPayload ->
                 // Filter only the items the user has selected
                 uiPayload.uiItem.trailingContentData is ListItemTrailingContentData.Checkbox &&
                         (uiPayload.uiItem.trailingContentData as ListItemTrailingContentData.Checkbox)

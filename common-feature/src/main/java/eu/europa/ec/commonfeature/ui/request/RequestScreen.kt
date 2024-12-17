@@ -40,7 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -244,7 +244,7 @@ private fun Content(
 @Composable
 fun DisplayRequestItems(
     modifier: Modifier,
-    items: List<RequestDocumentItemUi2<Event>>,
+    items: List<RequestDocumentItemUi>,
     onEventSend: (Event) -> Unit,
     hideOrNot: Boolean
 ) {
@@ -252,17 +252,17 @@ fun DisplayRequestItems(
         items.forEach { requestItem ->
             WrapExpandableListItem(
                 data = ExpandableListItemData(
-                    collapsed = requestItem.uiCollapsedItem.uiItem,
-                    expanded = requestItem.uiExpandedItems.map { it.uiItem }
+                    collapsed = requestItem.collapsedUiItem.uiItem,
+                    expanded = requestItem.expandedUiItems.map { it.uiItem }
                 ),
-                onItemClick = onEventSend,
+                onItemClick = { item ->
+                    onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
+                },
                 hideSensitiveContent = hideOrNot,
                 modifier = modifier,
-                isExpanded = requestItem.uiCollapsedItem.isExpanded,
+                isExpanded = requestItem.collapsedUiItem.isExpanded,
                 onExpandedChange = {
-                    requestItem.uiCollapsedItem.uiItem.event?.let { safeEvent ->
-                        onEventSend(safeEvent)
-                    }
+                    onEventSend(Event.ExpandOrCollapseRequiredDataList(itemId = requestItem.collapsedUiItem.uiItem.itemId))
                 }
             )
         }

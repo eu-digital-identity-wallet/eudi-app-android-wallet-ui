@@ -32,16 +32,10 @@ import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocType
-import eu.europa.ec.issuancefeature.ui.document.add.Event
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -80,8 +74,6 @@ interface AddDocumentInteractor {
     fun buildGenericSuccessRouteForDeferred(flowType: IssuanceFlowUiConfig): String
 
     fun resumeOpenId4VciWithAuthorization(uri: String)
-
-    fun getDummyData(): List<ExpandableListItemData<Event>>
 }
 
 class AddDocumentInteractorImpl(
@@ -206,101 +198,6 @@ class AddDocumentInteractorImpl(
 
     override fun resumeOpenId4VciWithAuthorization(uri: String) {
         walletCoreDocumentsController.resumeOpenId4VciWithAuthorization(uri)
-    }
-
-    override fun getDummyData(): List<ExpandableListItemData<Event>> {
-        val collapsedItem1 = ListItemData<Event>(
-            event = Event.CollapsedItemClicked("collapsed_id1"),
-            itemId = "collapsed_id1",
-            mainContentData = MainContentData.Text(text = "Collapsed Title"),
-            supportingText = "Click to expand",
-            trailingContentData = ListItemTrailingContentData.Icon(
-                iconData = AppIcons.KeyboardArrowDown
-            ),
-        )
-
-        val expandedItems1 = listOf(
-            ListItemData<Event>(
-                event = Event.ExpandedItemClicked("item11"),
-                itemId = "item11",
-                mainContentData = MainContentData.Text(text = "Expanded Item 11"),
-                supportingText = "Details about item 11",
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
-                        isChecked = false,
-                        enabled = true,
-                        onCheckedChange = null
-                    )
-                )
-            ),
-            ListItemData<Event>(
-                event = Event.ExpandedItemClicked("item12"),
-                itemId = "item12",
-                mainContentData = MainContentData.Text(text = "Expanded Item 12"),
-                supportingText = "Details about item 12",
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
-                        isChecked = true,
-                        enabled = true,
-                        onCheckedChange = {
-                            println("Giannis checkbox clicked")
-                        }
-                    )
-                )
-            )
-        )
-
-        val collapsedItem2 = ListItemData<Event>(
-            event = Event.CollapsedItemClicked("collapsed_id2"),
-            itemId = "collapsed_id2",
-            mainContentData = MainContentData.Text(text = "Collapsed Title"),
-            supportingText = "Click to expand",
-            trailingContentData = ListItemTrailingContentData.Icon(
-                iconData = AppIcons.KeyboardArrowDown
-            ),
-        )
-
-        val expandedItems2 = listOf(
-            ListItemData<Event>(
-                event = Event.ExpandedItemClicked("item21"),
-                itemId = "item21",
-                mainContentData = MainContentData.Text(text = "Expanded Item 21"),
-                supportingText = "Details about item 21",
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
-                        isChecked = false,
-                        enabled = true,
-                        onCheckedChange = null
-                    )
-                )
-            ),
-            ListItemData<Event>(
-                event = Event.ExpandedItemClicked("item22"),
-                itemId = "item22",
-                mainContentData = MainContentData.Text(text = "Expanded Item 22"),
-                supportingText = "Details about item 22",
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
-                        isChecked = true,
-                        enabled = true,
-                        onCheckedChange = {
-                            println("Giannis checkbox clicked")
-                        }
-                    )
-                )
-            )
-        )
-
-        return listOf(
-            ExpandableListItemData(
-                collapsed = collapsedItem1,
-                expanded = expandedItems1,
-            ),
-            ExpandableListItemData(
-                collapsed = collapsedItem2,
-                expanded = expandedItems2,
-            ),
-        )
     }
 
     private fun getSuccessScreenArgumentsForDeferred(

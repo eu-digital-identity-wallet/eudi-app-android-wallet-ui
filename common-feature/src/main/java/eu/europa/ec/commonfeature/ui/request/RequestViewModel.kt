@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
@@ -39,8 +39,7 @@ data class State(
     val hasWarnedUser: Boolean = false,
 
     val verifierName: String? = null,
-
-    val items: List<RequestDocumentItemUi2<Event>> = emptyList(),
+    val items: List<RequestDocumentItemUi> = emptyList(),
     val noItems: Boolean = false,
     val allowShare: Boolean = false
 ) : ViewState
@@ -105,7 +104,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     open fun updateData(
-        updatedItems: List<RequestDocumentItemUi2<Event>>,
+        updatedItems: List<RequestDocumentItemUi>,
         allowShare: Boolean? = null
     ) {
         val (hasVerificationItems, hasAtLeastOneFieldSelected) = hasVerificationItemsOrAtLeastOneFieldSelected(
@@ -218,9 +217,9 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     private fun expandOrCollapseRequiredDataList(id: String) {
         val currentItems = viewState.value.items
         val updatedItems = currentItems.map { item ->
-            if (item.uiCollapsedItem.uiItem.itemId == id) {
+            if (item.collapsedUiItem.uiItem.itemId == id) {
 
-                val newIsExpanded = !item.uiCollapsedItem.isExpanded
+                val newIsExpanded = !item.collapsedUiItem.isExpanded
 
                 // Change the Icon based on the new isExpanded state
                 val newIconData = if (newIsExpanded) {
@@ -230,9 +229,9 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 }
 
                 item.copy(
-                    uiCollapsedItem = item.uiCollapsedItem.copy(
+                    collapsedUiItem = item.collapsedUiItem.copy(
                         isExpanded = newIsExpanded,
-                        uiItem = item.uiCollapsedItem.uiItem.copy(
+                        uiItem = item.collapsedUiItem.uiItem.copy(
                             trailingContentData = ListItemTrailingContentData.Icon(
                                 iconData = newIconData
                             )
@@ -250,8 +249,8 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         val currentItems = viewState.value.items
 
         // Iterate over the items and modify the matching expanded item
-        val updatedList: List<RequestDocumentItemUi2<Event>> = currentItems.map { item ->
-            val updatedExpandedItems = item.uiExpandedItems.map { expandedItem ->
+        val updatedList: List<RequestDocumentItemUi> = currentItems.map { item ->
+            val updatedExpandedItems = item.expandedUiItems.map { expandedItem ->
                 if (expandedItem.uiItem.itemId == id
                     && expandedItem.uiItem.trailingContentData is ListItemTrailingContentData.Checkbox
                 ) {
@@ -274,7 +273,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
             // Return the updated item with its expanded items updated
             item.copy(
-                uiExpandedItems = updatedExpandedItems
+                expandedUiItems = updatedExpandedItems
             )
         }
 
@@ -308,14 +307,14 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun hasVerificationItemsOrAtLeastOneFieldSelected(
-        list: List<RequestDocumentItemUi2<Event>>
+        list: List<RequestDocumentItemUi>
     ): Pair<Boolean, Boolean> {
 
         var hasVerificationItems = false
         var hasAtLeastOneFieldSelected = false
 
         for (item in list) {
-            for (expandedItem in item.uiExpandedItems) {
+            for (expandedItem in item.expandedUiItems) {
                 val trailingContentData = expandedItem.uiItem.trailingContentData
                 if (trailingContentData is ListItemTrailingContentData.Checkbox) {
                     val checkbox = trailingContentData.checkboxData

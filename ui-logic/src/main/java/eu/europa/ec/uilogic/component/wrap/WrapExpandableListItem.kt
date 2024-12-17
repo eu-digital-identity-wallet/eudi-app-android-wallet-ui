@@ -24,15 +24,15 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 
-data class ExpandableListItemData<T>(
-    val collapsed: ListItemData<T>,
-    val expanded: List<ListItemData<T>>,
+data class ExpandableListItemData(
+    val collapsed: ListItemData,
+    val expanded: List<ListItemData>,
 )
 
 @Composable
-fun <T> WrapExpandableListItem(
-    data: ExpandableListItemData<T>,
-    onItemClick: ((T) -> Unit)?,
+fun WrapExpandableListItem(
+    data: ExpandableListItemData,
+    onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
@@ -47,7 +47,9 @@ fun <T> WrapExpandableListItem(
         cardCollapsedContent = {
             WrapListItem(
                 item = data.collapsed,
-                onItemClick = onItemClick,
+                onItemClick = {
+                    onExpandedChange()
+                },
                 hideSensitiveContent = false,
                 mainContentVerticalPadding = collapsedMainContentVerticalPadding,
             )

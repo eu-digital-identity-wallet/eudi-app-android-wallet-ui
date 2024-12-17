@@ -37,7 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUiOld
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -145,7 +145,7 @@ fun DocumentCard(
 
 @Composable
 fun <T> Field(
-    item: RequestDocumentItemUi<T>,
+    item: RequestDocumentItemUiOld<T>,
     showFullDetails: Boolean,
     onEventSend: (T) -> Unit,
 ) {

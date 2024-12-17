@@ -29,9 +29,9 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @Composable
-fun <T> WrapListItems(
-    items: List<ListItemData<T>>,
-    onItemClick: ((T) -> Unit)?,
+fun WrapListItems(
+    items: List<ListItemData>,
+    onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,

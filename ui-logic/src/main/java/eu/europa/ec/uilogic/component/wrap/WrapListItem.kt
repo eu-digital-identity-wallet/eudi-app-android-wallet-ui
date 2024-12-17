@@ -19,14 +19,13 @@ package eu.europa.ec.uilogic.component.wrap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 
 @Composable
-fun <T> WrapListItem(
-    item: ListItemData<T>,
-    onItemClick: ((T) -> Unit)?,
+fun WrapListItem(
+    item: ListItemData,
+    onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null
@@ -34,8 +33,8 @@ fun <T> WrapListItem(
     WrapCard(
         modifier = modifier,
         onClick = {
-            safeLet(onItemClick, item.event) { safeOnItemClick, safeEvent ->
-                safeOnItemClick(safeEvent)
+            onItemClick?.let { safeOnItemClick ->
+                safeOnItemClick(item)
             }
         },
     ) {

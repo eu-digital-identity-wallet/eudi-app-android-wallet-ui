@@ -22,7 +22,7 @@ import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi2
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -157,7 +157,7 @@ class ProximityRequestViewModel(
     }
 
     override fun updateData(
-        updatedItems: List<RequestDocumentItemUi2<Event>>,
+        updatedItems: List<RequestDocumentItemUi>,
         allowShare: Boolean?
     ) {
         super.updateData(updatedItems, allowShare)

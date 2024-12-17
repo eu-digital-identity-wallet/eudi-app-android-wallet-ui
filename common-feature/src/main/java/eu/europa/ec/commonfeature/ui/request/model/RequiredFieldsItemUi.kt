@@ -18,7 +18,7 @@ package eu.europa.ec.commonfeature.ui.request.model
 
 data class RequiredFieldsItemUi<T>(
     val id: Int,
-    val requestDocumentItemsUi: List<RequestDocumentItemUi<T>>,
+    val requestDocumentItemsUi: List<RequestDocumentItemUiOld<T>>,
     val expanded: Boolean = false,
     val title: String,
     val event: T
