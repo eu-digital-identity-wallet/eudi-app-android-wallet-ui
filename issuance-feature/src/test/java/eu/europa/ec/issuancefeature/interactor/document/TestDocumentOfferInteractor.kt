@@ -24,7 +24,6 @@ import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePop
-import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
 import eu.europa.ec.commonfeature.util.TestsData.mockedInvalidCodeFormatMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuanceErrorMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
@@ -46,7 +45,6 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedWalletActivationErrorMess
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -59,8 +57,9 @@ import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedMainPid
+import eu.europa.ec.testfeature.mockedMdlDocName
+import eu.europa.ec.testfeature.mockedMdlDocType
 import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
-import eu.europa.ec.testfeature.mockedPidDocName
 import eu.europa.ec.testfeature.mockedPidDocType
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
@@ -308,13 +307,13 @@ class TestDocumentOfferInteractor {
     // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
     // - valid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.NUMERIC),
     // - valid response.offer.txCodeSpec?.length (4), and
-    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is supported.
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item.
     // 2. walletCoreDocumentsController.getMainPidDocument() returns null (i.e. hasMainPid == false).
     // 3. a PID in Offer (i.e hasPidInOffer == true).
 
     // Case 5 Expected Result:
     // ResolveDocumentOfferInteractorPartialState.Success state, with:
-    // - DocumentUiItem list, with localized document names
+    // - DocumentUiItem list, with remote document names
     // - issuer name
     // - and txCodeLength
     @Test
@@ -334,8 +333,6 @@ class TestDocumentOfferInteractor {
             mockGetMainPidDocumentCall(
                 mainPid = null
             )
-            whenever(resourceProvider.getString(R.string.pid))
-                .thenReturn(mockedPidDocName)
 
             mockWalletDocumentsControllerResolveOfferEventEmission(
                 event = ResolveDocumentOfferPartialState.Success(mockedOffer)
@@ -344,7 +341,7 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedDocumentsUiList = listOf(
-                    DocumentItemUi(mockedPidDocName)
+                    DocumentItemUi(mockedOfferedDocumentName)
                 )
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
                     documents = expectedDocumentsUiList,
@@ -833,15 +830,13 @@ class TestDocumentOfferInteractor {
         coroutineRule.runTest {
             // Given
             val mockSuccessfullyIssuedDocId = "0000"
-
-            val mockDeferredPendingDocId1 = mockedPidDocType
-            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.formatType
-            val nonIssuedDeferredDocuments: Map<DocumentId, FormatType> = mapOf(
-                mockDeferredPendingDocId1 to mockDeferredPendingType1
+            val mockDeferredPendingDocName = mockedMdlDocName
+            val mockDeferredPendingType1 = mockedMdlDocType
+            val nonIssuedDeferredDocuments: Map<FormatType, DocumentId> = mapOf(
+                mockDeferredPendingType1 to mockDeferredPendingDocName
             )
 
-            val nonIssuedDocsNames = mockedDocUiNamePid
-            whenever(resourceProvider.getString(R.string.pid)).thenReturn(nonIssuedDocsNames)
+            val nonIssuedDocsNames = mockedMdlDocName
             whenever(
                 resourceProvider.getString(
                     R.string.issuance_document_offer_partial_success_subtitle,
@@ -1143,7 +1138,7 @@ class TestDocumentOfferInteractor {
 
     //region mocked objects
     private val mockedOfferedDocumentsList = listOf(
-        mockOfferedDocument(docType = DocumentIdentifier.MdocSample.formatType)
+        mockOfferedDocument(docType = "sample")
     )
 
     private val mockedTripleObject by lazy {

@@ -45,7 +45,6 @@ import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullDocuments
@@ -597,7 +596,6 @@ class TestDashboardInteractor {
     fun `Given Case 1, When getDocuments is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall(resourceProvider)
             mockGetMainPidDocumentCall(mockedMainPid)
 
             whenever(walletCoreDocumentsController.getAllDocuments())
@@ -635,8 +633,6 @@ class TestDashboardInteractor {
     fun `Given Case 2, When getDocuments is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall(resourceProvider)
-
             whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedMdlWithNoUserNameAndNoUserImage))
 
@@ -712,8 +708,6 @@ class TestDashboardInteractor {
     fun `Given Case 4, When getDocuments is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall(resourceProvider)
-
             whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedMdlWithNoExpirationDate))
 
@@ -822,10 +816,6 @@ class TestDashboardInteractor {
             BluetoothAdapter.STATE_OFF
         }
         shadowBluetoothAdapter.setState(newBluetoothAdapterState)
-    }
-
-    private fun mockGetStringForDocumentsCall(resourceProvider: ResourceProvider) {
-        mockDocumentTypeUiToUiNameCall(resourceProvider)
     }
 
     private fun mockGetMainPidDocumentCall(mainPid: IssuedDocument?) {
