@@ -27,6 +27,7 @@ import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -92,13 +93,18 @@ class DocumentDetailsInteractorImpl(
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState> =
         flow {
             val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
+            val format = document?.format
+            val docType = (format as? MsoMdocFormat)?.docType ?: (format as? SdJwtVcFormat)?.vct
 
-            val format = document?.format as? MsoMdocFormat
             val shouldDeleteAllDocuments: Boolean =
-                if (format?.docType?.toDocumentIdentifier() == DocumentIdentifier.PID) {
+                if (docType?.toDocumentIdentifier() == DocumentIdentifier.MdocPid) {
 
-                    val allPidDocuments =
-                        walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)
+                    val allPidDocuments = walletCoreDocumentsController.getAllDocumentsByType(
+                        documentIdentifiers = listOf(
+                            DocumentIdentifier.MdocPid,
+                            DocumentIdentifier.SdJwtPid
+                        )
+                    )
 
                     if (allPidDocuments.count() > 1) {
                         walletCoreDocumentsController.getMainPidDocument()?.id == documentId

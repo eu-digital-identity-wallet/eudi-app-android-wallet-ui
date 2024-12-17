@@ -21,6 +21,7 @@ import com.android.identity.securearea.software.SoftwareSecureArea
 import com.android.identity.storage.EphemeralStorageEngine
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import java.time.Instant
 
@@ -672,7 +673,6 @@ fun createMockedNamespaceData(
 val mockedFullPid = IssuedDocument(
     id = mockedPidId,
     name = mockedPidDocName,
-    format = MsoMdocFormat(mockedPidDocType),
     documentManagerId = "fabulas",
     isCertified = false,
     keyAlias = "massa",
@@ -681,8 +681,14 @@ val mockedFullPid = IssuedDocument(
     issuedAt = Instant.parse(mockedDocumentCreationDate),
     validFrom = Instant.now(),
     validUntil = Instant.now(),
-    nameSpacedData = createMockedNamespaceData(mockedPidNameSpace, mockedPidFields),
-    issuerProvidedData = byteArrayOf()
+    issuerProvidedData = byteArrayOf(),
+    data = MsoMdocData(
+        MsoMdocFormat(mockedPidNameSpace),
+        createMockedNamespaceData(
+            mockedPidNameSpace,
+            mockedPidFields
+        )
+    )
 )
 
 val mockedUnsignedPid = UnsignedDocument(
@@ -699,7 +705,13 @@ val mockedUnsignedPid = UnsignedDocument(
 val mockedMainPid = mockedFullPid
 
 val mockedPidWithBasicFields = mockedFullPid.copy(
-    nameSpacedData = createMockedNamespaceData(mockedPidNameSpace, mockedPidBasicFields)
+    data = MsoMdocData(
+        MsoMdocFormat(mockedPidNameSpace),
+        createMockedNamespaceData(
+            mockedPidNameSpace,
+            mockedPidBasicFields
+        )
+    )
 )
 
 val mockedOldestPidWithBasicFields = mockedPidWithBasicFields.copy(
@@ -708,13 +720,18 @@ val mockedOldestPidWithBasicFields = mockedPidWithBasicFields.copy(
 )
 
 val mockedEmptyPid = mockedFullPid.copy(
-    nameSpacedData = createMockedNamespaceData(mockedPidNameSpace, emptyMap())
+    data = MsoMdocData(
+        MsoMdocFormat(mockedPidNameSpace),
+        createMockedNamespaceData(
+            mockedPidNameSpace,
+            emptyMap()
+        )
+    )
 )
 
 val mockedFullMdl = IssuedDocument(
     id = mockedMdlId,
     name = mockedMdlDocName,
-    format = MsoMdocFormat(mockedMdlDocType),
     documentManagerId = "fabulas",
     isCertified = false,
     keyAlias = "massa",
@@ -723,28 +740,46 @@ val mockedFullMdl = IssuedDocument(
     issuedAt = Instant.parse(mockedDocumentCreationDate),
     validFrom = Instant.now(),
     validUntil = Instant.now(),
-    nameSpacedData = createMockedNamespaceData(mockedMdlNameSpace, mockedMdlFields),
-    issuerProvidedData = byteArrayOf()
+    issuerProvidedData = byteArrayOf(),
+    data = MsoMdocData(
+        MsoMdocFormat(mockedMdlDocType),
+        createMockedNamespaceData(
+            mockedMdlNameSpace,
+            mockedMdlFields
+        )
+    )
 )
 
 val mockedMdlWithBasicFields = mockedFullMdl.copy(
-    nameSpacedData = createMockedNamespaceData(mockedMdlNameSpace, mockedMdlBasicFields)
+    data = MsoMdocData(
+        MsoMdocFormat(mockedMdlDocType),
+        createMockedNamespaceData(
+            mockedMdlNameSpace,
+            mockedMdlBasicFields
+        )
+    )
 )
 
 val mockedMdlWithNoExpirationDate: IssuedDocument = mockedFullMdl.copy(
-    nameSpacedData = createMockedNamespaceData(
-        mockedMdlNameSpace,
-        mockedMdlFields
-            .minus("expiry_date")
+    data = MsoMdocData(
+        MsoMdocFormat(mockedMdlDocType),
+        createMockedNamespaceData(
+            mockedMdlNameSpace,
+            mockedMdlFields
+                .minus("expiry_date")
+        )
     )
 )
 
 val mockedMdlWithNoUserNameAndNoUserImage: IssuedDocument = mockedFullMdl.copy(
-    nameSpacedData = createMockedNamespaceData(
-        mockedMdlNameSpace,
-        mockedMdlFields
-            .minus("given_name")
-            .minus("portrait")
+    data = MsoMdocData(
+        MsoMdocFormat(mockedMdlDocType),
+        createMockedNamespaceData(
+            mockedMdlNameSpace,
+            mockedMdlFields
+                .minus("given_name")
+                .minus("portrait")
+        )
     )
 )
 

@@ -252,7 +252,7 @@ class TestAddDocumentInteractor {
         coroutineRule.runTest {
             // Given
             val mockedIssuanceMethod = IssuanceMethod.OPENID4VCI
-            val mockedDocumentType = DocumentIdentifier.PID.docType
+            val mockedDocumentType = DocumentIdentifier.MdocPid.formatType
 
             whenever(
                 walletCoreDocumentsController.issueDocument(

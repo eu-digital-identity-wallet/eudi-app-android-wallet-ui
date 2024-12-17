@@ -24,13 +24,11 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.isSupported
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer.TxCodeSpec.InputMode
 import eu.europa.ec.resourceslogic.R
@@ -143,25 +141,15 @@ class DocumentOfferInteractorImpl(
 
                             val hasPidInOffer =
                                 response.offer.offeredDocuments.any { offeredDocument ->
-                                    offeredDocument.docType.toDocumentIdentifier() == DocumentIdentifier.PID
+                                    val id = offeredDocument.docType.toDocumentIdentifier()
+                                    id == DocumentIdentifier.MdocPid || id == DocumentIdentifier.SdJwtPid
                                 }
 
                             if (hasMainPid || hasPidInOffer) {
-                                val resolvedDocumentsNames =
-                                    response.offer.offeredDocuments.map { offeredDocument ->
-                                        if (offeredDocument.docType.toDocumentIdentifier()
-                                                .isSupported()
-                                        ) {
-                                            offeredDocument.docType.toDocumentIdentifier()
-                                                .toUiName(resourceProvider)
-                                        } else {
-                                            offeredDocument.name
-                                        }
-                                    }
 
                                 ResolveDocumentOfferInteractorPartialState.Success(
-                                    documents = resolvedDocumentsNames.map { documentName ->
-                                        DocumentItemUi(title = documentName)
+                                    documents = response.offer.offeredDocuments.map { offeredDocument ->
+                                        DocumentItemUi(title = offeredDocument.name)
                                     },
                                     issuerName = response.offer.issuerName,
                                     txCodeLength = response.offer.txCodeSpec?.length
@@ -203,18 +191,13 @@ class DocumentOfferInteractorImpl(
 
                     is IssueDocumentsPartialState.PartialSuccess -> {
 
-                        val nonIssuedDocsNames: String = response.nonIssuedDocuments.entries.map {
-                            if (it.key.toDocumentIdentifier().isSupported()) {
-                                it.key.toDocumentIdentifier().toUiName(resourceProvider)
-                            } else {
-                                it.value
-                            }
-                        }.joinToString(
-                            separator = ", ",
-                            transform = {
-                                it
-                            }
-                        )
+                        val nonIssuedDocsNames: String =
+                            response.nonIssuedDocuments.entries.map { it.value }.joinToString(
+                                separator = ", ",
+                                transform = {
+                                    it
+                                }
+                            )
 
                         IssueDocumentsInteractorPartialState.Success(
                             successRoute = buildGenericSuccessRoute(

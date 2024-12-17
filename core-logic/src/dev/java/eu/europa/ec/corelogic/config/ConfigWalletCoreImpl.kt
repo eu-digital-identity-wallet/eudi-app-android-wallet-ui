@@ -18,6 +18,8 @@ package eu.europa.ec.corelogic.config
 
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.ScopedDocument
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
@@ -80,4 +82,27 @@ internal class WalletCoreConfigImpl(
             }
             return _config!!
         }
+    override val scopedDocuments: List<ScopedDocument>
+        get() = listOf(
+            ScopedDocument(
+                name = "National ID",
+                identifier = DocumentIdentifier.MdocPid
+            ),
+            ScopedDocument(
+                name = "Driving License",
+                identifier = DocumentIdentifier.OTHER(
+                    "org.iso.18013.5.1.mDL"
+                )
+            ),
+            ScopedDocument(
+                name = "Age Verification",
+                identifier = DocumentIdentifier.MdocPseudonym
+            ),
+            ScopedDocument(
+                name = "Photo ID",
+                identifier = DocumentIdentifier.OTHER(
+                    "org.iso.23220.2.photoid.1"
+                )
+            )
+        )
 }

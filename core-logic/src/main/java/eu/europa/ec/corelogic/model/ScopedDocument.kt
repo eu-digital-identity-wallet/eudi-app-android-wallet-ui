@@ -14,12 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.config
+package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.corelogic.model.ScopedDocument
-import eu.europa.ec.eudi.wallet.EudiWalletConfig
-
-interface WalletCoreConfig {
-    val config: EudiWalletConfig
-    val scopedDocuments: List<ScopedDocument>
-}
+data class ScopedDocument(val name: String, val identifier: DocumentIdentifier)

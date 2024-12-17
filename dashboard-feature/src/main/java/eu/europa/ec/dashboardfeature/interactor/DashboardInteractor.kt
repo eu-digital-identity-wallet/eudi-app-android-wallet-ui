@@ -34,7 +34,7 @@ import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DeferredDocumentData
-import eu.europa.ec.corelogic.model.DocType
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.model.UserInfo
 import eu.europa.ec.eudi.wallet.document.Document
@@ -108,7 +108,7 @@ interface DashboardInteractor {
     ): Flow<DashboardInteractorDeleteDocumentPartialState>
 
     fun tryIssuingDeferredDocumentsFlow(
-        deferredDocuments: Map<DocumentId, DocType>,
+        deferredDocuments: Map<DocumentId, FormatType>,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
     ): Flow<DashboardInteractorRetryIssuingDeferredDocumentsPartialState>
 
@@ -198,7 +198,7 @@ class DashboardInteractorImpl(
 
 
     override fun tryIssuingDeferredDocumentsFlow(
-        deferredDocuments: Map<DocumentId, DocType>,
+        deferredDocuments: Map<DocumentId, FormatType>,
         dispatcher: CoroutineDispatcher,
     ): Flow<DashboardInteractorRetryIssuingDeferredDocumentsPartialState> = flow {
 
@@ -274,7 +274,7 @@ class DashboardInteractorImpl(
 
                 return DocumentUi(
                     documentId = this.id,
-                    documentName = this.toUiName(resourceProvider),
+                    documentName = this.toUiName(),
                     documentIdentifier = this.toDocumentIdentifier(),
                     documentImage = "",
                     documentExpirationDateFormatted = documentExpirationDate,
@@ -290,7 +290,7 @@ class DashboardInteractorImpl(
             else -> {
                 return DocumentUi(
                     documentId = this.id,
-                    documentName = this.toUiName(resourceProvider),
+                    documentName = this.toUiName(),
                     documentIdentifier = this.toDocumentIdentifier(),
                     documentImage = "",
                     documentExpirationDateFormatted = "",

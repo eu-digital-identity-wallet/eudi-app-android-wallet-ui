@@ -20,6 +20,6 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 
 data class DeferredDocumentData(
     val documentId: DocumentId,
-    val docType: DocType,
+    val formatType: FormatType,
     val docName: String,
 )

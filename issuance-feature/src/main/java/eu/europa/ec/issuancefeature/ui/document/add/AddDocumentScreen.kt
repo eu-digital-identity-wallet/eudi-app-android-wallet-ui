@@ -187,7 +187,7 @@ private fun Content(
                                 onEventSend(
                                     Event.IssueDocument(
                                         issuanceMethod = IssuanceMethod.OPENID4VCI,
-                                        documentType = option.type.docType,
+                                        documentType = option.type.formatType,
                                         context = context
                                     )
                                 )
@@ -294,13 +294,13 @@ private fun IssuanceAddDocumentScreenPreview() {
                     DocumentOptionItemUi(
                         text = "National ID",
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.PID,
+                        type = DocumentIdentifier.MdocPid,
                         available = true,
                     ),
                     DocumentOptionItemUi(
                         text = "Driving License",
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.MDL,
+                        type = DocumentIdentifier.SdJwtPid,
                         available = false,
                     )
                 )
@@ -327,13 +327,15 @@ private fun DashboardAddDocumentScreenPreview() {
                     DocumentOptionItemUi(
                         text = "National ID",
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.PID,
+                        type = DocumentIdentifier.MdocPid,
                         available = true,
                     ),
                     DocumentOptionItemUi(
                         text = "Driving License",
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.MDL,
+                        type = DocumentIdentifier.OTHER(
+                            "mdl_identifier"
+                        ),
                         available = false,
                     )
                 )

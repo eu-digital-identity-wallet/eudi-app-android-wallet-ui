@@ -33,7 +33,6 @@ interface ResourceProvider {
     fun getString(@StringRes resId: Int, vararg formatArgs: Any): String
     fun genericErrorMessage(): String
     fun genericNetworkErrorMessage(): String
-    fun getReadableElementIdentifier(elementIdentifier: String): String
 }
 
 class ResourceProviderImpl(
@@ -82,10 +81,4 @@ class ResourceProviderImpl(
         } catch (_: Exception) {
             ""
         }
-
-    override fun getReadableElementIdentifier(elementIdentifier: String): String {
-        val identifier =
-            context.resources.getIdentifier(elementIdentifier, "string", context.packageName)
-        return if (identifier != 0) context.getString(identifier) else elementIdentifier
-    }
 }

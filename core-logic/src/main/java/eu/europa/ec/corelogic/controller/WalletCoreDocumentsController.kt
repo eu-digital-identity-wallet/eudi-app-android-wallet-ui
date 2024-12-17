@@ -21,8 +21,8 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.model.DeferredDocumentData
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
 import eu.europa.ec.eudi.wallet.document.Document
@@ -31,6 +31,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultCreateDocu
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.eudi.wallet.issue.openid4vci.DeferredIssueResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
@@ -44,9 +45,6 @@ import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import org.json.JSONObject
-import java.util.Base64
 
 enum class IssuanceMethod {
     OPENID4VCI
@@ -79,11 +77,6 @@ sealed class IssueDocumentsPartialState {
         val crypto: BiometricCrypto,
         val resultHandler: DeviceAuthenticationResult,
     ) : IssueDocumentsPartialState()
-}
-
-sealed class AddSampleDataPartialState {
-    data object Success : AddSampleDataPartialState()
-    data class Failure(val error: String) : AddSampleDataPartialState()
 }
 
 sealed class DeleteDocumentPartialState {
@@ -124,15 +117,6 @@ sealed class IssueDeferredDocumentPartialState {
  * Controller for interacting with internal local storage of Core for CRUD operations on documents
  * */
 interface WalletCoreDocumentsController {
-    /**
-     * Load sample document data taken from raw.xml
-     * */
-    fun loadSampleData(sampleDataByteArray: ByteArray): Flow<LoadSampleDataPartialState>
-
-    /**
-     * Adds the sample data into the Database.
-     * */
-    fun addSampleData(): Flow<AddSampleDataPartialState>
 
     /**
      * @return All the documents from the Database.
@@ -141,7 +125,7 @@ interface WalletCoreDocumentsController {
 
     fun getAllIssuedDocuments(): List<IssuedDocument>
 
-    fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<IssuedDocument>
+    fun getAllDocumentsByType(documentIdentifiers: List<DocumentIdentifier>): List<IssuedDocument>
 
     fun getDocumentById(documentId: DocumentId): Document?
 
@@ -149,7 +133,7 @@ interface WalletCoreDocumentsController {
 
     fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: DocType,
+        documentType: FormatType,
     ): Flow<IssueDocumentPartialState>
 
     fun issueDocumentsByOfferUri(
@@ -185,67 +169,42 @@ class WalletCoreDocumentsControllerImpl(
         eudiWallet.createOpenId4VciManager()
     }
 
-    override fun loadSampleData(sampleDataByteArray: ByteArray): Flow<LoadSampleDataPartialState> =
-        flow {
-            eudiWallet.loadMdocSampleDocuments(
-                sampleData = sampleDataByteArray,
-                createSettings = eudiWallet.getDefaultCreateDocumentSettings()
-            ).kotlinResult
-                .onSuccess { emit(LoadSampleDataPartialState.Success) }
-                .onFailure {
-                    emit(
-                        LoadSampleDataPartialState.Failure(
-                            error = it.message ?: genericErrorMessage
-                        )
-                    )
-                }
-        }.safeAsync {
-            LoadSampleDataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
-        }
-
-    override fun addSampleData(): Flow<AddSampleDataPartialState> = flow {
-
-        val byteArray = Base64.getDecoder().decode(
-            JSONObject(
-                resourceProvider.getStringFromRaw(R.raw.sample_data)
-            ).getString("Data")
-        )
-
-        loadSampleData(byteArray).map {
-            when (it) {
-                is LoadSampleDataPartialState.Failure -> AddSampleDataPartialState.Failure(it.error)
-                is LoadSampleDataPartialState.Success -> AddSampleDataPartialState.Success
-            }
-        }.collect {
-            emit(it)
-        }
-    }.safeAsync {
-        AddSampleDataPartialState.Failure(it.localizedMessage ?: genericErrorMessage)
-    }
-
     override fun getAllDocuments(): List<Document> =
         eudiWallet.getDocuments { it is IssuedDocument || it is DeferredDocument }
 
     override fun getAllIssuedDocuments(): List<IssuedDocument> =
         eudiWallet.getDocuments().filterIsInstance<IssuedDocument>()
 
-    override fun getAllDocumentsByType(documentIdentifier: DocumentIdentifier): List<IssuedDocument> =
+    override fun getAllDocumentsByType(documentIdentifiers: List<DocumentIdentifier>): List<IssuedDocument> =
         getAllDocuments()
             .filterIsInstance<IssuedDocument>()
-            .filter { it.format is MsoMdocFormat }
-            .filter { (it.format as MsoMdocFormat).docType == documentIdentifier.docType }
+            .filter {
+                when (it.format) {
+                    is MsoMdocFormat -> documentIdentifiers.any { id ->
+                        id.formatType == (it.format as MsoMdocFormat).docType
+                    }
+
+                    is SdJwtVcFormat -> documentIdentifiers.any { id ->
+                        id.formatType == (it.format as SdJwtVcFormat).vct
+                    }
+                }
+            }
 
     override fun getDocumentById(documentId: DocumentId): Document? {
         return eudiWallet.getDocumentById(documentId = documentId)
     }
 
     override fun getMainPidDocument(): IssuedDocument? =
-        getAllDocumentsByType(documentIdentifier = DocumentIdentifier.PID)
-            .minByOrNull { it.createdAt }
+        getAllDocumentsByType(
+            documentIdentifiers = listOf(
+                DocumentIdentifier.MdocPid,
+                DocumentIdentifier.SdJwtPid
+            )
+        ).minByOrNull { it.createdAt }
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: DocType,
+        documentType: FormatType,
     ): Flow<IssueDocumentPartialState> = flow {
         when (issuanceMethod) {
 
@@ -439,7 +398,7 @@ class WalletCoreDocumentsControllerImpl(
                                     IssueDeferredDocumentPartialState.Issued(
                                         DeferredDocumentData(
                                             documentId = deferredIssuanceResult.documentId,
-                                            docType = deferredIssuanceResult.docType,
+                                            formatType = deferredIssuanceResult.docType,
                                             docName = deferredIssuanceResult.name
                                         )
                                     )
@@ -451,7 +410,7 @@ class WalletCoreDocumentsControllerImpl(
                                     IssueDeferredDocumentPartialState.NotReady(
                                         DeferredDocumentData(
                                             documentId = deferredIssuanceResult.documentId,
-                                            docType = deferredIssuanceResult.docType,
+                                            formatType = deferredIssuanceResult.docType,
                                             docName = deferredIssuanceResult.name
                                         )
                                     )
@@ -487,7 +446,7 @@ class WalletCoreDocumentsControllerImpl(
         openId4VciManager.resumeWithAuthorization(uri)
     }
 
-    private fun issueDocumentWithOpenId4VCI(documentType: DocType): Flow<IssueDocumentsPartialState> =
+    private fun issueDocumentWithOpenId4VCI(documentType: FormatType): Flow<IssueDocumentsPartialState> =
         callbackFlow {
 
             openId4VciManager.issueDocumentByDocType(
@@ -506,9 +465,9 @@ class WalletCoreDocumentsControllerImpl(
     private fun ProducerScope<IssueDocumentsPartialState>.issuanceCallback(): OpenId4VciManager.OnIssueEvent {
 
         var totalDocumentsToBeIssued = 0
-        val nonIssuedDocuments: MutableMap<DocType, String> = mutableMapOf()
-        val deferredDocuments: MutableMap<DocumentId, DocType> = mutableMapOf()
-        val issuedDocuments: MutableMap<DocumentId, DocType> = mutableMapOf()
+        val nonIssuedDocuments: MutableMap<FormatType, String> = mutableMapOf()
+        val deferredDocuments: MutableMap<DocumentId, FormatType> = mutableMapOf()
+        val issuedDocuments: MutableMap<DocumentId, FormatType> = mutableMapOf()
 
         val listener = OpenId4VciManager.OnIssueEvent { event ->
             when (event) {

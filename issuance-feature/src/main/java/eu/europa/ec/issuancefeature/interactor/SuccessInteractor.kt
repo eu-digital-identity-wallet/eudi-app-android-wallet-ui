@@ -56,7 +56,7 @@ class SuccessInteractorImpl(
                 emit(
                     SuccessFetchDocumentByIdPartialState.Success(
                         document = issuedDocument,
-                        documentName = issuedDocument.toUiName(resourceProvider),
+                        documentName = issuedDocument.toUiName(),
                         fullName = extractFullNameFromDocumentOrEmpty(issuedDocument)
                     )
                 )

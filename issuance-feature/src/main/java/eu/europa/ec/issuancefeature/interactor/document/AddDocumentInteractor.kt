@@ -25,13 +25,12 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
-import eu.europa.ec.commonfeature.model.toUiName
-import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
+import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -59,10 +58,8 @@ interface AddDocumentInteractor {
 
     fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: DocType
+        documentType: FormatType
     ): Flow<IssueDocumentPartialState>
-
-    fun addSampleData(): Flow<AddSampleDataPartialState>
 
     fun handleUserAuth(
         context: Context,
@@ -81,46 +78,20 @@ class AddDocumentInteractorImpl(
     private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
+    private val walletCoreConfig: WalletCoreConfig
 ) : AddDocumentInteractor {
+
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
     override fun getAddDocumentOption(flowType: IssuanceFlowUiConfig): Flow<AddDocumentInteractorPartialState> =
         flow {
-            val options = mutableListOf(
+            val options = walletCoreConfig.scopedDocuments.map {
                 DocumentOptionItemUi(
-                    text = DocumentIdentifier.PID.toUiName(resourceProvider),
+                    text = it.name,
                     icon = AppIcons.Id,
-                    type = DocumentIdentifier.PID,
-                    available = true
-                ),
-                DocumentOptionItemUi(
-                    text = DocumentIdentifier.MDL.toUiName(resourceProvider),
-                    icon = AppIcons.Id,
-                    type = DocumentIdentifier.MDL,
-                    available = canCreateExtraDocument(flowType)
-                ),
-                DocumentOptionItemUi(
-                    text = DocumentIdentifier.AGE.toUiName(resourceProvider),
-                    icon = AppIcons.Id,
-                    type = DocumentIdentifier.AGE,
-                    available = canCreateExtraDocument(flowType)
-                ),
-                DocumentOptionItemUi(
-                    text = DocumentIdentifier.PHOTOID.toUiName(resourceProvider),
-                    icon = AppIcons.Id,
-                    type = DocumentIdentifier.PHOTOID,
-                    available = canCreateExtraDocument(flowType)
-                )
-            )
-            if (flowType == IssuanceFlowUiConfig.NO_DOCUMENT) {
-                options.add(
-                    DocumentOptionItemUi(
-                        text = DocumentIdentifier.SAMPLE.toUiName(resourceProvider),
-                        icon = AppIcons.Id,
-                        type = DocumentIdentifier.SAMPLE,
-                        available = true
-                    )
+                    type = it.identifier,
+                    available = canCreateExtraDocument(it.identifier, flowType)
                 )
             }
             emit(
@@ -136,15 +107,12 @@ class AddDocumentInteractorImpl(
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: DocType
+        documentType: FormatType
     ): Flow<IssueDocumentPartialState> =
         walletCoreDocumentsController.issueDocument(
             issuanceMethod = issuanceMethod,
             documentType = documentType
         )
-
-    override fun addSampleData(): Flow<AddSampleDataPartialState> =
-        walletCoreDocumentsController.addSampleData()
 
     override fun handleUserAuth(
         context: Context,
@@ -239,6 +207,10 @@ class AddDocumentInteractorImpl(
         )
     }
 
-    private fun canCreateExtraDocument(flowType: IssuanceFlowUiConfig): Boolean =
-        flowType != IssuanceFlowUiConfig.NO_DOCUMENT
+    private fun canCreateExtraDocument(
+        identifier: DocumentIdentifier,
+        flowType: IssuanceFlowUiConfig
+    ): Boolean =
+        (identifier is DocumentIdentifier.MdocPid || identifier is DocumentIdentifier.SdJwtPid)
+                || flowType != IssuanceFlowUiConfig.NO_DOCUMENT
 }

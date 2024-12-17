@@ -46,8 +46,8 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedWalletActivationErrorMess
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
@@ -753,18 +753,18 @@ class TestDocumentOfferInteractor {
             val mockSuccessfullyIssuedDocId = "0000"
 
             val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
-            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.docType
+            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.formatType
 
             val mockDeferredPendingDocId2 = mockedPendingMdlUi.documentId
-            val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.docType
+            val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.formatType
 
-            val nonIssuedDeferredDocuments: Map<DocumentId, DocType> = mapOf(
+            val nonIssuedDeferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId1 to mockDeferredPendingType1,
                 mockDeferredPendingDocId2 to mockDeferredPendingType2
             )
 
             val nonIssuedDocsNames =
-                "${mockedPendingPidUi.documentIdentifier.docType}, ${mockedPendingMdlUi.documentIdentifier.docType}"
+                "${mockedPendingPidUi.documentIdentifier.formatType}, ${mockedPendingMdlUi.documentIdentifier.formatType}"
 
             whenever(
                 resourceProvider.getString(
@@ -835,8 +835,8 @@ class TestDocumentOfferInteractor {
             val mockSuccessfullyIssuedDocId = "0000"
 
             val mockDeferredPendingDocId1 = mockedPidDocType
-            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.docType
-            val nonIssuedDeferredDocuments: Map<DocumentId, DocType> = mapOf(
+            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.formatType
+            val nonIssuedDeferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId1 to mockDeferredPendingType1
             )
 
@@ -1085,10 +1085,10 @@ class TestDocumentOfferInteractor {
 
     private fun mockDeferredDocumentsMap(): Map<String, String> {
         val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
-        val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.docType
+        val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.formatType
 
         val mockDeferredPendingDocId2 = mockedPendingMdlUi.documentId
-        val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.docType
+        val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.formatType
 
         return mapOf(
             mockDeferredPendingDocId1 to mockDeferredPendingType1,
@@ -1143,7 +1143,7 @@ class TestDocumentOfferInteractor {
 
     //region mocked objects
     private val mockedOfferedDocumentsList = listOf(
-        mockOfferedDocument(docType = DocumentIdentifier.SAMPLE.docType)
+        mockOfferedDocument(docType = DocumentIdentifier.MdocSample.formatType)
     )
 
     private val mockedTripleObject by lazy {
