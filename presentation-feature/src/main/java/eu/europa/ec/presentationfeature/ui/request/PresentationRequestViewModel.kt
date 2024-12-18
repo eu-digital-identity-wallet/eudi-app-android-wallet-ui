@@ -70,8 +70,10 @@ class PresentationRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            //title = viewState.value.screenTitle.plainText,
-                            title = "",//TODO
+                            title = constructTitle(
+                                verifierName = viewState.value.verifierName.orEmpty(),
+                                verifierIsTrusted = true
+                            ).plainText, //TODO change this when Redesign of PIN screen is done.
                             subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
@@ -119,7 +121,7 @@ class PresentationRequestViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(Event.DoWork) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.GoBack) }
+                                    onCancel = { setEvent(Event.Pop) }
                                 )
                             )
                         }
@@ -138,7 +140,7 @@ class PresentationRequestViewModel(
                     }
 
                     is PresentationRequestInteractorPartialState.Disconnect -> {
-                        setEvent(Event.GoBack)
+                        setEvent(Event.Pop)
                     }
 
                     is PresentationRequestInteractorPartialState.NoData -> {

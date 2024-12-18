@@ -62,20 +62,7 @@ data class DocumentDomainPayload(
     val docId: DocumentId,
     val docNamespace: NameSpace,
     val documentDetailsDomain: DocumentDetailsDomain
-) {
-    // We need to override equals in order for "groupBy" internal comparisons
-    override fun equals(other: Any?): Boolean {
-        return if (other is DocumentDomainPayload) {
-            other.docId == this.docId
-        } else {
-            false
-        }
-    }
-
-    override fun hashCode(): Int {
-        return docId.hashCode()
-    }
-}
+)
 
 //TODO Giannis Should this be in other package?
 data class DocumentDetailsDomain(

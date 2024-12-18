@@ -37,6 +37,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
+import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Checkbox
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Icon
 import eu.europa.ec.uilogic.component.MainContentData.Image
@@ -48,7 +50,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 
 /**
@@ -117,6 +119,18 @@ sealed class ListItemTrailingContentData {
 }
 
 /**
+ * Represents the clickable area of a [ListItem].
+ *
+ * This enum defines the regions within a [ListItem] that respond to user clicks.
+ *
+ * @property ENTIRE_ROW  The entire row of the [ListItem] is clickable.
+ * @property TRAILING_CONTENT The trailing content (e.g., an icon or checkbox) of the [ListItem] is clickable.
+ */
+enum class ClickableArea {
+    ENTIRE_ROW, TRAILING_CONTENT,
+}
+
+/**
  * A composable function that displays a list item with various content options.
  *
  * This function provides a flexible way to display list items with customizable content,
@@ -124,27 +138,28 @@ sealed class ListItemTrailingContentData {
  * It also supports hiding sensitive content by blurring it on devices with Android S and above.
  *
  * **Content Customization:**
- * - **Leading Content:** Can be an icon or a user image.
- * - **Main Content:** Can be text or an image.
- * - **Supporting Text:** Provides additional information below the main content.
- * - **Trailing Content:** Can be a checkbox or an icon.
+ * - **Leading Content:** Can be an icon or a user image specified by [ListItemData.leadingContentData].
+ * - **Main Content:** Can be text or an image specified by [ListItemData.mainContentData].
+ * - **Supporting Text:** Provides additional information below the main content, specified by [ListItemData.supportingText].
+ * - **Trailing Content:** Can be a checkbox or an icon specified by [ListItemData.trailingContentData].
+ * - **Overline Text:**  Displays text above the main content, specified by [ListItemData.overlineText].
  *
  * **Sensitivity Handling:**
- * - If `hideSensitiveContent` is true and the device supports blurring, the content will be blurred.
+ * - If `hideSensitiveContent` is true and the device supports blurring (Android S and above), the content will be blurred.
  * - On devices that don't support blurring, sensitive content is either hidden or displayed as plain text
- *   depending on the content type (e.g., images are hidden, text is displayed).
+ *   depending on the content type (e.g., images are hidden, leading content is hidden, text is displayed).
  *
  * **Click Handling:**
- * - `onItemClick` is invoked when the item is clicked. It receives the [ListItemData] object as a parameter.
+ * - `onItemClick` is invoked when a clickable area of the item is clicked. It receives the [ListItemData] object as a parameter.
  *   This allows you to handle item clicks and perform actions based on the selected item.
+ * - `clickableAreas` defines which areas of the list item are clickable. By default, only the trailing content is clickable.
+ *    You can set it to [ClickableArea.ENTIRE_ROW] to make the entire row clickable, or provide a custom list of clickable areas.
  *
  * @param item The [ListItemData] object containing the data to display in the list item.
- * @param onItemClick An optional lambda function that is invoked when the item is clicked.
+ * @param onItemClick An optional lambda function that is invoked when a clickable area of the item is clicked.
  * @param modifier A [Modifier] that can be used to customize the appearance of the list item.
  * @param hideSensitiveContent A boolean flag indicating whether to hide sensitive content by blurring it. Defaults to false.
- * @param mainContentVerticalPadding An optional value specifying the vertical padding for the main content.
- * @param overlineTextStyle The [TextStyle] to be applied to the overline text.
- */
+ * @param mainContentVerticalPadding An optional value specifying the vertical padding */
 @Composable
 fun ListItem(
     item: ListItemData,
@@ -152,6 +167,7 @@ fun ListItem(
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
+    clickableAreas: List<ClickableArea> = listOf(TRAILING_CONTENT),
     overlineTextStyle: TextStyle = MaterialTheme.typography.labelMedium.copy(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     ),
@@ -185,8 +201,17 @@ fun ListItem(
 
     with(item) {
         Row(
-            modifier = modifier
-                .padding(horizontal = SPACING_MEDIUM.dp),
+            modifier = if (clickableAreas.contains(ENTIRE_ROW)) {
+                Modifier.clickable {
+                    onItemClick?.let { safeOnItemClick ->
+                        safeOnItemClick(item)
+                    }
+                }
+            } else {
+                Modifier
+            }.then(
+                other = modifier.padding(horizontal = SPACING_MEDIUM.dp)
+            ),
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -231,7 +256,7 @@ fun ListItem(
                 // Main Content
                 if (!hideSensitiveContent || supportsBlur) {
                     when (mainContentData) {
-                        is MainContentData.Image -> ImageOrPlaceholder(
+                        is Image -> ImageOrPlaceholder(
                             modifier = Modifier
                                 .wrapContentWidth()
                                 .padding(top = SPACING_SMALL.dp)
@@ -240,7 +265,7 @@ fun ListItem(
                             contentScale = ContentScale.Fit,
                         )
 
-                        is MainContentData.Text -> Text(
+                        is Text -> Text(
                             modifier = blurModifier,
                             text = mainContentData.text,
                             style = mainTextStyle,
@@ -265,30 +290,25 @@ fun ListItem(
             // Trailing Content
             trailingContentData?.let { safeTrailingContentData ->
                 when (safeTrailingContentData) {
-                    is ListItemTrailingContentData.Checkbox -> WrapCheckbox(
+                    is Checkbox -> WrapCheckbox(
                         checkboxData = safeTrailingContentData.checkboxData.copy(
-                            onCheckedChange = {
-                                onItemClick?.let { safeOnItemClick ->
-                                    safeOnItemClick(item)
-                                }
-                            }
+                            onCheckedChange = if (clickableAreas.contains(TRAILING_CONTENT)) {
+                                { onItemClick?.invoke(item) }
+                            } else null
                         ),
                         modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
                     )
 
-                    is ListItemTrailingContentData.Icon -> WrapIcon(
+                    is Icon -> WrapIconButton(
                         modifier = Modifier
                             .padding(start = SIZE_MEDIUM.dp)
-                            .size(DEFAULT_ICON_SIZE.dp)
-                            .then(
-                                other = onItemClick?.let { safeOnItemClick ->
-                                    Modifier.clickable {
-                                        safeOnItemClick(item)
-                                    }
-                                } ?: Modifier
-                            ),
+                            .size(DEFAULT_ICON_SIZE.dp),
                         iconData = safeTrailingContentData.iconData,
                         customTint = MaterialTheme.colorScheme.primary,
+                        onClick = if (clickableAreas.contains(TRAILING_CONTENT)) {
+                            { onItemClick?.invoke(item) }
+                        } else null,
+                        throttleClicks = false,
                     )
                 }
             }

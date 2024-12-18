@@ -21,8 +21,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 data class ExpandableListItemData(
     val collapsed: ListItemData,
@@ -37,10 +39,11 @@ fun WrapExpandableListItem(
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
     onExpandedChange: () -> Unit,
-    isClickableWhenExpanded: Boolean = false,
     throttleClicks: Boolean = true,
-    collapsedMainContentVerticalPadding: Dp = 16.dp,
+    collapsedMainContentVerticalPadding: Dp = SPACING_MEDIUM.dp,
+    collapsedClickableAreas: List<ClickableArea>? = null,
     expandedMainContentVerticalPadding: Dp = 12.dp,
+    expandedClickableAreas: List<ClickableArea>? = null,
 ) {
     WrapExpandableCard(
         modifier = modifier,
@@ -50,8 +53,10 @@ fun WrapExpandableListItem(
                 onItemClick = {
                     onExpandedChange()
                 },
+                throttleClicks = throttleClicks,
                 hideSensitiveContent = false,
                 mainContentVerticalPadding = collapsedMainContentVerticalPadding,
+                clickableAreas = collapsedClickableAreas,
             )
         },
         cardExpandedContent = {
@@ -60,15 +65,14 @@ fun WrapExpandableListItem(
                 onItemClick = onItemClick,
                 hideSensitiveContent = hideSensitiveContent,
                 mainContentVerticalPadding = expandedMainContentVerticalPadding,
+                clickableAreas = expandedClickableAreas,
                 shape = RoundedCornerShape(
                     bottomStart = SIZE_SMALL.dp,
                     bottomEnd = SIZE_SMALL.dp,
                 ),
-                clickable = isClickableWhenExpanded,
             )
         },
         isExpanded = isExpanded,
-        onExpandedChange = onExpandedChange,
         throttleClicks = throttleClicks,
     )
 }

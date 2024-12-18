@@ -31,11 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -44,6 +40,7 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -53,6 +50,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.BaseBottomSheetContent
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
@@ -62,7 +60,6 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
-import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import kotlinx.coroutines.CoroutineScope
@@ -90,20 +87,18 @@ fun RequestScreen(
     ContentScreen(
         navigatableAction = ScreenNavigateAction.NONE,
         isLoading = state.isLoading,
-        onBack = { viewModel.setEvent(Event.SecondaryButtonPressed) },
+        onBack = { viewModel.setEvent(Event.UserWantsToGoBack) },
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 stickyBottomModifier = Modifier
                     .fillMaxWidth()
-                    .padding(paddingValues)
-                //.background(Color.Blue)
-                ,
+                    .padding(paddingValues),
                 stickyBottomConfig = StickyBottomConfig(
                     type = StickyBottomType.OneButton(
                         config = ButtonConfig(
                             type = ButtonType.PRIMARY,
                             enabled = !state.isLoading && state.allowShare,
-                            onClick = { viewModel.setEvent(Event.PrimaryButtonPressed) }
+                            onClick = { viewModel.setEvent(Event.StickyButtonPressed) }
                         )
                     )
                 )
@@ -181,7 +176,11 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .then(
+                other = if (state.noItems) Modifier else Modifier.verticalScroll(
+                    rememberScrollState()
+                )
+            )
             .padding(paddingValues),
         verticalArrangement = Arrangement.Top
     ) {
@@ -191,30 +190,13 @@ private fun Content(
             config = state.headerConfig,
         )
 
-        // Screen Main Content.
-        /*Request(
-            modifier = Modifier.weight(1f),
-            items = state.items,
-            noData = state.noItems,
-            isShowingFullUserInfo = state.isShowingFullUserInfo,
-            onEventSend = onEventSend,
-            listState = rememberLazyListState(),
-            contentPadding = paddingValues
-        )*/
-
-        var hideOrNot by remember { mutableStateOf(false) } //TODO Giannis remove later
-        WrapIconButton(
-            iconData = AppIcons.VisibilityOff,
-            onClick = { hideOrNot = !hideOrNot }
-        )
-
         DisplayRequestItems(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = SPACING_MEDIUM.dp),
+                .padding(top = SPACING_SMALL.dp),
             items = state.items,
+            noData = state.noItems,
             onEventSend = onEventSend,
-            hideOrNot = hideOrNot,
         )
     }
 
@@ -242,33 +224,43 @@ private fun Content(
 }
 
 @Composable
-fun DisplayRequestItems(
+private fun DisplayRequestItems(
     modifier: Modifier,
     items: List<RequestDocumentItemUi>,
+    noData: Boolean,
     onEventSend: (Event) -> Unit,
-    hideOrNot: Boolean
 ) {
-    Column {
-        items.forEach { requestItem ->
-            WrapExpandableListItem(
-                data = ExpandableListItemData(
-                    collapsed = requestItem.collapsedUiItem.uiItem,
-                    expanded = requestItem.expandedUiItems.map { it.uiItem }
-                ),
-                onItemClick = { item ->
-                    onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
-                },
-                hideSensitiveContent = hideOrNot,
-                modifier = modifier,
-                isExpanded = requestItem.collapsedUiItem.isExpanded,
-                onExpandedChange = {
-                    onEventSend(Event.ExpandOrCollapseRequiredDataList(itemId = requestItem.collapsedUiItem.uiItem.itemId))
-                }
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        if (noData) {
+            ErrorInfo(
+                modifier = Modifier.fillMaxSize(),
+                informativeText = stringResource(id = R.string.request_no_data),
             )
+        } else {
+            items.forEach { requestItem ->
+                WrapExpandableListItem(
+                    data = ExpandableListItemData(
+                        collapsed = requestItem.collapsedUiItem.uiItem,
+                        expanded = requestItem.expandedUiItems.map { it.uiItem }
+                    ),
+                    onItemClick = { item ->
+                        onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    hideSensitiveContent = false,
+                    isExpanded = requestItem.collapsedUiItem.isExpanded,
+                    onExpandedChange = {
+                        onEventSend(Event.ExpandOrCollapseRequiredDataList(itemId = requestItem.collapsedUiItem.uiItem.itemId))
+                    },
+                    throttleClicks = false,
+                )
+            }
         }
     }
 }
-
 
 @Composable
 private fun SheetContent(

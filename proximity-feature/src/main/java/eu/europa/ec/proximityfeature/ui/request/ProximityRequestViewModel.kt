@@ -57,7 +57,7 @@ class ProximityRequestViewModel(
             //relyingPartyData = interactor.getRelyingPartyData() //TODO()
             relyingPartyData = RelyingPartyData(
                 isVerified = true,
-                name = "Relying Party",
+                name = "(placeholder) Relying Party",
                 description = "requests the following",
             )
         )
@@ -70,8 +70,10 @@ class ProximityRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            //title = viewState.value.screenTitle.plainText, //TODO
-                            title = "",
+                            title = constructTitle(
+                                verifierName = viewState.value.verifierName.orEmpty(),
+                                verifierIsTrusted = true
+                            ).plainText, //TODO change this when Redesign of PIN screen is done.
                             subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
@@ -119,7 +121,7 @@ class ProximityRequestViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(Event.DoWork) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.GoBack) }
+                                    onCancel = { setEvent(Event.Pop) }
                                 )
                             )
                         }
@@ -138,7 +140,7 @@ class ProximityRequestViewModel(
                     }
 
                     is ProximityRequestInteractorPartialState.Disconnect -> {
-                        setEvent(Event.GoBack)
+                        setEvent(Event.Pop)
                     }
 
                     is ProximityRequestInteractorPartialState.NoData -> {

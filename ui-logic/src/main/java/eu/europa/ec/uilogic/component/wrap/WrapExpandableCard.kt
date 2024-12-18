@@ -35,7 +35,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 fun WrapExpandableCard(
     modifier: Modifier = Modifier,
     isExpanded: Boolean,
-    onExpandedChange: () -> Unit,
+    onExpandedChange: (() -> Unit)? = null,
     cardCollapsedContent: @Composable () -> Unit,
     cardExpandedContent: @Composable ColumnScope.() -> Unit,
     shape: Shape? = null,

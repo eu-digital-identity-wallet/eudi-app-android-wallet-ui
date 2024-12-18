@@ -119,7 +119,7 @@ fun WrapIconButton(
     throttleClicks: Boolean = true,
     throttleDuration: Long = 1_000L,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    onClick: () -> Unit
+    onClick: (() -> Unit)?
 ) {
     val role = Role.Button
     val rippleSize = if (size == DEFAULT_ICON_SIZE.dp) 40.dp else size
@@ -134,24 +134,26 @@ fun WrapIconButton(
             .size(rippleSize)
             .clip(CircleShape)
             .then(
-                when (throttleClicks) {
-                    true -> Modifier.throttledClickable(
-                        onClick = onClick,
-                        throttleDuration = throttleDuration,
-                        enabled = enabled,
-                        role = role,
-                        interactionSource = interactionSource,
-                        indication = indication
-                    )
+                if (onClick != null) {
+                    when (throttleClicks) {
+                        true -> Modifier.throttledClickable(
+                            onClick = onClick,
+                            throttleDuration = throttleDuration,
+                            enabled = enabled,
+                            role = role,
+                            interactionSource = interactionSource,
+                            indication = indication
+                        )
 
-                    false -> Modifier.clickable(
-                        onClick = onClick,
-                        enabled = enabled,
-                        role = role,
-                        interactionSource = interactionSource,
-                        indication = indication
-                    )
-                }
+                        false -> Modifier.clickable(
+                            onClick = onClick,
+                            enabled = enabled,
+                            role = role,
+                            interactionSource = interactionSource,
+                            indication = indication
+                        )
+                    }
+                } else Modifier
             ),
         contentAlignment = Alignment.Center
     ) {

@@ -16,9 +16,11 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
+import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 
@@ -27,26 +29,25 @@ fun WrapListItem(
     item: ListItemData,
     onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
+    throttleClicks: Boolean = true,
     hideSensitiveContent: Boolean = false,
-    mainContentVerticalPadding: Dp? = null
+    mainContentVerticalPadding: Dp? = null,
+    clickableAreas: List<ClickableArea>? = null,
 ) {
     WrapCard(
-        modifier = modifier,
-        onClick = {
-            onItemClick?.let { safeOnItemClick ->
-                safeOnItemClick(item)
-            }
-        },
+        modifier = Modifier.fillMaxWidth(),
+        throttleClicks = throttleClicks,
     ) {
         ListItem(
+            modifier = modifier,
             item = item,
-            onItemClick = null,
+            onItemClick = onItemClick,
             hideSensitiveContent = hideSensitiveContent,
             mainContentVerticalPadding = mainContentVerticalPadding,
+            clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
         )
     }
 }
-
 
 /*
 @ThemeModePreviews

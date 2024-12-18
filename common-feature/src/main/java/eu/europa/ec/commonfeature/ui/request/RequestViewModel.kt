@@ -47,14 +47,12 @@ data class State(
 sealed class Event : ViewEvent {
     data object DoWork : Event()
     data object DismissError : Event()
-    data object GoBack : Event()
-    data object ChangeContentVisibility : Event()
-    data class ExpandOrCollapseRequiredDataList(val itemId: String) : Event()
+    data object UserWantsToGoBack : Event()
+    data object Pop : Event()
+    data object StickyButtonPressed : Event()
 
     data class UserIdentificationClicked(val itemId: String) : Event()
-
-    data object PrimaryButtonPressed : Event()
-    data object SecondaryButtonPressed : Event()
+    data class ExpandOrCollapseRequiredDataList(val itemId: String) : Event()
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
@@ -83,7 +81,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 enum class RequestBottomSheetContent {
-    CANCEL, WARNING
+    CANCEL, WARNING,
 }
 
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
@@ -137,21 +135,19 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            is Event.GoBack -> {
+            is Event.UserWantsToGoBack -> {
+                showBottomSheet(sheetContent = RequestBottomSheetContent.CANCEL)
+            }
+
+            is Event.Pop -> {
                 setState {
                     copy(error = null)
                 }
                 doNavigation(NavigationType.Pop)
             }
 
-            is Event.ChangeContentVisibility -> {
-                setState {
-                    copy(isShowingFullUserInfo = !isShowingFullUserInfo)
-                }
-            }
-
-            is Event.ExpandOrCollapseRequiredDataList -> {
-                expandOrCollapseRequiredDataList(id = event.itemId)
+            is Event.StickyButtonPressed -> {
+                doNavigation(NavigationType.PushRoute(getNextScreen()))
             }
 
             is Event.UserIdentificationClicked -> {
@@ -165,12 +161,8 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            is Event.PrimaryButtonPressed -> {
-                doNavigation(NavigationType.PushRoute(getNextScreen()))
-            }
-
-            is Event.SecondaryButtonPressed -> {
-                showBottomSheet(sheetContent = RequestBottomSheetContent.CANCEL)
+            is Event.ExpandOrCollapseRequiredDataList -> {
+                expandOrCollapseRequiredDataList(id = event.itemId)
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {

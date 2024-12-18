@@ -17,6 +17,7 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -35,18 +37,18 @@ fun WrapListItems(
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
-    clickable: Boolean = false,
+    clickableAreas: List<ClickableArea>? = null,
     shape: Shape? = null,
-    throttleClicks: Boolean = true
 ) {
-    WrapCard(shape = shape) {
+    WrapCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = shape,
+    ) {
         Column(
-            modifier = modifier,
-            //userScrollEnabled = true,
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            //itemsIndexed(items) { index, item ->
             items.forEachIndexed { index, item ->
-                val itemModifier = Modifier.padding(
+                val itemModifier = modifier.padding(
                     top = if (index == 0) SPACING_SMALL.dp else 0.dp,
                     bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
                 )
@@ -57,6 +59,7 @@ fun WrapListItems(
                     modifier = itemModifier,
                     hideSensitiveContent = hideSensitiveContent,
                     mainContentVerticalPadding = mainContentVerticalPadding,
+                    clickableAreas = clickableAreas ?: listOf(ClickableArea.TRAILING_CONTENT),
                 )
 
                 if (index < items.lastIndex) {
