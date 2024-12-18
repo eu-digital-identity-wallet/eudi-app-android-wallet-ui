@@ -371,7 +371,7 @@ private fun SheetContent(
                             customTint = MaterialTheme.colorScheme.warning
                         )
                         Text(
-                            text = stringResource(R.string.document_details_bottom_sheet_bookmark_info_title),
+                            text = sheetContent.bottomSheetTextData.title,
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -379,7 +379,7 @@ private fun SheetContent(
                 }, bodyContent = {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.document_details_bottom_sheet_bookmark_info_message),
+                        text = sheetContent.bottomSheetTextData.message,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -400,7 +400,7 @@ private fun SheetContent(
                             customTint = MaterialTheme.colorScheme.success
                         )
                         Text(
-                            text = stringResource(R.string.document_details_bottom_sheet_badge_title),
+                            text = sheetContent.bottomSheetTextData.title,
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -408,7 +408,7 @@ private fun SheetContent(
                 }, bodyContent = {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.document_details_bottom_sheet_badge_subtitle),
+                        text = sheetContent.bottomSheetTextData.message,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
@@ -475,6 +475,7 @@ private fun IssuanceDocumentDetailsScreenPreview() {
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,
             ),
+            sheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation
         )
 
         Content(
@@ -513,6 +514,7 @@ private fun DashboardDocumentDetailsScreenPreview() {
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,
             ),
+            sheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation
         )
 
         Content(

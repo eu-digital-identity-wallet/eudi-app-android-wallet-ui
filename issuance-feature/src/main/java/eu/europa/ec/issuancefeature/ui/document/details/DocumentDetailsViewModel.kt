@@ -33,6 +33,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -65,7 +66,7 @@ data class State(
     val sensitiveInfoIcon: IconData = AppIcons.VisibilityOff,
     val isShowingFullUserInfo: Boolean = true,
 
-    val sheetContent: DocumentDetailsBottomSheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo
+    val sheetContent: DocumentDetailsBottomSheetContent
 ) : ViewState {
     val bookmarkIcon: IconData
         get() = if (isDocumentBookmarked) AppIcons.BookmarkFilled else AppIcons.Bookmark
@@ -109,9 +110,14 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class DocumentDetailsBottomSheetContent {
-    data object BookmarkStoredInfo : DocumentDetailsBottomSheetContent()
     data object DeleteDocumentConfirmation : DocumentDetailsBottomSheetContent()
-    data object IssuerInfo : DocumentDetailsBottomSheetContent()
+
+    data class BookmarkStoredInfo(val bottomSheetTextData: BottomSheetTextData) :
+        DocumentDetailsBottomSheetContent()
+
+    data class IssuerInfo(
+        val bottomSheetTextData: BottomSheetTextData
+    ) : DocumentDetailsBottomSheetContent()
 }
 
 @KoinViewModel
@@ -130,7 +136,13 @@ class DocumentDetailsViewModel(
         hasBottomPadding = hasBottomPadding(detailsType),
         detailsHaveBottomGradient = detailsHaveBottomGradient(detailsType),
         documentDetailsSectionTitle = resourceProvider.getString(R.string.document_details_main_section_text),
-        documentIssuerSectionTitle = resourceProvider.getString(R.string.document_details_issuer_section_text)
+        documentIssuerSectionTitle = resourceProvider.getString(R.string.document_details_issuer_section_text),
+        sheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo(
+            bottomSheetTextData = BottomSheetTextData(
+                title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_title),
+                message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_message)
+            )
+        )
     )
 
     override fun handleEvents(event: Event) {
@@ -196,13 +208,27 @@ class DocumentDetailsViewModel(
                 }
 
                 if (viewState.value.isDocumentBookmarked) {
-                    showBottomSheet(sheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo)
+                    val bottomSheetTextData = BottomSheetTextData(
+                        title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_title),
+                        message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_message)
+                    )
+                    showBottomSheet(
+                        sheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo(
+                            bottomSheetTextData = bottomSheetTextData
+                        )
+                    )
                 }
             }
 
             is Event.IssuerCardPressed -> {
+                val bottomSheetTextData = BottomSheetTextData(
+                    title = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_title),
+                    message = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_subtitle)
+                )
                 showBottomSheet(
-                    sheetContent = DocumentDetailsBottomSheetContent.IssuerInfo
+                    sheetContent = DocumentDetailsBottomSheetContent.IssuerInfo(
+                        bottomSheetTextData = bottomSheetTextData
+                    )
                 )
             }
         }
