@@ -117,13 +117,15 @@ fun DocumentDetailsScreen(
                             Event.BookmarkPressed(isBookmarked = state.isDocumentBookmarked)
                         )
                     },
-                    enabled = !state.isLoading
+                    enabled = !state.isLoading,
+                    throttleClicks = false,
                 ),
                 ToolbarAction(
                     icon = state.sensitiveInfoIcon,
                     customTint = MaterialTheme.colorScheme.onSurfaceVariant,
                     onClick = { viewModel.setEvent(Event.ChangeContentVisibility) },
-                    enabled = !state.isLoading
+                    enabled = !state.isLoading,
+                    throttleClicks = false,
                 )
             ),
             navigationIconTint = MaterialTheme.colorScheme.onSurfaceVariant

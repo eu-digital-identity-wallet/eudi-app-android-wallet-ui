@@ -66,6 +66,7 @@ data class ToolbarAction(
     val enabled: Boolean = true,
     val customTint: Color? = null,
     val clickable: Boolean = true,
+    val throttleClicks: Boolean = true,
     val onClick: () -> Unit,
 )
 
@@ -320,6 +321,7 @@ private fun ToolbarIcon(toolbarAction: ToolbarAction) {
             onClick = toolbarAction.onClick,
             enabled = toolbarAction.enabled,
             customTint = customIconTint,
+            throttleClicks = toolbarAction.throttleClicks
         )
     } else {
         WrapIcon(
