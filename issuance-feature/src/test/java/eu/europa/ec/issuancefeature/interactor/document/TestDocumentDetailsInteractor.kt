@@ -16,13 +16,12 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
-import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsItemData
-import eu.europa.ec.commonfeature.ui.document_details.model.toListItemData
-import eu.europa.ec.commonfeature.util.TestsData
-import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidUi
+import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
+import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
+import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlDomain
+import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidDomain
+import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
+import eu.europa.ec.commonfeature.util.TestsData.mockedDocumentHasExpired
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -52,7 +51,6 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
@@ -122,7 +120,7 @@ class TestDocumentDetailsInteractor {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
-                        documentUi = mockedBasicPidUi
+                        documentDetailsDomain = mockedBasicPidDomain
                     ),
                     awaitItem()
                 )
@@ -150,7 +148,7 @@ class TestDocumentDetailsInteractor {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
-                        documentUi = mockedBasicMdlUi.copy(
+                        documentDetailsDomain = mockedBasicMdlDomain.copy(
                             documentImage = "SE"
                         )
                     ),
@@ -254,24 +252,24 @@ class TestDocumentDetailsInteractor {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
-                        documentUi = DocumentUi(
-                            documentId = TestsData.mockedPidId,
-                            documentName = TestsData.mockedPidDocName,
-                            documentIdentifier = DocumentIdentifier.MdocPid,
+                        documentDetailsDomain = DocumentDetailsDomain(
+                            docName = mockedDocUiNamePid,
+                            docId = mockedPidId,
+                            docNamespace = mockedPidNameSpace,
+                            documentIdentifier = DocumentIdentifier.PID,
                             documentExpirationDateFormatted = "",
-                            documentHasExpired = TestsData.mockedDocumentHasExpired,
+                            documentHasExpired = mockedDocumentHasExpired,
                             documentImage = "",
-                            documentDetails = listOf(
-                                DocumentDetailsItemData.DocumentItemFieldWithValue(
-                                    itemData = InfoTextWithNameAndValueData.create(
-                                        title = "no_data_item",
-                                        infoValues = arrayOf("0")
-                                    )
-                                ).itemData.toListItemData()
-                            ),
                             userFullName = "",
-                            documentIssuanceState = DocumentUiIssuanceState.Issued
-                        )
+                            detailsItems = listOf(
+                                DocumentItem(
+                                    elementIdentifier = "no_data_item",
+                                    value = "0",
+                                    readableName = "no_data_item",
+                                    docId = mockedPidId,
+                                ),
+                            )
+                        ),
                     ),
                     awaitItem()
                 )
