@@ -40,7 +40,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
     when (documentIdentifier) {
 
-        DocumentIdentifier.MdocPid -> listOf(
+        DocumentIdentifier.MdocPid, DocumentIdentifier.SdJwtPid -> listOf(
             "issuance_date",
             "expiry_date",
             "issuing_authority",
