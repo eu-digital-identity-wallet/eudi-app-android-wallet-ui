@@ -246,62 +246,62 @@ object TestsData {
     )
 
     val mockedBasicPidDomain = DocumentDetailsDomain(
-        docName = mockedBasicPidUi.documentName,
-        docId = mockedBasicPidUi.documentId,
+        docName = mockedDocUiNamePid,
+        docId = mockedPidId,
         docNamespace = mockedPidNameSpace,
-        documentIdentifier = mockedBasicPidUi.documentIdentifier,
-        documentExpirationDateFormatted = mockedBasicPidUi.documentExpirationDateFormatted,
-        documentHasExpired = mockedBasicPidUi.documentHasExpired,
-        documentImage = mockedBasicPidUi.documentImage,
-        userFullName = mockedBasicPidUi.userFullName,
+        documentIdentifier = DocumentIdentifier.PID,
+        documentExpirationDateFormatted = mockedFormattedExpirationDate,
+        documentHasExpired = mockedDocumentHasExpired,
+        documentImage = "",
+        userFullName = "JAN ANDERSSON",
         detailsItems = listOf(
             DocumentItem(
                 elementIdentifier = "birth_city",
                 value = "KATRINEHOLM",
                 readableName = "birth_city",
-                docId = mockedBasicPidUi.documentId
+                docId = mockedPidId
             ),
             DocumentItem(
                 elementIdentifier = "gender",
                 value = "male",
                 readableName = "gender",
-                docId = mockedBasicPidUi.documentId
+                docId = mockedPidId
             ),
             DocumentItem(
                 elementIdentifier = "age_over_18",
                 value = "yes",
                 readableName = "age_over_18",
-                docId = mockedBasicPidUi.documentId
+                docId = mockedPidId
             ),
             DocumentItem(
                 elementIdentifier = "age_birth_year",
                 value = "1985",
                 readableName = "age_birth_year",
-                docId = mockedBasicPidUi.documentId
+                docId = mockedPidId
             ),
             DocumentItem(
                 elementIdentifier = "expiry_date",
                 value = "30 Mar 2050",
                 readableName = "expiry_date",
-                docId = mockedBasicPidUi.documentId
+                docId = mockedPidId
             ),
             DocumentItem(
                 elementIdentifier = "given_name",
                 value = "JAN",
                 readableName = "given_name",
-                docId = mockedBasicPidUi.documentId
+                docId = mockedPidId
             ),
             DocumentItem(
                 elementIdentifier = "family_name",
                 value = "ANDERSSON",
                 readableName = "family_name",
-                docId = mockedBasicPidUi.documentId
+                docId = mockedPidId
             ),
             DocumentItem(
                 elementIdentifier = "age_over_65",
                 value = "no",
                 readableName = "age_over_65",
-                docId = mockedBasicPidUi.documentId
+                docId = mockedPidId
             )
         )
     )
@@ -377,14 +377,14 @@ object TestsData {
     )
 
     val mockedBasicMdlDomain = DocumentDetailsDomain(
-        docName = mockedBasicMdlUi.documentName,
-        docId = mockedBasicMdlUi.documentId,
+        docName = mockedDocUiNameMdl,
+        docId = mockedMdlId,
         docNamespace = mockedMdlNameSpace,
-        documentIdentifier = mockedBasicMdlUi.documentIdentifier,
-        documentExpirationDateFormatted = mockedBasicMdlUi.documentExpirationDateFormatted,
-        documentHasExpired = mockedBasicMdlUi.documentHasExpired,
-        documentImage = mockedBasicMdlUi.documentImage,
-        userFullName = mockedBasicMdlUi.userFullName,
+        documentIdentifier = DocumentIdentifier.MDL,
+        documentExpirationDateFormatted = mockedFormattedExpirationDate,
+        documentHasExpired = mockedDocumentHasExpired,
+        documentImage = "",
+        userFullName = "JAN ANDERSSON",
         detailsItems = listOf(
             DocumentItem(
                 elementIdentifier = "driving_privileges",
@@ -395,50 +395,50 @@ object TestsData {
                         "expiry_date: 30 Mar 2050\n" +
                         "vehicle_category_code: B",
                 readableName = "driving_privileges",
-                docId = mockedBasicMdlUi.documentId
+                docId = mockedMdlId
             ),
             DocumentItem(
                 elementIdentifier = "expiry_date",
                 value = "30 Mar 2050",
                 readableName = "expiry_date",
-                docId = mockedBasicMdlUi.documentId
+                docId = mockedMdlId
             ),
             DocumentItem(
                 elementIdentifier = "sex",
                 value = "male",
                 readableName = "sex",
-                docId = mockedBasicMdlUi.documentId
+                docId = mockedMdlId
             ),
             DocumentItem(
                 elementIdentifier = "birth_place",
                 value = "SWEDEN",
                 readableName = "birth_place",
-                docId = mockedBasicMdlUi.documentId
+                docId = mockedMdlId
             ),
 
             DocumentItem(
                 elementIdentifier = "given_name",
                 value = "JAN",
                 readableName = "given_name",
-                docId = mockedBasicMdlUi.documentId
+                docId = mockedMdlId
             ),
             DocumentItem(
                 elementIdentifier = "portrait",
                 value = "SE",
                 readableName = "portrait",
-                docId = mockedBasicMdlUi.documentId
+                docId = mockedMdlId
             ),
             DocumentItem(
                 elementIdentifier = "family_name",
                 value = "ANDERSSON",
                 readableName = "family_name",
-                docId = mockedBasicMdlUi.documentId
+                docId = mockedMdlId
             ),
             DocumentItem(
                 elementIdentifier = "signature_usual_mark",
                 value = "SE",
                 readableName = "signature_usual_mark",
-                docId = mockedBasicMdlUi.documentId
+                docId = mockedMdlId
             )
         )
     )
