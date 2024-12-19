@@ -30,11 +30,11 @@ import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorRetryIssuingDeferredDocumentsPartialState
-import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -88,7 +88,7 @@ data class State(
 sealed class Event : ViewEvent {
     data class Init(val deepLinkUri: Uri?) : Event()
     data object OnPause : Event()
-    data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, DocType>) : Event()
+    data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, FormatType>) : Event()
     data object Pop : Event()
     data class NavigateToDocument(
         val documentId: DocumentId
@@ -155,7 +155,7 @@ sealed class Effect : ViewSideEffect {
         data object OnSystemSettings : Navigation()
     }
 
-    data class DocumentsFetched(val deferredDocs: Map<DocumentId, DocType>) : Effect()
+    data class DocumentsFetched(val deferredDocs: Map<DocumentId, FormatType>) : Effect()
     data class ShareLogFile(val intent: Intent, val chooserTitle: String) : Effect()
 
     data object ShowBottomSheet : Effect()
@@ -433,12 +433,12 @@ class DashboardViewModel(
                                 }
                             }
 
-                        val deferredDocs: MutableMap<DocumentId, DocType> = mutableMapOf()
+                        val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
                         response.documentsUi.filter { documentUi ->
                             documentUi.documentIssuanceState == DocumentUiIssuanceState.Pending
                         }.forEach { documentUi ->
                             deferredDocs[documentUi.documentId] =
-                                documentUi.documentIdentifier.docType
+                                documentUi.documentIdentifier.formatType
                         }
 
                         setState {
@@ -462,7 +462,10 @@ class DashboardViewModel(
         }
     }
 
-    private fun tryIssuingDeferredDocuments(event: Event, deferredDocs: Map<DocumentId, DocType>) {
+    private fun tryIssuingDeferredDocuments(
+        event: Event,
+        deferredDocs: Map<DocumentId, FormatType>
+    ) {
         setState {
             copy(
                 isLoading = false,

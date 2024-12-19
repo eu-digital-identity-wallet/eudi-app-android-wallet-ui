@@ -23,6 +23,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.uilogic.component.ListItemData
 
 //TODO Giannis To be removed
@@ -77,8 +78,11 @@ data class DocumentItemDomain(
     val isAvailable: Boolean,
 )
 
-val Document.docType: String
-    get() = (this.format as? MsoMdocFormat)?.docType.orEmpty()
+val Document.formatType: String
+    get() = when (this.format) {
+        is MsoMdocFormat -> (this.format as MsoMdocFormat).docType
+        is SdJwtVcFormat -> (this.format as SdJwtVcFormat).vct
+    }
 
 fun generateUniqueFieldId(
     elementIdentifier: ElementIdentifier,

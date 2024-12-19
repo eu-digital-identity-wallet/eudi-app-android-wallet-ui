@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -126,6 +127,7 @@ fun InfoTextWithNameAndImage(
     itemData: InfoTextWithNameAndImageData,
     contentDescription: String,
     modifier: Modifier = Modifier,
+    contentScale: ContentScale? = null,
     infoNameTextStyle: TextStyle = defaultInfoNameTextStyle,
 ) {
     Column(
@@ -140,7 +142,8 @@ fun InfoTextWithNameAndImage(
         if (itemData.base64Image.isNotBlank()) {
             WrapImage(
                 bitmap = rememberBase64DecodedBitmap(base64Image = itemData.base64Image),
-                contentDescription = contentDescription
+                contentDescription = contentDescription,
+                contentScale = contentScale
             )
         }
     }

@@ -27,12 +27,9 @@ import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
-import eu.europa.ec.corelogic.controller.AddSampleDataPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -83,7 +80,7 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
     data class IssueDocument(
         val issuanceMethod: IssuanceMethod,
-        val documentType: DocType,
+        val configId: String,
         val context: Context
     ) : Event()
 
@@ -133,15 +130,11 @@ class AddDocumentViewModel(
             }
 
             is Event.IssueDocument -> {
-                if (event.documentType != DocumentIdentifier.SAMPLE.docType) {
-                    issueDocument(
-                        issuanceMethod = event.issuanceMethod,
-                        docType = event.documentType,
-                        context = event.context
-                    )
-                } else {
-                    loadSampleData(event)
-                }
+                issueDocument(
+                    issuanceMethod = event.issuanceMethod,
+                    configId = event.configId,
+                    context = event.context
+                )
             }
 
             is Event.Finish -> setEffect { Effect.Navigation.Finish }
@@ -176,7 +169,7 @@ class AddDocumentViewModel(
                                                 IssuanceScreens.AddDocument.screenRoute
                                             )
                                         ),
-                                        RequestUriConfig
+                                        RequestUriConfig.Parser
                                     )
                                 )
                             )
@@ -206,7 +199,7 @@ class AddDocumentViewModel(
                                 error = null,
                                 options = response.options,
                                 isInitialised = true,
-                                isLoading = false,
+                                isLoading = false
                             )
                         }
                         handleDeepLink(deepLinkUri)
@@ -233,7 +226,7 @@ class AddDocumentViewModel(
 
     private fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        docType: DocType,
+        configId: String,
         context: Context
     ) {
         issuanceJob?.cancel()
@@ -248,7 +241,7 @@ class AddDocumentViewModel(
 
             addDocumentInteractor.issueDocument(
                 issuanceMethod = issuanceMethod,
-                documentType = docType
+                configId = configId
             ).collect { response ->
                 when (response) {
                     is IssueDocumentPartialState.Failure -> {
@@ -310,43 +303,6 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun loadSampleData(event: Event) {
-        setState {
-            copy(
-                isLoading = true
-            )
-        }
-
-        viewModelScope.launch {
-            addDocumentInteractor.addSampleData().collect { response ->
-                when (response) {
-                    is AddSampleDataPartialState.Failure -> {
-                        setState {
-                            copy(
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.DismissError) }
-                                ),
-                                isLoading = false
-                            )
-                        }
-                    }
-
-                    is AddSampleDataPartialState.Success -> {
-                        setState {
-                            copy(
-                                error = null,
-                                isLoading = false
-                            )
-                        }
-                        navigateToDashboardScreen()
-                    }
-                }
-            }
-        }
-    }
-
     private fun navigateToIssuanceSuccessScreen(documentId: String) {
         setEffect {
             Effect.Navigation.SwitchScreen(
@@ -368,15 +324,6 @@ class AddDocumentViewModel(
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = route,
-                inclusive = true
-            )
-        }
-    }
-
-    private fun navigateToDashboardScreen() {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = DashboardScreens.Dashboard.screenRoute,
                 inclusive = true
             )
         }

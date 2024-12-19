@@ -14,24 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-        maven {
-            url = uri("https://jitpack.io")
-        }
-        mavenLocal()
-    }
-    versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
-        }
-    }
-}
+package eu.europa.ec.businesslogic.extension
 
-rootProject.name = "build-logic"
-include(":convention")
+import java.util.Locale
+
+fun Locale.compareLocaleLanguage(localeToCompare: Locale?): Boolean =
+    localeToCompare?.let { this.language == it.language } == true

@@ -826,7 +826,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "0",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image0",
@@ -836,7 +836,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "1",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "",
                 documentHasExpired = false,
                 documentImage = "image1",
@@ -846,7 +846,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "2",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "",
                 documentHasExpired = true,
                 documentImage = "image2",
@@ -854,21 +854,10 @@ private fun DashboardScreenPreview() {
                 documentIssuanceState = DocumentUiIssuanceState.Issued
             ),
             DocumentUi(
-                documentId = "3",
-                documentName = "Driving License",
-                documentIdentifier = DocumentIdentifier.MDL,
-                documentExpirationDateFormatted = "25 Dec 2050",
-                documentHasExpired = false,
-                documentImage = "image3",
-                documentDetails = emptyList(),
-                documentIssuanceState = DocumentUiIssuanceState.Pending
-            ),
-            DocumentUi(
                 documentId = "4",
                 documentName = "Other",
                 documentIdentifier = DocumentIdentifier.OTHER(
-                    nameSpace = "",
-                    docType = ""
+                    formatType = ""
                 ),
                 documentExpirationDateFormatted = "01 Jun 2020",
                 documentHasExpired = true,
@@ -879,7 +868,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "5",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image5",

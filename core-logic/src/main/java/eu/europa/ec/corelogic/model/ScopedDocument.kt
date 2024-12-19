@@ -14,24 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-        maven {
-            url = uri("https://plugins.gradle.org/m2/")
-        }
-        maven {
-            url = uri("https://jitpack.io")
-        }
-        mavenLocal()
-    }
-    versionCatalogs {
-        create("libs") {
-            from(files("../gradle/libs.versions.toml"))
-        }
-    }
-}
+package eu.europa.ec.corelogic.model
 
-rootProject.name = "build-logic"
-include(":convention")
+data class ScopedDocument(val name: String, val configurationId: String, val isPid: Boolean)

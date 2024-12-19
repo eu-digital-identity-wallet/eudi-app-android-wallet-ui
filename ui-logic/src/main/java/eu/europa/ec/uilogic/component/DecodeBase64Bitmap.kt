@@ -18,6 +18,7 @@ package eu.europa.ec.uilogic.component
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,7 +41,8 @@ fun rememberBase64DecodedBitmap(base64Image: String): ImageBitmap? {
         if (decodedImage != null) return@LaunchedEffect
         launch(Dispatchers.Default) {
             decodedImage = try {
-                val decodedImageByteArray: ByteArray = decodeFromBase64(base64Image)
+                val decodedImageByteArray: ByteArray =
+                    decodeFromBase64(base64Image, Base64.URL_SAFE)
                 BitmapFactory.decodeByteArray(decodedImageByteArray, 0, decodedImageByteArray.size)
             } catch (e: Exception) {
                 null

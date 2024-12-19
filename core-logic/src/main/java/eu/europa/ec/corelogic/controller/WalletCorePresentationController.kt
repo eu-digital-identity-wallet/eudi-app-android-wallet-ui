@@ -106,11 +106,6 @@ sealed class WalletCorePartialState {
     data object RequestIsReadyToBeSent : WalletCorePartialState()
 }
 
-sealed class LoadSampleDataPartialState {
-    data object Success : LoadSampleDataPartialState()
-    data class Failure(val error: String) : LoadSampleDataPartialState()
-}
-
 /**
  * Common scoped interactor that has all the complexity and required interaction with the EudiWallet Core.
  * */

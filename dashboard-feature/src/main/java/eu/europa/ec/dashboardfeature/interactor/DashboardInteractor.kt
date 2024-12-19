@@ -25,7 +25,6 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
@@ -34,9 +33,9 @@ import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.model.UserInfo
-import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -108,7 +107,7 @@ interface DashboardInteractor {
     ): Flow<DashboardInteractorDeleteDocumentPartialState>
 
     fun tryIssuingDeferredDocumentsFlow(
-        deferredDocuments: Map<DocumentId, DocType>,
+        deferredDocuments: Map<DocumentId, FormatType>,
         dispatcher: CoroutineDispatcher = Dispatchers.IO,
     ): Flow<DashboardInteractorRetryIssuingDeferredDocumentsPartialState>
 
@@ -198,7 +197,7 @@ class DashboardInteractorImpl(
 
 
     override fun tryIssuingDeferredDocumentsFlow(
-        deferredDocuments: Map<DocumentId, DocType>,
+        deferredDocuments: Map<DocumentId, FormatType>,
         dispatcher: CoroutineDispatcher,
     ): Flow<DashboardInteractorRetryIssuingDeferredDocumentsPartialState> = flow {
 
@@ -274,7 +273,7 @@ class DashboardInteractorImpl(
 
                 return DocumentUi(
                     documentId = this.id,
-                    documentName = this.toUiName(resourceProvider),
+                    documentName = this.name,
                     documentIdentifier = this.toDocumentIdentifier(),
                     documentImage = "",
                     documentExpirationDateFormatted = documentExpirationDate,
@@ -290,7 +289,7 @@ class DashboardInteractorImpl(
             else -> {
                 return DocumentUi(
                     documentId = this.id,
-                    documentName = this.toUiName(resourceProvider),
+                    documentName = this.name,
                     documentIdentifier = this.toDocumentIdentifier(),
                     documentImage = "",
                     documentExpirationDateFormatted = "",

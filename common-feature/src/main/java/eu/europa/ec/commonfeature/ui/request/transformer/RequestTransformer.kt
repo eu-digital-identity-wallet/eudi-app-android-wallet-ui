@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request.transformer
 
+import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.commonfeature.ui.request.model.DocumentDetailsDomain
@@ -31,10 +32,9 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
-import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
+import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -43,12 +43,11 @@ import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import org.json.JSONObject
 
 private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
     when (documentIdentifier) {
 
-        DocumentIdentifier.PID -> listOf(
+        DocumentIdentifier.MdocPid, DocumentIdentifier.SdJwtPid -> listOf(
             "issuance_date",
             "expiry_date",
             "issuing_authority",
@@ -60,7 +59,7 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
             "portrait_capture_date"
         )
 
-        DocumentIdentifier.AGE -> listOf(
+        DocumentIdentifier.MdocPseudonym -> listOf(
             "issuance_date",
             "expiry_date",
             "issuing_country",
@@ -89,22 +88,30 @@ object RequestTransformer {
 
             requestDocument.requestedItems.keys.forEach { docItem ->
 
+                docItem as MsoMdocItem
+
                 val isRequired = getMandatoryFields(
                     documentIdentifier = storageDocument.toDocumentIdentifier()
                 ).contains(docItem.elementIdentifier)
 
+                val item = storageDocument.data.claims.firstOrNull {
+                    it.identifier == docItem.elementIdentifier
+                }
+
+                val readableName = item?.metadata?.display?.firstOrNull {
+                    resourceProvider.getLocale().compareLocaleLanguage(it.locale)
+                }?.name ?: docItem.elementIdentifier
+
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
                     parseKeyValueUi(
-                        json = storageDocument.nameSpacedDataJSONObject.getDocObject(
-                            nameSpace = docItem.namespace
-                        )[docItem.elementIdentifier],
+                        item = item?.value!!,
                         groupIdentifier = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = values
                     )
                     values.toString() to true
-                } catch (ex: Exception) {
+                } catch (_: Exception) {
                     resourceProvider.getString(R.string.request_element_identifier_not_available) to false
                 }
 
@@ -112,7 +119,7 @@ object RequestTransformer {
                     DocumentItemDomain(
                         elementIdentifier = docItem.elementIdentifier,
                         value = value,
-                        readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                        readableName = readableName,
                         isRequired = isRequired,
                         isAvailable = isAvailable
                     )
@@ -226,7 +233,7 @@ object RequestTransformer {
                             is MainContentData.Image -> mainContentData.base64Image
                             is MainContentData.Text -> mainContentData.text
                         }
-                    DocItem(
+                    MsoMdocItem(
                         namespace = documentPayload.docNamespace,
                         elementIdentifier = documentPayload.documentDetailsDomain.items
                             .find { it.value == mainContentValue }
@@ -243,7 +250,4 @@ object RequestTransformer {
 
         return DisclosedDocuments(disclosedDocuments)
     }
-
-    private fun JSONObject.getDocObject(nameSpace: String): JSONObject =
-        this[nameSpace] as JSONObject
 }
