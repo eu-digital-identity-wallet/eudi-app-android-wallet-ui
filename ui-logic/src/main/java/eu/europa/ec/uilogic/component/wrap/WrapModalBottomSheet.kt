@@ -148,7 +148,11 @@ fun DialogBottomSheet(
                             isWarning = textData.isNegativeButtonWarning,
                         )
                     ) {
-                        Text(text = safeNegativeButtonText, textAlign = TextAlign.Center)
+                        Text(
+                            text = safeNegativeButtonText,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
                 }
 
@@ -163,7 +167,11 @@ fun DialogBottomSheet(
                             isWarning = textData.isPositiveButtonWarning,
                         )
                     ) {
-                        Text(text = safePositiveButtonText, textAlign = TextAlign.Center)
+                        Text(
+                            text = safePositiveButtonText,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
                 }
             }

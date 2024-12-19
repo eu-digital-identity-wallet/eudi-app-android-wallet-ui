@@ -281,14 +281,14 @@ private fun Content(
                     ) {
                         Text(
                             text = stringResource(id = R.string.document_details_primary_button_text),
-                            style = MaterialTheme.typography.titleSmall.copy(color = MaterialTheme.colorScheme.primary)
+                            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary)
                         )
                     }
 
                     WrapButton(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = SPACING_MEDIUM.dp),
+                            .padding(bottom = SPACING_LARGE.dp),
                         buttonConfig = ButtonConfig(
                             type = ButtonType.SECONDARY,
                             isWarning = true,
@@ -299,7 +299,7 @@ private fun Content(
                     ) {
                         Text(
                             text = stringResource(id = R.string.document_details_secondary_button_text),
-                            style = MaterialTheme.typography.titleSmall
+                            style = MaterialTheme.typography.labelLarge
                         )
                     }
                 }
