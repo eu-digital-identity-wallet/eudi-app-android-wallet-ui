@@ -237,13 +237,15 @@ private fun DefaultToolBar(
         navigationIcon = {
             // Show navigation icon for BACKABLE action only
             if (navigatableAction == ScreenNavigateAction.BACKABLE) {
-                WrapIconButton(
-                    iconData = AppIcons.ArrowBack,
-                    onClick = {
-                        onBack?.invoke()
-                        keyboardController?.hide()
-                    },
-                    customTint = MaterialTheme.colorScheme.primary
+                ToolbarIcon(
+                    toolbarAction = ToolbarAction(
+                        icon = AppIcons.ArrowBack,
+                        onClick = {
+                            onBack?.invoke()
+                            keyboardController?.hide()
+                        },
+                        customTint = null,
+                    )
                 )
             }
         },
@@ -281,11 +283,13 @@ internal fun ToolBarActions(
     // Render Vertical More if overflow exists
     if (precomputedToolbarActions.actionsOverflow) {
         Box {
-            WrapIconButton(
-                onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
-                iconData = AppIcons.VerticalMore,
-                enabled = true,
-                customTint = MaterialTheme.colorScheme.primary
+            ToolbarIcon(
+                toolbarAction = ToolbarAction(
+                    icon = AppIcons.VerticalMore,
+                    onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
+                    enabled = true,
+                    customTint = null,
+                )
             )
             DropdownMenu(
                 expanded = dropDownMenuExpanded,
@@ -307,7 +311,7 @@ internal fun ToolBarActions(
 @Composable
 private fun ToolbarIcon(toolbarAction: ToolbarAction) {
     val customIconTint = toolbarAction.customTint
-        ?: MaterialTheme.colorScheme.primary
+        ?: MaterialTheme.colorScheme.onSurface
 
     if (toolbarAction.clickable) {
         WrapIconButton(

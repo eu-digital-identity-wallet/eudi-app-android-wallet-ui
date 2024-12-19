@@ -55,7 +55,6 @@ import eu.europa.ec.uilogic.component.wrap.BaseBottomSheetContent
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
@@ -85,9 +84,9 @@ fun RequestScreen(
     )
 
     ContentScreen(
-        navigatableAction = ScreenNavigateAction.NONE,
+        navigatableAction = ScreenNavigateAction.BACKABLE,
         isLoading = state.isLoading,
-        onBack = { viewModel.setEvent(Event.UserWantsToGoBack) },
+        onBack = { viewModel.setEvent(Event.Pop) },
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 stickyBottomModifier = Modifier
@@ -149,9 +148,6 @@ fun RequestScreen(
             ) {
                 SheetContent(
                     sheetContent = state.sheetContent,
-                    onEventSent = {
-                        viewModel.setEvent(it)
-                    }
                 )
             }
         }
@@ -190,6 +186,7 @@ private fun Content(
             config = state.headerConfig,
         )
 
+        // Screen Main Content.
         DisplayRequestItems(
             modifier = Modifier
                 .fillMaxWidth()
@@ -265,22 +262,8 @@ private fun DisplayRequestItems(
 @Composable
 private fun SheetContent(
     sheetContent: RequestBottomSheetContent,
-    onEventSent: (event: Event) -> Unit
 ) {
     when (sheetContent) {
-        RequestBottomSheetContent.CANCEL -> {
-            DialogBottomSheet(
-                textData = BottomSheetTextData(
-                    title = stringResource(id = R.string.request_bottom_sheet_cancel_title),
-                    message = stringResource(id = R.string.request_bottom_sheet_cancel_subtitle),
-                    positiveButtonText = stringResource(id = R.string.request_bottom_sheet_cancel_primary_button_text),
-                    negativeButtonText = stringResource(id = R.string.request_bottom_sheet_cancel_secondary_button_text),
-                ),
-                onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
-                onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
-            )
-        }
-
         RequestBottomSheetContent.WARNING -> {
             BaseBottomSheetContent(
                 textData = BottomSheetTextData(
@@ -323,22 +306,10 @@ private fun ContentPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun SheetContentCancelPreview() {
-    PreviewTheme {
-        SheetContent(
-            sheetContent = RequestBottomSheetContent.CANCEL,
-            onEventSent = {}
-        )
-    }
-}
-
-@ThemeModePreviews
-@Composable
 private fun SheetContentWarningPreview() {
     PreviewTheme {
         SheetContent(
             sheetContent = RequestBottomSheetContent.WARNING,
-            onEventSent = {}
         )
     }
 }

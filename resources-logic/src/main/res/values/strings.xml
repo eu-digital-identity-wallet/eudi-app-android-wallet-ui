@@ -141,11 +141,6 @@
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
     <string name="request_sticky_button_text">Share</string>
-    <string name="request_secondary_button_text">@string/generic_cancel_capitalized</string>
-    <string name="request_bottom_sheet_cancel_title">Cancel information sharing?</string>
-    <string name="request_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the login without sharing any information</string>
-    <string name="request_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
-    <string name="request_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
     <string name="request_bottom_sheet_warning_title">Warning</string>
     <string name="request_bottom_sheet_warning_subtitle">Choosing not to share certain data may result in failure to issue the requested document.</string>
     <string name="request_gender_male">male</string>

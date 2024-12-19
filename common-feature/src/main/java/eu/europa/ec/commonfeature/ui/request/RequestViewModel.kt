@@ -35,7 +35,7 @@ data class State(
     val headerConfig: ContentHeaderConfig,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.CANCEL,
+    val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.WARNING,
     val hasWarnedUser: Boolean = false,
 
     val verifierName: String? = null,
@@ -47,7 +47,6 @@ data class State(
 sealed class Event : ViewEvent {
     data object DoWork : Event()
     data object DismissError : Event()
-    data object UserWantsToGoBack : Event()
     data object Pop : Event()
     data object StickyButtonPressed : Event()
 
@@ -56,11 +55,6 @@ sealed class Event : ViewEvent {
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-
-        sealed class Cancel : BottomSheet() {
-            data object PrimaryButtonPressed : Cancel()
-            data object SecondaryButtonPressed : Cancel()
-        }
     }
 }
 
@@ -81,7 +75,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 enum class RequestBottomSheetContent {
-    CANCEL, WARNING,
+    WARNING,
 }
 
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
@@ -135,10 +129,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            is Event.UserWantsToGoBack -> {
-                showBottomSheet(sheetContent = RequestBottomSheetContent.CANCEL)
-            }
-
             is Event.Pop -> {
                 setState {
                     copy(error = null)
@@ -169,15 +159,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 setState {
                     copy(isBottomSheetOpen = event.isOpen)
                 }
-            }
-
-            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
-                hideBottomSheet()
-                doNavigation(NavigationType.Pop)
             }
         }
     }
