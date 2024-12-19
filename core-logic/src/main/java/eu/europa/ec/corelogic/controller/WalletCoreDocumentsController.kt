@@ -30,7 +30,6 @@ import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.openid4vci.SdJwtVcCredential
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
-import eu.europa.ec.eudi.wallet.document.DocType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.DefaultKeyUnlockData
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultCreateDocumentSettings
@@ -45,12 +44,14 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 enum class IssuanceMethod {
@@ -190,39 +191,41 @@ class WalletCoreDocumentsControllerImpl(
         eudiWallet.getDocuments().filterIsInstance<IssuedDocument>()
 
     override suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState {
-        return try {
+        return withContext(Dispatchers.IO) {
+            runCatching {
+                val metadata = openId4VciManager.getIssuerMetadata().getOrThrow()
 
-            val metadata = openId4VciManager.getIssuerMetadata().getOrThrow()
+                val documents =
+                    metadata.credentialConfigurationsSupported.mapNotNull { (id, config) ->
 
-            val documents = metadata.credentialConfigurationsSupported.mapNotNull { (id, config) ->
+                        val name: String = config.display
+                            .firstOrNull { locale.compareLocaleLanguage(it.locale) }
+                            ?.name
+                            ?: config.display.firstOrNull()?.name
+                            ?: id.value
 
-                val name: String = config.display
-                    .firstOrNull { locale.compareLocaleLanguage(it.locale) }
-                    ?.name
-                    ?: config.display.firstOrNull()?.name
-                    ?: id.value
+                        val isPid: Boolean = if (config is MsoMdocCredential) {
+                            config.docType.toDocumentIdentifier() == DocumentIdentifier.MdocPid
+                        } else if (config is SdJwtVcCredential) {
+                            config.type.toDocumentIdentifier() == DocumentIdentifier.SdJwtPid
+                        } else {
+                            false
+                        }
 
-                val isPid: Boolean = if (config is MsoMdocCredential) {
-                    config.docType.toDocumentIdentifier() == DocumentIdentifier.MdocPid
-                } else if (config is SdJwtVcCredential) {
-                    config.type.toDocumentIdentifier() == DocumentIdentifier.SdJwtPid
+                        ScopedDocument(
+                            name = name,
+                            configurationId = id.value,
+                            isPid = isPid
+                        )
+                    }
+                if (documents.isNotEmpty()) {
+                    FetchScopedDocumentsPartialState.Success(documents = documents)
                 } else {
-                    false
+                    FetchScopedDocumentsPartialState.Failure(errorMessage = genericErrorMessage)
                 }
-
-                ScopedDocument(
-                    name = name,
-                    configurationId = id.value,
-                    isPid = isPid
-                )
             }
-            if (documents.isNotEmpty()) {
-                FetchScopedDocumentsPartialState.Success(documents)
-            } else {
-                FetchScopedDocumentsPartialState.Failure(genericErrorMessage)
-            }
-        } catch (e: Exception) {
-            FetchScopedDocumentsPartialState.Failure(e.localizedMessage ?: genericErrorMessage)
+        }.getOrElse {
+            FetchScopedDocumentsPartialState.Failure(errorMessage = it.localizedMessage ?: genericErrorMessage)
         }
     }
 

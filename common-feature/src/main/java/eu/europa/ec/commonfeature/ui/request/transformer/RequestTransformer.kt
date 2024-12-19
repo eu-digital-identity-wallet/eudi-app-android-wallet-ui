@@ -17,7 +17,6 @@
 package eu.europa.ec.commonfeature.ui.request.transformer
 
 import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.commonfeature.ui.request.model.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.ui.request.model.DocumentDomainPayload
@@ -35,6 +34,7 @@ import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -81,9 +81,9 @@ object RequestTransformer {
         requestDocuments.forEach { requestDocument ->
             val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
 
-            val docName = storageDocument.toUiName(resourceProvider)
+            val docName = storageDocument.name
             val docId = storageDocument.id
-            val docNamespace = storageDocument.nameSpaces.keys.first()
+            val docNamespace = (storageDocument.data as MsoMdocData).nameSpaces.keys.first()
             val documentItemsDomain: MutableList<DocumentItemDomain> = mutableListOf()
 
             requestDocument.requestedItems.keys.forEach { docItem ->

@@ -78,7 +78,6 @@ class PresentationRequestInteractorImpl(
                         val requestDataUi = RequestTransformer.transformToDomainItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
-                            //requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
                             resourceProvider = resourceProvider
                         )
                         PresentationRequestInteractorPartialState.Success(
