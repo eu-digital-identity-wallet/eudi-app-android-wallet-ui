@@ -78,6 +78,7 @@ data class DocumentItemDomain(
     val isAvailable: Boolean,
 )
 
+//TODO Will this be needed in future or not?
 val Document.formatType: String
     get() = when (this.format) {
         is MsoMdocFormat -> (this.format as MsoMdocFormat).docType

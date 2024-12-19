@@ -148,7 +148,6 @@
     <string name="request_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
     <string name="request_bottom_sheet_warning_title">Warning</string>
     <string name="request_bottom_sheet_warning_subtitle">Choosing not to share certain data may result in failure to issue the requested document.</string>
-    <string name="request_required_fields_title">Verification Data</string>
     <string name="request_gender_male">male</string>
     <string name="request_gender_female">female</string>
     <string name="request_element_identifier_not_available">Not available</string>

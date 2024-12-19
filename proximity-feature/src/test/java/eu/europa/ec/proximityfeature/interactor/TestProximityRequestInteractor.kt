@@ -20,7 +20,6 @@ import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.commonfeature.util.TestsData.mockedRequestElementIdentifierNotAvailable
-import eu.europa.ec.commonfeature.util.TestsData.mockedRequestRequiredFieldsTitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedValidMdlWithBasicFieldsRequestDocument
 import eu.europa.ec.commonfeature.util.TestsData.mockedValidPidWithBasicFieldsRequestDocument
 import eu.europa.ec.commonfeature.util.TestsData.mockedVerifierName
@@ -29,7 +28,6 @@ import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemsCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
@@ -270,9 +268,6 @@ class TestProximityRequestInteractor {
     fun `Given Case 6, When getRequestDocuments is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            whenever(resourceProvider.getString(R.string.request_required_fields_title))
-                .thenReturn(mockedRequestRequiredFieldsTitle)
-
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     requestData = listOf(
@@ -320,8 +315,6 @@ class TestProximityRequestInteractor {
             mockGetAllIssuedDocumentsCall(
                 response = listOf(mockedPidWithBasicFields)
             )
-            whenever(resourceProvider.getString(R.string.request_required_fields_title))
-                .thenReturn(mockedRequestRequiredFieldsTitle)
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
@@ -340,20 +333,20 @@ class TestProximityRequestInteractor {
             // When
             interactor.getRequestDocuments()
                 .runFlowTest {
+                    val requestDataUi = RequestTransformer.transformToDomainItems(
+                        storageDocuments = listOf(mockedPidWithBasicFields),
+                        requestDocuments = listOf(mockedValidPidWithBasicFieldsRequestDocument),
+                        resourceProvider = resourceProvider
+                    )
+
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            RequestTransformer.transformToDomainItems(
-                                storageDocuments = listOf(
-                                    mockedPidWithBasicFields
-                                ),
+                            requestDocuments = RequestTransformer.transformToUiItems(
+                                documentsDomain = requestDataUi.getOrThrow(),
                                 resourceProvider = resourceProvider,
-                                requestDocuments = listOf(
-                                    mockedValidPidWithBasicFieldsRequestDocument
-                                ),
-                                requiredFieldsTitle = mockedRequestRequiredFieldsTitle
                             )
                         ),
                         awaitItem()
@@ -381,8 +374,6 @@ class TestProximityRequestInteractor {
             mockGetAllIssuedDocumentsCall(
                 response = listOf(mockedMdlWithBasicFields)
             )
-            whenever(resourceProvider.getString(R.string.request_required_fields_title))
-                .thenReturn(mockedRequestRequiredFieldsTitle)
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
@@ -401,19 +392,20 @@ class TestProximityRequestInteractor {
             // When
             interactor.getRequestDocuments()
                 .runFlowTest {
+                    val requestDataUi = RequestTransformer.transformToDomainItems(
+                        storageDocuments = listOf(mockedMdlWithBasicFields),
+                        requestDocuments = listOf(mockedValidMdlWithBasicFieldsRequestDocument),
+                        resourceProvider = resourceProvider
+                    )
+
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToDomainItems(
-                                storageDocuments = listOf(mockedMdlWithBasicFields),
+                            requestDocuments = RequestTransformer.transformToUiItems(
+                                documentsDomain = requestDataUi.getOrThrow(),
                                 resourceProvider = resourceProvider,
-                                requestDocuments = listOf(
-                                    mockedValidMdlWithBasicFieldsRequestDocument
-                                ),
-                                requiredFieldsTitle = mockedRequestRequiredFieldsTitle
-
                             )
                         ),
                         awaitItem()
@@ -444,8 +436,6 @@ class TestProximityRequestInteractor {
                     mockedPidWithBasicFields
                 )
             )
-            whenever(resourceProvider.getString(R.string.request_required_fields_title))
-                .thenReturn(mockedRequestRequiredFieldsTitle)
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
@@ -465,23 +455,26 @@ class TestProximityRequestInteractor {
             // When
             interactor.getRequestDocuments()
                 .runFlowTest {
+                    val requestDataUi = RequestTransformer.transformToDomainItems(
+                        storageDocuments = listOf(
+                            mockedMdlWithBasicFields,
+                            mockedPidWithBasicFields
+                        ),
+                        requestDocuments = listOf(
+                            mockedValidMdlWithBasicFieldsRequestDocument,
+                            mockedValidPidWithBasicFieldsRequestDocument
+                        ),
+                        resourceProvider = resourceProvider
+                    )
+
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToDomainItems(
-                                storageDocuments = listOf(
-                                    mockedMdlWithBasicFields,
-                                    mockedPidWithBasicFields
-                                ),
+                            requestDocuments = RequestTransformer.transformToUiItems(
+                                documentsDomain = requestDataUi.getOrThrow(),
                                 resourceProvider = resourceProvider,
-                                requestDocuments = listOf(
-                                    mockedValidMdlWithBasicFieldsRequestDocument,
-                                    mockedValidPidWithBasicFieldsRequestDocument
-                                ),
-                                requiredFieldsTitle = mockedRequestRequiredFieldsTitle
-
                             )
                         ),
                         awaitItem()
@@ -512,8 +505,6 @@ class TestProximityRequestInteractor {
                     mockedMdlWithBasicFields
                 )
             )
-            whenever(resourceProvider.getString(R.string.request_required_fields_title))
-                .thenReturn(mockedRequestRequiredFieldsTitle)
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
@@ -533,23 +524,26 @@ class TestProximityRequestInteractor {
             // When
             interactor.getRequestDocuments()
                 .runFlowTest {
+                    val requestDataUi = RequestTransformer.transformToDomainItems(
+                        storageDocuments = listOf(
+                            mockedPidWithBasicFields,
+                            mockedMdlWithBasicFields
+                        ),
+                        requestDocuments = listOf(
+                            mockedValidPidWithBasicFieldsRequestDocument,
+                            mockedValidMdlWithBasicFieldsRequestDocument
+                        ),
+                        resourceProvider = resourceProvider
+                    )
+
                     // Then
                     assertEquals(
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = mockedVerifierName,
                             verifierIsTrusted = mockedVerifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToDomainItems(
-                                storageDocuments = listOf(
-                                    mockedMdlWithBasicFields,
-                                    mockedPidWithBasicFields
-                                ),
+                            requestDocuments = RequestTransformer.transformToUiItems(
+                                documentsDomain = requestDataUi.getOrThrow(),
                                 resourceProvider = resourceProvider,
-                                requestDocuments = listOf(
-                                    mockedValidPidWithBasicFieldsRequestDocument,
-                                    mockedValidMdlWithBasicFieldsRequestDocument
-                                ),
-                                requiredFieldsTitle = mockedRequestRequiredFieldsTitle
-
                             )
                         ),
                         awaitItem()

@@ -21,7 +21,6 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
-import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer.transformToUiItems
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
@@ -80,10 +79,11 @@ class PresentationRequestInteractorImpl(
                             requestDocuments = response.requestData,
                             resourceProvider = resourceProvider
                         )
+
                         PresentationRequestInteractorPartialState.Success(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
-                            requestDocuments = transformToUiItems(
+                            requestDocuments = RequestTransformer.transformToUiItems(
                                 documentsDomain = requestDataUi.getOrThrow(),
                                 resourceProvider = resourceProvider,
                             )

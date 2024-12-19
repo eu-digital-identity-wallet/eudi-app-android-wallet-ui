@@ -80,6 +80,7 @@ class ProximityRequestInteractorImpl(
                             requestDocuments = response.requestData,
                             resourceProvider = resourceProvider
                         )
+
                         ProximityRequestInteractorPartialState.Success(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
