@@ -20,9 +20,11 @@ import com.android.identity.securearea.KeyUnlockData
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.corelogic.model.ScopedDocument
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
 import eu.europa.ec.eudi.wallet.document.Document
@@ -152,11 +154,14 @@ interface WalletCoreDocumentsController {
     fun issueDeferredDocument(docId: DocumentId): Flow<IssueDeferredDocumentPartialState>
 
     fun resumeOpenId4VciWithAuthorization(uri: String)
+
+    fun getScopedDocuments(): List<ScopedDocument>
 }
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val eudiWallet: EudiWallet,
+    private val walletCoreConfig: WalletCoreConfig
 ) : WalletCoreDocumentsController {
 
     private val genericErrorMessage
@@ -174,6 +179,8 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun getAllIssuedDocuments(): List<IssuedDocument> =
         eudiWallet.getDocuments().filterIsInstance<IssuedDocument>()
+
+    override fun getScopedDocuments(): List<ScopedDocument> = walletCoreConfig.scopedDocuments
 
     override fun getAllDocumentsByType(documentIdentifiers: List<DocumentIdentifier>): List<IssuedDocument> =
         getAllDocuments()
@@ -449,8 +456,8 @@ class WalletCoreDocumentsControllerImpl(
     private fun issueDocumentWithOpenId4VCI(documentType: FormatType): Flow<IssueDocumentsPartialState> =
         callbackFlow {
 
-            openId4VciManager.issueDocumentByDocType(
-                docType = documentType,
+            openId4VciManager.issueDocumentByFormat(
+                format = MsoMdocFormat(documentType),
                 onIssueEvent = issuanceCallback()
             )
 

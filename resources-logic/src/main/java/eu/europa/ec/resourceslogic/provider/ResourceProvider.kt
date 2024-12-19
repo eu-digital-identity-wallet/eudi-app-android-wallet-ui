@@ -22,6 +22,7 @@ import androidx.annotation.PluralsRes
 import androidx.annotation.RawRes
 import androidx.annotation.StringRes
 import eu.europa.ec.resourceslogic.R
+import java.util.Locale
 
 interface ResourceProvider {
 
@@ -33,6 +34,7 @@ interface ResourceProvider {
     fun getString(@StringRes resId: Int, vararg formatArgs: Any): String
     fun genericErrorMessage(): String
     fun genericNetworkErrorMessage(): String
+    fun getLocale(): Locale
 }
 
 class ResourceProviderImpl(
@@ -71,7 +73,7 @@ class ResourceProviderImpl(
     ): String =
         try {
             context.resources.getQuantityString(resId, quantity, *formatArgs)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             ""
         }
 
@@ -81,4 +83,6 @@ class ResourceProviderImpl(
         } catch (_: Exception) {
             ""
         }
+
+    override fun getLocale(): Locale = Locale.getDefault()
 }

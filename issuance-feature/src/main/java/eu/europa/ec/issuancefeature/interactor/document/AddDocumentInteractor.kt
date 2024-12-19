@@ -25,7 +25,6 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
-import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -77,8 +76,7 @@ class AddDocumentInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     private val resourceProvider: ResourceProvider,
-    private val uiSerializer: UiSerializer,
-    private val walletCoreConfig: WalletCoreConfig
+    private val uiSerializer: UiSerializer
 ) : AddDocumentInteractor {
 
     private val genericErrorMsg
@@ -86,7 +84,7 @@ class AddDocumentInteractorImpl(
 
     override fun getAddDocumentOption(flowType: IssuanceFlowUiConfig): Flow<AddDocumentInteractorPartialState> =
         flow {
-            val options = walletCoreConfig.scopedDocuments.map {
+            val options = walletCoreDocumentsController.getScopedDocuments().map {
                 DocumentOptionItemUi(
                     text = it.name,
                     icon = AppIcons.Id,

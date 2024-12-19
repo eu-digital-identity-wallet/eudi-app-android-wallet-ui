@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.document_details.transformer
 
+import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
@@ -44,6 +45,9 @@ object DocumentDetailsTransformer {
         val detailsItems = document.data.claims
             .map { claim ->
                 transformToDocumentDetailsUi(
+                    displayKey = claim.metadata?.display?.firstOrNull {
+                        resourceProvider.getLocale().compareLocaleLanguage(it.locale)
+                    }?.name,
                     key = claim.identifier,
                     item = claim.value ?: "",
                     resourceProvider = resourceProvider
@@ -79,14 +83,18 @@ object DocumentDetailsTransformer {
 
 private fun transformToDocumentDetailsUi(
     key: String,
+    displayKey: String?,
     item: Any,
     resourceProvider: ResourceProvider
 ): DocumentDetailsUi {
 
     val values = StringBuilder()
+    val localizedKey = displayKey ?: key
+
+
     parseKeyValueUi(
         item = item,
-        groupIdentifier = key,
+        groupIdentifier = localizedKey,
         resourceProvider = resourceProvider,
         allItems = values
     )
@@ -96,7 +104,7 @@ private fun transformToDocumentDetailsUi(
         DocumentJsonKeys.SIGNATURE -> {
             DocumentDetailsUi.SignatureItem(
                 itemData = InfoTextWithNameAndImageData(
-                    title = key,
+                    title = localizedKey,
                     base64Image = groupedValues
                 )
             )
@@ -105,7 +113,7 @@ private fun transformToDocumentDetailsUi(
         DocumentJsonKeys.PORTRAIT -> {
             DocumentDetailsUi.DefaultItem(
                 itemData = InfoTextWithNameAndValueData.create(
-                    title = key,
+                    title = localizedKey,
                     infoValues = arrayOf(resourceProvider.getString(R.string.document_details_portrait_readable_identifier))
                 )
             )
@@ -114,7 +122,7 @@ private fun transformToDocumentDetailsUi(
         else -> {
             DocumentDetailsUi.DefaultItem(
                 itemData = InfoTextWithNameAndValueData.create(
-                    title = key,
+                    title = localizedKey,
                     infoValues = arrayOf(groupedValues)
                 )
             )

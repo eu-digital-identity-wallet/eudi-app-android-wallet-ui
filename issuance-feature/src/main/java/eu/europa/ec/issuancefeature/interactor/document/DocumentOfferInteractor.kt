@@ -28,9 +28,11 @@ import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.extension.documentIdentifier
+import eu.europa.ec.corelogic.extension.getIssuerName
+import eu.europa.ec.corelogic.extension.getName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer.TxCodeSpec.InputMode
+import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -98,6 +100,7 @@ class DocumentOfferInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer
 ) : DocumentOfferInteractor {
+
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
@@ -114,7 +117,11 @@ class DocumentOfferInteractorImpl(
                     is ResolveDocumentOfferPartialState.Success -> {
                         val offerHasNoDocuments = response.offer.offeredDocuments.isEmpty()
                         if (offerHasNoDocuments) {
-                            ResolveDocumentOfferInteractorPartialState.NoDocument(issuerName = response.offer.issuerName)
+                            ResolveDocumentOfferInteractorPartialState.NoDocument(
+                                issuerName = response.offer.getIssuerName(
+                                    resourceProvider.getLocale()
+                                )
+                            )
                         } else {
 
                             val codeMinLength = 4
@@ -125,7 +132,7 @@ class DocumentOfferInteractorImpl(
                                 response.offer.txCodeSpec?.length
                             ) { inputMode, length ->
 
-                                if ((length !in codeMinLength..codeMaxLength) || inputMode == InputMode.TEXT) {
+                                if ((length !in codeMinLength..codeMaxLength) || inputMode == TxCodeInputMode.TEXT) {
                                     return@map ResolveDocumentOfferInteractorPartialState.Failure(
                                         errorMessage = resourceProvider.getString(
                                             R.string.issuance_document_offer_error_invalid_txcode_format,
@@ -141,7 +148,7 @@ class DocumentOfferInteractorImpl(
 
                             val hasPidInOffer =
                                 response.offer.offeredDocuments.any { offeredDocument ->
-                                    val id = offeredDocument.docType.toDocumentIdentifier()
+                                    val id = offeredDocument.documentIdentifier
                                     id == DocumentIdentifier.MdocPid || id == DocumentIdentifier.SdJwtPid
                                 }
 
@@ -149,9 +156,13 @@ class DocumentOfferInteractorImpl(
 
                                 ResolveDocumentOfferInteractorPartialState.Success(
                                     documents = response.offer.offeredDocuments.map { offeredDocument ->
-                                        DocumentItemUi(title = offeredDocument.name)
+                                        DocumentItemUi(
+                                            title = offeredDocument.getName(
+                                                resourceProvider.getLocale()
+                                            ).orEmpty()
+                                        )
                                     },
-                                    issuerName = response.offer.issuerName,
+                                    issuerName = response.offer.getIssuerName(resourceProvider.getLocale()),
                                     txCodeLength = response.offer.txCodeSpec?.length
                                 )
                             } else {

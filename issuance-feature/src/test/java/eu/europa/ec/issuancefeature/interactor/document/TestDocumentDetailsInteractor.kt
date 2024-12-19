@@ -229,6 +229,7 @@ class TestDocumentDetailsInteractor {
                 response = mockedPidWithBasicFields.copy(
                     data = MsoMdocData(
                         format = MsoMdocFormat(mockedPidNameSpace),
+                        metadata = null,
                         nameSpacedData = createMockedNamespaceData(
                             mockedPidNameSpace, mapOf(
                                 "no_data_item" to byteArrayOf(0)

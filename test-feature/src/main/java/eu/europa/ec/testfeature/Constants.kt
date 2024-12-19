@@ -683,8 +683,9 @@ val mockedFullPid = IssuedDocument(
     validUntil = Instant.now(),
     issuerProvidedData = byteArrayOf(),
     data = MsoMdocData(
-        MsoMdocFormat(mockedPidNameSpace),
-        createMockedNamespaceData(
+        format = MsoMdocFormat(mockedPidNameSpace),
+        metadata = null,
+        nameSpacedData = createMockedNamespaceData(
             mockedPidNameSpace,
             mockedPidFields
         )
@@ -700,14 +701,16 @@ val mockedUnsignedPid = UnsignedDocument(
     isCertified = false,
     keyAlias = "movet",
     secureArea = secureArea,
+    metadata = null
 )
 
 val mockedMainPid = mockedFullPid
 
 val mockedPidWithBasicFields = mockedFullPid.copy(
     data = MsoMdocData(
-        MsoMdocFormat(mockedPidNameSpace),
-        createMockedNamespaceData(
+        format = MsoMdocFormat(mockedPidNameSpace),
+        metadata = null,
+        nameSpacedData = createMockedNamespaceData(
             mockedPidNameSpace,
             mockedPidBasicFields
         )
@@ -721,8 +724,9 @@ val mockedOldestPidWithBasicFields = mockedPidWithBasicFields.copy(
 
 val mockedEmptyPid = mockedFullPid.copy(
     data = MsoMdocData(
-        MsoMdocFormat(mockedPidNameSpace),
-        createMockedNamespaceData(
+        format = MsoMdocFormat(mockedPidNameSpace),
+        metadata = null,
+        nameSpacedData = createMockedNamespaceData(
             mockedPidNameSpace,
             emptyMap()
         )
@@ -742,8 +746,9 @@ val mockedFullMdl = IssuedDocument(
     validUntil = Instant.now(),
     issuerProvidedData = byteArrayOf(),
     data = MsoMdocData(
-        MsoMdocFormat(mockedMdlDocType),
-        createMockedNamespaceData(
+        format = MsoMdocFormat(mockedMdlDocType),
+        metadata = null,
+        nameSpacedData = createMockedNamespaceData(
             mockedMdlNameSpace,
             mockedMdlFields
         )
@@ -752,8 +757,9 @@ val mockedFullMdl = IssuedDocument(
 
 val mockedMdlWithBasicFields = mockedFullMdl.copy(
     data = MsoMdocData(
-        MsoMdocFormat(mockedMdlDocType),
-        createMockedNamespaceData(
+        format = MsoMdocFormat(mockedMdlDocType),
+        metadata = null,
+        nameSpacedData = createMockedNamespaceData(
             mockedMdlNameSpace,
             mockedMdlBasicFields
         )
@@ -762,19 +768,21 @@ val mockedMdlWithBasicFields = mockedFullMdl.copy(
 
 val mockedMdlWithNoExpirationDate: IssuedDocument = mockedFullMdl.copy(
     data = MsoMdocData(
-        MsoMdocFormat(mockedMdlDocType),
-        createMockedNamespaceData(
+        format = MsoMdocFormat(mockedMdlDocType),
+        metadata = null,
+        nameSpacedData = createMockedNamespaceData(
             mockedMdlNameSpace,
             mockedMdlFields
-                .minus("expiry_date")
+                .minus("expiry_date"),
         )
     )
 )
 
 val mockedMdlWithNoUserNameAndNoUserImage: IssuedDocument = mockedFullMdl.copy(
     data = MsoMdocData(
-        MsoMdocFormat(mockedMdlDocType),
-        createMockedNamespaceData(
+        format = MsoMdocFormat(mockedMdlDocType),
+        metadata = null,
+        nameSpacedData = createMockedNamespaceData(
             mockedMdlNameSpace,
             mockedMdlFields
                 .minus("given_name")

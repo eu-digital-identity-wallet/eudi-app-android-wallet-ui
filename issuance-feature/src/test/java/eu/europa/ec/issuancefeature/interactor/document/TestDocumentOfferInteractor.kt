@@ -27,7 +27,7 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePop
 import eu.europa.ec.commonfeature.util.TestsData.mockedInvalidCodeFormatMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuanceErrorMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
-import eu.europa.ec.commonfeature.util.TestsData.mockedOfferTxCodeSpecFourDigits
+import eu.europa.ec.commonfeature.util.TestsData.mockedOfferTxCodeFourDigits
 import eu.europa.ec.commonfeature.util.TestsData.mockedOfferedDocumentDocType
 import eu.europa.ec.commonfeature.util.TestsData.mockedOfferedDocumentName
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
@@ -39,17 +39,26 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessContentDescription
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessSubtitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessTitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedTxCode
-import eu.europa.ec.commonfeature.util.TestsData.mockedTxCodeSpecFourDigits
+import eu.europa.ec.commonfeature.util.TestsData.mockedTxCodeFourDigits
 import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.commonfeature.util.TestsData.mockedWalletActivationErrorMessage
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.extension.getIssuerName
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.eudi.openid4vci.CredentialConfigurationIdentifier
+import eu.europa.ec.eudi.openid4vci.CredentialIssuerEndpoint
+import eu.europa.ec.eudi.openid4vci.CredentialIssuerId
+import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadata
+import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadata.Display
+import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
+import eu.europa.ec.eudi.openid4vci.TxCode
+import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
-import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer.TxCodeSpec
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -80,6 +89,8 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.net.URL
+import java.util.Locale
 
 class TestDocumentOfferInteractor {
 
@@ -123,6 +134,7 @@ class TestDocumentOfferInteractor {
         biometricCrypto = BiometricCrypto(cryptoObject = null)
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
+        whenever(resourceProvider.getLocale()).thenReturn(locale)
     }
 
     @After
@@ -158,7 +170,7 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.NoDocument(
-                    issuerName = mockedOffer.issuerName
+                    issuerName = mockedOffer.getIssuerName(locale)
                 )
                 // Then
                 assertEquals(expectedResult, awaitItem())
@@ -169,7 +181,7 @@ class TestDocumentOfferInteractor {
     // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
     // - valid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.NUMERIC),
     // - invalid response.offer.txCodeSpec?.length (2), and
-    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is not supported.
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item.
 
     // Case 2 Expected Result:
     // ResolveDocumentOfferInteractorPartialState.Failure state, with:
@@ -183,7 +195,7 @@ class TestDocumentOfferInteractor {
                 issuerName = mockedIssuerName,
                 offeredDocuments = mockedOfferedDocumentsList,
                 txCodeSpec = mockOfferTxCodeSpec(
-                    inputMode = TxCodeSpec.InputMode.NUMERIC,
+                    inputMode = TxCodeInputMode.NUMERIC,
                     length = mockedTxCodeSpecLength
                 )
             )
@@ -216,7 +228,7 @@ class TestDocumentOfferInteractor {
     // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
     // - invalid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.TEXT),
     // - valid response.offer.txCodeSpec?.length (4), and
-    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is not supported.
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item.
 
     // Case 3 Expected Result:
     // ResolveDocumentOfferInteractorPartialState.Failure state, with:
@@ -230,7 +242,7 @@ class TestDocumentOfferInteractor {
                 issuerName = mockedIssuerName,
                 offeredDocuments = mockedOfferedDocumentsList,
                 txCodeSpec = mockOfferTxCodeSpec(
-                    inputMode = TxCodeSpec.InputMode.TEXT,
+                    inputMode = TxCodeInputMode.TEXT,
                     length = mockedTxCodeSpecLength
                 )
             )
@@ -263,13 +275,14 @@ class TestDocumentOfferInteractor {
     // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
     // - valid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.NUMERIC),
     // - valid response.offer.txCodeSpec?.length (4), and
-    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is not supported.
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item.
     // 2. walletCoreDocumentsController.getMainPidDocument() returns not null (i.e. hasMainPid == true).
     // 3. no PID in Offer (i.e hasPidInOffer == false).
+    // 4. System Locale is not supported by Metadata.
 
     // Case 4 Expected Result:
     // ResolveDocumentOfferInteractorPartialState.Success state, with:
-    // - DocumentUiItem list, with non-localized document names
+    // - DocumentUiItem list, with non-localized document names, using DocTypes.
     // - issuer name
     // - and txCodeLength
     @Test
@@ -278,8 +291,17 @@ class TestDocumentOfferInteractor {
             // Given
             val mockedOffer = mockOffer(
                 issuerName = mockedIssuerName,
-                offeredDocuments = mockedOfferedDocumentsList,
-                txCodeSpec = mockedOfferTxCodeSpecFourDigits
+                offeredDocuments = listOf(
+                    mockOfferedDocument(
+                        display = listOf(
+                            eu.europa.ec.eudi.openid4vci.Display(
+                                name = mockedOfferedDocumentName,
+                                locale = Locale("es")
+                            )
+                        )
+                    )
+                ),
+                txCodeSpec = mockedOfferTxCodeFourDigits
             )
             mockGetMainPidDocumentCall(
                 mainPid = mockedMainPid
@@ -290,13 +312,13 @@ class TestDocumentOfferInteractor {
 
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
-                val expectedList = mockedOfferedDocumentsList.map {
-                    DocumentItemUi(title = mockedOfferedDocumentName)
-                }
+                val expectedList = listOf(
+                    DocumentItemUi(title = mockedOfferedDocumentDocType)
+                )
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
                     documents = expectedList,
                     issuerName = mockedIssuerName,
-                    txCodeLength = mockedOfferTxCodeSpecFourDigits.length
+                    txCodeLength = mockedTxCodeFourDigits
                 )
                 // Then
                 assertEquals(expectedResult, awaitItem())
@@ -310,6 +332,7 @@ class TestDocumentOfferInteractor {
     // - response.offer.offeredDocuments has only one Offer.OfferedDocument item.
     // 2. walletCoreDocumentsController.getMainPidDocument() returns null (i.e. hasMainPid == false).
     // 3. a PID in Offer (i.e hasPidInOffer == true).
+    // 4. System Locale is supported by Metadata.
 
     // Case 5 Expected Result:
     // ResolveDocumentOfferInteractorPartialState.Success state, with:
@@ -328,7 +351,7 @@ class TestDocumentOfferInteractor {
                         docType = mockedPidDocType
                     )
                 ),
-                txCodeSpec = mockedOfferTxCodeSpecFourDigits
+                txCodeSpec = mockedOfferTxCodeFourDigits
             )
             mockGetMainPidDocumentCall(
                 mainPid = null
@@ -358,9 +381,10 @@ class TestDocumentOfferInteractor {
     // 1. walletCoreDocumentsController.resolveDocumentOffer() returns ResolveDocumentOfferPartialState.Success with:
     // - valid response.offer.txCodeSpec?.inputMode (TxCodeSpec.InputMode.NUMERIC),
     // - valid response.offer.txCodeSpec?.length (4), and
-    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item that its docType is not supported.
+    // - response.offer.offeredDocuments has only one Offer.OfferedDocument item.
     // 2. walletCoreDocumentsController.getMainPidDocument() returns null (i.e. hasMainPid == false).
     // 3. no PID in Offer (i.e hasPidInOffer == false).
+    // 4. System Locale is supported by Metadata.
 
     // Case 6 Expected Result:
     // ResolveDocumentOfferInteractorPartialState.Failure state, with:
@@ -372,7 +396,7 @@ class TestDocumentOfferInteractor {
             val mockedOffer = mockOffer(
                 issuerName = mockedIssuerName,
                 offeredDocuments = mockedOfferedDocumentsList,
-                txCodeSpec = mockedOfferTxCodeSpecFourDigits
+                txCodeSpec = mockedOfferTxCodeFourDigits
             )
             mockGetMainPidDocumentCall(
                 mainPid = null
@@ -1108,38 +1132,82 @@ class TestDocumentOfferInteractor {
     private fun mockOffer(
         issuerName: String,
         offeredDocuments: List<Offer.OfferedDocument> = listOf(),
-        txCodeSpec: TxCodeSpec? = mockOfferTxCodeSpec()
+        txCodeSpec: TxCode? = mockOfferTxCodeSpec(),
+        docType: String = mockedOfferedDocumentDocType,
     ): Offer {
         return mock(Offer::class.java).apply {
-            whenever(this.issuerName).thenReturn(issuerName)
             whenever(this.offeredDocuments).thenReturn(offeredDocuments)
             whenever(this.txCodeSpec).thenReturn(txCodeSpec)
+            whenever(this.issuerMetadata).thenReturn(
+                mockCredentialIssuerMetadata(
+                    issuerName,
+                    docType
+                )
+            )
         }
+    }
+
+    private fun mockCredentialIssuerMetadata(
+        issuerName: String,
+        docType: String
+    ): CredentialIssuerMetadata {
+        return CredentialIssuerMetadata(
+            credentialIssuerIdentifier = CredentialIssuerId.invoke(mockHttpUrl).getOrThrow(),
+            credentialEndpoint = CredentialIssuerEndpoint(URL(mockHttpUrl)),
+            credentialConfigurationsSupported = mapOf(
+                CredentialConfigurationIdentifier("identifier") to MsoMdocCredential(
+                    docType = docType,
+                    isoPolicy = null
+                )
+            ),
+            display = listOf(
+                Display(
+                    name = issuerName,
+                    locale = locale.language
+                )
+            )
+        )
     }
 
     private fun mockOfferedDocument(
         name: String = mockedOfferedDocumentName,
-        docType: String = mockedOfferedDocumentDocType
+        docType: String = mockedOfferedDocumentDocType,
+        display: List<eu.europa.ec.eudi.openid4vci.Display> = listOf(
+            eu.europa.ec.eudi.openid4vci.Display(
+                name = name,
+                locale = locale
+            )
+        )
     ): Offer.OfferedDocument {
         return mock(Offer.OfferedDocument::class.java).apply {
-            whenever(this.name).thenReturn(name)
-            whenever(this.docType).thenReturn(docType)
+            whenever(this.documentFormat).thenReturn(MsoMdocFormat(docType))
+            whenever(this.configuration).thenReturn(
+                MsoMdocCredential(
+                    docType = mockedOfferedDocumentDocType,
+                    isoPolicy = null,
+                    display = display
+                )
+            )
         }
     }
 
     private fun mockOfferTxCodeSpec(
-        inputMode: TxCodeSpec.InputMode = TxCodeSpec.InputMode.NUMERIC,
-        length: Int? = mockedTxCodeSpecFourDigits,
+        inputMode: TxCodeInputMode = TxCodeInputMode.NUMERIC,
+        length: Int? = mockedTxCodeFourDigits,
         description: String? = null
-    ): TxCodeSpec {
-        return TxCodeSpec(inputMode, length, description)
+    ): TxCode {
+        return TxCode(inputMode, length, description)
     }
     //endregion
 
     //region mocked objects
     private val mockedOfferedDocumentsList = listOf(
-        mockOfferedDocument(docType = "sample")
+        mockOfferedDocument()
     )
+
+    private val mockHttpUrl = "https://issuer.eudiw.dev"
+
+    private val locale: Locale = Locale("en")
 
     private val mockedTripleObject by lazy {
         Triple(

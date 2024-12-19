@@ -37,7 +37,6 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessContentDescription
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessSubtitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessTitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
-import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -87,9 +86,6 @@ class TestAddDocumentInteractor {
     private lateinit var context: Context
 
     @Mock
-    private lateinit var walletCoreConfig: WalletCoreConfig
-
-    @Mock
     private lateinit var resultHandler: DeviceAuthenticationResult
 
     private lateinit var interactor: AddDocumentInteractor
@@ -106,14 +102,15 @@ class TestAddDocumentInteractor {
             walletCoreDocumentsController = walletCoreDocumentsController,
             deviceAuthenticationInteractor = deviceAuthenticationInteractor,
             resourceProvider = resourceProvider,
-            uiSerializer = uiSerializer,
-            walletCoreConfig = walletCoreConfig
+            uiSerializer = uiSerializer
         )
 
         crypto = BiometricCrypto(cryptoObject = null)
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
-        whenever(walletCoreConfig.scopedDocuments).thenReturn(mockedScopedDocuments)
+        whenever(walletCoreDocumentsController.getScopedDocuments()).thenReturn(
+            mockedScopedDocuments
+        )
     }
 
     @After

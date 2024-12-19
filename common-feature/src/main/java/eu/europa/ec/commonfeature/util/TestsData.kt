@@ -26,7 +26,8 @@ import eu.europa.ec.corelogic.model.ScopedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.ReaderAuth
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
-import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer.TxCodeSpec
+import eu.europa.ec.eudi.openid4vci.TxCode
+import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndImageData
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
@@ -59,7 +60,7 @@ object TestsData {
     const val mockedRequestElementIdentifierNotAvailable = "Not available"
     const val mockedOfferedDocumentName = "Offered Document"
     const val mockedOfferedDocumentDocType = "mocked_offered_document_doc_type"
-    const val mockedTxCodeSpecFourDigits = 4
+    const val mockedTxCodeFourDigits = 4
     const val mockedSuccessTitle = "Success title"
     const val mockedSuccessSubtitle = "Success subtitle"
     const val mockedSuccessContentDescription = "Content description"
@@ -393,10 +394,10 @@ object TestsData {
         )
     )
 
-    val mockedOfferTxCodeSpecFourDigits =
-        TxCodeSpec(
-            inputMode = TxCodeSpec.InputMode.NUMERIC,
-            length = mockedTxCodeSpecFourDigits
+    val mockedOfferTxCodeFourDigits =
+        TxCode(
+            inputMode = TxCodeInputMode.NUMERIC,
+            length = mockedTxCodeFourDigits
         )
 
     val mockedPidOptionItemUi = DocumentOptionItemUi(

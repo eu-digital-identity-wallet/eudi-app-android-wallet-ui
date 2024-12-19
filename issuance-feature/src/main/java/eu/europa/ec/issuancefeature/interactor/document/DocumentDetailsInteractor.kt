@@ -67,8 +67,10 @@ class DocumentDetailsInteractorImpl(
         documentId: DocumentId,
     ): Flow<DocumentDetailsInteractorPartialState> =
         flow {
-            val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
-                    as? IssuedDocument
+
+            val document =
+                walletCoreDocumentsController.getDocumentById(documentId = documentId) as? IssuedDocument
+
             document?.let { issuedDocument ->
                 val itemUi = DocumentDetailsTransformer.transformToUiItem(
                     document = issuedDocument,
@@ -95,9 +97,10 @@ class DocumentDetailsInteractorImpl(
             val document = walletCoreDocumentsController.getDocumentById(documentId = documentId)
             val format = document?.format
             val docType = (format as? MsoMdocFormat)?.docType ?: (format as? SdJwtVcFormat)?.vct
+            val docIdentifier = docType?.toDocumentIdentifier()
 
             val shouldDeleteAllDocuments: Boolean =
-                if (docType?.toDocumentIdentifier() == DocumentIdentifier.MdocPid) {
+                if (docIdentifier == DocumentIdentifier.MdocPid || docIdentifier == DocumentIdentifier.SdJwtPid) {
 
                     val allPidDocuments = walletCoreDocumentsController.getAllDocumentsByType(
                         documentIdentifiers = listOf(
