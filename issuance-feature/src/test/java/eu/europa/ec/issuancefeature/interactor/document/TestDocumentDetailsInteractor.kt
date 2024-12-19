@@ -104,7 +104,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
 
     // Case 1 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with a PID document UI item.
+    // DocumentDetailsInteractorPartialState.Success state, with a PID document item.
     @Test
     fun `Given Case 1, When getDocumentDetails is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -132,7 +132,7 @@ class TestDocumentDetailsInteractor {
     // 1. walletCoreDocumentsController.getDocumentById() returns an mDL document.
 
     // Case 2 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with an mDL document UI item.
+    // DocumentDetailsInteractorPartialState.Success state, with an mDL document item.
     @Test
     fun `Given Case 2, When getDocumentDetails is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -221,7 +221,7 @@ class TestDocumentDetailsInteractor {
     // no user name.
 
     // Case 5 Expected Result:
-    // DocumentDetailsInteractorPartialState.Success state, with a PID document UI item, with:
+    // DocumentDetailsInteractorPartialState.Success state, with a PID document item, with:
     // an empty string for documentExpirationDateFormatted,
     // an empty string for documentImage, and
     // an empty string for userFullName,
