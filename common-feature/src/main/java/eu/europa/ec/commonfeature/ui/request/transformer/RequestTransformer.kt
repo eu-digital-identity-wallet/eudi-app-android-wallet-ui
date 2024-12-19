@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request.transformer
 
+import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
@@ -87,12 +88,19 @@ object RequestTransformer {
             // Add optional field items.
             requestDocument.requestedItems.keys.forEachIndexed { itemIndex, docItem ->
                 docItem as MsoMdocItem
+
+                val item = storageDocument.data.claims.firstOrNull {
+                    it.identifier == docItem.elementIdentifier
+                }
+
+                val elementIdentifier = item?.metadata?.display?.firstOrNull {
+                    resourceProvider.getLocale().compareLocaleLanguage(it.locale)
+                }?.name ?: docItem.elementIdentifier
+
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
                     parseKeyValueUi(
-                        item = storageDocument.data.claims.first {
-                            it.identifier == docItem.elementIdentifier
-                        }.value!!,
+                        item = item?.value!!,
                         groupIdentifier = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = values
@@ -122,7 +130,7 @@ object RequestTransformer {
                             optional = false,
                             isChecked = isAvailable,
                             event = null,
-                            readableName = docItem.elementIdentifier,
+                            readableName = elementIdentifier,
                             value = value
                         )
                     )
@@ -147,7 +155,7 @@ object RequestTransformer {
                                 optional = isAvailable,
                                 isChecked = isAvailable,
                                 event = Event.UserIdentificationClicked(itemId = uID),
-                                readableName = docItem.elementIdentifier,
+                                readableName = elementIdentifier,
                                 value = value
                             )
                         )

@@ -16,10 +16,8 @@
 
 package eu.europa.ec.corelogic.config
 
-import eu.europa.ec.corelogic.model.ScopedDocument
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 
 interface WalletCoreConfig {
     val config: EudiWalletConfig
-    val scopedDocuments: List<ScopedDocument>
 }

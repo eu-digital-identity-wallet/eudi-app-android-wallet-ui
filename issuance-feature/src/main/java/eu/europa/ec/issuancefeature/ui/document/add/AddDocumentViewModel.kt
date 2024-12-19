@@ -30,7 +30,6 @@ import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
-import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -81,7 +80,7 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
     data class IssueDocument(
         val issuanceMethod: IssuanceMethod,
-        val documentType: FormatType,
+        val configId: String,
         val context: Context
     ) : Event()
 
@@ -133,7 +132,7 @@ class AddDocumentViewModel(
             is Event.IssueDocument -> {
                 issueDocument(
                     issuanceMethod = event.issuanceMethod,
-                    formatType = event.documentType,
+                    configId = event.configId,
                     context = event.context
                 )
             }
@@ -227,7 +226,7 @@ class AddDocumentViewModel(
 
     private fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        formatType: FormatType,
+        configId: String,
         context: Context
     ) {
         issuanceJob?.cancel()
@@ -242,7 +241,7 @@ class AddDocumentViewModel(
 
             addDocumentInteractor.issueDocument(
                 issuanceMethod = issuanceMethod,
-                documentType = formatType
+                configId = configId
             ).collect { response ->
                 when (response) {
                     is IssueDocumentPartialState.Failure -> {

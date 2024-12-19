@@ -16,12 +16,11 @@
 
 package eu.europa.ec.commonfeature.model
 
-import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.uilogic.component.IconData
 
 data class DocumentOptionItemUi(
+    val configId: String,
     val text: String,
     val icon: IconData,
-    val type: DocumentIdentifier,
     val available: Boolean,
 )

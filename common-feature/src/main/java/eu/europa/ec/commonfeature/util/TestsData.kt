@@ -49,6 +49,7 @@ object TestsData {
     const val mockedDocUiNameMdl = "Driving License"
     const val mockedDocUiNameAge = "Age Verification"
     const val mockedDocUiNamePhotoId = "Photo ID"
+    const val mockedConfigIssuerId = "configurationId"
     const val mockedNoUserFistNameFound = ""
     const val mockedNoUserBase64PortraitFound = ""
     const val mockedNoExpirationDateFound = ""
@@ -72,10 +73,7 @@ object TestsData {
     const val mockedTxCode = "mockedTxCode"
 
     const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
-    const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
     const val mockedMdlNameSpace = "org.iso.18013.5.1"
-    const val mockedAgeVerificationDocType = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
-    const val mockedPhotoIdDocType = "org.iso.23220.2.photoid.1"
 
     const val mockedUriPath1 = "eudi-wallet://example.com/path1"
     const val mockedUriPath2 = "eudi-wallet://example.com/path2"
@@ -358,26 +356,24 @@ object TestsData {
     val mockedScopedDocuments: List<ScopedDocument>
         get() = listOf(
             ScopedDocument(
-                name = "National ID",
-                identifier = DocumentIdentifier.MdocPid
+                name = mockedDocUiNamePid,
+                configurationId = mockedConfigIssuerId,
+                isPid = true
             ),
             ScopedDocument(
-                name = "Driving License",
-                identifier = DocumentIdentifier.OTHER(
-                    "org.iso.18013.5.1.mDL"
-                )
+                name = mockedDocUiNameMdl,
+                configurationId = mockedConfigIssuerId,
+                isPid = false
             ),
             ScopedDocument(
-                name = "Age Verification",
-                identifier = DocumentIdentifier.OTHER(
-                    "eu.europa.ec.eudi.pseudonym.age_over_18.1"
-                )
+                name = mockedDocUiNameAge,
+                configurationId = mockedConfigIssuerId,
+                isPid = false
             ),
             ScopedDocument(
-                name = "Photo ID",
-                identifier = DocumentIdentifier.OTHER(
-                    "org.iso.23220.2.photoid.1"
-                )
+                name = mockedDocUiNamePhotoId,
+                configurationId = mockedConfigIssuerId,
+                isPid = false
             )
         )
 
@@ -403,28 +399,28 @@ object TestsData {
     val mockedPidOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNamePid,
         icon = AppIcons.Id,
-        type = DocumentIdentifier.MdocPid,
+        configId = mockedConfigIssuerId,
         available = true
     )
 
     val mockedMdlOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNameMdl,
         icon = AppIcons.Id,
-        type = DocumentIdentifier.OTHER(mockedMdlDocType),
+        configId = mockedConfigIssuerId,
         available = true
     )
 
     val mockedAgeOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNameAge,
         icon = AppIcons.Id,
-        type = DocumentIdentifier.OTHER(mockedAgeVerificationDocType),
+        configId = mockedConfigIssuerId,
         available = true
     )
 
     val mockedPhotoIdOptionItemUi = DocumentOptionItemUi(
         text = mockedDocUiNamePhotoId,
         icon = AppIcons.Id,
-        type = DocumentIdentifier.OTHER(mockedPhotoIdDocType),
+        configId = mockedConfigIssuerId,
         available = true
     )
 }

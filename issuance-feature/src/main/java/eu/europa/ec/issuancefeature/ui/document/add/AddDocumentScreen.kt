@@ -36,13 +36,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
-import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
@@ -61,6 +61,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
@@ -167,7 +168,14 @@ private fun Content(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(paddingValues)
+                .padding(
+                    PaddingValues(
+                        top = paddingValues.calculateTopPadding(),
+                        start = paddingValues.calculateLeftPadding(LayoutDirection.Ltr),
+                        end = paddingValues.calculateRightPadding(LayoutDirection.Ltr),
+                        bottom = SPACING_EXTRA_SMALL.dp
+                    )
+                )
         ) {
             ContentTitle(
                 title = state.title,
@@ -187,7 +195,7 @@ private fun Content(
                                 onEventSend(
                                     Event.IssueDocument(
                                         issuanceMethod = IssuanceMethod.OPENID4VCI,
-                                        documentType = option.type.formatType,
+                                        configId = option.configId,
                                         context = context
                                     )
                                 )
@@ -294,13 +302,13 @@ private fun IssuanceAddDocumentScreenPreview() {
                     DocumentOptionItemUi(
                         text = "National ID",
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.MdocPid,
+                        configId = "id",
                         available = true,
                     ),
                     DocumentOptionItemUi(
                         text = "Driving License",
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.SdJwtPid,
+                        configId = "id",
                         available = false,
                     )
                 )
@@ -327,15 +335,13 @@ private fun DashboardAddDocumentScreenPreview() {
                     DocumentOptionItemUi(
                         text = "National ID",
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.MdocPid,
+                        configId = "id",
                         available = true,
                     ),
                     DocumentOptionItemUi(
                         text = "Driving License",
                         icon = AppIcons.Id,
-                        type = DocumentIdentifier.OTHER(
-                            "mdl_identifier"
-                        ),
+                        configId = "id",
                         available = false,
                     )
                 )

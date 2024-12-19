@@ -37,10 +37,10 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessContentDescription
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessSubtitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessTitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
+import eu.europa.ec.corelogic.controller.FetchScopedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -64,6 +64,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.Locale
 
 class TestAddDocumentInteractor {
 
@@ -108,9 +109,7 @@ class TestAddDocumentInteractor {
         crypto = BiometricCrypto(cryptoObject = null)
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
-        whenever(walletCoreDocumentsController.getScopedDocuments()).thenReturn(
-            mockedScopedDocuments
-        )
+        whenever(resourceProvider.getLocale()).thenReturn(locale)
     }
 
     @After
@@ -132,6 +131,11 @@ class TestAddDocumentInteractor {
         coroutineRule.runTest {
 
             // When
+            whenever(walletCoreDocumentsController.getScopedDocuments(any())).thenReturn(
+                FetchScopedDocumentsPartialState.Success(mockedScopedDocuments)
+            )
+
+            // When
             interactor.getAddDocumentOption(
                 flowType = IssuanceFlowUiConfig.NO_DOCUMENT
             ).runFlowTest {
@@ -139,16 +143,7 @@ class TestAddDocumentInteractor {
                 assertEquals(
                     AddDocumentInteractorPartialState.Success(
                         options = listOf(
-                            mockedPidOptionItemUi,
-                            mockedMdlOptionItemUi.copy(
-                                available = false
-                            ),
-                            mockedAgeOptionItemUi.copy(
-                                available = false
-                            ),
-                            mockedPhotoIdOptionItemUi.copy(
-                                available = false
-                            ),
+                            mockedPidOptionItemUi
                         )
                     ),
                     awaitItem()
@@ -168,6 +163,11 @@ class TestAddDocumentInteractor {
     fun `Given Case 2, When getAddDocumentOption is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // When
+
+            whenever(walletCoreDocumentsController.getScopedDocuments(any())).thenReturn(
+                FetchScopedDocumentsPartialState.Success(mockedScopedDocuments)
+            )
+
             interactor.getAddDocumentOption(
                 flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
             ).runFlowTest {
@@ -193,19 +193,19 @@ class TestAddDocumentInteractor {
         coroutineRule.runTest {
             // Given
             val mockedIssuanceMethod = IssuanceMethod.OPENID4VCI
-            val mockedDocumentType = DocumentIdentifier.MdocPid.formatType
+            val mockedConfigId = "id"
 
             whenever(
                 walletCoreDocumentsController.issueDocument(
                     issuanceMethod = mockedIssuanceMethod,
-                    documentType = mockedDocumentType
+                    configId = mockedConfigId
                 )
             ).thenReturn(IssueDocumentPartialState.Success(mockedPidId).toFlow())
 
             // When
             interactor.issueDocument(
                 issuanceMethod = mockedIssuanceMethod,
-                documentType = mockedDocumentType
+                configId = mockedConfigId
             ).runFlowTest {
                 awaitItem()
 
@@ -213,7 +213,7 @@ class TestAddDocumentInteractor {
                 verify(walletCoreDocumentsController, times(1))
                     .issueDocument(
                         issuanceMethod = mockedIssuanceMethod,
-                        documentType = mockedDocumentType
+                        configId = mockedConfigId
                     )
             }
         }
@@ -445,5 +445,7 @@ class TestAddDocumentInteractor {
             third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
         )
     }
+
+    private val locale: Locale = Locale("en")
     //endregion
 }

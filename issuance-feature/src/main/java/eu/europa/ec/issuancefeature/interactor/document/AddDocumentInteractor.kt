@@ -25,11 +25,10 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
+import eu.europa.ec.corelogic.controller.FetchScopedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -57,7 +56,7 @@ interface AddDocumentInteractor {
 
     fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: FormatType
+        configId: String
     ): Flow<IssueDocumentPartialState>
 
     fun handleUserAuth(
@@ -84,19 +83,31 @@ class AddDocumentInteractorImpl(
 
     override fun getAddDocumentOption(flowType: IssuanceFlowUiConfig): Flow<AddDocumentInteractorPartialState> =
         flow {
-            val options = walletCoreDocumentsController.getScopedDocuments().map {
-                DocumentOptionItemUi(
-                    text = it.name,
-                    icon = AppIcons.Id,
-                    type = it.identifier,
-                    available = canCreateExtraDocument(it.identifier, flowType)
+            when (val state =
+                walletCoreDocumentsController.getScopedDocuments(resourceProvider.getLocale())) {
+                is FetchScopedDocumentsPartialState.Failure -> emit(
+                    AddDocumentInteractorPartialState.Failure(
+                        error = state.errorMessage
+                    )
+                )
+
+                is FetchScopedDocumentsPartialState.Success -> emit(
+                    AddDocumentInteractorPartialState.Success(
+                        options = state.documents.mapNotNull {
+                            if (flowType != IssuanceFlowUiConfig.NO_DOCUMENT || it.isPid) {
+                                DocumentOptionItemUi(
+                                    text = it.name,
+                                    icon = AppIcons.Id,
+                                    configId = it.configurationId,
+                                    available = true
+                                )
+                            } else {
+                                null
+                            }
+                        }
+                    )
                 )
             }
-            emit(
-                AddDocumentInteractorPartialState.Success(
-                    options = options
-                )
-            )
         }.safeAsync {
             AddDocumentInteractorPartialState.Failure(
                 error = it.localizedMessage ?: genericErrorMsg
@@ -105,11 +116,11 @@ class AddDocumentInteractorImpl(
 
     override fun issueDocument(
         issuanceMethod: IssuanceMethod,
-        documentType: FormatType
+        configId: String
     ): Flow<IssueDocumentPartialState> =
         walletCoreDocumentsController.issueDocument(
             issuanceMethod = issuanceMethod,
-            documentType = documentType
+            configId = configId
         )
 
     override fun handleUserAuth(
@@ -204,11 +215,4 @@ class AddDocumentInteractorImpl(
             )
         )
     }
-
-    private fun canCreateExtraDocument(
-        identifier: DocumentIdentifier,
-        flowType: IssuanceFlowUiConfig
-    ): Boolean =
-        (identifier is DocumentIdentifier.MdocPid || identifier is DocumentIdentifier.SdJwtPid)
-                || flowType != IssuanceFlowUiConfig.NO_DOCUMENT
 }
