@@ -19,40 +19,10 @@ package eu.europa.ec.testfeature
 import androidx.annotation.VisibleForTesting
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.whenever
-
-private const val mockedDocUiNamePid = "National ID"
-private const val mockedDocUiNameMdl = "Driving License"
-private const val mockedDocUiNameAgeVerification = "Age Verification"
-private const val mockedDocUiNamePhotoId = "Photo ID"
-private const val mockedDocUiNameSampleData = "Load Sample Documents"
 
 @VisibleForTesting(otherwise = VisibleForTesting.NONE)
 object MockResourceProviderForStringCalls {
-
-    /**
-     * Mock the call of [eu.europa.ec.commonfeature.model.toUiName]
-     */
-    fun mockDocumentTypeUiToUiNameCall(resourceProvider: ResourceProvider) {
-        whenever(resourceProvider.getString(R.string.pid))
-            .thenReturn(mockedDocUiNamePid)
-
-        whenever(resourceProvider.getString(R.string.mdl))
-            .thenReturn(mockedDocUiNameMdl)
-
-        whenever(resourceProvider.getString(R.string.load_sample_data))
-            .thenReturn(mockedDocUiNameSampleData)
-
-        whenever(resourceProvider.getString(R.string.age_verification))
-            .thenReturn(mockedDocUiNameAgeVerification)
-
-        whenever(resourceProvider.getString(R.string.age_verification))
-            .thenReturn(mockedDocUiNameAgeVerification)
-
-        whenever(resourceProvider.getString(R.string.photo_id))
-            .thenReturn(mockedDocUiNamePhotoId)
-    }
 
     /**
      * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToUiItem]
@@ -75,10 +45,6 @@ object MockResourceProviderForStringCalls {
      * Mock the call of [eu.europa.ec.commonfeature.util.getKeyValueUi]
      */
     fun mockGetKeyValueUiCall(resourceProvider: ResourceProvider) {
-        whenever(resourceProvider.getReadableElementIdentifier(ArgumentMatchers.anyString()))
-            .then {
-                it.arguments.first()
-            }
 
         whenever(resourceProvider.getString(R.string.document_details_boolean_item_true_readable_value))
             .thenReturn("yes")
@@ -107,7 +73,6 @@ object MockResourceProviderForStringCalls {
     ) {
         whenever(resourceProvider.getString(R.string.request_element_identifier_not_available))
             .thenReturn(notAvailableString)
-        mockDocumentTypeUiToUiNameCall(resourceProvider)
         mockGetKeyValueUiCall(resourceProvider)
     }
 }

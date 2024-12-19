@@ -16,7 +16,6 @@
 
 package eu.europa.ec.issuancefeature.di
 
-
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
@@ -42,13 +41,13 @@ fun provideAddDocumentInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
     deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
-    uiSerializer: UiSerializer,
+    uiSerializer: UiSerializer
 ): AddDocumentInteractor =
     AddDocumentInteractorImpl(
         walletCoreDocumentsController,
         deviceAuthenticationInteractor,
         resourceProvider,
-        uiSerializer,
+        uiSerializer
     )
 
 @Factory

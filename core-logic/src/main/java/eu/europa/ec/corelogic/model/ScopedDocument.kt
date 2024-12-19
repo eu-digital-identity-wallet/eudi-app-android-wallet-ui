@@ -16,10 +16,4 @@
 
 package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.eudi.wallet.document.DocumentId
-
-data class DeferredDocumentData(
-    val documentId: DocumentId,
-    val formatType: FormatType,
-    val docName: String,
-)
+data class ScopedDocument(val name: String, val configurationId: String, val isPid: Boolean)

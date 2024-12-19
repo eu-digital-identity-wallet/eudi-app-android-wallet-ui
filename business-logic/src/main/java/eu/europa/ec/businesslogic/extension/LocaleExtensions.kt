@@ -14,12 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.model
+package eu.europa.ec.businesslogic.extension
 
-import eu.europa.ec.eudi.wallet.document.DocumentId
+import java.util.Locale
 
-data class DeferredDocumentData(
-    val documentId: DocumentId,
-    val formatType: FormatType,
-    val docName: String,
-)
+fun Locale.compareLocaleLanguage(localeToCompare: Locale?): Boolean =
+    localeToCompare?.let { this.language == it.language } == true

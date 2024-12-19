@@ -27,8 +27,9 @@ import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemCall
 import eu.europa.ec.testfeature.createMockedNamespaceData
 import eu.europa.ec.testfeature.mockedEmptyPid
@@ -103,7 +104,6 @@ class TestDocumentDetailsInteractor {
         coroutineRule.runTest {
             // Given
             mockTransformToUiItemCall(resourceProvider)
-            mockDocumentTypeUiToUiNameCall(resourceProvider)
 
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
 
@@ -132,7 +132,6 @@ class TestDocumentDetailsInteractor {
         coroutineRule.runTest {
             // Given
             mockTransformToUiItemCall(resourceProvider)
-            mockDocumentTypeUiToUiNameCall(resourceProvider)
 
             mockGetDocumentByIdCall(response = mockedMdlWithBasicFields)
 
@@ -225,13 +224,16 @@ class TestDocumentDetailsInteractor {
         coroutineRule.runTest {
             // Given
             mockTransformToUiItemCall(resourceProvider)
-            mockDocumentTypeUiToUiNameCall(resourceProvider)
 
             mockGetDocumentByIdCall(
                 response = mockedPidWithBasicFields.copy(
-                    nameSpacedData = createMockedNamespaceData(
-                        mockedPidNameSpace, mapOf(
-                            "no_data_item" to byteArrayOf(0)
+                    data = MsoMdocData(
+                        format = MsoMdocFormat(mockedPidNameSpace),
+                        metadata = null,
+                        nameSpacedData = createMockedNamespaceData(
+                            mockedPidNameSpace, mapOf(
+                                "no_data_item" to byteArrayOf(0)
+                            )
                         )
                     )
                 )
@@ -246,8 +248,8 @@ class TestDocumentDetailsInteractor {
                     DocumentDetailsInteractorPartialState.Success(
                         documentUi = DocumentUi(
                             documentId = TestsData.mockedPidId,
-                            documentName = TestsData.mockedDocUiNamePid,
-                            documentIdentifier = DocumentIdentifier.PID,
+                            documentName = TestsData.mockedPidDocName,
+                            documentIdentifier = DocumentIdentifier.MdocPid,
                             documentExpirationDateFormatted = "",
                             documentHasExpired = TestsData.mockedDocumentHasExpired,
                             documentImage = "",
@@ -579,7 +581,7 @@ class TestDocumentDetailsInteractor {
     }
 
     private fun mockGetAllDocumentsWithTypeCall(response: List<IssuedDocument>) {
-        whenever(walletCoreDocumentsController.getAllDocumentsByType(documentIdentifier = any()))
+        whenever(walletCoreDocumentsController.getAllDocumentsByType(documentIdentifiers = any()))
             .thenReturn(response)
     }
 
