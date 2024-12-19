@@ -24,6 +24,15 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapText
 
+/**
+ * A composable function that displays a section title with customizable styling.
+ *
+ * @param modifier Modifier used to adjust the layout or appearance of the title.
+ * @param sectionTitle The text to display as the section title.
+ * @param sectionTitleTextConfig Optional [TextConfig] for customizing the typography
+ * and color of the section title. Defaults to a style labelSmall with an
+ * onSurfaceVariant color.
+ */
 @Composable
 fun SectionTitle(
     modifier: Modifier,
