@@ -21,6 +21,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -43,6 +44,8 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Checkbox
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Icon
 import eu.europa.ec.uilogic.component.MainContentData.Image
 import eu.europa.ec.uilogic.component.MainContentData.Text
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.ICON_SIZE_40
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
@@ -180,24 +183,13 @@ fun ListItem(
 
     // API check
     val supportsBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val blurModifier = remember(hideSensitiveContent) {
+    val blurModifier = remember(supportsBlur, hideSensitiveContent) {
         if (supportsBlur && hideSensitiveContent) {
             Modifier.blur(10.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
         } else {
             Modifier
         }
     }
-
-    val leadingContentData: ListItemLeadingContentData? =
-        remember(hideSensitiveContent, item.leadingContentData) {
-            item.leadingContentData?.let { safeLeadingContentData ->
-                if (hideSensitiveContent && !supportsBlur) {
-                    null
-                } else {
-                    safeLeadingContentData
-                }
-            }
-        }
 
     with(item) {
         Row(
@@ -216,23 +208,24 @@ fun ListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Leading Content
-            leadingContentData?.let { safeLeadingContentData ->
+            if (!hideSensitiveContent || supportsBlur) {
+                leadingContentData?.let { safeLeadingContentData ->
+                    val leadingContentModifier = Modifier
+                        .padding(end = SIZE_MEDIUM.dp)
+                        .size(ICON_SIZE_40.dp)
+                        .then(blurModifier)
 
-                val leadingContentModifier = Modifier
-                    .padding(end = SIZE_MEDIUM.dp)
-                    .size(ICON_SIZE_40.dp)
-                    .then(blurModifier)
+                    when (safeLeadingContentData) {
+                        is ListItemLeadingContentData.Icon -> WrapImage(
+                            modifier = leadingContentModifier,
+                            iconData = safeLeadingContentData.iconData,
+                        )
 
-                when (safeLeadingContentData) {
-                    is ListItemLeadingContentData.Icon -> WrapImage(
-                        modifier = leadingContentModifier,
-                        iconData = safeLeadingContentData.iconData,
-                    )
-
-                    is ListItemLeadingContentData.UserImage -> ImageOrPlaceholder(
-                        modifier = leadingContentModifier,
-                        base64Image = safeLeadingContentData.userBase64Image,
-                    )
+                        is ListItemLeadingContentData.UserImage -> ImageOrPlaceholder(
+                            modifier = leadingContentModifier,
+                            base64Image = safeLeadingContentData.userBase64Image,
+                        )
+                    }
                 }
             }
 
@@ -316,7 +309,6 @@ fun ListItem(
     }
 }
 
-/*
 @ThemeModePreviews
 @Composable
 private fun ListItemPreview() {
@@ -330,68 +322,95 @@ private fun ListItemPreview() {
             // Basic ListItem with only mainText
             ListItem(
                 item = ListItemData(
-                    mainText = "Basic Item"
+                    itemId = "1",
+                    mainContentData = Text(text = "Basic Item")
                 ),
                 modifier = modifier,
+                onItemClick = {},
             )
 
             // ListItem with overlineText and supportingText
             ListItem(
                 item = ListItemData(
-                    mainText = "Item with Overline and Supporting Text",
+                    itemId = "2",
+                    mainContentData = Text(text = "Item with Overline and Supporting Text"),
                     overlineText = "Overline Text",
                     supportingText = "Supporting Text"
                 ),
                 modifier = modifier,
+                onItemClick = {},
             )
 
             // ListItem with leadingIcon
             ListItem(
                 item = ListItemData(
-                    mainText = "Item with Leading Icon",
-                    leadingIcon = AppIcons.Add,
+                    itemId = "3",
+                    mainContentData = Text(text = "Item with Leading Icon"),
+                    leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Add),
                 ),
                 modifier = modifier,
+                onItemClick = {},
             )
 
             // ListItem with trailing icon
             ListItem(
                 item = ListItemData(
-                    mainText = "Item with Trailing Icon",
-                    trailingContentData = ListItemTrailingContentData.Icon(
+                    itemId = "4",
+                    mainContentData = Text(text = "Item with Trailing Icon"),
+                    trailingContentData = Icon(
                         iconData = AppIcons.KeyboardArrowDown,
                     )
                 ),
                 modifier = modifier,
+                onItemClick = {},
             )
 
-            // ListItem with trailing checkbox
+            // ListItem with trailing enabled checkbox
             ListItem(
                 item = ListItemData(
-                    mainText = "Item with Trailing Checkbox",
-                    trailingContentData = ListItemTrailingContentData.Checkbox(
+                    itemId = "5",
+                    mainContentData = Text(text = "Item with Trailing Enabled Checkbox"),
+                    trailingContentData = Checkbox(
                         checkboxData = CheckboxData(
                             isChecked = true,
-                            onCheckedChange = {}
                         )
                     )
                 ),
                 modifier = modifier,
+                onItemClick = {},
+            )
+
+            // ListItem with trailing disabled checkbox
+            ListItem(
+                item = ListItemData(
+                    itemId = "5",
+                    mainContentData = Text(text = "Item with Trailing Disabled Checkbox"),
+                    trailingContentData = Checkbox(
+                        checkboxData = CheckboxData(
+                            isChecked = true,
+                            enabled = false,
+                        )
+                    )
+                ),
+                modifier = modifier,
+                onItemClick = {},
             )
 
             // ListItem with all elements
             ListItem(
                 item = ListItemData(
-                    mainText = "Full Item Example",
+                    itemId = "6",
+                    mainContentData = Text(text = "Full Item Example"),
                     overlineText = "Overline Text",
                     supportingText = "Supporting Text",
-                    leadingIcon = AppIcons.Add,
-                    trailingContentData = ListItemTrailingContentData.Icon(
+                    leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Add),
+                    trailingContentData = Icon(
                         iconData = AppIcons.KeyboardArrowDown,
                     )
                 ),
                 modifier = modifier,
+                onItemClick = {},
             )
         }
     }
-}*/
+}

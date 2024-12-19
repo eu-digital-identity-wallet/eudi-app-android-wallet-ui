@@ -19,15 +19,24 @@ package eu.europa.ec.uilogic.component.wrap
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.MainContentData
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @Composable
@@ -39,10 +48,12 @@ fun WrapListItems(
     mainContentVerticalPadding: Dp? = null,
     clickableAreas: List<ClickableArea>? = null,
     shape: Shape? = null,
+    colors: CardColors? = null,
 ) {
     WrapCard(
         modifier = Modifier.fillMaxWidth(),
         shape = shape,
+        colors = colors,
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -70,7 +81,6 @@ fun WrapListItems(
     }
 }
 
-/*
 @ThemeModePreviews
 @Composable
 private fun WrapListItemsPreview(
@@ -79,50 +89,54 @@ private fun WrapListItemsPreview(
     PreviewTheme {
         val items = listOf(
             ListItemData(
-                mainText = "Main text $text",
+                itemId = "1",
+                mainContentData = MainContentData.Text(text = "Main text $text"),
             ),
             ListItemData(
-                mainText = "Main text $text",
+                itemId = "2",
+                mainContentData = MainContentData.Text(text = "Main text $text"),
                 overlineText = "",
                 supportingText = "",
             ),
             ListItemData(
-                mainText = "Main text $text",
+                itemId = "3",
+                mainContentData = MainContentData.Text(text = "Main text $text"),
                 overlineText = "Overline text $text",
                 supportingText = "Supporting text $text",
-                leadingIcon = AppIcons.Sign,
+                leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
                 trailingContentData = ListItemTrailingContentData.Icon(
                     iconData = AppIcons.KeyboardArrowRight,
                 ),
             ),
             ListItemData(
-                mainText = "Main text $text",
+                itemId = "4",
+                mainContentData = MainContentData.Text(text = "Main text $text"),
                 overlineText = "Overline text $text",
                 supportingText = "Supporting text $text",
-                leadingIcon = AppIcons.Sign,
+                leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
                 trailingContentData = ListItemTrailingContentData.Checkbox(
                     checkboxData = CheckboxData(
                         isChecked = true,
                         enabled = true,
-                        onCheckedChange = null,
                     ),
                 ),
             ),
             ListItemData(
-                mainText = "Main text $text",
+                itemId = "5",
+                mainContentData = MainContentData.Text(text = "Main text $text"),
                 supportingText = "Supporting text $text",
                 trailingContentData = ListItemTrailingContentData.Icon(
                     iconData = AppIcons.KeyboardArrowRight,
                 ),
             ),
             ListItemData(
-                mainText = "Main text $text",
+                itemId = "6",
+                mainContentData = MainContentData.Text(text = "Main text $text"),
                 supportingText = "Supporting text $text",
                 trailingContentData = ListItemTrailingContentData.Checkbox(
                     checkboxData = CheckboxData(
                         isChecked = true,
                         enabled = true,
-                        onCheckedChange = null,
                     ),
                 ),
             ),
@@ -130,6 +144,7 @@ private fun WrapListItemsPreview(
 
         WrapListItems(
             items = items,
+            onItemClick = {},
         )
     }
-}*/
+}

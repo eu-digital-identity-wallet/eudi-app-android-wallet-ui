@@ -17,12 +17,20 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.MainContentData
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
@@ -44,6 +52,7 @@ fun WrapExpandableListItem(
     collapsedClickableAreas: List<ClickableArea>? = null,
     expandedMainContentVerticalPadding: Dp = 12.dp,
     expandedClickableAreas: List<ClickableArea>? = null,
+    colors: CardColors? = null,
 ) {
     WrapExpandableCard(
         modifier = modifier,
@@ -57,6 +66,7 @@ fun WrapExpandableListItem(
                 hideSensitiveContent = false,
                 mainContentVerticalPadding = collapsedMainContentVerticalPadding,
                 clickableAreas = collapsedClickableAreas,
+                colors = colors,
             )
         },
         cardExpandedContent = {
@@ -70,50 +80,52 @@ fun WrapExpandableListItem(
                     bottomStart = SIZE_SMALL.dp,
                     bottomEnd = SIZE_SMALL.dp,
                 ),
+                colors = colors,
             )
         },
         isExpanded = isExpanded,
         throttleClicks = throttleClicks,
+        colors = colors,
     )
 }
 
-/*
 @ThemeModePreviews
 @Composable
 private fun WrapExpandableListItemPreview() {
     PreviewTheme {
-        var isExpanded by rememberSaveable { mutableStateOf(false) }
-
         val data = ExpandableListItemData(
             collapsed = ListItemData(
-                mainText = "Digital ID",
+                itemId = "0",
+                mainContentData = MainContentData.Text(text = "Digital ID"),
                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
                 trailingContentData = ListItemTrailingContentData.Icon(
-                    iconData = if (isExpanded) AppIcons.KeyboardArrowUp else AppIcons.KeyboardArrowDown
+                    iconData = AppIcons.KeyboardArrowDown
                 ),
             ),
             expanded = listOf(
                 ListItemData(
+                    itemId = "1",
                     overlineText = "Family name",
-                    mainText = "Doe",
+                    mainContentData = MainContentData.Text(text = "Doe"),
                 ),
                 ListItemData(
+                    itemId = "2",
                     overlineText = "Given name",
-                    mainText = "John",
+                    mainContentData = MainContentData.Text(text = "John"),
                 ),
                 ListItemData(
+                    itemId = "3",
                     overlineText = "Date of birth",
-                    mainText = "21 Oct 2023",
+                    mainContentData = MainContentData.Text(text = "21 Oct 2023"),
                 ),
             )
         )
 
         WrapExpandableListItem(
-            modifier = Modifier.heightIn(max = 1500.dp),
             data = data,
-            isExpanded = isExpanded,
-            onExpandedChange = { isExpanded = it },
-            onExpandedItemClick = {},
+            isExpanded = true,
+            onExpandedChange = {},
+            onItemClick = {},
         )
     }
-}*/
+}

@@ -129,7 +129,7 @@ private fun Content(
         // Screen Main Content.
         UserImageAndIcon(
             modifier = Modifier.weight(1f),
-            base64Image = "", //TODO Add support for displaying document Image, if exists.
+            base64Image = "",
             icon = AppIcons.IdStroke,
             username = state.userFullName
         )
