@@ -228,15 +228,18 @@ object RequestTransformer {
         val disclosedDocuments =
             groupedByDocument.map { (documentPayload, selectedItemsForDocument) ->
                 val disclosedItems = selectedItemsForDocument.map { selectedItem ->
-                    val mainContentValue =
-                        when (val mainContentData = selectedItem.uiItem.mainContentData) {
-                            is MainContentData.Image -> mainContentData.base64Image
-                            is MainContentData.Text -> mainContentData.text
+                    val value = when (val mainContentData = selectedItem.uiItem.mainContentData) {
+                        is MainContentData.Image -> mainContentData.base64Image
+
+                        is MainContentData.Text -> {
+                            (selectedItem.uiItem.leadingContentData as? ListItemLeadingContentData.UserImage)?.userBase64Image
+                                ?: mainContentData.text
                         }
+                    }
                     MsoMdocItem(
                         namespace = documentPayload.docNamespace,
                         elementIdentifier = documentPayload.documentDetailsDomain.items
-                            .find { it.value == mainContentValue }
+                            .find { it.value == value }
                             ?.elementIdentifier ?: ""
                     )
                 }
