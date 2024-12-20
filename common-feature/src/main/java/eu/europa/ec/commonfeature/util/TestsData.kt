@@ -46,8 +46,8 @@ object TestsData {
     const val mockedMdlId = "000002"
     const val mockedUserFirstName = "JAN"
     const val mockedUserBase64Portrait = "SE"
-    const val mockedDocUiNamePid = "National ID"
-    const val mockedDocUiNameMdl = "Driving License"
+    const val mockedDocUiNamePid = "EU PID"
+    const val mockedDocUiNameMdl = "mDL"
     const val mockedDocUiNameAge = "Age Verification"
     const val mockedDocUiNamePhotoId = "Photo ID"
     const val mockedConfigIssuerId = "configurationId"
@@ -249,12 +249,43 @@ object TestsData {
         docName = mockedDocUiNamePid,
         docId = mockedPidId,
         docNamespace = mockedPidNameSpace,
-        documentIdentifier = DocumentIdentifier.PID,
+        documentIdentifier = DocumentIdentifier.MdocPid,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
         documentImage = "",
         userFullName = "JAN ANDERSSON",
         detailsItems = listOf(
+            DocumentItem(
+                elementIdentifier = "family_name",
+                value = "ANDERSSON",
+                readableName = "family_name",
+                docId = mockedPidId
+            ),
+            DocumentItem(
+                elementIdentifier = "given_name",
+                value = "JAN",
+                readableName = "given_name",
+                docId = mockedPidId
+            ),
+            DocumentItem(
+                elementIdentifier = "age_over_18",
+                value = "yes",
+                readableName = "age_over_18",
+                docId = mockedPidId
+            ),
+            DocumentItem(
+                elementIdentifier = "age_over_65",
+                value = "no",
+                readableName = "age_over_65",
+                docId = mockedPidId
+            ),
+            DocumentItem(
+                elementIdentifier = "age_birth_year",
+                value = "1985",
+                readableName = "age_birth_year",
+                docId = mockedPidId
+            ),
+
             DocumentItem(
                 elementIdentifier = "birth_city",
                 value = "KATRINEHOLM",
@@ -268,39 +299,9 @@ object TestsData {
                 docId = mockedPidId
             ),
             DocumentItem(
-                elementIdentifier = "age_over_18",
-                value = "yes",
-                readableName = "age_over_18",
-                docId = mockedPidId
-            ),
-            DocumentItem(
-                elementIdentifier = "age_birth_year",
-                value = "1985",
-                readableName = "age_birth_year",
-                docId = mockedPidId
-            ),
-            DocumentItem(
                 elementIdentifier = "expiry_date",
                 value = "30 Mar 2050",
                 readableName = "expiry_date",
-                docId = mockedPidId
-            ),
-            DocumentItem(
-                elementIdentifier = "given_name",
-                value = "JAN",
-                readableName = "given_name",
-                docId = mockedPidId
-            ),
-            DocumentItem(
-                elementIdentifier = "family_name",
-                value = "ANDERSSON",
-                readableName = "family_name",
-                docId = mockedPidId
-            ),
-            DocumentItem(
-                elementIdentifier = "age_over_65",
-                value = "no",
-                readableName = "age_over_65",
                 docId = mockedPidId
             )
         )
@@ -380,12 +381,42 @@ object TestsData {
         docName = mockedDocUiNameMdl,
         docId = mockedMdlId,
         docNamespace = mockedMdlNameSpace,
-        documentIdentifier = DocumentIdentifier.MDL,
+        documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
         documentImage = "",
         userFullName = "JAN ANDERSSON",
         detailsItems = listOf(
+            DocumentItem(
+                elementIdentifier = "family_name",
+                value = "ANDERSSON",
+                readableName = "family_name",
+                docId = mockedMdlId
+            ),
+            DocumentItem(
+                elementIdentifier = "given_name",
+                value = "JAN",
+                readableName = "given_name",
+                docId = mockedMdlId
+            ),
+            DocumentItem(
+                elementIdentifier = "birth_place",
+                value = "SWEDEN",
+                readableName = "birth_place",
+                docId = mockedMdlId
+            ),
+            DocumentItem(
+                elementIdentifier = "expiry_date",
+                value = "30 Mar 2050",
+                readableName = "expiry_date",
+                docId = mockedMdlId
+            ),
+            DocumentItem(
+                elementIdentifier = "portrait",
+                value = "SE",
+                readableName = "portrait",
+                docId = mockedMdlId
+            ),
             DocumentItem(
                 elementIdentifier = "driving_privileges",
                 value = "issue_date: 1 Jul 2010\n" +
@@ -398,46 +429,15 @@ object TestsData {
                 docId = mockedMdlId
             ),
             DocumentItem(
-                elementIdentifier = "expiry_date",
-                value = "30 Mar 2050",
-                readableName = "expiry_date",
+                elementIdentifier = "signature_usual_mark",
+                value = "SE",
+                readableName = "signature_usual_mark",
                 docId = mockedMdlId
             ),
             DocumentItem(
                 elementIdentifier = "sex",
                 value = "male",
                 readableName = "sex",
-                docId = mockedMdlId
-            ),
-            DocumentItem(
-                elementIdentifier = "birth_place",
-                value = "SWEDEN",
-                readableName = "birth_place",
-                docId = mockedMdlId
-            ),
-
-            DocumentItem(
-                elementIdentifier = "given_name",
-                value = "JAN",
-                readableName = "given_name",
-                docId = mockedMdlId
-            ),
-            DocumentItem(
-                elementIdentifier = "portrait",
-                value = "SE",
-                readableName = "portrait",
-                docId = mockedMdlId
-            ),
-            DocumentItem(
-                elementIdentifier = "family_name",
-                value = "ANDERSSON",
-                readableName = "family_name",
-                docId = mockedMdlId
-            ),
-            DocumentItem(
-                elementIdentifier = "signature_usual_mark",
-                value = "SE",
-                readableName = "signature_usual_mark",
                 docId = mockedMdlId
             )
         )

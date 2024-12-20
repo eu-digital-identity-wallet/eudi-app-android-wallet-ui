@@ -256,7 +256,7 @@ class TestDocumentDetailsInteractor {
                             docName = mockedDocUiNamePid,
                             docId = mockedPidId,
                             docNamespace = mockedPidNameSpace,
-                            documentIdentifier = DocumentIdentifier.PID,
+                            documentIdentifier = DocumentIdentifier.MdocPid,
                             documentExpirationDateFormatted = "",
                             documentHasExpired = mockedDocumentHasExpired,
                             documentImage = "",

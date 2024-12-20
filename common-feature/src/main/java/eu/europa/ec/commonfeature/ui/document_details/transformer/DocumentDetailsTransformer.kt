@@ -150,7 +150,7 @@ private fun transformToDocumentDetailsDocumentItem(
     val localizedKey = displayKey ?: key
 
     parseKeyValueUi(
-        json = item,
+        item = item,
         groupIdentifier = localizedKey,
         resourceProvider = resourceProvider,
         allItems = values
