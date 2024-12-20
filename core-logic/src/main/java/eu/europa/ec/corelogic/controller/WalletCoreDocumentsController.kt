@@ -196,7 +196,7 @@ class WalletCoreDocumentsControllerImpl(
                 val metadata = openId4VciManager.getIssuerMetadata().getOrThrow()
 
                 val documents =
-                    metadata.credentialConfigurationsSupported.mapNotNull { (id, config) ->
+                    metadata.credentialConfigurationsSupported.map { (id, config) ->
 
                         val name: String = config.display
                             .firstOrNull { locale.compareLocaleLanguage(it.locale) }
@@ -204,12 +204,15 @@ class WalletCoreDocumentsControllerImpl(
                             ?: config.display.firstOrNull()?.name
                             ?: id.value
 
-                        val isPid: Boolean = if (config is MsoMdocCredential) {
-                            config.docType.toDocumentIdentifier() == DocumentIdentifier.MdocPid
-                        } else if (config is SdJwtVcCredential) {
-                            config.type.toDocumentIdentifier() == DocumentIdentifier.SdJwtPid
-                        } else {
-                            false
+                        val isPid: Boolean = when (config) {
+                            is MsoMdocCredential ->
+                                config.docType.toDocumentIdentifier() == DocumentIdentifier.MdocPid
+
+                            is SdJwtVcCredential ->
+                                config.type.toDocumentIdentifier() == DocumentIdentifier.SdJwtPid
+
+                            else ->
+                                false
                         }
 
                         ScopedDocument(
@@ -225,7 +228,9 @@ class WalletCoreDocumentsControllerImpl(
                 }
             }
         }.getOrElse {
-            FetchScopedDocumentsPartialState.Failure(errorMessage = it.localizedMessage ?: genericErrorMessage)
+            FetchScopedDocumentsPartialState.Failure(
+                errorMessage = it.localizedMessage ?: genericErrorMessage
+            )
         }
     }
 
