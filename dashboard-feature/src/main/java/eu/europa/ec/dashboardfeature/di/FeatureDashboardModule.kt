@@ -22,8 +22,16 @@ import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNew
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNewImpl
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
+import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
+import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
+import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -48,6 +56,18 @@ fun provideDashboardInteractor(
         configLogic,
         logController
     )
+
+@Factory
+fun provideDashboardInteractorNew(): DashboardInteractorNew = DashboardInteractorNewImpl()
+
+@Factory
+fun provideHomeInteractor(): HomeInteractor = HomeInteractorImpl()
+
+@Factory
+fun provideDocumentsInteractor(): DocumentsInteractor = DocumentsInteractorImpl()
+
+@Factory
+fun provideTransactionInteractor(): TransactionsInteractor = TransactionsInteractorImpl()
 
 @Factory
 fun provideDocumentSignInteractor(): DocumentSignInteractor =

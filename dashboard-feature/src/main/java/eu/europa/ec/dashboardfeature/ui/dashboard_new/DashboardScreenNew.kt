@@ -21,17 +21,30 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNewImpl
+import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationBar
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationItem
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsScreen
+import eu.europa.ec.dashboardfeature.ui.documents.DocumentsViewModel
 import eu.europa.ec.dashboardfeature.ui.home.HomeScreen
+import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
+import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 
 @Composable
-fun DashboardScreenNew(hostNavController: NavController, viewModel: DashboardViewModelNew) {
+fun DashboardScreenNew(
+    hostNavController: NavController,
+    viewModel: DashboardViewModelNew,
+    documentsViewModel: DocumentsViewModel,
+    homeViewModel: HomeViewModel,
+    transactionsViewModel: TransactionsViewModel,
+) {
     val bottomNavigationController = rememberNavController()
 
     ContentScreen(
@@ -44,11 +57,22 @@ fun DashboardScreenNew(hostNavController: NavController, viewModel: DashboardVie
             navController = bottomNavigationController,
             startDestination = BottomNavigationItem.Home.route
         ) {
-            composable(BottomNavigationItem.Home.route) { HomeScreen(hostNavController) }
-            composable(BottomNavigationItem.Documents.route) { DocumentsScreen(hostNavController) }
+            composable(BottomNavigationItem.Home.route) {
+                HomeScreen(
+                    hostNavController,
+                    homeViewModel
+                )
+            }
+            composable(BottomNavigationItem.Documents.route) {
+                DocumentsScreen(
+                    hostNavController,
+                    documentsViewModel
+                )
+            }
             composable(BottomNavigationItem.Transactions.route) {
                 TransactionsScreen(
-                    hostNavController
+                    hostNavController,
+                    transactionsViewModel
                 )
             }
         }
@@ -58,5 +82,11 @@ fun DashboardScreenNew(hostNavController: NavController, viewModel: DashboardVie
 @Composable
 @ThemeModePreviews
 fun DashboardScreenPreview() {
-    DashboardScreenNew(rememberNavController(), DashboardViewModelNew())
+    DashboardScreenNew(
+        rememberNavController(),
+        DashboardViewModelNew(DashboardInteractorNewImpl()),
+        DocumentsViewModel(DocumentsInteractorImpl()),
+        HomeViewModel(HomeInteractorImpl()),
+        TransactionsViewModel(TransactionsInteractorImpl())
+    )
 }

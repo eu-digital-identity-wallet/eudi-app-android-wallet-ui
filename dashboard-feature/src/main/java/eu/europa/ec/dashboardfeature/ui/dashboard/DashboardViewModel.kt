@@ -173,6 +173,7 @@ sealed class DashboardBottomSheetContent {
     ) : DashboardBottomSheetContent()
 }
 
+@Deprecated("To be deleted")
 @KoinViewModel
 class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,

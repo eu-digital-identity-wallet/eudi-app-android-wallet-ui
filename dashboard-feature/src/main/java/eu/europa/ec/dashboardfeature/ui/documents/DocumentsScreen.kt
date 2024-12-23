@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 
 @Composable
-fun DocumentsScreen(navHostController: NavController) {
+fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewModel) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

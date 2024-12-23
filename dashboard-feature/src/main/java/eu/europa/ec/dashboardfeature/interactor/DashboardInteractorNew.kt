@@ -14,25 +14,11 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.transactions
+package eu.europa.ec.dashboardfeature.interactor
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+interface DashboardInteractorNew {
+}
 
-@Composable
-fun TransactionsScreen(
-    navHostController: NavController,
-    transactionsViewModel: TransactionsViewModel,
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Transactions")
-    }
+class DashboardInteractorNewImpl : DashboardInteractorNew {
+
 }

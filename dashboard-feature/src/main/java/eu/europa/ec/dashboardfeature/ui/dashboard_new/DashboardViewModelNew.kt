@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard_new
 
+import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNew
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -35,7 +36,9 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-class DashboardViewModelNew : MviViewModel<Event, State, Effect>() {
+class DashboardViewModelNew(
+    val interactor: DashboardInteractorNew
+) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
         return State()
     }

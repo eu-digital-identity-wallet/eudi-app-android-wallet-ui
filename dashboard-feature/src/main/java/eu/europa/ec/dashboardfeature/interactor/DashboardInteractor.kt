@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
+@Deprecated("To be deleted")
 sealed class DashboardInteractorGetDocumentsPartialState {
     data class Success(
         val documentsUi: List<DocumentUi>,
@@ -60,6 +61,7 @@ sealed class DashboardInteractorGetDocumentsPartialState {
     data class Failure(val error: String) : DashboardInteractorGetDocumentsPartialState()
 }
 
+@Deprecated("To be deleted")
 sealed class DashboardInteractorDeleteDocumentPartialState {
     data object SingleDocumentDeleted : DashboardInteractorDeleteDocumentPartialState()
     data object AllDocumentsDeleted : DashboardInteractorDeleteDocumentPartialState()
@@ -67,6 +69,7 @@ sealed class DashboardInteractorDeleteDocumentPartialState {
         DashboardInteractorDeleteDocumentPartialState()
 }
 
+@Deprecated("To be deleted")
 sealed class DashboardInteractorRetryIssuingDeferredDocumentPartialState {
     data class Success(
         val deferredDocumentData: DeferredDocumentData
@@ -86,6 +89,7 @@ sealed class DashboardInteractorRetryIssuingDeferredDocumentPartialState {
     ) : DashboardInteractorRetryIssuingDeferredDocumentPartialState()
 }
 
+@Deprecated("To be deleted")
 sealed class DashboardInteractorRetryIssuingDeferredDocumentsPartialState {
     data class Result(
         val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
@@ -97,6 +101,7 @@ sealed class DashboardInteractorRetryIssuingDeferredDocumentsPartialState {
     ) : DashboardInteractorRetryIssuingDeferredDocumentsPartialState()
 }
 
+@Deprecated("To be deleted")
 interface DashboardInteractor {
     fun getDocuments(): Flow<DashboardInteractorGetDocumentsPartialState>
     fun isBleAvailable(): Boolean
@@ -114,6 +119,7 @@ interface DashboardInteractor {
     fun retrieveLogFileUris(): ArrayList<Uri>
 }
 
+@Deprecated("To be deleted")
 class DashboardInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,

@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen(navHostController: NavController) {
+fun HomeScreen(navHostController: NavController, homeViewModel: HomeViewModel) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

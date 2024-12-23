@@ -14,25 +14,29 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.transactions
+package eu.europa.ec.dashboardfeature.ui.home
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
+import eu.europa.ec.uilogic.mvi.MviViewModel
+import eu.europa.ec.uilogic.mvi.ViewEvent
+import eu.europa.ec.uilogic.mvi.ViewSideEffect
+import eu.europa.ec.uilogic.mvi.ViewState
+import org.koin.android.annotation.KoinViewModel
 
-@Composable
-fun TransactionsScreen(
-    navHostController: NavController,
-    transactionsViewModel: TransactionsViewModel,
-) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Transactions")
+class State : ViewState
+
+sealed class Event : ViewEvent
+
+sealed class Effect : ViewSideEffect
+
+@KoinViewModel
+class HomeViewModel(
+    val interactor: HomeInteractor,
+) : MviViewModel<Event, State, Effect>() {
+    override fun setInitialState(): State {
+        return State()
+    }
+
+    override fun handleEvents(event: Event) {
     }
 }
