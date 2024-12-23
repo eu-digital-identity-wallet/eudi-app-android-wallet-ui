@@ -37,7 +37,7 @@ sealed interface DocumentIdentifier {
 
     data object SdJwtPid : DocumentIdentifier {
         override val formatType: FormatType
-            get() = "eu.europa.ec.eudi.pid_jwt_vc_json"
+            get() = "urn:eu:europa:ec:eudi:pid:1"
     }
 
     data class OTHER(
