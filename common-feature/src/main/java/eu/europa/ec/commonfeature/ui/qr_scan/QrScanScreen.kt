@@ -63,8 +63,8 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.PreMeasuredContentWithAnimatedVisibility
+import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -94,7 +94,7 @@ fun QrScanScreen(
 
     ContentScreen(
         isLoading = false,
-        navigatableAction = ScreenNavigateAction.CANCELABLE,
+        navigatableAction = ScreenNavigateAction.BACKABLE,
         onBack = { viewModel.setEvent(Event.GoBack) },
     ) { paddingValues ->
         Content(
@@ -144,9 +144,10 @@ private fun Content(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        ContentTitle(
+        SimpleContentTitle(
+            modifier = Modifier.fillMaxWidth(),
             title = state.qrScannedConfig.title,
-            subtitle = state.qrScannedConfig.subTitle
+            subtitle = state.qrScannedConfig.subTitle,
         )
 
         // Occupy the rest of the screen.
@@ -241,7 +242,7 @@ private fun OpenCamera(
                         .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                         .build()
 
-                    preview.setSurfaceProvider(previewView.surfaceProvider)
+                    preview.surfaceProvider = previewView.surfaceProvider
 
                     val imageAnalysis = ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)

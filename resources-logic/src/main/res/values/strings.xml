@@ -31,8 +31,6 @@
     <string name="generic_success">Success</string>
     <string name="generic_ok">OK</string>
     <string name="generic_dash">-</string>
-    <string name="generic_qr_scan_title">Scan QR</string>
-    <string name="generic_qr_scan_subtitle">Place the QR code within the frame to start scanning</string>
     <string name="generic_deferred_success_title">In progress</string>
     <string name="generic_bottom_sheet_delete_title">Delete document?</string>
     <string name="generic_bottom_sheet_delete_subtitle">This document will be permanently deleted from your wallet and may affect access to services.</string>
@@ -228,13 +226,14 @@
         predefined criteria for security, data protection, compliance, and responsible data handling.</string>
 
     <!-- Proximity QR -->
-    <string name="proximity_qr_title">Show QR or Tap</string>
-    <string name="proximity_qr_subtitle">Show this QR code to access the necessary information for sharing</string>
-    <string name="proximity_qr_use_nfc">Or use the NFC</string>
+    <string name="proximity_qr_title">Present document in person</string>
+    <string name="proximity_qr_subtitle">Show this QR code to a Relying Party to present a digital document.</string>
+    <string name="proximity_qr_use_nfc">Or share via NFC</string>
+    <string name="proximity_qr_hold_near_reader">Hold your phone near reader to scan.</string>
 
     <!-- Presentation Qr Scan -->
-    <string name="presentation_qr_scan_title">@string/generic_qr_scan_title</string>
-    <string name="presentation_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
+    <string name="presentation_qr_scan_title">Present document online</string>
+    <string name="presentation_qr_scan_subtitle">Scan a QR code provided from a Relying Party to present a digital document.</string>
 
     <!-- Presentation Loading Screen -->
     <string name="presentation_loading_success_config_subtitle">You successfully shared information with %1$s</string>
@@ -257,8 +256,8 @@
     <string name="issuance_success_primary_button_text">NEXT</string>
 
     <!-- Issuance Qr Scan -->
-    <string name="issuance_qr_scan_title">@string/generic_qr_scan_title</string>
-    <string name="issuance_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
+    <string name="issuance_qr_scan_title">Add document from QR</string>
+    <string name="issuance_qr_scan_subtitle">Scan a QR code provided from an issuer to add a digital document to your wallet.</string>
 
     <!-- Issuance Document Offer -->
     <string name="issuance_document_offer_default_issuer_name">Issuer</string>
