@@ -134,10 +134,10 @@
     <!-- Request Screen -->
     <string name="request_header_description">The following transaction requires your permission and authentication.</string>
     <string name="request_header_main_text">DATA SHARING REQUEST</string>
+    <string name="request_header_relying_party_default_name">Relying Party</string>
+    <string name="request_header_relying_party_description">\ requests the following</string>
     <string name="request_warning_text">Please review carefully before sharing your data.</string>
     <string name="request_collapsed_supporting_text">View details</string>
-    <string name="request_title_before_badge">Verifier</string>
-    <string name="request_title_after_badge">\ requests the following</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
     <string name="request_sticky_button_text">Share</string>
