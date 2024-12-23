@@ -124,6 +124,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Deprecated("To be deleted")
 fun DashboardScreen(
     navController: NavController,
     viewModel: DashboardViewModel
