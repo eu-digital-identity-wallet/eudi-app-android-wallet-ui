@@ -59,11 +59,11 @@ import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.wrap.BaseBottomSheetContent
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
@@ -290,7 +290,7 @@ private fun SheetContent(
             )
 
         is DocumentDetailsBottomSheetContent.BookmarkStoredInfo -> {
-            BaseBottomSheetContent(
+            SimpleBottomSheet(
                 textData = sheetContent.bottomSheetTextData,
                 leadingIcon = AppIcons.BookmarkFilled,
                 leadingIconTint = MaterialTheme.colorScheme.warning,
@@ -298,7 +298,7 @@ private fun SheetContent(
         }
 
         is DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo -> {
-            BaseBottomSheetContent(
+            SimpleBottomSheet(
                 textData = sheetContent.bottomSheetTextData,
                 leadingIcon = AppIcons.Verified,
                 leadingIconTint = MaterialTheme.colorScheme.success,

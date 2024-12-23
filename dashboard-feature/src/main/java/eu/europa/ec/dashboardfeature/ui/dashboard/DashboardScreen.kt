@@ -97,7 +97,7 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.FabData
-import eu.europa.ec.uilogic.component.wrap.GenericBaseSheetContent
+import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
@@ -318,7 +318,7 @@ private fun DashboardSheetContent(
 ) {
     when (sheetContent) {
         is DashboardBottomSheetContent.Options -> {
-            GenericBaseSheetContent(
+            GenericBottomSheet(
                 titleContent = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),

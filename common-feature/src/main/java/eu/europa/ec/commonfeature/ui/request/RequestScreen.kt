@@ -51,11 +51,11 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.wrap.BaseBottomSheetContent
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
@@ -265,7 +265,7 @@ private fun SheetContent(
 ) {
     when (sheetContent) {
         RequestBottomSheetContent.WARNING -> {
-            BaseBottomSheetContent(
+            SimpleBottomSheet(
                 textData = BottomSheetTextData(
                     title = stringResource(id = R.string.request_bottom_sheet_warning_title),
                     message = stringResource(id = R.string.request_bottom_sheet_warning_subtitle),

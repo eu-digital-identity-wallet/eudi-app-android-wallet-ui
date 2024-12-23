@@ -75,6 +75,19 @@ private val bottomSheetDefaultBackgroundColor: Color
 private val bottomSheetDefaultTextColor: Color
     @Composable get() = MaterialTheme.colorScheme.onSurface
 
+/**
+ * Data class representing the text content for a bottom sheet.
+ *
+ * This class holds the title, message, and button texts for a bottom sheet.
+ * It also includes flags to indicate if a button should be styled as a warning.
+ *
+ * @property title The title of the bottom sheet.
+ * @property message The message displayed in the bottom sheet.
+ * @property positiveButtonText The text for the positive button (e.g., "OK", "Confirm"). Can be null if no positive button is needed.
+ * @property isPositiveButtonWarning A flag indicating if the positive button should be styled as a warning (e.g., red color). Defaults to false.
+ * @property negativeButtonText The text for the negative button (e.g., "Cancel", "Dismiss"). Can be null if no negative button is needed.
+ * @property isNegativeButtonWarning A flag indicating if the negative button should be styled as a warning (e.g., red color). Defaults to false.
+ */
 data class BottomSheetTextData(
     val title: String,
     val message: String,
@@ -104,8 +117,21 @@ fun WrapModalBottomSheet(
     )
 }
 
+/**
+ * A generic composable function for creating a bottom sheet.
+ *
+ * This function provides a basic structure for a bottom sheet, including a title and body section.
+ * You can customize the content of the title and body by providing composable functions.
+ *
+ * The bottom sheet is displayed with a default background color and padding.
+ *
+ * @param titleContent A composable function that provides the content for the title section of the bottom sheet.
+ * This content is displayed at the top of the bottom sheet.
+ * @param bodyContent A composable function that provides the content for the body section of the bottom sheet.
+ * This content is displayed below the title, separated by a medium vertical spacer.
+ */
 @Composable
-fun GenericBaseSheetContent(
+fun GenericBottomSheet(
     titleContent: @Composable () -> Unit,
     bodyContent: @Composable () -> Unit,
 ) {
@@ -122,6 +148,19 @@ fun GenericBaseSheetContent(
     }
 }
 
+/**
+ * A composable function that displays a dialog-style bottom sheet.
+ *
+ * This bottom sheet presents information to the user with optional icons,
+ * title, message, and two buttons for positive and negative actions.
+ *
+ * @param textData Data class containing the text content for the bottom sheet. This includes
+ *                 title, message, positive button text, and negative button text.
+ * @param leadingIcon An optional icon to be displayed at the beginning of the title.
+ * @param leadingIconTint An optional tint color for the leading icon.
+ * @param onPositiveClick A lambda function to be executed when the positive button is clicked.
+ * @param onNegativeClick A lambda function to be executed when the negative button is clicked.
+ */
 @Composable
 fun DialogBottomSheet(
     textData: BottomSheetTextData,
@@ -130,7 +169,7 @@ fun DialogBottomSheet(
     onPositiveClick: () -> Unit = {},
     onNegativeClick: () -> Unit = {},
 ) {
-    BaseBottomSheetContent(
+    BaseBottomSheet(
         textData = textData,
         leadingIcon = leadingIcon,
         leadingIconTint = leadingIconTint,
@@ -179,8 +218,36 @@ fun DialogBottomSheet(
     )
 }
 
+/**
+ * A simple bottom sheet composable function.
+ *
+ * This function displays a basic bottom sheet with a title and message.
+ * It can optionally include a leading icon with a custom tint.
+ * It utilizes the `BaseBottomSheet` composable for its core functionality, providing a
+ * standardized structure for bottom sheets.
+ *
+ * @param textData An object of type `BottomSheetTextData` containing the title and message
+ * to be displayed in the bottom sheet.
+ * @param leadingIcon An optional `IconData` object representing the icon to be displayed
+ * at the leading edge of the bottom sheet.
+ * @param leadingIconTint An optional `Color` to apply as a tint to the leading icon. If null,
+ * the default icon color will be used.
+ */
 @Composable
-fun BaseBottomSheetContent(
+fun SimpleBottomSheet(
+    textData: BottomSheetTextData,
+    leadingIcon: IconData? = null,
+    leadingIconTint: Color? = null,
+) {
+    BaseBottomSheet(
+        textData = textData,
+        leadingIcon = leadingIcon,
+        leadingIconTint = leadingIconTint,
+    )
+}
+
+@Composable
+private fun BaseBottomSheet(
     textData: BottomSheetTextData,
     leadingIcon: IconData? = null,
     leadingIconTint: Color? = null,
@@ -233,7 +300,7 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
     onEventSent: (T) -> Unit,
 ) {
     if (options.size == 2) {
-        BaseBottomSheetContent(
+        BaseBottomSheet(
             textData = textData,
             bodyContent = {
                 Row(
@@ -282,7 +349,7 @@ fun <T : ViewEvent> BottomSheetWithOptionsList(
     onEventSent: (T) -> Unit,
 ) {
     if (options.isNotEmpty()) {
-        BaseBottomSheetContent(
+        BaseBottomSheet(
             textData = textData,
             bodyContent = {
                 Column(
@@ -398,9 +465,9 @@ private fun BottomSheetDefaultHandlePreview() {
 
 @ThemeModePreviews
 @Composable
-private fun BaseBottomSheetContentPreview() {
+private fun SimpleBottomSheetPreview() {
     PreviewTheme {
-        BaseBottomSheetContent(
+        SimpleBottomSheet(
             textData = BottomSheetTextData(
                 title = "Title",
                 message = "Message",
@@ -411,9 +478,9 @@ private fun BaseBottomSheetContentPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun BaseBottomSheetContentWithLeadingIconPreview() {
+private fun SimpleBottomSheetWithLeadingIconPreview() {
     PreviewTheme {
-        BaseBottomSheetContent(
+        SimpleBottomSheet(
             textData = BottomSheetTextData(
                 title = "Title",
                 message = "Message",
