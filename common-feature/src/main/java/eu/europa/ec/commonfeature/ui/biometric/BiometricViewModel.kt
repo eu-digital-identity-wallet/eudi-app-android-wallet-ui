@@ -26,7 +26,6 @@ import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.LoadingType
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
@@ -55,7 +54,7 @@ sealed class Event : ViewEvent {
 }
 
 data class State(
-    val isLoading: LoadingType = LoadingType.NONE,
+    val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val config: BiometricUiConfig,
     val quickPinError: String? = null,

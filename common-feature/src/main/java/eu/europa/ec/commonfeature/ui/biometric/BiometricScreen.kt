@@ -69,7 +69,7 @@ fun BiometricScreen(
     val context = LocalContext.current
 
     ContentScreen(
-        loadingType = state.isLoading,
+        isLoading = state.isLoading,
         navigatableAction = if (state.isCancellable) {
             ScreenNavigateAction.CANCELABLE
         } else {

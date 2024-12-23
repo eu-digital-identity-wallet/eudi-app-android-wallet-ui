@@ -49,7 +49,7 @@ fun DocumentOfferCodeScreen(
     val context = LocalContext.current
 
     ContentScreen(
-        loadingType = state.isLoading,
+        isLoading = state.isLoading,
         contentErrorConfig = state.error,
         navigatableAction = ScreenNavigateAction.CANCELABLE,
         onBack = { viewModel.setEvent(Event.Pop) },

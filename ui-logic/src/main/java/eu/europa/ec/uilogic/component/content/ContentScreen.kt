@@ -56,10 +56,6 @@ import eu.europa.ec.uilogic.component.utils.stickyBottomPaddings
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 
-enum class LoadingType {
-    NORMAL, NONE
-}
-
 data class ToolbarAction(
     val icon: IconData,
     val order: Int = 100,
@@ -82,37 +78,6 @@ enum class ScreenNavigateAction {
 @Composable
 fun ContentScreen(
     isLoading: Boolean = false,
-    toolBarConfig: ToolbarConfig? = null,
-    navigatableAction: ScreenNavigateAction = ScreenNavigateAction.BACKABLE,
-    onBack: (() -> Unit)? = null,
-    topBar: @Composable (() -> Unit)? = null,
-    bottomBar: @Composable (() -> Unit)? = null,
-    stickyBottom: @Composable ((PaddingValues) -> Unit)? = null,
-    fab: @Composable () -> Unit = {},
-    fabPosition: FabPosition = FabPosition.End,
-    snackbarHost: @Composable () -> Unit = {},
-    contentErrorConfig: ContentErrorConfig? = null,
-    bodyContent: @Composable (PaddingValues) -> Unit
-) {
-    ContentScreen(
-        loadingType = if (isLoading) LoadingType.NORMAL else LoadingType.NONE,
-        toolBarConfig = toolBarConfig,
-        navigatableAction = navigatableAction,
-        onBack = onBack,
-        topBar = topBar,
-        bottomBar = bottomBar,
-        stickyBottom = stickyBottom,
-        fab = fab,
-        fabPosition = fabPosition,
-        snackbarHost = snackbarHost,
-        contentErrorConfig = contentErrorConfig,
-        bodyContent = bodyContent
-    )
-}
-
-@Composable
-fun ContentScreen(
-    loadingType: LoadingType = LoadingType.NONE,
     toolBarConfig: ToolbarConfig? = null,
     navigatableAction: ScreenNavigateAction = ScreenNavigateAction.BACKABLE,
     onBack: (() -> Unit)? = null,
@@ -186,7 +151,7 @@ fun ContentScreen(
                     }
                 }
 
-                if (loadingType == LoadingType.NORMAL) LoadingIndicator()
+                if (isLoading) LoadingIndicator()
             }
         }
     }

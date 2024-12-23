@@ -24,7 +24,6 @@ import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractor
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.LoadingType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -39,7 +38,7 @@ private typealias PinCode = String
 data class State(
     val offerCodeUiConfig: OfferCodeUiConfig,
 
-    val isLoading: LoadingType = LoadingType.NONE,
+    val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val notifyOnAuthenticationFailure: Boolean = false,
 
@@ -111,7 +110,7 @@ class DocumentOfferCodeViewModel(
 
             setState {
                 copy(
-                    isLoading = LoadingType.NORMAL,
+                    isLoading = true,
                     error = null
                 )
             }
@@ -125,7 +124,7 @@ class DocumentOfferCodeViewModel(
                 when (response) {
                     is IssueDocumentsInteractorPartialState.Failure -> setState {
                         copy(
-                            isLoading = LoadingType.NONE,
+                            isLoading = false,
                             error = ContentErrorConfig(
                                 errorSubTitle = response.errorMessage,
                                 onCancel = { setEvent(Event.DismissError) }
@@ -136,7 +135,7 @@ class DocumentOfferCodeViewModel(
                     is IssueDocumentsInteractorPartialState.Success -> {
                         setState {
                             copy(
-                                isLoading = LoadingType.NONE,
+                                isLoading = false,
                                 error = null,
                             )
                         }
@@ -146,7 +145,7 @@ class DocumentOfferCodeViewModel(
                     is IssueDocumentsInteractorPartialState.DeferredSuccess -> {
                         setState {
                             copy(
-                                isLoading = LoadingType.NONE,
+                                isLoading = false,
                                 error = null,
                             )
                         }
