@@ -19,7 +19,6 @@ package eu.europa.ec.commonfeature.ui.document_details.domain
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
-import eu.europa.ec.eudi.wallet.document.NameSpace
 
 data class DocumentItem(
     val elementIdentifier: ElementIdentifier,
@@ -31,7 +30,6 @@ data class DocumentItem(
 data class DocumentDetailsDomain(
     val docName: String,
     val docId: DocumentId,
-    val docNamespace: NameSpace,
     val documentIdentifier: DocumentIdentifier,
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,

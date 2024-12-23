@@ -16,13 +16,8 @@
 
 package eu.europa.ec.issuancefeature.ui.document.details
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,13 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -57,10 +48,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IssuerDetailsCard
 import eu.europa.ec.uilogic.component.IssuerDetailsCardData
 import eu.europa.ec.uilogic.component.SectionTitle
-import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
-import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.content.ToolbarAction
 import eu.europa.ec.uilogic.component.content.ToolbarConfig
@@ -70,14 +59,12 @@ import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
+import eu.europa.ec.uilogic.component.wrap.BaseBottomSheetContent
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
-import eu.europa.ec.uilogic.component.wrap.GenericBaseSheetContent
 import eu.europa.ec.uilogic.component.wrap.WrapButton
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import kotlinx.coroutines.CoroutineScope
@@ -102,34 +89,33 @@ fun DocumentDetailsScreen(
         skipPartiallyExpanded = false
     )
 
+    val toolbarConfig = ToolbarConfig(
+        actions = if (state.error == null) {
+            listOf(
+                ToolbarAction(
+                    icon = if (state.isDocumentBookmarked) AppIcons.BookmarkFilled else AppIcons.Bookmark,
+                    onClick = { viewModel.setEvent(Event.BookmarkPressed) },
+                    enabled = !state.isLoading,
+                    throttleClicks = true,
+                ),
+                ToolbarAction(
+                    icon = if (state.hideSensitiveContent) AppIcons.Visibility else AppIcons.VisibilityOff,
+                    onClick = { viewModel.setEvent(Event.ChangeContentVisibility) },
+                    enabled = !state.isLoading,
+                    throttleClicks = false,
+                )
+            )
+        } else {
+            emptyList()
+        }
+    )
+
     ContentScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
         navigatableAction = state.navigatableAction,
         onBack = state.onBackAction,
-        toolBarConfig = ToolbarConfig(
-            actions = listOf(
-                ToolbarAction(
-                    icon = state.bookmarkIcon,
-                    customTint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    onClick = {
-                        viewModel.setEvent(
-                            Event.BookmarkPressed(isBookmarked = state.isDocumentBookmarked)
-                        )
-                    },
-                    enabled = !state.isLoading,
-                    throttleClicks = false,
-                ),
-                ToolbarAction(
-                    icon = state.sensitiveInfoIcon,
-                    customTint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    onClick = { viewModel.setEvent(Event.ChangeContentVisibility) },
-                    enabled = !state.isLoading,
-                    throttleClicks = false,
-                )
-            ),
-            navigationIconTint = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
+        toolBarConfig = toolbarConfig,
     ) { paddingValues ->
         Content(
             state = state,
@@ -155,7 +141,6 @@ fun DocumentDetailsScreen(
                 sheetState = bottomSheetState
             ) {
                 SheetContent(
-                    documentTypeUiName = state.document?.documentName.orEmpty(),
                     sheetContent = state.sheetContent,
                     onEventSent = {
                         viewModel.setEvent(it)
@@ -203,106 +188,51 @@ private fun Content(
 ) {
     state.document?.let { documentUi ->
         Column(
-            modifier = Modifier.padding(
-                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
-                top = paddingValues.calculateTopPadding(),
-                bottom = rememberContentBottomPadding(
-                    hasBottomPadding = state.hasBottomPadding,
-                    paddingValues = paddingValues
-                )
-            )
+            modifier = Modifier.padding(paddingValues)
         ) {
-            // Screen Headline
-            ContentTitle(
-                title = state.headline
-            )
+            // Screen title
+            ContentTitle(title = state.title)
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
             ) {
-                // Main Content
-                MainContent(
-                    detailsHaveBottomGradient = state.detailsHaveBottomGradient,
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // Document Details title and content
-                        SectionTitle(
-                            modifier = Modifier.padding(vertical = SPACING_MEDIUM.dp),
-                            sectionTitle = state.documentDetailsSectionTitle.orEmpty()
-                        )
 
-                        WrapListItems(
-                            items = documentUi.documentDetails,
-                            hideSensitiveContent = state.isShowingFullUserInfo.not(),
-                            onItemClick = null
-                        )
+                SectionTitle(
+                    modifier = Modifier.padding(vertical = SPACING_MEDIUM.dp),
+                    text = state.documentDetailsSectionTitle,
+                )
 
-                        // Issuer title and content
-                        SectionTitle(
-                            modifier = Modifier.padding(
-                                top = SPACING_LARGE.dp,
-                                bottom = SPACING_MEDIUM.dp,
-                            ),
-                            sectionTitle = state.documentIssuerSectionTitle.orEmpty()
-                        )
+                WrapListItems(
+                    items = documentUi.documentDetails,
+                    hideSensitiveContent = state.hideSensitiveContent,
+                    onItemClick = null,
+                )
 
-                        IssuerDetailsCard(
-                            item = IssuerDetailsCardData(
-                                issuerName = stringResource(R.string.placeholder_content_issuer),
-                                issuerLogo = AppIcons.IssuerPlaceholder,
-                                issuerCategory = stringResource(R.string.placeholder_content_category),
-                                issuerLocation = stringResource(R.string.placeholder_content_location),
-                                issuerIsVerified = true,
-                            ),
-                            onClick = {
-                                onEventSend(Event.IssuerCardPressed)
-                            }
-                        )
-                    }
-                }
+                // Issuer title and content
+                SectionTitle(
+                    modifier = Modifier.padding(
+                        top = SPACING_LARGE.dp,
+                        bottom = SPACING_MEDIUM.dp,
+                    ),
+                    text = state.documentIssuerSectionTitle,
+                )
 
-                if (state.shouldShowActionButtons) {
-                    WrapButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = SPACING_EXTRA_SMALL.dp),
-                        buttonConfig = ButtonConfig(
-                            type = ButtonType.PRIMARY,
-                            isWithoutContainerBackground = true,
-                            onClick = {
-                                onEventSend(Event.PrimaryButtonPressed)
-                            }
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.document_details_primary_button_text),
-                            style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary)
-                        )
-                    }
+                IssuerDetailsCard(
+                    item = IssuerDetailsCardData(
+                        issuerName = stringResource(R.string.placeholder_content_issuer),
+                        issuerLogo = AppIcons.IssuerPlaceholder,
+                        issuerCategory = stringResource(R.string.placeholder_content_category),
+                        issuerLocation = stringResource(R.string.placeholder_content_location),
+                        issuerIsVerified = true,
+                    ),
+                    onClick = { onEventSend(Event.IssuerCardPressed) }
+                )
 
-                    WrapButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = SPACING_LARGE.dp),
-                        buttonConfig = ButtonConfig(
-                            type = ButtonType.SECONDARY,
-                            isWarning = true,
-                            onClick = {
-                                onEventSend(Event.SecondaryButtonPressed)
-                            }
-                        )
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.document_details_secondary_button_text),
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
-                }
+                ButtonsSection(
+                    onEventSend = onEventSend
+                )
             }
         }
     }
@@ -325,6 +255,10 @@ private fun Content(
                 is Effect.ShowBottomSheet -> {
                     onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                 }
+
+                is Effect.BookmarkStored -> {
+                    onEventSend(Event.OnBookmarkStored)
+                }
             }
         }.collect()
     }
@@ -332,7 +266,6 @@ private fun Content(
 
 @Composable
 private fun SheetContent(
-    documentTypeUiName: String,
     sheetContent: DocumentDetailsBottomSheetContent,
     onEventSent: (event: Event) -> Unit
 ) {
@@ -341,16 +274,14 @@ private fun SheetContent(
             DialogBottomSheet(
                 textData = BottomSheetTextData(
                     title = stringResource(
-                        id = R.string.document_details_bottom_sheet_delete_title,
-                        documentTypeUiName
+                        id = R.string.document_details_bottom_sheet_delete_title
                     ),
                     message = stringResource(
-                        id = R.string.document_details_bottom_sheet_delete_subtitle,
-                        documentTypeUiName
+                        id = R.string.document_details_bottom_sheet_delete_subtitle
                     ),
                     positiveButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_primary_button_text),
                     negativeButtonText = stringResource(id = R.string.document_details_bottom_sheet_delete_secondary_button_text),
-                    isPositiveButtonWarning = true
+                    isPositiveButtonWarning = true,
                 ),
                 leadingIcon = AppIcons.Delete,
                 leadingIconTint = MaterialTheme.colorScheme.error,
@@ -359,94 +290,59 @@ private fun SheetContent(
             )
 
         is DocumentDetailsBottomSheetContent.BookmarkStoredInfo -> {
-            GenericBaseSheetContent(
-                titleContent = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
-                    ) {
-                        WrapIcon(
-                            iconData = AppIcons.BookmarkFilled,
-                            customTint = MaterialTheme.colorScheme.warning
-                        )
-                        Text(
-                            text = sheetContent.bottomSheetTextData.title,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }, bodyContent = {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = sheetContent.bottomSheetTextData.message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+            BaseBottomSheetContent(
+                textData = sheetContent.bottomSheetTextData,
+                leadingIcon = AppIcons.BookmarkFilled,
+                leadingIconTint = MaterialTheme.colorScheme.warning,
             )
         }
 
-        is DocumentDetailsBottomSheetContent.IssuerInfo -> {
-            GenericBaseSheetContent(
-                titleContent = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
-                    ) {
-                        WrapIcon(
-                            iconData = AppIcons.Verified,
-                            customTint = MaterialTheme.colorScheme.success
-                        )
-                        Text(
-                            text = sheetContent.bottomSheetTextData.title,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }, bodyContent = {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = sheetContent.bottomSheetTextData.message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
+        is DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo -> {
+            BaseBottomSheetContent(
+                textData = sheetContent.bottomSheetTextData,
+                leadingIcon = AppIcons.Verified,
+                leadingIconTint = MaterialTheme.colorScheme.success,
             )
         }
     }
 }
 
 @Composable
-private fun ColumnScope.MainContent(
-    detailsHaveBottomGradient: Boolean,
-    content: @Composable () -> Unit
-) {
-    if (detailsHaveBottomGradient) {
-        ContentGradient(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            gradientEdge = GradientEdge.BOTTOM
+private fun ButtonsSection(onEventSend: (Event) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                top = SPACING_EXTRA_SMALL.dp,
+                bottom = SPACING_MEDIUM.dp,
+            )
+    ) {
+        WrapButton(
+            modifier = Modifier.fillMaxWidth(),
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                onClick = { onEventSend(Event.PrimaryButtonPressed) },
+                isWithoutContainerBackground = true,
+            )
         ) {
-            content()
+            Text(
+                text = stringResource(id = R.string.document_details_primary_button_text),
+                style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary)
+            )
         }
-    } else {
-        content()
-    }
-}
 
-@Composable
-private fun rememberContentBottomPadding(
-    hasBottomPadding: Boolean,
-    paddingValues: PaddingValues
-): Dp {
-    return remember(hasBottomPadding) {
-        if (hasBottomPadding) {
-            paddingValues.calculateBottomPadding()
-        } else {
-            0.dp
+        WrapButton(
+            modifier = Modifier.fillMaxWidth(),
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                onClick = { onEventSend(Event.SecondaryButtonPressed) },
+                isWarning = true,
+            )
+        ) {
+            Text(
+                text = stringResource(id = R.string.document_details_secondary_button_text),
+                style = MaterialTheme.typography.labelLarge
+            )
         }
     }
 }
@@ -459,19 +355,15 @@ private fun IssuanceDocumentDetailsScreenPreview() {
         val state = State(
             detailsType = IssuanceFlowUiConfig.NO_DOCUMENT,
             navigatableAction = ScreenNavigateAction.NONE,
-            shouldShowActionButtons = true,
-            hasCustomTopBar = false,
-            hasBottomPadding = true,
-            detailsHaveBottomGradient = true,
             documentDetailsSectionTitle = "DOCUMENT DETAILS",
             documentIssuerSectionTitle = "ISSUER",
             document = DocumentUi(
-                documentId = "2",
+                documentId = "1",
                 documentName = "National ID",
                 documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
-                documentImage = "image3",
+                documentImage = "image1",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,
             ),
@@ -498,10 +390,6 @@ private fun DashboardDocumentDetailsScreenPreview() {
         val state = State(
             detailsType = IssuanceFlowUiConfig.EXTRA_DOCUMENT,
             navigatableAction = ScreenNavigateAction.CANCELABLE,
-            shouldShowActionButtons = false,
-            hasCustomTopBar = true,
-            hasBottomPadding = false,
-            detailsHaveBottomGradient = false,
             documentDetailsSectionTitle = "DOCUMENT DETAILS",
             documentIssuerSectionTitle = "ISSUER",
             document = DocumentUi(
@@ -510,7 +398,7 @@ private fun DashboardDocumentDetailsScreenPreview() {
                 documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
-                documentImage = "image3",
+                documentImage = "image2",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,
             ),

@@ -248,7 +248,6 @@ object TestsData {
     val mockedBasicPidDomain = DocumentDetailsDomain(
         docName = mockedDocUiNamePid,
         docId = mockedPidId,
-        docNamespace = mockedPidNameSpace,
         documentIdentifier = DocumentIdentifier.MdocPid,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
@@ -380,7 +379,6 @@ object TestsData {
     val mockedBasicMdlDomain = DocumentDetailsDomain(
         docName = mockedDocUiNameMdl,
         docId = mockedMdlId,
-        docNamespace = mockedMdlNameSpace,
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,

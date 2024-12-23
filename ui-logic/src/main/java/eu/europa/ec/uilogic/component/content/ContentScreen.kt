@@ -72,8 +72,7 @@ data class ToolbarAction(
 
 data class ToolbarConfig(
     val title: String = "",
-    val actions: List<ToolbarAction> = listOf(),
-    val navigationIconTint: Color? = null,
+    val actions: List<ToolbarAction> = listOf()
 )
 
 enum class ScreenNavigateAction {
@@ -131,6 +130,7 @@ fun ContentScreen(
     val hasToolBar = contentErrorConfig != null
             || navigatableAction != ScreenNavigateAction.NONE
             || topBar != null
+            || toolBarConfig?.actions?.isNotEmpty() == true
     val topSpacing = if (hasToolBar) TopSpacing.WithToolbar else TopSpacing.WithoutToolbar
 
     Scaffold(
@@ -246,7 +246,7 @@ private fun DefaultToolBar(
                             onBack?.invoke()
                             keyboardController?.hide()
                         },
-                        customTint = toolbarConfig?.navigationIconTint
+                        customTint = null,
                     )
                 )
             }
@@ -290,7 +290,7 @@ internal fun ToolBarActions(
                     icon = AppIcons.VerticalMore,
                     onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
                     enabled = true,
-                    customTint = MaterialTheme.colorScheme.primary
+                    customTint = null,
                 )
             )
             DropdownMenu(

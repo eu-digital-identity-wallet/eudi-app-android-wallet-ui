@@ -32,7 +32,6 @@ import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
@@ -43,7 +42,7 @@ object DocumentDetailsTransformer {
     fun transformToDocumentDetailsDomain(
         document: IssuedDocument,
         resourceProvider: ResourceProvider
-    ): Result<DocumentDetailsDomain?> = runCatching {
+    ): Result<DocumentDetailsDomain> = runCatching {
 
         val detailsDocumentItems = document.data.claims
             .map { claim ->
@@ -58,6 +57,11 @@ object DocumentDetailsTransformer {
                 )
             }
 
+        val documentImage = extractValueFromDocumentOrEmpty(
+            document = document,
+            key = DocumentJsonKeys.PORTRAIT
+        )
+
         val documentExpirationDate = extractValueFromDocumentOrEmpty(
             document = document,
             key = DocumentJsonKeys.EXPIRY_DATE
@@ -65,17 +69,9 @@ object DocumentDetailsTransformer {
 
         val docHasExpired = documentHasExpired(documentExpirationDate)
 
-        val documentImage = extractValueFromDocumentOrEmpty(
-            document = document,
-            key = DocumentJsonKeys.PORTRAIT
-        )
-
-        val docNamespace = (document.data as MsoMdocData).nameSpaces.keys.first()
-
         return@runCatching DocumentDetailsDomain(
             docName = document.name,
             docId = document.id,
-            docNamespace = docNamespace,
             documentIdentifier = document.toDocumentIdentifier(),
             documentExpirationDateFormatted = documentExpirationDate.toDateFormatted().orEmpty(),
             documentHasExpired = docHasExpired,

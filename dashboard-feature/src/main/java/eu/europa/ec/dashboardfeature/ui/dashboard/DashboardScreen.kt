@@ -406,12 +406,10 @@ private fun DashboardSheetContent(
             DialogBottomSheet(
                 textData = BottomSheetTextData(
                     title = stringResource(
-                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title,
-                        sheetContent.documentUi.documentName
+                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title
                     ),
                     message = stringResource(
-                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle,
-                        sheetContent.documentUi.documentName
+                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle
                     ),
                     positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_primary_button_text),
                     negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text),

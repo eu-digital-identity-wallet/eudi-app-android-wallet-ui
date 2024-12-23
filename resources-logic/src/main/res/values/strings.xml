@@ -34,7 +34,7 @@
     <string name="generic_qr_scan_title">Scan QR</string>
     <string name="generic_qr_scan_subtitle">Place the QR code within the frame to start scanning</string>
     <string name="generic_deferred_success_title">In progress</string>
-    <string name="generic_bottom_sheet_delete_title">Delete %1$s?</string>
+    <string name="generic_bottom_sheet_delete_title">Delete document?</string>
     <string name="generic_bottom_sheet_delete_subtitle">This document will be permanently deleted from your wallet and may affect access to services.</string>
     <string name="generic_bottom_sheet_delete_primary_button_text">Delete</string>
     <string name="generic_bottom_sheet_delete_secondary_button_text">Cancel</string>

@@ -36,8 +36,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 sealed class DocumentDetailsInteractorPartialState {
-    data class Success(val documentDetailsDomain: DocumentDetailsDomain) :
-        DocumentDetailsInteractorPartialState()
+    data class Success(
+        val documentDetailsDomain: DocumentDetailsDomain,
+        val documentIsBookmarked: Boolean,
+    ) : DocumentDetailsInteractorPartialState()
 
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
 }
@@ -45,13 +47,15 @@ sealed class DocumentDetailsInteractorPartialState {
 sealed class DocumentDetailsInteractorDeleteDocumentPartialState {
     data object SingleDocumentDeleted : DocumentDetailsInteractorDeleteDocumentPartialState()
     data object AllDocumentsDeleted : DocumentDetailsInteractorDeleteDocumentPartialState()
-    data class Failure(val errorMessage: String) :
-        DocumentDetailsInteractorDeleteDocumentPartialState()
+    data class Failure(
+        val errorMessage: String
+    ) : DocumentDetailsInteractorDeleteDocumentPartialState()
 }
 
 sealed class DocumentDetailsInteractorStoreBookmarkPartialState {
-    data class Success(val bookmarkId: String) :
-        DocumentDetailsInteractorStoreBookmarkPartialState()
+    data class Success(
+        val bookmarkId: String
+    ) : DocumentDetailsInteractorStoreBookmarkPartialState()
 
     data object Failure : DocumentDetailsInteractorStoreBookmarkPartialState()
 }
@@ -61,20 +65,13 @@ sealed class DocumentDetailsInteractorDeleteBookmarkPartialState {
     data object Failure : DocumentDetailsInteractorDeleteBookmarkPartialState()
 }
 
-sealed class DocumentDetailsInteractorRetrieveBookmarkPartialState {
-    data object Success : DocumentDetailsInteractorRetrieveBookmarkPartialState()
-    data object NoBookmarkRetrieved : DocumentDetailsInteractorRetrieveBookmarkPartialState()
-
-    data object Failure : DocumentDetailsInteractorRetrieveBookmarkPartialState()
-}
-
 interface DocumentDetailsInteractor {
     fun getDocumentDetails(
         documentId: DocumentId,
     ): Flow<DocumentDetailsInteractorPartialState>
 
     fun deleteDocument(
-        documentId: String
+        documentId: DocumentId
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState>
 
     fun storeBookmark(
@@ -84,10 +81,6 @@ interface DocumentDetailsInteractor {
     fun deleteBookmark(
         bookmarkId: String
     ): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState>
-
-    fun retrieveBookmark(
-        bookmarkId: String
-    ): Flow<DocumentDetailsInteractorRetrieveBookmarkPartialState>
 }
 
 class DocumentDetailsInteractorImpl(
@@ -115,13 +108,15 @@ class DocumentDetailsInteractorImpl(
                     )
 
                 val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
-                documentDetailsDomain?.let { safeDocumentDetailsDomain ->
-                    emit(
-                        DocumentDetailsInteractorPartialState.Success(
-                            documentDetailsDomain = safeDocumentDetailsDomain
-                        )
+
+                val documentIsBookmarked = bookmarkStorageController.retrieve(documentId) != null
+
+                emit(
+                    DocumentDetailsInteractorPartialState.Success(
+                        documentDetailsDomain = documentDetailsDomain,
+                        documentIsBookmarked = documentIsBookmarked,
                     )
-                } ?: emit(DocumentDetailsInteractorPartialState.Failure(error = genericErrorMsg))
+                )
             } ?: emit(DocumentDetailsInteractorPartialState.Failure(error = genericErrorMsg))
         }.safeAsync {
             DocumentDetailsInteractorPartialState.Failure(
@@ -201,17 +196,5 @@ class DocumentDetailsInteractorImpl(
             emit(DocumentDetailsInteractorDeleteBookmarkPartialState.Success)
         }.safeAsync {
             DocumentDetailsInteractorDeleteBookmarkPartialState.Failure
-        }
-
-    override fun retrieveBookmark(bookmarkId: String): Flow<DocumentDetailsInteractorRetrieveBookmarkPartialState> =
-        flow {
-            val bookmark = bookmarkStorageController.retrieve(bookmarkId)
-            bookmark?.let {
-                emit(DocumentDetailsInteractorRetrieveBookmarkPartialState.Success)
-            } ?: run {
-                emit(DocumentDetailsInteractorRetrieveBookmarkPartialState.NoBookmarkRetrieved)
-            }
-        }.safeAsync {
-            DocumentDetailsInteractorRetrieveBookmarkPartialState.Failure
         }
 }
