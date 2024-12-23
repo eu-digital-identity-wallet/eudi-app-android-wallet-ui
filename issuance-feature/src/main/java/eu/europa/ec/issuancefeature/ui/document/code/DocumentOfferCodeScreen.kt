@@ -116,7 +116,7 @@ private fun CodeFieldLayout(
         },
         length = state.offerCodeUiConfig.txCodeLength,
         visualTransformation = PasswordVisualTransformation(),
-        pinWidth = 46.dp,
+        pinWidth = 42.dp,
         focusOnCreate = true,
         shouldHideKeyboardOnCompletion = true
     )

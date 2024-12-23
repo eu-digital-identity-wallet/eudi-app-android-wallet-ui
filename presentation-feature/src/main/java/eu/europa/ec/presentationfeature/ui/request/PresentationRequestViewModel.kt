@@ -17,6 +17,7 @@
 package eu.europa.ec.presentationfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
@@ -67,9 +68,11 @@ class PresentationRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = "Verifier", //TODO change this when Redesign of PIN screen is done.
-                            subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
-                            quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
+                            mode = BiometricMode.Default(
+                                descriptionWhenBiometricsEnabled = resourceProvider.getString(R.string.loading_biometry_biometrics_enabled_description),
+                                descriptionWhenBiometricsNotEnabled = resourceProvider.getString(R.string.loading_biometry_biometrics_not_enabled_description),
+                                textAbovePin = resourceProvider.getString(R.string.biometric_default_mode_text_above_pin_field),
+                            ),
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
@@ -79,7 +82,7 @@ class PresentationRequestViewModel(
                                 onBackNavigation = ConfigNavigation(
                                     navigationType = NavigationType.PopTo(PresentationScreens.PresentationRequest),
                                 ),
-                                hasToolbarCancelIcon = true
+                                hasToolbarBackIcon = true
                             )
                         ),
                         BiometricUiConfig.Parser

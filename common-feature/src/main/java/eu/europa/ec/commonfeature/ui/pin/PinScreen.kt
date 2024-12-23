@@ -250,7 +250,7 @@ private fun PinFieldLayout(
         hasError = !state.quickPinError.isNullOrEmpty(),
         errorMessage = state.quickPinError,
         visualTransformation = PasswordVisualTransformation(),
-        pinWidth = 46.dp,
+        pinWidth = 42.dp,
         clearCode = state.resetPin,
         focusOnCreate = true
     )

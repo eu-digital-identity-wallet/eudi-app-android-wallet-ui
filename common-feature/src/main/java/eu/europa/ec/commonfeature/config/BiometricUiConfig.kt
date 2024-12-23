@@ -24,10 +24,22 @@ import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
+sealed interface BiometricMode {
+    data class Default(
+        val descriptionWhenBiometricsEnabled: String,
+        val descriptionWhenBiometricsNotEnabled: String,
+        val textAbovePin: String,
+    ) : BiometricMode
+
+    data class Login(
+        val title: String,
+        val subTitleWhenBiometricsEnabled: String,
+        val subTitleWhenBiometricsNotEnabled: String,
+    ) : BiometricMode
+}
+
 data class BiometricUiConfig(
-    val title: String,
-    val subTitle: String,
-    val quickPinOnlySubTitle: String,
+    val mode: BiometricMode,
     val isPreAuthorization: Boolean = false,
     val shouldInitializeBiometricAuthOnCreate: Boolean = true,
     val onSuccessNavigation: ConfigNavigation,
@@ -37,17 +49,23 @@ data class BiometricUiConfig(
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "biometricConfig"
         override fun provideParser(): Gson {
-            return GsonBuilder().registerTypeAdapter(
-                NavigationType::class.java,
-                SerializableTypeAdapter<NavigationType>()
-            ).create()
+            return GsonBuilder()
+                .registerTypeAdapter(
+                    NavigationType::class.java,
+                    SerializableTypeAdapter<NavigationType>()
+                )
+                .registerTypeAdapter(
+                    BiometricMode::class.java,
+                    SerializableTypeAdapter<BiometricMode>()
+                )
+                .create()
         }
     }
 }
 
 data class OnBackNavigationConfig(
     val onBackNavigation: ConfigNavigation?,
-    private val hasToolbarCancelIcon: Boolean
+    private val hasToolbarBackIcon: Boolean
 ) {
-    val isCancellable: Boolean get() = hasToolbarCancelIcon && onBackNavigation != null
+    val isBackable: Boolean get() = hasToolbarBackIcon && onBackNavigation != null
 }
