@@ -210,8 +210,7 @@ private fun DefaultToolBar(
                         onClick = {
                             onBack?.invoke()
                             keyboardController?.hide()
-                        },
-                        customTint = null,
+                        }
                     )
                 )
             }
@@ -255,7 +254,6 @@ internal fun ToolBarActions(
                     icon = AppIcons.VerticalMore,
                     onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
                     enabled = true,
-                    customTint = null,
                 )
             )
             DropdownMenu(
