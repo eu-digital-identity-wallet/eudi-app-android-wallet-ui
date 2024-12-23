@@ -30,7 +30,6 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
-import eu.europa.ec.uilogic.component.content.TitleWithBadge
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -54,12 +53,10 @@ class PresentationRequestViewModel(
         return ContentHeaderConfig(
             description = resourceProvider.getString(R.string.request_header_description),
             mainText = resourceProvider.getString(R.string.request_header_main_text),
-            //relyingPartyData = interactor.getRelyingPartyData() //TODO()
-            relyingPartyData = RelyingPartyData(
-                isVerified = true,
-                name = "(placeholder) Relying Party",
-                description = "requests the following",
-            )
+            relyingPartyData = getRelyingPartyData(
+                name = null,
+                isVerified = false,
+            ),
         )
     }
 
@@ -70,10 +67,7 @@ class PresentationRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = constructTitle(
-                                verifierName = viewState.value.verifierName.orEmpty(),
-                                verifierIsTrusted = true
-                            ).plainText, //TODO change this when Redesign of PIN screen is done.
+                            title = "Verifier", //TODO change this when Redesign of PIN screen is done.
                             subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
                             quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
                             isPreAuthorization = false,
@@ -129,11 +123,19 @@ class PresentationRequestViewModel(
 
                     is PresentationRequestInteractorPartialState.Success -> {
                         updateData(response.requestDocuments)
+
+                        val updatedHeaderConfig = viewState.value.headerConfig.copy(
+                            relyingPartyData = getRelyingPartyData(
+                                name = response.verifierName,
+                                isVerified = response.verifierIsTrusted,
+                            )
+                        )
+
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                verifierName = response.verifierName,
+                                headerConfig = updatedHeaderConfig,
                                 items = response.requestDocuments,
                             )
                         }
@@ -144,11 +146,18 @@ class PresentationRequestViewModel(
                     }
 
                     is PresentationRequestInteractorPartialState.NoData -> {
+                        val updatedHeaderConfig = viewState.value.headerConfig.copy(
+                            relyingPartyData = getRelyingPartyData(
+                                name = response.verifierName,
+                                isVerified = response.verifierIsTrusted,
+                            )
+                        )
+
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                verifierName = response.verifierName,
+                                headerConfig = updatedHeaderConfig,
                                 noItems = true,
                             )
                         }
@@ -171,22 +180,15 @@ class PresentationRequestViewModel(
         interactor.stopPresentation()
     }
 
-    private fun constructTitle(
-        verifierName: String? = null,
-        verifierIsTrusted: Boolean = false
-    ): TitleWithBadge {
-        val textBeforeBadge = if (verifierName.isNullOrBlank()) {
-            resourceProvider.getString(R.string.request_title_before_badge)
-        } else {
-            verifierName
-        }
-
-        val textAfterBadge = resourceProvider.getString(R.string.request_title_after_badge)
-
-        return TitleWithBadge(
-            textBeforeBadge = textBeforeBadge,
-            textAfterBadge = textAfterBadge,
-            isTrusted = verifierIsTrusted
+    private fun getRelyingPartyData(
+        name: String?,
+        isVerified: Boolean,
+    ): RelyingPartyData {
+        return RelyingPartyData(
+            isVerified = isVerified,
+            name = name
+                ?: resourceProvider.getString(R.string.request_header_relying_party_default_name),
+            description = resourceProvider.getString(R.string.request_header_relying_party_description),
         )
     }
 }

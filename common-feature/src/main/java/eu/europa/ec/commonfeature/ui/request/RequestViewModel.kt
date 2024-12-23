@@ -38,7 +38,6 @@ data class State(
     val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.WARNING,
     val hasWarnedUser: Boolean = false,
 
-    val verifierName: String? = null,
     val items: List<RequestDocumentItemUi> = emptyList(),
     val noItems: Boolean = false,
     val allowShare: Boolean = false
@@ -115,7 +114,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         return State(
             headerConfig = getHeaderConfig(),
             error = null,
-            verifierName = null
         )
     }
 

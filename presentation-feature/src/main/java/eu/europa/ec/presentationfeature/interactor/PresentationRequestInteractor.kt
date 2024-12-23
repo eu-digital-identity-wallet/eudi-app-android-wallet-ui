@@ -30,13 +30,13 @@ import kotlinx.coroutines.flow.mapNotNull
 
 sealed class PresentationRequestInteractorPartialState {
     data class Success(
-        val verifierName: String? = null,
+        val verifierName: String?,
         val verifierIsTrusted: Boolean,
         val requestDocuments: List<RequestDocumentItemUi>
     ) : PresentationRequestInteractorPartialState()
 
     data class NoData(
-        val verifierName: String? = null,
+        val verifierName: String?,
         val verifierIsTrusted: Boolean,
     ) : PresentationRequestInteractorPartialState()
 

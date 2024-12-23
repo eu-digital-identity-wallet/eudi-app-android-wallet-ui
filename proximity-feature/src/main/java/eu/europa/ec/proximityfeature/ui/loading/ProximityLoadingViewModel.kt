@@ -56,11 +56,11 @@ class ProximityLoadingViewModel(
 
     override fun getTitle(): String {
         return if (interactor.verifierName.isNullOrBlank()) {
-            resourceProvider.getString(R.string.request_title_before_badge) +
-                    resourceProvider.getString(R.string.request_title_after_badge)
+            resourceProvider.getString(R.string.request_header_relying_party_default_name) +
+                    resourceProvider.getString(R.string.request_header_relying_party_description)
         } else {
             interactor.verifierName +
-                    resourceProvider.getString(R.string.request_title_after_badge)
+                    resourceProvider.getString(R.string.request_header_relying_party_description)
         }
     }
 
