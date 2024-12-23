@@ -17,18 +17,21 @@
 package eu.europa.ec.commonfeature.ui.pin
 
 import android.content.Context
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -37,11 +40,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.AppIconAndText
+import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
@@ -91,11 +96,7 @@ fun PinScreen(
                             type = ButtonType.PRIMARY,
                             enabled = state.isButtonEnabled,
                             onClick = {
-                                viewModel.setEvent(
-                                    Event.NextButtonPressed(
-                                        pin = state.pin
-                                    )
-                                )
+                                viewModel.setEvent(Event.NextButtonPressed(pin = state.pin))
                             }
                         )
                     )
@@ -179,23 +180,47 @@ private fun Content(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        ContentTitle(
-            title = state.title,
-            subtitle = state.subtitle
+        AppIconAndText(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = SPACING_LARGE.dp),
+            appIconAndTextData = AppIconAndTextData(),
         )
 
-        VSpacer.Medium()
-
-        PinFieldLayout(
-            state = state,
-            onPinInput = { quickPin ->
-                onEventSend(
-                    Event.OnQuickPinEntered(
-                        quickPin
-                    )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = SPACING_LARGE.dp),
+            verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
+        ) {
+            Text(
+                text = state.title,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-            }
-        )
+            )
+            Text(
+                text = state.subtitle,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = SPACING_LARGE.dp),
+            verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
+        ) {
+            PinFieldLayout(
+                modifier = Modifier.fillMaxWidth(),
+                state = state,
+                onPinInput = { quickPin ->
+                    onEventSend(Event.OnQuickPinEntered(quickPin))
+                }
+            )
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -239,13 +264,13 @@ private fun SheetContent(
 
 @Composable
 private fun PinFieldLayout(
+    modifier: Modifier = Modifier,
     state: State,
     onPinInput: (String) -> Unit,
 ) {
     WrapPinTextField(
-        onPinUpdate = {
-            onPinInput(it)
-        },
+        modifier = modifier,
+        onPinUpdate = onPinInput,
         length = state.quickPinSize,
         hasError = !state.quickPinError.isNullOrEmpty(),
         errorMessage = state.quickPinError,

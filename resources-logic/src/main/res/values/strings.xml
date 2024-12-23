@@ -118,8 +118,8 @@
     <string name="quick_pin_numerical_rule_invalid_error_message">Only numerical values are allowed</string>
     <string name="quick_pin_non_match">Pins do not match</string>
 
-    <string name="quick_pin_create_title">Welcome to the EUDI Wallet</string>
-    <string name="quick_pin_create_enter_subtitle">Set a quick pin for future logins</string>
+    <string name="quick_pin_create_title">Welcome to your Wallet</string>
+    <string name="quick_pin_create_enter_subtitle">Secure your wallet with a PIN code and connect to your National System.</string>
     <string name="quick_pin_create_reenter_subtitle">Re-enter the quick pin</string>
 
     <string name="quick_pin_change_title">Change quick pin</string>
