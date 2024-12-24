@@ -19,6 +19,7 @@ package eu.europa.ec.commonfeature.ui.loading
 import android.content.Context
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -31,8 +32,7 @@ import kotlin.time.Duration
 
 data class State(
     val error: ContentErrorConfig? = null,
-    val screenTitle: String,
-    val screenSubtitle: String,
+    val headerConfig: ContentHeaderConfig,
     val isCancellable: Boolean,
     val notifyOnAuthenticationFailure: Boolean = false
 ) : ViewState
@@ -57,14 +57,9 @@ sealed class Effect : ViewSideEffect {
 abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
 
     /**
-     * The title of the re-usable [LoadingScreen] .
+     * The [ContentHeaderConfig] of the re-usable [LoadingScreen] .
      */
-    abstract fun getTitle(): String
-
-    /**
-     * The subtitle of the re-usable [LoadingScreen] .
-     */
-    abstract fun getSubtitle(): String
+    abstract fun getHeaderConfig(): ContentHeaderConfig
 
     /**
      * The [Screen] the user will be navigated to:
@@ -94,8 +89,7 @@ abstract class LoadingViewModel : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State {
         return State(
-            screenTitle = getTitle(),
-            screenSubtitle = getSubtitle(),
+            headerConfig = getHeaderConfig(),
             error = null,
             isCancellable = !getCancellableTimeout().isPositive()
         )

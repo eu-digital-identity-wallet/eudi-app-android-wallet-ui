@@ -31,6 +31,7 @@ import eu.europa.ec.presentationfeature.interactor.PresentationLoadingSendReques
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -55,18 +56,10 @@ class PresentationLoadingViewModel(
     private val interactor: PresentationLoadingInteractor,
 ) : LoadingViewModel() {
 
-    override fun getTitle(): String {
-        return if (interactor.verifierName.isNullOrBlank()) {
-            resourceProvider.getString(R.string.request_header_relying_party_default_name) +
-                    resourceProvider.getString(R.string.request_header_relying_party_description)
-        } else {
-            interactor.verifierName +
-                    resourceProvider.getString(R.string.request_header_relying_party_description)
-        }
-    }
-
-    override fun getSubtitle(): String {
-        return resourceProvider.getString(R.string.loading_subtitle)
+    override fun getHeaderConfig(): ContentHeaderConfig {
+        return ContentHeaderConfig(
+            description = resourceProvider.getString(R.string.loading_content_header_description),
+        )
     }
 
     override fun getPreviousScreen(): Screen {
@@ -241,7 +234,7 @@ class PresentationLoadingViewModel(
                     ),
                     onBackScreenToNavigate = deepLinkWithUriOrPopToDashboard,
                 ),
-                SuccessUIConfig.Parser
+                SuccessUIConfig
             ).orEmpty()
         )
     }

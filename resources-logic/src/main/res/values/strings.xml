@@ -153,7 +153,7 @@
     <string name="request_element_identifier_not_available">Not available</string>
 
     <!-- Loading Screen -->
-    <string name="loading_subtitle">Please wait…</string>
+    <string name="loading_content_header_description">Please wait…</string>
     <string name="loading_success_config_title">@string/generic_success</string>
     <string name="loading_success_config_primary_button_text">@string/generic_continue_capitalized</string>
     <string name="loading_biometry_biometrics_enabled_description">Use your biometrics to approve the transaction.</string>
