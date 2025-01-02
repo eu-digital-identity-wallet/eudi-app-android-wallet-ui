@@ -24,6 +24,7 @@ import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePop
+import eu.europa.ec.commonfeature.util.TestsData.mockedConfigurationIdentifierValue
 import eu.europa.ec.commonfeature.util.TestsData.mockedInvalidCodeFormatMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuanceErrorMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
@@ -313,7 +314,10 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedList = listOf(
-                    DocumentItemUi(title = mockedOfferedDocumentDocType)
+                    DocumentItemUi(
+                        title = mockedOfferedDocumentDocType,
+                        documentId = mockedConfigurationIdentifierValue
+                    )
                 )
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
                     documents = expectedList,
@@ -364,7 +368,10 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedDocumentsUiList = listOf(
-                    DocumentItemUi(mockedOfferedDocumentName)
+                    DocumentItemUi(
+                        title = mockedOfferedDocumentName,
+                        documentId = mockedConfigurationIdentifierValue
+                    )
                 )
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
                     documents = expectedDocumentsUiList,
@@ -1188,6 +1195,7 @@ class TestDocumentOfferInteractor {
                     display = display
                 )
             )
+            whenever(this.configurationIdentifier).thenReturn(CredentialConfigurationIdentifier("mockedConfigurationIdentifierValue"))
         }
     }
 

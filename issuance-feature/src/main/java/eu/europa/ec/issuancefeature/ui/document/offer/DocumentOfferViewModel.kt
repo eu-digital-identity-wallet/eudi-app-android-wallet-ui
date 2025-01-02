@@ -24,14 +24,17 @@ import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.document.ResolveDocumentOfferInteractorPartialState
+import eu.europa.ec.issuancefeature.ui.document.offer.transformer.DocumentOfferTransformer.transformToDocumentOfferUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -59,11 +62,11 @@ data class State(
     val notifyOnAuthenticationFailure: Boolean = false,
 
     val issuerName: String,
-    val screenTitle: String,
-    val screenSubtitle: String,
-    val documents: List<DocumentItemUi> = emptyList(),
+    val documents: List<ListItemData> = emptyList(),
     val noDocument: Boolean = false,
-    val txCodeLength: Int? = null
+    val txCodeLength: Int? = null,
+
+    val headerConfig: ContentHeaderConfig
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -75,7 +78,8 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
 
     data class PrimaryButtonPressed(val context: Context) : Event()
-    data object SecondaryButtonPressed : Event()
+
+    data object BackButtonPressed : Event()
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
@@ -133,8 +137,7 @@ class DocumentOfferViewModel(
         return State(
             offerUiConfig = deserializedOfferUiConfig,
             issuerName = issuerName,
-            screenTitle = calculateScreenTitle(issuerName = issuerName),
-            screenSubtitle = resourceProvider.getString(R.string.issuance_document_offer_subtitle),
+            headerConfig = getHeaderConfig()
         )
     }
 
@@ -170,7 +173,7 @@ class DocumentOfferViewModel(
                 )
             }
 
-            is Event.SecondaryButtonPressed -> {
+            is Event.BackButtonPressed -> {
                 showBottomSheet()
             }
 
@@ -262,11 +265,10 @@ class DocumentOfferViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                documents = response.documents,
+                                documents = response.documents.transformToDocumentOfferUi(),
                                 isInitialised = true,
                                 noDocument = false,
                                 issuerName = response.issuerName,
-                                screenTitle = calculateScreenTitle(issuerName = response.issuerName),
                                 txCodeLength = response.txCodeLength
                             )
                         }
@@ -283,13 +285,24 @@ class DocumentOfferViewModel(
                                 isInitialised = true,
                                 noDocument = true,
                                 issuerName = response.issuerName,
-                                screenTitle = calculateScreenTitle(issuerName = response.issuerName)
                             )
                         }
                     }
                 }
             }
         }
+    }
+
+    private fun getHeaderConfig(): ContentHeaderConfig {
+        return ContentHeaderConfig(
+            description = resourceProvider.getString(R.string.issuance_document_offer_description),
+            mainText = resourceProvider.getString(R.string.issuance_document_offer_header_main_text),
+            relyingPartyData = RelyingPartyData(
+                isVerified = true,
+                name = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name),
+                description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
+            )
+        )
     }
 
     private fun issueDocuments(
@@ -422,13 +435,6 @@ class DocumentOfferViewModel(
         setEffect {
             Effect.CloseBottomSheet
         }
-    }
-
-    private fun calculateScreenTitle(issuerName: String): String {
-        return resourceProvider.getString(
-            R.string.issuance_document_offer_title,
-            issuerName
-        )
     }
 
     private fun navigateToOfferCodeScreen(

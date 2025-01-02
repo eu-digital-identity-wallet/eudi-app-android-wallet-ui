@@ -14,11 +14,27 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.request.model
+package eu.europa.ec.issuancefeature.ui.document.offer.transformer
 
+import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.MainContentData
 
-data class DocumentItemUi(
-    val title: String,
-    val documentId: DocumentId
-)
+internal object DocumentOfferTransformer {
+    fun List<DocumentItemUi>.transformToDocumentOfferUi(): List<ListItemData> {
+        return this.mapIndexed { index, item ->
+            ListItemData(
+                itemId = generateItemId(documentId = item.documentId, index = index),
+                mainContentData = MainContentData.Text(item.title)
+            )
+        }
+    }
+}
+
+private fun generateItemId(
+    documentId: DocumentId,
+    index: Int
+): String {
+    return "${documentId}_$index"
+}

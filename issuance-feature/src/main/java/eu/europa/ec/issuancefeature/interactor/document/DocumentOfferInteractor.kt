@@ -161,7 +161,8 @@ class DocumentOfferInteractorImpl(
                                         DocumentItemUi(
                                             title = offeredDocument.getName(
                                                 resourceProvider.getLocale()
-                                            ).orEmpty()
+                                            ).orEmpty(),
+                                            documentId = offeredDocument.configurationIdentifier.value
                                         )
                                     },
                                     issuerName = response.offer.getIssuerName(resourceProvider.getLocale()),

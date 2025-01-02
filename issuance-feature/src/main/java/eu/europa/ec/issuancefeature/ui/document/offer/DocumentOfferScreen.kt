@@ -17,14 +17,11 @@
 package eu.europa.ec.issuancefeature.ui.document.offer
 
 import android.content.Context
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -39,36 +36,48 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.request.DocumentCard
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
+import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ErrorInfo
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.MainContentData
+import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentGradient
+import eu.europa.ec.uilogic.component.content.ContentHeader
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
+import eu.europa.ec.uilogic.component.utils.SIZE_26
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapButton
+import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
+import eu.europa.ec.uilogic.component.wrap.StickyBottomType
+import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,8 +98,26 @@ fun DocumentOfferScreen(
     ContentScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
-        navigatableAction = ScreenNavigateAction.NONE,
-        onBack = { viewModel.setEvent(Event.SecondaryButtonPressed) },
+        navigatableAction = ScreenNavigateAction.BACKABLE,
+        onBack = { viewModel.setEvent(Event.BackButtonPressed) },
+        stickyBottom = { paddingValues ->
+            WrapStickyBottomContent(
+                stickyBottomModifier = Modifier
+                    .fillMaxWidth()
+                    .padding(paddingValues),
+                stickyBottomConfig = StickyBottomConfig(
+                    type = StickyBottomType.OneButton(
+                        config = ButtonConfig(
+                            type = ButtonType.PRIMARY,
+                            enabled = !state.isLoading && !state.noDocument,
+                            onClick = { viewModel.setEvent(Event.PrimaryButtonPressed(context)) }
+                        )
+                    )
+                )
+            ) {
+                Text(text = stringResource(R.string.issuance_document_offer_primary_button_text_add))
+            }
+        }
     ) { paddingValues ->
         Content(
             state = state,
@@ -102,7 +129,6 @@ fun DocumentOfferScreen(
             paddingValues = paddingValues,
             coroutineScope = scope,
             modalBottomSheetState = bottomSheetState,
-            context = context
         )
 
         if (isBottomSheetOpen) {
@@ -167,48 +193,39 @@ private fun Content(
     paddingValues: PaddingValues,
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
-    context: Context
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        // Screen Title
-        ContentTitle(
-            title = state.screenTitle,
-            subtitle = state.screenSubtitle,
-        )
-
-        if (state.noDocument) {
-            ErrorInfo(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                informativeText = stringResource(id = R.string.issuance_document_offer_error_no_document)
-            )
-        } else {
-            // Add bottom gradient to Screen Main Content
-            ContentGradient(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                gradientEdge = GradientEdge.BOTTOM
-            ) {
-                // Screen Main Content
-                MainContent(
-                    modifier = Modifier.fillMaxSize(),
-                    documents = state.documents,
+        if (state.isLoading.not()) {
+            if (state.noDocument) {
+                ErrorInfo(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    informativeText = stringResource(id = R.string.issuance_document_offer_error_no_document)
                 )
+            } else {
+                ContentHeader(
+                    modifier = Modifier.fillMaxWidth(),
+                    config = state.headerConfig,
+                )
+                // Add bottom gradient to Screen Main Content
+                ContentGradient(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    gradientEdge = GradientEdge.BOTTOM
+                ) {
+                    // Screen Main Content
+                    MainContent(
+                        documents = state.documents,
+                    )
+                }
             }
         }
-
-        // Sticky Bottom Section
-        StickyBottomSection(
-            state = state,
-            onEventSend = onEventSend,
-            context = context
-        )
     }
 
     LaunchedEffect(Unit) {
@@ -253,54 +270,16 @@ private fun SheetContent(
 @Composable
 private fun MainContent(
     modifier: Modifier = Modifier,
-    documents: List<DocumentItemUi>,
+    documents: List<ListItemData>,
 ) {
-    LazyColumn(
+    VSpacer.Small()
+
+    WrapListItems(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
-        contentPadding = PaddingValues(
-            top = SPACING_SMALL.dp,
-            bottom = SPACING_EXTRA_LARGE.dp
-        )
-    ) {
-        items(documents) { document ->
-            DocumentCard(
-                cardText = document.title,
-            )
-        }
-    }
-}
-
-@Composable
-private fun StickyBottomSection(
-    state: State,
-    onEventSend: (Event) -> Unit,
-    context: Context
-) {
-    Column {
-
-        WrapButton(
-            modifier = Modifier.fillMaxWidth(),
-            buttonConfig = ButtonConfig(
-                type = ButtonType.PRIMARY,
-                enabled = !state.isLoading && !state.noDocument,
-                onClick = { onEventSend(Event.PrimaryButtonPressed(context)) }
-            )
-        ) {
-            Text(text = stringResource(id = R.string.issuance_document_offer_primary_button_text))
-        }
-        VSpacer.Medium()
-
-        WrapButton(
-            modifier = Modifier.fillMaxWidth(),
-            buttonConfig = ButtonConfig(
-                type = ButtonType.SECONDARY,
-                onClick = { onEventSend(Event.SecondaryButtonPressed) }
-            )
-        ) {
-            Text(text = stringResource(id = R.string.issuance_document_offer_secondary_button_text))
-        }
-    }
+        items = documents,
+        onItemClick = null,
+        mainContentVerticalPadding = SIZE_26.dp
+    )
 }
 
 private fun handleNavigationEffect(
@@ -337,5 +316,58 @@ private fun handleNavigationEffect(
         }
 
         is Effect.Navigation.Pop -> navController.popBackStack()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@ThemeModePreviews
+@Composable
+private fun ContentPreview() {
+    PreviewTheme {
+        val previewState = State(
+            isLoading = false,
+            error = null,
+            isBottomSheetOpen = false,
+            isInitialised = true,
+            issuerName = "Placeholder Issuer",
+            documents = listOf(
+                ListItemData(
+                    itemId = "doc_1",
+                    mainContentData = MainContentData.Text("PID")
+                )
+            ),
+            noDocument = false,
+            headerConfig = ContentHeaderConfig(
+                description = "",
+                mainText = "",
+                relyingPartyData = RelyingPartyData(
+                    isVerified = true,
+                    name = "Placeholder Relying Party",
+                    description = ""
+                )
+            ),
+            offerUiConfig = OfferUiConfig(
+                offerURI = "",
+                onSuccessNavigation = ConfigNavigation(
+                    navigationType = NavigationType.PushScreen(
+                        screen = DashboardScreens.Dashboard,
+                        popUpToScreen = IssuanceScreens.AddDocument
+                    )
+                ),
+                onCancelNavigation = ConfigNavigation(
+                    navigationType = NavigationType.Pop
+                )
+            )
+        )
+
+        Content(
+            state = previewState,
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
+            coroutineScope = rememberCoroutineScope(),
+            modalBottomSheetState = rememberModalBottomSheetState(),
+        )
     }
 }
