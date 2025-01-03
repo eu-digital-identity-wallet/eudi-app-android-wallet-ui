@@ -269,7 +269,12 @@ class DocumentOfferViewModel(
                                 isInitialised = true,
                                 noDocument = false,
                                 issuerName = response.issuerName,
-                                txCodeLength = response.txCodeLength
+                                txCodeLength = response.txCodeLength,
+                                headerConfig = headerConfig.copy(
+                                    relyingPartyData = getHeaderConfigIssuerData(
+                                        issuerName = response.issuerName
+                                    )
+                                )
                             )
                         }
 
@@ -302,6 +307,14 @@ class DocumentOfferViewModel(
                 name = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name),
                 description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
             )
+        )
+    }
+
+    private fun getHeaderConfigIssuerData(issuerName: String): RelyingPartyData {
+        return RelyingPartyData(
+            isVerified = true,
+            name = issuerName,
+            description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
         )
     }
 
