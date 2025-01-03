@@ -293,7 +293,7 @@
 
     <!-- Issuance Document Offer Code -->
     <string name="issuance_code_title">%1$s requires verification</string>
-    <string name="issuance_code_caption">Type the %1$d-digit transaction code you received</string>
+    <string name="issuance_code_caption">Type the %1$d-digit transaction code you received.</string>
 
     <!-- Issuance Document Errors -->
     <string name="issuance_generic_error">Something went wrong issuing your document(s)</string>

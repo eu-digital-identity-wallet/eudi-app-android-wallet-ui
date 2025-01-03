@@ -42,7 +42,8 @@ data class State(
     val error: ContentErrorConfig? = null,
     val notifyOnAuthenticationFailure: Boolean = false,
 
-    val screenTitle: String,
+    // TODO should a title be displayed?
+    val screenTitle: String? = null,
     val screenSubtitle: String
 ) : ViewState
 

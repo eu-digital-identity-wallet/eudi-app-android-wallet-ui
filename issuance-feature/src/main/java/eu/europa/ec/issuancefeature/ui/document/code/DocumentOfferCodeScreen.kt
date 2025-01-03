@@ -17,28 +17,40 @@
 package eu.europa.ec.issuancefeature.ui.document.code
 
 import android.content.Context
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
+import eu.europa.ec.uilogic.component.AppIconAndText
+import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @Composable
 fun DocumentOfferCodeScreen(
@@ -51,7 +63,7 @@ fun DocumentOfferCodeScreen(
     ContentScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
-        navigatableAction = ScreenNavigateAction.CANCELABLE,
+        navigatableAction = ScreenNavigateAction.BACKABLE,
         onBack = { viewModel.setEvent(Event.Pop) },
     ) { paddingValues ->
         Content(
@@ -81,18 +93,54 @@ private fun Content(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        ContentTitle(
-            title = state.screenTitle,
-            subtitle = state.screenSubtitle,
+        AppIconAndText(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = SPACING_LARGE.dp),
+            appIconAndTextData = AppIconAndTextData(),
         )
 
-        WrapIcon(
-            iconData = AppIcons.Message,
-            customTint = MaterialTheme.colorScheme.primary
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = SPACING_LARGE.dp),
+            verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
+        ) {
+            state.screenTitle?.let {
+                Text(
+                    text = state.screenTitle,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            }
 
-        CodeFieldLayout(state = state) {
-            onEventSend(Event.OnPinChange(code = it, context = context))
+            Text(
+                text = state.screenSubtitle,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = SPACING_LARGE.dp),
+            verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
+        ) {
+            CodeFieldLayout(
+                modifier = Modifier.fillMaxWidth(),
+                state = state,
+                onPinInput = { quickPin ->
+                    onEventSend(
+                        Event.OnPinChange(
+                            code = quickPin,
+                            context = context
+                        )
+                    )
+                }
+            )
         }
     }
 
@@ -107,10 +155,12 @@ private fun Content(
 
 @Composable
 private fun CodeFieldLayout(
+    modifier: Modifier,
     state: State,
     onPinInput: (String) -> Unit,
 ) {
     WrapPinTextField(
+        modifier = modifier,
         onPinUpdate = {
             onPinInput(it)
         },
@@ -136,5 +186,34 @@ private fun handleNavigationEffect(
         }
 
         is Effect.Navigation.Pop -> navController.popBackStack()
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun DocumentOfferCodeScreenEmptyPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                isLoading = false,
+                error = null,
+                notifyOnAuthenticationFailure = false,
+                screenTitle = "Demo Issuer requires verification",
+                screenSubtitle = "Type the 5-digit transaction code you received.",
+                offerCodeUiConfig = OfferCodeUiConfig(
+                    offerURI = "https://offer.uri.com",
+                    txCodeLength = 5,
+                    issuerName = "Demo Issuer",
+                    onSuccessNavigation = ConfigNavigation(
+                        navigationType = NavigationType.Pop
+                    )
+                )
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(16.dp),
+            context = LocalContext.current
+        )
     }
 }
