@@ -50,7 +50,7 @@ sealed class Event : ViewEvent {
     data object StickyButtonPressed : Event()
 
     data class UserIdentificationClicked(val itemId: String) : Event()
-    data class ExpandOrCollapseRequiredDataList(val itemId: String) : Event()
+    data class ExpandOrCollapseRequestDocumentItem(val itemId: String) : Event()
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
@@ -149,8 +149,8 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            is Event.ExpandOrCollapseRequiredDataList -> {
-                expandOrCollapseRequiredDataList(id = event.itemId)
+            is Event.ExpandOrCollapseRequestDocumentItem -> {
+                expandOrCollapseRequestDocumentItem(id = event.itemId)
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
@@ -185,7 +185,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         }
     }
 
-    private fun expandOrCollapseRequiredDataList(id: String) {
+    private fun expandOrCollapseRequestDocumentItem(id: String) {
         val currentItems = viewState.value.items
         val updatedItems = currentItems.map { item ->
             if (item.collapsedUiItem.uiItem.itemId == id) {

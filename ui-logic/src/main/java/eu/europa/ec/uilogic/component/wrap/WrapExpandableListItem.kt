@@ -27,8 +27,8 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -96,7 +96,7 @@ private fun WrapExpandableListItemPreview() {
         val data = ExpandableListItemData(
             collapsed = ListItemData(
                 itemId = "0",
-                mainContentData = MainContentData.Text(text = "Digital ID"),
+                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
                 trailingContentData = ListItemTrailingContentData.Icon(
                     iconData = AppIcons.KeyboardArrowDown
@@ -106,17 +106,17 @@ private fun WrapExpandableListItemPreview() {
                 ListItemData(
                     itemId = "1",
                     overlineText = "Family name",
-                    mainContentData = MainContentData.Text(text = "Doe"),
+                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
                 ),
                 ListItemData(
                     itemId = "2",
                     overlineText = "Given name",
-                    mainContentData = MainContentData.Text(text = "John"),
+                    mainContentData = ListItemMainContentData.Text(text = "John"),
                 ),
                 ListItemData(
                     itemId = "3",
                     overlineText = "Date of birth",
-                    mainContentData = MainContentData.Text(text = "21 Oct 2023"),
+                    mainContentData = ListItemMainContentData.Text(text = "21 Oct 2023"),
                 ),
             )
         )

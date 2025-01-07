@@ -35,7 +35,7 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.MainContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 
 object DocumentDetailsTransformer {
 
@@ -102,15 +102,15 @@ object DocumentDetailsTransformer {
 
         val mainTextContentData = when {
             keyIsPortrait(key = this.elementIdentifier) -> {
-                MainContentData.Text(text = "")
+                ListItemMainContentData.Text(text = "")
             }
 
             keyIsSignature(key = this.elementIdentifier) -> {
-                MainContentData.Image(base64Image = this.value)
+                ListItemMainContentData.Image(base64Image = this.value)
             }
 
             else -> {
-                MainContentData.Text(text = this.value)
+                ListItemMainContentData.Text(text = this.value)
             }
         }
 

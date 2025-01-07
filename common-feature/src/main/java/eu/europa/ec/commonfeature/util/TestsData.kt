@@ -31,7 +31,7 @@ import eu.europa.ec.eudi.openid4vci.TxCode
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.MainContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.DashboardScreens
@@ -204,42 +204,42 @@ object TestsData {
             ListItemData(
                 itemId = "",
                 overlineText = "birth_city",
-                mainContentData = MainContentData.Text("KATRINEHOLM")
+                mainContentData = ListItemMainContentData.Text("KATRINEHOLM")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "gender",
-                mainContentData = MainContentData.Text("male")
+                mainContentData = ListItemMainContentData.Text("male")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "age_over_18",
-                mainContentData = MainContentData.Text("yes")
+                mainContentData = ListItemMainContentData.Text("yes")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "age_birth_year",
-                mainContentData = MainContentData.Text("1985")
+                mainContentData = ListItemMainContentData.Text("1985")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "expiry_date",
-                mainContentData = MainContentData.Text("30 Mar 2050")
+                mainContentData = ListItemMainContentData.Text("30 Mar 2050")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "given_name",
-                mainContentData = MainContentData.Text("JAN")
+                mainContentData = ListItemMainContentData.Text("JAN")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "family_name",
-                mainContentData = MainContentData.Text("ANDERSSON")
+                mainContentData = ListItemMainContentData.Text("ANDERSSON")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "age_over_65",
-                mainContentData = MainContentData.Text("no")
+                mainContentData = ListItemMainContentData.Text("no")
             )
         ),
         userFullName = "JAN ANDERSSON"
@@ -326,7 +326,7 @@ object TestsData {
             ListItemData(
                 itemId = "",
                 overlineText = "driving_privileges",
-                mainContentData = MainContentData.Text(
+                mainContentData = ListItemMainContentData.Text(
                     text = arrayOf(
                         "issue_date: 1 Jul 2010\n" +
                                 "expiry_date: 30 Mar 2050\n" +
@@ -340,37 +340,37 @@ object TestsData {
             ListItemData(
                 itemId = "",
                 overlineText = "expiry_date",
-                mainContentData = MainContentData.Text("30 Mar 2050")
+                mainContentData = ListItemMainContentData.Text("30 Mar 2050")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "sex",
-                mainContentData = MainContentData.Text("male")
+                mainContentData = ListItemMainContentData.Text("male")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "birth_place",
-                mainContentData = MainContentData.Text("SWEDEN")
+                mainContentData = ListItemMainContentData.Text("SWEDEN")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "portrait",
-                mainContentData = MainContentData.Image("SE")
+                mainContentData = ListItemMainContentData.Image("SE")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "given_name",
-                mainContentData = MainContentData.Text("JAN")
+                mainContentData = ListItemMainContentData.Text("JAN")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "family_name",
-                mainContentData = MainContentData.Text("ANDERSSON")
+                mainContentData = ListItemMainContentData.Text("ANDERSSON")
             ),
             ListItemData(
                 itemId = "",
                 overlineText = "signature_usual_mark",
-                mainContentData = MainContentData.Image("SE")
+                mainContentData = ListItemMainContentData.Image("SE")
             )
         ),
         userFullName = "JAN ANDERSSON"

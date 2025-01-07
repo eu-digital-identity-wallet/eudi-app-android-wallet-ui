@@ -30,8 +30,8 @@ import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -77,7 +77,7 @@ private fun WrapListItemPreview(
                 modifier = Modifier.fillMaxWidth(),
                 item = ListItemData(
                     itemId = "1",
-                    mainContentData = MainContentData.Text(text = "Main text $text"),
+                    mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
                 ),
                 onItemClick = {},
             )
@@ -85,7 +85,7 @@ private fun WrapListItemPreview(
                 modifier = Modifier.fillMaxWidth(),
                 item = ListItemData(
                     itemId = "2",
-                    mainContentData = MainContentData.Text(text = "Main text $text"),
+                    mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
                     overlineText = "",
                     supportingText = "",
                 ),
@@ -95,7 +95,7 @@ private fun WrapListItemPreview(
                 modifier = Modifier.fillMaxWidth(),
                 item = ListItemData(
                     itemId = "3",
-                    mainContentData = MainContentData.Text(text = "Main text $text"),
+                    mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
                     overlineText = "Overline text $text",
                     supportingText = "Supporting text $text",
                     leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
@@ -109,7 +109,7 @@ private fun WrapListItemPreview(
                 modifier = Modifier.fillMaxWidth(),
                 item = ListItemData(
                     itemId = "4",
-                    mainContentData = MainContentData.Text(text = "Main text $text"),
+                    mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
                     supportingText = "Supporting text $text",
                     trailingContentData = ListItemTrailingContentData.Icon(
                         iconData = AppIcons.KeyboardArrowRight,

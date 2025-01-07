@@ -40,8 +40,8 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 
 private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
@@ -94,18 +94,18 @@ object RequestTransformer {
                     documentIdentifier = storageDocument.toDocumentIdentifier()
                 ).contains(docItem.elementIdentifier)
 
-                val item = storageDocument.data.claims.firstOrNull {
+                val documentClaim = storageDocument.data.claims.firstOrNull {
                     it.identifier == docItem.elementIdentifier
                 }
 
-                val readableName = item?.metadata?.display?.firstOrNull {
+                val readableName = documentClaim?.metadata?.display?.firstOrNull {
                     resourceProvider.getLocale().compareLocaleLanguage(it.locale)
                 }?.name ?: docItem.elementIdentifier
 
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
                     parseKeyValueUi(
-                        item = item?.value!!,
+                        item = documentClaim?.value!!,
                         groupIdentifier = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = values
@@ -163,15 +163,15 @@ object RequestTransformer {
 
                 val mainText = when {
                     keyIsPortrait(key = docItem.elementIdentifier) && docItem.isAvailable -> {
-                        MainContentData.Text(text = "")
+                        ListItemMainContentData.Text(text = "")
                     }
 
                     keyIsSignature(key = docItem.elementIdentifier) && docItem.isAvailable -> {
-                        MainContentData.Image(base64Image = docItem.value)
+                        ListItemMainContentData.Image(base64Image = docItem.value)
                     }
 
                     else -> {
-                        MainContentData.Text(text = docItem.value)
+                        ListItemMainContentData.Text(text = docItem.value)
                     }
                 }
 
@@ -197,7 +197,7 @@ object RequestTransformer {
                 collapsedUiItem = CollapsedUiItem(
                     uiItem = ListItemData(
                         itemId = collapsedItemId,
-                        mainContentData = MainContentData.Text(text = documentDomainPayload.docName),
+                        mainContentData = ListItemMainContentData.Text(text = documentDomainPayload.docName),
                         supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowDown
@@ -229,9 +229,9 @@ object RequestTransformer {
             groupedByDocument.map { (documentPayload, selectedItemsForDocument) ->
                 val disclosedItems = selectedItemsForDocument.map { selectedItem ->
                     val value = when (val mainContentData = selectedItem.uiItem.mainContentData) {
-                        is MainContentData.Image -> mainContentData.base64Image
+                        is ListItemMainContentData.Image -> mainContentData.base64Image
 
-                        is MainContentData.Text -> {
+                        is ListItemMainContentData.Text -> {
                             (selectedItem.uiItem.leadingContentData as? ListItemLeadingContentData.UserImage)?.userBase64Image
                                 ?: mainContentData.text
                         }

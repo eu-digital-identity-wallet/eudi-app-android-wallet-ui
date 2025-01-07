@@ -40,10 +40,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
+import eu.europa.ec.uilogic.component.ListItemMainContentData.Image
+import eu.europa.ec.uilogic.component.ListItemMainContentData.Text
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Checkbox
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Icon
-import eu.europa.ec.uilogic.component.MainContentData.Image
-import eu.europa.ec.uilogic.component.MainContentData.Text
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
@@ -66,7 +66,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
  * @param itemId A unique identifier for this specific list item. This is crucial for identifying
  * the item within the list, especially when handling interactions.
  * @param mainContentData The primary content displayed in the list item. This is typically text
- * but could be other UI elements. See [MainContentData] for details on how to structure
+ * but could be other UI elements. See [ListItemMainContentData] for details on how to structure
  * the main content.
  * @param overlineText Optional text displayed above the `mainContentData`, providing context
  * or a brief heading for the item.
@@ -81,7 +81,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
  */
 data class ListItemData(
     val itemId: String,
-    val mainContentData: MainContentData,
+    val mainContentData: ListItemMainContentData,
     val overlineText: String? = null,
     val supportingText: String? = null,
     val leadingContentData: ListItemLeadingContentData? = null,
@@ -95,9 +95,9 @@ data class ListItemData(
  * @see [Text]
  * @see [Image]
  */
-sealed class MainContentData {
-    data class Text(val text: String) : MainContentData()
-    data class Image(val base64Image: String) : MainContentData()
+sealed class ListItemMainContentData {
+    data class Text(val text: String) : ListItemMainContentData()
+    data class Image(val base64Image: String) : ListItemMainContentData()
 }
 
 /**

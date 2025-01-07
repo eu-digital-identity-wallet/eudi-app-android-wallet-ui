@@ -47,8 +47,8 @@ import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentHeader
@@ -264,7 +264,7 @@ private fun DisplayRequestItems(
                         hideSensitiveContent = false,
                         isExpanded = requestItem.collapsedUiItem.isExpanded,
                         onExpandedChange = {
-                            onEventSend(Event.ExpandOrCollapseRequiredDataList(itemId = requestItem.collapsedUiItem.uiItem.itemId))
+                            onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
                         },
                         throttleClicks = false,
                     )
@@ -327,7 +327,7 @@ private fun ContentPreview() {
                             isExpanded = false,
                             uiItem = ListItemData(
                                 itemId = "000",
-                                mainContentData = MainContentData.Text(text = "Digital ID"),
+                                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
                                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
                                 trailingContentData = ListItemTrailingContentData.Icon(
                                     iconData = AppIcons.KeyboardArrowDown
@@ -355,7 +355,7 @@ private fun ContentPreview() {
                                 uiItem = ListItemData(
                                     itemId = "00",
                                     overlineText = "Family name",
-                                    mainContentData = MainContentData.Text(text = "Doe"),
+                                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
                                 )
                             ),
                         )
@@ -365,7 +365,7 @@ private fun ContentPreview() {
                             isExpanded = true,
                             uiItem = ListItemData(
                                 itemId = "111",
-                                mainContentData = MainContentData.Text(text = "mDL"),
+                                mainContentData = ListItemMainContentData.Text(text = "mDL"),
                                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
                                 trailingContentData = ListItemTrailingContentData.Icon(
                                     iconData = AppIcons.KeyboardArrowUp
@@ -393,7 +393,7 @@ private fun ContentPreview() {
                                 uiItem = ListItemData(
                                     itemId = "10",
                                     overlineText = "Family name",
-                                    mainContentData = MainContentData.Text(text = "Doe"),
+                                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
                                     trailingContentData = ListItemTrailingContentData.Checkbox(
                                         checkboxData = CheckboxData(
                                             isChecked = false
@@ -421,7 +421,7 @@ private fun ContentPreview() {
                                 uiItem = ListItemData(
                                     itemId = "11",
                                     overlineText = "Given name",
-                                    mainContentData = MainContentData.Text(text = "John"),
+                                    mainContentData = ListItemMainContentData.Text(text = "John"),
                                     trailingContentData = ListItemTrailingContentData.Checkbox(
                                         checkboxData = CheckboxData(
                                             isChecked = true
@@ -449,7 +449,7 @@ private fun ContentPreview() {
                                 uiItem = ListItemData(
                                     itemId = "12",
                                     overlineText = "Age in years",
-                                    mainContentData = MainContentData.Text(text = "18"),
+                                    mainContentData = ListItemMainContentData.Text(text = "18"),
                                     trailingContentData = ListItemTrailingContentData.Checkbox(
                                         checkboxData = CheckboxData(
                                             isChecked = true,
