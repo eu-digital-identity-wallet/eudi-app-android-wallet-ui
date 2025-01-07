@@ -44,11 +44,9 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
-import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.GradientEdge
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -212,18 +210,11 @@ private fun Content(
                     modifier = Modifier.fillMaxWidth(),
                     config = state.headerConfig,
                 )
-                // Add bottom gradient to Screen Main Content
-                ContentGradient(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    gradientEdge = GradientEdge.BOTTOM
-                ) {
-                    // Screen Main Content
-                    MainContent(
-                        documents = state.documents,
-                    )
-                }
+
+                // Screen Main Content
+                MainContent(
+                    documents = state.documents,
+                )
             }
         }
     }
