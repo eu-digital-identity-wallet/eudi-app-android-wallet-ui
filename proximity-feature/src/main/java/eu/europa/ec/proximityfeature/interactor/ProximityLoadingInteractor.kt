@@ -45,6 +45,7 @@ sealed class ProximityLoadingSendRequestedDocumentPartialState {
 
 interface ProximityLoadingInteractor {
     val verifierName: String?
+    val isVerified: Boolean
     fun stopPresentation()
     fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState>
     fun sendRequestedDocuments(): ProximityLoadingSendRequestedDocumentPartialState
@@ -62,6 +63,8 @@ class ProximityLoadingInteractorImpl(
 ) : ProximityLoadingInteractor {
 
     override val verifierName: String? = walletCorePresentationController.verifierName
+
+    override val isVerified: Boolean = walletCorePresentationController.verifierIsTrusted == true
 
     override fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState> =
         walletCorePresentationController.observeSentDocumentsRequest().mapNotNull { response ->

@@ -128,6 +128,8 @@ interface WalletCorePresentationController {
      * */
     val verifierName: String?
 
+    val verifierIsTrusted: Boolean?
+
     /**
      * Who started the presentation
      * */
@@ -209,6 +211,8 @@ class WalletCorePresentationControllerImpl(
 
     override var verifierName: String? = null
 
+    override var verifierIsTrusted: Boolean? = null
+
     override val initiatorRoute: String
         get() {
             val config = requireInit { _config }
@@ -257,13 +261,14 @@ class WalletCorePresentationControllerImpl(
                         verifierName = requestedDocuments.requestedDocuments
                             .firstOrNull()?.readerAuth?.readerCommonName
 
-                        val verifierIsTrusted = requestedDocuments.requestedDocuments
+                        val isTrusted = requestedDocuments.requestedDocuments
                             .firstOrNull()?.readerAuth?.isVerified == true
+                        verifierIsTrusted = isTrusted
 
                         TransferEventPartialState.RequestReceived(
                             requestData = requestedDocuments.requestedDocuments,
                             verifierName = verifierName,
-                            verifierIsTrusted = verifierIsTrusted
+                            verifierIsTrusted = isTrusted
                         )
                     } ?: TransferEventPartialState.Error(error = genericErrorMessage)
                 )
