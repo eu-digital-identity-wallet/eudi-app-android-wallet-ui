@@ -70,12 +70,12 @@ sealed class IssueDocumentPartialState {
 }
 
 sealed class IssueDocumentsPartialState {
-    data class Success(val documentIds: List<String>) : IssueDocumentsPartialState()
-    data class DeferredSuccess(val deferredDocuments: Map<String, String>) :
+    data class Success(val documentIds: List<DocumentId>) : IssueDocumentsPartialState()
+    data class DeferredSuccess(val deferredDocuments: Map<DocumentId, FormatType>) :
         IssueDocumentsPartialState()
 
     data class PartialSuccess(
-        val documentIds: List<String>,
+        val documentIds: List<DocumentId>,
         val nonIssuedDocuments: Map<String, String>,
     ) : IssueDocumentsPartialState()
 
