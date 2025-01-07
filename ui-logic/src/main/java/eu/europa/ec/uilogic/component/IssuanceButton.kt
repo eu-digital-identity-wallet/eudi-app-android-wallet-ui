@@ -40,7 +40,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 data class IssuanceButtonData(
     val text: String,
-    val icon: IconData
+    val icon: IconData?
 )
 
 @Composable
@@ -72,16 +72,18 @@ fun IssuanceButton(
                 }
             }
 
-            WrapIcon(
-                modifier = Modifier
-                    .width(40.dp)
-                    .height(30.dp),
-                iconData = data.icon,
-                customTint = iconsColor,
-                enabled = enabled,
-            )
+            data.icon?.let {
+                WrapIcon(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(30.dp),
+                    iconData = it,
+                    customTint = iconsColor,
+                    enabled = enabled,
+                )
 
-            HSpacer.Medium()
+                HSpacer.Medium()
+            }
 
             Text(
                 modifier = Modifier.weight(1f),

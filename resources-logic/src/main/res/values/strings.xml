@@ -256,15 +256,12 @@
     <string name="presentation_qr_scan_subtitle">Scan a QR code provided from a Relying Party to present a digital document.</string>
 
     <!-- Issuance Add Document Screen -->
-    <string name="issuance_add_document_title">Add document</string>
-    <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
-    <string name="issuance_add_document_user_auth_required">User authentication is required</string>
+    <string name="issuance_add_document_title">Add document from list</string>
+    <string name="issuance_add_document_subtitle">Choose a digital document from the list below to add to your wallet. You may add more documents by scanning the QR code provided to you by an authorised issuing service.</string>
     <string name="issuance_add_document_deferred_success_title">@string/generic_document_pending</string>
     <string name="issuance_add_document_deferred_success_text">@string/generic_deferred_success_text</string>
     <string name="issuance_add_document_deferred_success_description">Your document has been requested. You will be notified when it has been issued to your wallet.</string>
     <string name="issuance_add_document_deferred_success_primary_button_text">@string/generic_ok</string>
-    <string name="issuance_add_document_qr_scan_section_title">Or</string>
-    <string name="issuance_add_document_qr_scan_section_subtitle">SCAN QR</string>
 
     <!-- Issuance Success Screen -->
     <string name="issuance_success_header_description">You have successfully added the following to your wallet</string>
