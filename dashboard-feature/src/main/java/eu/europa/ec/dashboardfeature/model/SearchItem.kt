@@ -14,18 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.interactor
+package eu.europa.ec.dashboardfeature.model
 
-import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.uilogic.component.ListItemData
-
-interface DocumentsInteractor {
-    fun getAllDocuments(): List<ListItemData>
-}
-
-class DocumentsInteractorImpl(
-    val documentsController: WalletCoreDocumentsController,
-) : DocumentsInteractor {
-   override fun getAllDocuments(): List<ListItemData> {
-    }
-}
+data class SearchItem(val searchLabel: String)

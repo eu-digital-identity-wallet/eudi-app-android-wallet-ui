@@ -23,9 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewParameter
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
@@ -35,6 +33,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 fun WrapSearchBar(
     modifier: Modifier = Modifier,
     searchText: String,
+    placeholder: String,
     onSearchTextChanged: (String) -> Unit,
     colors: TextFieldColors? = null,
     maxLines: Int = 1,
@@ -49,7 +48,7 @@ fun WrapSearchBar(
             )
         },
         placeholder = {
-            Text(text = stringResource(R.string.generic_search_bar_placeholder_text))
+            Text(text = placeholder)
         },
         colors = colors ?: OutlinedTextFieldDefaults.colors(
             unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
@@ -67,6 +66,7 @@ private fun WrapSearchBarWithTextPreview(
         WrapSearchBar(
             modifier = Modifier.fillMaxWidth(),
             searchText = text,
+            placeholder = "Search Documents",
             onSearchTextChanged = {}
         )
     }
@@ -79,6 +79,7 @@ private fun WrapSearchBarWithNoTextPreview() {
         WrapSearchBar(
             modifier = Modifier.fillMaxWidth(),
             searchText = "",
+            placeholder = "Search Documents",
             onSearchTextChanged = {}
         )
     }

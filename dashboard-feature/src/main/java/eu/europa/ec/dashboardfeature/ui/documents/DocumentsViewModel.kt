@@ -23,20 +23,30 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import org.koin.android.annotation.KoinViewModel
 
-class State : ViewState
+data class State(
+    val isLoading: Boolean,
+    val documents: Boolean,
+) : ViewState
 
-sealed class Event : ViewEvent
+sealed class Event : ViewEvent {
+    data object Init : Event()
+}
 
 sealed class Effect : ViewSideEffect
 
 @KoinViewModel
 class DocumentsViewModel(
-    val interactor: DocumentsInteractor,
+    val interactor: DocumentsInteractor
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
         return State()
     }
 
     override fun handleEvents(event: Event) {
+        when (event) {
+            is Event.Init -> {
+                documentsController.getAllDocuments()
+            }
+        }
     }
 }

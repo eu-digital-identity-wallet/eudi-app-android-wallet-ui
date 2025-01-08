@@ -17,10 +17,13 @@
 package eu.europa.ec.dashboardfeature.ui.documents
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
+import eu.europa.ec.dashboardfeature.model.SearchItem
+import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -50,9 +55,9 @@ fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewMo
         ContentScreen(
             isLoading = false,
             navigatableAction = ScreenNavigateAction.NONE,
-            topBar = { TopBar() }
-        ) {
-            Content()
+            topBar = { TopBar() },
+        ) { paddingValues ->
+            Content(paddingValues)
         }
     }
 }
@@ -80,13 +85,27 @@ private fun TopBar() {
 }
 
 @Composable
-private fun Content() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+private fun Content(
+    paddingValues: PaddingValues,
+) {
+    val list = listOf(
+        SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label)),
+        "item1",
+        "item2",
+        "item3",
+        "item4",
+    )
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues = paddingValues)
     ) {
-
-        Text("Documents")
+        items(list) {
+            when (it) {
+                is SearchItem -> FiltersSearchBar(placeholder = it.searchLabel)
+                else -> Text(text = it as String)
+            }
+        }
     }
 }
 
