@@ -275,10 +275,7 @@
 
     <!-- Issuance Document Offer -->
     <string name="issuance_document_offer_default_issuer_name">@string/generic_default_issuer_name</string>
-    <string name="issuance_document_offer_title">%1$s wants to issue the following in your wallet</string>
-    <string name="issuance_document_offer_subtitle">Please confirm the issuance of the following</string>
     <string name="issuance_document_offer_primary_button_text_add">Add</string>
-    <string name="issuance_document_offer_secondary_button_text">@string/generic_cancel_capitalized</string>
     <string name="issuance_document_offer_success_title">@string/generic_success</string>
     <string name="issuance_document_offer_deferred_success_title">@string/generic_deferred_success_title</string>
     <string name="issuance_document_offer_success_subtitle">Your documents from %1$s have been successfully issued.</string>
