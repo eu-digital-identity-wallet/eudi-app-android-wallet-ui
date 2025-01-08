@@ -18,12 +18,12 @@ package eu.europa.ec.issuancefeature.di
 
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.issuancefeature.interactor.SuccessInteractor
-import eu.europa.ec.issuancefeature.interactor.SuccessInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorImpl
+import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractor
+import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -64,10 +64,13 @@ fun provideDocumentDetailsInteractor(
     )
 
 @Factory
-fun provideSuccessInteractor(
-    resourceProvider: ResourceProvider,
-    walletCoreDocumentsController: WalletCoreDocumentsController
-): SuccessInteractor = SuccessInteractorImpl(resourceProvider, walletCoreDocumentsController)
+fun provideDocumentIssuanceSuccessInteractor(
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    resourceProvider: ResourceProvider
+): DocumentIssuanceSuccessInteractor = DocumentIssuanceSuccessInteractorImpl(
+    walletCoreDocumentsController,
+    resourceProvider,
+)
 
 @Factory
 fun provideDocumentOfferInteractor(

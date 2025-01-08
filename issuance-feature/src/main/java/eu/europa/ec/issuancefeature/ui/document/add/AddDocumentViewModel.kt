@@ -307,7 +307,7 @@ class AddDocumentViewModel(
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.Success,
+                    screen = IssuanceScreens.DocumentSuccess,
                     arguments = generateComposableArguments(
                         mapOf(
                             "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),

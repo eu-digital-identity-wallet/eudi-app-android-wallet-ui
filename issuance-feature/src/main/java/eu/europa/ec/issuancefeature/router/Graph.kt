@@ -31,7 +31,7 @@ import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
-import eu.europa.ec.issuancefeature.ui.success.SuccessScreen
+import eu.europa.ec.issuancefeature.ui.document.success.DocumentIssuanceSuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel
@@ -71,9 +71,9 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
             )
         }
 
-        // Success
+        // Document Success
         composable(
-            route = IssuanceScreens.Success.screenRoute,
+            route = IssuanceScreens.DocumentSuccess.screenRoute,
             arguments = listOf(
                 navArgument("flowType") {
                     type = NavType.StringType
@@ -83,7 +83,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 },
             )
         ) {
-            SuccessScreen(
+            DocumentIssuanceSuccessScreen(
                 navController,
                 getViewModel(
                     parameters = {

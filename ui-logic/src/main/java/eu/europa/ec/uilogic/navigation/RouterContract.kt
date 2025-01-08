@@ -79,8 +79,8 @@ sealed class IssuanceScreens {
         parameters = "?flowType={flowType}"
     )
 
-    data object Success : Screen(
-        name = "ISSUANCE_SUCCESS",
+    data object DocumentSuccess : Screen(
+        name = "ISSUANCE_DOCUMENT_SUCCESS",
         parameters = "?flowType={flowType}"
                 + "&documentId={documentId}"
     )

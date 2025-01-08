@@ -98,7 +98,7 @@ object DocumentDetailsTransformer {
         )
     }
 
-    private fun DocumentItem.toListItemData(): ListItemData {
+    fun DocumentItem.toListItemData(): ListItemData {
 
         val mainTextContentData = when {
             keyIsPortrait(key = this.elementIdentifier) -> {
@@ -134,7 +134,7 @@ object DocumentDetailsTransformer {
     }
 }
 
-private fun transformToDocumentDetailsDocumentItem(
+fun transformToDocumentDetailsDocumentItem(
     key: String,
     displayKey: String?,
     item: Any,

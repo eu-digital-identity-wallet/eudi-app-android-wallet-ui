@@ -26,12 +26,17 @@
     <string name="generic_cancel_capitalized" tools:ignore="ButtonCase">CANCEL</string>
     <string name="generic_next_capitalized" tools:ignore="ButtonCase">NEXT</string>
     <string name="generic_confirm_capitalized" tools:ignore="ButtonCase">CONFIRM</string>
+    <string name="generic_continue">Continue</string>
     <string name="generic_continue_capitalized" tools:ignore="ButtonCase">CONTINUE</string>
     <string name="generic_enable_capitalized" tools:ignore="ButtonCase">ENABLE</string>
     <string name="generic_success">Success</string>
+    <string name="generic_close">Close</string>
     <string name="generic_ok">OK</string>
     <string name="generic_dash">-</string>
-    <string name="generic_deferred_success_title">In progress</string>
+    <string name="generic_default_relying_party_name">Relying Party</string>
+    <string name="generic_default_issuer_name">Issuer</string>
+    <string name="generic_view_details">View details</string>
+    <string name="generic_deferred_success_title">In progress!</string>
     <string name="generic_bottom_sheet_delete_title">Delete document?</string>
     <string name="generic_bottom_sheet_delete_subtitle">This document will be permanently deleted from your wallet and may affect access to services.</string>
     <string name="generic_bottom_sheet_delete_primary_button_text">Delete</string>
@@ -111,6 +116,10 @@
     <string name="biometric_unknown_error">Something went wrong initializing biometric authentication. Please try again</string>
     <string name="biometric_default_mode_text_above_pin_field">PIN</string>">
 
+    <!-- Document Success -->
+    <string name="document_success_collapsed_supporting_text">@string/generic_view_details</string>
+    <string name="document_success_sticky_button_text">@string/generic_close</string>
+
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
     <string name="quick_pin_numerical_rule_invalid_error_message">Only numerical values are allowed</string>
@@ -139,10 +148,10 @@
     <!-- Request Screen -->
     <string name="request_header_description">The following transaction requires your permission and authentication.</string>
     <string name="request_header_main_text">DATA SHARING REQUEST</string>
-    <string name="request_header_relying_party_default_name">Relying Party</string>
+    <string name="request_header_relying_party_default_name">@string/generic_default_relying_party_name</string>
     <string name="request_header_relying_party_description">\ requests the following</string>
     <string name="request_warning_text">Please review carefully before sharing your data.</string>
-    <string name="request_collapsed_supporting_text">View details</string>
+    <string name="request_collapsed_supporting_text">@string/generic_view_details</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
     <string name="request_sticky_button_text">Share</string>
@@ -154,8 +163,9 @@
 
     <!-- Loading Screen -->
     <string name="loading_content_header_description">Please wait…</string>
-    <string name="loading_success_config_title">@string/generic_success</string>
-    <string name="loading_success_config_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="loading_success_config_description">You successfully shared the following information with</string>
+    <string name="loading_success_config_relying_party_default_name">@string/generic_default_relying_party_name</string>
+    <string name="loading_success_config_primary_button_text">@string/generic_close</string>
     <string name="loading_biometry_biometrics_enabled_description">Use your biometrics to approve the transaction.</string>
     <string name="loading_biometry_biometrics_not_enabled_description">To approve the transaction you need to verify your identity.</string>
 
@@ -245,12 +255,7 @@
     <string name="presentation_qr_scan_title">Present document online</string>
     <string name="presentation_qr_scan_subtitle">Scan a QR code provided from a Relying Party to present a digital document.</string>
 
-    <!-- Presentation Loading Screen -->
-    <string name="presentation_loading_success_config_subtitle">You successfully shared information with %1$s</string>
-    <string name="presentation_loading_success_config_verifier">Verifier</string>
-
     <!-- Issuance Add Document Screen -->
-    <string name="issuance_add_document">@string/generic_continue_capitalized</string>
     <string name="issuance_add_document_title">Add document</string>
     <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
     <string name="issuance_add_document_user_auth_required">User authentication is required</string>
@@ -261,16 +266,15 @@
     <string name="issuance_add_document_qr_scan_section_subtitle">SCAN QR</string>
 
     <!-- Issuance Success Screen -->
-    <string name="issuance_success_title">@string/generic_success</string>
-    <string name="issuance_success_subtitle">You can now add your %1$s</string>
-    <string name="issuance_success_primary_button_text">NEXT</string>
+    <string name="issuance_success_header_description">You have successfully added the following to your wallet</string>
+    <string name="issuance_success_header_issuer_default_name">@string/generic_default_issuer_name</string>
 
     <!-- Issuance Qr Scan -->
     <string name="issuance_qr_scan_title">Add document from QR</string>
     <string name="issuance_qr_scan_subtitle">Scan a QR code provided from an issuer to add a digital document to your wallet.</string>
 
     <!-- Issuance Document Offer -->
-    <string name="issuance_document_offer_default_issuer_name">Issuer</string>
+    <string name="issuance_document_offer_default_issuer_name">@string/generic_default_issuer_name</string>
     <string name="issuance_document_offer_title">%1$s wants to issue the following in your wallet</string>
     <string name="issuance_document_offer_subtitle">Please confirm the issuance of the following</string>
     <string name="issuance_document_offer_primary_button_text">ISSUE</string>
