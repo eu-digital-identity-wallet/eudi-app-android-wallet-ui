@@ -16,16 +16,48 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
+import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.MainContentData
 
 interface DocumentsInteractor {
     fun getAllDocuments(): List<ListItemData>
 }
 
 class DocumentsInteractorImpl(
+    val resourceProvider: ResourceProvider,
     val documentsController: WalletCoreDocumentsController,
 ) : DocumentsInteractor {
-   override fun getAllDocuments(): List<ListItemData> {
+    override fun getAllDocuments(): List<ListItemData> {
+        return documentsController.getAllDocuments().map {
+            val documentExpirationDate: String = when (it) {
+                is IssuedDocument -> {
+                    "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
+                            extractValueFromDocumentOrEmpty(
+                                document = it,
+                                key = DocumentJsonKeys.EXPIRY_DATE
+                            )
+                }
+
+                else -> ""
+            }
+            ListItemData(
+                itemId = it.id,
+                mainContentData = MainContentData.Text(text = it.name),
+                overlineText = null, // TODO Here we want to show verifier name
+                supportingText = documentExpirationDate,
+                leadingContentData = null, // TODO Verifier image
+                trailingContentData = ListItemTrailingContentData.Icon(
+                    iconData = AppIcons.KeyboardArrowRight
+                )
+            )
+        }
     }
 }

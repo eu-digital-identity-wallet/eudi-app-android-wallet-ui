@@ -72,7 +72,10 @@ fun provideHomeInteractor(
 )
 
 @Factory
-fun provideDocumentsInteractor(): DocumentsInteractor = DocumentsInteractorImpl()
+fun provideDocumentsInteractor(
+    resourceProvider: ResourceProvider,
+    documentsController: WalletCoreDocumentsController,
+): DocumentsInteractor = DocumentsInteractorImpl(resourceProvider, documentsController)
 
 @Factory
 fun provideTransactionInteractor(): TransactionsInteractor = TransactionsInteractorImpl()

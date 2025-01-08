@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.documents
 
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
+import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -25,7 +26,7 @@ import org.koin.android.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean,
-    val documents: Boolean,
+    val documents: List<ListItemData> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -36,16 +37,16 @@ sealed class Effect : ViewSideEffect
 
 @KoinViewModel
 class DocumentsViewModel(
-    val interactor: DocumentsInteractor
+    val interactor: DocumentsInteractor,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
-        return State()
+        return State(isLoading = true)
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                documentsController.getAllDocuments()
+                setState { copy(documents = interactor.getAllDocuments()) }
             }
         }
     }

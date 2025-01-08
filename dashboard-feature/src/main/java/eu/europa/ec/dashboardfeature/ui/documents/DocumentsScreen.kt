@@ -33,18 +33,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapListItem
 
 @Composable
 fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewModel) {
@@ -57,7 +56,10 @@ fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewMo
             navigatableAction = ScreenNavigateAction.NONE,
             topBar = { TopBar() },
         ) { paddingValues ->
-            Content(paddingValues)
+            Content(paddingValues, viewModel.viewState.value)
+        }
+        OneTimeLaunchedEffect {
+            viewModel.setEvent(Event.Init)
         }
     }
 }
@@ -87,33 +89,19 @@ private fun TopBar() {
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
+    state: State,
 ) {
-    val list = listOf(
-        SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label)),
-        "item1",
-        "item2",
-        "item3",
-        "item4",
-    )
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues = paddingValues)
     ) {
-        items(list) {
-            when (it) {
-                is SearchItem -> FiltersSearchBar(placeholder = it.searchLabel)
-                else -> Text(text = it as String)
-            }
+        item {
+            val searchItem = SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
+            FiltersSearchBar(placeholder = searchItem.searchLabel)
+        }
+        items(state.documents) {
+            WrapListItem(it, {})
         }
     }
-}
-
-@ThemeModePreviews
-@Composable
-private fun DocumentsScreenPreview() {
-    DocumentsScreen(
-        rememberNavController(),
-        viewModel = DocumentsViewModel(DocumentsInteractorImpl())
-    )
 }
