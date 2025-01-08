@@ -24,6 +24,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.MainContentData
 
@@ -32,8 +33,8 @@ interface DocumentsInteractor {
 }
 
 class DocumentsInteractorImpl(
-    val resourceProvider: ResourceProvider,
-    val documentsController: WalletCoreDocumentsController,
+    private val resourceProvider: ResourceProvider,
+    private val documentsController: WalletCoreDocumentsController,
 ) : DocumentsInteractor {
     override fun getAllDocuments(): List<ListItemData> {
         return documentsController.getAllDocuments().map {
@@ -51,9 +52,11 @@ class DocumentsInteractorImpl(
             ListItemData(
                 itemId = it.id,
                 mainContentData = MainContentData.Text(text = it.name),
-                overlineText = null, // TODO Here we want to show verifier name
+                overlineText = "Hellenic Goverment", // TODO Here we want to show issuer name
                 supportingText = documentExpirationDate,
-                leadingContentData = null, // TODO Verifier image
+                leadingContentData = ListItemLeadingContentData.Icon(
+                    iconData = AppIcons.IssuerPlaceholder
+                ), // TODO Get the actual issuer image
                 trailingContentData = ListItemTrailingContentData.Icon(
                     iconData = AppIcons.KeyboardArrowRight
                 )

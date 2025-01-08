@@ -87,6 +87,9 @@ fun BottomNavigationBar(navController: NavController) {
                     it.route == screen.route
                 } == true,
                 onClick = {
+                    if (screen.route == "TRANSACTIONS") { // TODO remove when transactions feature is ready
+                        return@NavigationBarItem
+                    }
                     navController.navigate(screen.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true

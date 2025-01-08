@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,6 +45,9 @@ import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewModel) {
@@ -56,10 +60,13 @@ fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewMo
             navigatableAction = ScreenNavigateAction.NONE,
             topBar = { TopBar() },
         ) { paddingValues ->
-            Content(paddingValues, viewModel.viewState.value)
-        }
-        OneTimeLaunchedEffect {
-            viewModel.setEvent(Event.Init)
+            Content(
+                paddingValues = paddingValues,
+                navHostController = navHostController,
+                state = viewModel.viewState.value,
+                effectFlow = viewModel.effect,
+                onEventSend = { viewModel.setEvent(it) }
+            )
         }
     }
 }
@@ -89,7 +96,10 @@ private fun TopBar() {
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
+    navHostController: NavController,
     state: State,
+    effectFlow: Flow<Effect>,
+    onEventSend: (Event) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -97,11 +107,32 @@ private fun Content(
             .padding(paddingValues = paddingValues)
     ) {
         item {
-            val searchItem = SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
+            val searchItem =
+                SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
             FiltersSearchBar(placeholder = searchItem.searchLabel)
         }
-        items(state.documents) {
-            WrapListItem(it, {})
+        items(state.documents) { documentItemData ->
+            WrapListItem(
+                documentItemData,
+                { onEventSend(Event.GoToDocumentDetails(documentItemData.itemId)) })
         }
+    }
+
+    OneTimeLaunchedEffect {
+        onEventSend(Event.Init)
+    }
+
+    LaunchedEffect(Unit) {
+        effectFlow.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation.SwitchScreen -> {
+                    navHostController.navigate(effect.screenRoute) {
+                        popUpTo(effect.popUpToScreenRoute) {
+                            inclusive = effect.inclusive
+                        }
+                    }
+                }
+            }
+        }.collect()
     }
 }
