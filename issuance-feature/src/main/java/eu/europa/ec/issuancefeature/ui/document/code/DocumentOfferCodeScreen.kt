@@ -41,6 +41,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -106,14 +107,12 @@ private fun Content(
                 .padding(vertical = SPACING_LARGE.dp),
             verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
         ) {
-            state.screenTitle?.let {
-                Text(
-                    text = state.screenTitle,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+            Text(
+                text = state.screenTitle,
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-            }
+            )
 
             Text(
                 text = state.screenSubtitle,
@@ -212,7 +211,7 @@ private fun DocumentOfferCodeScreenEmptyPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(16.dp),
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
             context = LocalContext.current
         )
     }
