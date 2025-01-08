@@ -51,7 +51,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_26
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
@@ -269,7 +269,7 @@ private fun MainContent(
         modifier = modifier,
         items = documents,
         onItemClick = null,
-        mainContentVerticalPadding = SIZE_26.dp
+        mainContentVerticalPadding = SPACING_LARGE.dp
     )
 }
 
