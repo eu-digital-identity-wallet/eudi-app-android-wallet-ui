@@ -49,11 +49,6 @@ sealed class DashboardScreens {
         Screen(name = "SIGN_DOCUMENT")
 }
 
-sealed class LoginScreens {
-    data object Welcome : Screen(name = "WELCOME")
-    data object Faq : Screen(name = "FAQ")
-}
-
 sealed class PresentationScreens {
     data object PresentationRequest : Screen(
         name = "PRESENTATION_REQUEST",
@@ -110,7 +105,6 @@ sealed class IssuanceScreens {
 sealed class ModuleRoute(val route: String) : NavigatableItem {
     data object StartupModule : ModuleRoute("STARTUP_MODULE")
     data object CommonModule : ModuleRoute("COMMON_MODULE")
-    data object LoginModule : ModuleRoute("LOGIN_MODULE")
     data object DashboardModule : ModuleRoute("DASHBOARD_MODULE")
     data object PresentationModule : ModuleRoute("PRESENTATION_MODULE")
     data object ProximityModule : ModuleRoute("PROXIMITY_MODULE")

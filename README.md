@@ -205,8 +205,6 @@ The released software is an initial development release version:
 
 *common-feature*: Code that is common to all features.
 
-*login-feature*: Login feature.
-
 *dashboard-feature*: The application main screen.
 
 *startup-feature*: The initial screen of the app.
@@ -221,14 +219,12 @@ The released software is an initial development release version:
 ```mermaid
 graph TD;
   startup-feature --> assembly-logic
-  login-feature --> assembly-logic
   dashboard-feature --> assembly-logic
   presentation-feature --> assembly-logic
   proximity-feature --> assembly-logic
   issuance-feature --> assembly-logic
 
   common-feature --> startup-feature
-  common-feature --> login-feature
   common-feature --> dashboard-feature
   common-feature --> presentation-feature
   common-feature --> proximity-feature

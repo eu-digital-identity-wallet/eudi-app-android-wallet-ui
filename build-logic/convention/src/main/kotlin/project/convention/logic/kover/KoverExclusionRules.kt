@@ -30,7 +30,6 @@ val koverModules: Map<LibraryModule, KoverExclusionRules> = mapOf(
     LibraryModule.UiLogic to KoverExclusionRules.UiLogic,
     LibraryModule.CommonFeature to KoverExclusionRules.CommonFeature,
     LibraryModule.StartupFeature to KoverExclusionRules.StartupFeature,
-    LibraryModule.LoginFeature to KoverExclusionRules.LoginFeature,
     LibraryModule.DashboardFeature to KoverExclusionRules.DashboardFeature,
     LibraryModule.PresentationFeature to KoverExclusionRules.PresentationFeature,
     LibraryModule.ProximityFeature to KoverExclusionRules.ProximityFeature,
@@ -139,14 +138,6 @@ sealed interface KoverExclusionRules {
     object StartupFeature : FeatureModule {
         override val classes: List<String>
             get() = commonClasses
-        override val packages: List<String>
-            get() = commonPackages
-    }
-
-    object LoginFeature : FeatureModule {
-        override val classes: List<String>
-            get() = commonClasses
-
         override val packages: List<String>
             get() = commonPackages
     }
