@@ -71,9 +71,9 @@ import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ImageOrPlaceholder
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.ScalableText
-import eu.europa.ec.uilogic.component.UserImageOrPlaceholder
 import eu.europa.ec.uilogic.component.content.ContentGradient
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.GradientEdge
@@ -97,7 +97,7 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.FabData
-import eu.europa.ec.uilogic.component.wrap.GenericBaseSheetContent
+import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
@@ -123,7 +123,6 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Deprecated("To be deleted")
 fun DashboardScreen(
     navController: NavController,
     viewModel: DashboardViewModel
@@ -319,7 +318,7 @@ private fun DashboardSheetContent(
 ) {
     when (sheetContent) {
         is DashboardBottomSheetContent.Options -> {
-            GenericBaseSheetContent(
+            GenericBottomSheet(
                 titleContent = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -407,12 +406,10 @@ private fun DashboardSheetContent(
             DialogBottomSheet(
                 textData = BottomSheetTextData(
                     title = stringResource(
-                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title,
-                        sheetContent.documentUi.documentName
+                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title
                     ),
                     message = stringResource(
-                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle,
-                        sheetContent.documentUi.documentName
+                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle
                     ),
                     positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_primary_button_text),
                     negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text),
@@ -533,8 +530,8 @@ private fun Title(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            UserImageOrPlaceholder(
-                userBase64Image = userBase64Image,
+            ImageOrPlaceholder(
+                base64Image = userBase64Image,
                 modifier = Modifier
                     .size(64.dp)
                     .clip(RoundedCornerShape(SIZE_SMALL.dp))
@@ -827,7 +824,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "0",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image0",
@@ -837,7 +834,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "1",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "",
                 documentHasExpired = false,
                 documentImage = "image1",
@@ -847,7 +844,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "2",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "",
                 documentHasExpired = true,
                 documentImage = "image2",
@@ -855,21 +852,10 @@ private fun DashboardScreenPreview() {
                 documentIssuanceState = DocumentUiIssuanceState.Issued
             ),
             DocumentUi(
-                documentId = "3",
-                documentName = "Driving License",
-                documentIdentifier = DocumentIdentifier.MDL,
-                documentExpirationDateFormatted = "25 Dec 2050",
-                documentHasExpired = false,
-                documentImage = "image3",
-                documentDetails = emptyList(),
-                documentIssuanceState = DocumentUiIssuanceState.Pending
-            ),
-            DocumentUi(
                 documentId = "4",
                 documentName = "Other",
                 documentIdentifier = DocumentIdentifier.OTHER(
-                    nameSpace = "",
-                    docType = ""
+                    formatType = ""
                 ),
                 documentExpirationDateFormatted = "01 Jun 2020",
                 documentHasExpired = true,
@@ -880,7 +866,7 @@ private fun DashboardScreenPreview() {
             DocumentUi(
                 documentId = "5",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image5",
