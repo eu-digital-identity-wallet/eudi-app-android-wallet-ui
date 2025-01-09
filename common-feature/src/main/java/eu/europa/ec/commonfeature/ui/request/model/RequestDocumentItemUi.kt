@@ -44,7 +44,7 @@ data class RequestDocumentItemUi<T>(
 data class DocumentItemDomainPayload(
     val docId: String,
     val formatType: FormatType,
-    val namespace: String,
+    val namespace: String?,
     val elementIdentifier: ElementIdentifier
 ) {
     // We need to override equals in order for "groupBy" internal comparisons

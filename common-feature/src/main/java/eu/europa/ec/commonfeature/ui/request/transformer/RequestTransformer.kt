@@ -35,6 +35,7 @@ import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
@@ -87,7 +88,11 @@ object RequestTransformer {
 
             // Add optional field items.
             requestDocument.requestedItems.keys.forEachIndexed { itemIndex, docItem ->
-                docItem as MsoMdocItem
+
+                val nameSpace = when (docItem) {
+                    is MsoMdocItem -> docItem.namespace
+                    else -> null
+                }
 
                 val item = storageDocument.data.claims.firstOrNull {
                     it.identifier == docItem.elementIdentifier
@@ -124,7 +129,7 @@ object RequestTransformer {
                             docPayload = DocumentItemDomainPayload(
                                 docId = storageDocument.id,
                                 formatType = storageDocument.formatType,
-                                namespace = docItem.namespace,
+                                namespace = nameSpace,
                                 elementIdentifier = docItem.elementIdentifier,
                             ),
                             optional = false,
@@ -149,7 +154,7 @@ object RequestTransformer {
                                 docPayload = DocumentItemDomainPayload(
                                     docId = storageDocument.id,
                                     formatType = storageDocument.formatType,
-                                    namespace = docItem.namespace,
+                                    namespace = nameSpace,
                                     elementIdentifier = docItem.elementIdentifier,
                                 ),
                                 optional = isAvailable,
@@ -218,10 +223,16 @@ object RequestTransformer {
                 DisclosedDocument(
                     documentId = document.docId,
                     disclosedItems = selectedDocumentItems.map {
-                        MsoMdocItem(
-                            it.domainPayload.namespace,
-                            it.domainPayload.elementIdentifier
-                        )
+                        when (it.domainPayload.namespace) {
+                            null -> SdJwtVcItem(
+                                it.domainPayload.elementIdentifier
+                            )
+
+                            else -> MsoMdocItem(
+                                it.domainPayload.namespace,
+                                it.domainPayload.elementIdentifier
+                            )
+                        }
                     },
                     keyUnlockData = null
                 )
