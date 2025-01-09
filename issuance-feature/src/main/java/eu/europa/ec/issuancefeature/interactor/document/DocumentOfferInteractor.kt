@@ -149,7 +149,9 @@ class DocumentOfferInteractorImpl(
                             val hasPidInOffer =
                                 response.offer.offeredDocuments.any { offeredDocument ->
                                     val id = offeredDocument.documentIdentifier
-                                    id == DocumentIdentifier.MdocPid || id == DocumentIdentifier.SdJwtPid
+                                    // TODO: Re-activate once SD-JWT PID Rule book is in place in ARF.
+                                    // id == DocumentIdentifier.MdocPid || id == DocumentIdentifier.SdJwtPid
+                                    id == DocumentIdentifier.MdocPid
                                 }
 
                             if (hasMainPid || hasPidInOffer) {

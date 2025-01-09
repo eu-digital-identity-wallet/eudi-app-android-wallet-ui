@@ -22,7 +22,6 @@ import project.convention.logic.config.LibraryModule.CommonFeature
 import project.convention.logic.config.LibraryModule.CoreLogic
 import project.convention.logic.config.LibraryModule.DashboardFeature
 import project.convention.logic.config.LibraryModule.IssuanceFeature
-import project.convention.logic.config.LibraryModule.LoginFeature
 import project.convention.logic.config.LibraryModule.NetworkLogic
 import project.convention.logic.config.LibraryModule.PresentationFeature
 import project.convention.logic.config.LibraryModule.ProximityFeature
@@ -68,7 +67,6 @@ dependencies {
     // Feature Modules
     api(project(CommonFeature.path))
     api(project(StartupFeature.path))
-    api(project(LoginFeature.path))
     api(project(DashboardFeature.path))
     api(project(PresentationFeature.path))
     api(project(ProximityFeature.path))
