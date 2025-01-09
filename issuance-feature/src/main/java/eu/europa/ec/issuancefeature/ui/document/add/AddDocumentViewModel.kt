@@ -264,7 +264,7 @@ class AddDocumentViewModel(
                                 isLoading = false
                             )
                         }
-                        navigateToIssuanceSuccessScreen(
+                        navigateToAddDocumentSuccessScreen(
                             documentId = response.documentId
                         )
                     }
@@ -303,11 +303,11 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun navigateToIssuanceSuccessScreen(documentId: String) {
+    private fun navigateToAddDocumentSuccessScreen(documentId: String) {
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.DocumentScopedSuccess,
+                    screen = IssuanceScreens.AddDocumentSuccess,
                     arguments = generateComposableArguments(
                         mapOf(
                             "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
