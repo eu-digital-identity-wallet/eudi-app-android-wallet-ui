@@ -60,7 +60,7 @@ class DocumentIssuanceSuccessViewModel(
         }
 
         viewModelScope.launch {
-            interactor.getUiItem(documentId = documentId).collect { response ->
+            interactor.getUiItems(documentIds = listOf(documentId)).collect { response ->
                 when (response) {
                     is DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Failed -> {
                         setState {
@@ -80,7 +80,7 @@ class DocumentIssuanceSuccessViewModel(
                         setState {
                             copy(
                                 headerConfig = response.headerConfig,
-                                items = listOf(response.documentUi),
+                                items = response.documentsUi,
                                 error = null,
                                 isLoading = false,
                             )

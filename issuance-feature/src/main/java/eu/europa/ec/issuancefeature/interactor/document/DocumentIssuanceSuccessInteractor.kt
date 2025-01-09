@@ -36,8 +36,19 @@ import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
+    data class Success(
+        val documentsUi: List<DocumentSuccessItemUi>,
+        val headerConfig: ContentHeaderConfig,
+    ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
+
+    data class Failed(
+        val errorMessage: String
+    ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
+}
+
 interface DocumentIssuanceSuccessInteractor {
-    fun getUiItem(documentId: DocumentId): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState>
+    fun getUiItems(documentIds: List<DocumentId>): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState>
 }
 
 class DocumentIssuanceSuccessInteractorImpl(
@@ -48,43 +59,58 @@ class DocumentIssuanceSuccessInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getUiItem(documentId: DocumentId): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState> {
+    override fun getUiItems(documentIds: List<DocumentId>): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState> {
         return flow {
-            val document =
-                walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-            val issuerName = document.data.metadata?.credentialIssuerIdentifier
-                ?: resourceProvider.getString(R.string.issuance_success_header_issuer_default_name) //TODO where do we get this information from?
-            val issuerIsTrusted = true //TODO where do we get this information from?
+            val documentsUi = mutableListOf<DocumentSuccessItemUi>()
 
-            val detailsDocumentItems = document.data.claims
-                .map { claim ->
-                    transformToDocumentDetailsDocumentItem(
-                        displayKey = claim.metadata?.display?.firstOrNull {
-                            resourceProvider.getLocale()
-                                .compareLocaleLanguage(it.locale)
-                        }?.name,
-                        key = claim.identifier,
-                        item = claim.value ?: "",
-                        resourceProvider = resourceProvider,
-                        documentId = documentId
-                    ).toListItemData()
+            var issuerName =
+                resourceProvider.getString(R.string.issuance_success_header_issuer_default_name)
+            var issuerIsTrusted = false
+
+            documentIds.forEach { documentId ->
+
+                val document =
+                    walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
+
+                //TODO where do we get this information from?
+                document.data.metadata?.credentialIssuerIdentifier?.let { safeIssuerName ->
+                    issuerName = safeIssuerName
                 }
 
-            val documentUi = DocumentSuccessItemUi(
-                collapsedUiItem = CollapsedUiItem(
-                    uiItem = ListItemData(
-                        itemId = documentId,
-                        mainContentData = ListItemMainContentData.Text(text = document.name),
-                        supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = AppIcons.KeyboardArrowDown
-                        )
+                issuerIsTrusted = true //TODO where do we get this information from?
+
+                val detailsDocumentItems = document.data.claims
+                    .map { claim ->
+                        transformToDocumentDetailsDocumentItem(
+                            displayKey = claim.metadata?.display?.firstOrNull {
+                                resourceProvider.getLocale()
+                                    .compareLocaleLanguage(it.locale)
+                            }?.name,
+                            key = claim.identifier,
+                            item = claim.value ?: "",
+                            resourceProvider = resourceProvider,
+                            documentId = documentId
+                        ).toListItemData()
+                    }
+
+                val documentUi = DocumentSuccessItemUi(
+                    collapsedUiItem = CollapsedUiItem(
+                        uiItem = ListItemData(
+                            itemId = documentId,
+                            mainContentData = ListItemMainContentData.Text(text = document.name),
+                            supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = AppIcons.KeyboardArrowDown
+                            )
+                        ),
+                        isExpanded = false
                     ),
-                    isExpanded = false
-                ),
-                expandedUiItems = detailsDocumentItems
-            )
+                    expandedUiItems = detailsDocumentItems
+                )
+
+                documentsUi.add(documentUi)
+            }
 
             val headerConfig = ContentHeaderConfig(
                 description = resourceProvider.getString(R.string.issuance_success_header_description),
@@ -96,7 +122,7 @@ class DocumentIssuanceSuccessInteractorImpl(
 
             emit(
                 DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
-                    documentUi = documentUi,
+                    documentsUi = documentsUi,
                     headerConfig = headerConfig,
                 )
             )
@@ -106,15 +132,4 @@ class DocumentIssuanceSuccessInteractorImpl(
             )
         }
     }
-}
-
-sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
-    data class Success(
-        val documentUi: DocumentSuccessItemUi,
-        val headerConfig: ContentHeaderConfig,
-    ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
-
-    data class Failed(
-        val errorMessage: String
-    ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
 }
