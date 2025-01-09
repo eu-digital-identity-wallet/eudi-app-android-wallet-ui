@@ -193,11 +193,9 @@ fun ListItem(
 
     with(item) {
         Row(
-            modifier = if (clickableAreas.contains(ENTIRE_ROW)) {
+            modifier = if (clickableAreas.contains(ENTIRE_ROW) && onItemClick != null) {
                 Modifier.clickable {
-                    onItemClick?.let { safeOnItemClick ->
-                        safeOnItemClick(item)
-                    }
+                    onItemClick(item)
                 }
             } else {
                 Modifier
