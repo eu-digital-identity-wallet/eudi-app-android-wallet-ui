@@ -25,13 +25,15 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
+import eu.europa.ec.commonfeature.config.OfferSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.issuancefeature.BuildConfig
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
-import eu.europa.ec.issuancefeature.ui.document.success.DocumentIssuanceSuccessScreen
+import eu.europa.ec.issuancefeature.ui.document.success.offer.DocumentOfferSuccessScreen
+import eu.europa.ec.issuancefeature.ui.document.success.scoped_issuance.DocumentScopedIssuanceSuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel
@@ -71,9 +73,9 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
             )
         }
 
-        // Document Success
+        // Document Scoped Issuance Success
         composable(
-            route = IssuanceScreens.DocumentSuccess.screenRoute,
+            route = IssuanceScreens.DocumentScopedSuccess.screenRoute,
             arguments = listOf(
                 navArgument("flowType") {
                     type = NavType.StringType
@@ -83,7 +85,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 },
             )
         ) {
-            DocumentIssuanceSuccessScreen(
+            DocumentScopedIssuanceSuccessScreen(
                 navController,
                 getViewModel(
                     parameters = {
@@ -179,6 +181,28 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(OfferCodeUiConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
+            )
+        }
+
+        // Document Offer Success
+        composable(
+            route = IssuanceScreens.DocumentOfferSuccess.screenRoute,
+            arguments = listOf(
+                navArgument(OfferSuccessUiConfig.serializedKeyName) {
+                    type = NavType.StringType
+                },
+            )
+        ) {
+            DocumentOfferSuccessScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(OfferSuccessUiConfig.serializedKeyName)
+                                .orEmpty(),
                         )
                     }
                 )

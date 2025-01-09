@@ -616,12 +616,11 @@ class TestDocumentOfferInteractor {
     // Case 4:
     // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
     // IssueDocumentsPartialState.Success with:
-    // 1. required strings are mocked
-    // 2. uiSerializer.toBase64() serializes the mockedSuccessUiConfig into mockedArguments
+    // 1. some documentIds.
 
     // Case 4 Expected Result:
     // IssueDocumentsInteractorPartialState.Success state, with:
-    // - successRoute equal to "SUCCESS?successConfig=mockedArguments"
+    // - the same documentIds.
     @Test
     fun `Given Case 4, When issueDocuments is called, Then Case 4 Expected Result is returned`() =
         coroutineRule.runTest {
@@ -632,35 +631,6 @@ class TestDocumentOfferInteractor {
                 )
             )
 
-            mockIssuanceDocumentOfferSuccessStrings()
-            whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_success_subtitle,
-                    mockedIssuerName
-                )
-            ).thenReturn(mockedSuccessSubtitle)
-
-            val mockedSuccessUiConfig = SuccessUIConfig(
-                headerConfig = mockedTripleObject.first,
-                content = mockedSuccessSubtitle,
-                imageConfig = mockedTripleObject.second,
-                buttonConfig = listOf(
-                    SuccessUIConfig.ButtonConfig(
-                        text = mockedTripleObject.third,
-                        style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                        navigation = mockedConfigNavigationTypePop
-                    )
-                ),
-                onBackScreenToNavigate = mockedConfigNavigationTypePop
-            )
-
-            whenever(
-                uiSerializer.toBase64(
-                    model = mockedSuccessUiConfig,
-                    parser = SuccessUIConfig.Parser
-                )
-            ).thenReturn(mockedRouteArguments)
-
             // When
             interactor.issueDocuments(
                 offerUri = mockedUriPath1,
@@ -669,7 +639,7 @@ class TestDocumentOfferInteractor {
                 txCode = mockedTxCode
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Success(
-                    successRoute = "SUCCESS?successConfig=$mockedRouteArguments"
+                    documentIds = listOf(mockedPidId)
                 )
 
                 // Then
@@ -757,6 +727,9 @@ class TestDocumentOfferInteractor {
             }
         }
 
+    //TODO Check if we want to treat PartialSuccess the same as Success.
+    // If so, this documentations should be updated accordingly.
+
     // Case 6:
     // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
     //    IssueDocumentsPartialState.PartialSuccess with:
@@ -775,6 +748,8 @@ class TestDocumentOfferInteractor {
     fun `Given Case 6, When issueDocuments is called, Then Case 6 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
+            //TODO Check if we want to treat PartialSuccess the same as Success.
+            // If so, most of the following mocks should be deleted.
             val mockSuccessfullyIssuedDocId = "0000"
 
             val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
@@ -838,13 +813,16 @@ class TestDocumentOfferInteractor {
                 txCode = mockedTxCode
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Success(
-                    successRoute = "SUCCESS?successConfig=$mockedRouteArguments"
+                    documentIds = listOf(mockSuccessfullyIssuedDocId)
                 )
 
                 // Then
                 assertEquals(expectedResult, awaitItem())
             }
         }
+
+    //TODO Check if we want to treat PartialSuccess the same as Success.
+    // If so, this documentations should be updated accordingly.
 
     // Case 7:
     // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits IssueDocumentsPartialState.PartialSuccess
@@ -857,6 +835,8 @@ class TestDocumentOfferInteractor {
     fun `Given Case 7, When issueDocuments is called, Then Case 7 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
+            //TODO Check if we want to treat PartialSuccess the same as Success.
+            // If so, most of the following mocks should be deleted.
             val mockSuccessfullyIssuedDocId = "0000"
             val mockDeferredPendingDocName = mockedMdlDocName
             val mockDeferredPendingType1 = mockedMdlDocType
@@ -899,7 +879,7 @@ class TestDocumentOfferInteractor {
                 txCode = mockedTxCode
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Success(
-                    successRoute = "SUCCESS?successConfig=$mockedRouteArguments"
+                    documentIds = listOf(mockSuccessfullyIssuedDocId),
                 )
 
                 // Then

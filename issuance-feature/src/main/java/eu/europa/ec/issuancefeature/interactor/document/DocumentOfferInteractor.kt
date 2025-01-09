@@ -32,6 +32,7 @@ import eu.europa.ec.corelogic.extension.getIssuerName
 import eu.europa.ec.corelogic.extension.getName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.ui.document.offer.model.DocumentOfferItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -59,7 +60,7 @@ sealed class ResolveDocumentOfferInteractorPartialState {
 
 sealed class IssueDocumentsInteractorPartialState {
     data class Success(
-        val successRoute: String,
+        val documentIds: List<DocumentId>,
     ) : IssueDocumentsInteractorPartialState()
 
     data class DeferredSuccess(
@@ -213,7 +214,8 @@ class DocumentOfferInteractorImpl(
                             )
 
                         IssueDocumentsInteractorPartialState.Success(
-                            successRoute = buildGenericSuccessRoute(
+                            //TODO do we want to treat Partial Success equally to Success?
+                            /*successRoute = buildGenericSuccessRoute(
                                 type = IssuanceSuccessType.DEFAULT,
                                 subtitle = resourceProvider.getString(
                                     R.string.issuance_document_offer_partial_success_subtitle,
@@ -221,20 +223,14 @@ class DocumentOfferInteractorImpl(
                                     nonIssuedDocsNames
                                 ),
                                 navigation = navigation
-                            )
+                            )*/
+                            documentIds = response.documentIds
                         )
                     }
 
                     is IssueDocumentsPartialState.Success -> {
                         IssueDocumentsInteractorPartialState.Success(
-                            successRoute = buildGenericSuccessRoute(
-                                type = IssuanceSuccessType.DEFAULT,
-                                subtitle = resourceProvider.getString(
-                                    R.string.issuance_document_offer_success_subtitle,
-                                    issuerName
-                                ),
-                                navigation = navigation
-                            )
+                            documentIds = response.documentIds
                         )
                     }
 

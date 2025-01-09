@@ -21,10 +21,12 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
+import eu.europa.ec.commonfeature.config.OfferSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.document.ResolveDocumentOfferInteractorPartialState
@@ -328,7 +330,10 @@ class DocumentOfferViewModel(
                             )
                         }
 
-                        goToSuccessScreen(route = response.successRoute)
+                        goToDocumentOfferSuccessScreen(
+                            documentIds = response.documentIds,
+                            onSuccessNavigation = onSuccessNavigation,
+                        )
                     }
 
                     is IssueDocumentsInteractorPartialState.DeferredSuccess -> {
@@ -352,6 +357,30 @@ class DocumentOfferViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun goToDocumentOfferSuccessScreen(
+        documentIds: List<DocumentId>,
+        onSuccessNavigation: ConfigNavigation,
+    ) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = IssuanceScreens.DocumentOfferSuccess,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            OfferSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                model = OfferSuccessUiConfig(
+                                    documentIds = documentIds,
+                                    onSuccessNavigation = onSuccessNavigation,
+                                ),
+                                parser = OfferSuccessUiConfig.Parser
+                            ).orEmpty()
+                        )
+                    )
+                )
+            )
         }
     }
 

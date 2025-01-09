@@ -18,26 +18,26 @@ package eu.europa.ec.commonfeature.config
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
-data class OfferCodeUiConfig(
-    val offerURI: String,
-    val txCodeLength: Int,
-    val issuerName: String,
-    val onSuccessNavigation: ConfigNavigation
+data class OfferSuccessUiConfig(
+    val documentIds: List<DocumentId>,
+    val onSuccessNavigation: ConfigNavigation,
 ) : UiSerializable {
 
     companion object Parser : UiSerializableParser {
-        override val serializedKeyName = "offerCodeConfig"
+        override val serializedKeyName = "offerSuccessConfig"
         override fun provideParser(): Gson {
-            return GsonBuilder().registerTypeAdapter(
-                NavigationType::class.java,
-                SerializableTypeAdapter<NavigationType>()
-            ).create()
+            return GsonBuilder()
+                .registerTypeAdapter(
+                    NavigationType::class.java,
+                    SerializableTypeAdapter<NavigationType>()
+                ).create()
         }
     }
 }

@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.success
+package eu.europa.ec.issuancefeature.ui.document.success.scoped_issuance
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
@@ -32,7 +32,7 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 @KoinViewModel
-class DocumentIssuanceSuccessViewModel(
+class DocumentScopedIssuanceSuccessViewModel(
     private val interactor: DocumentIssuanceSuccessInteractor,
     @InjectedParam private val flowType: IssuanceFlowUiConfig,
     @InjectedParam private val documentId: DocumentId,

@@ -144,7 +144,7 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            else -> {}
+            else -> {} //TODO should we handle the rest of the cases as well?
         }
     }
 
