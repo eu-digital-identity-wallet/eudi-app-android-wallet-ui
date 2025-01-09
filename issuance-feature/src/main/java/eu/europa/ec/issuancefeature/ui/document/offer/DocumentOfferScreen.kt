@@ -17,18 +17,17 @@
 package eu.europa.ec.issuancefeature.ui.document.offer
 
 import android.content.Context
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -41,7 +40,7 @@ import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.MainContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentHeader
@@ -53,15 +52,12 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
-import eu.europa.ec.uilogic.component.wrap.WrapListItems
-import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -70,13 +66,11 @@ import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,12 +80,6 @@ fun DocumentOfferScreen(
 ) {
     val state = viewModel.viewState.value
     val context = LocalContext.current
-
-    val isBottomSheetOpen = state.isBottomSheetOpen
-    val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
-    )
 
     ContentScreen(
         isLoading = state.isLoading,
@@ -108,7 +96,7 @@ fun DocumentOfferScreen(
                         config = ButtonConfig(
                             type = ButtonType.PRIMARY,
                             enabled = !state.isLoading && !state.noDocument,
-                            onClick = { viewModel.setEvent(Event.PrimaryButtonPressed(context)) }
+                            onClick = { viewModel.setEvent(Event.StickyButtonPressed(context)) }
                         )
                     )
                 )
@@ -120,33 +108,11 @@ fun DocumentOfferScreen(
         Content(
             state = state,
             effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(context, navigationEffect, navController)
             },
             paddingValues = paddingValues,
-            coroutineScope = scope,
-            modalBottomSheetState = bottomSheetState,
         )
-
-        if (isBottomSheetOpen) {
-            WrapModalBottomSheet(
-                onDismissRequest = {
-                    viewModel.setEvent(
-                        Event.BottomSheet.UpdateBottomSheetState(
-                            isOpen = false
-                        )
-                    )
-                },
-                sheetState = bottomSheetState
-            ) {
-                SheetContent(
-                    onEventSent = {
-                        viewModel.setEvent(it)
-                    }
-                )
-            }
-        }
     }
 
     LifecycleEffect(
@@ -181,41 +147,34 @@ fun DocumentOfferScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
-    onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues,
-    coroutineScope: CoroutineScope,
-    modalBottomSheetState: SheetState,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        if (state.isLoading.not()) {
-            if (state.noDocument) {
-                ErrorInfo(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    informativeText = stringResource(id = R.string.issuance_document_offer_error_no_document)
-                )
-            } else {
-                ContentHeader(
-                    modifier = Modifier.fillMaxWidth(),
-                    config = state.headerConfig,
-                )
+        ContentHeader(
+            modifier = Modifier.fillMaxWidth(),
+            config = state.headerConfig,
+        )
 
-                // Screen Main Content
-                MainContent(
-                    documents = state.documents,
-                )
-            }
+        if (state.noDocument) {
+            ErrorInfo(
+                modifier = Modifier.fillMaxSize(),
+                informativeText = stringResource(id = R.string.issuance_document_offer_error_no_document)
+            )
+        } else {
+            // Screen Main Content
+            MainContent(
+                modifier = Modifier.fillMaxSize(),
+                documents = state.documents,
+            )
         }
     }
 
@@ -223,39 +182,9 @@ private fun Content(
         effectFlow.onEach { effect ->
             when (effect) {
                 is Effect.Navigation -> onNavigationRequested(effect)
-
-                is Effect.CloseBottomSheet -> {
-                    coroutineScope.launch {
-                        modalBottomSheetState.hide()
-                    }.invokeOnCompletion {
-                        if (!modalBottomSheetState.isVisible) {
-                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
-                        }
-                    }
-                }
-
-                is Effect.ShowBottomSheet -> {
-                    onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
-                }
             }
         }.collect()
     }
-}
-
-@Composable
-private fun SheetContent(
-    onEventSent: (event: Event) -> Unit,
-) {
-    DialogBottomSheet(
-        textData = BottomSheetTextData(
-            title = stringResource(id = R.string.issuance_document_offer_bottom_sheet_cancel_title),
-            message = stringResource(id = R.string.issuance_document_offer_bottom_sheet_cancel_subtitle),
-            positiveButtonText = stringResource(id = R.string.issuance_document_offer_bottom_sheet_cancel_primary_button_text),
-            negativeButtonText = stringResource(id = R.string.issuance_document_offer_bottom_sheet_cancel_secondary_button_text),
-        ),
-        onPositiveClick = { onEventSent(Event.BottomSheet.Cancel.PrimaryButtonPressed) },
-        onNegativeClick = { onEventSent(Event.BottomSheet.Cancel.SecondaryButtonPressed) }
-    )
 }
 
 @Composable
@@ -263,14 +192,20 @@ private fun MainContent(
     modifier: Modifier = Modifier,
     documents: List<ListItemData>,
 ) {
-    VSpacer.Small()
-
-    WrapListItems(
+    LazyColumn(
         modifier = modifier,
-        items = documents,
-        onItemClick = null,
-        mainContentVerticalPadding = SPACING_LARGE.dp
-    )
+        contentPadding = PaddingValues(vertical = SPACING_SMALL.dp),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
+    ) {
+        items(documents.size) { index ->
+            WrapListItem(
+                modifier = Modifier.fillMaxWidth(),
+                item = documents[index],
+                onItemClick = null,
+                mainContentVerticalPadding = SPACING_LARGE.dp,
+            )
+        }
+    }
 }
 
 private fun handleNavigationEffect(
@@ -310,7 +245,6 @@ private fun handleNavigationEffect(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @ThemeModePreviews
 @Composable
 private fun ContentPreview() {
@@ -318,23 +252,21 @@ private fun ContentPreview() {
         val previewState = State(
             isLoading = false,
             error = null,
-            isBottomSheetOpen = false,
             isInitialised = true,
-            issuerName = "Placeholder Issuer",
             documents = listOf(
                 ListItemData(
                     itemId = "doc_1",
-                    mainContentData = MainContentData.Text("PID")
+                    mainContentData = ListItemMainContentData.Text(text = "PID")
                 )
             ),
             noDocument = false,
             headerConfig = ContentHeaderConfig(
-                description = "",
-                mainText = "",
+                description = stringResource(R.string.issuance_document_offer_description),
+                mainText = stringResource(R.string.issuance_document_offer_header_main_text),
                 relyingPartyData = RelyingPartyData(
                     isVerified = true,
-                    name = "Placeholder Relying Party",
-                    description = ""
+                    name = stringResource(R.string.issuance_document_offer_relying_party_default_name),
+                    description = stringResource(R.string.issuance_document_offer_relying_party_description)
                 )
             ),
             offerUiConfig = OfferUiConfig(
@@ -354,11 +286,8 @@ private fun ContentPreview() {
         Content(
             state = previewState,
             effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {},
             onNavigationRequested = {},
             paddingValues = PaddingValues(SPACING_MEDIUM.dp),
-            coroutineScope = rememberCoroutineScope(),
-            modalBottomSheetState = rememberModalBottomSheetState(),
         )
     }
 }

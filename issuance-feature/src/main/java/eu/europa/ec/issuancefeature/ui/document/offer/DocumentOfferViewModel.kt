@@ -28,7 +28,7 @@ import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.document.ResolveDocumentOfferInteractorPartialState
-import eu.europa.ec.issuancefeature.ui.document.offer.transformer.DocumentOfferTransformer.transformToDocumentOfferUi
+import eu.europa.ec.issuancefeature.ui.document.offer.transformer.DocumentOfferTransformer.toListItemDataList
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.ListItemData
@@ -56,39 +56,25 @@ data class State(
     val offerUiConfig: OfferUiConfig,
 
     val isLoading: Boolean = true,
+    val headerConfig: ContentHeaderConfig,
     val error: ContentErrorConfig? = null,
-    val isBottomSheetOpen: Boolean = false,
     val isInitialised: Boolean = false,
     val notifyOnAuthenticationFailure: Boolean = false,
 
-    val issuerName: String,
     val documents: List<ListItemData> = emptyList(),
     val noDocument: Boolean = false,
     val txCodeLength: Int? = null,
-
-    val headerConfig: ContentHeaderConfig
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data class Init(val deepLink: Uri?) : Event()
-    data object Pop : Event()
+    data object BackButtonPressed : Event()
     data object OnPause : Event()
     data class OnResumeIssuance(val uri: String) : Event()
     data class OnDynamicPresentation(val uri: String) : Event()
     data object DismissError : Event()
 
-    data class PrimaryButtonPressed(val context: Context) : Event()
-
-    data object BackButtonPressed : Event()
-
-    sealed class BottomSheet : Event() {
-        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-
-        sealed class Cancel : BottomSheet() {
-            data object PrimaryButtonPressed : Cancel()
-            data object SecondaryButtonPressed : Cancel()
-        }
-    }
+    data class StickyButtonPressed(val context: Context) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -110,9 +96,6 @@ sealed class Effect : ViewSideEffect {
             val routeToPop: String? = null
         ) : Navigation()
     }
-
-    data object ShowBottomSheet : Effect()
-    data object CloseBottomSheet : Effect()
 }
 
 @KoinViewModel
@@ -130,13 +113,8 @@ class DocumentOfferViewModel(
             OfferUiConfig.Parser
         ) ?: throw RuntimeException("OfferUiConfig:: is Missing or invalid")
 
-        val issuerName = resourceProvider.getString(
-            R.string.issuance_document_offer_default_issuer_name
-        )
-
         return State(
             offerUiConfig = deserializedOfferUiConfig,
-            issuerName = issuerName,
             headerConfig = getHeaderConfig()
         )
     }
@@ -154,42 +132,24 @@ class DocumentOfferViewModel(
                 }
             }
 
-            is Event.Pop -> {
+            is Event.BackButtonPressed -> {
                 setState { copy(error = null) }
-                setEffect { Effect.Navigation.Pop }
+                doNavigation(viewState.value.offerUiConfig.onCancelNavigation)
             }
 
             is Event.DismissError -> {
                 setState { copy(error = null) }
             }
 
-            is Event.PrimaryButtonPressed -> {
+            is Event.StickyButtonPressed -> {
                 issueDocuments(
                     context = event.context,
                     offerUri = viewState.value.offerUiConfig.offerURI,
-                    issuerName = viewState.value.issuerName,
+                    issuerName = viewState.value.headerConfig.relyingPartyData?.name
+                        ?: resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name),
                     onSuccessNavigation = viewState.value.offerUiConfig.onSuccessNavigation,
                     txCodeLength = viewState.value.txCodeLength
                 )
-            }
-
-            is Event.BackButtonPressed -> {
-                showBottomSheet()
-            }
-
-            is Event.BottomSheet.UpdateBottomSheetState -> {
-                setState {
-                    copy(isBottomSheetOpen = event.isOpen)
-                }
-            }
-
-            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
-                hideBottomSheet()
-                doNavigation(viewState.value.offerUiConfig.onCancelNavigation)
             }
 
             is Event.OnPause -> {
@@ -265,10 +225,9 @@ class DocumentOfferViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                documents = response.documents.transformToDocumentOfferUi(),
+                                documents = response.documents.toListItemDataList(),
                                 isInitialised = true,
                                 noDocument = false,
-                                issuerName = response.issuerName,
                                 txCodeLength = response.txCodeLength,
                                 headerConfig = headerConfig.copy(
                                     relyingPartyData = getHeaderConfigIssuerData(
@@ -289,7 +248,6 @@ class DocumentOfferViewModel(
                                 documents = emptyList(),
                                 isInitialised = true,
                                 noDocument = true,
-                                issuerName = response.issuerName,
                             )
                         }
                     }
@@ -303,7 +261,7 @@ class DocumentOfferViewModel(
             description = resourceProvider.getString(R.string.issuance_document_offer_description),
             mainText = resourceProvider.getString(R.string.issuance_document_offer_header_main_text),
             relyingPartyData = RelyingPartyData(
-                isVerified = true,
+                isVerified = false,
                 name = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name),
                 description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
             )
@@ -312,7 +270,7 @@ class DocumentOfferViewModel(
 
     private fun getHeaderConfigIssuerData(issuerName: String): RelyingPartyData {
         return RelyingPartyData(
-            isVerified = true,
+            isVerified = true, //TODO
             name = issuerName,
             description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
         )
@@ -435,18 +393,6 @@ class DocumentOfferViewModel(
 
         setEffect {
             navigationEffect
-        }
-    }
-
-    private fun showBottomSheet() {
-        setEffect {
-            Effect.ShowBottomSheet
-        }
-    }
-
-    private fun hideBottomSheet() {
-        setEffect {
-            Effect.CloseBottomSheet
         }
     }
 

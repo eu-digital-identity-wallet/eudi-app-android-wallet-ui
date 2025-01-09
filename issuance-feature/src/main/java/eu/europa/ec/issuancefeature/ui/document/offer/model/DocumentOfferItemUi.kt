@@ -14,19 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.offer.transformer
+package eu.europa.ec.issuancefeature.ui.document.offer.model
 
-import eu.europa.ec.issuancefeature.ui.document.offer.model.DocumentOfferItemUi
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-
-internal object DocumentOfferTransformer {
-    fun List<DocumentOfferItemUi>.toListItemDataList(): List<ListItemData> {
-        return this.mapIndexed { index, item ->
-            ListItemData(
-                itemId = index.toString(),
-                mainContentData = ListItemMainContentData.Text(text = item.title)
-            )
-        }
-    }
-}
+data class DocumentOfferItemUi(
+    val title: String,
+)

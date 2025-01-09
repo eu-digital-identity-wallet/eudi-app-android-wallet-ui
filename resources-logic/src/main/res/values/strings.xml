@@ -274,7 +274,6 @@
     <string name="issuance_qr_scan_subtitle">Scan a QR code provided from an issuer to add a digital document to your wallet.</string>
 
     <!-- Issuance Document Offer -->
-    <string name="issuance_document_offer_default_issuer_name">@string/generic_default_issuer_name</string>
     <string name="issuance_document_offer_primary_button_text_add">Add</string>
     <string name="issuance_document_offer_success_title">@string/generic_success</string>
     <string name="issuance_document_offer_deferred_success_title">@string/generic_deferred_success_title</string>
@@ -287,15 +286,10 @@
     <string name="issuance_document_offer_error_invalid_txcode_format">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</string>
     <string name="issuance_document_offer_error_no_document">Unable to fetch and process the credential offer</string>
 
-    <string name="issuance_document_offer_bottom_sheet_cancel_title">Cancel document issuance?</string>
-    <string name="issuance_document_offer_bottom_sheet_cancel_subtitle">Canceling will redirect you back to the documents list with no new documents.</string>
-    <string name="issuance_document_offer_bottom_sheet_cancel_primary_button_text">Continue issuance</string>
-    <string name="issuance_document_offer_bottom_sheet_cancel_secondary_button_text">Cancel issuance</string>
-
     <string name="issuance_document_offer_description">The following transaction requires your permission and authentication.</string>
     <string name="issuance_document_offer_header_main_text">ISSUANCE REQUEST</string>
-    <string name="issuance_document_offer_relying_party_default_name">Relying Party</string>
-    <string name="issuance_document_offer_relying_party_description">\ wants to add the following</string>
+    <string name="issuance_document_offer_relying_party_default_name">@string/generic_default_issuer_name</string>
+    <string name="issuance_document_offer_relying_party_description">wants to add the following</string>
 
     <!-- Issuance Document Offer Code -->
     <string name="issuance_code_title">%1$s requires verification</string>

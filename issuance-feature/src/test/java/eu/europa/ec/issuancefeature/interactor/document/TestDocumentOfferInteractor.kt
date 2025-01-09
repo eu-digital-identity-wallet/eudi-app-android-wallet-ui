@@ -22,9 +22,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePop
-import eu.europa.ec.commonfeature.util.TestsData.mockedConfigurationIdentifierValue
 import eu.europa.ec.commonfeature.util.TestsData.mockedInvalidCodeFormatMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuanceErrorMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
@@ -60,6 +58,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
+import eu.europa.ec.issuancefeature.ui.document.offer.model.DocumentOfferItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -314,9 +313,8 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedList = listOf(
-                    DocumentItemUi(
+                    DocumentOfferItemUi(
                         title = mockedOfferedDocumentDocType,
-                        documentId = mockedConfigurationIdentifierValue
                     )
                 )
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
@@ -368,9 +366,8 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedDocumentsUiList = listOf(
-                    DocumentItemUi(
+                    DocumentOfferItemUi(
                         title = mockedOfferedDocumentName,
-                        documentId = mockedConfigurationIdentifierValue
                     )
                 )
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
@@ -1195,7 +1192,6 @@ class TestDocumentOfferInteractor {
                     display = display
                 )
             )
-            whenever(this.configurationIdentifier).thenReturn(CredentialConfigurationIdentifier("mockedConfigurationIdentifierValue"))
         }
     }
 

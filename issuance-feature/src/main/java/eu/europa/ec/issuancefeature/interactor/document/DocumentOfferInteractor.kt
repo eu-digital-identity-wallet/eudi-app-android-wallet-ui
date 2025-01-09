@@ -24,7 +24,6 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -33,6 +32,7 @@ import eu.europa.ec.corelogic.extension.getIssuerName
 import eu.europa.ec.corelogic.extension.getName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
+import eu.europa.ec.issuancefeature.ui.document.offer.model.DocumentOfferItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -48,7 +48,7 @@ import kotlinx.coroutines.flow.map
 
 sealed class ResolveDocumentOfferInteractorPartialState {
     data class Success(
-        val documents: List<DocumentItemUi>,
+        val documents: List<DocumentOfferItemUi>,
         val issuerName: String,
         val txCodeLength: Int?
     ) : ResolveDocumentOfferInteractorPartialState()
@@ -158,11 +158,10 @@ class DocumentOfferInteractorImpl(
 
                                 ResolveDocumentOfferInteractorPartialState.Success(
                                     documents = response.offer.offeredDocuments.map { offeredDocument ->
-                                        DocumentItemUi(
+                                        DocumentOfferItemUi(
                                             title = offeredDocument.getName(
                                                 resourceProvider.getLocale()
                                             ).orEmpty(),
-                                            documentId = offeredDocument.configurationIdentifier.value
                                         )
                                     },
                                     issuerName = response.offer.getIssuerName(resourceProvider.getLocale()),
