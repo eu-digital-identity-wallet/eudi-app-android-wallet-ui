@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -88,7 +90,7 @@ private fun TopBar(
         // wallet logo
         AppIconAndText(appIconAndTextData = AppIconAndTextData())
 
-        HSpacer.Large()
+        HSpacer.ExtraLarge()
     }
 }
 
@@ -98,11 +100,15 @@ private fun Content(
     onEventSent: ((event: Event) -> Unit),
     paddingValues: PaddingValues
 ) {
+    val scrollState = rememberScrollState()
     Column(
-        modifier = Modifier.padding(paddingValues),
+        modifier = Modifier
+            .padding(paddingValues)
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
-        VSpacer.Medium()
+        VSpacer.Small()
+
         ContentTitle(
             title = state.welcomeUserMessage,
             titleStyle = MaterialTheme.typography.headlineMedium
