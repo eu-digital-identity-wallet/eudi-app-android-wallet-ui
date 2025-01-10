@@ -16,25 +16,56 @@
 
 package eu.europa.ec.dashboardfeature.ui.home
 
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.wrap.ActionCardConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import org.koin.android.annotation.KoinViewModel
 
-class State : ViewState
+data class State(
+    val welcomeUserMessage: String,
+    val authenticateCardConfig: ActionCardConfig,
+    val signCardConfig: ActionCardConfig,
+) : ViewState
 
-sealed class Event : ViewEvent
+sealed class Event : ViewEvent {
+    data object AuthenticatePressed : Event()
+    data object SignPressed : Event()
+    data object LearnMorePressed : Event()
+}
 
 sealed class Effect : ViewSideEffect
 
 @KoinViewModel
 class HomeViewModel(
     val interactor: HomeInteractor,
+    private val resourceProvider: ResourceProvider
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
-        return State()
+        // TODO user first name will be needed
+        return State(
+            welcomeUserMessage = resourceProvider.getString(
+                R.string.home_screen_welcome_user_message,
+                "Alex"
+            ),
+            authenticateCardConfig = ActionCardConfig(
+                title = resourceProvider.getString(R.string.home_screen_authentication_card_title),
+                icon = AppIcons.WalletActivated,
+                primaryButtonText = resourceProvider.getString(R.string.home_screen_authenticate),
+                secondaryButtonText = resourceProvider.getString(R.string.home_screen_learn_more)
+            ),
+            signCardConfig = ActionCardConfig(
+                title = resourceProvider.getString(R.string.home_screen_sign_card_title),
+                icon = AppIcons.Contract,
+                primaryButtonText = resourceProvider.getString(R.string.home_screen_sign),
+                secondaryButtonText = resourceProvider.getString(R.string.home_screen_learn_more)
+            ),
+        )
     }
 
     override fun handleEvents(event: Event) {

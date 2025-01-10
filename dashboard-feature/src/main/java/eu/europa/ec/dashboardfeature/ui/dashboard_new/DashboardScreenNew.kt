@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard_new
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,6 +34,7 @@ import eu.europa.ec.dashboardfeature.ui.home.HomeScreen
 import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
+import eu.europa.ec.resourceslogic.provider.ResourceProviderImpl
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -82,11 +84,12 @@ fun DashboardScreenNew(
 @Composable
 @ThemeModePreviews
 fun DashboardScreenPreview() {
+    val content = LocalContext.current
     DashboardScreenNew(
         rememberNavController(),
         DashboardViewModelNew(DashboardInteractorNewImpl()),
         DocumentsViewModel(DocumentsInteractorImpl()),
-        HomeViewModel(HomeInteractorImpl()),
+        HomeViewModel(HomeInteractorImpl(), ResourceProviderImpl(content)),
         TransactionsViewModel(TransactionsInteractorImpl())
     )
 }

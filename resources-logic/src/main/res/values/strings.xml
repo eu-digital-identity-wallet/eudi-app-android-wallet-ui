@@ -98,6 +98,8 @@
     <string name="content_description_wallet_secured_icon">Wallet secured</string>
     <string name="content_description_info_icon">Info</string>
     <string name="content_description_issuer_icon">Issuer</string>
+    <string name="content_description_menu_icon">Menu</string>
+    <string name="content_description_signature_icon">Signature</string>
 
     <!-- Placeholder content-->
     <string name="placeholder_content_issuer">Placeholder Issuer</string>
@@ -205,7 +207,12 @@
 
     <!-- Home Screen -->
     <string name="home_screen_title">Home</string>
-
+    <string name="home_screen_welcome_user_message">Welcome back, %1$s</string>
+    <string name="home_screen_authentication_card_title">Authenticate, authorise transactions and share your digital documents in person or online.</string>
+    <string name="home_screen_sign_card_title">Electronically sign digital documents with your wallet by choosing a file from your device or by scanning a QR code.</string>
+    <string name="home_screen_authenticate">Authenticate</string>
+    <string name="home_screen_sign">Sign</string>
+    <string name="home_screen_learn_more">Learn more</string>
 
     <!-- Documents Screen -->
     <string name="documents_screen_title">Documents</string>

@@ -16,85 +16,151 @@
 
 package eu.europa.ec.dashboardfeature.ui.home
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
-import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.AppIconAndText
+import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
+import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.ActionCardConfig
+import eu.europa.ec.uilogic.component.wrap.WrapActionCard
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 
 @Composable
-fun HomeScreen(navHostController: NavController, viewModel: HomeViewModel) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        ContentScreen(
-            isLoading = false,
-            navigatableAction = ScreenNavigateAction.NONE,
-            topBar = { TopBar() }
-        ) {
-            Content()
-        }
+fun HomeScreen(
+    navHostController: NavController,
+    viewModel: HomeViewModel
+) {
+    val state = viewModel.viewState.value
+
+    ContentScreen(
+        isLoading = false,
+        navigatableAction = ScreenNavigateAction.NONE,
+        topBar = { TopBar() }
+    ) { paddingValues ->
+        Content(
+            state = state,
+            onEventSent = { event -> viewModel.setEvent(event) },
+            paddingValues = paddingValues
+        )
     }
 }
 
 @Composable
-private fun TopBar() {
+private fun TopBar(
+    onEventSent: ((event: Event) -> Unit)? = null
+) {
     Row(
         modifier = Modifier
             .height(SIZE_XX_LARGE.dp)
             .fillMaxSize()
             .padding(SPACING_MEDIUM.dp),
+        Arrangement.SpaceBetween
     ) {
-        Text(
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.headlineLarge,
-            text = stringResource(R.string.home_screen_title)
-        )
-        WrapIcon(
-            modifier = Modifier.align(Alignment.CenterVertically),
-            iconData = AppIcons.Add
-        )
+        // home menu icon
+        WrapIconButton(
+            modifier = Modifier.offset(x = -SPACING_SMALL.dp),
+            iconData = AppIcons.Menu
+        ) {
+            // invoke event
+        }
+
+        // wallet logo
+        AppIconAndText(appIconAndTextData = AppIconAndTextData())
+
+        HSpacer.Large()
     }
 }
 
 @Composable
-private fun Content() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+private fun Content(
+    state: State,
+    onEventSent: ((event: Event) -> Unit),
+    paddingValues: PaddingValues
+) {
+    Column(
+        modifier = Modifier.padding(paddingValues),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
+        VSpacer.Medium()
+        ContentTitle(
+            title = state.welcomeUserMessage,
+            titleStyle = MaterialTheme.typography.headlineMedium
+        )
 
-        Text("Home")
+        WrapActionCard(
+            config = state.authenticateCardConfig,
+            onActionClick = {
+                onEventSent(
+                    Event.AuthenticatePressed
+                )
+            },
+            onLearnMoreClick = {
+                onEventSent(
+                    Event.LearnMorePressed
+                )
+            }
+        )
+
+        WrapActionCard(
+            config = state.signCardConfig,
+            onActionClick = {
+                onEventSent(
+                    Event.SignPressed
+                )
+            },
+            onLearnMoreClick = {
+                onEventSent(
+                    Event.LearnMorePressed
+                )
+            }
+        )
     }
 }
 
 @ThemeModePreviews
 @Composable
-private fun HomeScreenPreview() {
-    HomeScreen(
-        rememberNavController(),
-        viewModel = HomeViewModel(HomeInteractorImpl())
-    )
+private fun HomeScreenContentPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                welcomeUserMessage = "Welcome back, Alex",
+                authenticateCardConfig = ActionCardConfig(
+                    title = "Authenticate, authorise transactions and share your digital documents in person or online.",
+                    icon = AppIcons.WalletActivated,
+                    primaryButtonText = "Authenticate",
+                    secondaryButtonText = "Learn more",
+                ),
+                signCardConfig = ActionCardConfig(
+                    title = "Sign, authorise transactions and share your digital documents in person or online.",
+                    icon = AppIcons.Contract,
+                    primaryButtonText = "Sign",
+                    secondaryButtonText = "Learn more",
+                )
+
+            ),
+            onEventSent = {},
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp)
+        )
+    }
 }

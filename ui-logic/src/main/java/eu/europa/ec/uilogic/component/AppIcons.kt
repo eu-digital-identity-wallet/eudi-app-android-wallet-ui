@@ -316,6 +316,18 @@ object AppIcons {
         imageVector = null
     )
 
+    val Menu: IconData = IconData(
+        resourceId = R.drawable.ic_menu,
+        contentDescriptionId = R.string.content_description_menu_icon,
+        imageVector = null
+    )
+
+    val Contract: IconData = IconData(
+        resourceId = R.drawable.ic_contract,
+        contentDescriptionId = R.string.content_description_signature_icon,
+        imageVector = null
+    )
+
     val InProgress: IconData = IconData(
         resourceId = R.drawable.ic_in_progress,
         contentDescriptionId = R.string.content_description_in_progress_icon,

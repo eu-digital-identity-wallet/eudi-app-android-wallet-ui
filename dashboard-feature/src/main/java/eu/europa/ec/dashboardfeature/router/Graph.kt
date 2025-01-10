@@ -22,7 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.navDeepLink
 import eu.europa.ec.dashboardfeature.BuildConfig
-import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardScreen
+import eu.europa.ec.dashboardfeature.ui.dashboard_new.DashboardScreenNew
 import eu.europa.ec.dashboardfeature.ui.sign.DocumentSignScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
@@ -43,15 +43,15 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
             )
         ) {
             //TODO change this accordingly.
-            /*DashboardScreenNew(
+            DashboardScreenNew(
                 navController,
                 koinViewModel(),
                 koinViewModel(),
                 koinViewModel(),
                 koinViewModel()
-            )*/
+            )
 
-            DashboardScreen(navController, koinViewModel())
+            //DashboardScreen(navController, koinViewModel())
         }
 
         composable(
