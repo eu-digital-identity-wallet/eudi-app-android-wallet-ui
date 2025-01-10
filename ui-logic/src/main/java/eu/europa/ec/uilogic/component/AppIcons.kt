@@ -387,4 +387,10 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_add_document_from_qr_icon,
         imageVector = null
     )
+
+    val ChangePin: IconData = IconData(
+        resourceId = R.drawable.ic_change_pin,
+        contentDescriptionId = R.string.content_description_change_pin_icon,
+        imageVector = null
+    )
 }

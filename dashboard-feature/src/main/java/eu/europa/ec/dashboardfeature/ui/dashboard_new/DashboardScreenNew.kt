@@ -87,7 +87,10 @@ fun DashboardScreenPreview() {
     val content = LocalContext.current
     DashboardScreenNew(
         rememberNavController(),
-        DashboardViewModelNew(DashboardInteractorNewImpl()),
+        DashboardViewModelNew(
+            DashboardInteractorNewImpl(),
+            ResourceProviderImpl(content)
+        ),
         DocumentsViewModel(DocumentsInteractorImpl()),
         HomeViewModel(HomeInteractorImpl(), ResourceProviderImpl(content)),
         TransactionsViewModel(TransactionsInteractorImpl())

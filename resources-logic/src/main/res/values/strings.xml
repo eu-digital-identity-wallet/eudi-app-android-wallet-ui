@@ -105,6 +105,7 @@
     <string name="content_description_menu_icon">Menu</string>
     <string name="content_description_signature_icon">Signature</string>
     <string name="content_description_authenticate_icon">Authentication ID cards</string>
+    <string name="content_description_change_pin_icon">Change PIN</string>
 
     <!-- Placeholder content-->
     <string name="placeholder_content_issuer">Placeholder Issuer</string>
@@ -209,6 +210,10 @@
     <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
     <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
     <string name="dashboard_intent_chooser_logs_share_title">Share logs</string>
+
+    <!-- Dashboard Side Menu -->
+    <string name="dashboard_side_menu_title">My EU Wallet</string>
+    <string name="dashboard_side_menu_change_pin">Change PIN</string>
 
     <!-- Home Screen -->
     <string name="home_screen_title">Home</string>
