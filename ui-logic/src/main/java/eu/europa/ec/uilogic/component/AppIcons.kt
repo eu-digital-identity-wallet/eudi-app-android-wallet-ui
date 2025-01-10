@@ -286,9 +286,9 @@ object AppIcons {
         imageVector = null
     )
 
-    val CheckCircle: IconData = IconData(
-        resourceId = R.drawable.ic_check_circle,
-        contentDescriptionId = R.string.content_description_check_circle_icon,
+    val Success: IconData = IconData(
+        resourceId = R.drawable.ic_success,
+        contentDescriptionId = R.string.content_description_success_icon,
         imageVector = null
     )
 

@@ -205,19 +205,17 @@ class ProximityLoadingViewModel(
         return mapOf(
             SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                 SuccessUIConfig(
-                    headerConfig = SuccessUIConfig.HeaderConfig(
-                        title = ""//resourceProvider.getString(R.string.loading_success_config_title)
-                    ),
-                    content = resourceProvider.getString(
-                        //R.string.presentation_loading_success_config_subtitle,
-                        R.string.loading_content_header_description, //TODO Giannis
-                        interactor.verifierName
+                    textElementsConfig = SuccessUIConfig.TextElementsConfig(
+                        text = "",//resourceProvider.getString(R.string.loading_success_config_title)
+                        description = resourceProvider.getString(
+                            //R.string.presentation_loading_success_config_subtitle,
+                            R.string.loading_content_header_description, //TODO Giannis
+                            interactor.verifierName
                             //?: resourceProvider.getString(R.string.presentation_loading_success_config_verifier)
-                            ?: R.string.loading_content_header_description, //TODO Giannis
+                                ?: R.string.loading_content_header_description, //TODO Giannis
+                        ),
                     ),
-                    imageConfig = SuccessUIConfig.ImageConfig(
-                        type = SuccessUIConfig.ImageConfig.Type.DEFAULT
-                    ),
+                    imageConfig = SuccessUIConfig.ImageConfig(),
                     buttonConfig = listOf(
                         SuccessUIConfig.ButtonConfig(
                             text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),

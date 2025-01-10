@@ -366,16 +366,14 @@ class PinViewModel(
                 mapOf(
                     SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                         SuccessUIConfig(
-                            headerConfig = SuccessUIConfig.HeaderConfig(
-                                title = resourceProvider.getString(R.string.quick_pin_success_title),
+                            textElementsConfig = SuccessUIConfig.TextElementsConfig(
+                                text = resourceProvider.getString(R.string.quick_pin_success_text),
+                                description = when (pinFlow) {
+                                    PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_description)
+                                    PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_description)
+                                }
                             ),
-                            content = when (pinFlow) {
-                                PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_subtitle)
-                                PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_subtitle)
-                            },
-                            imageConfig = SuccessUIConfig.ImageConfig(
-                                type = SuccessUIConfig.ImageConfig.Type.DEFAULT
-                            ),
+                            imageConfig = SuccessUIConfig.ImageConfig(),
                             buttonConfig = listOf(
                                 SuccessUIConfig.ButtonConfig(
                                     text = when (pinFlow) {

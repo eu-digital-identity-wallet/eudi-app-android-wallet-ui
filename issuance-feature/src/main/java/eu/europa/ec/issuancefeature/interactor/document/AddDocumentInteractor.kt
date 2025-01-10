@@ -180,16 +180,16 @@ class AddDocumentInteractorImpl(
     private fun getSuccessScreenArgumentsForDeferred(
         navigation: ConfigNavigation
     ): String {
-        val (headerConfig, imageConfig, buttonText) = Triple(
-            first = SuccessUIConfig.HeaderConfig(
+        val (textElementsConfig, imageConfig, buttonText) = Triple(
+            first = SuccessUIConfig.TextElementsConfig(
                 title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
-                color = ThemeColors.warning
+                text = resourceProvider.getString(R.string.issuance_add_document_deferred_success_text),
+                description = resourceProvider.getString(R.string.issuance_add_document_deferred_success_description),
+                color = ThemeColors.pending
             ),
             second = SuccessUIConfig.ImageConfig(
-                type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
-                drawableRes = AppIcons.ClockTimer.resourceId,
-                tint = ThemeColors.warning,
-                contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
+                type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
+                tint = ThemeColors.primary,
             ),
             third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
         )
@@ -198,8 +198,7 @@ class AddDocumentInteractorImpl(
             mapOf(
                 SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                     SuccessUIConfig(
-                        headerConfig = headerConfig,
-                        content = resourceProvider.getString(R.string.issuance_add_document_deferred_success_subtitle),
+                        textElementsConfig = textElementsConfig,
                         imageConfig = imageConfig,
                         buttonConfig = listOf(
                             SuccessUIConfig.ButtonConfig(

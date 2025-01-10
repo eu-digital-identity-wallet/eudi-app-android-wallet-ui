@@ -245,8 +245,8 @@ class DocumentOfferInteractorImpl(
                         IssueDocumentsInteractorPartialState.DeferredSuccess(
                             successRoute = buildGenericSuccessRoute(
                                 type = IssuanceSuccessType.DEFERRED,
-                                subtitle = resourceProvider.getString(
-                                    R.string.issuance_document_offer_deferred_success_subtitle,
+                                description = resourceProvider.getString(
+                                    R.string.issuance_document_offer_deferred_success_description,
                                     issuerName
                                 ),
                                 navigation = navigation
@@ -301,10 +301,10 @@ class DocumentOfferInteractorImpl(
 
     private fun buildGenericSuccessRoute(
         type: IssuanceSuccessType,
-        subtitle: String,
+        description: String,
         navigation: ConfigNavigation
     ): String {
-        val successScreenArguments = getSuccessScreenArguments(type, subtitle, navigation)
+        val successScreenArguments = getSuccessScreenArguments(type, description, navigation)
         return generateComposableNavigationLink(
             screen = CommonScreens.Success,
             arguments = successScreenArguments
@@ -313,34 +313,30 @@ class DocumentOfferInteractorImpl(
 
     private fun getSuccessScreenArguments(
         type: IssuanceSuccessType,
-        subtitle: String,
+        description: String,
         navigation: ConfigNavigation
     ): String {
-        val (headerConfig, imageConfig, buttonText) = when (type) {
+        val (textElementsConfig, imageConfig, buttonText) = when (type) {
             IssuanceSuccessType.DEFAULT -> Triple(
-                first = SuccessUIConfig.HeaderConfig(
-                    title = resourceProvider.getString(R.string.issuance_document_offer_success_title),
+                first = SuccessUIConfig.TextElementsConfig(
+                    text = resourceProvider.getString(R.string.issuance_document_offer_success_text),
+                    description = description,
                     color = ThemeColors.success
                 ),
-                second = SuccessUIConfig.ImageConfig(
-                    type = SuccessUIConfig.ImageConfig.Type.DEFAULT,
-                    drawableRes = null,
-                    tint = ThemeColors.success,
-                    contentDescription = resourceProvider.getString(R.string.content_description_success_icon)
-                ),
+                second = SuccessUIConfig.ImageConfig(),
                 third = resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
             )
 
             IssuanceSuccessType.DEFERRED -> Triple(
-                first = SuccessUIConfig.HeaderConfig(
+                first = SuccessUIConfig.TextElementsConfig(
                     title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
-                    color = ThemeColors.warning
+                    text = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_text),
+                    description = description,
+                    color = ThemeColors.pending
                 ),
                 second = SuccessUIConfig.ImageConfig(
-                    type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
-                    drawableRes = AppIcons.ClockTimer.resourceId,
-                    tint = ThemeColors.warning,
-                    contentDescription = resourceProvider.getString(AppIcons.ClockTimer.contentDescriptionId)
+                    type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
+                    tint = ThemeColors.primary,
                 ),
                 third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
             )
@@ -350,8 +346,7 @@ class DocumentOfferInteractorImpl(
             mapOf(
                 SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                     SuccessUIConfig(
-                        headerConfig = headerConfig,
-                        content = subtitle,
+                        textElementsConfig = textElementsConfig,
                         imageConfig = imageConfig,
                         buttonConfig = listOf(
                             SuccessUIConfig.ButtonConfig(

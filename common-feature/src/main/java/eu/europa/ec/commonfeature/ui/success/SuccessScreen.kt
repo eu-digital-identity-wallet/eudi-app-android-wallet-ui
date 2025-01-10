@@ -16,44 +16,42 @@
 
 package eu.europa.ec.commonfeature.ui.success
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.WrapButton
+import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.cacheDeepLink
@@ -131,50 +129,63 @@ private fun SuccessScreenView(
             .padding(paddingValues),
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            ContentTitle(
-                title = state.successConfig.headerConfig?.title,
-                titleStyle = MaterialTheme.typography.headlineSmall.copy(
-                    color = state.successConfig.headerConfig?.color ?: Color.Unspecified
-                ),
-                subtitle = state.successConfig.content,
+        state.successConfig.textElementsConfig.title?.let { safeTitle ->
+            SimpleContentTitle(
+                modifier = Modifier.fillMaxWidth(),
+                title = safeTitle,
+                subtitle = null,
             )
         }
 
         val imageConfig = state.successConfig.imageConfig
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            contentAlignment = Alignment.Center
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            when {
-                // DEFAULT
-                imageConfig.type == SuccessUIConfig.ImageConfig.Type.DEFAULT -> {
-                    Image(
-                        modifier = Modifier.fillMaxWidth(0.6f),
-                        imageVector = Icons.Outlined.CheckCircle,
-                        contentDescription = imageConfig.contentDescription,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.success),
-                        contentScale = ContentScale.FillWidth
-                    )
-                }
-                // Image
-                imageConfig.type == SuccessUIConfig.ImageConfig.Type.DRAWABLE && imageConfig.drawableRes != null -> {
-                    Image(
-                        modifier = Modifier.fillMaxWidth(0.25f),
-                        painter = painterResource(id = imageConfig.drawableRes),
-                        contentDescription = imageConfig.contentDescription,
-                        colorFilter = ColorFilter.tint(imageConfig.tint),
-                        contentScale = ContentScale.FillWidth
-                    )
-                }
+            when (imageConfig.type) {
+                is SuccessUIConfig.ImageConfig.Type.Default -> WrapImage(
+                    modifier = Modifier.fillMaxWidth(0.6f),
+                    iconData = AppIcons.Success,
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.success),
+                    contentScale = ContentScale.FillWidth
+                )
+
+                is SuccessUIConfig.ImageConfig.Type.Drawable -> WrapImage(
+                    modifier = Modifier.fillMaxWidth(0.25f),
+                    iconData = imageConfig.type.icon,
+                    colorFilter = ColorFilter.tint(imageConfig.tint),
+                    contentScale = ContentScale.FillWidth
+                )
             }
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                text = state.successConfig.textElementsConfig.text,
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    color = state.successConfig.textElementsConfig.color
+                ),
+                textAlign = TextAlign.Center,
+            )
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp),
+                text = state.successConfig.textElementsConfig.description,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                textAlign = TextAlign.Center,
+            )
         }
 
         Column(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             state.successConfig.buttonConfig.forEach { buttonConfig ->
@@ -245,16 +256,15 @@ private fun SuccessDefaultPreview() {
         SuccessScreenView(
             state = State(
                 successConfig = SuccessUIConfig(
-                    headerConfig = SuccessUIConfig.HeaderConfig(
-                        title = "Success",
+                    textElementsConfig = SuccessUIConfig.TextElementsConfig(
+                        title = null,
+                        text = stringResource(R.string.generic_success),
+                        description = stringResource(R.string.quick_pin_change_success_description),
                     ),
-                    content = "Subtitle",
-                    imageConfig = SuccessUIConfig.ImageConfig(
-                        type = SuccessUIConfig.ImageConfig.Type.DEFAULT
-                    ),
+                    imageConfig = SuccessUIConfig.ImageConfig(),
                     buttonConfig = listOf(
                         SuccessUIConfig.ButtonConfig(
-                            text = "back",
+                            text = "Back",
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = ConfigNavigation(
                                 navigationType = NavigationType.PopTo(StartupScreens.Splash),
@@ -276,21 +286,20 @@ private fun SuccessDefaultPreview() {
 
 @ThemeModePreviews
 @Composable
-private fun SuccessDrawablePreview() {
+private fun SuccessPendingPreview() {
     PreviewTheme {
         SuccessScreenView(
             state = State(
                 successConfig = SuccessUIConfig(
-                    headerConfig = SuccessUIConfig.HeaderConfig(
-                        title = "In Progress",
-                        color = ThemeColors.warning
+                    textElementsConfig = SuccessUIConfig.TextElementsConfig(
+                        title = stringResource(R.string.issuance_add_document_deferred_success_title),
+                        text = stringResource(R.string.issuance_add_document_deferred_success_text),
+                        description = "Your document Digital ID from Issuance Service has been requested. You will be notified when it has been issued to your wallet.",
+                        color = ThemeColors.pending,
                     ),
-                    content = "Subtitle",
                     imageConfig = SuccessUIConfig.ImageConfig(
-                        type = SuccessUIConfig.ImageConfig.Type.DRAWABLE,
-                        drawableRes = AppIcons.ClockTimer.resourceId,
-                        tint = ThemeColors.warning,
-                        contentDescription = "contentDescription"
+                        type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
+                        tint = ThemeColors.primary,
                     ),
                     buttonConfig = listOf(
                         SuccessUIConfig.ButtonConfig(

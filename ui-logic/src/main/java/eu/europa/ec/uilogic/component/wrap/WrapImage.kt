@@ -19,6 +19,7 @@ package eu.europa.ec.uilogic.component.wrap
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
@@ -30,6 +31,7 @@ import eu.europa.ec.uilogic.component.IconData
 fun WrapImage(
     iconData: IconData,
     modifier: Modifier = Modifier,
+    colorFilter: ColorFilter? = null,
     contentScale: ContentScale? = null,
 ) {
     val iconContentDescription = stringResource(id = iconData.contentDescriptionId)
@@ -39,6 +41,7 @@ fun WrapImage(
             modifier = modifier,
             painter = painterResource(id = resId),
             contentDescription = iconContentDescription,
+            colorFilter = colorFilter,
             contentScale = contentScale ?: ContentScale.FillBounds,
         )
     } ?: run {
@@ -47,6 +50,7 @@ fun WrapImage(
                 modifier = modifier,
                 imageVector = imageVector,
                 contentDescription = iconContentDescription,
+                colorFilter = colorFilter,
                 contentScale = contentScale ?: ContentScale.FillBounds,
             )
         }
@@ -58,12 +62,14 @@ fun WrapImage(
     modifier: Modifier = Modifier,
     painter: BitmapPainter,
     contentDescription: String,
+    colorFilter: ColorFilter? = null,
     contentScale: ContentScale? = null,
 ) {
     Image(
         modifier = modifier,
         painter = painter,
         contentDescription = contentDescription,
+        colorFilter = colorFilter,
         contentScale = contentScale ?: ContentScale.FillBounds,
     )
 }
@@ -73,6 +79,7 @@ fun WrapImage(
     modifier: Modifier = Modifier,
     bitmap: ImageBitmap?,
     contentDescription: String,
+    colorFilter: ColorFilter? = null,
     contentScale: ContentScale? = null,
 ) {
     bitmap?.let {
@@ -80,6 +87,7 @@ fun WrapImage(
             modifier = modifier,
             bitmap = it,
             contentDescription = contentDescription,
+            colorFilter = colorFilter,
             contentScale = contentScale ?: ContentScale.FillBounds,
         )
     }

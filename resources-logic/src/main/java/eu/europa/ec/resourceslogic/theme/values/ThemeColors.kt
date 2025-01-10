@@ -75,6 +75,7 @@ class ThemeColors {
         // Light theme extra colors palette.
         internal const val eudiw_theme_light_success: Long = 0xFF55953B
         internal const val eudiw_theme_light_warning: Long = 0xFFF39626
+        internal const val eudiw_theme_light_pending: Long = 0xFFAB5200
         internal const val eudiw_theme_light_divider: Long = 0xFFD9D9D9
 
         // Dark theme base colors palette.
@@ -118,6 +119,7 @@ class ThemeColors {
         // Dark theme extra colors palette.
         internal const val eudiw_theme_dark_success: Long = 0xFF93D875
         internal const val eudiw_theme_dark_warning: Long = 0xFFFFB689
+        internal const val eudiw_theme_dark_pending: Long = 0xFFCC8B3F
         internal const val eudiw_theme_dark_divider: Long = 0xFFD9D9D9
 
         const val eudiw_theme_light_background_preview: Long =
@@ -203,6 +205,13 @@ class ThemeColors {
             surfaceContainerLowest = eudiw_theme_dark_surfaceContainerLowest,
         )
 
+        val primary: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_primary)
+            } else {
+                Color(eudiw_theme_light_primary)
+            }
+
         val success: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_success)
@@ -215,6 +224,13 @@ class ThemeColors {
                 Color(eudiw_theme_dark_warning)
             } else {
                 Color(eudiw_theme_light_warning)
+            }
+
+        val pending: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_pending)
+            } else {
+                Color(eudiw_theme_light_pending)
             }
 
         val divider: Color
@@ -238,6 +254,13 @@ val ColorScheme.warning: Color
         Color(ThemeColors.eudiw_theme_dark_warning)
     } else {
         Color(ThemeColors.eudiw_theme_light_warning)
+    }
+
+val ColorScheme.pending: Color
+    @Composable get() = if (isSystemInDarkTheme()) {
+        Color(ThemeColors.eudiw_theme_dark_pending)
+    } else {
+        Color(ThemeColors.eudiw_theme_light_pending)
     }
 
 val ColorScheme.divider: Color

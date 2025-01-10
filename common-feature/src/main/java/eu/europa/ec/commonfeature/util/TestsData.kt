@@ -58,13 +58,13 @@ object TestsData {
     const val mockedDocumentHasExpired = false
     const val mockedVerifierName = "EUDIW Verifier"
     const val mockedIssuerName = "EUDIW Issuer"
-    const val mockedRequestRequiredFieldsTitle = "Verification Data"
     const val mockedRequestElementIdentifierNotAvailable = "Not available"
     const val mockedOfferedDocumentName = "Offered Document"
     const val mockedOfferedDocumentDocType = "mocked_offered_document_doc_type"
     const val mockedTxCodeFourDigits = 4
-    const val mockedSuccessTitle = "Success title"
-    const val mockedSuccessSubtitle = "Success subtitle"
+    const val mockedDeferredSuccessTitle = "Document pending"
+    const val mockedSuccessText = "Success text"
+    const val mockedSuccessDescription = "Success description"
     const val mockedSuccessContentDescription = "Content description"
     const val mockedIssuanceErrorMessage = "Issuance error message"
     const val mockedInvalidCodeFormatMessage = "Invalid code format message"

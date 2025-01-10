@@ -35,7 +35,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 fun SimpleContentTitle(
     modifier: Modifier = Modifier,
     title: String,
-    subtitle: String,
+    subtitle: String?,
 ) {
     Column(
         modifier = modifier,
@@ -49,13 +49,15 @@ fun SimpleContentTitle(
             )
         )
 
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface
+        subtitle?.let { safeSubtitle ->
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = safeSubtitle,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             )
-        )
+        }
     }
 }
 

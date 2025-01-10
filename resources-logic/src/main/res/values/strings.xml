@@ -30,13 +30,14 @@
     <string name="generic_continue_capitalized" tools:ignore="ButtonCase">CONTINUE</string>
     <string name="generic_enable_capitalized" tools:ignore="ButtonCase">ENABLE</string>
     <string name="generic_success">Success</string>
+    <string name="generic_document_pending">Document pending</string>
     <string name="generic_close">Close</string>
     <string name="generic_ok">OK</string>
     <string name="generic_dash">-</string>
     <string name="generic_default_relying_party_name">Relying Party</string>
     <string name="generic_default_issuer_name">Issuer</string>
     <string name="generic_view_details">View details</string>
-    <string name="generic_deferred_success_title">In progress!</string>
+    <string name="generic_deferred_success_text">In progress!</string>
     <string name="generic_bottom_sheet_delete_title">Delete document?</string>
     <string name="generic_bottom_sheet_delete_subtitle">This document will be permanently deleted from your wallet and may affect access to services.</string>
     <string name="generic_bottom_sheet_delete_primary_button_text">Delete</string>
@@ -86,7 +87,6 @@
     <string name="content_description_bookmark_icon">Bookmark</string>
     <string name="content_description_bookmark_filled_icon">Bookmark filled</string>
     <string name="content_description_certified_icon">Certified</string>
-    <string name="content_description_check_circle_icon">Check circle</string>
     <string name="content_description_documents_icon">Documents</string>
     <string name="content_description_download_icon">Download</string>
     <string name="content_description_filters_icon">Filters</string>
@@ -134,10 +134,10 @@
     <string name="quick_pin_change_enter_new_subtitle">Select a quick pin for future logins</string>
     <string name="quick_pin_change_reenter_new_subtitle">Re-enter the new quick pin</string>
 
-    <string name="quick_pin_success_title">@string/generic_success</string>
-    <string name="quick_pin_create_success_subtitle">You successfully set the quick pin</string>
+    <string name="quick_pin_success_text">@string/generic_success</string>
+    <string name="quick_pin_create_success_description">You successfully set the quick pin</string>
     <string name="quick_pin_create_success_btn">@string/generic_continue_capitalized</string>
-    <string name="quick_pin_change_success_subtitle">You successfully changed the quick pin</string>
+    <string name="quick_pin_change_success_description">You successfully changed the quick pin</string>
     <string name="quick_pin_change_success_btn">BACK TO HOME</string>
 
     <string name="quick_pin_bottom_sheet_cancel_title">Cancel quick pin changing?</string>
@@ -259,8 +259,9 @@
     <string name="issuance_add_document_title">Add document</string>
     <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
     <string name="issuance_add_document_user_auth_required">User authentication is required</string>
-    <string name="issuance_add_document_deferred_success_title">@string/generic_deferred_success_title</string>
-    <string name="issuance_add_document_deferred_success_subtitle">Your document has been requested. You will be notified when it has been issued to your wallet.</string>
+    <string name="issuance_add_document_deferred_success_title">@string/generic_document_pending</string>
+    <string name="issuance_add_document_deferred_success_text">@string/generic_deferred_success_text</string>
+    <string name="issuance_add_document_deferred_success_description">Your document has been requested. You will be notified when it has been issued to your wallet.</string>
     <string name="issuance_add_document_deferred_success_primary_button_text">@string/generic_ok</string>
     <string name="issuance_add_document_qr_scan_section_title">Or</string>
     <string name="issuance_add_document_qr_scan_section_subtitle">SCAN QR</string>
@@ -275,11 +276,12 @@
 
     <!-- Issuance Document Offer -->
     <string name="issuance_document_offer_primary_button_text_add">Add</string>
-    <string name="issuance_document_offer_success_title">@string/generic_success</string>
-    <string name="issuance_document_offer_deferred_success_title">@string/generic_deferred_success_title</string>
-    <string name="issuance_document_offer_success_subtitle">Your documents from %1$s have been successfully issued.</string>
-    <string name="issuance_document_offer_partial_success_subtitle">Your documents from %1$s have been successfully issued except %2$s</string>
-    <string name="issuance_document_offer_deferred_success_subtitle">Your documents from %1$s have been requested. You will be notified when they have been issued to your wallet.</string>
+    <string name="issuance_document_offer_success_text">@string/generic_success</string>
+    <string name="issuance_document_offer_deferred_success_title">@string/generic_document_pending</string>
+    <string name="issuance_document_offer_deferred_success_text">@string/generic_deferred_success_text</string>
+    <string name="issuance_document_offer_success_description">Your documents from %1$s have been successfully issued.</string>
+    <string name="issuance_document_offer_partial_success_description">Your documents from %1$s have been successfully issued except %2$s</string>
+    <string name="issuance_document_offer_deferred_success_description">Your documents from %1$s have been requested. You will be notified when they have been issued to your wallet.</string>
     <string name="issuance_document_offer_success_primary_button_text">@string/generic_continue_capitalized</string>
     <string name="issuance_document_offer_deferred_success_primary_button_text">@string/generic_ok</string>
     <string name="issuance_document_offer_error_missing_pid_text">Wallet needs to be activated first with a National ID</string>

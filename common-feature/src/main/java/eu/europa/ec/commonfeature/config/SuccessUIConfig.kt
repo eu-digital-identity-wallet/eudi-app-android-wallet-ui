@@ -16,11 +16,11 @@
 
 package eu.europa.ec.commonfeature.config
 
-import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.Color
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializable
@@ -28,21 +28,19 @@ import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
 data class SuccessUIConfig(
-    val headerConfig: HeaderConfig?,
-    val content: String,
+    val textElementsConfig: TextElementsConfig,
     val imageConfig: ImageConfig,
     val buttonConfig: List<ButtonConfig>,
     val onBackScreenToNavigate: ConfigNavigation
 ) : UiSerializable {
 
     data class ImageConfig(
-        val type: Type,
-        @DrawableRes val drawableRes: Int? = null,
+        val type: Type = Type.Default,
         val tint: Color = ThemeColors.success,
-        val contentDescription: String? = null
     ) {
-        enum class Type {
-            DRAWABLE, DEFAULT
+        sealed class Type {
+            data object Default : Type()
+            data class Drawable(val icon: IconData) : Type()
         }
     }
 
@@ -56,18 +54,26 @@ data class SuccessUIConfig(
         }
     }
 
-    data class HeaderConfig(
-        val title: String,
+    data class TextElementsConfig(
+        val title: String? = null,
+        val text: String,
+        val description: String,
         val color: Color = ThemeColors.success
     )
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "successConfig"
         override fun provideParser(): Gson {
-            return GsonBuilder().registerTypeAdapter(
-                NavigationType::class.java,
-                SerializableTypeAdapter<NavigationType>()
-            ).create()
+            return GsonBuilder()
+                .registerTypeAdapter(
+                    NavigationType::class.java,
+                    SerializableTypeAdapter<NavigationType>()
+                )
+                .registerTypeAdapter(
+                    ImageConfig.Type::class.java,
+                    SerializableTypeAdapter<ImageConfig.Type>()
+                )
+                .create()
         }
     }
 }
