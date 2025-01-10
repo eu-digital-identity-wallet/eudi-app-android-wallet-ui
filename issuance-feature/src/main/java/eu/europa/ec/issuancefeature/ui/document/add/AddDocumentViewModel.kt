@@ -25,12 +25,13 @@ import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
+import eu.europa.ec.commonfeature.model.DocumentOptionListItemHolder
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorPartialState
+import eu.europa.ec.issuancefeature.ui.document.add.transformer.AddDocumentTransformer.transformToAddDocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -65,7 +66,7 @@ data class State(
 
     val title: String = "",
     val subtitle: String = "",
-    val options: List<DocumentOptionItemUi> = emptyList()
+    val options: List<DocumentOptionListItemHolder> = emptyList()
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -191,7 +192,7 @@ class AddDocumentViewModel(
                         setState {
                             copy(
                                 error = null,
-                                options = response.options,
+                                options = response.options.transformToAddDocumentUi(),
                                 isInitialised = true,
                                 isLoading = false
                             )

@@ -174,10 +174,13 @@ fun ListItem(
     overlineTextStyle: TextStyle = MaterialTheme.typography.labelMedium.copy(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     ),
+    mainContentTextStyle: TextStyle? = MaterialTheme.typography.bodyLarge.copy(
+        color = MaterialTheme.colorScheme.onSurface
+    ),
 ) {
     val maxSecondaryTextLines = 1
     val textOverflow = TextOverflow.Ellipsis
-    val mainTextStyle = MaterialTheme.typography.bodyLarge.copy(
+    val mainTextStyle = mainContentTextStyle ?: MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onSurface
     )
 

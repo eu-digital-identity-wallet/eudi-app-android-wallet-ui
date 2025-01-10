@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -32,12 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
+import eu.europa.ec.commonfeature.model.DocumentOptionListItemHolder
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IssuanceButton
-import eu.europa.ec.uilogic.component.IssuanceButtonData
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -48,6 +50,7 @@ import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
@@ -156,21 +159,19 @@ private fun Content(
         LazyColumn {
             state.options.forEach { option ->
                 item {
-                    IssuanceButton(
-                        data = IssuanceButtonData(
-                            text = option.text,
-                            icon = null
-                        ),
-                        enabled = option.available,
-                        onClick = {
+                    WrapListItem(
+                        item = option.listItemData,
+                        mainContentVerticalPadding = SPACING_MEDIUM.dp,
+                        mainContentTextStyle = MaterialTheme.typography.titleMedium,
+                        onItemClick = if (option.available) { optionListItemData ->
                             onEventSend(
                                 Event.IssueDocument(
                                     issuanceMethod = IssuanceMethod.OPENID4VCI,
-                                    configId = option.configId,
+                                    configId = optionListItemData.itemId,
                                     context = context
                                 )
                             )
-                        }
+                        } else null
                     )
 
                     VSpacer.Medium()
@@ -196,19 +197,24 @@ private fun IssuanceAddDocumentScreenPreview() {
             state = State(
                 navigatableAction = ScreenNavigateAction.NONE,
                 title = "Add document from list",
-                subtitle = "Choose a digital document from the list below to add to your wallet. You may add more documents by scanning the QR code provided to you by an authorised issuing service.",
+                subtitle = "Choose a digital document from the list below to add to your wallet." +
+                        "You may add more documents by scanning the QR code provided to you by an authorised issuing service.",
                 options = listOf(
-                    DocumentOptionItemUi(
-                        text = "National ID",
-                        icon = AppIcons.Id,
-                        configId = "id",
+                    DocumentOptionListItemHolder(
                         available = true,
+                        listItemData = ListItemData(
+                            itemId = "configId",
+                            mainContentData = MainContentData.Text("National ID"),
+                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                        )
                     ),
-                    DocumentOptionItemUi(
-                        text = "Driving License",
-                        icon = AppIcons.Id,
-                        configId = "id",
+                    DocumentOptionListItemHolder(
                         available = false,
+                        listItemData = ListItemData(
+                            itemId = "configId",
+                            mainContentData = MainContentData.Text("Driving Licence"),
+                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                        )
                     )
                 )
             ),
@@ -229,19 +235,24 @@ private fun DashboardAddDocumentScreenPreview() {
             state = State(
                 navigatableAction = ScreenNavigateAction.BACKABLE,
                 title = "Add document from list",
-                subtitle = "Choose a digital document from the list below to add to your wallet. You may add more documents by scanning the QR code provided to you by an authorised issuing service.",
+                subtitle = "Choose a digital document from the list below to add to your wallet." +
+                        "You may add more documents by scanning the QR code provided to you by an authorised issuing service.",
                 options = listOf(
-                    DocumentOptionItemUi(
-                        text = "National ID",
-                        icon = AppIcons.Id,
-                        configId = "id",
+                    DocumentOptionListItemHolder(
                         available = true,
+                        listItemData = ListItemData(
+                            itemId = "configId",
+                            mainContentData = MainContentData.Text("National ID"),
+                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                        )
                     ),
-                    DocumentOptionItemUi(
-                        text = "Driving License",
-                        icon = AppIcons.Id,
-                        configId = "id",
+                    DocumentOptionListItemHolder(
                         available = false,
+                        listItemData = ListItemData(
+                            itemId = "configId",
+                            mainContentData = MainContentData.Text("Driving Licence"),
+                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                        )
                     )
                 )
             ),
