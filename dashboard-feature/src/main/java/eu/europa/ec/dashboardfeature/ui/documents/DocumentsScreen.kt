@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.documents
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
@@ -44,7 +47,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
@@ -121,12 +124,15 @@ private fun Content(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues = paddingValues)
+            .padding(paddingValues = paddingValues),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         item {
             val searchItem =
                 SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
-            FiltersSearchBar(placeholder = searchItem.searchLabel)
+            FiltersSearchBar(placeholder = searchItem.searchLabel,
+                onValueChange = {},
+                onFilterClick = {})
         }
         items(state.documents) { documentItemData ->
             WrapListItem(
@@ -139,8 +145,11 @@ private fun Content(
         AddDocumentBottomSheet(onEventSend, modalBottomSheetState)
     }
 
-    OneTimeLaunchedEffect {
-        onEventSend(Event.Init)
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
+        onEventSend(Event.GetDocuments)
     }
 
     LaunchedEffect(Unit) {
@@ -175,25 +184,21 @@ private fun AddDocumentBottomSheet(
                 title = stringResource(R.string.documents_screen_add_document_title),
                 message = stringResource(R.string.documents_screen_add_document_description)
             ),
-            options = buildList {
-                addAll(
-                    listOf(
-                        ModalOptionUi(
-                            title = stringResource(R.string.documents_screen_add_document_option_list),
-                            leadingIcon = AppIcons.AddDocumentFromList,
-                            leadingIconTint = MaterialTheme.colorScheme.primary,
-                            event = Event.GoToDocumentDetails(docId = ""),
-                        ),
-                        ModalOptionUi(
-                            title = stringResource(R.string.documents_screen_add_document_option_qr),
-                            leadingIcon = AppIcons.AddDocumentFromQr,
-                            leadingIconTint = MaterialTheme.colorScheme.primary,
-                            event = Event.GoToDocumentDetails(docId = ""),
-                        ),
-                    )
+            options = listOf(
+                ModalOptionUi(
+                    title = stringResource(R.string.documents_screen_add_document_option_list),
+                    leadingIcon = AppIcons.AddDocumentFromList,
+                    leadingIconTint = MaterialTheme.colorScheme.primary,
+                    event = Event.GoToAddDocument,
+                ),
+                ModalOptionUi(
+                    title = stringResource(R.string.documents_screen_add_document_option_qr),
+                    leadingIcon = AppIcons.AddDocumentFromQr,
+                    leadingIconTint = MaterialTheme.colorScheme.primary,
+                    event = Event.GoToQrScan,
                 )
-            },
-            onEventSent = {}
+            ),
+            onEventSent = { onEventSend(it) }
         )
     }
 }

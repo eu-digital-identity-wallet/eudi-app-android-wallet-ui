@@ -16,10 +16,19 @@
 
 package eu.europa.ec.dashboardfeature.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,25 +36,48 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
-import eu.europa.ec.uilogic.component.wrap.WrapSearchBar
 
 @Composable
-fun FiltersSearchBar(modifier: Modifier = Modifier, placeholder: String) {
+fun FiltersSearchBar(
+    placeholder: String,
+    onValueChange: (String) -> Unit,
+    onFilterClick: () -> Unit,
+) {
+    var value by remember { mutableStateOf("") }
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = SPACING_MEDIUM.dp, bottom = SPACING_MEDIUM.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        WrapSearchBar(
+        OutlinedTextField(
             modifier = Modifier.weight(1f),
-            searchText = "",
-            placeholder = placeholder,
-            onSearchTextChanged = {}
+            value = value,
+            maxLines = 1,
+            onValueChange = {
+                value = it
+                onValueChange(it)
+            },
+            placeholder = { Text(placeholder) },
+            leadingIcon = {
+                WrapIcon(
+                    iconData = AppIcons.Search,
+                    customTint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = MaterialTheme.colorScheme.surfaceContainer,
+                focusedBorderColor = MaterialTheme.colorScheme.surfaceContainer
+            )
         )
+
         WrapIcon(
-            modifier = Modifier.fillMaxWidth().weight(1f),
-            iconData = AppIcons.Filters
+            modifier = Modifier
+                .clickable { onFilterClick() }
+                .padding(all = SPACING_MEDIUM.dp),
+            iconData = AppIcons.Filters,
+            customTint = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -53,6 +85,7 @@ fun FiltersSearchBar(modifier: Modifier = Modifier, placeholder: String) {
 @Composable
 @ThemeModePreviews
 private fun FiltersSearchBarPreview() {
-    FiltersSearchBar(placeholder = "Documents"
+    FiltersSearchBar(
+        placeholder = "Search documents", onValueChange = { }, onFilterClick = {}
     )
 }

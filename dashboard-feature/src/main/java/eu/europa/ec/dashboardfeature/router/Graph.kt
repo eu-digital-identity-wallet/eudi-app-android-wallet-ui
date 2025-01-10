@@ -44,11 +44,11 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
         ) {
             //TODO change this accordingly.
             DashboardScreenNew(
-                navController,
-                koinViewModel(),
-                koinViewModel(),
-                koinViewModel(),
-                koinViewModel()
+                hostNavController = navController,
+                viewModel = koinViewModel(),
+                documentsViewModel = koinViewModel(),
+                homeViewModel = koinViewModel(),
+                transactionsViewModel = koinViewModel()
             )
 
             //DashboardScreen(navController, koinViewModel())
