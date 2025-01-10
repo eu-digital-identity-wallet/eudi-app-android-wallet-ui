@@ -22,13 +22,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_LARGE
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapSearchBar
@@ -36,17 +33,23 @@ import eu.europa.ec.uilogic.component.wrap.WrapSearchBar
 @Composable
 fun FiltersSearchBar(modifier: Modifier = Modifier, placeholder: String) {
     Row(
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = modifier
+            .padding(top = SPACING_MEDIUM.dp, bottom = SPACING_MEDIUM.dp)
             .fillMaxWidth()
-            .padding(top = SPACING_MEDIUM.dp, bottom = SPACING_LARGE.dp)
     ) {
         WrapSearchBar(
+            modifier = Modifier
+                .weight(3f),
             searchText = "",
             placeholder = placeholder,
             onSearchTextChanged = {}
         )
-        WrapIcon(modifier = Modifier.align(Alignment.CenterVertically), iconData = AppIcons.Filters)
+        WrapIcon(
+            modifier = Modifier
+                .weight(1f),
+            iconData = AppIcons.Filters
+        )
     }
 }
 
@@ -55,6 +58,6 @@ fun FiltersSearchBar(modifier: Modifier = Modifier, placeholder: String) {
 private fun FiltersSearchBarPreview() {
     FiltersSearchBar(
         modifier = Modifier
-            .height(SIZE_EXTRA_LARGE.dp), placeholder = "Documents"
+            .height(70.dp), placeholder = "Documents"
     )
 }

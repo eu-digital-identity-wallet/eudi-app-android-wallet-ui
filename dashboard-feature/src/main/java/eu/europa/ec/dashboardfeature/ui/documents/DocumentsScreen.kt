@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.documents
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,8 +24,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -38,41 +41,47 @@ import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
+import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewModel) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        ContentScreen(
-            isLoading = false,
-            navigatableAction = ScreenNavigateAction.NONE,
-            topBar = { TopBar() },
-        ) { paddingValues ->
-            Content(
-                paddingValues = paddingValues,
-                navHostController = navHostController,
-                state = viewModel.viewState.value,
-                effectFlow = viewModel.effect,
-                onEventSend = { viewModel.setEvent(it) }
-            )
-        }
+    val state = viewModel.viewState.value
+
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
+    )
+    ContentScreen(
+        isLoading = false,
+        navigatableAction = ScreenNavigateAction.NONE,
+        topBar = { TopBar { viewModel.setEvent(it) } },
+    ) { paddingValues ->
+        Content(
+            paddingValues = paddingValues,
+            navHostController = navHostController,
+            state = state,
+            effectFlow = viewModel.effect,
+            onEventSend = { viewModel.setEvent(it) },
+            modalBottomSheetState = bottomSheetState
+        )
     }
 }
 
 @Composable
-private fun TopBar() {
+private fun TopBar(onEventSend: (Event) -> Unit) {
     Row(
         modifier = Modifier
             .height(SIZE_XX_LARGE.dp)
@@ -87,12 +96,17 @@ private fun TopBar() {
             text = stringResource(R.string.documents_screen_title)
         )
         WrapIcon(
-            modifier = Modifier.align(Alignment.CenterVertically),
+            modifier = Modifier
+                .clickable {
+                    onEventSend(Event.ToggleAddDocumentBottomSheet(isOpen = true))
+                }
+                .align(Alignment.CenterVertically),
             iconData = AppIcons.Add
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     paddingValues: PaddingValues,
@@ -100,7 +114,10 @@ private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
+    modalBottomSheetState: SheetState,
 ) {
+    val isBottomSheetOpen = state.showAddDocumentBottomSheet
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -116,6 +133,10 @@ private fun Content(
                 documentItemData,
                 { onEventSend(Event.GoToDocumentDetails(documentItemData.itemId)) })
         }
+    }
+
+    if (isBottomSheetOpen) {
+        AddDocumentBottomSheet(onEventSend, modalBottomSheetState)
     }
 
     OneTimeLaunchedEffect {
@@ -134,5 +155,45 @@ private fun Content(
                 }
             }
         }.collect()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddDocumentBottomSheet(
+    onEventSend: (Event) -> Unit,
+    modalBottomSheetState: SheetState,
+) {
+    WrapModalBottomSheet(
+        onDismissRequest = {
+            onEventSend(Event.ToggleAddDocumentBottomSheet(isOpen = false))
+        },
+        sheetState = modalBottomSheetState
+    ) {
+        BottomSheetWithTwoBigIcons(
+            textData = BottomSheetTextData(
+                title = stringResource(R.string.documents_screen_add_document_title),
+                message = stringResource(R.string.documents_screen_add_document_description)
+            ),
+            options = buildList {
+                addAll(
+                    listOf(
+                        ModalOptionUi(
+                            title = stringResource(R.string.documents_screen_add_document_option_list),
+                            leadingIcon = AppIcons.AddDocumentFromList,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = Event.GoToDocumentDetails(docId = ""),
+                        ),
+                        ModalOptionUi(
+                            title = stringResource(R.string.documents_screen_add_document_option_qr),
+                            leadingIcon = AppIcons.AddDocumentFromQr,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = Event.GoToDocumentDetails(docId = ""),
+                        ),
+                    )
+                )
+            },
+            onEventSent = {}
+        )
     }
 }

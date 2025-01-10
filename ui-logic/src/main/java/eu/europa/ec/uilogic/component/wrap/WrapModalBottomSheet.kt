@@ -112,7 +112,7 @@ fun WrapModalBottomSheet(
     sheetState: SheetState,
     shape: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
     dragHandle: @Composable (() -> Unit) = { BottomSheetDefaultHandle() },
-    sheetContent: @Composable ColumnScope.() -> Unit
+    sheetContent: @Composable ColumnScope.() -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -394,7 +394,7 @@ fun <T : ViewEvent> BottomSheetWithOptionsList(
 @Composable
 private fun <T : ViewEvent> OptionsList(
     optionItems: List<ModalOptionUi<T>>,
-    itemSelected: (T) -> Unit
+    itemSelected: (T) -> Unit,
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
@@ -418,7 +418,7 @@ private fun <T : ViewEvent> OptionsList(
 @Composable
 private fun <T : ViewEvent> OptionListItem(
     item: ModalOptionUi<T>,
-    itemSelected: (T) -> Unit
+    itemSelected: (T) -> Unit,
 ) {
     Row(
         modifier = Modifier

@@ -33,11 +33,13 @@ import org.koin.android.annotation.KoinViewModel
 data class State(
     val isLoading: Boolean,
     val documents: List<ListItemData> = emptyList(),
+    val showAddDocumentBottomSheet: Boolean = false
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data object Init : Event()
     data class GoToDocumentDetails(val docId: DocumentId) : Event()
+    data class ToggleAddDocumentBottomSheet(val isOpen: Boolean) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -65,6 +67,9 @@ class DocumentsViewModel(
             }
             is Event.GoToDocumentDetails -> {
                 goToDocumentDetails(event.docId)
+            }
+            is Event.ToggleAddDocumentBottomSheet -> {
+                setState { copy(showAddDocumentBottomSheet = event.isOpen) }
             }
         }
     }
