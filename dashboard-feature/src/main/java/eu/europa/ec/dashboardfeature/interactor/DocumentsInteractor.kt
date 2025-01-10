@@ -30,35 +30,64 @@ import eu.europa.ec.uilogic.component.MainContentData
 
 interface DocumentsInteractor {
     fun getAllDocuments(): List<ListItemData>
+    fun searchDocuments(query: String): List<ListItemData>
 }
 
 class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val documentsController: WalletCoreDocumentsController,
 ) : DocumentsInteractor {
-    override fun getAllDocuments(): List<ListItemData> {
-        return documentsController.getAllDocuments().map {
-            val documentExpirationDate: String = when (it) {
-                is IssuedDocument -> {
-                    "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
-                            extractValueFromDocumentOrEmpty(
-                                document = it,
-                                key = DocumentJsonKeys.EXPIRY_DATE
-                            )
-                }
 
-                else -> ""
+    private val documents: MutableList<ListItemData> = mutableListOf()
+
+    override fun getAllDocuments(): List<ListItemData> {
+        documents.clear()
+        documents.addAll(
+            documentsController.getAllDocuments().map {
+                val documentExpirationDate: String = when (it) {
+                    is IssuedDocument -> {
+                        "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
+                                extractValueFromDocumentOrEmpty(
+                                    document = it,
+                                    key = DocumentJsonKeys.EXPIRY_DATE
+                                )
+                    }
+
+                    else -> ""
+                }
+                ListItemData(
+                    itemId = it.id,
+                    mainContentData = MainContentData.Text(text = it.name),
+                    overlineText = "Hellenic Goverment", // TODO Here we want to show issuer name
+                    supportingText = documentExpirationDate,
+                    leadingContentData = ListItemLeadingContentData.Icon(
+                        iconData = AppIcons.IssuerPlaceholder
+                    ), // TODO Get the actual issuer image
+                    trailingContentData = ListItemTrailingContentData.Icon(
+                        iconData = AppIcons.KeyboardArrowRight
+                    )
+                )
             }
-            ListItemData(
-                itemId = it.id,
-                mainContentData = MainContentData.Text(text = it.name),
-                overlineText = "Hellenic Goverment", // TODO Here we want to show issuer name
-                supportingText = documentExpirationDate,
-                leadingContentData = ListItemLeadingContentData.Icon(
-                    iconData = AppIcons.IssuerPlaceholder
-                ), // TODO Get the actual issuer image
-                trailingContentData = ListItemTrailingContentData.Icon(
-                    iconData = AppIcons.KeyboardArrowRight
+        )
+
+        return documents
+    }
+
+    override fun searchDocuments(query: String): List<ListItemData> {
+        val result = documents.filter {
+            (it.mainContentData as MainContentData.Text).text.lowercase()
+                .contains(query.lowercase())
+        }
+
+        return result.ifEmpty {
+            listOf(
+                ListItemData(
+                    itemId = "",
+                    mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_search_no_results)),
+                    overlineText = null,
+                    supportingText = null,
+                    leadingContentData = null,
+                    trailingContentData = null
                 )
             )
         }

@@ -48,6 +48,7 @@ sealed class Event : ViewEvent {
     data object GoToQrScan : Event()
     data class GoToDocumentDetails(val docId: DocumentId) : Event()
     data class ToggleAddDocumentBottomSheet(val isOpen: Boolean) : Event()
+    data class OnSearchQueryChanged(val query: String) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -90,6 +91,9 @@ class DocumentsViewModel(
 
             is Event.GoToQrScan -> {
                 goToQrScan()
+            }
+            is Event.OnSearchQueryChanged -> {
+                setState { copy(documents = interactor.searchDocuments(event.query)) }
             }
         }
     }

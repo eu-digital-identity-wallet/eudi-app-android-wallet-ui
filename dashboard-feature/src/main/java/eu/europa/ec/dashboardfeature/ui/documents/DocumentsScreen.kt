@@ -131,7 +131,7 @@ private fun Content(
             val searchItem =
                 SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
             FiltersSearchBar(placeholder = searchItem.searchLabel,
-                onValueChange = {},
+                onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = {})
         }
         items(state.documents) { documentItemData ->
