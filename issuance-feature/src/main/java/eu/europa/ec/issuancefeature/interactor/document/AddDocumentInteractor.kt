@@ -34,8 +34,8 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -101,7 +101,7 @@ class AddDocumentInteractorImpl(
                                 DocumentOptionItemUi(
                                     itemData = ListItemData(
                                         itemId = it.configurationId,
-                                        mainContentData = MainContentData.Text(text = it.name),
+                                        mainContentData = ListItemMainContentData.Text(text = it.name),
                                         trailingContentData = ListItemTrailingContentData.Icon(
                                             iconData = AppIcons.Add
                                         )

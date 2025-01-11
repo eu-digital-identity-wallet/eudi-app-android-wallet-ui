@@ -40,8 +40,8 @@ import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -206,7 +206,7 @@ private fun IssuanceAddDocumentScreenPreview() {
                         available = true,
                         itemData = ListItemData(
                             itemId = "configId1",
-                            mainContentData = MainContentData.Text(text = "National ID"),
+                            mainContentData = ListItemMainContentData.Text(text = "National ID"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     ),
@@ -214,7 +214,7 @@ private fun IssuanceAddDocumentScreenPreview() {
                         available = false,
                         itemData = ListItemData(
                             itemId = "configId2",
-                            mainContentData = MainContentData.Text(text = "Driving Licence"),
+                            mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     )
@@ -243,7 +243,7 @@ private fun DashboardAddDocumentScreenPreview() {
                         available = true,
                         itemData = ListItemData(
                             itemId = "configId1",
-                            mainContentData = MainContentData.Text(text = "National ID"),
+                            mainContentData = ListItemMainContentData.Text(text = "National ID"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     ),
@@ -251,7 +251,7 @@ private fun DashboardAddDocumentScreenPreview() {
                         available = false,
                         itemData = ListItemData(
                             itemId = "configId2",
-                            mainContentData = MainContentData.Text(text = "Driving Licence"),
+                            mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     )
