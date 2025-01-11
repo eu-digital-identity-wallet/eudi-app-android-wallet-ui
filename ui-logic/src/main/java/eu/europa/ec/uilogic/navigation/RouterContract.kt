@@ -72,6 +72,8 @@ sealed class ProximityScreens {
     )
 
     data object Loading : Screen(name = "PROXIMITY_LOADING")
+
+    data object Success : Screen(name = "PROXIMITY_SUCCESS")
 }
 
 sealed class IssuanceScreens {

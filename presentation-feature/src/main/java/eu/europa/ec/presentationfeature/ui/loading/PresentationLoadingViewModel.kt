@@ -33,7 +33,6 @@ import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.Screen
-import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -43,7 +42,6 @@ import kotlin.time.toDuration
 
 @KoinViewModel
 class PresentationLoadingViewModel(
-    private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
     private val interactor: PresentationLoadingInteractor,
 ) : LoadingViewModel() {
@@ -80,7 +78,7 @@ class PresentationLoadingViewModel(
                                     errorSubTitle = it.error,
                                     onCancel = {
                                         setEvent(Event.DismissError)
-                                        doNavigation(NavigationType.Pop)
+                                        doNavigation(NavigationType.PopTo(getPreviousScreen()))
                                     }
                                 )
                             )

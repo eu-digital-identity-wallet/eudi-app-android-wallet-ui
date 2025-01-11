@@ -26,6 +26,8 @@ import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorImpl
+import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractor
+import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -61,3 +63,16 @@ fun provideProximityLoadingInteractor(
     deviceAuthenticationInteractor: DeviceAuthenticationInteractor
 ): ProximityLoadingInteractor =
     ProximityLoadingInteractorImpl(walletCorePresentationController, deviceAuthenticationInteractor)
+
+@Factory
+fun provideProximitySuccessInteractor(
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController,
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    resourceProvider: ResourceProvider,
+): ProximitySuccessInteractor {
+    return ProximitySuccessInteractorImpl(
+        walletCorePresentationController,
+        walletCoreDocumentsController,
+        resourceProvider,
+    )
+}
