@@ -31,6 +31,7 @@ import eu.europa.ec.eudi.openid4vci.TxCode
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -495,30 +496,38 @@ object TestsData {
         )
 
     val mockedPidOptionItemUi = DocumentOptionItemUi(
-        text = mockedDocUiNamePid,
-        icon = AppIcons.Id,
-        configId = mockedConfigIssuerId,
+        itemData = ListItemData(
+            itemId = mockedConfigIssuerId,
+            mainContentData = ListItemMainContentData.Text(text = mockedDocUiNamePid),
+            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+        ),
         available = true
     )
 
     val mockedMdlOptionItemUi = DocumentOptionItemUi(
-        text = mockedDocUiNameMdl,
-        icon = AppIcons.Id,
-        configId = mockedConfigIssuerId,
+        itemData = ListItemData(
+            itemId = mockedConfigIssuerId,
+            mainContentData = ListItemMainContentData.Text(text = mockedDocUiNameMdl),
+            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+        ),
         available = true
     )
 
     val mockedAgeOptionItemUi = DocumentOptionItemUi(
-        text = mockedDocUiNameAge,
-        icon = AppIcons.Id,
-        configId = mockedConfigIssuerId,
+        itemData = ListItemData(
+            itemId = mockedConfigIssuerId,
+            mainContentData = ListItemMainContentData.Text(text = mockedDocUiNameAge),
+            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+        ),
         available = true
     )
 
     val mockedPhotoIdOptionItemUi = DocumentOptionItemUi(
-        text = mockedDocUiNamePhotoId,
-        icon = AppIcons.Id,
-        configId = mockedConfigIssuerId,
+        itemData = ListItemData(
+            itemId = mockedConfigIssuerId,
+            mainContentData = ListItemMainContentData.Text(text = mockedDocUiNamePhotoId),
+            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+        ),
         available = true
     )
 }

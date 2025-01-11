@@ -29,13 +29,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentOptionListItemHolder
+import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.util.CoreActions
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
@@ -49,7 +51,6 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
@@ -156,12 +157,16 @@ private fun Content(
             subtitle = state.subtitle
         )
 
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+        ) {
             state.options.forEach { option ->
                 item {
                     WrapListItem(
-                        item = option.listItemData,
-                        mainContentVerticalPadding = SPACING_MEDIUM.dp,
+                        modifier = Modifier.fillMaxWidth(),
+                        item = option.itemData,
+                        mainContentVerticalPadding = SPACING_LARGE.dp,
                         mainContentTextStyle = MaterialTheme.typography.titleMedium,
                         onItemClick = if (option.available) { optionListItemData ->
                             onEventSend(
@@ -173,8 +178,6 @@ private fun Content(
                             )
                         } else null
                     )
-
-                    VSpacer.Medium()
                 }
             }
         }
@@ -196,23 +199,22 @@ private fun IssuanceAddDocumentScreenPreview() {
         Content(
             state = State(
                 navigatableAction = ScreenNavigateAction.NONE,
-                title = "Add document from list",
-                subtitle = "Choose a digital document from the list below to add to your wallet." +
-                        "You may add more documents by scanning the QR code provided to you by an authorised issuing service.",
+                title = stringResource(R.string.issuance_add_document_title),
+                subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
-                    DocumentOptionListItemHolder(
+                    DocumentOptionItemUi(
                         available = true,
-                        listItemData = ListItemData(
-                            itemId = "configId",
-                            mainContentData = MainContentData.Text("National ID"),
+                        itemData = ListItemData(
+                            itemId = "configId1",
+                            mainContentData = MainContentData.Text(text = "National ID"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     ),
-                    DocumentOptionListItemHolder(
+                    DocumentOptionItemUi(
                         available = false,
-                        listItemData = ListItemData(
-                            itemId = "configId",
-                            mainContentData = MainContentData.Text("Driving Licence"),
+                        itemData = ListItemData(
+                            itemId = "configId2",
+                            mainContentData = MainContentData.Text(text = "Driving Licence"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     )
@@ -234,23 +236,22 @@ private fun DashboardAddDocumentScreenPreview() {
         Content(
             state = State(
                 navigatableAction = ScreenNavigateAction.BACKABLE,
-                title = "Add document from list",
-                subtitle = "Choose a digital document from the list below to add to your wallet." +
-                        "You may add more documents by scanning the QR code provided to you by an authorised issuing service.",
+                title = stringResource(R.string.issuance_add_document_title),
+                subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
-                    DocumentOptionListItemHolder(
+                    DocumentOptionItemUi(
                         available = true,
-                        listItemData = ListItemData(
-                            itemId = "configId",
-                            mainContentData = MainContentData.Text("National ID"),
+                        itemData = ListItemData(
+                            itemId = "configId1",
+                            mainContentData = MainContentData.Text(text = "National ID"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     ),
-                    DocumentOptionListItemHolder(
+                    DocumentOptionItemUi(
                         available = false,
-                        listItemData = ListItemData(
-                            itemId = "configId",
-                            mainContentData = MainContentData.Text("Driving Licence"),
+                        itemData = ListItemData(
+                            itemId = "configId2",
+                            mainContentData = MainContentData.Text(text = "Driving Licence"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     )
