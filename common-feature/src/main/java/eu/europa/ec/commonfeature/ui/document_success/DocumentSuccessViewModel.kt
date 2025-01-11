@@ -16,6 +16,8 @@
 
 package eu.europa.ec.commonfeature.ui.document_success
 
+import android.net.Uri
+import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
@@ -56,6 +58,13 @@ sealed class Effect : ViewSideEffect {
         data class PopBackStackUpTo(
             val screenRoute: String,
             val inclusive: Boolean
+        ) : Navigation()
+
+        data object Pop : Navigation()
+
+        data class DeepLink(
+            val link: Uri,
+            val routeToPop: String?
         ) : Navigation()
     }
 }
@@ -122,29 +131,40 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun doNavigation(navigation: ConfigNavigation) {
-        when (val nav = navigation.navigationType) {
+
+        val navigationEffect: Effect.Navigation = when (val nav = navigation.navigationType) {
             is NavigationType.PopTo -> {
-                setEffect {
-                    Effect.Navigation.PopBackStackUpTo(
-                        screenRoute = nav.screen.screenRoute,
-                        inclusive = false
-                    )
-                }
+                Effect.Navigation.PopBackStackUpTo(
+                    screenRoute = nav.screen.screenRoute,
+                    inclusive = false
+                )
             }
 
             is NavigationType.PushScreen -> {
-                setEffect {
-                    Effect.Navigation.SwitchScreen(
-                        screenRoute = generateComposableNavigationLink(
-                            screen = nav.screen,
-                            arguments = generateComposableArguments(nav.arguments),
-                        ),
-                        popUpRoute = nav.popUpToScreen?.screenRoute
-                    )
-                }
+                Effect.Navigation.SwitchScreen(
+                    screenRoute = generateComposableNavigationLink(
+                        screen = nav.screen,
+                        arguments = generateComposableArguments(nav.arguments),
+                    ),
+                    popUpRoute = nav.popUpToScreen?.screenRoute
+                )
             }
 
-            else -> {} //TODO should we handle the rest of the cases as well?
+            is NavigationType.Deeplink -> Effect.Navigation.DeepLink(
+                nav.link.toUri(),
+                nav.routeToPop
+            )
+
+            is NavigationType.Pop, NavigationType.Finish -> Effect.Navigation.Pop
+
+            is NavigationType.PushRoute -> Effect.Navigation.SwitchScreen(
+                nav.route,
+                nav.popUpToRoute
+            )
+        }
+
+        setEffect {
+            navigationEffect
         }
     }
 

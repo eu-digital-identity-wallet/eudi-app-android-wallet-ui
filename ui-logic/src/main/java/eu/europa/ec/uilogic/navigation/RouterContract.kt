@@ -79,12 +79,6 @@ sealed class IssuanceScreens {
         parameters = "?flowType={flowType}"
     )
 
-    data object AddDocumentSuccess : Screen(
-        name = "ISSUANCE_ADD_DOCUMENT_SUCCESS",
-        parameters = "?flowType={flowType}"
-                + "&documentId={documentId}"
-    )
-
     data object DocumentDetails : Screen(
         name = "ISSUANCE_DOCUMENT_DETAILS",
         parameters = "?detailsType={detailsType}"
@@ -101,9 +95,9 @@ sealed class IssuanceScreens {
         parameters = "?offerCodeConfig={offerCodeConfig}"
     )
 
-    data object DocumentOfferSuccess : Screen(
-        name = "ISSUANCE_DOCUMENT_OFFER_SUCCESS",
-        parameters = "?offerSuccessConfig={offerSuccessConfig}"
+    data object DocumentIssuanceSuccess : Screen(
+        name = "ISSUANCE_DOCUMENT_SUCCESS",
+        parameters = "?issuanceSuccessConfig={issuanceSuccessConfig}"
     )
 }
 

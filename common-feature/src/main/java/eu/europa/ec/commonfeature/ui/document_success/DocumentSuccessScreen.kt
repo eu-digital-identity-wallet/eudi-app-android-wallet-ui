@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -47,6 +48,7 @@ import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
+import eu.europa.ec.uilogic.extension.cacheDeepLink
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -56,6 +58,7 @@ fun DocumentSuccessScreen(
     navController: NavController,
     viewModel: DocumentSuccessViewModel,
 ) {
+    val context = LocalContext.current
     val state = viewModel.viewState.value
 
     ContentScreen(
@@ -103,6 +106,18 @@ fun DocumentSuccessScreen(
                             inclusive = navigationEffect.inclusive
                         )
                     }
+
+                    is Effect.Navigation.DeepLink -> {
+                        context.cacheDeepLink(navigationEffect.link)
+                        navigationEffect.routeToPop?.let {
+                            navController.popBackStack(
+                                route = it,
+                                inclusive = false
+                            )
+                        } ?: navController.popBackStack()
+                    }
+
+                    is Effect.Navigation.Pop -> navController.popBackStack()
                 }
             },
             paddingValues = paddingValues

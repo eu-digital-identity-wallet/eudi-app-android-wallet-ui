@@ -24,16 +24,15 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
-import eu.europa.ec.commonfeature.config.OfferSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.issuancefeature.BuildConfig
 import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
-import eu.europa.ec.issuancefeature.ui.document.success.add.AddDocumentSuccessScreen
-import eu.europa.ec.issuancefeature.ui.document.success.offer.DocumentOfferSuccessScreen
+import eu.europa.ec.issuancefeature.ui.document.success.DocumentIssuanceSuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel
@@ -67,33 +66,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                             IssuanceFlowUiConfig.fromString(
                                 it.arguments?.getString("flowType").orEmpty()
                             ),
-                        )
-                    }
-                )
-            )
-        }
-
-        // Add Document Success
-        composable(
-            route = IssuanceScreens.AddDocumentSuccess.screenRoute,
-            arguments = listOf(
-                navArgument("flowType") {
-                    type = NavType.StringType
-                },
-                navArgument("documentId") {
-                    type = NavType.StringType
-                },
-            )
-        ) {
-            AddDocumentSuccessScreen(
-                navController,
-                getViewModel(
-                    parameters = {
-                        parametersOf(
-                            IssuanceFlowUiConfig.fromString(
-                                it.arguments?.getString("flowType").orEmpty()
-                            ),
-                            it.arguments?.getString("documentId").orEmpty(),
                         )
                     }
                 )
@@ -187,21 +159,27 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
             )
         }
 
-        // Document Offer Success
+        // Document Issuance Success
         composable(
-            route = IssuanceScreens.DocumentOfferSuccess.screenRoute,
+            route = IssuanceScreens.DocumentIssuanceSuccess.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + IssuanceScreens.DocumentIssuanceSuccess.screenRoute
+                }
+            ),
             arguments = listOf(
-                navArgument(OfferSuccessUiConfig.serializedKeyName) {
+                navArgument(IssuanceSuccessUiConfig.serializedKeyName) {
                     type = NavType.StringType
                 },
             )
         ) {
-            DocumentOfferSuccessScreen(
+            DocumentIssuanceSuccessScreen(
                 navController,
                 getViewModel(
                     parameters = {
                         parametersOf(
-                            it.arguments?.getString(OfferSuccessUiConfig.serializedKeyName)
+                            it.arguments?.getString(IssuanceSuccessUiConfig.serializedKeyName)
                                 .orEmpty(),
                         )
                     }

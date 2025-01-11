@@ -25,13 +25,13 @@ import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
-data class OfferSuccessUiConfig(
+data class IssuanceSuccessUiConfig(
     val documentIds: List<DocumentId>,
     val onSuccessNavigation: ConfigNavigation,
 ) : UiSerializable {
 
     companion object Parser : UiSerializableParser {
-        override val serializedKeyName = "offerSuccessConfig"
+        override val serializedKeyName = "issuanceSuccessConfig"
         override fun provideParser(): Gson {
             return GsonBuilder()
                 .registerTypeAdapter(

@@ -14,16 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.success.offer
+package eu.europa.ec.issuancefeature.ui.document.success
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessScreen
 
 @Composable
-fun DocumentOfferSuccessScreen(
+fun DocumentIssuanceSuccessScreen(
     navController: NavController,
-    viewModel: DocumentOfferSuccessViewModel,
+    viewModel: DocumentIssuanceSuccessViewModel,
 ) {
     DocumentSuccessScreen(
         navController = navController,

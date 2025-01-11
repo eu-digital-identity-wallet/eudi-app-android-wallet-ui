@@ -20,8 +20,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.extension.toUri
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
-import eu.europa.ec.commonfeature.config.OfferSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
@@ -330,7 +330,7 @@ class DocumentOfferViewModel(
                             )
                         }
 
-                        goToDocumentOfferSuccessScreen(
+                        goToDocumentIssuanceSuccessScreen(
                             documentIds = response.documentIds,
                             onSuccessNavigation = onSuccessNavigation,
                         )
@@ -360,22 +360,22 @@ class DocumentOfferViewModel(
         }
     }
 
-    private fun goToDocumentOfferSuccessScreen(
+    private fun goToDocumentIssuanceSuccessScreen(
         documentIds: List<DocumentId>,
         onSuccessNavigation: ConfigNavigation,
     ) {
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.DocumentOfferSuccess,
+                    screen = IssuanceScreens.DocumentIssuanceSuccess,
                     arguments = generateComposableArguments(
                         mapOf(
-                            OfferSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
-                                model = OfferSuccessUiConfig(
+                            IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                model = IssuanceSuccessUiConfig(
                                     documentIds = documentIds,
                                     onSuccessNavigation = onSuccessNavigation,
                                 ),
-                                parser = OfferSuccessUiConfig.Parser
+                                parser = IssuanceSuccessUiConfig.Parser
                             ).orEmpty()
                         )
                     )

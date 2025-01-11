@@ -117,6 +117,8 @@
     <string name="biometric_default_mode_text_above_pin_field">PIN</string>">
 
     <!-- Document Success -->
+    <string name="document_success_header_description">You successfully shared the following information with</string>
+    <string name="document_success_relying_party_default_name">@string/generic_default_relying_party_name</string>
     <string name="document_success_collapsed_supporting_text">@string/generic_view_details</string>
     <string name="document_success_sticky_button_text">@string/generic_close</string>
 

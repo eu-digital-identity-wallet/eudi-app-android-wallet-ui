@@ -14,53 +14,45 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.success.add
+package eu.europa.ec.issuancefeature.ui.document.success
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessViewModel
 import eu.europa.ec.commonfeature.ui.document_success.Event
-import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractorGetUiItemsPartialState
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
-import eu.europa.ec.uilogic.config.NavigationType
-import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 @KoinViewModel
-class AddDocumentSuccessViewModel(
+class DocumentIssuanceSuccessViewModel(
     private val interactor: DocumentIssuanceSuccessInteractor,
-    @InjectedParam private val flowType: IssuanceFlowUiConfig,
-    @InjectedParam private val documentId: DocumentId,
+    private val uiSerializer: UiSerializer,
+    @InjectedParam private val issuanceSuccessSerializedConfig: String,
 ) : DocumentSuccessViewModel() {
 
     override fun getNextScreenConfigNavigation(): ConfigNavigation {
-        return when (flowType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> ConfigNavigation(
-                navigationType = NavigationType.PushScreen(
-                    screen = DashboardScreens.Dashboard
-                )
-            )
+        val deserializedIssuanceSuccessUiConfig = getDeserializedIssuanceSuccessUiConfig()
 
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ConfigNavigation(
-                navigationType = NavigationType.PopTo(
-                    screen = DashboardScreens.Dashboard
-                )
-            )
-        }
+        return deserializedIssuanceSuccessUiConfig.onSuccessNavigation
     }
 
     override fun doWork() {
+        val deserializedIssuanceSuccessUiConfig = getDeserializedIssuanceSuccessUiConfig()
+
         setState {
             copy(isLoading = true)
         }
 
         viewModelScope.launch {
-            interactor.getUiItems(documentIds = listOf(documentId)).collect { response ->
+            interactor.getUiItems(
+                documentIds = deserializedIssuanceSuccessUiConfig.documentIds
+            ).collect { response ->
                 when (response) {
                     is DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Failed -> {
                         setState {
@@ -89,5 +81,14 @@ class AddDocumentSuccessViewModel(
                 }
             }
         }
+    }
+
+    private fun getDeserializedIssuanceSuccessUiConfig(): IssuanceSuccessUiConfig {
+        val deserializedIssuanceSuccessUiConfig = uiSerializer.fromBase64(
+            payload = issuanceSuccessSerializedConfig,
+            model = IssuanceSuccessUiConfig::class.java,
+            parser = IssuanceSuccessUiConfig.Parser
+        ) ?: throw RuntimeException("IssuanceSuccessUiConfig:: is Missing or invalid")
+        return deserializedIssuanceSuccessUiConfig
     }
 }

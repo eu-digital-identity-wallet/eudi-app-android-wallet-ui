@@ -21,6 +21,7 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.QrScanFlow
@@ -264,7 +265,7 @@ class AddDocumentViewModel(
                                 isLoading = false
                             )
                         }
-                        navigateToAddDocumentSuccessScreen(
+                        navigateToDocumentIssuanceSuccessScreen(
                             documentId = response.documentId
                         )
                     }
@@ -303,15 +304,34 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun navigateToAddDocumentSuccessScreen(documentId: String) {
+    private fun navigateToDocumentIssuanceSuccessScreen(documentId: String) {
+        val onSuccessNavigation = when (flowType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> ConfigNavigation(
+                navigationType = NavigationType.PushScreen(
+                    screen = DashboardScreens.Dashboard
+                )
+            )
+
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ConfigNavigation(
+                navigationType = NavigationType.PopTo(
+                    screen = DashboardScreens.Dashboard
+                )
+            )
+        }
+
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.AddDocumentSuccess,
+                    screen = IssuanceScreens.DocumentIssuanceSuccess,
                     arguments = generateComposableArguments(
                         mapOf(
-                            "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
-                            "documentId" to documentId,
+                            IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                model = IssuanceSuccessUiConfig(
+                                    documentIds = listOf(documentId),
+                                    onSuccessNavigation = onSuccessNavigation,
+                                ),
+                                parser = IssuanceSuccessUiConfig.Parser
+                            ).orEmpty()
                         )
                     )
                 ),

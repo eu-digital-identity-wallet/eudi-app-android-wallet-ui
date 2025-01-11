@@ -18,8 +18,8 @@ package eu.europa.ec.issuancefeature.ui.document.code
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
-import eu.europa.ec.commonfeature.config.OfferSuccessUiConfig
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractorPartialState
@@ -146,7 +146,7 @@ class DocumentOfferCodeViewModel(
                             )
                         }
 
-                        goToDocumentOfferSuccessScreen(
+                        goToDocumentIssuanceSuccessScreen(
                             documentIds = response.documentIds,
                             onSuccessNavigation = viewState.value.offerCodeUiConfig.onSuccessNavigation,
                         )
@@ -175,22 +175,22 @@ class DocumentOfferCodeViewModel(
         }
     }
 
-    private fun goToDocumentOfferSuccessScreen(
+    private fun goToDocumentIssuanceSuccessScreen(
         documentIds: List<DocumentId>,
         onSuccessNavigation: ConfigNavigation,
     ) {
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.DocumentOfferSuccess,
+                    screen = IssuanceScreens.DocumentIssuanceSuccess,
                     arguments = generateComposableArguments(
                         mapOf(
-                            OfferSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
-                                model = OfferSuccessUiConfig(
+                            IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                model = IssuanceSuccessUiConfig(
                                     documentIds = documentIds,
                                     onSuccessNavigation = onSuccessNavigation,
                                 ),
-                                parser = OfferSuccessUiConfig.Parser
+                                parser = IssuanceSuccessUiConfig.Parser
                             ).orEmpty()
                         )
                     )
