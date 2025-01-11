@@ -204,26 +204,7 @@ class DocumentOfferInteractorImpl(
                     }
 
                     is IssueDocumentsPartialState.PartialSuccess -> {
-
-                        val nonIssuedDocsNames: String =
-                            response.nonIssuedDocuments.entries.map { it.value }.joinToString(
-                                separator = ", ",
-                                transform = {
-                                    it
-                                }
-                            )
-
                         IssueDocumentsInteractorPartialState.Success(
-                            //TODO do we want to treat Partial Success equally to Success?
-                            /*successRoute = buildGenericSuccessRoute(
-                                type = IssuanceSuccessType.DEFAULT,
-                                subtitle = resourceProvider.getString(
-                                    R.string.issuance_document_offer_partial_success_subtitle,
-                                    issuerName,
-                                    nonIssuedDocsNames
-                                ),
-                                navigation = navigation
-                            )*/
                             documentIds = response.documentIds
                         )
                     }
@@ -243,8 +224,7 @@ class DocumentOfferInteractorImpl(
 
                     is IssueDocumentsPartialState.DeferredSuccess -> {
                         IssueDocumentsInteractorPartialState.DeferredSuccess(
-                            successRoute = buildGenericSuccessRoute(
-                                type = IssuanceSuccessType.DEFERRED,
+                            successRoute = buildGenericSuccessRouteForDeferred(
                                 description = resourceProvider.getString(
                                     R.string.issuance_document_offer_deferred_success_description,
                                     issuerName
@@ -295,52 +275,34 @@ class DocumentOfferInteractorImpl(
         walletCoreDocumentsController.resumeOpenId4VciWithAuthorization(uri)
     }
 
-    private enum class IssuanceSuccessType {
-        DEFAULT, DEFERRED
-    }
-
-    private fun buildGenericSuccessRoute(
-        type: IssuanceSuccessType,
+    private fun buildGenericSuccessRouteForDeferred(
         description: String,
         navigation: ConfigNavigation
     ): String {
-        val successScreenArguments = getSuccessScreenArguments(type, description, navigation)
+        val successScreenArguments = getDeferredSuccessScreenArguments(description, navigation)
         return generateComposableNavigationLink(
             screen = CommonScreens.Success,
             arguments = successScreenArguments
         )
     }
 
-    private fun getSuccessScreenArguments(
-        type: IssuanceSuccessType,
+    private fun getDeferredSuccessScreenArguments(
         description: String,
         navigation: ConfigNavigation
     ): String {
-        val (textElementsConfig, imageConfig, buttonText) = when (type) {
-            IssuanceSuccessType.DEFAULT -> Triple(
-                first = SuccessUIConfig.TextElementsConfig(
-                    text = resourceProvider.getString(R.string.issuance_document_offer_success_text),
-                    description = description,
-                    color = ThemeColors.success
-                ),
-                second = SuccessUIConfig.ImageConfig(),
-                third = resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
-            )
-
-            IssuanceSuccessType.DEFERRED -> Triple(
-                first = SuccessUIConfig.TextElementsConfig(
-                    title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
-                    text = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_text),
-                    description = description,
-                    color = ThemeColors.pending
-                ),
-                second = SuccessUIConfig.ImageConfig(
-                    type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
-                    tint = ThemeColors.primary,
-                ),
-                third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
-            )
-        }
+        val (textElementsConfig, imageConfig, buttonText) = Triple(
+            first = SuccessUIConfig.TextElementsConfig(
+                title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
+                text = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_text),
+                description = description,
+                color = ThemeColors.pending
+            ),
+            second = SuccessUIConfig.ImageConfig(
+                type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
+                tint = ThemeColors.primary,
+            ),
+            third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
+        )
 
         return generateComposableArguments(
             mapOf(

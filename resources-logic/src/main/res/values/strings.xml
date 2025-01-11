@@ -277,13 +277,9 @@
 
     <!-- Issuance Document Offer -->
     <string name="issuance_document_offer_primary_button_text_add">Add</string>
-    <string name="issuance_document_offer_success_text">@string/generic_success</string>
     <string name="issuance_document_offer_deferred_success_title">@string/generic_document_pending</string>
     <string name="issuance_document_offer_deferred_success_text">@string/generic_deferred_success_text</string>
-    <string name="issuance_document_offer_success_description">Your documents from %1$s have been successfully issued.</string>
-    <string name="issuance_document_offer_partial_success_description">Your documents from %1$s have been successfully issued except %2$s</string>
     <string name="issuance_document_offer_deferred_success_description">Your documents from %1$s have been requested. You will be notified when they have been issued to your wallet.</string>
-    <string name="issuance_document_offer_success_primary_button_text">@string/generic_continue_capitalized</string>
     <string name="issuance_document_offer_deferred_success_primary_button_text">@string/generic_ok</string>
     <string name="issuance_document_offer_error_missing_pid_text">Wallet needs to be activated first with a National ID</string>
     <string name="issuance_document_offer_error_invalid_txcode_format">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</string>

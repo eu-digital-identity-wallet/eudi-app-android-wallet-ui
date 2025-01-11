@@ -35,7 +35,6 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedPendingPidUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedPrimaryButtonText
 import eu.europa.ec.commonfeature.util.TestsData.mockedRouteArguments
-import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessContentDescription
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessDescription
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessText
 import eu.europa.ec.commonfeature.util.TestsData.mockedTxCode
@@ -583,12 +582,6 @@ class TestDocumentOfferInteractor {
             // Given
             whenever(resourceProvider.getString(R.string.issuance_generic_error))
                 .thenReturn(mockedIssuanceErrorMessage)
-            whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_success_description,
-                    mockedIssuerName
-                )
-            ).thenReturn(mockedSuccessDescription)
 
             mockWalletDocumentsControllerIssueByUriEventEmission(
                 event = IssueDocumentsPartialState.UserAuthRequired(
@@ -727,9 +720,6 @@ class TestDocumentOfferInteractor {
             }
         }
 
-    //TODO Check if we want to treat PartialSuccess the same as Success.
-    // If so, this documentations should be updated accordingly.
-
     // Case 6:
     // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
     //    IssueDocumentsPartialState.PartialSuccess with:
@@ -748,8 +738,6 @@ class TestDocumentOfferInteractor {
     fun `Given Case 6, When issueDocuments is called, Then Case 6 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            //TODO Check if we want to treat PartialSuccess the same as Success.
-            // If so, most of the following mocks should be deleted.
             val mockSuccessfullyIssuedDocId = "0000"
 
             val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
@@ -763,28 +751,13 @@ class TestDocumentOfferInteractor {
                 mockDeferredPendingDocId2 to mockDeferredPendingType2
             )
 
-            val nonIssuedDocsNames =
-                "${mockedPendingPidUi.documentIdentifier.formatType}, ${mockedPendingMdlUi.documentIdentifier.formatType}"
-
-            whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_partial_success_description,
-                    mockedIssuerName,
-                    nonIssuedDocsNames
-                )
-            ).thenReturn(mockedSuccessDescription)
-
             mockWalletDocumentsControllerIssueByUriEventEmission(
                 event = IssueDocumentsPartialState.PartialSuccess(
                     documentIds = listOf(mockSuccessfullyIssuedDocId),
                     nonIssuedDocuments = nonIssuedDeferredDocuments
                 )
             )
-
-            mockIssuanceDocumentOfferSuccessStrings()
-            whenever(resourceProvider.getString(R.string.content_description_success_icon))
-                .thenReturn(mockedSuccessContentDescription)
-
+            
             val config = SuccessUIConfig(
                 textElementsConfig = mockedTripleObject.first,
                 imageConfig = mockedTripleObject.second,
@@ -820,9 +793,6 @@ class TestDocumentOfferInteractor {
             }
         }
 
-    //TODO Check if we want to treat PartialSuccess the same as Success.
-    // If so, this documentations should be updated accordingly.
-
     // Case 7:
     // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits IssueDocumentsPartialState.PartialSuccess
     // 2. The interactor is called with the given offerUri, issuerName, navigation and txCode.
@@ -834,8 +804,6 @@ class TestDocumentOfferInteractor {
     fun `Given Case 7, When issueDocuments is called, Then Case 7 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
-            //TODO Check if we want to treat PartialSuccess the same as Success.
-            // If so, most of the following mocks should be deleted.
             val mockSuccessfullyIssuedDocId = "0000"
             val mockDeferredPendingDocName = mockedMdlDocName
             val mockDeferredPendingType1 = mockedMdlDocType
@@ -843,25 +811,12 @@ class TestDocumentOfferInteractor {
                 mockDeferredPendingType1 to mockDeferredPendingDocName
             )
 
-            val nonIssuedDocsNames = mockedMdlDocName
-            whenever(
-                resourceProvider.getString(
-                    R.string.issuance_document_offer_partial_success_description,
-                    mockedIssuerName,
-                    nonIssuedDocsNames
-                )
-            ).thenReturn(mockedSuccessDescription)
-
             mockWalletDocumentsControllerIssueByUriEventEmission(
                 event = IssueDocumentsPartialState.PartialSuccess(
                     documentIds = listOf(mockSuccessfullyIssuedDocId),
                     nonIssuedDocuments = nonIssuedDeferredDocuments
                 )
             )
-
-            mockIssuanceDocumentOfferSuccessStrings()
-            whenever(resourceProvider.getString(R.string.content_description_success_icon))
-                .thenReturn(mockedSuccessContentDescription)
 
             whenever(
                 uiSerializer.toBase64(
@@ -1098,13 +1053,6 @@ class TestDocumentOfferInteractor {
         )
     }
 
-    private fun mockIssuanceDocumentOfferSuccessStrings() {
-        whenever(resourceProvider.getString(R.string.issuance_document_offer_success_text))
-            .thenReturn(mockedSuccessText)
-        whenever(resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text))
-            .thenReturn(mockedPrimaryButtonText)
-    }
-
     private fun mockIssuanceDocumentOfferDeferredSuccessStrings() {
         whenever(resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title))
             .thenReturn(mockedDeferredSuccessTitle)
@@ -1197,13 +1145,12 @@ class TestDocumentOfferInteractor {
     private val mockedTripleObject by lazy {
         Triple(
             first = SuccessUIConfig.TextElementsConfig(
-                text = resourceProvider.getString(R.string.issuance_document_offer_success_text),
+                text = mockedSuccessText,
                 description = mockedSuccessDescription,
                 color = ThemeColors.success
             ),
             second = SuccessUIConfig.ImageConfig(),
-            third =
-            resourceProvider.getString(R.string.issuance_document_offer_success_primary_button_text)
+            third = mockedPrimaryButtonText
         )
     }
 
