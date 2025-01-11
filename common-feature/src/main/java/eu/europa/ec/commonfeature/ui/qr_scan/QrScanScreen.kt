@@ -310,7 +310,7 @@ private fun InformativeText(text: String) {
             Text(
                 modifier = Modifier.padding(all = SPACING_SMALL.dp),
                 text = text,
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.labelMedium,
                 textAlign = TextAlign.Center
             )
         }
