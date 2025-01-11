@@ -369,4 +369,22 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_issuer_icon,
         imageVector = null
     )
+
+    val IdCards: IconData = IconData(
+        resourceId = R.drawable.ic_authenticate_id_cards,
+        contentDescriptionId = R.string.content_description_issuer_icon,
+        imageVector = null
+    )
+
+    val SignDocumentFromDevice: IconData = IconData(
+        resourceId = R.drawable.ic_sign_document_from_device,
+        contentDescriptionId = R.string.content_description_add_document_from_list_icon,
+        imageVector = null
+    )
+
+    val SignDocumentFromQr: IconData = IconData(
+        resourceId = R.drawable.ic_sign_document_from_qr,
+        contentDescriptionId = R.string.content_description_add_document_from_qr_icon,
+        imageVector = null
+    )
 }

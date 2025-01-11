@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -41,9 +42,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeLarge
 import eu.europa.ec.resourceslogic.theme.values.divider
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -308,7 +312,16 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
                     verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    options.forEach { item ->
+                    options.forEachIndexed { index, item ->
+                        if (index == 1) {
+                            Text(
+                                modifier = Modifier.align(Alignment.CenterVertically),
+                                text = stringResource(
+                                    R.string.documents_screen_add_document_option_or
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -318,22 +331,30 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             item.leadingIcon?.let { safeLeadingIcon ->
-                                WrapIcon(
+                                WrapImage(
                                     //modifier = Modifier.size(80.dp),
                                     iconData = safeLeadingIcon,
-                                    customTint = item.leadingIconTint,
                                 )
                             }
-                            Text(
-                                modifier = Modifier.padding(
-                                    top = SPACING_SMALL.dp,
-                                    bottom = SPACING_MEDIUM.dp
-                                ),
-                                text = item.title,
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    color = MaterialTheme.colorScheme.primary
+                            VSpacer.Small()
+                            WrapCard(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ), shape = MaterialTheme.shapes.allCorneredShapeLarge,
+                                enabled = item.enabled
+                            ) {
+                                Text(
+                                    modifier = Modifier.padding(
+                                        top = SPACING_SMALL.dp,
+                                        bottom = SPACING_SMALL.dp,
+                                        start = SPACING_LARGE.dp,
+                                        end = SPACING_LARGE.dp,
+                                    ),
+                                    text = item.title,
+                                    style = MaterialTheme.typography.labelLarge
                                 )
-                            )
+                            }
                         }
                     }
                 }

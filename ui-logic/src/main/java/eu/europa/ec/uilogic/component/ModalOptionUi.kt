@@ -25,5 +25,6 @@ data class ModalOptionUi<T : ViewEvent>(
     val leadingIconTint: Color? = null,
     val trailingIcon: IconData? = null,
     val trailingIconTint: Color? = null,
+    val enabled: Boolean = true,
     val event: T,
 )

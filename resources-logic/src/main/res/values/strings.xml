@@ -83,6 +83,10 @@
     <string name="content_description_present_document_cross_device_icon">Present document online</string>
     <string name="content_description_add_document_from_list_icon">Add document from list</string>
     <string name="content_description_add_document_from_qr_icon">Add document from QR</string>
+    <string name="content_description_authenticate_in_person_icon">Authenticate in person</string>
+    <string name="content_description_authenticate_online_icon">Authenticate online</string>
+    <string name="content_description_sign_document_from_device_icon">Sign document from device</string>
+    <string name="content_description_sign_document_from_qr_icon">Sign document from QR</string>
 
     <string name="content_description_bookmark_icon">Bookmark</string>
     <string name="content_description_bookmark_filled_icon">Bookmark filled</string>
@@ -100,6 +104,7 @@
     <string name="content_description_issuer_icon">Issuer</string>
     <string name="content_description_menu_icon">Menu</string>
     <string name="content_description_signature_icon">Signature</string>
+    <string name="content_description_authenticate_icon">Authentication ID cards</string>
 
     <!-- Placeholder content-->
     <string name="placeholder_content_issuer">Placeholder Issuer</string>
@@ -207,15 +212,36 @@
 
     <!-- Home Screen -->
     <string name="home_screen_title">Home</string>
+    <string name="home_screen_welcome">Welcome back</string>
     <string name="home_screen_welcome_user_message">Welcome back, %1$s</string>
     <string name="home_screen_authentication_card_title">Authenticate, authorise transactions and share your digital documents in person or online.</string>
     <string name="home_screen_sign_card_title">Electronically sign digital documents with your wallet by choosing a file from your device or by scanning a QR code.</string>
     <string name="home_screen_authenticate">Authenticate</string>
+    <string name="home_screen_authenticate_description">Authenticate by sharing your data in person (in close proximity) or online (website/service).</string>
     <string name="home_screen_sign">Sign</string>
+    <string name="home_screen_sign_document">Sign document</string>
+    <string name="home_screen_sign_document_description">Sign a document digitally by choosing a file from your device ot by scanning a QR code.</string>
     <string name="home_screen_learn_more">Learn more</string>
+    <string name="home_screen_authenticate_option_in_person">In person</string>
+    <string name="home_screen_add_document_option_online">Online</string>
+    <string name="home_screen_sign_document_option_from_device">From device</string>
+    <string name="home_screen_sign_document_option_scan_qr">Scan QR</string>
+
+    <!-- Home Screen Learn More Popups content -->
+    <string name="home_screen_authenticate_learn_more_inner_title">Sign documents safely</string>
+    <string name="home_screen_authenticate_learn_more_description">Sign documents with just your wallet. Providing a legally binding e-signature will be faster and easier than ever, enabling you to conduct business whenever you are.</string>
+    <string name="home_screen_sign_learn_more_inner_title">Access online services</string>
+    <string name="home_screen_sign_learn_more_description">Identify yourself to a wide range of public and private online services while protecting your privacy. Prove who you are with just a few taps - no need to manage countless passwords.</string>
 
     <!-- Documents Screen -->
     <string name="documents_screen_title">Documents</string>
+    <string name="documents_screen_search_label">Search documents</string>
+    <string name="documents_screen_search_no_results">No documents match your search. Try changing your search query or filters.</string>
+    <string name="documents_screen_add_document_title">Add document</string>
+    <string name="documents_screen_add_document_description">Add documents to your wallet by choosing from a list or by scanning a provided QR code.</string>
+    <string name="documents_screen_add_document_option_list">From list</string>
+    <string name="documents_screen_add_document_option_qr">Scan QR</string>
+    <string name="documents_screen_add_document_option_or">OR</string>
 
     <!-- Transactions Screen -->
     <string name="transactions_screen_title">Transactions</string>
