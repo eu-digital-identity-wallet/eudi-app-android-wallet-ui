@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.interactor.document
+package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -23,7 +23,7 @@ import eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDoc
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -35,52 +35,60 @@ import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.net.URI
 
-sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
+sealed class PresentationSuccessInteractorGetUiItemsPartialState {
     data class Success(
         val documentsUi: List<DocumentSuccessItemUi>,
         val headerConfig: ContentHeaderConfig,
-    ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
+    ) : PresentationSuccessInteractorGetUiItemsPartialState()
 
     data class Failed(
         val errorMessage: String
-    ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
+    ) : PresentationSuccessInteractorGetUiItemsPartialState()
 }
 
-interface DocumentIssuanceSuccessInteractor {
-    fun getUiItems(documentIds: List<DocumentId>): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState>
+interface PresentationSuccessInteractor {
+    val initiatorRoute: String
+    val redirectUri: URI?
+    fun getUiItems(): Flow<PresentationSuccessInteractorGetUiItemsPartialState>
+    fun stopPresentation()
 }
 
-class DocumentIssuanceSuccessInteractorImpl(
+class PresentationSuccessInteractorImpl(
+    private val walletCorePresentationController: WalletCorePresentationController,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
-) : DocumentIssuanceSuccessInteractor {
+) : PresentationSuccessInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun getUiItems(documentIds: List<DocumentId>): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState> {
+    override val initiatorRoute: String = walletCorePresentationController.initiatorRoute
+
+    override val redirectUri: URI? = walletCorePresentationController.redirectUri
+
+    override fun getUiItems(): Flow<PresentationSuccessInteractorGetUiItemsPartialState> {
         return flow {
 
             val documentsUi = mutableListOf<DocumentSuccessItemUi>()
 
-            var issuerName =
-                resourceProvider.getString(R.string.issuance_success_header_issuer_default_name)
-            var issuerIsTrusted = false
+            val verifierName = walletCorePresentationController.verifierName
 
-            documentIds.forEach { documentId ->
+            val isVerified = walletCorePresentationController.verifierIsTrusted == true
+
+            walletCorePresentationController.disclosedDocuments?.forEach { disclosedDocument ->
                 try {
+                    val documentId = disclosedDocument.documentId
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-                    //TODO where do we get this information from?
-                    document.data.metadata?.credentialIssuerIdentifier?.let { safeIssuerName ->
-                        issuerName = safeIssuerName
-                    }
-
-                    issuerIsTrusted = true //TODO where do we get this information from?
-
                     val detailsDocumentItems = document.data.claims
+                        .filter { claim ->
+                            disclosedDocument.disclosedItems.any { disclosedItem ->
+                                claim.identifier == disclosedItem.elementIdentifier
+                            }
+                        }
                         .map { claim ->
                             transformToDocumentDetailsDocumentItem(
                                 displayKey = claim.metadata?.display?.firstOrNull {
@@ -115,28 +123,33 @@ class DocumentIssuanceSuccessInteractorImpl(
             }
 
             val headerConfigDescription = if (documentsUi.isEmpty()) {
-                resourceProvider.getString(R.string.issuance_success_header_description_when_error)
+                resourceProvider.getString(R.string.document_success_header_description_when_error)
             } else {
-                resourceProvider.getString(R.string.issuance_success_header_description)
+                resourceProvider.getString(R.string.document_success_header_description)
             }
             val headerConfig = ContentHeaderConfig(
                 description = headerConfigDescription,
                 relyingPartyData = RelyingPartyData(
-                    name = issuerName,
-                    isVerified = issuerIsTrusted,
+                    name = verifierName
+                        ?: resourceProvider.getString(R.string.document_success_relying_party_default_name),
+                    isVerified = isVerified,
                 )
             )
 
             emit(
-                DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
+                PresentationSuccessInteractorGetUiItemsPartialState.Success(
                     documentsUi = documentsUi,
-                    headerConfig = headerConfig,
+                    headerConfig = headerConfig
                 )
             )
         }.safeAsync {
-            DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Failed(
+            PresentationSuccessInteractorGetUiItemsPartialState.Failed(
                 errorMessage = it.localizedMessage ?: genericErrorMsg
             )
         }
+    }
+
+    override fun stopPresentation() {
+        walletCorePresentationController.stopPresentation()
     }
 }

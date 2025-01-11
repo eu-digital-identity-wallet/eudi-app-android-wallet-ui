@@ -190,8 +190,8 @@ class PresentationRequestViewModel(
         return RelyingPartyData(
             isVerified = isVerified,
             name = name
-                ?: resourceProvider.getString(R.string.request_header_relying_party_default_name),
-            description = resourceProvider.getString(R.string.request_header_relying_party_description),
+                ?: resourceProvider.getString(R.string.request_relying_party_default_name),
+            description = resourceProvider.getString(R.string.request_relying_party_description),
         )
     }
 }

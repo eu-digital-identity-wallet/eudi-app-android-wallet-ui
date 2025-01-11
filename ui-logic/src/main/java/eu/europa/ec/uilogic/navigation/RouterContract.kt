@@ -57,6 +57,7 @@ sealed class PresentationScreens {
 
     data object PresentationLoading : Screen(name = "PRESENTATION_LOADING")
 
+    data object PresentationSuccess : Screen(name = "PRESENTATION_SUCCESS")
 }
 
 sealed class ProximityScreens {

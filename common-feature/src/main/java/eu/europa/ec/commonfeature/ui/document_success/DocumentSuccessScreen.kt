@@ -63,7 +63,6 @@ fun DocumentSuccessScreen(
 
     ContentScreen(
         isLoading = false,
-        contentErrorConfig = state.error,
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 stickyBottomModifier = Modifier
@@ -143,12 +142,10 @@ private fun Content(
             .verticalScroll(rememberScrollState())
             .padding(paddingValues)
     ) {
-        state.headerConfig?.let { safeHeaderConfig ->
-            ContentHeader(
-                modifier = Modifier.fillMaxWidth(),
-                config = safeHeaderConfig,
-            )
-        }
+        ContentHeader(
+            modifier = Modifier.fillMaxWidth(),
+            config = state.headerConfig,
+        )
 
         Column(
             modifier = Modifier

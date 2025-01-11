@@ -19,11 +19,9 @@ package eu.europa.ec.presentationfeature.ui.loading
 import android.content.Context
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
-import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.ui.loading.Effect
 import eu.europa.ec.commonfeature.ui.loading.Event
 import eu.europa.ec.commonfeature.ui.loading.LoadingViewModel
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingObserveResponsePartialState
@@ -32,19 +30,13 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
-import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
-import eu.europa.ec.uilogic.navigation.CommonScreens
-import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.Screen
-import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
-import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
-import java.net.URI
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -58,7 +50,7 @@ class PresentationLoadingViewModel(
 
     override fun getHeaderConfig(): ContentHeaderConfig {
         return ContentHeaderConfig(
-            description = resourceProvider.getString(R.string.loading_content_header_description),
+            description = resourceProvider.getString(R.string.loading_header_description),
         )
     }
 
@@ -70,13 +62,8 @@ class PresentationLoadingViewModel(
         return PresentationScreens.PresentationLoading
     }
 
-    private fun getNextScreen(uri: URI? = null): String {
-        return generateComposableNavigationLink(
-            screen = CommonScreens.Success,
-            arguments = generateComposableArguments(
-                getSuccessConfig(uri)
-            )
-        )
+    private fun getNextScreen(): String {
+        return PresentationScreens.PresentationSuccess.screenRoute
     }
 
     override fun getCancellableTimeout(): Duration = 5.toDuration(DurationUnit.SECONDS)
@@ -105,7 +92,7 @@ class PresentationLoadingViewModel(
                     }
 
                     is PresentationLoadingObserveResponsePartialState.Redirect -> {
-                        onSuccess(it.uri)
+                        onSuccess()
                     }
 
                     is PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent -> {
@@ -193,49 +180,12 @@ class PresentationLoadingViewModel(
         )
     }
 
-    private fun onSuccess(uri: URI? = null) {
+    private fun onSuccess() {
         setState {
             copy(
                 error = null
             )
         }
-        interactor.stopPresentation()
-        getOrCreatePresentationScope().close()
-        doNavigation(NavigationType.PushRoute(getNextScreen(uri)))
-    }
-
-    private fun getSuccessConfig(uri: URI?): Map<String, String> {
-        val deepLinkWithUriOrPopToDashboard = ConfigNavigation(
-            navigationType = uri?.let {
-                NavigationType.Deeplink(it.toString(), interactor.initiatorRoute)
-            } ?: NavigationType.PopTo(DashboardScreens.Dashboard)
-        )
-
-        return mapOf(
-            SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
-                SuccessUIConfig(
-                    textElementsConfig = SuccessUIConfig.TextElementsConfig(
-                        text = "", //resourceProvider.getString(R.string.loading_success_config_title),
-                        description = resourceProvider.getString(
-                            //R.string.presentation_loading_success_config_subtitle,
-                            R.string.loading_content_header_description, //TODO Giannis
-                            interactor.verifierName
-                            //?: resourceProvider.getString(R.string.presentation_loading_success_config_verifier)
-                                ?: R.string.loading_content_header_description, //TODO Giannis
-                        ),
-                    ),
-                    imageConfig = SuccessUIConfig.ImageConfig(),
-                    buttonConfig = listOf(
-                        SuccessUIConfig.ButtonConfig(
-                            text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),
-                            style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
-                            navigation = deepLinkWithUriOrPopToDashboard,
-                        )
-                    ),
-                    onBackScreenToNavigate = deepLinkWithUriOrPopToDashboard,
-                ),
-                SuccessUIConfig
-            ).orEmpty()
-        )
+        doNavigation(NavigationType.PushRoute(getNextScreen()))
     }
 }

@@ -54,7 +54,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapText
  */
 data class ContentHeaderConfig(
     val appIconAndTextData: AppIconAndTextData = AppIconAndTextData(),
-    val description: String,
+    val description: String?,
     val descriptionTextConfig: TextConfig? = null,
     val mainText: String? = null,
     val mainTextConfig: TextConfig? = null,
@@ -91,17 +91,19 @@ fun ContentHeader(
             )
 
             // Description section.
-            WrapText(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = SPACING_SMALL.dp),
-                text = description,
-                textConfig = descriptionTextConfig ?: TextConfig(
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = commonTextAlign,
-                    maxLines = 3,
+            description?.let { safeDescription ->
+                WrapText(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = SPACING_SMALL.dp),
+                    text = safeDescription,
+                    textConfig = descriptionTextConfig ?: TextConfig(
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = commonTextAlign,
+                        maxLines = 3,
+                    )
                 )
-            )
+            }
 
             // Main text section.
             mainText?.let { safeMainText ->

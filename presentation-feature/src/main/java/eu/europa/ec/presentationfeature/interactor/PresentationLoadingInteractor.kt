@@ -48,8 +48,6 @@ sealed class PresentationLoadingSendRequestedDocumentPartialState {
 interface PresentationLoadingInteractor {
     val verifierName: String?
     val isVerified: Boolean
-    val initiatorRoute: String
-    fun stopPresentation()
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
     fun sendRequestedDocuments(): PresentationLoadingSendRequestedDocumentPartialState
     fun handleUserAuthentication(
@@ -68,9 +66,6 @@ class PresentationLoadingInteractorImpl(
     override val verifierName: String? = walletCorePresentationController.verifierName
 
     override val isVerified: Boolean = walletCorePresentationController.verifierIsTrusted == true
-
-    override val initiatorRoute: String =
-        walletCorePresentationController.initiatorRoute
 
     override fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState> =
         walletCorePresentationController.observeSentDocumentsRequest().mapNotNull { response ->
@@ -132,9 +127,5 @@ class PresentationLoadingInteractorImpl(
                 }
             }
         }
-    }
-
-    override fun stopPresentation() {
-        walletCorePresentationController.stopPresentation()
     }
 }

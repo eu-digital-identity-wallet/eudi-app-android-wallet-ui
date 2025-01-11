@@ -19,9 +19,9 @@ package eu.europa.ec.commonfeature.ui.document_success
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
+import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -34,15 +34,13 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 
 data class State(
     val isLoading: Boolean = false,
-    val headerConfig: ContentHeaderConfig? = null,
-    val error: ContentErrorConfig? = null,
+    val headerConfig: ContentHeaderConfig,
 
     val items: List<DocumentSuccessItemUi> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data object DoWork : Event()
-    data object Close : Event()
     data object StickyButtonPressed : Event()
 
     data class ExpandOrCollapseSuccessDocumentItem(val itemId: String) : Event()
@@ -75,16 +73,17 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
     abstract fun doWork()
 
     override fun setInitialState(): State {
-        return State()
+        return State(
+            headerConfig = ContentHeaderConfig(
+                appIconAndTextData = AppIconAndTextData(),
+                description = null,
+            )
+        )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.DoWork -> doWork()
-
-            is Event.Close -> closeAndDoNavigation(
-                navigation = getNextScreenConfigNavigation()
-            )
 
             is Event.ExpandOrCollapseSuccessDocumentItem -> expandOrCollapseSuccessDocumentItem(id = event.itemId)
 
@@ -166,13 +165,5 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
         setEffect {
             navigationEffect
         }
-    }
-
-    private fun closeAndDoNavigation(navigation: ConfigNavigation) {
-        setState {
-            copy(error = null)
-        }
-
-        doNavigation(navigation)
     }
 }

@@ -14,45 +14,44 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.success
+package eu.europa.ec.presentationfeature.ui.success
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessViewModel
-import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractor
-import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractorGetUiItemsPartialState
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.presentationfeature.interactor.PresentationSuccessInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationSuccessInteractorGetUiItemsPartialState
 import eu.europa.ec.uilogic.config.ConfigNavigation
-import eu.europa.ec.uilogic.serializer.UiSerializer
+import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
-import org.koin.core.annotation.InjectedParam
 
 @KoinViewModel
-class DocumentIssuanceSuccessViewModel(
-    private val interactor: DocumentIssuanceSuccessInteractor,
-    private val uiSerializer: UiSerializer,
-    @InjectedParam private val issuanceSuccessSerializedConfig: String,
+class PresentationSuccessViewModel(
+    private val interactor: PresentationSuccessInteractor,
 ) : DocumentSuccessViewModel() {
 
     override fun getNextScreenConfigNavigation(): ConfigNavigation {
-        val deserializedIssuanceSuccessUiConfig = getDeserializedIssuanceSuccessUiConfig()
+        val redirectUri = interactor.redirectUri
+        val deepLinkWithUriOrPopToDashboard = ConfigNavigation(
+            navigationType = redirectUri?.let {
+                NavigationType.Deeplink(it.toString(), interactor.initiatorRoute)
+            } ?: NavigationType.PopTo(DashboardScreens.Dashboard)
+        )
 
-        return deserializedIssuanceSuccessUiConfig.onSuccessNavigation
+        return deepLinkWithUriOrPopToDashboard
     }
 
     override fun doWork() {
-        val deserializedIssuanceSuccessUiConfig = getDeserializedIssuanceSuccessUiConfig()
-
         setState {
             copy(isLoading = true)
         }
 
         viewModelScope.launch {
-            interactor.getUiItems(
-                documentIds = deserializedIssuanceSuccessUiConfig.documentIds
-            ).collect { response ->
+            interactor.getUiItems().collect { response ->
                 when (response) {
-                    is DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Failed -> {
+                    is PresentationSuccessInteractorGetUiItemsPartialState.Failed -> {
                         setState {
                             copy(
                                 isLoading = false,
@@ -60,7 +59,7 @@ class DocumentIssuanceSuccessViewModel(
                         }
                     }
 
-                    is DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success -> {
+                    is PresentationSuccessInteractorGetUiItemsPartialState.Success -> {
                         setState {
                             copy(
                                 headerConfig = response.headerConfig,
@@ -74,12 +73,9 @@ class DocumentIssuanceSuccessViewModel(
         }
     }
 
-    private fun getDeserializedIssuanceSuccessUiConfig(): IssuanceSuccessUiConfig {
-        val deserializedIssuanceSuccessUiConfig = uiSerializer.fromBase64(
-            payload = issuanceSuccessSerializedConfig,
-            model = IssuanceSuccessUiConfig::class.java,
-            parser = IssuanceSuccessUiConfig.Parser
-        ) ?: throw RuntimeException("IssuanceSuccessUiConfig:: is Missing or invalid")
-        return deserializedIssuanceSuccessUiConfig
+    override fun onCleared() {
+        super.onCleared()
+        interactor.stopPresentation()
+        getOrCreatePresentationScope().close()
     }
 }

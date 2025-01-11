@@ -135,6 +135,8 @@ interface WalletCorePresentationController {
      * */
     val initiatorRoute: String
 
+    val redirectUri: URI?
+
     /**
      * Set [PresentationControllerConfig]
      * */
@@ -219,6 +221,8 @@ class WalletCorePresentationControllerImpl(
             return config.initiatorRoute
         }
 
+    override var redirectUri: URI? = null
+
     override fun setConfig(config: PresentationControllerConfig) {
         _config = config
     }
@@ -279,6 +283,8 @@ class WalletCorePresentationControllerImpl(
                 )
             },
             onRedirect = { uri ->
+                redirectUri = uri
+
                 trySendBlocking(
                     TransferEventPartialState.Redirect(
                         uri = uri

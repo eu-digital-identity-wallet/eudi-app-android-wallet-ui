@@ -57,7 +57,7 @@ class ProximityLoadingViewModel(
 
     override fun getHeaderConfig(): ContentHeaderConfig {
         return ContentHeaderConfig(
-            description = resourceProvider.getString(R.string.loading_content_header_description),
+            description = resourceProvider.getString(R.string.loading_header_description),
         )
     }
 
@@ -209,16 +209,16 @@ class ProximityLoadingViewModel(
                         text = "",//resourceProvider.getString(R.string.loading_success_config_title)
                         description = resourceProvider.getString(
                             //R.string.presentation_loading_success_config_subtitle,
-                            R.string.loading_content_header_description, //TODO Giannis
+                            R.string.loading_header_description, //TODO Giannis
                             interactor.verifierName
                             //?: resourceProvider.getString(R.string.presentation_loading_success_config_verifier)
-                                ?: R.string.loading_content_header_description, //TODO Giannis
+                                ?: R.string.loading_header_description, //TODO Giannis
                         ),
                     ),
                     imageConfig = SuccessUIConfig.ImageConfig(),
                     buttonConfig = listOf(
                         SuccessUIConfig.ButtonConfig(
-                            text = resourceProvider.getString(R.string.loading_success_config_primary_button_text),
+                            text = "",//resourceProvider.getString(R.string.loading_success_config_primary_button_text),
                             style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                             navigation = popToDashboard,
                         )
