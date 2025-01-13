@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -55,6 +56,8 @@ import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
+import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -325,9 +328,10 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
                         Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .throttledClickable {
+                                .throttledClickable(enabled = item.enabled) {
                                     onEventSent(item.event)
-                                },
+                                }
+                                .alpha(ALPHA_ENABLED.takeIf { item.enabled } ?: ALPHA_DISABLED),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             item.leadingIcon?.let { safeLeadingIcon ->
@@ -341,8 +345,7 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
                                 colors = CardDefaults.cardColors(
                                     containerColor = MaterialTheme.colorScheme.primary,
                                     contentColor = MaterialTheme.colorScheme.onPrimary
-                                ), shape = MaterialTheme.shapes.allCorneredShapeLarge,
-                                enabled = item.enabled
+                                ), shape = MaterialTheme.shapes.allCorneredShapeLarge
                             ) {
                                 Text(
                                     modifier = Modifier.padding(
