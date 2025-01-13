@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -116,6 +117,7 @@ fun WrapIconButton(
     customTint: Color? = null,
     enabled: Boolean = true,
     size: Dp = DEFAULT_ICON_SIZE.dp,
+    shape: Shape? = CircleShape,
     throttleClicks: Boolean = true,
     throttleDuration: Long = 1_000L,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -132,7 +134,7 @@ fun WrapIconButton(
         modifier = modifier
             .minimumInteractiveComponentSize()
             .size(rippleSize)
-            .clip(CircleShape)
+            .then(if (shape != null) Modifier.clip(shape) else Modifier)
             .then(
                 if (onClick != null) {
                     when (throttleClicks) {

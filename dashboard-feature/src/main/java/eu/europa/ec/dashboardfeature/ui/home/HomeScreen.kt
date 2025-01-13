@@ -134,7 +134,8 @@ private fun TopBar(
         // home menu icon
         WrapIconButton(
             modifier = Modifier.offset(x = -SPACING_SMALL.dp),
-            iconData = AppIcons.Menu
+            iconData = AppIcons.Menu,
+            shape = null
         ) {
             // invoke event
         }
