@@ -33,6 +33,7 @@ import eu.europa.ec.dashboardfeature.ui.dashboard_new.State
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -110,7 +111,7 @@ private fun SideMenuContentPreview() {
                 sideMenuOptions = listOf(
                     ListItemData(
                         itemId = "changePinId",
-                        mainContentData = eu.europa.ec.uilogic.component.MainContentData.Text(
+                        mainContentData = ListItemMainContentData.Text(
                             text = "Change PIN"
                         ),
                         leadingContentData = ListItemLeadingContentData.Icon(

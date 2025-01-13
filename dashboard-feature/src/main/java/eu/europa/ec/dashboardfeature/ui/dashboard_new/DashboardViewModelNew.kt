@@ -21,8 +21,8 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -66,7 +66,7 @@ class DashboardViewModelNew(
             sideMenuOptions = listOf(
                 ListItemData(
                     itemId = "changePinId",
-                    mainContentData = MainContentData.Text(
+                    mainContentData = ListItemMainContentData.Text(
                         text = resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.dashboard_side_menu_change_pin)
                     ),
                     leadingContentData = ListItemLeadingContentData.Icon(
