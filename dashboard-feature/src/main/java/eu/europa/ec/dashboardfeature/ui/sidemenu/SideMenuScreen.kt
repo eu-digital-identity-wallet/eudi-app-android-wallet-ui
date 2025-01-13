@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.dashboardfeature.ui.dashboard_new.Event
 import eu.europa.ec.dashboardfeature.ui.dashboard_new.State
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
@@ -46,14 +47,14 @@ import eu.europa.ec.uilogic.component.wrap.WrapListItem
 @Composable
 internal fun SideMenuScreen(
     state: State,
-    onEventSent: (eu.europa.ec.dashboardfeature.ui.dashboard_new.Event) -> Unit,
+    onEventSent: (Event) -> Unit,
 ) {
     ContentScreen(
         navigatableAction = ScreenNavigateAction.BACKABLE,
         isLoading = false,
         onBack = {
             onEventSent(
-                eu.europa.ec.dashboardfeature.ui.dashboard_new.Event.SideMenu.Hide
+                Event.SideMenu.Hide
             )
         }
     ) { paddingValues ->
@@ -68,7 +69,7 @@ internal fun SideMenuScreen(
 @Composable
 private fun Content(
     state: State,
-    onEventSent: (eu.europa.ec.dashboardfeature.ui.dashboard_new.Event) -> Unit,
+    onEventSent: (Event) -> Unit,
     paddingValues: PaddingValues
 ) {
     Column(
@@ -91,7 +92,7 @@ private fun Content(
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     onItemClick = {
                         onEventSent(
-                            eu.europa.ec.dashboardfeature.ui.dashboard_new.Event.OpenChangeQuickPin
+                            Event.SideMenu.OpenChangeQuickPin
                         )
                     }
                 )

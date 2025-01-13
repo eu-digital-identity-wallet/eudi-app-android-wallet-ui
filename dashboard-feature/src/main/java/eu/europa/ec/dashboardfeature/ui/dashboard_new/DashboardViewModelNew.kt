@@ -40,13 +40,12 @@ data class State(
 sealed class Event : ViewEvent {
     data object Pop : Event()
 
+    // side menu events
     sealed class SideMenu : Event() {
         data object Show : SideMenu()
         data object Hide : SideMenu()
+        data object OpenChangeQuickPin : SideMenu()
     }
-
-    // side menu events
-    data object OpenChangeQuickPin : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -82,7 +81,7 @@ class DashboardViewModelNew(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            Event.OpenChangeQuickPin -> {
+            Event.SideMenu.OpenChangeQuickPin -> {
                 // TODO navigate to change pin
             }
 

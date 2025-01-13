@@ -71,11 +71,15 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
+typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Event
+typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Event.SideMenu.Show
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navHostController: NavController,
-    viewModel: HomeViewModel
+    viewModel: HomeViewModel,
+    onEventSent: (DashboardEvent) -> Unit
 ) {
     val state = viewModel.viewState.value
     val isBottomSheetOpen = state.isBottomSheetOpen
@@ -87,12 +91,18 @@ fun HomeScreen(
     ContentScreen(
         isLoading = false,
         navigatableAction = ScreenNavigateAction.NONE,
-        topBar = { TopBar() }
+        topBar = {
+            TopBar(
+                onEventSent = onEventSent
+            )
+        }
     ) { paddingValues ->
         Content(
             state = state,
             effectFlow = viewModel.effect,
-            onEventSent = { event -> viewModel.setEvent(event) },
+            onEventSent = { event ->
+                viewModel.setEvent(event)
+            },
             coroutineScope = scope,
             modalBottomSheetState = bottomSheetState,
             navController = navHostController,
@@ -122,7 +132,7 @@ fun HomeScreen(
 
 @Composable
 private fun TopBar(
-    onEventSent: ((event: Event) -> Unit)? = null
+    onEventSent: (DashboardEvent) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -137,7 +147,9 @@ private fun TopBar(
             iconData = AppIcons.Menu,
             shape = null
         ) {
-            // invoke event
+            onEventSent(
+                ShowSideMenuEvent
+            )
         }
 
         // wallet logo

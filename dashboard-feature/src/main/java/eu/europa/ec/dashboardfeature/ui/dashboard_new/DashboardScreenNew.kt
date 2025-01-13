@@ -16,7 +16,12 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard_new
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -32,6 +37,7 @@ import eu.europa.ec.dashboardfeature.ui.documents.DocumentsScreen
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsViewModel
 import eu.europa.ec.dashboardfeature.ui.home.HomeScreen
 import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
+import eu.europa.ec.dashboardfeature.ui.sidemenu.SideMenuScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
 import eu.europa.ec.resourceslogic.provider.ResourceProviderImpl
@@ -48,6 +54,7 @@ fun DashboardScreenNew(
     transactionsViewModel: TransactionsViewModel,
 ) {
     val bottomNavigationController = rememberNavController()
+    val state = viewModel.viewState.value
 
     ContentScreen(
         isLoading = false,
@@ -62,7 +69,10 @@ fun DashboardScreenNew(
             composable(BottomNavigationItem.Home.route) {
                 HomeScreen(
                     hostNavController,
-                    homeViewModel
+                    homeViewModel,
+                    onEventSent = { event ->
+                        viewModel.setEvent(event)
+                    }
                 )
             }
             composable(BottomNavigationItem.Documents.route) {
@@ -78,6 +88,18 @@ fun DashboardScreenNew(
                 )
             }
         }
+    }
+
+    AnimatedVisibility(
+        visible = state.isSideMenuVisible,
+        modifier = Modifier.fillMaxSize(),
+        enter = slideInHorizontally(initialOffsetX = { it }),
+        exit = slideOutHorizontally(targetOffsetX = { it })
+    ) {
+        SideMenuScreen(
+            state = state,
+            onEventSent = { event -> viewModel.setEvent(event) }
+        )
     }
 }
 

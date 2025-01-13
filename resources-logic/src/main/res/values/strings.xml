@@ -106,6 +106,7 @@
     <string name="content_description_signature_icon">Signature</string>
     <string name="content_description_authenticate_icon">Authentication ID cards</string>
     <string name="content_description_change_pin_icon">Change PIN</string>
+    <string name="content_description_menu_icon">Menu</string>
 
     <!-- Placeholder content-->
     <string name="placeholder_content_issuer">Placeholder Issuer</string>
