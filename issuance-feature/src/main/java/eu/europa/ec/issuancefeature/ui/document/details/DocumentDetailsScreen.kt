@@ -389,7 +389,7 @@ private fun DashboardDocumentDetailsScreenPreview() {
     PreviewTheme {
         val state = State(
             detailsType = IssuanceFlowUiConfig.EXTRA_DOCUMENT,
-            navigatableAction = ScreenNavigateAction.CANCELABLE,
+            navigatableAction = ScreenNavigateAction.BACKABLE,
             documentDetailsSectionTitle = "DOCUMENT DETAILS",
             documentIssuerSectionTitle = "ISSUER",
             document = DocumentUi(
