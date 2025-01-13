@@ -33,8 +33,12 @@ import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -81,14 +85,15 @@ object RequestTransformer {
         requestDocuments.forEach { requestDocument ->
             val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
 
-            val docName = storageDocument.name
-            val docId = storageDocument.id
-            val docNamespace = (storageDocument.data as MsoMdocData).nameSpaces.keys.first()
+            val docName: String = storageDocument.name
+            val docId: DocumentId = storageDocument.id
+            val docNamespace: NameSpace? = when (val data = storageDocument.data) {
+                is MsoMdocData -> data.nameSpaces.keys.first()
+                is SdJwtVcData -> null
+            }
             val documentItemsDomain: MutableList<DocumentItemDomain> = mutableListOf()
 
             requestDocument.requestedItems.keys.forEach { docItem ->
-
-                docItem as MsoMdocItem
 
                 val isRequired = getMandatoryFields(
                     documentIdentifier = storageDocument.toDocumentIdentifier()
@@ -227,7 +232,9 @@ object RequestTransformer {
         // Convert to the format required by DisclosedDocuments
         val disclosedDocuments =
             groupedByDocument.map { (documentPayload, selectedItemsForDocument) ->
+
                 val disclosedItems = selectedItemsForDocument.map { selectedItem ->
+
                     val value = when (val mainContentData = selectedItem.uiItem.mainContentData) {
                         is ListItemMainContentData.Image -> mainContentData.base64Image
 
@@ -236,12 +243,21 @@ object RequestTransformer {
                                 ?: mainContentData.text
                         }
                     }
-                    MsoMdocItem(
-                        namespace = documentPayload.docNamespace,
-                        elementIdentifier = documentPayload.documentDetailsDomain.items
-                            .find { it.value == value }
-                            ?.elementIdentifier ?: ""
-                    )
+
+                    val elementIdentifier = documentPayload.documentDetailsDomain.items
+                        .find { it.value == value }
+                        ?.elementIdentifier ?: ""
+
+                    when (documentPayload.docNamespace) {
+                        null -> SdJwtVcItem(
+                            elementIdentifier = elementIdentifier
+                        )
+
+                        else -> MsoMdocItem(
+                            namespace = documentPayload.docNamespace,
+                            elementIdentifier = elementIdentifier
+                        )
+                    }
                 }
 
                 DisclosedDocument(
