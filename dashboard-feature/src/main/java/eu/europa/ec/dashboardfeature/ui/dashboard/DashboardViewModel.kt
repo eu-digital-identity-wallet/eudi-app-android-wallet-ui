@@ -380,7 +380,6 @@ class DashboardViewModel(
                     screen = IssuanceScreens.DocumentDetails,
                     arguments = generateComposableArguments(
                         mapOf(
-                            "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
                             "documentId" to docId
                         )
                     )

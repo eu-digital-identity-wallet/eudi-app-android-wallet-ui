@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -113,8 +112,8 @@ fun DocumentDetailsScreen(
     ContentScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
-        navigatableAction = state.navigatableAction,
-        onBack = state.onBackAction,
+        navigatableAction = ScreenNavigateAction.BACKABLE,
+        onBack = { viewModel.setEvent(Event.Pop) },
         toolBarConfig = toolbarConfig,
     ) { paddingValues ->
         Content(
@@ -350,11 +349,9 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @ThemeModePreviews
 @Composable
-private fun IssuanceDocumentDetailsScreenPreview() {
+private fun DocumentDetailsScreenPreview() {
     PreviewTheme {
         val state = State(
-            detailsType = IssuanceFlowUiConfig.NO_DOCUMENT,
-            navigatableAction = ScreenNavigateAction.NONE,
             documentDetailsSectionTitle = "DOCUMENT DETAILS",
             documentIssuerSectionTitle = "ISSUER",
             document = DocumentUi(
@@ -364,41 +361,6 @@ private fun IssuanceDocumentDetailsScreenPreview() {
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image1",
-                documentDetails = emptyList(),
-                documentIssuanceState = DocumentUiIssuanceState.Issued,
-            ),
-            sheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation
-        )
-
-        Content(
-            state = state,
-            effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {},
-            onNavigationRequested = {},
-            paddingValues = PaddingValues(SPACING_LARGE.dp),
-            coroutineScope = rememberCoroutineScope(),
-            modalBottomSheetState = rememberModalBottomSheetState(),
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@ThemeModePreviews
-@Composable
-private fun DashboardDocumentDetailsScreenPreview() {
-    PreviewTheme {
-        val state = State(
-            detailsType = IssuanceFlowUiConfig.EXTRA_DOCUMENT,
-            navigatableAction = ScreenNavigateAction.BACKABLE,
-            documentDetailsSectionTitle = "DOCUMENT DETAILS",
-            documentIssuerSectionTitle = "ISSUER",
-            document = DocumentUi(
-                documentId = "2",
-                documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.MdocPid,
-                documentExpirationDateFormatted = "30 Mar 2050",
-                documentHasExpired = false,
-                documentImage = "image2",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,
             ),

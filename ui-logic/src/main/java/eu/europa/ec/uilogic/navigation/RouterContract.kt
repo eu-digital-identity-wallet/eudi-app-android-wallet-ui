@@ -84,8 +84,7 @@ sealed class IssuanceScreens {
 
     data object DocumentDetails : Screen(
         name = "ISSUANCE_DOCUMENT_DETAILS",
-        parameters = "?detailsType={detailsType}"
-                + "&documentId={documentId}"
+        parameters = "?documentId={documentId}"
     )
 
     data object DocumentOffer : Screen(

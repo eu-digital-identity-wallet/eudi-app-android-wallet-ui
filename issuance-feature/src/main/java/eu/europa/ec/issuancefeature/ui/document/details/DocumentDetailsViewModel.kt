@@ -17,7 +17,6 @@
 package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
@@ -29,7 +28,6 @@ import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteracto
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -42,10 +40,6 @@ import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
 
 data class State(
-    val detailsType: IssuanceFlowUiConfig,
-    val navigatableAction: ScreenNavigateAction,
-    val onBackAction: (() -> Unit)? = null,
-
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
@@ -117,13 +111,9 @@ sealed class DocumentDetailsBottomSheetContent {
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
     private val resourceProvider: ResourceProvider,
-    @InjectedParam private val detailsType: IssuanceFlowUiConfig,
     @InjectedParam private val documentId: DocumentId,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        detailsType = detailsType,
-        navigatableAction = getNavigatableAction(detailsType),
-        onBackAction = getOnBackAction(detailsType),
         documentDetailsSectionTitle = resourceProvider.getString(R.string.document_details_main_section_text),
         documentIssuerSectionTitle = resourceProvider.getString(R.string.document_details_issuer_section_text),
     )
@@ -357,21 +347,5 @@ class DocumentDetailsViewModel(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_subtitle)
         )
-    }
-
-    private fun getNavigatableAction(detailsType: IssuanceFlowUiConfig): ScreenNavigateAction {
-        return when (detailsType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.BACKABLE
-        }
-    }
-
-    private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit)? {
-        return when (flowType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> null
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
-                { setEvent(Event.Pop) }
-            }
-        }
     }
 }

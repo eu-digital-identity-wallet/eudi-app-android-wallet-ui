@@ -82,9 +82,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 }
             ),
             arguments = listOf(
-                navArgument("detailsType") {
-                    type = NavType.StringType
-                },
                 navArgument("documentId") {
                     type = NavType.StringType
                 },
@@ -95,9 +92,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 getViewModel(
                     parameters = {
                         parametersOf(
-                            IssuanceFlowUiConfig.fromString(
-                                it.arguments?.getString("detailsType").orEmpty()
-                            ),
                             it.arguments?.getString("documentId").orEmpty(),
                         )
                     }
