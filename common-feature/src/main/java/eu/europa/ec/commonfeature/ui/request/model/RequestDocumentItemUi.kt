@@ -61,7 +61,7 @@ data class ExpandedUiItem(
 data class DocumentDomainPayload(
     val docName: String,
     val docId: DocumentId,
-    val docNamespace: NameSpace,
+    val docNamespace: NameSpace?,
     val documentDetailsDomain: DocumentDetailsDomain
 )
 
