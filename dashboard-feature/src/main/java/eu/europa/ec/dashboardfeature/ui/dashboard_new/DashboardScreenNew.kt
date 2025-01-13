@@ -16,15 +16,16 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard_new
 
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNewImpl
-import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
-import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
-import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationBar
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationItem
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsScreen
@@ -35,7 +36,14 @@ import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.extension.finish
+import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.openAppSettings
+import eu.europa.ec.uilogic.extension.openBleSettings
+import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun DashboardScreenNew(
@@ -45,6 +53,7 @@ fun DashboardScreenNew(
     homeViewModel: HomeViewModel,
     transactionsViewModel: TransactionsViewModel,
 ) {
+    val context = LocalContext.current
     val bottomNavigationController = rememberNavController()
 
     ContentScreen(
@@ -77,16 +86,51 @@ fun DashboardScreenNew(
             }
         }
     }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_RESUME
+    ) {
+        viewModel.setEvent(
+            Event.Init(
+                deepLinkUri = context.getPendingDeepLink()
+            )
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation -> handleNavigationEffect(effect, hostNavController, context)
+            }
+        }.collect()
+    }
 }
 
-@Composable
-@ThemeModePreviews
-fun DashboardScreenPreview() {
-    DashboardScreenNew(
-        rememberNavController(),
-        DashboardViewModelNew(DashboardInteractorNewImpl()),
-        DocumentsViewModel(DocumentsInteractorImpl()),
-        HomeViewModel(HomeInteractorImpl()),
-        TransactionsViewModel(TransactionsInteractorImpl())
-    )
+private fun handleNavigationEffect(
+    navigationEffect: Effect.Navigation,
+    navController: NavController,
+    context: Context
+) {
+    when (navigationEffect) {
+        is Effect.Navigation.Pop -> context.finish()
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screenRoute) {
+                popUpTo(navigationEffect.popUpToScreenRoute) {
+                    inclusive = navigationEffect.inclusive
+                }
+            }
+        }
+
+        is Effect.Navigation.OpenDeepLinkAction -> {
+            handleDeepLinkAction(
+                navController,
+                navigationEffect.deepLinkUri,
+                navigationEffect.arguments
+            )
+        }
+
+        is Effect.Navigation.OnAppSettings -> context.openAppSettings()
+        is Effect.Navigation.OnSystemSettings -> context.openBleSettings()
+    }
 }
