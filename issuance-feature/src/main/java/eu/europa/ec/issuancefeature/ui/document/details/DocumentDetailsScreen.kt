@@ -372,7 +372,7 @@ private fun DocumentDetailsScreenPreview() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
             onNavigationRequested = {},
-            paddingValues = PaddingValues(SPACING_LARGE.dp),
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
             coroutineScope = rememberCoroutineScope(),
             modalBottomSheetState = rememberModalBottomSheetState(),
         )

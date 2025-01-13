@@ -16,37 +16,41 @@
 
 package eu.europa.ec.dashboardfeature.ui.sign
 
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.dashboardfeature.model.SignDocumentButtonUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.WrapCard
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapListItem
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 
 @Composable
 internal fun DocumentSignScreen(
@@ -92,14 +96,18 @@ private fun Content(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        ContentTitle(
+        SimpleContentTitle(
             title = state.title,
             subtitle = state.subtitle,
         )
 
-        VSpacer.Medium()
+        VSpacer.Large()
 
-        SignButton(onEventSend)
+        SignButton(
+            modifier = Modifier.fillMaxWidth(),
+            buttonUi = state.buttonUi,
+            onEventSend = onEventSend,
+        )
     }
 
     val selectPdfLauncher = rememberLauncherForActivityResult(
@@ -115,50 +123,52 @@ private fun Content(
             when (effect) {
                 is Effect.Navigation.Pop -> onNavigationRequested(effect)
                 is Effect.OpenDocumentSelection -> selectPdfLauncher.launch(effect.selection)
-                is Effect.LaunchedRQES -> {
-                    Toast.makeText(
-                        context,
-                        "Launched with: ${effect.uri}",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
             }
         }.collect()
     }
 }
 
 @Composable
-private fun SignButton(onEventSend: (Event) -> Unit) {
-    WrapCard(
-        onClick = {
-            onEventSend(
-                Event.OnSelectDocument
-            )
+private fun SignButton(
+    modifier: Modifier = Modifier,
+    buttonUi: SignDocumentButtonUi,
+    onEventSend: (Event) -> Unit,
+) {
+    WrapListItem(
+        modifier = modifier,
+        item = buttonUi.data,
+        onItemClick = {
+            onEventSend(Event.OnSelectDocument)
         },
-        throttleClicks = true,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
+        mainContentVerticalPadding = SPACING_LARGE.dp,
+        mainContentTextStyle = MaterialTheme.typography.titleMedium,
+    )
+}
+
+@ThemeModePreviews
+@Composable
+private fun DocumentSignScreenPreview() {
+    PreviewTheme {
+        Content(
+            state = State(
+                title = stringResource(R.string.document_sign_title),
+                subtitle = stringResource(R.string.document_sign_subtitle),
+                buttonUi = SignDocumentButtonUi(
+                    data = ListItemData(
+                        itemId = "0",
+                        mainContentData = ListItemMainContentData.Text(
+                            text = stringResource(R.string.document_sign_select_document),
+                        ),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.Add
+                        ),
+                    )
+                )
+            ),
+            effectFlow = Channel<Effect>().receiveAsFlow(),
+            onEventSend = {},
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
         )
-    ) {
-        Row(
-            modifier = Modifier.padding(SPACING_MEDIUM.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            val iconsColor = MaterialTheme.colorScheme.primary
-            val textColor = MaterialTheme.colorScheme.onSurface
-
-            Text(
-                modifier = Modifier.weight(1f),
-                text = stringResource(R.string.document_sign_select_document),
-                style = MaterialTheme.typography.titleMedium,
-                color = textColor
-            )
-
-            WrapIcon(
-                iconData = AppIcons.Add,
-                customTint = iconsColor,
-            )
-        }
     }
 }

@@ -19,6 +19,8 @@ package eu.europa.ec.dashboardfeature.ui.sign
 import android.content.Context
 import android.net.Uri
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
+import eu.europa.ec.dashboardfeature.model.SignDocumentButtonUi
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -32,6 +34,7 @@ data class State(
     val error: ContentErrorConfig? = null,
     val title: String,
     val subtitle: String,
+    val buttonUi: SignDocumentButtonUi
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -46,7 +49,6 @@ sealed class Effect : ViewSideEffect {
     }
 
     data class OpenDocumentSelection(val selection: Array<String>) : Effect()
-    data class LaunchedRQES(val uri: Uri) : Effect()
 }
 
 @KoinViewModel
@@ -56,8 +58,9 @@ class DocumentSignViewModel(
 ) : MviViewModel<Event, State, Effect>() {
 
     override fun setInitialState(): State = State(
-        title = resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.document_sign_title),
-        subtitle = resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.document_sign_subtitle)
+        title = resourceProvider.getString(R.string.document_sign_title),
+        subtitle = resourceProvider.getString(R.string.document_sign_subtitle),
+        buttonUi = documentSignInteractor.getUiItem(),
     )
 
     override fun handleEvents(event: Event) {

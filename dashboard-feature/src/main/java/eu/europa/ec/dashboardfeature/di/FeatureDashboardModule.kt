@@ -70,5 +70,8 @@ fun provideDocumentsInteractor(): DocumentsInteractor = DocumentsInteractorImpl(
 fun provideTransactionInteractor(): TransactionsInteractor = TransactionsInteractorImpl()
 
 @Factory
-fun provideDocumentSignInteractor(): DocumentSignInteractor =
-    DocumentSignInteractorImpl()
+fun provideDocumentSignInteractor(
+    resourceProvider: ResourceProvider,
+): DocumentSignInteractor = DocumentSignInteractorImpl(
+    resourceProvider,
+)
