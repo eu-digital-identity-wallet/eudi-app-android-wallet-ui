@@ -27,10 +27,20 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.MainContentData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 
 interface DocumentsInteractor {
     fun getAllDocuments(): List<ListItemData>
     fun searchDocuments(query: String): List<ListItemData>
+    fun getFilters(): List<ExpandableListItemData>
+    fun onFilterSelect(
+        id: String,
+        groupId: String,
+        setStateAction: (List<ExpandableListItemData>) -> Unit,
+    )
+    fun clearFilters(setStateAction: (List<ExpandableListItemData>) -> Unit)
+    fun applyFilters(setStateAction: (List<ExpandableListItemData>) -> Unit)
 }
 
 class DocumentsInteractorImpl(
@@ -39,6 +49,100 @@ class DocumentsInteractorImpl(
 ) : DocumentsInteractor {
 
     private val documents: MutableList<ListItemData> = mutableListOf()
+
+    //#region Filters
+    private val expandableFilterByExpiryPeriod = ExpandableListItemData(
+        collapsed = ListItemData(
+            itemId = "",
+            mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_by)),
+            trailingContentData = ListItemTrailingContentData.Icon(
+                iconData = AppIcons.KeyboardArrowDown
+            )
+        ),
+        expanded = listOf(
+            ListItemData(
+                itemId = "def1",
+                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_default)),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        groupId = "filter1",
+                        isSelected = true,
+                        enabled = true
+                    )
+                )
+            ),
+            ListItemData(
+                itemId = "issue1",
+                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued)),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        groupId = "filter1",
+                        isSelected = false,
+                        enabled = true
+                    )
+                )
+            ),
+            ListItemData(
+                itemId = "date1",
+                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date)),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        groupId = "filter1",
+                        isSelected = false,
+                        enabled = true
+                    )
+                )
+            )
+        )
+    )
+
+    private val expandableSortFilters = ExpandableListItemData(
+        collapsed = ListItemData(
+            itemId = "",
+            mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_by)),
+            trailingContentData = ListItemTrailingContentData.Icon(
+                iconData = AppIcons.KeyboardArrowDown
+            )
+        ),
+        expanded = listOf(
+            ListItemData(
+                itemId = "def",
+                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_default)),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        groupId = "filter",
+                        isSelected = true,
+                        enabled = true
+                    )
+                )
+            ),
+            ListItemData(
+                itemId = "issue",
+                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued)),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        groupId = "filter",
+                        isSelected = false,
+                        enabled = true
+                    )
+                )
+            ),
+            ListItemData(
+                itemId = "date",
+                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date)),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        groupId = "filter",
+                        isSelected = false,
+                        enabled = true
+                    )
+                )
+            )
+        )
+    )
+
+    private val filterList = mutableListOf(expandableSortFilters, expandableFilterByExpiryPeriod)
+    //#endregion
 
     override fun getAllDocuments(): List<ListItemData> {
         documents.clear()
@@ -92,4 +196,61 @@ class DocumentsInteractorImpl(
             )
         }
     }
+
+    override fun getFilters(): List<ExpandableListItemData> {
+        return filterList
+    }
+
+    override fun onFilterSelect(
+        id: String,
+        groupId: String,
+        setStateAction: (List<ExpandableListItemData>) -> Unit,
+    ) {
+
+        filterSnapshot = filterSnapshot.map { checkIfSelected(it, id, groupId) }
+
+        setStateAction(filterSnapshot)
+    }
+
+    override fun clearFilters(setStateAction: (List<ExpandableListItemData>) -> Unit) {
+        filterSnapshot = filterList
+        setStateAction(filterList)
+    }
+
+    override fun applyFilters(setStateAction: (List<ExpandableListItemData>) -> Unit) {
+        filterList.clear().run { filterList.addAll(filterSnapshot) }
+        setStateAction(filterList)
+    }
+
+    private fun checkIfSelected(
+        expandableListItemData: ExpandableListItemData,
+        id: String,
+        groupId: String,
+    ): ExpandableListItemData {
+        return expandableListItemData.copy(
+            expanded = expandableListItemData.expanded.map { listItemData ->
+
+                if ((listItemData.trailingContentData as ListItemTrailingContentData.RadioButton).radioButtonData.groupId
+                    != groupId && listItemData.itemId != id
+                ) {
+                    listItemData
+                } else {
+                    listItemData.copy(
+                        trailingContentData = ListItemTrailingContentData.RadioButton(
+                            radioButtonData = RadioButtonData(
+                                groupId = groupId,
+                                isSelected = listItemData.itemId == id,
+                                enabled = true
+                            )
+                        )
+                    )
+                }
+            }
+        )
+    }
+
+    private var filterSnapshot: List<ExpandableListItemData> = listOf(
+        expandableSortFilters,
+        expandableFilterByExpiryPeriod
+    )
 }

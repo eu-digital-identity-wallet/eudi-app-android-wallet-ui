@@ -24,6 +24,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -39,7 +40,9 @@ import org.koin.android.annotation.KoinViewModel
 data class State(
     val isLoading: Boolean,
     val documents: List<ListItemData> = emptyList(),
+    val filters: List<ExpandableListItemData> = emptyList(),
     val showAddDocumentBottomSheet: Boolean = false,
+    val showFiltersBottomSheet: Boolean = false,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -47,8 +50,11 @@ sealed class Event : ViewEvent {
     data object GoToAddDocument : Event()
     data object GoToQrScan : Event()
     data class GoToDocumentDetails(val docId: DocumentId) : Event()
-    data class ToggleAddDocumentBottomSheet(val isOpen: Boolean) : Event()
+    data class ShowAddDocumentBottomSheet(val isOpen: Boolean) : Event()
+    data class ShowFiltersBottomSheet(val isOpen: Boolean) : Event()
     data class OnSearchQueryChanged(val query: String) : Event()
+    data class OnFilterSelectionChanged(val filterId: String, val groupId: String) : Event()
+    data object OnFiltersApply : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -74,15 +80,29 @@ class DocumentsViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.GetDocuments -> {
-                setState { copy(documents = interactor.getAllDocuments()) }
+                setState {
+                    copy(
+                        documents = interactor.getAllDocuments(),
+                        filters = interactor.getFilters()
+                    )
+                }
             }
 
             is Event.GoToDocumentDetails -> {
                 goToDocumentDetails(event.docId)
             }
 
-            is Event.ToggleAddDocumentBottomSheet -> {
+            is Event.ShowAddDocumentBottomSheet -> {
                 setState { copy(showAddDocumentBottomSheet = event.isOpen) }
+            }
+
+            is Event.ShowFiltersBottomSheet -> {
+                setState { copy(showFiltersBottomSheet = event.isOpen) }
+                if (!event.isOpen) {
+                    interactor.clearFilters {
+                        setState { copy(filters = it) }
+                    }
+                }
             }
 
             is Event.GoToAddDocument -> {
@@ -92,8 +112,21 @@ class DocumentsViewModel(
             is Event.GoToQrScan -> {
                 goToQrScan()
             }
+
             is Event.OnSearchQueryChanged -> {
                 setState { copy(documents = interactor.searchDocuments(event.query)) }
+            }
+
+            is Event.OnFilterSelectionChanged -> {
+                interactor.onFilterSelect(event.filterId, event.groupId) {
+                    setState { copy(filters = it) }
+                }
+            }
+
+            is Event.OnFiltersApply -> {
+                interactor.applyFilters {
+                    setState { copy(showFiltersBottomSheet = false) }
+                }
             }
         }
     }

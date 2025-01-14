@@ -243,6 +243,19 @@
     <string name="documents_screen_add_document_option_list">From list</string>
     <string name="documents_screen_add_document_option_qr">Scan QR</string>
     <string name="documents_screen_add_document_option_or">OR</string>
+    <string name="documents_screen_filters_title">Filter</string>
+    <string name="documents_screen_filters_sort_by">Sort by</string>
+    <string name="documents_screen_filters_ascending">Ascending</string>
+    <string name="documents_screen_filters_descending">Descending</string>
+    <string name="documents_screen_filters_sort_default">Default</string>
+    <string name="documents_screen_filters_sort_date_issued">Date Issued</string>
+    <string name="documents_screen_filters_sort_expiry_date">Expiry Date</string>
+    <string name="documents_screen_filters_filter_by_expiry_period">Filter by expiry period</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_1">Next 7 days</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_2">Next 30 days</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_3">Beyond 30 days</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_4">Before today</string>
+    <string name="documents_screen_filters_apply">Apply</string>
 
     <!-- Transactions Screen -->
     <string name="transactions_screen_title">Transactions</string>

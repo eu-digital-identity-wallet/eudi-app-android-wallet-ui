@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.ui.documents
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
@@ -32,6 +34,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,14 +50,20 @@ import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
@@ -101,7 +113,7 @@ private fun TopBar(onEventSend: (Event) -> Unit) {
         WrapIcon(
             modifier = Modifier
                 .clickable {
-                    onEventSend(Event.ToggleAddDocumentBottomSheet(isOpen = true))
+                    onEventSend(Event.ShowAddDocumentBottomSheet(isOpen = true))
                 }
                 .align(Alignment.CenterVertically),
             iconData = AppIcons.Add
@@ -119,7 +131,8 @@ private fun Content(
     onEventSend: (Event) -> Unit,
     modalBottomSheetState: SheetState,
 ) {
-    val isBottomSheetOpen = state.showAddDocumentBottomSheet
+    val isAddDocumentBottomSheetOpen = state.showAddDocumentBottomSheet
+    val isFiltersBottomSheetOpen = state.showFiltersBottomSheet
 
     LazyColumn(
         modifier = Modifier
@@ -132,7 +145,7 @@ private fun Content(
                 SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
             FiltersSearchBar(placeholder = searchItem.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
-                onFilterClick = {})
+                onFilterClick = { onEventSend(Event.ShowFiltersBottomSheet(isOpen = true)) })
         }
         items(state.documents) { documentItemData ->
             WrapListItem(
@@ -141,8 +154,12 @@ private fun Content(
         }
     }
 
-    if (isBottomSheetOpen) {
+    if (isAddDocumentBottomSheetOpen) {
         AddDocumentBottomSheet(onEventSend, modalBottomSheetState)
+    }
+
+    if (isFiltersBottomSheetOpen) {
+        FiltersBottomSheet(state.filters, onEventSend, modalBottomSheetState)
     }
 
     LifecycleEffect(
@@ -175,7 +192,7 @@ private fun AddDocumentBottomSheet(
 ) {
     WrapModalBottomSheet(
         onDismissRequest = {
-            onEventSend(Event.ToggleAddDocumentBottomSheet(isOpen = false))
+            onEventSend(Event.ShowAddDocumentBottomSheet(isOpen = false))
         },
         sheetState = modalBottomSheetState
     ) {
@@ -200,5 +217,53 @@ private fun AddDocumentBottomSheet(
             ),
             onEventSent = { onEventSend(it) }
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FiltersBottomSheet(
+    filters: List<ExpandableListItemData>,
+    onEventSend: (Event) -> Unit,
+    modalBottomSheetState: SheetState,
+) {
+    WrapModalBottomSheet(
+        onDismissRequest = {
+            onEventSend(Event.ShowFiltersBottomSheet(isOpen = false))
+        },
+        sheetState = modalBottomSheetState
+    ) {
+
+        GenericBottomSheet(titleContent = {
+            Text(
+                text = stringResource(R.string.documents_screen_filters_title),
+                style = MaterialTheme.typography.headlineSmall
+            )
+        }) {
+            val expandStateList by remember {
+                mutableStateOf(filters.map { false }.toMutableStateList())
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)) {
+                filters.forEachIndexed { index, filter ->
+                    WrapExpandableListItem(
+                        data = filter,
+                        isExpanded = expandStateList[index],
+                        onExpandedChange = { expandStateList[index] = !expandStateList[index] },
+                        onItemClick = {
+                            val id = it.itemId
+                            val groupId =
+                                (it.trailingContentData as ListItemTrailingContentData.RadioButton).radioButtonData.groupId
+                            onEventSend(Event.OnFilterSelectionChanged(id, groupId))
+                        }
+                    )
+                }
+
+                VSpacer.Large()
+                Button(onClick = { onEventSend(Event.OnFiltersApply) }) {
+                    Text(text = stringResource(R.string.documents_screen_filters_apply))
+                }
+            }
+        }
     }
 }

@@ -52,9 +52,11 @@ import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapImage
+import eu.europa.ec.uilogic.component.wrap.WrapRadioButton
 
 /**
  * Represents the data displayed within a single item in a list.
@@ -119,6 +121,7 @@ sealed class ListItemLeadingContentData {
 sealed class ListItemTrailingContentData {
     data class Icon(val iconData: IconData) : ListItemTrailingContentData()
     data class Checkbox(val checkboxData: CheckboxData) : ListItemTrailingContentData()
+    data class RadioButton(val radioButtonData: RadioButtonData) : ListItemTrailingContentData()
 }
 
 /**
@@ -301,6 +304,15 @@ fun ListItem(
                             { onItemClick?.invoke(item) }
                         } else null,
                         throttleClicks = false,
+                    )
+
+                    is ListItemTrailingContentData.RadioButton -> WrapRadioButton(
+                        radioButtonData = safeTrailingContentData.radioButtonData.copy(
+                            onCheckedChange = if (clickableAreas.contains(TRAILING_CONTENT)) {
+                                { onItemClick?.invoke(item) }
+                            } else null
+                        ),
+                        modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
                     )
                 }
             }
