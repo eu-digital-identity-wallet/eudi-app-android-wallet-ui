@@ -114,7 +114,7 @@ fun DashboardScreenPreview() {
             ResourceProviderImpl(content)
         ),
         DocumentsViewModel(DocumentsInteractorImpl()),
-        HomeViewModel(HomeInteractorImpl(), ResourceProviderImpl(content)),
+        HomeViewModel(HomeInteractorImpl(), ResourceProviderImpl(context)),
         TransactionsViewModel(TransactionsInteractorImpl())
     )
 }

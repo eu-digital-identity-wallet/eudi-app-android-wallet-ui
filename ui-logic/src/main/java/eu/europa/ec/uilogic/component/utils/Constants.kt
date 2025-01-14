@@ -79,5 +79,8 @@ const val SIZE_EXTRA_LARGE = 48
 /** Size 62 */
 const val SIZE_XX_LARGE = 62
 
+/** Size 97 */
+const val DEFAULT_ACTION_CARD_HEIGHT = 97
+
 /** Size 100 */
 const val SIZE_100 = 100

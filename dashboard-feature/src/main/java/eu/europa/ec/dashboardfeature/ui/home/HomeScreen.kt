@@ -147,9 +147,7 @@ private fun TopBar(
             iconData = AppIcons.Menu,
             shape = null
         ) {
-            onEventSent(
-                ShowSideMenuEvent
-            )
+            onEventSent(ShowSideMenuEvent)
         }
 
         // wallet logo
