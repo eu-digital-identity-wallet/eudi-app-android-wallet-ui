@@ -35,6 +35,7 @@ import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorRetryIssuingDeferredDocumentsPartialState
+import eu.europa.ec.dashboardfeature.ui.home.BleAvailability
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -62,10 +63,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
-
-enum class BleAvailability {
-    AVAILABLE, NO_PERMISSION, DISABLED, UNKNOWN
-}
 
 data class State(
     val isLoading: Boolean = true,

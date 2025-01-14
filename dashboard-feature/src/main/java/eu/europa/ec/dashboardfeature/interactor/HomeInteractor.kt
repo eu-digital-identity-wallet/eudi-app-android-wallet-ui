@@ -16,9 +16,67 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-interface HomeInteractor {
+import android.bluetooth.BluetoothManager
+import android.content.Context
+import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
+import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
+import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+
+sealed class HomeInteractorGetUserNameViaMainPidDocumentPartialState {
+    data class Success(
+        val userFirstName: String,
+    ) : HomeInteractorGetUserNameViaMainPidDocumentPartialState()
+
+    data class Failure(val error: String) :
+        HomeInteractorGetUserNameViaMainPidDocumentPartialState()
 }
 
-class HomeInteractorImpl : HomeInteractor {
+interface HomeInteractor {
+    fun isBleAvailable(): Boolean
+    fun isBleCentralClientModeEnabled(): Boolean
+    fun getUserNameViaMainPidDocument(): Flow<HomeInteractorGetUserNameViaMainPidDocumentPartialState>
+}
 
+class HomeInteractorImpl(
+    private val resourceProvider: ResourceProvider,
+    private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val walletCoreConfig: WalletCoreConfig
+) : HomeInteractor {
+    private val genericErrorMsg
+        get() = resourceProvider.genericErrorMessage()
+
+    override fun isBleAvailable(): Boolean {
+        val bluetoothManager: BluetoothManager? = resourceProvider.provideContext()
+            .getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        return bluetoothManager?.adapter?.isEnabled == true
+    }
+
+    override fun isBleCentralClientModeEnabled(): Boolean =
+        walletCoreConfig.config.enableBleCentralMode
+
+    override fun getUserNameViaMainPidDocument(): Flow<HomeInteractorGetUserNameViaMainPidDocumentPartialState> =
+        flow {
+            val mainPid = walletCoreDocumentsController.getMainPidDocument()
+            val userFirstName = mainPid?.let {
+                return@let extractValueFromDocumentOrEmpty(
+                    document = it,
+                    key = DocumentJsonKeys.FIRST_NAME
+                )
+            }.orEmpty()
+
+            emit(
+                HomeInteractorGetUserNameViaMainPidDocumentPartialState.Success(
+                    userFirstName = userFirstName
+                )
+            )
+        }.safeAsync {
+            HomeInteractorGetUserNameViaMainPidDocumentPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
+            )
+        }
 }

@@ -16,7 +16,14 @@
 
 package eu.europa.ec.dashboardfeature.ui.home
 
+import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.PresentationMode
+import eu.europa.ec.commonfeature.config.QrScanFlow
+import eu.europa.ec.commonfeature.config.QrScanUiConfig
+import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
+import eu.europa.ec.dashboardfeature.interactor.HomeInteractorGetUserNameViaMainPidDocumentPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -25,20 +32,38 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.CommonScreens
+import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.ProximityScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.serializer.UiSerializer
+import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
+enum class BleAvailability {
+    AVAILABLE, NO_PERMISSION, DISABLED, UNKNOWN
+}
+
 data class State(
+    val isLoading: Boolean = false,
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: HomeScreenBottomSheetContent = HomeScreenBottomSheetContent.Authenticate,
 
-    // TODO first name will be needed
-    val userFirstName: String = "",
     val welcomeUserMessage: String,
     val authenticateCardConfig: ActionCardConfig,
     val signCardConfig: ActionCardConfig,
+
+    val bleAvailability: BleAvailability = BleAvailability.UNKNOWN,
+    val isBleCentralClientModeEnabled: Boolean = false,
+
+    val allowUserInteraction: Boolean = false,
 ) : ViewState
 
 sealed class Event : ViewEvent {
+    data object Init : Event()
+    data object StartProximityFlow : Event()
+
     sealed class AuthenticateCard : Event() {
         data object AuthenticatePressed : Event()
         data object LearnMorePressed : Event()
@@ -58,37 +83,44 @@ sealed class Event : ViewEvent {
             data object OpenAuthenticateOnLine : Authenticate()
         }
 
-        sealed class SignDocument : BottomSheet() {
-            data object OpenDocumentFromDevice : SignDocument()
-            data object OpenDocumentFromQr : SignDocument()
+        sealed class Bluetooth : BottomSheet() {
+            data class PrimaryButtonPressed(val availability: BleAvailability) : Bluetooth()
+            data object SecondaryButtonPressed : Bluetooth()
         }
     }
+
+    data object OnShowPermissionsRational : Event()
+    data class OnPermissionStateChanged(val availability: BleAvailability) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data class SwitchScreen(
             val screenRoute: String,
-            val popUpToScreenRoute: String = "",
+            val popUpToScreenRoute: String = DashboardScreens.Dashboard.screenRoute,
             val inclusive: Boolean = false,
         ) : Navigation()
+
+        data object OnAppSettings : Navigation()
+        data object OnSystemSettings : Navigation()
     }
 
     data object ShowBottomSheet : Effect()
-    data object CloseBottomSheet : Effect()
+    data class CloseBottomSheet(val hasNextBottomSheet: Boolean) : Effect()
 }
 
 sealed class HomeScreenBottomSheetContent {
     data object Authenticate : HomeScreenBottomSheetContent()
     data object LearnMoreAboutAuthenticate : HomeScreenBottomSheetContent()
-    data object Sign : HomeScreenBottomSheetContent()
     data object LearnMoreAboutSignDocument : HomeScreenBottomSheetContent()
-}
 
+    data class Bluetooth(val availability: BleAvailability) : HomeScreenBottomSheetContent()
+}
 
 @KoinViewModel
 class HomeViewModel(
-    val interactor: HomeInteractor,
+    private val homeInteractor: HomeInteractor,
+    private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider
 ) : MviViewModel<Event, State, Effect>() {
 
@@ -106,12 +138,17 @@ class HomeViewModel(
                 icon = AppIcons.Contract,
                 primaryButtonText = resourceProvider.getString(R.string.home_screen_sign),
                 secondaryButtonText = resourceProvider.getString(R.string.home_screen_learn_more)
-            )
+            ),
+            isBleCentralClientModeEnabled = homeInteractor.isBleCentralClientModeEnabled(),
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
+            is Event.Init -> {
+                getUserNameViaMainPidDocument()
+            }
+
             is Event.AuthenticateCard.AuthenticatePressed -> showBottomSheet(
                 sheetContent = HomeScreenBottomSheetContent.Authenticate
             )
@@ -120,9 +157,9 @@ class HomeViewModel(
                 sheetContent = HomeScreenBottomSheetContent.LearnMoreAboutAuthenticate
             )
 
-            is Event.SignDocumentCard.SignDocumentPressed -> showBottomSheet(
-                sheetContent = HomeScreenBottomSheetContent.Sign
-            )
+            is Event.SignDocumentCard.SignDocumentPressed -> {
+                navigateToDocumentSign()
+            }
 
             is Event.SignDocumentCard.LearnMorePressed -> showBottomSheet(
                 sheetContent = HomeScreenBottomSheetContent.LearnMoreAboutSignDocument
@@ -138,18 +175,70 @@ class HomeViewModel(
                 hideBottomSheet()
             }
 
-            is Event.BottomSheet.Authenticate.OpenAuthenticateInPerson -> TODO()
-            is Event.BottomSheet.Authenticate.OpenAuthenticateOnLine -> TODO()
+            is Event.BottomSheet.Authenticate.OpenAuthenticateInPerson -> {
+                checkIfBluetoothIsEnabled()
+            }
 
-            is Event.BottomSheet.SignDocument.OpenDocumentFromDevice -> navigateToDocumentSign()
-            is Event.BottomSheet.SignDocument.OpenDocumentFromQr -> {
-                // no action
+            is Event.BottomSheet.Authenticate.OpenAuthenticateOnLine -> {
+                hideBottomSheet()
+                navigateToQrScan()
+            }
+
+            is Event.OnPermissionStateChanged -> {
+                setState { copy(bleAvailability = event.availability) }
+            }
+
+            is Event.OnShowPermissionsRational -> {
+                setState { copy(bleAvailability = BleAvailability.UNKNOWN) }
+                showBottomSheet(
+                    sheetContent = HomeScreenBottomSheetContent.Bluetooth(
+                        BleAvailability.NO_PERMISSION
+                    )
+                )
+            }
+
+            is Event.StartProximityFlow -> {
+                hideBottomSheet()
+                startProximityFlow()
+            }
+
+            is Event.BottomSheet.Bluetooth.PrimaryButtonPressed -> {
+                hideBottomSheet()
+                onBleUserAction(event.availability)
+            }
+
+            is Event.BottomSheet.Bluetooth.SecondaryButtonPressed -> {
+                hideBottomSheet()
             }
         }
     }
 
-    private fun navigateToDocumentSign() {
-        // navigate to sign document
+    private fun checkIfBluetoothIsEnabled() {
+        if (homeInteractor.isBleAvailable()) {
+            setState { copy(bleAvailability = BleAvailability.NO_PERMISSION) }
+        } else {
+            setState { copy(bleAvailability = BleAvailability.DISABLED) }
+            hideAndShowNextBottomSheet()
+            showBottomSheet(
+                sheetContent = HomeScreenBottomSheetContent.Bluetooth(BleAvailability.DISABLED)
+            )
+        }
+    }
+
+    private fun onBleUserAction(availability: BleAvailability) {
+        when (availability) {
+            BleAvailability.NO_PERMISSION -> {
+                setEffect { Effect.Navigation.OnAppSettings }
+            }
+
+            BleAvailability.DISABLED -> {
+                setEffect { Effect.Navigation.OnSystemSettings }
+            }
+
+            else -> {
+                // no implementation
+            }
+        }
     }
 
     private fun showBottomSheet(sheetContent: HomeScreenBottomSheetContent) {
@@ -163,7 +252,101 @@ class HomeViewModel(
 
     private fun hideBottomSheet() {
         setEffect {
-            Effect.CloseBottomSheet
+            Effect.CloseBottomSheet(false)
+        }
+    }
+
+    private fun hideAndShowNextBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet(true)
+        }
+    }
+
+    private fun navigateToDocumentSign() {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = DashboardScreens.SignDocument.screenRoute
+            )
+        }
+    }
+
+    private fun startProximityFlow() {
+        setState { copy(bleAvailability = BleAvailability.AVAILABLE) }
+        // Create Koin scope for presentation
+        getOrCreatePresentationScope()
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = ProximityScreens.QR,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                RequestUriConfig(PresentationMode.Ble(DashboardScreens.Dashboard.screenRoute)),
+                                RequestUriConfig.Parser
+                            )
+                        )
+                    )
+                )
+            )
+        }
+    }
+
+    private fun navigateToQrScan() {
+        val navigationEffect = Effect.Navigation.SwitchScreen(
+            screenRoute = generateComposableNavigationLink(
+                screen = CommonScreens.QrScan,
+                arguments = generateComposableArguments(
+                    mapOf(
+                        QrScanUiConfig.serializedKeyName to uiSerializer.toBase64(
+                            QrScanUiConfig(
+                                title = resourceProvider.getString(R.string.presentation_qr_scan_title),
+                                subTitle = resourceProvider.getString(R.string.presentation_qr_scan_subtitle),
+                                qrScanFlow = QrScanFlow.Presentation
+                            ),
+                            QrScanUiConfig.Parser
+                        )
+                    )
+                )
+            )
+        )
+
+        setEffect {
+            navigationEffect
+        }
+    }
+
+    private fun getUserNameViaMainPidDocument() {
+        setState {
+            copy(
+                isLoading = true
+            )
+        }
+        viewModelScope.launch {
+            homeInteractor.getUserNameViaMainPidDocument().collect { response ->
+                when (response) {
+                    is HomeInteractorGetUserNameViaMainPidDocumentPartialState.Failure -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                            )
+                        }
+                    }
+
+                    is HomeInteractorGetUserNameViaMainPidDocumentPartialState.Success -> {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                welcomeUserMessage = if (response.userFirstName.isNotBlank()) {
+                                    resourceProvider.getString(
+                                        R.string.home_screen_welcome_user_message,
+                                        response.userFirstName
+                                    )
+                                } else resourceProvider.getString(R.string.home_screen_welcome)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

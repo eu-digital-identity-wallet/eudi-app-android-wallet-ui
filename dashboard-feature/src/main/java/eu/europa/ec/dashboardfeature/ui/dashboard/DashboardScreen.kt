@@ -66,6 +66,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.dashboardfeature.ui.home.BleAvailability
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
 import eu.europa.ec.resourceslogic.theme.values.bottomCorneredShapeSmall

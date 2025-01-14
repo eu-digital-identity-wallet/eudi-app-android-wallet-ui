@@ -77,7 +77,7 @@ fun DashboardScreenNew(
                 HomeScreen(
                     hostNavController,
                     homeViewModel,
-                    onEventSent = { event ->
+                    onDashboardEventSent = { event ->
                         viewModel.setEvent(event)
                     }
                 )

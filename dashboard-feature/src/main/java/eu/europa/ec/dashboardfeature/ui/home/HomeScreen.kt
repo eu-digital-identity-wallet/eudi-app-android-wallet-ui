@@ -16,6 +16,9 @@
 
 package eu.europa.ec.dashboardfeature.ui.home
 
+import android.Manifest
+import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -39,7 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIconAndText
 import eu.europa.ec.uilogic.component.AppIconAndTextData
@@ -51,6 +55,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -58,11 +63,14 @@ import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ActionCardConfig
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
+import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapActionCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.extension.openAppSettings
+import eu.europa.ec.uilogic.extension.openBleSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -79,7 +87,7 @@ typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Eve
 fun HomeScreen(
     navHostController: NavController,
     viewModel: HomeViewModel,
-    onEventSent: (DashboardEvent) -> Unit
+    onDashboardEventSent: (DashboardEvent) -> Unit
 ) {
     val state = viewModel.viewState.value
     val isBottomSheetOpen = state.isBottomSheetOpen
@@ -89,11 +97,11 @@ fun HomeScreen(
     )
 
     ContentScreen(
-        isLoading = false,
+        isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
         topBar = {
             TopBar(
-                onEventSent = onEventSent
+                onEventSent = onDashboardEventSent
             )
         }
     ) { paddingValues ->
@@ -103,9 +111,11 @@ fun HomeScreen(
             onEventSent = { event ->
                 viewModel.setEvent(event)
             },
+            onNavigationRequested = {
+                handleNavigationEffect(it, navHostController, navHostController.context)
+            },
             coroutineScope = scope,
             modalBottomSheetState = bottomSheetState,
-            navController = navHostController,
             paddingValues = paddingValues
         )
     }
@@ -127,6 +137,10 @@ fun HomeScreen(
                 modalBottomSheetState = bottomSheetState
             )
         }
+    }
+
+    OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Init)
     }
 }
 
@@ -163,9 +177,9 @@ private fun Content(
     state: State,
     effectFlow: Flow<Effect>,
     onEventSent: ((event: Event) -> Unit),
+    onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
-    navController: NavController,
     paddingValues: PaddingValues
 ) {
     val scrollState = rememberScrollState()
@@ -211,12 +225,25 @@ private fun Content(
         )
     }
 
+    if (state.bleAvailability == BleAvailability.NO_PERMISSION) {
+        RequiredPermissionsAsk(state, onEventSent)
+    }
+
     LaunchedEffect(Unit) {
         effectFlow.onEach { effect ->
             when (effect) {
+                is Effect.Navigation -> onNavigationRequested(effect)
+
                 is Effect.CloseBottomSheet -> {
                     coroutineScope.launch {
-                        modalBottomSheetState.hide()
+                        if (effect.hasNextBottomSheet.not()) {
+                            modalBottomSheetState.hide()
+                        } else {
+                            modalBottomSheetState.hide().also {
+                                modalBottomSheetState.show()
+                                onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+                            }
+                        }
                     }.invokeOnCompletion {
                         if (!modalBottomSheetState.isVisible) {
                             onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
@@ -227,14 +254,27 @@ private fun Content(
                 is Effect.ShowBottomSheet -> {
                     onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                 }
-
-                is Effect.Navigation.SwitchScreen -> navController.navigate(effect.screenRoute) {
-                    popUpTo(effect.popUpToScreenRoute) {
-                        inclusive = effect.inclusive
-                    }
-                }
             }
         }.collect()
+    }
+}
+
+private fun handleNavigationEffect(
+    navigationEffect: Effect.Navigation,
+    navController: NavController,
+    context: Context
+) {
+    when (navigationEffect) {
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screenRoute) {
+                popUpTo(navigationEffect.popUpToScreenRoute) {
+                    inclusive = navigationEffect.inclusive
+                }
+            }
+        }
+
+        is Effect.Navigation.OnAppSettings -> context.openAppSettings()
+        is Effect.Navigation.OnSystemSettings -> context.openBleSettings()
     }
 }
 
@@ -272,13 +312,17 @@ private fun HomeScreenSheetContent(
                             event = Event.BottomSheet.Authenticate.OpenAuthenticateOnLine,
                         )
                     ),
-                    onEventSent = {
-                        // invoke event
+                    onEventSent = { event ->
+                        onEventSent(event)
                     }
                 )
             }
         }
 
+        /**
+         * Bottom sheet for Sign Document click event,
+         * will be implemented in the future
+         *
         is HomeScreenBottomSheetContent.Sign -> {
             WrapModalBottomSheet(
                 onDismissRequest = {
@@ -311,7 +355,7 @@ private fun HomeScreenSheetContent(
                     }
                 )
             }
-        }
+        }*/
 
         is HomeScreenBottomSheetContent.LearnMoreAboutAuthenticate -> {
             WrapModalBottomSheet(
@@ -402,8 +446,64 @@ private fun HomeScreenSheetContent(
                 )
             }
         }
+
+        is HomeScreenBottomSheetContent.Bluetooth -> {
+            DialogBottomSheet(
+                textData = BottomSheetTextData(
+                    title = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_title),
+                    message = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_subtitle),
+                    positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_primary_button_text),
+                    negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_secondary_button_text),
+                ),
+                onPositiveClick = {
+                    onEventSent(
+                        Event.BottomSheet.Bluetooth.PrimaryButtonPressed(
+                            sheetContent.availability
+                        )
+                    )
+                },
+                onNegativeClick = { onEventSent(Event.BottomSheet.Bluetooth.SecondaryButtonPressed) }
+            )
+        }
     }
 }
+
+@OptIn(ExperimentalPermissionsApi::class)
+@Composable
+private fun RequiredPermissionsAsk(
+    state: State,
+    onEventSend: (Event) -> Unit
+) {
+
+    val permissions: MutableList<String> = mutableListOf()
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
+        permissions.add(Manifest.permission.BLUETOOTH_SCAN)
+        permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+    }
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2 && state.isBleCentralClientModeEnabled) {
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+        permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+    }
+
+    val permissionsState = rememberMultiplePermissionsState(permissions = permissions)
+
+    when {
+        permissionsState.allPermissionsGranted -> onEventSend(Event.StartProximityFlow)
+        !permissionsState.allPermissionsGranted && permissionsState.shouldShowRationale -> {
+            onEventSend(Event.OnShowPermissionsRational)
+        }
+
+        else -> {
+            onEventSend(Event.OnPermissionStateChanged(BleAvailability.UNKNOWN))
+            LaunchedEffect(Unit) {
+                permissionsState.launchMultiplePermissionRequest()
+            }
+        }
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ThemeModePreviews
@@ -429,10 +529,10 @@ private fun HomeScreenContentPreview() {
 
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),
+            onNavigationRequested = {},
             coroutineScope = rememberCoroutineScope(),
             modalBottomSheetState = rememberModalBottomSheetState(),
             onEventSent = {},
-            navController = rememberNavController(),
             paddingValues = PaddingValues(SPACING_MEDIUM.dp)
         )
     }

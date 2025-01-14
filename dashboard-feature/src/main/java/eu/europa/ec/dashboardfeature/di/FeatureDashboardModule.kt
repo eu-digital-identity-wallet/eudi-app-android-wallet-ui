@@ -61,7 +61,15 @@ fun provideDashboardInteractor(
 fun provideDashboardInteractorNew(): DashboardInteractorNew = DashboardInteractorNewImpl()
 
 @Factory
-fun provideHomeInteractor(): HomeInteractor = HomeInteractorImpl()
+fun provideHomeInteractor(
+    resourceProvider: ResourceProvider,
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    walletCoreConfig: WalletCoreConfig,
+): HomeInteractor = HomeInteractorImpl(
+    resourceProvider,
+    walletCoreDocumentsController,
+    walletCoreConfig,
+)
 
 @Factory
 fun provideDocumentsInteractor(): DocumentsInteractor = DocumentsInteractorImpl()
