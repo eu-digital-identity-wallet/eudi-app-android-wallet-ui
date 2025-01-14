@@ -106,12 +106,12 @@ fun DashboardScreenNew(
 @Composable
 @ThemeModePreviews
 fun DashboardScreenPreview() {
-    val content = LocalContext.current
+    val context = LocalContext.current
     DashboardScreenNew(
         rememberNavController(),
         DashboardViewModelNew(
             DashboardInteractorNewImpl(),
-            ResourceProviderImpl(content)
+            ResourceProviderImpl(context)
         ),
         DocumentsViewModel(DocumentsInteractorImpl()),
         HomeViewModel(HomeInteractorImpl(), ResourceProviderImpl(context)),
