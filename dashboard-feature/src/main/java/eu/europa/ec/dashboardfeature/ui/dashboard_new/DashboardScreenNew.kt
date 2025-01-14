@@ -23,19 +23,14 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNewImpl
-import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
-import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
-import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationBar
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationItem
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsScreen
@@ -45,10 +40,8 @@ import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
 import eu.europa.ec.dashboardfeature.ui.sidemenu.SideMenuScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
-import eu.europa.ec.resourceslogic.provider.ResourceProviderImpl
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
@@ -162,20 +155,4 @@ private fun handleNavigationEffect(
         is Effect.Navigation.OnAppSettings -> context.openAppSettings()
         is Effect.Navigation.OnSystemSettings -> context.openBleSettings()
     }
-}
-
-@Composable
-@ThemeModePreviews
-fun DashboardScreenPreview() {
-    val context = LocalContext.current
-    DashboardScreenNew(
-        rememberNavController(),
-        DashboardViewModelNew(
-            DashboardInteractorNewImpl(),
-            ResourceProviderImpl(context)
-        ),
-        DocumentsViewModel(DocumentsInteractorImpl()),
-        HomeViewModel(HomeInteractorImpl(), ResourceProviderImpl(context)),
-        TransactionsViewModel(TransactionsInteractorImpl())
-    )
 }
