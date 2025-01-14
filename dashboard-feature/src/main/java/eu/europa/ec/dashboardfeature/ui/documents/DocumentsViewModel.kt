@@ -54,6 +54,7 @@ sealed class Event : ViewEvent {
     data class ShowFiltersBottomSheet(val isOpen: Boolean) : Event()
     data class OnSearchQueryChanged(val query: String) : Event()
     data class OnFilterSelectionChanged(val filterId: String, val groupId: String) : Event()
+    data object OnFiltersReset : Event()
     data object OnFiltersApply : Event()
 }
 
@@ -124,8 +125,22 @@ class DocumentsViewModel(
             }
 
             is Event.OnFiltersApply -> {
-                interactor.applyFilters {
-                    setState { copy(showFiltersBottomSheet = false) }
+                setState {
+                    copy(
+                        documents = interactor.applyFilters(),
+                        showFiltersBottomSheet = false
+                    )
+                }
+            }
+
+            Event.OnFiltersReset -> {
+                val (documents, filters) = interactor.resetFilters()
+                setState {
+                    copy(
+                        documents = documents,
+                        filters = filters,
+                        showFiltersBottomSheet = false
+                    )
                 }
             }
         }

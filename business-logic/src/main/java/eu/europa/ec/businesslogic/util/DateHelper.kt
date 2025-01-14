@@ -18,7 +18,9 @@ package eu.europa.ec.businesslogic.util
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
@@ -33,7 +35,7 @@ private val dtoDateFormatters = listOf(
 
 fun String.toDateFormatted(
     selectedLanguage: String = LocaleUtils.DEFAULT_LOCALE,
-    dateFormatStyle: Int = DateFormat.MEDIUM
+    dateFormatStyle: Int = DateFormat.MEDIUM,
 ): String? {
     var formattedDate: Date? = null
     val dateFormat = SimpleDateFormat.getDateInstance(
@@ -71,4 +73,10 @@ fun String.toLocalDate(
     }
 
     return result
+}
+
+fun Instant.formatInstant(zoneId: ZoneId = ZoneId.systemDefault(), locale: Locale = Locale.ENGLISH): String {
+    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
+        .withZone(zoneId)
+    return formatter.format(this)
 }

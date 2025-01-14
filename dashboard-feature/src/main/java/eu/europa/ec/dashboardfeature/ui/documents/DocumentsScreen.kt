@@ -22,11 +22,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
@@ -50,10 +50,10 @@ import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
@@ -61,8 +61,11 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
@@ -252,16 +255,34 @@ private fun FiltersBottomSheet(
                         onExpandedChange = { expandStateList[index] = !expandStateList[index] },
                         onItemClick = {
                             val id = it.itemId
-                            val groupId =
-                                (it.trailingContentData as ListItemTrailingContentData.RadioButton).radioButtonData.groupId
+                            val groupId = filter.collapsed.itemId
                             onEventSend(Event.OnFilterSelectionChanged(id, groupId))
                         }
                     )
                 }
 
                 VSpacer.Large()
-                Button(onClick = { onEventSend(Event.OnFiltersApply) }) {
-                    Text(text = stringResource(R.string.documents_screen_filters_apply))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    WrapButton(
+                        modifier = Modifier.weight(1f),
+                        buttonConfig = ButtonConfig(type = ButtonType.SECONDARY, onClick = {
+                            onEventSend(Event.OnFiltersReset)
+                        })
+                    ) {
+                        Text(text = stringResource(R.string.documents_screen_filters_reset))
+                    }
+                    HSpacer.Small()
+                    WrapButton(
+                        modifier = Modifier.weight(1f),
+                        buttonConfig = ButtonConfig(type = ButtonType.PRIMARY, onClick = {
+                            onEventSend(Event.OnFiltersApply)
+                        })
+                    ) {
+                        Text(text = stringResource(R.string.documents_screen_filters_apply))
+                    }
                 }
             }
         }

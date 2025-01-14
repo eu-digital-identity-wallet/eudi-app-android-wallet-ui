@@ -254,8 +254,9 @@
     <string name="documents_screen_filters_filter_by_expiry_period_1">Next 7 days</string>
     <string name="documents_screen_filters_filter_by_expiry_period_2">Next 30 days</string>
     <string name="documents_screen_filters_filter_by_expiry_period_3">Beyond 30 days</string>
-    <string name="documents_screen_filters_filter_by_expiry_period_4">Before today</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_4">Before today (expired)</string>
     <string name="documents_screen_filters_apply">Apply</string>
+    <string name="documents_screen_filters_reset">Reset all</string>
 
     <!-- Transactions Screen -->
     <string name="transactions_screen_title">Transactions</string>

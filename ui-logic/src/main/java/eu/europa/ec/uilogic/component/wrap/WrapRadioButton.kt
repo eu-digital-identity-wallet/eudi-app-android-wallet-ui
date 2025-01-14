@@ -48,7 +48,6 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
  */
 
 data class RadioButtonData(
-    val groupId: String,
     val isSelected: Boolean,
     val enabled: Boolean = true,
     val onCheckedChange: ((Boolean) -> Unit)? = null,
@@ -85,7 +84,6 @@ private fun WrapRadioButtonPreview() {
     }
 
     val radioButtonData = RadioButtonData(
-        groupId = "",
         isSelected = isChecked,
         enabled = true,
         onCheckedChange = {
