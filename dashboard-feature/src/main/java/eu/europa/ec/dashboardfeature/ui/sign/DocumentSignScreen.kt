@@ -101,7 +101,7 @@ private fun Content(
             subtitle = state.subtitle,
         )
 
-        VSpacer.Large()
+        VSpacer.Medium()
 
         SignButton(
             modifier = Modifier.fillMaxWidth(),

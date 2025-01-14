@@ -16,21 +16,25 @@
 
 package eu.europa.ec.dashboardfeature.ui.sidemenu
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.dashboardfeature.model.SideMenuItemType
+import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
 import eu.europa.ec.dashboardfeature.ui.dashboard_new.Event
 import eu.europa.ec.dashboardfeature.ui.dashboard_new.State
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
@@ -41,7 +45,8 @@ import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 
 @Composable
@@ -75,8 +80,7 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
-        verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
+            .padding(paddingValues)
     ) {
         SimpleContentTitle(
             modifier = Modifier.fillMaxWidth(),
@@ -84,17 +88,39 @@ private fun Content(
             subtitle = null
         )
 
-        LazyColumn {
-            items(state.sideMenuOptions) { menuOption ->
-                WrapListItem(
-                    mainContentVerticalPadding = SPACING_LARGE.dp,
-                    item = menuOption,
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                    onItemClick = {
-                        onEventSent(
-                            Event.SideMenu.OpenChangeQuickPin
-                        )
-                    }
+        SideMenuOptions(
+            sideMenuOptions = state.sideMenuOptions,
+            onEventSent = onEventSent,
+        )
+    }
+}
+
+@Composable
+private fun SideMenuOptions(
+    sideMenuOptions: List<SideMenuItemUi>,
+    onEventSent: (Event) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        itemsIndexed(sideMenuOptions) { index, menuOption ->
+            WrapListItem(
+                modifier = Modifier.fillMaxWidth(),
+                mainContentVerticalPadding = SPACING_MEDIUM.dp,
+                item = menuOption.data,
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                onItemClick = {
+                    onEventSent(
+                        Event.SideMenu.ItemClicked(itemType = menuOption.type)
+                    )
+                }
+            )
+
+            if (index != sideMenuOptions.lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = SPACING_SMALL.dp)
                 )
             }
         }
@@ -107,25 +133,58 @@ private fun SideMenuContentPreview() {
     PreviewTheme {
         Content(
             state = State(
-                isSideMenuVisible = false,
-                sideMenuTitle = "My EU Wallet",
+                isSideMenuVisible = true,
+                sideMenuTitle = stringResource(R.string.dashboard_side_menu_title),
                 sideMenuOptions = listOf(
-                    ListItemData(
-                        itemId = "changePinId",
-                        mainContentData = ListItemMainContentData.Text(
-                            text = "Change PIN"
-                        ),
-                        leadingContentData = ListItemLeadingContentData.Icon(
-                            iconData = AppIcons.ChangePin
-                        ),
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = AppIcons.KeyboardArrowRight
+                    SideMenuItemUi(
+                        type = SideMenuItemType.CHANGE_PIN,
+                        data = ListItemData(
+                            itemId = "changePinId",
+                            mainContentData = ListItemMainContentData.Text(
+                                text = stringResource(R.string.dashboard_side_menu_change_pin)
+                            ),
+                            leadingContentData = ListItemLeadingContentData.Icon(
+                                iconData = AppIcons.ChangePin
+                            ),
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = AppIcons.KeyboardArrowRight
+                            )
                         )
-                    )
+                    ),
+                    SideMenuItemUi(
+                        type = SideMenuItemType.CHANGE_PIN,
+                        data = ListItemData(
+                            itemId = "changePinId",
+                            mainContentData = ListItemMainContentData.Text(
+                                text = stringResource(R.string.dashboard_side_menu_change_pin)
+                            ),
+                            leadingContentData = ListItemLeadingContentData.Icon(
+                                iconData = AppIcons.ChangePin
+                            ),
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = AppIcons.KeyboardArrowRight
+                            )
+                        )
+                    ),
+                    SideMenuItemUi(
+                        type = SideMenuItemType.CHANGE_PIN,
+                        data = ListItemData(
+                            itemId = "changePinId",
+                            mainContentData = ListItemMainContentData.Text(
+                                text = stringResource(R.string.dashboard_side_menu_change_pin)
+                            ),
+                            leadingContentData = ListItemLeadingContentData.Icon(
+                                iconData = AppIcons.ChangePin
+                            ),
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = AppIcons.KeyboardArrowRight
+                            )
+                        )
+                    ),
                 )
             ),
             onEventSent = {},
-            paddingValues = PaddingValues(SPACING_LARGE.dp)
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp)
         )
     }
 }

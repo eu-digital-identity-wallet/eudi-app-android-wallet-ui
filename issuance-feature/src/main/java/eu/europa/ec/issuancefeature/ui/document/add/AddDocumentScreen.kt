@@ -148,8 +148,7 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues),
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+            .padding(paddingValues)
     ) {
         SimpleContentTitle(
             modifier = Modifier.fillMaxWidth(),
@@ -159,7 +158,8 @@ private fun Content(
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
+            contentPadding = PaddingValues(vertical = SPACING_MEDIUM.dp)
         ) {
             state.options.forEach { option ->
                 item {

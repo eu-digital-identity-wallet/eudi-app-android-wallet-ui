@@ -24,11 +24,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.VSpacer
 
 @Deprecated(message = "Should be removed if/when the designs get updated for the QRScan, AddDocument and ProximityQR Screens.")
 @Composable
@@ -39,7 +38,7 @@ fun SimpleContentTitle(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
+        verticalArrangement = Arrangement.Top
     ) {
         Text(
             modifier = Modifier.fillMaxWidth(),
@@ -48,6 +47,7 @@ fun SimpleContentTitle(
                 color = MaterialTheme.colorScheme.onSurface
             )
         )
+        VSpacer.Large()
 
         subtitle?.let { safeSubtitle ->
             Text(
@@ -69,6 +69,18 @@ private fun SimpleContentTitlePreview() {
             modifier = Modifier.fillMaxWidth(),
             title = stringResource(id = R.string.proximity_qr_title),
             subtitle = stringResource(id = R.string.proximity_qr_subtitle)
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun SimpleContentTitleNoSubtitlePreview() {
+    PreviewTheme {
+        SimpleContentTitle(
+            modifier = Modifier.fillMaxWidth(),
+            title = stringResource(id = R.string.proximity_qr_title),
+            subtitle = null
         )
     }
 }

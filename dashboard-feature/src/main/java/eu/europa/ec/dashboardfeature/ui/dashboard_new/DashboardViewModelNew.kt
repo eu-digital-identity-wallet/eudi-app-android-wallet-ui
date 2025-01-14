@@ -20,8 +20,12 @@ import android.net.Uri
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNew
+import eu.europa.ec.dashboardfeature.model.SideMenuItemType
+import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
@@ -34,9 +38,11 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.android.annotation.KoinViewModel
@@ -46,7 +52,7 @@ data class State(
     // side menu
     val isSideMenuVisible: Boolean = false,
     val sideMenuTitle: String = "",
-    val sideMenuOptions: List<ListItemData>
+    val sideMenuOptions: List<SideMenuItemUi>,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -57,7 +63,7 @@ sealed class Event : ViewEvent {
     sealed class SideMenu : Event() {
         data object Show : SideMenu()
         data object Hide : SideMenu()
-        data object OpenChangeQuickPin : SideMenu()
+        data class ItemClicked(val itemType: SideMenuItemType) : SideMenu()
     }
 }
 
@@ -86,39 +92,65 @@ class DashboardViewModelNew(
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
         return State(
-            sideMenuTitle = resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.dashboard_side_menu_title),
-            sideMenuOptions = listOf(
-                ListItemData(
-                    itemId = "changePinId",
-                    mainContentData = ListItemMainContentData.Text(
-                        text = resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.dashboard_side_menu_change_pin)
-                    ),
-                    leadingContentData = ListItemLeadingContentData.Icon(
-                        iconData = AppIcons.ChangePin
-                    ),
-                    trailingContentData = ListItemTrailingContentData.Icon(
-                        iconData = AppIcons.KeyboardArrowRight
-                    )
-                )
-            )
+            sideMenuTitle = resourceProvider.getString(R.string.dashboard_side_menu_title),
+            sideMenuOptions = getSideMenuOptions(),
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> handleDeepLink(event.deepLinkUri)
+
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
-            Event.SideMenu.OpenChangeQuickPin -> {
-                // TODO navigate to change pin
+
+            is Event.SideMenu.ItemClicked -> {
+                handleSideMenuItemClicked(event.itemType)
             }
 
-            Event.SideMenu.Hide -> {
+            is Event.SideMenu.Hide -> {
                 setState { copy(isSideMenuVisible = false) }
             }
 
-            Event.SideMenu.Show -> {
+            is Event.SideMenu.Show -> {
                 setState { copy(isSideMenuVisible = true) }
             }
+        }
+    }
+
+    private fun handleSideMenuItemClicked(itemType: SideMenuItemType) {
+        val nextScreenRoute = when (itemType) {
+            SideMenuItemType.CHANGE_PIN -> {
+                generateComposableNavigationLink(
+                    screen = CommonScreens.QuickPin,
+                    arguments = generateComposableArguments(
+                        mapOf("pinFlow" to PinFlow.UPDATE)
+                    )
+                )
+            }
+        }
+
+        setEffect { Effect.Navigation.SwitchScreen(screenRoute = nextScreenRoute) }
+    }
+
+    private fun getSideMenuOptions(): List<SideMenuItemUi> {
+        return buildList {
+            add(
+                SideMenuItemUi(
+                    type = SideMenuItemType.CHANGE_PIN,
+                    data = ListItemData(
+                        itemId = "changePinId",
+                        mainContentData = ListItemMainContentData.Text(
+                            text = resourceProvider.getString(R.string.dashboard_side_menu_change_pin)
+                        ),
+                        leadingContentData = ListItemLeadingContentData.Icon(
+                            iconData = AppIcons.ChangePin
+                        ),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        )
+                    )
+                )
+            )
         }
     }
 
