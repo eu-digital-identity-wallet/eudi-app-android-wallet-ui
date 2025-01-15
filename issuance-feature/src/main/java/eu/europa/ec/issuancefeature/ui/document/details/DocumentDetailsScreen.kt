@@ -232,7 +232,7 @@ private fun Content(
                             issuerLogo = state.issuerLogo,
                             issuerIsVerified = false,
                         ),
-                        onClick = { onEventSend(Event.IssuerCardPressed) }
+                        onClick = null
                     )
                 }
 

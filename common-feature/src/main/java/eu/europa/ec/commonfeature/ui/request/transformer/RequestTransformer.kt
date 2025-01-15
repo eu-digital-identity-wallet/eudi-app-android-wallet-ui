@@ -111,7 +111,8 @@ object RequestTransformer {
                     val values = StringBuilder()
                     parseKeyValueUi(
                         item = documentClaim?.value!!,
-                        groupIdentifier = docItem.elementIdentifier,
+                        groupIdentifier = readableName,
+                        groupIdentifierKey = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = values
                     )

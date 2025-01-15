@@ -262,8 +262,6 @@ fun ListItem(
                     Text(
                         text = safeOverlineText,
                         style = if (hideSensitiveContent && !supportsBlur) mainTextStyle else overlineTextStyle,
-                        maxLines = maxSecondaryTextLines,
-                        overflow = textOverflow,
                     )
                 }
 

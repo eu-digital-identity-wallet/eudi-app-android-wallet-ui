@@ -100,7 +100,10 @@ fun IssuerDetailsCard(
                 verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                WrapAsyncImage(source = item.issuerLogo.toString())
+                WrapAsyncImage(
+                    modifier = Modifier.fillMaxWidth(0.5f),
+                    source = item.issuerLogo.toString()
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

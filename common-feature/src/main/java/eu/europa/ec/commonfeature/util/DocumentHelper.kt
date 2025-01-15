@@ -97,6 +97,7 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
 fun parseKeyValueUi(
     item: Any,
     groupIdentifier: String,
+    groupIdentifierKey: String,
     keyIdentifier: String = "",
     resourceProvider: ResourceProvider,
     allItems: StringBuilder
@@ -109,6 +110,7 @@ fun parseKeyValueUi(
                     parseKeyValueUi(
                         item = value,
                         groupIdentifier = groupIdentifier,
+                        groupIdentifierKey = groupIdentifierKey,
                         keyIdentifier = key,
                         resourceProvider = resourceProvider,
                         allItems = allItems
@@ -123,6 +125,7 @@ fun parseKeyValueUi(
                     parseKeyValueUi(
                         item = it,
                         groupIdentifier = groupIdentifier,
+                        groupIdentifierKey = groupIdentifierKey,
                         resourceProvider = resourceProvider,
                         allItems = allItems
                     )
@@ -147,11 +150,11 @@ fun parseKeyValueUi(
             allItems.append(
                 when {
 
-                    keyIsGender(groupIdentifier) -> {
+                    keyIsGender(groupIdentifierKey) -> {
                         getGenderValue(item.toString(), resourceProvider)
                     }
 
-                    keyIsUserPseudonym(groupIdentifier) -> {
+                    keyIsUserPseudonym(groupIdentifierKey) -> {
                         item.toString().decodeFromBase64()
                     }
 
