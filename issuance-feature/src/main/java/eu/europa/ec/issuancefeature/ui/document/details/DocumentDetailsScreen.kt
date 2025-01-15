@@ -218,7 +218,7 @@ private fun Content(
                     onItemClick = null,
                 )
 
-                if (state.issuerName != null || state.issuerLogo != null){
+                if (state.issuerName != null || state.issuerLogo != null) {
                     SectionTitle(
                         modifier = Modifier.padding(
                             top = SPACING_LARGE.dp,

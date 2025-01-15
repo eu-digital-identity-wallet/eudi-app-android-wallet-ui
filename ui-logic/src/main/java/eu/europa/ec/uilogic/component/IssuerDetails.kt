@@ -51,8 +51,6 @@ import java.net.URI
  *
  * @property issuerName The name of the card issuer.
  * @property issuerLogo The icon representing the issuer's logo.
- * @property issuerCategory The category the issuer belongs to (e.g., "Bank", "Fintech").
- * @property issuerLocation The location of the issuer.
  * @property issuerIsVerified Indicates whether the issuer is verified.
  */
 data class IssuerDetailsCardData(

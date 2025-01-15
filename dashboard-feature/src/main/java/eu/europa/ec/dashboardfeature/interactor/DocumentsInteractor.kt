@@ -16,17 +16,29 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.formatInstant
+import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
+import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
+import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.extensions.isBeyondNextDays
 import eu.europa.ec.dashboardfeature.extensions.isExpired
 import eu.europa.ec.dashboardfeature.extensions.isWithinNextDays
+import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
 import eu.europa.ec.dashboardfeature.model.FilterableAttributes
 import eu.europa.ec.dashboardfeature.model.FilterableDocumentItem
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
@@ -35,6 +47,14 @@ import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 private const val FILTER_BY_STATE_GROUP_ID = "state_group_id"
 private const val FILTER_BY_STATE_VALID = "state_valid"
@@ -52,14 +72,69 @@ private const val FILTER_SORT_EXPIRY_DATE = "sort_expiry_date"
 
 sealed class DocumentInteractorPartialState {
     data class ResetFilters(
-        val documents: List<ListItemData>,
+        val documents: List<DocumentDetailsItemUi>,
         val filters: List<ExpandableListItemData>,
     ) : DocumentInteractorPartialState()
 }
 
+sealed class DocumentInteractorGetDocumentsPartialState {
+    data class Success(
+        val documentsUi: List<DocumentDetailsItemUi>,
+        val shouldAllowUserInteraction: Boolean,
+    ) : DocumentInteractorGetDocumentsPartialState()
+
+    data class Failure(val error: String) : DocumentInteractorGetDocumentsPartialState()
+}
+
+sealed class DocumentInteractorDeleteDocumentPartialState {
+    data object SingleDocumentDeleted : DocumentInteractorDeleteDocumentPartialState()
+    data object AllDocumentsDeleted : DocumentInteractorDeleteDocumentPartialState()
+    data class Failure(val errorMessage: String) :
+        DocumentInteractorDeleteDocumentPartialState()
+}
+
+sealed class DocumentInteractorRetryIssuingDeferredDocumentPartialState {
+    data class Success(
+        val deferredDocumentData: DeferredDocumentData
+    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
+
+    data class NotReady(
+        val deferredDocumentData: DeferredDocumentData
+    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
+
+    data class Failure(
+        val documentId: DocumentId,
+        val errorMessage: String,
+    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
+
+    data class Expired(
+        val documentId: DocumentId,
+    ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
+}
+
+sealed class DocumentInteractorRetryIssuingDeferredDocumentsPartialState {
+    data class Result(
+        val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
+        val failedIssuedDeferredDocuments: List<DocumentId>,
+    ) : DocumentInteractorRetryIssuingDeferredDocumentsPartialState()
+
+    data class Failure(
+        val errorMessage: String,
+    ) : DocumentInteractorRetryIssuingDeferredDocumentsPartialState()
+}
+
 interface DocumentsInteractor {
-    fun getAllDocuments(): List<ListItemData>
-    fun searchDocuments(query: String): List<ListItemData>
+    fun getDocuments(): Flow<DocumentInteractorGetDocumentsPartialState>
+    fun tryIssuingDeferredDocumentsFlow(
+        deferredDocuments: Map<DocumentId, FormatType>,
+        dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    ): Flow<DocumentInteractorRetryIssuingDeferredDocumentsPartialState>
+
+    fun deleteDocument(
+        documentId: String
+    ): Flow<DocumentInteractorDeleteDocumentPartialState>
+
+    fun searchDocuments(query: String): List<DocumentDetailsItemUi>
     fun getFilters(): List<ExpandableListItemData>
     fun onFilterSelect(
         id: String,
@@ -69,14 +144,17 @@ interface DocumentsInteractor {
 
     fun clearFilters(setStateAction: (List<ExpandableListItemData>) -> Unit)
     fun resetFilters(): DocumentInteractorPartialState.ResetFilters
-    fun applyFilters(queriedDocuments: List<ListItemData>): List<ListItemData>
+    fun applyFilters(queriedDocuments: List<DocumentDetailsItemUi>): List<DocumentDetailsItemUi>
     fun onSortingOrderChanged(sortingOrder: DualSelectorButton)
 }
 
 class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val documentsController: WalletCoreDocumentsController,
+    private val walletCoreDocumentsController: WalletCoreDocumentsController,
 ) : DocumentsInteractor {
+
+    private val genericErrorMsg
+        get() = resourceProvider.genericErrorMessage()
 
     private val documents: MutableList<FilterableDocumentItem> = mutableListOf()
     private var filteredDocuments: MutableList<FilterableDocumentItem> = mutableListOf()
@@ -234,60 +312,238 @@ class DocumentsInteractorImpl(
 
     //#endregion
 
-    override fun getAllDocuments(): List<ListItemData> {
-        documents.clear()
-        documents.addAll(
-            documentsController.getAllDocuments().map { document ->
-                document as IssuedDocument
-                val localizedIssuerMetadata =
-                    document.localizedIssuerMetadata(resourceProvider.getLocale())
+    override fun getDocuments(): Flow<DocumentInteractorGetDocumentsPartialState> =
+        flow<DocumentInteractorGetDocumentsPartialState> {
+            val shouldAllowUserInteraction =
+                walletCoreDocumentsController.getMainPidDocument() != null
 
-                FilterableDocumentItem(
-                    filterableAttributes = FilterableAttributes(
-                        issuedDate = document.issuedAt,
-                        expiryDate = document.validUntil,
-                    ),
-                    data = ListItemData(
-                        itemId = document.id,
-                        mainContentData = ListItemMainContentData.Text(text = document.name),
-                        overlineText = localizedIssuerMetadata?.name,
-                        supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
-                                document.validUntil.formatInstant(),
-                        leadingContentData = ListItemLeadingContentData.AsyncImage(
-                            imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
-                            errorImage = AppIcons.Id,
-                        ),
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = AppIcons.KeyboardArrowRight
-                        )
-                    )
+            documents.clear()
+            documents.addAll(
+                walletCoreDocumentsController.getAllDocuments().map { document ->
+                    when (document) {
+                        is IssuedDocument -> {
+                            val localizedIssuerMetadata =
+                                document.localizedIssuerMetadata(resourceProvider.getLocale())
+
+                            FilterableDocumentItem(
+                                filterableAttributes = FilterableAttributes(
+                                    issuedDate = document.issuedAt,
+                                    expiryDate = document.validUntil,
+                                ),
+                                itemUi = DocumentDetailsItemUi(
+                                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                                    uiData = ListItemData(
+                                        itemId = document.id,
+                                        mainContentData = ListItemMainContentData.Text(text = document.name),
+                                        overlineText = localizedIssuerMetadata?.name,
+                                        supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
+                                                document.validUntil.formatInstant(),
+                                        leadingContentData = ListItemLeadingContentData.AsyncImage(
+                                            imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
+                                            errorImage = AppIcons.Id,
+                                        ),
+                                        trailingContentData = ListItemTrailingContentData.Icon(
+                                            iconData = AppIcons.KeyboardArrowRight
+                                        )
+                                    ),
+                                    documentIdentifier = document.toDocumentIdentifier(),
+                                )
+                            )
+                        }
+
+                        is UnsignedDocument -> {
+                            val localizedIssuerMetadata =
+                                document.localizedIssuerMetadata(resourceProvider.getLocale())
+
+                            FilterableDocumentItem(
+                                filterableAttributes = FilterableAttributes(
+                                    issuedDate = null,
+                                    expiryDate = null,
+                                ),
+                                itemUi = DocumentDetailsItemUi(
+                                    documentIssuanceState = DocumentUiIssuanceState.Pending,
+                                    uiData = ListItemData(
+                                        itemId = document.id,
+                                        mainContentData = ListItemMainContentData.Text(text = document.name),
+                                        overlineText = localizedIssuerMetadata?.name,
+                                        supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
+                                        leadingContentData = ListItemLeadingContentData.AsyncImage(
+                                            imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
+                                            errorImage = AppIcons.Id,
+                                        ),
+                                        trailingContentData = ListItemTrailingContentData.Icon(
+                                            iconData = AppIcons.ClockTimer,
+                                            tint = ThemeColors.pending,
+                                        )
+                                    ),
+                                    documentIdentifier = document.toDocumentIdentifier(),
+                                )
+                            )
+                        }
+                    }
+                }
+            )
+
+            filteredDocuments.clear().run { filteredDocuments.addAll(documents) }
+            createIssuerFilter(filteredDocuments.distinctBy { it.itemUi.uiData.overlineText }
+                .map { it.itemUi.uiData.overlineText ?: "" })
+
+            emit(
+                DocumentInteractorGetDocumentsPartialState.Success(
+                    documentsUi = documents.map { it.itemUi }
+                        .sortedBy { (it.uiData.mainContentData as ListItemMainContentData.Text).text },
+                    shouldAllowUserInteraction = shouldAllowUserInteraction,
                 )
+            )
+        }.safeAsync {
+            DocumentInteractorGetDocumentsPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
+            )
+        }
+
+    override fun tryIssuingDeferredDocumentsFlow(
+        deferredDocuments: Map<DocumentId, FormatType>,
+        dispatcher: CoroutineDispatcher,
+    ): Flow<DocumentInteractorRetryIssuingDeferredDocumentsPartialState> = flow {
+
+        val successResults: MutableList<DeferredDocumentData> = mutableListOf()
+        val failedResults: MutableList<DocumentId> = mutableListOf()
+
+        withContext(dispatcher) {
+            val allJobs = deferredDocuments.keys.map { deferredDocumentId ->
+                async {
+                    tryIssuingDeferredDocumentSuspend(deferredDocumentId)
+                }
             }
+
+            allJobs.forEach { job ->
+                when (val result = job.await()) {
+                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.Failure -> {
+                        failedResults.add(result.documentId)
+                    }
+
+                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.Success -> {
+                        successResults.add(result.deferredDocumentData)
+                    }
+
+                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.NotReady -> {}
+
+                    is DocumentInteractorRetryIssuingDeferredDocumentPartialState.Expired -> {
+                        deleteDocument(result.documentId)
+                    }
+                }
+            }
+        }
+
+        emit(
+            DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Result(
+                successfullyIssuedDeferredDocuments = successResults,
+                failedIssuedDeferredDocuments = failedResults
+            )
         )
 
-        filteredDocuments.clear().run { filteredDocuments.addAll(documents) }
-        createIssuerFilter(filteredDocuments.distinctBy { it.data.overlineText }
-            .map { it.data.overlineText ?: "" })
-        return documents.map { it.data }
-            .sortedBy { (it.mainContentData as ListItemMainContentData.Text).text }
+    }.safeAsync {
+        DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Failure(
+            errorMessage = it.localizedMessage ?: genericErrorMsg
+        )
     }
 
-    override fun searchDocuments(query: String): List<ListItemData> {
-        val result = filteredDocuments.map { it.data }.filter {
-            (it.mainContentData as ListItemMainContentData.Text).text.lowercase()
+    private suspend fun tryIssuingDeferredDocumentSuspend(
+        deferredDocumentId: DocumentId,
+        dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    ): DocumentInteractorRetryIssuingDeferredDocumentPartialState {
+        return withContext(dispatcher) {
+            walletCoreDocumentsController.issueDeferredDocument(deferredDocumentId)
+                .map { result ->
+                    when (result) {
+                        is IssueDeferredDocumentPartialState.Failed -> {
+                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.Failure(
+                                documentId = result.documentId,
+                                errorMessage = result.errorMessage
+                            )
+                        }
+
+                        is IssueDeferredDocumentPartialState.Issued -> {
+                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.Success(
+                                deferredDocumentData = result.deferredDocumentData
+                            )
+                        }
+
+                        is IssueDeferredDocumentPartialState.NotReady -> {
+                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.NotReady(
+                                deferredDocumentData = result.deferredDocumentData
+                            )
+                        }
+
+                        is IssueDeferredDocumentPartialState.Expired -> {
+                            DocumentInteractorRetryIssuingDeferredDocumentPartialState.Expired(
+                                documentId = result.documentId
+                            )
+                        }
+                    }
+                }.firstOrNull()
+                ?: DocumentInteractorRetryIssuingDeferredDocumentPartialState.Failure(
+                    documentId = deferredDocumentId,
+                    errorMessage = genericErrorMsg
+                )
+        }
+    }
+
+    override fun deleteDocument(
+        documentId: String,
+    ): Flow<DocumentInteractorDeleteDocumentPartialState> =
+        flow {
+            walletCoreDocumentsController.deleteDocument(documentId).collect { response ->
+                when (response) {
+                    is DeleteDocumentPartialState.Failure -> {
+                        emit(
+                            DocumentInteractorDeleteDocumentPartialState.Failure(
+                                errorMessage = response.errorMessage
+                            )
+                        )
+                    }
+
+                    is DeleteDocumentPartialState.Success -> {
+                        if (walletCoreDocumentsController.getAllDocuments().isEmpty()) {
+                            emit(DocumentInteractorDeleteDocumentPartialState.AllDocumentsDeleted)
+                        } else
+                            emit(DocumentInteractorDeleteDocumentPartialState.SingleDocumentDeleted)
+                    }
+                }
+            }
+        }.safeAsync {
+            DocumentInteractorDeleteDocumentPartialState.Failure(
+                errorMessage = it.localizedMessage ?: genericErrorMsg
+            )
+        }
+
+    override fun searchDocuments(query: String): List<DocumentDetailsItemUi> {
+        val result = filteredDocuments.map { it.itemUi }.filter {
+            (it.uiData.mainContentData as ListItemMainContentData.Text).text.lowercase()
                 .contains(query.lowercase())
         }
 
-        createIssuerFilter(result.distinctBy { it.overlineText }.map { it.overlineText ?: "" })
+        createIssuerFilter(result.distinctBy { it.uiData.overlineText }
+            .map { it.uiData.overlineText ?: "" })
         return result.ifEmpty {
             listOf(
-                ListItemData(
-                    itemId = "",
-                    mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_search_no_results)),
-                    overlineText = null,
-                    supportingText = null,
-                    leadingContentData = null,
-                    trailingContentData = null
+                DocumentDetailsItemUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "",
+                        mainContentData = ListItemMainContentData.Text(
+                            resourceProvider.getString(
+                                R.string.documents_screen_search_no_results
+                            )
+                        ),
+                        overlineText = null,
+                        supportingText = null,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.OTHER(
+                        formatType = ""
+                    ),
                 )
             )
         }
@@ -325,12 +581,12 @@ class DocumentsInteractorImpl(
         filterList.clear().run { filterList.addAll(filterSnapshot) }
         filteredDocuments.clear().run { filteredDocuments.addAll(documents) }
         return DocumentInteractorPartialState.ResetFilters(
-            documents = documents.map { it.data },
+            documents = documents.map { it.itemUi },
             filters = filterSnapshot
         )
     }
 
-    override fun applyFilters(queriedDocuments: List<ListItemData>): List<ListItemData> {
+    override fun applyFilters(queriedDocuments: List<DocumentDetailsItemUi>): List<DocumentDetailsItemUi> {
         filterList.clear().run { filterList.addAll(filterSnapshot) }
         val selectedFilters = getSelectedItems(filterList)
 
@@ -338,43 +594,46 @@ class DocumentsInteractorImpl(
             filteredDocuments = when (item.itemId) {
                 FILTER_BY_PERIOD_NEXT_7 -> {
                     filteredDocuments.filter { document ->
-                        document.filterableAttributes.expiryDate.isWithinNextDays(7)
+                        document.filterableAttributes.expiryDate?.isWithinNextDays(7) == true
                     }.toMutableList()
                 }
 
                 FILTER_BY_PERIOD_NEXT_30 -> {
                     filteredDocuments.filter { document ->
-                        document.filterableAttributes.expiryDate.isWithinNextDays(30)
+                        document.filterableAttributes.expiryDate?.isWithinNextDays(30) == true
                     }.toMutableList()
                 }
 
                 FILTER_BY_PERIOD_BEYOND_30 -> {
                     filteredDocuments.filter { document ->
-                        document.filterableAttributes.expiryDate.isBeyondNextDays(30)
+                        document.filterableAttributes.expiryDate?.isBeyondNextDays(30) == true
                     }.toMutableList()
                 }
 
                 FILTER_BY_PERIOD_EXPIRED -> {
                     filteredDocuments.filter { document ->
-                        document.filterableAttributes.expiryDate.isExpired()
+                        document.filterableAttributes.expiryDate?.isExpired() == true
                     }.toMutableList()
                 }
 
                 FILTER_SORT_DEFAULT -> {
-                    filteredDocuments.sortByOrder(sortingOrder) { (it.data.mainContentData as ListItemMainContentData.Text).text }.toMutableList()
+                    filteredDocuments.sortByOrder(sortingOrder) { (it.itemUi.uiData.mainContentData as ListItemMainContentData.Text).text }
+                        .toMutableList()
                 }
 
                 FILTER_SORT_DATE_ISSUED -> {
-                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.issuedDate }.toMutableList()
+                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.issuedDate }
+                        .toMutableList()
                 }
 
                 FILTER_SORT_EXPIRY_DATE -> {
-                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.expiryDate }.toMutableList()
+                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.expiryDate }
+                        .toMutableList()
                 }
 
                 "$FILTER_BY_ISSUER_GROUP_ID${(item.mainContentData as ListItemMainContentData.Text).text}" -> {
                     filteredDocuments.filter { document ->
-                        document.data.overlineText == item.itemId.replace(
+                        document.itemUi.uiData.overlineText == item.itemId.replace(
                             FILTER_BY_ISSUER_GROUP_ID,
                             ""
                         )
@@ -383,13 +642,13 @@ class DocumentsInteractorImpl(
 
                 FILTER_BY_STATE_VALID -> {
                     filteredDocuments.filter { document ->
-                        !document.filterableAttributes.expiryDate.isExpired()
+                        document.filterableAttributes.expiryDate?.isExpired() == false
                     }.toMutableList()
                 }
 
                 FILTER_BY_STATE_EXPIRED -> {
                     filteredDocuments.filter { document ->
-                        document.filterableAttributes.expiryDate.isExpired()
+                        document.filterableAttributes.expiryDate?.isExpired() == true
                     }.toMutableList()
                 }
 
@@ -397,15 +656,25 @@ class DocumentsInteractorImpl(
             }
         }
 
-        return filteredDocuments.map { it.data }.ifEmpty {
+        return filteredDocuments.map { it.itemUi }.ifEmpty {
             listOf(
-                ListItemData(
-                    itemId = "",
-                    mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_search_no_results)),
-                    overlineText = null,
-                    supportingText = null,
-                    leadingContentData = null,
-                    trailingContentData = null
+                DocumentDetailsItemUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "",
+                        mainContentData = ListItemMainContentData.Text(
+                            resourceProvider.getString(
+                                R.string.documents_screen_search_no_results
+                            )
+                        ),
+                        overlineText = null,
+                        supportingText = null,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.OTHER(
+                        formatType = ""
+                    ),
                 )
             )
         }

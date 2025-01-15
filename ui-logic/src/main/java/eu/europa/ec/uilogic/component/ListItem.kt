@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -126,7 +127,7 @@ sealed class ListItemLeadingContentData {
  * - [Checkbox]: Displays a checkbox with associated data.
  */
 sealed class ListItemTrailingContentData {
-    data class Icon(val iconData: IconData) : ListItemTrailingContentData()
+    data class Icon(val iconData: IconData, val tint: Color? = null) : ListItemTrailingContentData()
     data class Checkbox(val checkboxData: CheckboxData) : ListItemTrailingContentData()
     data class RadioButton(val radioButtonData: RadioButtonData) : ListItemTrailingContentData()
 }
@@ -184,6 +185,7 @@ fun ListItem(
     overlineTextStyle: TextStyle = MaterialTheme.typography.labelMedium.copy(
         color = MaterialTheme.colorScheme.onSurfaceVariant
     ),
+    supportingTextColor: Color? = null,
     mainContentTextStyle: TextStyle? = null,
 ) {
     val maxSecondaryTextLines = 1
@@ -236,7 +238,8 @@ fun ListItem(
                         )
 
                         is ListItemLeadingContentData.AsyncImage -> WrapAsyncImage(
-                            modifier = Modifier.size(ICON_SIZE_40.dp)
+                            modifier = Modifier
+                                .size(ICON_SIZE_40.dp)
                                 .padding(end = SIZE_MEDIUM.dp),
                             source = safeLeadingContentData.imageUrl,
                             error = safeLeadingContentData.errorImage,
@@ -290,7 +293,8 @@ fun ListItem(
                     Text(
                         text = safeSupportingText,
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = supportingTextColor
+                                ?: MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         maxLines = maxSecondaryTextLines,
                         overflow = textOverflow,
@@ -315,7 +319,8 @@ fun ListItem(
                             .padding(start = SIZE_MEDIUM.dp)
                             .size(DEFAULT_ICON_SIZE.dp),
                         iconData = safeTrailingContentData.iconData,
-                        customTint = MaterialTheme.colorScheme.primary,
+                        customTint = safeTrailingContentData.tint
+                            ?: MaterialTheme.colorScheme.primary,
                         onClick = if (clickableAreas.contains(TRAILING_CONTENT)) {
                             { onItemClick?.invoke(item) }
                         } else null,

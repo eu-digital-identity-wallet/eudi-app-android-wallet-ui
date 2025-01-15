@@ -272,7 +272,7 @@ class DocumentOfferViewModel(
 
     private fun getHeaderConfigIssuerData(issuerName: String): RelyingPartyData {
         return RelyingPartyData(
-            isVerified = true, //TODO
+            isVerified = false,
             name = issuerName,
             description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
         )

@@ -17,12 +17,12 @@
 package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
-import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import java.util.Locale
 
-fun IssuedDocument.localizedIssuerMetadata(locale: Locale): DocumentMetaData.IssuerDisplay? {
-    return data.metadata?.issuerDisplay?.firstOrNull {
+fun Document.localizedIssuerMetadata(locale: Locale): DocumentMetaData.IssuerDisplay? {
+    return metadata?.issuerDisplay?.firstOrNull {
         locale.compareLocaleLanguage(it.locale)
     }
 }

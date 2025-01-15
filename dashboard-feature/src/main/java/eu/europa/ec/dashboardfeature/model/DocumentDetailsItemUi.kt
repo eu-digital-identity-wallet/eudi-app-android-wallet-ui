@@ -16,14 +16,12 @@
 
 package eu.europa.ec.dashboardfeature.model
 
-import java.time.Instant
+import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.uilogic.component.ListItemData
 
-data class FilterableAttributes(
-    val issuedDate: Instant?,
-    val expiryDate: Instant?,
-)
-
-data class FilterableDocumentItem(
-    val itemUi: DocumentDetailsItemUi,
-    val filterableAttributes: FilterableAttributes,
+data class DocumentDetailsItemUi(
+    val documentIssuanceState: DocumentUiIssuanceState,
+    val uiData: ListItemData,
+    val documentIdentifier: DocumentIdentifier,
 )
