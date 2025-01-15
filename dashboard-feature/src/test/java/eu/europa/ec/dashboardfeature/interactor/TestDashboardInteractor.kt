@@ -40,12 +40,11 @@ import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DeferredDocumentData
-import eu.europa.ec.corelogic.model.DocType
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullDocuments
@@ -365,19 +364,19 @@ class TestDashboardInteractor {
         coroutineRule.runTest {
             // Given
             val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
-            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.docType
+            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.formatType
             val mockDeferredPendingName1 = mockedPendingPidUi.documentName
 
             val mockDeferredPendingDocId2 = mockedPendingMdlUi.documentId
-            val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.docType
+            val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.formatType
 
-            val deferredDocuments: Map<DocumentId, DocType> = mapOf(
+            val deferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId1 to mockDeferredPendingType1,
                 mockDeferredPendingDocId2 to mockDeferredPendingType2
             )
             val successData = DeferredDocumentData(
                 documentId = mockDeferredPendingDocId1,
-                docType = mockDeferredPendingType1,
+                formatType = mockDeferredPendingType1,
                 docName = mockDeferredPendingName1
             )
 
@@ -420,9 +419,9 @@ class TestDashboardInteractor {
         coroutineRule.runTest {
             // Given
             val mockDeferredExpiredDocId = mockedPendingPidUi.documentId
-            val mockDeferredExpiredDocType = mockedPendingPidUi.documentIdentifier.docType
+            val mockDeferredExpiredDocType = mockedPendingPidUi.documentIdentifier.formatType
 
-            val deferredDocuments: Map<DocumentId, DocType> = mapOf(
+            val deferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredExpiredDocId to mockDeferredExpiredDocType
             )
 
@@ -457,15 +456,15 @@ class TestDashboardInteractor {
     fun `Given Case 3, When tryIssuingDeferredDocumentsFlow is called, Then Case 3 Expected Result is returned`() =
         coroutineRule.runTest {
             val mockDeferredPendingDocId = mockedPendingPidUi.documentId
-            val mockDeferredPendingType = mockedPendingPidUi.documentIdentifier.docType
+            val mockDeferredPendingType = mockedPendingPidUi.documentIdentifier.formatType
             val mockDeferredPendingName = mockedPendingPidUi.documentName
 
-            val deferredDocuments: Map<DocumentId, DocType> = mapOf(
+            val deferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId to mockDeferredPendingType
             )
             val successData = DeferredDocumentData(
                 documentId = mockDeferredPendingDocId,
-                docType = mockDeferredPendingType,
+                formatType = mockDeferredPendingType,
                 docName = mockDeferredPendingName
             )
 
@@ -498,9 +497,9 @@ class TestDashboardInteractor {
         coroutineRule.runTest {
             // Given
             val mockDeferredPendingDocId = mockedPendingPidUi.documentId
-            val mockDeferredPendingType = mockedPendingPidUi.documentIdentifier.docType
+            val mockDeferredPendingType = mockedPendingPidUi.documentIdentifier.formatType
 
-            val deferredDocuments: Map<DocumentId, DocType> = mapOf(
+            val deferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId to mockDeferredPendingType
             )
             whenever(walletCoreDocumentsController.issueDeferredDocument(mockDeferredPendingDocId))
@@ -528,9 +527,9 @@ class TestDashboardInteractor {
         coroutineRule.runTest {
             // Given
             val mockDeferredPendingDocId = mockedPendingPidUi.documentId
-            val mockDeferredPendingType = mockedPendingPidUi.documentIdentifier.docType
+            val mockDeferredPendingType = mockedPendingPidUi.documentIdentifier.formatType
 
-            val deferredDocuments: Map<DocumentId, DocType> = mapOf(
+            val deferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId to mockDeferredPendingType
             )
             whenever(walletCoreDocumentsController.issueDeferredDocument(mockDeferredPendingDocId))
@@ -558,9 +557,9 @@ class TestDashboardInteractor {
         coroutineRule.runTest {
             // Given
             val mockDeferredPendingDocId = mockedPendingPidUi.documentId
-            val mockDeferredPendingType = mockedPendingPidUi.documentIdentifier.docType
+            val mockDeferredPendingType = mockedPendingPidUi.documentIdentifier.formatType
 
-            val deferredDocuments: Map<DocumentId, DocType> = mapOf(
+            val deferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId to mockDeferredPendingType
             )
             whenever(walletCoreDocumentsController.issueDeferredDocument(mockDeferredPendingDocId))
@@ -597,7 +596,6 @@ class TestDashboardInteractor {
     fun `Given Case 1, When getDocuments is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall(resourceProvider)
             mockGetMainPidDocumentCall(mockedMainPid)
 
             whenever(walletCoreDocumentsController.getAllDocuments())
@@ -635,8 +633,6 @@ class TestDashboardInteractor {
     fun `Given Case 2, When getDocuments is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall(resourceProvider)
-
             whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedMdlWithNoUserNameAndNoUserImage))
 
@@ -712,8 +708,6 @@ class TestDashboardInteractor {
     fun `Given Case 4, When getDocuments is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockGetStringForDocumentsCall(resourceProvider)
-
             whenever(walletCoreDocumentsController.getAllDocuments())
                 .thenReturn(listOf(mockedMdlWithNoExpirationDate))
 
@@ -822,10 +816,6 @@ class TestDashboardInteractor {
             BluetoothAdapter.STATE_OFF
         }
         shadowBluetoothAdapter.setState(newBluetoothAdapterState)
-    }
-
-    private fun mockGetStringForDocumentsCall(resourceProvider: ResourceProvider) {
-        mockDocumentTypeUiToUiNameCall(resourceProvider)
     }
 
     private fun mockGetMainPidDocumentCall(mainPid: IssuedDocument?) {

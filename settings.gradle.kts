@@ -34,6 +34,7 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://jitpack.io")
         }
+        mavenLocal()
     }
 }
 
@@ -47,7 +48,6 @@ include(":assembly-logic")
 include(":startup-feature")
 include(":test-logic")
 include(":test-feature")
-include(":login-feature")
 include(":common-feature")
 include(":dashboard-feature")
 include(":presentation-feature")

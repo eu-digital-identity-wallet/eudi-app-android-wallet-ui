@@ -17,12 +17,13 @@
 package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.commonfeature.util.keyIsBase64
-import eu.europa.ec.corelogic.model.DocType
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 
 data class RequestDocumentItemUi<T>(
     val id: String,
@@ -42,8 +43,8 @@ data class RequestDocumentItemUi<T>(
 
 data class DocumentItemDomainPayload(
     val docId: String,
-    val docType: DocType,
-    val namespace: String,
+    val formatType: FormatType,
+    val namespace: String?,
     val elementIdentifier: ElementIdentifier
 ) {
     // We need to override equals in order for "groupBy" internal comparisons
@@ -81,8 +82,11 @@ fun <T> DocItem.toRequestDocumentItemUi(
     )
 }
 
-val Document.docType: String
-    get() = (this.format as? MsoMdocFormat)?.docType.orEmpty()
+val Document.formatType: String
+    get() = when (this.format) {
+        is MsoMdocFormat -> (this.format as MsoMdocFormat).docType
+        is SdJwtVcFormat -> (this.format as SdJwtVcFormat).vct
+    }
 
 fun produceDocUID(
     elementIdentifier: ElementIdentifier,

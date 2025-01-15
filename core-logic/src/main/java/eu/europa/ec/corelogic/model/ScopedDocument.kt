@@ -14,6 +14,6 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.loginfeature.model
+package eu.europa.ec.corelogic.model
 
-data class FaqUiModel(val title: String, val description: String)
+data class ScopedDocument(val name: String, val configurationId: String, val isPid: Boolean)

@@ -16,11 +16,10 @@
 
 package eu.europa.ec.commonfeature.ui.document_details.transformer
 
+import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.util.toDateFormatted
-import eu.europa.ec.businesslogic.util.toList
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.commonfeature.model.toUiName
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
@@ -29,12 +28,10 @@ import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndImageData
 import eu.europa.ec.uilogic.component.InfoTextWithNameAndValueData
-import org.json.JSONObject
 
 object DocumentDetailsTransformer {
 
@@ -45,30 +42,14 @@ object DocumentDetailsTransformer {
 
         val documentIdentifierUi = document.toDocumentIdentifier()
 
-        // Get the JSON Object from EudiWallerCore.
-        val documentJson =
-            (document.nameSpacedDataJSONObject[documentIdentifierUi.nameSpace] as JSONObject)
-
-        // Create a JSON Array with all its keys (i.e. given_name, family_name, etc.) keeping their original order.
-        val documentKeysJsonArray = documentJson.names() ?: return null
-
-        // Create a JSON Array with all its values (i.e. John, Smith, etc.) keeping their original order.
-        val documentValuesJsonArray = documentJson.toJSONArray(documentKeysJsonArray) ?: return null
-
-        val detailsItems = documentValuesJsonArray
-            .toList()
-            .withIndex()
-            // Create a connection between keys and values using their index--original order.
-            .associateBy {
-                documentKeysJsonArray.get(it.index)
-            }
-            // Now that we have both the keys and the values, transform them to UI items.
-            .map {
-                val value = it.value.value
-                val key = it.key.toString()
+        val detailsItems = document.data.claims
+            .map { claim ->
                 transformToDocumentDetailsUi(
-                    key = key,
-                    item = value,
+                    displayKey = claim.metadata?.display?.firstOrNull {
+                        resourceProvider.getLocale().compareLocaleLanguage(it.locale)
+                    }?.name,
+                    key = claim.identifier,
+                    item = claim.value ?: "",
                     resourceProvider = resourceProvider
                 )
             }
@@ -87,7 +68,7 @@ object DocumentDetailsTransformer {
 
         return DocumentUi(
             documentId = document.id,
-            documentName = document.toUiName(resourceProvider),
+            documentName = document.name,
             documentIdentifier = documentIdentifierUi,
             documentExpirationDateFormatted = documentExpirationDate.toDateFormatted().orEmpty(),
             documentHasExpired = docHasExpired,
@@ -102,16 +83,18 @@ object DocumentDetailsTransformer {
 
 private fun transformToDocumentDetailsUi(
     key: String,
+    displayKey: String?,
     item: Any,
     resourceProvider: ResourceProvider
 ): DocumentDetailsUi {
 
-    val uiKey = resourceProvider.getReadableElementIdentifier(key)
-
     val values = StringBuilder()
+    val localizedKey = displayKey ?: key
+
+
     parseKeyValueUi(
-        json = item,
-        groupIdentifier = key,
+        item = item,
+        groupIdentifier = localizedKey,
         resourceProvider = resourceProvider,
         allItems = values
     )
@@ -121,7 +104,7 @@ private fun transformToDocumentDetailsUi(
         DocumentJsonKeys.SIGNATURE -> {
             DocumentDetailsUi.SignatureItem(
                 itemData = InfoTextWithNameAndImageData(
-                    title = uiKey,
+                    title = localizedKey,
                     base64Image = groupedValues
                 )
             )
@@ -130,7 +113,7 @@ private fun transformToDocumentDetailsUi(
         DocumentJsonKeys.PORTRAIT -> {
             DocumentDetailsUi.DefaultItem(
                 itemData = InfoTextWithNameAndValueData.create(
-                    title = uiKey,
+                    title = localizedKey,
                     infoValues = arrayOf(resourceProvider.getString(R.string.document_details_portrait_readable_identifier))
                 )
             )
@@ -139,7 +122,7 @@ private fun transformToDocumentDetailsUi(
         else -> {
             DocumentDetailsUi.DefaultItem(
                 itemData = InfoTextWithNameAndValueData.create(
-                    title = uiKey,
+                    title = localizedKey,
                     infoValues = arrayOf(groupedValues)
                 )
             )

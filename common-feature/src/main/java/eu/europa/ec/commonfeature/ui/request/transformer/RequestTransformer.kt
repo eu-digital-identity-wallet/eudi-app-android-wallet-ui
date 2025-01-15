@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request.transformer
 
-import eu.europa.ec.commonfeature.model.toUiName
+import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomainPayload
 import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
@@ -24,7 +24,7 @@ import eu.europa.ec.commonfeature.ui.request.model.OptionalFieldItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.model.RequiredFieldsItemUi
-import eu.europa.ec.commonfeature.ui.request.model.docType
+import eu.europa.ec.commonfeature.ui.request.model.formatType
 import eu.europa.ec.commonfeature.ui.request.model.produceDocUID
 import eu.europa.ec.commonfeature.ui.request.model.toRequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
@@ -32,18 +32,17 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
-import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
+import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.nameSpacedDataJSONObject
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import org.json.JSONObject
 
 private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
     when (documentIdentifier) {
 
-        DocumentIdentifier.PID -> listOf(
+        DocumentIdentifier.MdocPid, DocumentIdentifier.SdJwtPid -> listOf(
             "issuance_date",
             "expiry_date",
             "issuing_authority",
@@ -55,7 +54,7 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
             "portrait_capture_date"
         )
 
-        DocumentIdentifier.AGE -> listOf(
+        DocumentIdentifier.MdocPseudonym -> listOf(
             "issuance_date",
             "expiry_date",
             "issuing_country",
@@ -80,29 +79,39 @@ object RequestTransformer {
             // Add document item.
             items += RequestDataUi.Document(
                 documentItemUi = DocumentItemUi(
-                    title = storageDocument.toUiName(resourceProvider)
+                    title = storageDocument.name
                 )
             )
             items += RequestDataUi.Space()
 
             val required = mutableListOf<RequestDocumentItemUi<Event>>()
 
-
             // Add optional field items.
             requestDocument.requestedItems.keys.forEachIndexed { itemIndex, docItem ->
+
+                val nameSpace = when (docItem) {
+                    is MsoMdocItem -> docItem.namespace
+                    else -> null
+                }
+
+                val item = storageDocument.data.claims.firstOrNull {
+                    it.identifier == docItem.elementIdentifier
+                }
+
+                val elementIdentifier = item?.metadata?.display?.firstOrNull {
+                    resourceProvider.getLocale().compareLocaleLanguage(it.locale)
+                }?.name ?: docItem.elementIdentifier
 
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
                     parseKeyValueUi(
-                        json = storageDocument.nameSpacedDataJSONObject.getDocObject(
-                            nameSpace = docItem.namespace
-                        )[docItem.elementIdentifier],
+                        item = item?.value!!,
                         groupIdentifier = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = values
                     )
                     (values.toString() to true)
-                } catch (ex: Exception) {
+                } catch (_: Exception) {
                     (resourceProvider.getString(R.string.request_element_identifier_not_available) to false)
                 }
 
@@ -115,18 +124,18 @@ object RequestTransformer {
                             uID = produceDocUID(
                                 elementIdentifier = docItem.elementIdentifier,
                                 documentId = storageDocument.id,
-                                docType = storageDocument.docType
+                                docType = storageDocument.formatType
                             ),
                             docPayload = DocumentItemDomainPayload(
                                 docId = storageDocument.id,
-                                docType = storageDocument.docType,
-                                namespace = docItem.namespace,
+                                formatType = storageDocument.formatType,
+                                namespace = nameSpace,
                                 elementIdentifier = docItem.elementIdentifier,
                             ),
                             optional = false,
                             isChecked = isAvailable,
                             event = null,
-                            readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                            readableName = elementIdentifier,
                             value = value
                         )
                     )
@@ -134,7 +143,7 @@ object RequestTransformer {
                     val uID = produceDocUID(
                         elementIdentifier = docItem.elementIdentifier,
                         documentId = storageDocument.id,
-                        docType = storageDocument.docType
+                        docType = storageDocument.formatType
                     )
 
                     items += RequestDataUi.Space()
@@ -144,14 +153,14 @@ object RequestTransformer {
                                 uID = uID,
                                 docPayload = DocumentItemDomainPayload(
                                     docId = storageDocument.id,
-                                    docType = storageDocument.docType,
-                                    namespace = docItem.namespace,
+                                    formatType = storageDocument.formatType,
+                                    namespace = nameSpace,
                                     elementIdentifier = docItem.elementIdentifier,
                                 ),
                                 optional = isAvailable,
                                 isChecked = isAvailable,
                                 event = Event.UserIdentificationClicked(itemId = uID),
-                                readableName = resourceProvider.getReadableElementIdentifier(docItem.elementIdentifier),
+                                readableName = elementIdentifier,
                                 value = value
                             )
                         )
@@ -214,17 +223,20 @@ object RequestTransformer {
                 DisclosedDocument(
                     documentId = document.docId,
                     disclosedItems = selectedDocumentItems.map {
-                        DocItem(
-                            it.domainPayload.namespace,
-                            it.domainPayload.elementIdentifier
-                        )
+                        when (it.domainPayload.namespace) {
+                            null -> SdJwtVcItem(
+                                it.domainPayload.elementIdentifier
+                            )
+
+                            else -> MsoMdocItem(
+                                it.domainPayload.namespace,
+                                it.domainPayload.elementIdentifier
+                            )
+                        }
                     },
                     keyUnlockData = null
                 )
             }
         )
     }
-
-    private fun JSONObject.getDocObject(nameSpace: String): JSONObject =
-        this[nameSpace] as JSONObject
 }

@@ -342,7 +342,7 @@ private fun IssuanceDocumentDetailsScreenPreview() {
             document = DocumentUi(
                 documentId = "2",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image3",
@@ -386,7 +386,7 @@ private fun DashboardDocumentDetailsScreenPreview() {
             document = DocumentUi(
                 documentId = "2",
                 documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.PID,
+                documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
                 documentImage = "image3",

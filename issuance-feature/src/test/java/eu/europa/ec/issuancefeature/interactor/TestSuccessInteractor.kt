@@ -16,15 +16,14 @@
 
 package eu.europa.ec.issuancefeature.interactor
 
-import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockDocumentTypeUiToUiNameCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedFullPid
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.mockedPidDocName
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
@@ -135,14 +134,13 @@ class TestSuccessInteractor {
             // Given
             whenever(walletCoreDocumentsController.getDocumentById("test_id"))
                 .thenReturn(mockedFullPid)
-            mockDocumentTypeUiToUiNameCall(resourceProvider)
 
             // When
             interactor.fetchDocumentById("test_id").runFlowTest {
                 assertEquals(
                     SuccessFetchDocumentByIdPartialState.Success(
                         document = mockedFullPid,
-                        documentName = mockedDocUiNamePid,
+                        documentName = mockedPidDocName,
                         fullName = extractFullNameFromDocumentOrEmpty(mockedFullPid)
                     ),
                     awaitItem()
