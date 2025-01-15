@@ -275,57 +275,60 @@ private fun FiltersBottomSheet(
         sheetState = modalBottomSheetState
     ) {
 
-        GenericBottomSheet(titleContent = {
-            Text(
-                text = stringResource(R.string.documents_screen_filters_title),
-                style = MaterialTheme.typography.headlineSmall
-            )
-        }) {
-            val expandStateList by remember {
-                mutableStateOf(filters.map { false }.toMutableStateList())
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)) {
-                DualSelectorButtons(sortOrderButtonData) {
-                    onEventSend(Event.OnSortingOrderChanged(it))
+        GenericBottomSheet(
+            titleContent = {
+                Text(
+                    text = stringResource(R.string.documents_screen_filters_title),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            bodyContent = {
+                val expandStateList by remember {
+                    mutableStateOf(filters.map { false }.toMutableStateList())
                 }
-                filters.forEachIndexed { index, filter ->
-                    WrapExpandableListItem(
-                        data = filter,
-                        isExpanded = expandStateList[index],
-                        onExpandedChange = { expandStateList[index] = !expandStateList[index] },
-                        onItemClick = {
-                            val id = it.itemId
-                            val groupId = filter.collapsed.itemId
-                            onEventSend(Event.OnFilterSelectionChanged(id, groupId))
+
+                Column(verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)) {
+                    DualSelectorButtons(sortOrderButtonData) {
+                        onEventSend(Event.OnSortingOrderChanged(it))
+                    }
+                    filters.forEachIndexed { index, filter ->
+                        WrapExpandableListItem(
+                            data = filter,
+                            isExpanded = expandStateList[index],
+                            onExpandedChange = { expandStateList[index] = !expandStateList[index] },
+                            onItemClick = {
+                                val id = it.itemId
+                                val groupId = filter.collapsed.itemId
+                                onEventSend(Event.OnFilterSelectionChanged(id, groupId))
+                            }
+                        )
+                    }
+
+                    VSpacer.Large()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        WrapButton(
+                            modifier = Modifier.weight(1f),
+                            buttonConfig = ButtonConfig(type = ButtonType.SECONDARY, onClick = {
+                                onEventSend(Event.OnFiltersReset)
+                            })
+                        ) {
+                            Text(text = stringResource(R.string.documents_screen_filters_reset))
                         }
-                    )
-                }
-
-                VSpacer.Large()
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    WrapButton(
-                        modifier = Modifier.weight(1f),
-                        buttonConfig = ButtonConfig(type = ButtonType.SECONDARY, onClick = {
-                            onEventSend(Event.OnFiltersReset)
-                        })
-                    ) {
-                        Text(text = stringResource(R.string.documents_screen_filters_reset))
-                    }
-                    HSpacer.Small()
-                    WrapButton(
-                        modifier = Modifier.weight(1f),
-                        buttonConfig = ButtonConfig(type = ButtonType.PRIMARY, onClick = {
-                            onEventSend(Event.OnFiltersApply)
-                        })
-                    ) {
-                        Text(text = stringResource(R.string.documents_screen_filters_apply))
+                        HSpacer.Small()
+                        WrapButton(
+                            modifier = Modifier.weight(1f),
+                            buttonConfig = ButtonConfig(type = ButtonType.PRIMARY, onClick = {
+                                onEventSend(Event.OnFiltersApply)
+                            })
+                        ) {
+                            Text(text = stringResource(R.string.documents_screen_filters_apply))
+                        }
                     }
                 }
             }
-        }
+        )
     }
 }
