@@ -21,7 +21,7 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import java.util.Locale
 
-fun IssuedDocument.localizedIssuerMetadata(locale: Locale): DocumentMetaData.Display? {
+fun IssuedDocument.localizedIssuerMetadata(locale: Locale): DocumentMetaData.IssuerDisplay? {
     return data.metadata?.issuerDisplay?.firstOrNull {
         locale.compareLocaleLanguage(it.locale)
     }
