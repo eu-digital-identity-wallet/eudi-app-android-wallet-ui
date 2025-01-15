@@ -23,6 +23,7 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.EncryptionAlgorithm
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.EncryptionMethod
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.resourceslogic.R
 
 internal class WalletCoreConfigImpl(
@@ -64,6 +65,9 @@ internal class WalletCoreConfigImpl(
                                 BuildConfig.EUDI_OPENID4VP_SCHEME,
                                 BuildConfig.MDOC_OPENID4VP_SCHEME
                             )
+                        )
+                        withFormats(
+                            Format.MsoMdoc, Format.SdJwtVc.ES256
                         )
                     }
 
