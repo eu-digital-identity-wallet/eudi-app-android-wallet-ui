@@ -38,6 +38,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
 import eu.europa.ec.uilogic.component.ListItemMainContentData.Image
@@ -108,6 +109,7 @@ sealed class ListItemMainContentData {
  */
 sealed class ListItemLeadingContentData {
     data class Icon(val iconData: IconData) : ListItemLeadingContentData()
+    data class AsyncImage(val imageUrl: String) : ListItemLeadingContentData()
     data class UserImage(val userBase64Image: String) : ListItemLeadingContentData()
 }
 
@@ -226,6 +228,11 @@ fun ListItem(
                         is ListItemLeadingContentData.UserImage -> ImageOrPlaceholder(
                             modifier = leadingContentModifier,
                             base64Image = safeLeadingContentData.userBase64Image,
+                        )
+
+                        is ListItemLeadingContentData.AsyncImage -> AsyncImage(
+                            model = safeLeadingContentData.imageUrl,
+                            contentDescription = ""
                         )
                     }
                 }

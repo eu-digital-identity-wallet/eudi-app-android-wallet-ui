@@ -50,6 +50,8 @@ import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DualSelectorButtonData
+import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -162,7 +164,12 @@ private fun Content(
     }
 
     if (isFiltersBottomSheetOpen) {
-        FiltersBottomSheet(state.filters, onEventSend, modalBottomSheetState)
+        FiltersBottomSheet(
+            state.filters,
+            state.sortingOrderButtonData,
+            onEventSend,
+            modalBottomSheetState
+        )
     }
 
     LifecycleEffect(
@@ -227,6 +234,7 @@ private fun AddDocumentBottomSheet(
 @Composable
 private fun FiltersBottomSheet(
     filters: List<ExpandableListItemData>,
+    sortOrderButtonData: DualSelectorButtonData,
     onEventSend: (Event) -> Unit,
     modalBottomSheetState: SheetState,
 ) {
@@ -248,6 +256,9 @@ private fun FiltersBottomSheet(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)) {
+                DualSelectorButtons(sortOrderButtonData) {
+                    onEventSend(Event.OnSortingOrderChanged(it))
+                }
                 filters.forEachIndexed { index, filter ->
                     WrapExpandableListItem(
                         data = filter,

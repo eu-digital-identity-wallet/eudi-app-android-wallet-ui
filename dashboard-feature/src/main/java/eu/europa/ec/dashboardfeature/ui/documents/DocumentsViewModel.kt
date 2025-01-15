@@ -23,6 +23,8 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.DualSelectorButton
+import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -41,6 +43,7 @@ data class State(
     val isLoading: Boolean,
     val documents: List<ListItemData> = emptyList(),
     val filters: List<ExpandableListItemData> = emptyList(),
+    val sortingOrderButtonData: DualSelectorButtonData,
     val showAddDocumentBottomSheet: Boolean = false,
     val showFiltersBottomSheet: Boolean = false,
 ) : ViewState
@@ -56,6 +59,7 @@ sealed class Event : ViewEvent {
     data class OnFilterSelectionChanged(val filterId: String, val groupId: String) : Event()
     data object OnFiltersReset : Event()
     data object OnFiltersApply : Event()
+    data class OnSortingOrderChanged(val sortingOrder: DualSelectorButton) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -75,7 +79,13 @@ class DocumentsViewModel(
     private val uiSerializer: UiSerializer,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
-        return State(isLoading = true)
+        return State(
+            isLoading = true, sortingOrderButtonData = DualSelectorButtonData(
+                first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
+                second = resourceProvider.getString(R.string.documents_screen_filters_ascending),
+                selectedButton = DualSelectorButton.FIRST
+            )
+        )
     }
 
     override fun handleEvents(event: Event) {
@@ -127,7 +137,7 @@ class DocumentsViewModel(
             is Event.OnFiltersApply -> {
                 setState {
                     copy(
-                        documents = interactor.applyFilters(),
+                        documents = interactor.applyFilters(documents),
                         showFiltersBottomSheet = false
                     )
                 }
@@ -139,9 +149,15 @@ class DocumentsViewModel(
                     copy(
                         documents = documents,
                         filters = filters,
-                        showFiltersBottomSheet = false
+                        showFiltersBottomSheet = false,
+                        sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = DualSelectorButton.FIRST)
                     )
                 }
+            }
+
+            is Event.OnSortingOrderChanged -> {
+                interactor.onSortingOrderChanged(event.sortingOrder)
+                setState { copy(sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = event.sortingOrder)) }
             }
         }
     }

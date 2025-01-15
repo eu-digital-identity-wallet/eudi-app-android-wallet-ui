@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.extensions.isBeyondNextDays
@@ -27,6 +28,7 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
@@ -47,8 +49,8 @@ private const val FILTER_SORT_EXPIRY_DATE = "sort_expiry_date"
 sealed class DocumentInteractorPartialState {
     data class ResetFilters(
         val documents: List<ListItemData>,
-        val filters: List<ExpandableListItemData>
-    ): DocumentInteractorPartialState()
+        val filters: List<ExpandableListItemData>,
+    ) : DocumentInteractorPartialState()
 }
 
 interface DocumentsInteractor {
@@ -63,7 +65,8 @@ interface DocumentsInteractor {
 
     fun clearFilters(setStateAction: (List<ExpandableListItemData>) -> Unit)
     fun resetFilters(): DocumentInteractorPartialState.ResetFilters
-    fun applyFilters(): List<ListItemData>
+    fun applyFilters(queriedDocuments: List<ListItemData>): List<ListItemData>
+    fun onSortingOrderChanged(sortingOrder: DualSelectorButton)
 }
 
 class DocumentsInteractorImpl(
@@ -72,6 +75,7 @@ class DocumentsInteractorImpl(
 ) : DocumentsInteractor {
 
     private val documents: MutableList<FilterableDocumentItem> = mutableListOf()
+    private var sortingOrder: DualSelectorButton = DualSelectorButton.FIRST
 
     //#region Filters
     private val expandableFilterByExpiryPeriod = ExpandableListItemData(
@@ -181,6 +185,9 @@ class DocumentsInteractorImpl(
         documents.addAll(
             documentsController.getAllDocuments().map { document ->
                 document as IssuedDocument
+                val localizedIssuerMetadata = document.data.metadata?.issuerDisplay?.firstOrNull {
+                    resourceProvider.getLocale().compareLocaleLanguage(it.locale)
+                }
 
                 FilterableDocumentItem(
                     filterableAttributes = FilterableAttributes(
@@ -190,12 +197,12 @@ class DocumentsInteractorImpl(
                     data = ListItemData(
                         itemId = document.id,
                         mainContentData = MainContentData.Text(text = document.name),
-                        overlineText = "Hellenic Government", // TODO Here we want to show issuer name
+                        overlineText = localizedIssuerMetadata?.name ?: "Test Issuer",
                         supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
                                 document.validUntil.formatInstant(),
-                        leadingContentData = ListItemLeadingContentData.Icon(
-                            iconData = AppIcons.IssuerPlaceholder
-                        ), // TODO Get the actual issuer image
+                        leadingContentData = ListItemLeadingContentData.AsyncImage(
+                            imageUrl = localizedIssuerMetadata?.logo?.uri.toString()
+                        ),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
@@ -205,6 +212,7 @@ class DocumentsInteractorImpl(
         )
 
         return documents.map { it.data }
+            .sortedBy { (it.mainContentData as MainContentData.Text).text }
     }
 
     override fun searchDocuments(query: String): List<ListItemData> {
@@ -249,6 +257,7 @@ class DocumentsInteractorImpl(
 
     override fun resetFilters(): DocumentInteractorPartialState.ResetFilters {
         filterSnapshot = listOf(expandableSortFilters, expandableFilterByExpiryPeriod)
+        sortingOrder = DualSelectorButton.FIRST
         filterList.clear().run { filterList.addAll(filterSnapshot) }
         return DocumentInteractorPartialState.ResetFilters(
             documents = documents.map { it.data },
@@ -256,10 +265,10 @@ class DocumentsInteractorImpl(
         )
     }
 
-    override fun applyFilters(): List<ListItemData> {
+    override fun applyFilters(queriedDocuments: List<ListItemData>): List<ListItemData> {
         filterList.clear().run { filterList.addAll(filterSnapshot) }
         val selectedFilters = getSelectedItems(filterList)
-        var filteredDocuments = documents.toList()
+        var filteredDocuments = documents.filter { queriedDocuments.contains(it.data) }
 
         selectedFilters.forEach { item ->
             filteredDocuments = when (item.itemId) {
@@ -288,15 +297,15 @@ class DocumentsInteractorImpl(
                 }
 
                 FILTER_SORT_DEFAULT -> {
-                    filteredDocuments
+                    filteredDocuments.sortByOrder(sortingOrder) { (it.data.mainContentData as MainContentData.Text).text }
                 }
 
                 FILTER_SORT_DATE_ISSUED -> {
-                    filteredDocuments.sortedBy { it.filterableAttributes.issuedDate }
+                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.issuedDate }
                 }
 
                 FILTER_SORT_EXPIRY_DATE -> {
-                    filteredDocuments.sortedBy { it.filterableAttributes.expiryDate }
+                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.expiryDate }
                 }
 
                 else -> filteredDocuments
@@ -315,6 +324,10 @@ class DocumentsInteractorImpl(
                 )
             )
         }
+    }
+
+    override fun onSortingOrderChanged(sortingOrder: DualSelectorButton) {
+        this.sortingOrder = sortingOrder
     }
 
     private fun getSelectedItems(filters: List<ExpandableListItemData>): List<ListItemData> {
@@ -350,5 +363,15 @@ class DocumentsInteractorImpl(
                 }
             }
         )
+    }
+
+    private fun <T, R : Comparable<R>> List<T>.sortByOrder(
+        sortOrder: DualSelectorButton,
+        selector: (T) -> R?
+    ): List<T> {
+        return when (sortOrder) {
+            DualSelectorButton.FIRST -> sortedBy(selector)
+            DualSelectorButton.SECOND -> sortedByDescending(selector)
+        }
     }
 }
