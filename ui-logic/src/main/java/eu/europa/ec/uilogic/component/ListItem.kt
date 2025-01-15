@@ -236,6 +236,8 @@ fun ListItem(
                         )
 
                         is ListItemLeadingContentData.AsyncImage -> WrapAsyncImage(
+                            modifier = Modifier.size(ICON_SIZE_40.dp)
+                                .padding(end = SIZE_MEDIUM.dp),
                             source = safeLeadingContentData.imageUrl,
                             error = safeLeadingContentData.errorImage,
                             placeholder = safeLeadingContentData.placeholderImage,

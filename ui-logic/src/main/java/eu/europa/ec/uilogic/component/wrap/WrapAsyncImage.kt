@@ -18,8 +18,12 @@ package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.decode.SvgDecoder
+import coil.request.ImageRequest
 import eu.europa.ec.uilogic.component.IconData
 
 @Composable
@@ -31,9 +35,19 @@ fun WrapAsyncImage(
     error: IconData? = null,
     fallback: IconData? = null,
 ) {
+    val context = LocalContext.current
+    val imageLoader = ImageLoader.Builder(context)
+        .components {
+            add(SvgDecoder.Factory())
+        }
+        .build()
+
     AsyncImage(
         modifier = modifier,
-        model = source,
+        model = ImageRequest.Builder(context)
+            .data(source)
+            .build(),
+        imageLoader = imageLoader,
         contentDescription = contentDescription,
         error = error?.resourceId?.let { painterResource(it) },
         fallback = fallback?.resourceId?.let { painterResource(it) },
