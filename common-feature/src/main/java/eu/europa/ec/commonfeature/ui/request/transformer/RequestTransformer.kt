@@ -98,7 +98,7 @@ object RequestTransformer {
                     it.identifier == docItem.elementIdentifier
                 }
 
-                val elementIdentifier = item?.metadata?.display?.firstOrNull {
+                val localizedElementIdentifier = item?.metadata?.display?.firstOrNull {
                     resourceProvider.getLocale().compareLocaleLanguage(it.locale)
                 }?.name ?: docItem.elementIdentifier
 
@@ -106,7 +106,8 @@ object RequestTransformer {
                     val values = StringBuilder()
                     parseKeyValueUi(
                         item = item?.value!!,
-                        groupIdentifier = docItem.elementIdentifier,
+                        groupIdentifier = localizedElementIdentifier,
+                        groupIdentifierKey = docItem.elementIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = values
                     )
@@ -135,7 +136,7 @@ object RequestTransformer {
                             optional = false,
                             isChecked = isAvailable,
                             event = null,
-                            readableName = elementIdentifier,
+                            readableName = localizedElementIdentifier,
                             value = value
                         )
                     )
@@ -160,7 +161,7 @@ object RequestTransformer {
                                 optional = isAvailable,
                                 isChecked = isAvailable,
                                 event = Event.UserIdentificationClicked(itemId = uID),
-                                readableName = elementIdentifier,
+                                readableName = localizedElementIdentifier,
                                 value = value
                             )
                         )
