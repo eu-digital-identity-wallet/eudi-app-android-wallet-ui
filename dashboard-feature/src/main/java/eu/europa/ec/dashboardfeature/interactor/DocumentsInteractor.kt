@@ -36,6 +36,10 @@ import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 
+private const val FILTER_BY_STATE_GROUP_ID = "state_group_id"
+private const val FILTER_BY_STATE_VALID = "state_valid"
+private const val FILTER_BY_STATE_EXPIRED = "state_expired"
+private const val FILTER_BY_ISSUER_GROUP_ID = "issuer_group_id"
 private const val FILTER_BY_PERIOD_GROUP_ID = "by_period_group_id"
 private const val FILTER_BY_PERIOD_NEXT_7 = "by_period_next_7"
 private const val FILTER_BY_PERIOD_NEXT_30 = "by_period_next_30"
@@ -172,10 +176,55 @@ class DocumentsInteractorImpl(
         )
     )
 
-    private val filterList = mutableListOf(expandableSortFilters, expandableFilterByExpiryPeriod)
-    private var filterSnapshot: List<ExpandableListItemData> = listOf(
+    private var issuerFilters = ExpandableListItemData(
+        collapsed = ListItemData(
+            itemId = FILTER_BY_ISSUER_GROUP_ID,
+            mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer)),
+            trailingContentData = ListItemTrailingContentData.Icon(
+                iconData = AppIcons.KeyboardArrowDown
+            )
+        ),
+        expanded = listOf()
+    )
+
+    private val expandableFilterByState = ExpandableListItemData(
+        collapsed = ListItemData(
+            itemId = FILTER_BY_STATE_GROUP_ID,
+            mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state)),
+            trailingContentData = ListItemTrailingContentData.Icon(
+                iconData = AppIcons.KeyboardArrowDown
+            )
+        ),
+        expanded = listOf(
+            ListItemData(
+                itemId = FILTER_BY_STATE_VALID,
+                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid)),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        isSelected = false,
+                        enabled = true
+                    )
+                )
+            ),
+            ListItemData(
+                itemId = FILTER_BY_STATE_EXPIRED,
+                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired)),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        isSelected = false,
+                        enabled = true
+                    )
+                )
+            )
+        )
+    )
+
+    private val filterList =
+        mutableListOf(expandableSortFilters, expandableFilterByExpiryPeriod, expandableFilterByState)
+    private var filterSnapshot = mutableListOf(
         expandableSortFilters,
-        expandableFilterByExpiryPeriod
+        expandableFilterByExpiryPeriod,
+        expandableFilterByState
     )
 
     //#endregion
@@ -192,12 +241,13 @@ class DocumentsInteractorImpl(
                 FilterableDocumentItem(
                     filterableAttributes = FilterableAttributes(
                         issuedDate = document.issuedAt,
-                        expiryDate = document.issuedAt
+                        expiryDate = document.validUntil,
                     ),
                     data = ListItemData(
                         itemId = document.id,
                         mainContentData = MainContentData.Text(text = document.name),
-                        overlineText = localizedIssuerMetadata?.name ?: "Test Issuer",
+                        overlineText = localizedIssuerMetadata?.name
+                            ?: "Test Issuer ${document.name}",
                         supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
                                 document.validUntil.formatInstant(),
                         leadingContentData = ListItemLeadingContentData.AsyncImage(
@@ -211,6 +261,8 @@ class DocumentsInteractorImpl(
             }
         )
 
+        createIssuerFilter(documents.distinctBy { it.data.overlineText }
+            .map { it.data.overlineText ?: "" })
         return documents.map { it.data }
             .sortedBy { (it.mainContentData as MainContentData.Text).text }
     }
@@ -245,7 +297,7 @@ class DocumentsInteractorImpl(
         setStateAction: (List<ExpandableListItemData>) -> Unit,
     ) {
 
-        filterSnapshot = filterSnapshot.map { checkIfSelected(it, id, groupId) }
+        filterSnapshot = filterSnapshot.map { checkIfSelected(it, id, groupId) }.toMutableList()
 
         setStateAction(filterSnapshot)
     }
@@ -256,7 +308,8 @@ class DocumentsInteractorImpl(
     }
 
     override fun resetFilters(): DocumentInteractorPartialState.ResetFilters {
-        filterSnapshot = listOf(expandableSortFilters, expandableFilterByExpiryPeriod)
+        filterSnapshot =
+            mutableListOf(expandableSortFilters, expandableFilterByExpiryPeriod, issuerFilters, expandableFilterByState)
         sortingOrder = DualSelectorButton.FIRST
         filterList.clear().run { filterList.addAll(filterSnapshot) }
         return DocumentInteractorPartialState.ResetFilters(
@@ -308,6 +361,28 @@ class DocumentsInteractorImpl(
                     filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.expiryDate }
                 }
 
+                "$FILTER_BY_ISSUER_GROUP_ID${(item.mainContentData as MainContentData.Text).text}" -> {
+                    val copiedDocumentList = documents.toList() // To prevent filtering against filtered results instead of all documents
+                    copiedDocumentList.filter { document ->
+                        document.data.overlineText == item.itemId.replace(
+                            FILTER_BY_ISSUER_GROUP_ID,
+                            ""
+                        )
+                    }
+                }
+
+                FILTER_BY_STATE_VALID -> {
+                    filteredDocuments.filter { document ->
+                        !document.filterableAttributes.expiryDate.isExpired()
+                    }
+                }
+
+                FILTER_BY_STATE_EXPIRED -> {
+                    filteredDocuments.filter { document ->
+                        document.filterableAttributes.expiryDate.isExpired()
+                    }
+                }
+
                 else -> filteredDocuments
             }
         }
@@ -328,6 +403,28 @@ class DocumentsInteractorImpl(
 
     override fun onSortingOrderChanged(sortingOrder: DualSelectorButton) {
         this.sortingOrder = sortingOrder
+    }
+
+    private fun createIssuerFilter(issuersList: List<String>) {
+        val filterList = issuersList.filter { it.isNotBlank() }
+
+        issuerFilters = issuerFilters.copy(expanded = filterList.map {
+            ListItemData(
+                itemId = "$FILTER_BY_ISSUER_GROUP_ID$it",
+                mainContentData = MainContentData.Text(it),
+                trailingContentData = ListItemTrailingContentData.RadioButton(
+                    radioButtonData = RadioButtonData(
+                        isSelected = false,
+                        enabled = true
+                    )
+                )
+            )
+        })
+        this.filterList.remove(issuerFilters)
+        this.filterList.add(issuerFilters)
+
+        this.filterSnapshot.remove(issuerFilters)
+        this.filterSnapshot.add(issuerFilters)
     }
 
     private fun getSelectedItems(filters: List<ExpandableListItemData>): List<ListItemData> {
@@ -367,7 +464,7 @@ class DocumentsInteractorImpl(
 
     private fun <T, R : Comparable<R>> List<T>.sortByOrder(
         sortOrder: DualSelectorButton,
-        selector: (T) -> R?
+        selector: (T) -> R?,
     ): List<T> {
         return when (sortOrder) {
             DualSelectorButton.FIRST -> sortedBy(selector)

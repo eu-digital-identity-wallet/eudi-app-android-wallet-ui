@@ -21,14 +21,15 @@ import java.time.temporal.ChronoUnit
 
 fun Instant.isWithinNextDays(days: Long): Boolean {
     val now = Instant.now()
-    return this > now && this <= now.plus(days, ChronoUnit.DAYS)
+    val future = now.plus(days, ChronoUnit.DAYS)
+    return this.isAfter(now) && !this.isAfter(future)
 }
 
 fun Instant.isBeyondNextDays(days: Long): Boolean {
     val now = Instant.now()
-    return this > now.plus(days, ChronoUnit.DAYS)
+    return this.isAfter(now.plus(days, ChronoUnit.DAYS))
 }
 
 fun Instant.isExpired(): Boolean {
-    return this < Instant.now()
+    return this.isBefore(Instant.now())
 }
