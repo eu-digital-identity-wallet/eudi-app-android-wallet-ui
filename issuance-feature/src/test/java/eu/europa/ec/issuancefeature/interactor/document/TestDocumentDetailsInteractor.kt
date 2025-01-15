@@ -124,6 +124,8 @@ class TestDocumentDetailsInteractor {
                     DocumentDetailsInteractorPartialState.Success(
                         documentDetailsDomain = mockedBasicPidDomain,
                         documentIsBookmarked = false,
+                        issuerName = null,
+                        issuerLogo = null
                     ),
                     awaitItem()
                 )
@@ -156,6 +158,8 @@ class TestDocumentDetailsInteractor {
                     DocumentDetailsInteractorPartialState.Success(
                         documentDetailsDomain = mockedBasicPidDomain,
                         documentIsBookmarked = true,
+                        issuerName = null,
+                        issuerLogo = null
                     ),
                     awaitItem()
                 )
@@ -190,6 +194,8 @@ class TestDocumentDetailsInteractor {
                             documentImage = "SE"
                         ),
                         documentIsBookmarked = false,
+                        issuerName = null,
+                        issuerLogo = null
                     ),
                     awaitItem()
                 )
@@ -283,6 +289,8 @@ class TestDocumentDetailsInteractor {
                             )
                         ),
                         documentIsBookmarked = false,
+                        issuerName = null,
+                        issuerLogo = null
                     ),
                     awaitItem()
                 )
