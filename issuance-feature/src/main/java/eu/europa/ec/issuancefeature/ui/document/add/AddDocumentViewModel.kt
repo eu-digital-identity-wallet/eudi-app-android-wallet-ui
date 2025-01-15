@@ -301,7 +301,8 @@ class AddDocumentViewModel(
         val onSuccessNavigation = when (flowType) {
             IssuanceFlowUiConfig.NO_DOCUMENT -> ConfigNavigation(
                 navigationType = NavigationType.PushScreen(
-                    screen = DashboardScreens.Dashboard
+                    screen = DashboardScreens.Dashboard,
+                    popUpToScreen = IssuanceScreens.AddDocument
                 )
             )
 
