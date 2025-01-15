@@ -16,10 +16,14 @@
 
 package eu.europa.ec.dashboardfeature.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -33,7 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
@@ -42,6 +48,7 @@ fun FiltersSearchBar(
     placeholder: String,
     onValueChange: (String) -> Unit,
     onFilterClick: () -> Unit,
+    isFilteringActive: Boolean = false,
 ) {
     var value by remember { mutableStateOf("") }
     Row(
@@ -72,20 +79,33 @@ fun FiltersSearchBar(
             )
         )
 
-        WrapIcon(
+        Box(
             modifier = Modifier
                 .clickable { onFilterClick() }
-                .padding(all = SPACING_MEDIUM.dp),
-            iconData = AppIcons.Filters,
-            customTint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+                .padding(all = SPACING_MEDIUM.dp)
+        ) {
+            WrapIcon(
+                iconData = AppIcons.Filters,
+                customTint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (isFilteringActive) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size((SIZE_SMALL * 1.5).dp)
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                )
+            }
+        }
     }
 }
 
 @Composable
 @ThemeModePreviews
 private fun FiltersSearchBarPreview() {
-    FiltersSearchBar(
-        placeholder = "Search documents", onValueChange = { }, onFilterClick = {}
-    )
+    PreviewTheme {
+        FiltersSearchBar(
+            placeholder = "Search documents", onValueChange = { }, onFilterClick = {}, true
+        )
+    }
 }

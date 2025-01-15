@@ -150,7 +150,8 @@ private fun Content(
                 SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
             FiltersSearchBar(placeholder = searchItem.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
-                onFilterClick = { onEventSend(Event.ShowFiltersBottomSheet(isOpen = true)) })
+                onFilterClick = { onEventSend(Event.ShowFiltersBottomSheet(isOpen = true)) },
+                isFilteringActive = state.isFilteringActive)
         }
         items(state.documents) { documentItemData ->
             WrapListItem(

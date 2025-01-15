@@ -43,6 +43,7 @@ data class State(
     val isLoading: Boolean,
     val documents: List<ListItemData> = emptyList(),
     val filters: List<ExpandableListItemData> = emptyList(),
+    val isFilteringActive: Boolean,
     val sortingOrderButtonData: DualSelectorButtonData,
     val showAddDocumentBottomSheet: Boolean = false,
     val showFiltersBottomSheet: Boolean = false,
@@ -83,8 +84,9 @@ class DocumentsViewModel(
             isLoading = true, sortingOrderButtonData = DualSelectorButtonData(
                 first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
                 second = resourceProvider.getString(R.string.documents_screen_filters_ascending),
-                selectedButton = DualSelectorButton.FIRST
-            )
+                selectedButton = DualSelectorButton.FIRST,
+            ),
+            isFilteringActive = false
         )
     }
 
@@ -138,7 +140,8 @@ class DocumentsViewModel(
                 setState {
                     copy(
                         documents = interactor.applyFilters(documents),
-                        showFiltersBottomSheet = false
+                        showFiltersBottomSheet = false,
+                        isFilteringActive = true
                     )
                 }
             }
@@ -150,6 +153,7 @@ class DocumentsViewModel(
                         documents = documents,
                         filters = filters,
                         showFiltersBottomSheet = false,
+                        isFilteringActive = false,
                         sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = DualSelectorButton.FIRST)
                     )
                 }
