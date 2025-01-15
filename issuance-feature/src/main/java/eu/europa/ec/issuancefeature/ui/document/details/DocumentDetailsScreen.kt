@@ -78,7 +78,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun DocumentDetailsScreen(
     navController: NavController,
-    viewModel: DocumentDetailsViewModel
+    viewModel: DocumentDetailsViewModel,
 ) {
     val state = viewModel.viewState.value
 
@@ -159,7 +159,7 @@ fun DocumentDetailsScreen(
 
 private fun handleNavigationEffect(
     navigationEffect: Effect.Navigation,
-    navController: NavController
+    navController: NavController,
 ) {
     when (navigationEffect) {
         is Effect.Navigation.SwitchScreen -> {
@@ -209,25 +209,23 @@ private fun Content(
                     onItemClick = null,
                 )
 
-                // Issuer title and content
-                SectionTitle(
-                    modifier = Modifier.padding(
-                        top = SPACING_LARGE.dp,
-                        bottom = SPACING_MEDIUM.dp,
-                    ),
-                    text = state.documentIssuerSectionTitle,
-                )
-
-                IssuerDetailsCard(
-                    item = IssuerDetailsCardData(
-                        issuerName = stringResource(R.string.placeholder_content_issuer),
-                        issuerLogo = AppIcons.IssuerPlaceholder,
-                        issuerCategory = stringResource(R.string.placeholder_content_category),
-                        issuerLocation = stringResource(R.string.placeholder_content_location),
-                        issuerIsVerified = true,
-                    ),
-                    onClick = { onEventSend(Event.IssuerCardPressed) }
-                )
+                if (state.issuerName != null || state.issuerLogo != null){
+                    SectionTitle(
+                        modifier = Modifier.padding(
+                            top = SPACING_LARGE.dp,
+                            bottom = SPACING_MEDIUM.dp,
+                        ),
+                        text = state.documentIssuerSectionTitle,
+                    )
+                    IssuerDetailsCard(
+                        item = IssuerDetailsCardData(
+                            issuerName = state.issuerName,
+                            issuerLogo = state.issuerLogo,
+                            issuerIsVerified = false,
+                        ),
+                        onClick = { onEventSend(Event.IssuerCardPressed) }
+                    )
+                }
 
                 ButtonsSection(
                     onEventSend = onEventSend
@@ -266,7 +264,7 @@ private fun Content(
 @Composable
 private fun SheetContent(
     sheetContent: DocumentDetailsBottomSheetContent,
-    onEventSent: (event: Event) -> Unit
+    onEventSent: (event: Event) -> Unit,
 ) {
     when (sheetContent) {
         is DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation ->

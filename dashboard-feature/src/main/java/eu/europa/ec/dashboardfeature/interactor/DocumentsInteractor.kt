@@ -250,8 +250,7 @@ class DocumentsInteractorImpl(
                     data = ListItemData(
                         itemId = document.id,
                         mainContentData = ListItemMainContentData.Text(text = document.name),
-                        overlineText = localizedIssuerMetadata?.name
-                            ?: "Test Issuer ${document.name}",
+                        overlineText = localizedIssuerMetadata?.name,
                         supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
                                 document.validUntil.formatInstant(),
                         leadingContentData = ListItemLeadingContentData.AsyncImage(

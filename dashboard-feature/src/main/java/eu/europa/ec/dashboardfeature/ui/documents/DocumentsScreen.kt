@@ -94,7 +94,7 @@ fun DocumentsScreen(
         skipPartiallyExpanded = true
     )
     ContentScreen(
-        isLoading = false,
+        isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
         topBar = {
             TopBar(

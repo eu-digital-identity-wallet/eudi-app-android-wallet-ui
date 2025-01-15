@@ -23,6 +23,7 @@ import eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDoc
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -73,12 +74,9 @@ class DocumentIssuanceSuccessInteractorImpl(
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-                    //TODO where do we get this information from?
-                    document.data.metadata?.credentialIssuerIdentifier?.let { safeIssuerName ->
+                    document.localizedIssuerMetadata(resourceProvider.getLocale())?.name?.let { safeIssuerName ->
                         issuerName = safeIssuerName
                     }
-
-                    issuerIsTrusted = true //TODO where do we get this information from?
 
                     val detailsDocumentItems = document.data.claims
                         .map { claim ->

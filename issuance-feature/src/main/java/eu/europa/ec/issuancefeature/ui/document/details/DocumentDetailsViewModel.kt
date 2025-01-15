@@ -38,6 +38,7 @@ import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import java.net.URI
 
 data class State(
     val isLoading: Boolean = true,
@@ -46,6 +47,8 @@ data class State(
 
     val document: DocumentUi? = null,
     val title: String? = null,
+    val issuerName: String? = null,
+    val issuerLogo: URI? = null,
     val documentDetailsSectionTitle: String,
     val documentIssuerSectionTitle: String,
 
@@ -207,6 +210,8 @@ class DocumentDetailsViewModel(
                                 document = documentUi,
                                 title = documentUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
+                                issuerName = response.issuerName,
+                                issuerLogo = response.issuerLogo
                             )
                         }
                     }

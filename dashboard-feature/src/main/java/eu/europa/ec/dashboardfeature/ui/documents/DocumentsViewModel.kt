@@ -96,7 +96,8 @@ class DocumentsViewModel(
                 setState {
                     copy(
                         documents = interactor.getAllDocuments(),
-                        filters = interactor.getFilters()
+                        filters = interactor.getFilters(),
+                        isLoading = false
                     )
                 }
             }

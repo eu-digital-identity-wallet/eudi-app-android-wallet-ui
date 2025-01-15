@@ -107,11 +107,6 @@
     <string name="content_description_authenticate_icon">Authentication ID cards</string>
     <string name="content_description_change_pin_icon">Change PIN</string>
 
-    <!-- Placeholder content-->
-    <string name="placeholder_content_issuer">Placeholder Issuer</string>
-    <string name="placeholder_content_category">Government agency</string>
-    <string name="placeholder_content_location">Athens - Greece</string>
-
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
     <string name="biometric_prompt_subtitle">Authenticate using your biometrics</string>

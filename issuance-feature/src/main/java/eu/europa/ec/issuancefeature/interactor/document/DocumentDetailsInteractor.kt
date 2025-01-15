@@ -22,6 +22,7 @@ import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetail
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocumentId
@@ -34,9 +35,12 @@ import eu.europa.ec.storagelogic.model.Bookmark
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import java.net.URI
 
 sealed class DocumentDetailsInteractorPartialState {
     data class Success(
+        val issuerName: String?,
+        val issuerLogo: URI?,
         val documentDetailsDomain: DocumentDetailsDomain,
         val documentIsBookmarked: Boolean,
     ) : DocumentDetailsInteractorPartialState()
@@ -109,12 +113,18 @@ class DocumentDetailsInteractorImpl(
 
                 val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
 
+                val issuerName = safeIssuedDocument.localizedIssuerMetadata(resourceProvider.getLocale())?.name
+
+                val issuerLogo = safeIssuedDocument.localizedIssuerMetadata(resourceProvider.getLocale())?.logo
+
                 val documentIsBookmarked = bookmarkStorageController.retrieve(documentId) != null
 
                 emit(
                     DocumentDetailsInteractorPartialState.Success(
+                        issuerName = issuerName,
                         documentDetailsDomain = documentDetailsDomain,
                         documentIsBookmarked = documentIsBookmarked,
+                        issuerLogo = issuerLogo?.uri
                     )
                 )
             } ?: emit(DocumentDetailsInteractorPartialState.Failure(error = genericErrorMsg))

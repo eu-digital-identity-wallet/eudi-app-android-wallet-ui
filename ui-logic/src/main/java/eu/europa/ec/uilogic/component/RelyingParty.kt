@@ -34,9 +34,10 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.wrap.TextConfig
+import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
-import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapText
+import java.net.URI
 
 /**
  * Data class representing information about a Relying Party.
@@ -49,7 +50,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapText
  * @property descriptionTextConfig Optional [TextConfig] for styling the description text.
  */
 data class RelyingPartyData(
-    val logo: IconData? = null,
+    val logo: URI? = null,
     val isVerified: Boolean,
     val name: String,
     val nameTextConfig: TextConfig? = null,
@@ -71,7 +72,7 @@ fun RelyingParty(
     ) {
         with(relyingPartyData) {
             logo?.let { safeLogo ->
-                WrapImage(iconData = safeLogo)
+                WrapAsyncImage(source = safeLogo.toString())
             }
 
             Row(

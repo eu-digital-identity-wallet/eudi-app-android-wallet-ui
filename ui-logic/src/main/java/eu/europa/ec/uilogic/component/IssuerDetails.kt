@@ -38,9 +38,10 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
+import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
-import eu.europa.ec.uilogic.component.wrap.WrapImage
+import java.net.URI
 
 /**
  * Data class representing the information displayed on an issuer details card.
@@ -55,10 +56,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
  * @property issuerIsVerified Indicates whether the issuer is verified.
  */
 data class IssuerDetailsCardData(
-    val issuerName: String,
-    val issuerLogo: IconData,
-    val issuerCategory: String,
-    val issuerLocation: String,
+    val issuerName: String?,
+    val issuerLogo: URI?,
     val issuerIsVerified: Boolean,
 )
 
@@ -103,7 +102,7 @@ fun IssuerDetailsCard(
                 verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                WrapImage(iconData = item.issuerLogo)
+                WrapAsyncImage(source = item.issuerLogo.toString())
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -124,37 +123,20 @@ fun IssuerDetailsCard(
                             customTint = MaterialTheme.colorScheme.success,
                         )
                     }
-                    Text(
-                        text = item.issuerName,
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    item.issuerName?.let { safeIssuerName ->
+                        Text(
+                            text = safeIssuerName,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
-            }
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                SecondaryText(text = item.issuerCategory)
-                SecondaryText(text = item.issuerLocation)
             }
         }
     }
-}
-
-@Composable
-private fun SecondaryText(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyMedium.copy(
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        ),
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
 }
 
 @ThemeModePreviews
@@ -164,10 +146,8 @@ private fun IssuerDetailsCardPreview() {
         Column(modifier = Modifier.fillMaxWidth()) {
             val issuerDetails = IssuerDetailsCardData(
                 issuerName = "Hellenic Government",
-                issuerLogo = AppIcons.Add,
-                issuerCategory = "Government agency",
-                issuerLocation = "Athens - Greece",
-                issuerIsVerified = true,
+                issuerLogo = URI.create("www.logo.gr"),
+                issuerIsVerified = false,
             )
 
             IssuerDetailsCard(
