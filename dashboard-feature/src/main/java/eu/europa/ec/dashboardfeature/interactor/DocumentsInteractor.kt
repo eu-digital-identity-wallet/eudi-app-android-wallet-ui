@@ -31,8 +31,8 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.MainContentData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 
@@ -85,7 +85,7 @@ class DocumentsInteractorImpl(
     private val expandableFilterByExpiryPeriod = ExpandableListItemData(
         collapsed = ListItemData(
             itemId = FILTER_BY_PERIOD_GROUP_ID,
-            mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period)),
+            mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period)),
             trailingContentData = ListItemTrailingContentData.Icon(
                 iconData = AppIcons.KeyboardArrowDown
             )
@@ -93,7 +93,7 @@ class DocumentsInteractorImpl(
         expanded = listOf(
             ListItemData(
                 itemId = FILTER_BY_PERIOD_NEXT_7,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_1)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_1)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
@@ -103,7 +103,7 @@ class DocumentsInteractorImpl(
             ),
             ListItemData(
                 itemId = FILTER_BY_PERIOD_NEXT_30,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_2)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_2)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
@@ -113,7 +113,7 @@ class DocumentsInteractorImpl(
             ),
             ListItemData(
                 itemId = FILTER_BY_PERIOD_BEYOND_30,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_3)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_3)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
@@ -123,7 +123,7 @@ class DocumentsInteractorImpl(
             ),
             ListItemData(
                 itemId = FILTER_BY_PERIOD_EXPIRED,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_4)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_4)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
@@ -137,7 +137,7 @@ class DocumentsInteractorImpl(
     private val expandableSortFilters = ExpandableListItemData(
         collapsed = ListItemData(
             itemId = FILTER_SORT_GROUP_ID,
-            mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_by)),
+            mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_by)),
             trailingContentData = ListItemTrailingContentData.Icon(
                 iconData = AppIcons.KeyboardArrowDown
             )
@@ -145,7 +145,7 @@ class DocumentsInteractorImpl(
         expanded = listOf(
             ListItemData(
                 itemId = FILTER_SORT_DEFAULT,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_default)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_default)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = true,
@@ -155,7 +155,7 @@ class DocumentsInteractorImpl(
             ),
             ListItemData(
                 itemId = FILTER_SORT_DATE_ISSUED,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
@@ -165,7 +165,7 @@ class DocumentsInteractorImpl(
             ),
             ListItemData(
                 itemId = FILTER_SORT_EXPIRY_DATE,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
@@ -179,7 +179,7 @@ class DocumentsInteractorImpl(
     private var issuerFilters = ExpandableListItemData(
         collapsed = ListItemData(
             itemId = FILTER_BY_ISSUER_GROUP_ID,
-            mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer)),
+            mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer)),
             trailingContentData = ListItemTrailingContentData.Icon(
                 iconData = AppIcons.KeyboardArrowDown
             )
@@ -190,7 +190,7 @@ class DocumentsInteractorImpl(
     private val expandableFilterByState = ExpandableListItemData(
         collapsed = ListItemData(
             itemId = FILTER_BY_STATE_GROUP_ID,
-            mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state)),
+            mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state)),
             trailingContentData = ListItemTrailingContentData.Icon(
                 iconData = AppIcons.KeyboardArrowDown
             )
@@ -198,7 +198,7 @@ class DocumentsInteractorImpl(
         expanded = listOf(
             ListItemData(
                 itemId = FILTER_BY_STATE_VALID,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
@@ -208,7 +208,7 @@ class DocumentsInteractorImpl(
             ),
             ListItemData(
                 itemId = FILTER_BY_STATE_EXPIRED,
-                mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired)),
+                mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired)),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
@@ -220,7 +220,11 @@ class DocumentsInteractorImpl(
     )
 
     private val filterList =
-        mutableListOf(expandableSortFilters, expandableFilterByExpiryPeriod, expandableFilterByState)
+        mutableListOf(
+            expandableSortFilters,
+            expandableFilterByExpiryPeriod,
+            expandableFilterByState
+        )
     private var filterSnapshot = mutableListOf(
         expandableSortFilters,
         expandableFilterByExpiryPeriod,
@@ -234,7 +238,8 @@ class DocumentsInteractorImpl(
         documents.addAll(
             documentsController.getAllDocuments().map { document ->
                 document as IssuedDocument
-                val localizedIssuerMetadata = document.localizedIssuerMetadata(resourceProvider.getLocale())
+                val localizedIssuerMetadata =
+                    document.localizedIssuerMetadata(resourceProvider.getLocale())
 
                 FilterableDocumentItem(
                     filterableAttributes = FilterableAttributes(
@@ -243,7 +248,7 @@ class DocumentsInteractorImpl(
                     ),
                     data = ListItemData(
                         itemId = document.id,
-                        mainContentData = MainContentData.Text(text = document.name),
+                        mainContentData = ListItemMainContentData.Text(text = document.name),
                         overlineText = localizedIssuerMetadata?.name
                             ?: "Test Issuer ${document.name}",
                         supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
@@ -263,12 +268,12 @@ class DocumentsInteractorImpl(
         createIssuerFilter(documents.distinctBy { it.data.overlineText }
             .map { it.data.overlineText ?: "" })
         return documents.map { it.data }
-            .sortedBy { (it.mainContentData as MainContentData.Text).text }
+            .sortedBy { (it.mainContentData as ListItemMainContentData.Text).text }
     }
 
     override fun searchDocuments(query: String): List<ListItemData> {
         val result = documents.map { it.data }.filter {
-            (it.mainContentData as MainContentData.Text).text.lowercase()
+            (it.mainContentData as ListItemMainContentData.Text).text.lowercase()
                 .contains(query.lowercase())
         }
 
@@ -276,7 +281,7 @@ class DocumentsInteractorImpl(
             listOf(
                 ListItemData(
                     itemId = "",
-                    mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_search_no_results)),
+                    mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_search_no_results)),
                     overlineText = null,
                     supportingText = null,
                     leadingContentData = null,
@@ -308,7 +313,12 @@ class DocumentsInteractorImpl(
 
     override fun resetFilters(): DocumentInteractorPartialState.ResetFilters {
         filterSnapshot =
-            mutableListOf(expandableSortFilters, expandableFilterByExpiryPeriod, issuerFilters, expandableFilterByState)
+            mutableListOf(
+                expandableSortFilters,
+                expandableFilterByExpiryPeriod,
+                issuerFilters,
+                expandableFilterByState
+            )
         sortingOrder = DualSelectorButton.FIRST
         filterList.clear().run { filterList.addAll(filterSnapshot) }
         return DocumentInteractorPartialState.ResetFilters(
@@ -349,7 +359,7 @@ class DocumentsInteractorImpl(
                 }
 
                 FILTER_SORT_DEFAULT -> {
-                    filteredDocuments.sortByOrder(sortingOrder) { (it.data.mainContentData as MainContentData.Text).text }
+                    filteredDocuments.sortByOrder(sortingOrder) { (it.data.mainContentData as ListItemMainContentData.Text).text }
                 }
 
                 FILTER_SORT_DATE_ISSUED -> {
@@ -360,8 +370,9 @@ class DocumentsInteractorImpl(
                     filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.expiryDate }
                 }
 
-                "$FILTER_BY_ISSUER_GROUP_ID${(item.mainContentData as MainContentData.Text).text}" -> {
-                    val copiedDocumentList = documents.toList() // To prevent filtering against filtered results instead of all documents
+                "$FILTER_BY_ISSUER_GROUP_ID${(item.mainContentData as ListItemMainContentData.Text).text}" -> {
+                    val copiedDocumentList =
+                        documents.toList() // To prevent filtering against filtered results instead of all documents
                     copiedDocumentList.filter { document ->
                         document.data.overlineText == item.itemId.replace(
                             FILTER_BY_ISSUER_GROUP_ID,
@@ -390,7 +401,7 @@ class DocumentsInteractorImpl(
             listOf(
                 ListItemData(
                     itemId = "",
-                    mainContentData = MainContentData.Text(resourceProvider.getString(R.string.documents_screen_search_no_results)),
+                    mainContentData = ListItemMainContentData.Text(resourceProvider.getString(R.string.documents_screen_search_no_results)),
                     overlineText = null,
                     supportingText = null,
                     leadingContentData = null,
@@ -410,7 +421,7 @@ class DocumentsInteractorImpl(
         issuerFilters = issuerFilters.copy(expanded = filterList.map {
             ListItemData(
                 itemId = "$FILTER_BY_ISSUER_GROUP_ID$it",
-                mainContentData = MainContentData.Text(it),
+                mainContentData = ListItemMainContentData.Text(it),
                 trailingContentData = ListItemTrailingContentData.RadioButton(
                     radioButtonData = RadioButtonData(
                         isSelected = false,
