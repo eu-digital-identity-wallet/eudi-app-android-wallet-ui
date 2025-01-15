@@ -18,6 +18,7 @@ package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -187,7 +189,14 @@ private fun Content(
 ) {
     state.document?.let { documentUi ->
         Column(
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(
+                PaddingValues(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = 0.dp,
+                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                    end = paddingValues.calculateStartPadding(LayoutDirection.Ltr)
+                )
+            )
         ) {
             // Screen title
             ContentTitle(title = state.title)
