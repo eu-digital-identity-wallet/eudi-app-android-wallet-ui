@@ -220,7 +220,7 @@
     <string name="home_screen_welcome">Welcome back</string>
     <string name="home_screen_welcome_user_message">Welcome back, %1$s</string>
     <string name="home_screen_authentication_card_title">Authenticate, authorise transactions and share your digital documents in person or online.</string>
-    <string name="home_screen_sign_card_title">Electronically sign digital documents with your wallet by choosing a file from your device or by scanning a QR code.</string>
+    <string name="home_screen_sign_card_title">Electronically sign digital documents with your wallet by choosing a file from your device.</string>
     <string name="home_screen_authenticate">Authenticate</string>
     <string name="home_screen_authenticate_description">Authenticate by sharing your data in person (in close proximity) or online (website/service).</string>
     <string name="home_screen_sign">Sign</string>
