@@ -39,6 +39,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -89,6 +90,7 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     onDashboardEventSent: (DashboardEvent) -> Unit
 ) {
+    val context = LocalContext.current
     val state = viewModel.viewState.value
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
@@ -112,7 +114,7 @@ fun HomeScreen(
                 viewModel.setEvent(event)
             },
             onNavigationRequested = {
-                handleNavigationEffect(it, navHostController, navHostController.context)
+                handleNavigationEffect(it, navHostController, context)
             },
             coroutineScope = scope,
             modalBottomSheetState = bottomSheetState,
@@ -324,127 +326,114 @@ private fun HomeScreenSheetContent(
          * will be implemented in the future
          *
         is HomeScreenBottomSheetContent.Sign -> {
-            WrapModalBottomSheet(
-                onDismissRequest = {
-                    onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
-                },
-                sheetState = modalBottomSheetState
-            ) {
-                BottomSheetWithTwoBigIcons(
-                    textData = BottomSheetTextData(
-                        title = stringResource(R.string.home_screen_sign_document),
-                        message = stringResource(R.string.home_screen_sign_document_description)
-                    ),
-                    options = listOf(
-                        ModalOptionUi(
-                            title = stringResource(R.string.home_screen_sign_document_option_from_device),
-                            leadingIcon = AppIcons.SignDocumentFromDevice,
-                            leadingIconTint = MaterialTheme.colorScheme.primary,
-                            event = Event.BottomSheet.SignDocument.OpenDocumentFromDevice,
-                        ),
-                        ModalOptionUi(
-                            title = stringResource(R.string.home_screen_sign_document_option_scan_qr),
-                            leadingIcon = AppIcons.SignDocumentFromQr,
-                            leadingIconTint = MaterialTheme.colorScheme.primary,
-                            enabled = false,
-                            event = Event.BottomSheet.SignDocument.OpenDocumentFromQr,
-                        )
-                    ),
-                    onEventSent = {
-                        // invoke event
-                    }
-                )
-            }
+        WrapModalBottomSheet(
+        onDismissRequest = {
+        onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+        },
+        sheetState = modalBottomSheetState
+        ) {
+        BottomSheetWithTwoBigIcons(
+        textData = BottomSheetTextData(
+        title = stringResource(R.string.home_screen_sign_document),
+        message = stringResource(R.string.home_screen_sign_document_description)
+        ),
+        options = listOf(
+        ModalOptionUi(
+        title = stringResource(R.string.home_screen_sign_document_option_from_device),
+        leadingIcon = AppIcons.SignDocumentFromDevice,
+        leadingIconTint = MaterialTheme.colorScheme.primary,
+        event = Event.BottomSheet.SignDocument.OpenDocumentFromDevice,
+        ),
+        ModalOptionUi(
+        title = stringResource(R.string.home_screen_sign_document_option_scan_qr),
+        leadingIcon = AppIcons.SignDocumentFromQr,
+        leadingIconTint = MaterialTheme.colorScheme.primary,
+        enabled = false,
+        event = Event.BottomSheet.SignDocument.OpenDocumentFromQr,
+        )
+        ),
+        onEventSent = {
+        // invoke event
+        }
+        )
+        }
         }*/
 
         is HomeScreenBottomSheetContent.LearnMoreAboutAuthenticate -> {
-            WrapModalBottomSheet(
-                onDismissRequest = {
-                    onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
-                },
-                sheetState = modalBottomSheetState
-            ) {
-                GenericBottomSheet(
-                    titleContent = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            WrapIcon(
-                                iconData = AppIcons.Info,
-                                customTint = MaterialTheme.colorScheme.primary
-                            )
-                            HSpacer.Small()
-                            Text(
-                                text = stringResource(R.string.home_screen_authenticate),
-                                style = MaterialTheme.typography.headlineSmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                ),
-                            )
-                        }
-                    },
-                    bodyContent = {
-                        Column(verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)) {
-                            Text(
-                                stringResource(R.string.home_screen_sign_learn_more_inner_title),
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                            Text(
-                                stringResource(R.string.home_screen_sign_learn_more_description),
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                        }
+
+            GenericBottomSheet(
+                titleContent = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WrapIcon(
+                            iconData = AppIcons.Info,
+                            customTint = MaterialTheme.colorScheme.primary
+                        )
+                        HSpacer.Small()
+                        Text(
+                            text = stringResource(R.string.home_screen_authenticate),
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            ),
+                        )
                     }
-                )
-            }
+                },
+                bodyContent = {
+                    Column(verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)) {
+                        Text(
+                            stringResource(R.string.home_screen_sign_learn_more_inner_title),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                        Text(
+                            stringResource(R.string.home_screen_sign_learn_more_description),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                    }
+                }
+            )
         }
 
         is HomeScreenBottomSheetContent.LearnMoreAboutSignDocument -> {
-            WrapModalBottomSheet(
-                onDismissRequest = {
-                    onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
-                },
-                sheetState = modalBottomSheetState
-            ) {
-                GenericBottomSheet(
-                    titleContent = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            WrapIcon(
-                                iconData = AppIcons.Info,
-                                customTint = MaterialTheme.colorScheme.primary
+            GenericBottomSheet(
+                titleContent = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WrapIcon(
+                            iconData = AppIcons.Info,
+                            customTint = MaterialTheme.colorScheme.primary
+                        )
+                        HSpacer.Small()
+                        Text(
+                            stringResource(R.string.home_screen_sign),
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                            HSpacer.Small()
-                            Text(
-                                stringResource(R.string.home_screen_sign),
-                                style = MaterialTheme.typography.headlineSmall.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                        }
-                    },
-                    bodyContent = {
-                        Column(verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)) {
-                            Text(
-                                stringResource(R.string.home_screen_authenticate_learn_more_inner_title),
-                                style = MaterialTheme.typography.titleMedium.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                            Text(
-                                stringResource(R.string.home_screen_authenticate_learn_more_description),
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                        }
+                        )
                     }
-                )
-            }
+                },
+                bodyContent = {
+                    Column(verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)) {
+                        Text(
+                            stringResource(R.string.home_screen_authenticate_learn_more_inner_title),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                        Text(
+                            stringResource(R.string.home_screen_authenticate_learn_more_description),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        )
+                    }
+                }
+            )
         }
 
         is HomeScreenBottomSheetContent.Bluetooth -> {

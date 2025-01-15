@@ -32,8 +32,9 @@ sealed class HomeInteractorGetUserNameViaMainPidDocumentPartialState {
         val userFirstName: String,
     ) : HomeInteractorGetUserNameViaMainPidDocumentPartialState()
 
-    data class Failure(val error: String) :
-        HomeInteractorGetUserNameViaMainPidDocumentPartialState()
+    data class Failure(
+        val error: String
+    ) : HomeInteractorGetUserNameViaMainPidDocumentPartialState()
 }
 
 interface HomeInteractor {
