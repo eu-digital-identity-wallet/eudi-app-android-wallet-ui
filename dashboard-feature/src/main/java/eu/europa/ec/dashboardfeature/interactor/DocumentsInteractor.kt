@@ -79,6 +79,7 @@ class DocumentsInteractorImpl(
 ) : DocumentsInteractor {
 
     private val documents: MutableList<FilterableDocumentItem> = mutableListOf()
+    private var filteredDocuments: MutableList<FilterableDocumentItem> = mutableListOf()
     private var sortingOrder: DualSelectorButton = DualSelectorButton.FIRST
 
     //#region Filters
@@ -265,18 +266,20 @@ class DocumentsInteractorImpl(
             }
         )
 
-        createIssuerFilter(documents.distinctBy { it.data.overlineText }
+        filteredDocuments.clear().run { filteredDocuments.addAll(documents) }
+        createIssuerFilter(filteredDocuments.distinctBy { it.data.overlineText }
             .map { it.data.overlineText ?: "" })
         return documents.map { it.data }
             .sortedBy { (it.mainContentData as ListItemMainContentData.Text).text }
     }
 
     override fun searchDocuments(query: String): List<ListItemData> {
-        val result = documents.map { it.data }.filter {
+        val result = filteredDocuments.map { it.data }.filter {
             (it.mainContentData as ListItemMainContentData.Text).text.lowercase()
                 .contains(query.lowercase())
         }
 
+        createIssuerFilter(result.distinctBy { it.overlineText }.map { it.overlineText ?: "" })
         return result.ifEmpty {
             listOf(
                 ListItemData(
@@ -321,6 +324,7 @@ class DocumentsInteractorImpl(
             )
         sortingOrder = DualSelectorButton.FIRST
         filterList.clear().run { filterList.addAll(filterSnapshot) }
+        filteredDocuments.clear().run { filteredDocuments.addAll(documents) }
         return DocumentInteractorPartialState.ResetFilters(
             documents = documents.map { it.data },
             filters = filterSnapshot
@@ -330,67 +334,64 @@ class DocumentsInteractorImpl(
     override fun applyFilters(queriedDocuments: List<ListItemData>): List<ListItemData> {
         filterList.clear().run { filterList.addAll(filterSnapshot) }
         val selectedFilters = getSelectedItems(filterList)
-        var filteredDocuments = documents.filter { queriedDocuments.contains(it.data) }
 
         selectedFilters.forEach { item ->
             filteredDocuments = when (item.itemId) {
                 FILTER_BY_PERIOD_NEXT_7 -> {
                     filteredDocuments.filter { document ->
                         document.filterableAttributes.expiryDate.isWithinNextDays(7)
-                    }
+                    }.toMutableList()
                 }
 
                 FILTER_BY_PERIOD_NEXT_30 -> {
                     filteredDocuments.filter { document ->
                         document.filterableAttributes.expiryDate.isWithinNextDays(30)
-                    }
+                    }.toMutableList()
                 }
 
                 FILTER_BY_PERIOD_BEYOND_30 -> {
                     filteredDocuments.filter { document ->
                         document.filterableAttributes.expiryDate.isBeyondNextDays(30)
-                    }
+                    }.toMutableList()
                 }
 
                 FILTER_BY_PERIOD_EXPIRED -> {
                     filteredDocuments.filter { document ->
                         document.filterableAttributes.expiryDate.isExpired()
-                    }
+                    }.toMutableList()
                 }
 
                 FILTER_SORT_DEFAULT -> {
-                    filteredDocuments.sortByOrder(sortingOrder) { (it.data.mainContentData as ListItemMainContentData.Text).text }
+                    filteredDocuments.sortByOrder(sortingOrder) { (it.data.mainContentData as ListItemMainContentData.Text).text }.toMutableList()
                 }
 
                 FILTER_SORT_DATE_ISSUED -> {
-                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.issuedDate }
+                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.issuedDate }.toMutableList()
                 }
 
                 FILTER_SORT_EXPIRY_DATE -> {
-                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.expiryDate }
+                    filteredDocuments.sortByOrder(sortingOrder) { it.filterableAttributes.expiryDate }.toMutableList()
                 }
 
                 "$FILTER_BY_ISSUER_GROUP_ID${(item.mainContentData as ListItemMainContentData.Text).text}" -> {
-                    val copiedDocumentList =
-                        documents.toList() // To prevent filtering against filtered results instead of all documents
-                    copiedDocumentList.filter { document ->
+                    filteredDocuments.filter { document ->
                         document.data.overlineText == item.itemId.replace(
                             FILTER_BY_ISSUER_GROUP_ID,
                             ""
                         )
-                    }
+                    }.toMutableList()
                 }
 
                 FILTER_BY_STATE_VALID -> {
                     filteredDocuments.filter { document ->
                         !document.filterableAttributes.expiryDate.isExpired()
-                    }
+                    }.toMutableList()
                 }
 
                 FILTER_BY_STATE_EXPIRED -> {
                     filteredDocuments.filter { document ->
                         document.filterableAttributes.expiryDate.isExpired()
-                    }
+                    }.toMutableList()
                 }
 
                 else -> filteredDocuments

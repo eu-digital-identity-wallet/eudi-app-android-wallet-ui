@@ -290,16 +290,18 @@ private fun FiltersBottomSheet(
                     onEventSend(Event.OnSortingOrderChanged(it))
                 }
                 filters.forEachIndexed { index, filter ->
-                    WrapExpandableListItem(
-                        data = filter,
-                        isExpanded = expandStateList[index],
-                        onExpandedChange = { expandStateList[index] = !expandStateList[index] },
-                        onItemClick = {
-                            val id = it.itemId
-                            val groupId = filter.collapsed.itemId
-                            onEventSend(Event.OnFilterSelectionChanged(id, groupId))
-                        }
-                    )
+                    if (filter.expanded.isNotEmpty()){
+                        WrapExpandableListItem(
+                            data = filter,
+                            isExpanded = expandStateList[index],
+                            onExpandedChange = { expandStateList[index] = !expandStateList[index] },
+                            onItemClick = {
+                                val id = it.itemId
+                                val groupId = filter.collapsed.itemId
+                                onEventSend(Event.OnFilterSelectionChanged(id, groupId))
+                            }
+                        )
+                    }
                 }
 
                     VSpacer.Large()
