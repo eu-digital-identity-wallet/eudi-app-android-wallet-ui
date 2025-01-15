@@ -17,7 +17,6 @@
 package eu.europa.ec.dashboardfeature.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,7 +40,9 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 
 @Composable
 fun FiltersSearchBar(
@@ -79,19 +80,18 @@ fun FiltersSearchBar(
             )
         )
 
-        Box(
-            modifier = Modifier
-                .clickable { onFilterClick() }
-                .padding(all = SPACING_MEDIUM.dp)
-        ) {
-            WrapIcon(
+        Box {
+            WrapIconButton(
                 iconData = AppIcons.Filters,
                 customTint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            ) {
+                onFilterClick()
+            }
             if (isFilteringActive) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
+                        .padding(top = SPACING_SMALL.dp, end = SPACING_SMALL.dp)
                         .size((SIZE_SMALL * 1.5).dp)
                         .background(MaterialTheme.colorScheme.primary, CircleShape)
                 )

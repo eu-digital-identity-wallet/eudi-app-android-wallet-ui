@@ -16,7 +16,6 @@
 
 package eu.europa.ec.dashboardfeature.ui.documents
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,7 +40,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -73,7 +71,6 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
@@ -144,14 +141,11 @@ private fun TopBar(
             style = MaterialTheme.typography.headlineLarge,
             text = stringResource(R.string.documents_screen_title)
         )
-        WrapIcon(
-            modifier = Modifier
-                .clickable {
-                    onEventSend(Event.ShowAddDocumentBottomSheet(isOpen = true))
-                }
-                .align(Alignment.CenterVertically),
+        WrapIconButton(
             iconData = AppIcons.Add
-        )
+        ){
+            onEventSend(Event.ShowAddDocumentBottomSheet(isOpen = true))
+        }
     }
 }
 
