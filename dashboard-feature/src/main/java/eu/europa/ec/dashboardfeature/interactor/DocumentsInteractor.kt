@@ -430,10 +430,10 @@ class DocumentsInteractorImpl(
                 )
             )
         })
-        this.filterList.remove(issuerFilters)
+        this.filterList.removeIf { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
         this.filterList.add(issuerFilters)
 
-        this.filterSnapshot.remove(issuerFilters)
+        this.filterSnapshot.removeIf { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
         this.filterSnapshot.add(issuerFilters)
     }
 

@@ -85,7 +85,10 @@ fun DashboardScreenNew(
             composable(BottomNavigationItem.Documents.route) {
                 DocumentsScreen(
                     hostNavController,
-                    documentsViewModel
+                    documentsViewModel,
+                    onDashboardEventSent = { event ->
+                        viewModel.setEvent(event)
+                    }
                 )
             }
             composable(BottomNavigationItem.Transactions.route) {

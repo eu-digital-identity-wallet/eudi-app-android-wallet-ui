@@ -83,7 +83,7 @@ class DocumentsViewModel(
         return State(
             isLoading = true, sortingOrderButtonData = DualSelectorButtonData(
                 first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
-                second = resourceProvider.getString(R.string.documents_screen_filters_ascending),
+                second = resourceProvider.getString(R.string.documents_screen_filters_descending),
                 selectedButton = DualSelectorButton.FIRST,
             ),
             isFilteringActive = false
@@ -119,10 +119,12 @@ class DocumentsViewModel(
             }
 
             is Event.GoToAddDocument -> {
+                setState { copy(showAddDocumentBottomSheet = false) }
                 goToAddDocument()
             }
 
             is Event.GoToQrScan -> {
+                setState { copy(showAddDocumentBottomSheet = false) }
                 goToQrScan()
             }
 

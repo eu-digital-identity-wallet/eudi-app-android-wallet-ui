@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -60,6 +61,7 @@ import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
@@ -70,15 +72,23 @@ import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
+typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Event
+typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Event.SideMenu.Show
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewModel) {
+fun DocumentsScreen(
+    navHostController: NavController,
+    viewModel: DocumentsViewModel,
+    onDashboardEventSent: (DashboardEvent) -> Unit,
+) {
     val state = viewModel.viewState.value
 
     val bottomSheetState = rememberModalBottomSheetState(
@@ -87,7 +97,12 @@ fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewMo
     ContentScreen(
         isLoading = false,
         navigatableAction = ScreenNavigateAction.NONE,
-        topBar = { TopBar { viewModel.setEvent(it) } },
+        topBar = {
+            TopBar(
+                onEventSend = { viewModel.setEvent(it) },
+                onDashboardEventSent = onDashboardEventSent
+            )
+        },
     ) { paddingValues ->
         Content(
             paddingValues = paddingValues,
@@ -101,13 +116,25 @@ fun DocumentsScreen(navHostController: NavController, viewModel: DocumentsViewMo
 }
 
 @Composable
-private fun TopBar(onEventSend: (Event) -> Unit) {
+private fun TopBar(
+    onEventSend: (Event) -> Unit,
+    onDashboardEventSent: (DashboardEvent) -> Unit,
+) {
     Row(
         modifier = Modifier
             .height(SIZE_XX_LARGE.dp)
             .fillMaxSize()
             .padding(SPACING_MEDIUM.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
+        WrapIconButton(
+            modifier = Modifier.offset(x = -SPACING_SMALL.dp),
+            iconData = AppIcons.Menu,
+            shape = null
+        ) {
+            onDashboardEventSent(ShowSideMenuEvent)
+        }
+
         Text(
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
@@ -148,10 +175,12 @@ private fun Content(
         item {
             val searchItem =
                 SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
-            FiltersSearchBar(placeholder = searchItem.searchLabel,
+            FiltersSearchBar(
+                placeholder = searchItem.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.ShowFiltersBottomSheet(isOpen = true)) },
-                isFilteringActive = state.isFilteringActive)
+                isFilteringActive = state.isFilteringActive
+            )
         }
         items(state.documents) { documentItemData ->
             WrapListItem(
