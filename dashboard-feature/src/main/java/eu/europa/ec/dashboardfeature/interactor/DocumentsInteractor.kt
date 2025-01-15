@@ -373,7 +373,7 @@ class DocumentsInteractorImpl(
                                         ),
                                         trailingContentData = ListItemTrailingContentData.Icon(
                                             iconData = AppIcons.ClockTimer,
-                                            tint = ThemeColors.pending,
+                                            tint = ThemeColors.warning,
                                         )
                                     ),
                                     documentIdentifier = document.toDocumentIdentifier(),

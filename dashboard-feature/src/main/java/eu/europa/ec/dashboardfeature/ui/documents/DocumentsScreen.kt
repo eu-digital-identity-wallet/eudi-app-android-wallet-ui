@@ -54,7 +54,7 @@ import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.pending
+import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
@@ -222,7 +222,7 @@ private fun Content(
                 },
                 supportingTextColor = when (documentItem.documentIssuanceState) {
                     DocumentUiIssuanceState.Issued -> null
-                    DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.pending
+                    DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
                     DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
                 }
             )
