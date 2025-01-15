@@ -55,9 +55,7 @@ data class State(
     val signCardConfig: ActionCardConfig,
 
     val bleAvailability: BleAvailability = BleAvailability.UNKNOWN,
-    val isBleCentralClientModeEnabled: Boolean = false,
-
-    val allowUserInteraction: Boolean = false,
+    val isBleCentralClientModeEnabled: Boolean = false
 ) : ViewState
 
 sealed class Event : ViewEvent {

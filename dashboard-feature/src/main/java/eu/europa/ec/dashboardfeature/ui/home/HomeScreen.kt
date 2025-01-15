@@ -474,7 +474,6 @@ private fun RequiredPermissionsAsk(
     state: State,
     onEventSend: (Event) -> Unit
 ) {
-
     val permissions: MutableList<String> = mutableListOf()
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
