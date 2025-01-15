@@ -277,15 +277,17 @@ private fun FiltersBottomSheet(
         sheetState = modalBottomSheetState
     ) {
 
-        GenericBottomSheet(titleContent = {
-            Text(
-                text = stringResource(R.string.documents_screen_filters_title),
-                style = MaterialTheme.typography.headlineSmall
-            )
-        }) {
-            val expandStateList by remember {
-                mutableStateOf(filters.map { false }.toMutableStateList())
-            }
+        GenericBottomSheet(
+            titleContent = {
+                Text(
+                    text = stringResource(R.string.documents_screen_filters_title),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            bodyContent = {
+                val expandStateList by remember {
+                    mutableStateOf(filters.map { false }.toMutableStateList())
+                }
 
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -306,30 +308,31 @@ private fun FiltersBottomSheet(
                     )
                 }
 
-                VSpacer.Large()
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    WrapButton(
-                        modifier = Modifier.weight(1f),
-                        buttonConfig = ButtonConfig(type = ButtonType.SECONDARY, onClick = {
-                            onEventSend(Event.OnFiltersReset)
-                        })
+                    VSpacer.Large()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Text(text = stringResource(R.string.documents_screen_filters_reset))
-                    }
-                    HSpacer.Small()
-                    WrapButton(
-                        modifier = Modifier.weight(1f),
-                        buttonConfig = ButtonConfig(type = ButtonType.PRIMARY, onClick = {
-                            onEventSend(Event.OnFiltersApply)
-                        })
-                    ) {
-                        Text(text = stringResource(R.string.documents_screen_filters_apply))
+                        WrapButton(
+                            modifier = Modifier.weight(1f),
+                            buttonConfig = ButtonConfig(type = ButtonType.SECONDARY, onClick = {
+                                onEventSend(Event.OnFiltersReset)
+                            })
+                        ) {
+                            Text(text = stringResource(R.string.documents_screen_filters_reset))
+                        }
+                        HSpacer.Small()
+                        WrapButton(
+                            modifier = Modifier.weight(1f),
+                            buttonConfig = ButtonConfig(type = ButtonType.PRIMARY, onClick = {
+                                onEventSend(Event.OnFiltersApply)
+                            })
+                        ) {
+                            Text(text = stringResource(R.string.documents_screen_filters_apply))
+                        }
                     }
                 }
             }
-        }
+        )
     }
 }
