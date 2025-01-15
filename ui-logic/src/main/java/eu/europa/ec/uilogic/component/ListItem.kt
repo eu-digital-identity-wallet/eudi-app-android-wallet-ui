@@ -38,7 +38,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
 import eu.europa.ec.uilogic.component.ListItemMainContentData.Image
@@ -54,6 +53,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
+import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapImage
@@ -109,7 +109,12 @@ sealed class ListItemMainContentData {
  */
 sealed class ListItemLeadingContentData {
     data class Icon(val iconData: IconData) : ListItemLeadingContentData()
-    data class AsyncImage(val imageUrl: String) : ListItemLeadingContentData()
+    data class AsyncImage(
+        val imageUrl: String,
+        val errorImage: IconData? = null,
+        val placeholderImage: IconData? = null,
+    ) : ListItemLeadingContentData()
+
     data class UserImage(val userBase64Image: String) : ListItemLeadingContentData()
 }
 
@@ -230,8 +235,10 @@ fun ListItem(
                             base64Image = safeLeadingContentData.userBase64Image,
                         )
 
-                        is ListItemLeadingContentData.AsyncImage -> AsyncImage(
-                            model = safeLeadingContentData.imageUrl,
+                        is ListItemLeadingContentData.AsyncImage -> WrapAsyncImage(
+                            source = safeLeadingContentData.imageUrl,
+                            error = safeLeadingContentData.errorImage,
+                            placeholder = safeLeadingContentData.placeholderImage,
                             contentDescription = ""
                         )
                     }

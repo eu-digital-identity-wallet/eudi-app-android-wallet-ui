@@ -16,9 +16,9 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.dashboardfeature.extensions.isBeyondNextDays
 import eu.europa.ec.dashboardfeature.extensions.isExpired
 import eu.europa.ec.dashboardfeature.extensions.isWithinNextDays
@@ -234,9 +234,7 @@ class DocumentsInteractorImpl(
         documents.addAll(
             documentsController.getAllDocuments().map { document ->
                 document as IssuedDocument
-                val localizedIssuerMetadata = document.data.metadata?.issuerDisplay?.firstOrNull {
-                    resourceProvider.getLocale().compareLocaleLanguage(it.locale)
-                }
+                val localizedIssuerMetadata = document.localizedIssuerMetadata(resourceProvider.getLocale())
 
                 FilterableDocumentItem(
                     filterableAttributes = FilterableAttributes(
@@ -251,7 +249,8 @@ class DocumentsInteractorImpl(
                         supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
                                 document.validUntil.formatInstant(),
                         leadingContentData = ListItemLeadingContentData.AsyncImage(
-                            imageUrl = localizedIssuerMetadata?.logo?.uri.toString()
+                            imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
+                            errorImage = AppIcons.Id,
                         ),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowRight
