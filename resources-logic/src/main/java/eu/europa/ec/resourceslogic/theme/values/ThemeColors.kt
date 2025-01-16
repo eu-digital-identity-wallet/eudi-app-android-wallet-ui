@@ -233,6 +233,13 @@ class ThemeColors {
                 Color(eudiw_theme_light_pending)
             }
 
+        val error: Color
+            get() = if (isInDarkMode) {
+                Color(eudiw_theme_dark_error)
+            } else {
+                Color(eudiw_theme_light_error)
+            }
+
         val divider: Color
             get() = if (isInDarkMode) {
                 Color(eudiw_theme_dark_divider)

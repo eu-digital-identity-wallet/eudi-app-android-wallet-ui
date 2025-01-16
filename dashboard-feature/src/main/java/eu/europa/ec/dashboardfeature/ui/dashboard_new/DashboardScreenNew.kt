@@ -21,6 +21,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -40,8 +42,6 @@ import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
 import eu.europa.ec.dashboardfeature.ui.sidemenu.SideMenuScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
-import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
@@ -63,13 +63,13 @@ fun DashboardScreenNew(
     val bottomNavigationController = rememberNavController()
     val state = viewModel.viewState.value
 
-    ContentScreen(
-        isLoading = false,
-        navigatableAction = ScreenNavigateAction.NONE,
-        onBack = { viewModel.setEvent(Event.Pop) },
+    Scaffold(
         bottomBar = { BottomNavigationBar(bottomNavigationController) }
-    ) {
+    ) { padding ->
         NavHost(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
             navController = bottomNavigationController,
             startDestination = BottomNavigationItem.Home.route
         ) {

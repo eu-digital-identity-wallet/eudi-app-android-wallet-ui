@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -105,6 +108,7 @@ fun DocumentsScreen(
     ContentScreen(
         isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
+        onBack = { context.finish() },
         topBar = {
             TopBar(
                 onEventSend = { viewModel.setEvent(it) },
@@ -195,7 +199,15 @@ private fun Content(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues = paddingValues),
+            .padding(
+                paddingValues = PaddingValues(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = 0.dp,
+                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+                )
+            ),
+        contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         item {

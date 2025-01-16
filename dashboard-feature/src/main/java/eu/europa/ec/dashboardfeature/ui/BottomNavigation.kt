@@ -72,7 +72,7 @@ fun BottomNavigationBar(navController: NavController) {
     val currentDestination = navBackStackEntry?.destination
 
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
         navItems.forEach { screen ->
             NavigationBarItem(

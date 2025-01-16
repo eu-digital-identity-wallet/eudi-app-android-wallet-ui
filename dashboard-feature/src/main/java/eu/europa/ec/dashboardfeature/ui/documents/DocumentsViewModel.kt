@@ -30,9 +30,11 @@ import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
@@ -301,7 +303,14 @@ class DocumentsViewModel(
                             .map { documentUi ->
                                 if (documentUi.uiData.itemId in deferredFailedDocIds) {
                                     documentUi.copy(
-                                        documentIssuanceState = DocumentUiIssuanceState.Failed
+                                        documentIssuanceState = DocumentUiIssuanceState.Failed,
+                                        uiData = documentUi.uiData.copy(
+                                            supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
+                                            trailingContentData = ListItemTrailingContentData.Icon(
+                                                iconData = AppIcons.ErrorFilled,
+                                                tint = ThemeColors.error
+                                            )
+                                        )
                                     )
                                 } else {
                                     documentUi

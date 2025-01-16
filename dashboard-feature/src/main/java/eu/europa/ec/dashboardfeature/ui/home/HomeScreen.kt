@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -41,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -70,6 +73,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapActionCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.extension.openBleSettings
 import kotlinx.coroutines.CoroutineScope
@@ -101,6 +105,7 @@ fun HomeScreen(
     ContentScreen(
         isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
+        onBack = { context.finish() },
         topBar = {
             TopBar(
                 onEventSent = onDashboardEventSent
@@ -187,7 +192,15 @@ private fun Content(
     val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
-            .padding(paddingValues)
+            .fillMaxSize()
+            .padding(
+                paddingValues = PaddingValues(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = 0.dp,
+                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+                )
+            )
             .verticalScroll(scrollState),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
@@ -225,6 +238,8 @@ private fun Content(
                 )
             }
         )
+
+        VSpacer.Medium()
     }
 
     if (state.bleAvailability == BleAvailability.NO_PERMISSION) {
