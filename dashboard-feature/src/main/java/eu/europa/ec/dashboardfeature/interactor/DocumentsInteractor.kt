@@ -75,6 +75,11 @@ sealed class DocumentInteractorPartialState {
         val documents: List<DocumentDetailsItemUi>,
         val filters: List<ExpandableListItemData>,
     ) : DocumentInteractorPartialState()
+
+    data class SearchResult(
+        val documents: List<DocumentDetailsItemUi>,
+        val filters: List<ExpandableListItemData>,
+    )
 }
 
 sealed class DocumentInteractorGetDocumentsPartialState {
@@ -95,11 +100,11 @@ sealed class DocumentInteractorDeleteDocumentPartialState {
 
 sealed class DocumentInteractorRetryIssuingDeferredDocumentPartialState {
     data class Success(
-        val deferredDocumentData: DeferredDocumentData
+        val deferredDocumentData: DeferredDocumentData,
     ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
 
     data class NotReady(
-        val deferredDocumentData: DeferredDocumentData
+        val deferredDocumentData: DeferredDocumentData,
     ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
 
     data class Failure(
@@ -131,10 +136,10 @@ interface DocumentsInteractor {
     ): Flow<DocumentInteractorRetryIssuingDeferredDocumentsPartialState>
 
     fun deleteDocument(
-        documentId: String
+        documentId: String,
     ): Flow<DocumentInteractorDeleteDocumentPartialState>
 
-    fun searchDocuments(query: String): List<DocumentDetailsItemUi>
+    fun searchDocuments(query: String): DocumentInteractorPartialState.SearchResult
     fun getFilters(): List<ExpandableListItemData>
     fun onFilterSelect(
         id: String,
@@ -159,6 +164,7 @@ class DocumentsInteractorImpl(
     private val documents: MutableList<FilterableDocumentItem> = mutableListOf()
     private var filteredDocuments: MutableList<FilterableDocumentItem> = mutableListOf()
     private var sortingOrder: DualSelectorButton = DualSelectorButton.FIRST
+    private var activeQuery: String = ""
 
     //#region Filters
     private val expandableFilterByExpiryPeriod = ExpandableListItemData(
@@ -517,7 +523,8 @@ class DocumentsInteractorImpl(
             )
         }
 
-    override fun searchDocuments(query: String): List<DocumentDetailsItemUi> {
+    override fun searchDocuments(query: String): DocumentInteractorPartialState.SearchResult {
+        activeQuery = query
         val result = filteredDocuments.map { it.itemUi }.filter {
             (it.uiData.mainContentData as ListItemMainContentData.Text).text.lowercase()
                 .contains(query.lowercase())
@@ -525,28 +532,14 @@ class DocumentsInteractorImpl(
 
         createIssuerFilter(result.distinctBy { it.uiData.overlineText }
             .map { it.uiData.overlineText ?: "" })
-        return result.ifEmpty {
-            listOf(
-                DocumentDetailsItemUi(
-                    documentIssuanceState = DocumentUiIssuanceState.Issued,
-                    uiData = ListItemData(
-                        itemId = "",
-                        mainContentData = ListItemMainContentData.Text(
-                            resourceProvider.getString(
-                                R.string.documents_screen_search_no_results
-                            )
-                        ),
-                        overlineText = null,
-                        supportingText = null,
-                        leadingContentData = null,
-                        trailingContentData = null
-                    ),
-                    documentIdentifier = DocumentIdentifier.OTHER(
-                        formatType = ""
-                    ),
-                )
-            )
-        }
+
+        val regeneratedFilters = getFilters()
+        val resultDocuments = result.getEmptyUIifEmptyList()
+
+        return DocumentInteractorPartialState.SearchResult(
+            documents = resultDocuments,
+            filters = regeneratedFilters
+        )
     }
 
     override fun getFilters(): List<ExpandableListItemData> {
@@ -579,9 +572,25 @@ class DocumentsInteractorImpl(
             )
         sortingOrder = DualSelectorButton.FIRST
         filterList.clear().run { filterList.addAll(filterSnapshot) }
-        filteredDocuments.clear().run { filteredDocuments.addAll(documents) }
+
+        // Get documents respecting current query
+        val queryRespectDocuments = if (activeQuery.isNotBlank()) {
+            // Query filtered documents
+            documents.filter {
+                (it.itemUi.uiData.mainContentData as ListItemMainContentData.Text).text.lowercase()
+                    .contains(activeQuery.lowercase())
+            }
+        } else {
+            documents
+        }
+        filteredDocuments = documents
+
+        // regenerate issuer filter based on the new reset results
+        createIssuerFilter(queryRespectDocuments.distinctBy { it.itemUi.uiData.overlineText }
+            .map { it.itemUi.uiData.overlineText ?: "" })
+
         return DocumentInteractorPartialState.ResetFilters(
-            documents = documents.map { it.itemUi },
+            documents = queryRespectDocuments.map { it.itemUi }.getEmptyUIifEmptyList(),
             filters = filterSnapshot
         )
     }
@@ -656,28 +665,20 @@ class DocumentsInteractorImpl(
             }
         }
 
-        return filteredDocuments.map { it.itemUi }.ifEmpty {
-            listOf(
-                DocumentDetailsItemUi(
-                    documentIssuanceState = DocumentUiIssuanceState.Issued,
-                    uiData = ListItemData(
-                        itemId = "",
-                        mainContentData = ListItemMainContentData.Text(
-                            resourceProvider.getString(
-                                R.string.documents_screen_search_no_results
-                            )
-                        ),
-                        overlineText = null,
-                        supportingText = null,
-                        leadingContentData = null,
-                        trailingContentData = null
-                    ),
-                    documentIdentifier = DocumentIdentifier.OTHER(
-                        formatType = ""
-                    ),
-                )
-            )
+        createIssuerFilter(filteredDocuments.distinctBy { it.itemUi.uiData.overlineText }
+            .map { it.itemUi.uiData.overlineText ?: "" })
+
+        // Get documents respecting current query
+        val queryRespectDocuments = if (activeQuery.isNotBlank()) {
+            filteredDocuments.map { it.itemUi }.filter {
+                (it.uiData.mainContentData as ListItemMainContentData.Text).text.lowercase()
+                    .contains(activeQuery.lowercase())
+            }
+        } else {
+            filteredDocuments.map { it.itemUi }
         }
+
+        return queryRespectDocuments.getEmptyUIifEmptyList()
     }
 
     override fun onSortingOrderChanged(sortingOrder: DualSelectorButton) {
@@ -748,6 +749,31 @@ class DocumentsInteractorImpl(
         return when (sortOrder) {
             DualSelectorButton.FIRST -> sortedBy(selector)
             DualSelectorButton.SECOND -> sortedByDescending(selector)
+        }
+    }
+
+    private fun List<DocumentDetailsItemUi>.getEmptyUIifEmptyList(): List<DocumentDetailsItemUi> {
+        return ifEmpty {
+            listOf(
+                DocumentDetailsItemUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "",
+                        mainContentData = ListItemMainContentData.Text(
+                            resourceProvider.getString(
+                                R.string.documents_screen_search_no_results
+                            )
+                        ),
+                        overlineText = null,
+                        supportingText = null,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.OTHER(
+                        formatType = ""
+                    ),
+                )
+            )
         }
     }
 }
