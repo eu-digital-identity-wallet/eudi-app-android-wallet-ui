@@ -91,7 +91,7 @@ sealed class Event : ViewEvent {
     data class OnSortingOrderChanged(val sortingOrder: DualSelectorButton) : Event()
 
     data class OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
-        val documentId: DocumentId
+        val documentId: DocumentId,
     ) : Event()
 
     sealed class DeferredNotReadyYet(open val documentId: DocumentId) : Event() {
@@ -193,7 +193,13 @@ class DocumentsViewModel(
             }
 
             is Event.OnSearchQueryChanged -> {
-                setState { copy(documents = interactor.searchDocuments(event.query)) }
+                val searchResult = interactor.searchDocuments(event.query)
+                setState {
+                    copy(
+                        documents = searchResult.documents,
+                        filters = searchResult.filters
+                    )
+                }
             }
 
             is Event.OnFilterSelectionChanged -> {
@@ -335,7 +341,7 @@ class DocumentsViewModel(
 
     private fun tryIssuingDeferredDocuments(
         event: Event,
-        deferredDocs: Map<DocumentId, FormatType>
+        deferredDocs: Map<DocumentId, FormatType>,
     ) {
         setState {
             copy(
