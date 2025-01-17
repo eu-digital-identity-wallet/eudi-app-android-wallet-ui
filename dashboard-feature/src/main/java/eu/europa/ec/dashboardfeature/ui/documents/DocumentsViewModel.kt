@@ -21,6 +21,7 @@ import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
@@ -57,21 +58,16 @@ import org.koin.android.annotation.KoinViewModel
 data class State(
     val isLoading: Boolean,
     val error: ContentErrorConfig? = null,
+    val isBottomSheetOpen: Boolean = false,
+    val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
+
     val documents: List<DocumentDetailsItemUi> = emptyList(),
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
-
-    //TODO remove that once BottomSheet Logic is sorted out.
-    val successfullyIssuedDeferredDocumentsUi: List<ModalOptionUi<Event>> = emptyList(),
-    val deferredSelectedDocumentToBeDeleted: DocumentId? = null,
-
     val allowUserInteraction: Boolean = true, //TODO
+
     val filters: List<ExpandableListItemData> = emptyList(),
     val isFilteringActive: Boolean,
     val sortingOrderButtonData: DualSelectorButtonData,
-    val showAddDocumentBottomSheet: Boolean = false,
-    val showFiltersBottomSheet: Boolean = false,
-    val showDeferredDocumentsReadyBottomSheet: Boolean = false,
-    val showDeferredDocumentPressedBottomSheet: Boolean = false,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -79,32 +75,46 @@ sealed class Event : ViewEvent {
     data object OnPause : Event()
     data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, FormatType>) : Event()
     data object Pop : Event()
-    data object GoToAddDocument : Event()
-    data object GoToQrScan : Event()
     data class GoToDocumentDetails(val docId: DocumentId) : Event()
-    data class ShowAddDocumentBottomSheet(val isOpen: Boolean) : Event()
-    data class ShowFiltersBottomSheet(val isOpen: Boolean) : Event()
-    data class ShowDeferredDocumentsReadyBottomSheet(val isOpen: Boolean) : Event()
-    data class ShowDeferredDocumentPressedBottomSheet(val isOpen: Boolean) : Event()
     data class OnSearchQueryChanged(val query: String) : Event()
     data class OnFilterSelectionChanged(val filterId: String, val groupId: String) : Event()
     data object OnFiltersReset : Event()
     data object OnFiltersApply : Event()
     data class OnSortingOrderChanged(val sortingOrder: DualSelectorButton) : Event()
 
-    data class OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
-        val documentId: DocumentId,
-    ) : Event()
+    data object AddDocumentPressed : Event()
+    data object FiltersPressed : Event()
 
-    sealed class DeferredNotReadyYet(open val documentId: DocumentId) : Event() {
-        data class DocumentSelected(override val documentId: DocumentId) :
-            DeferredNotReadyYet(documentId)
+    sealed class BottomSheet : Event() {
+        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
+        data object Close : BottomSheet()
 
-        data class PrimaryButtonPressed(override val documentId: DocumentId) :
-            DeferredNotReadyYet(documentId)
+        sealed class AddDocument : BottomSheet() {
+            data object FromList : AddDocument()
+            data object ScanQr : AddDocument()
+        }
 
-        data class SecondaryButtonPressed(override val documentId: DocumentId) :
-            DeferredNotReadyYet(documentId)
+        sealed class DeferredDocument : BottomSheet() {
+            sealed class DeferredNotReadyYet(
+                open val documentId: DocumentId
+            ) : DeferredDocument() {
+                data class DocumentSelected(
+                    override val documentId: DocumentId,
+                ) : DeferredNotReadyYet(documentId)
+
+                data class PrimaryButtonPressed(
+                    override val documentId: DocumentId,
+                ) : DeferredNotReadyYet(documentId)
+
+                data class SecondaryButtonPressed(
+                    override val documentId: DocumentId,
+                ) : DeferredNotReadyYet(documentId)
+            }
+
+            data class OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
+                val documentId: DocumentId,
+            ) : DeferredDocument()
+        }
     }
 }
 
@@ -119,6 +129,19 @@ sealed class Effect : ViewSideEffect {
     }
 
     data class DocumentsFetched(val deferredDocs: Map<DocumentId, FormatType>) : Effect()
+
+    data object ShowBottomSheet : Effect()
+    data object CloseBottomSheet : Effect()
+}
+
+sealed class DocumentsBottomSheetContent {
+    data class Filters(val filters: List<ExpandableListItemData>) : DocumentsBottomSheetContent()
+    data object AddDocument : DocumentsBottomSheetContent()
+    data class DeferredDocumentPressed(val documentId: DocumentId) : DocumentsBottomSheetContent()
+    data class DeferredDocumentsReady(
+        val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
+        val options: List<ModalOptionUi<Event>>,
+    ) : DocumentsBottomSheetContent()
 }
 
 @KoinViewModel
@@ -171,27 +194,19 @@ class DocumentsViewModel(
                 goToDocumentDetails(event.docId)
             }
 
-            is Event.ShowAddDocumentBottomSheet -> {
-                setState { copy(showAddDocumentBottomSheet = event.isOpen) }
+            is Event.AddDocumentPressed -> {
+                showBottomSheet(sheetContent = DocumentsBottomSheetContent.AddDocument)
             }
 
-            is Event.ShowFiltersBottomSheet -> {
-                setState { copy(showFiltersBottomSheet = event.isOpen) }
+            is Event.FiltersPressed -> {
+                //TODO Stamatis do we still need this logic?
+                /*setState { copy(showFiltersBottomSheet = event.isOpen) }
                 if (!event.isOpen) {
                     interactor.clearFilters {
                         setState { copy(filters = it) }
                     }
-                }
-            }
-
-            is Event.GoToAddDocument -> {
-                setState { copy(showAddDocumentBottomSheet = false) }
-                goToAddDocument()
-            }
-
-            is Event.GoToQrScan -> {
-                setState { copy(showAddDocumentBottomSheet = false) }
-                goToQrScan()
+                }*/
+                showBottomSheet(sheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()))
             }
 
             is Event.OnSearchQueryChanged -> {
@@ -214,23 +229,23 @@ class DocumentsViewModel(
                 setState {
                     copy(
                         documents = interactor.applyFilters(documents),
-                        showFiltersBottomSheet = false,
                         isFilteringActive = true
                     )
                 }
+                hideBottomSheet()
             }
 
-            Event.OnFiltersReset -> {
+            is Event.OnFiltersReset -> {
                 val (documents, filters) = interactor.resetFilters()
                 setState {
                     copy(
                         documents = documents,
                         filters = filters,
-                        showFiltersBottomSheet = false,
                         isFilteringActive = false,
                         sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = DualSelectorButton.FIRST)
                     )
                 }
+                hideBottomSheet()
             }
 
             is Event.OnSortingOrderChanged -> {
@@ -238,39 +253,46 @@ class DocumentsViewModel(
                 setState { copy(sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = event.sortingOrder)) }
             }
 
-            is Event.ShowDeferredDocumentsReadyBottomSheet -> {
-                setState { copy(showDeferredDocumentsReadyBottomSheet = event.isOpen) }
-            }
-
-            is Event.ShowDeferredDocumentPressedBottomSheet -> {
-                setState { copy(showDeferredDocumentPressedBottomSheet = event.isOpen) }
-            }
-
-            is Event.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected -> {
-                setState { copy(showDeferredDocumentsReadyBottomSheet = false) }
-                goToDocumentDetails(event.documentId)
-            }
-
-            is Event.DeferredNotReadyYet.DocumentSelected -> {
+            is Event.BottomSheet.UpdateBottomSheetState -> {
                 setState {
-                    copy(
-                        deferredSelectedDocumentToBeDeleted = event.documentId,
-                        showDeferredDocumentPressedBottomSheet = true,
+                    copy(isBottomSheetOpen = event.isOpen)
+                }
+            }
+
+            is Event.BottomSheet.Close -> {
+                hideBottomSheet()
+            }
+
+            is Event.BottomSheet.AddDocument.FromList -> {
+                hideBottomSheet()
+                goToAddDocument()
+            }
+
+            is Event.BottomSheet.AddDocument.ScanQr -> {
+                hideBottomSheet()
+                goToQrScan()
+            }
+
+            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected -> {
+                showBottomSheet(
+                    sheetContent = DocumentsBottomSheetContent.DeferredDocumentPressed(
+                        documentId = event.documentId
                     )
-                }
+                )
             }
 
-            is Event.DeferredNotReadyYet.PrimaryButtonPressed -> {
-                setState {
-                    copy(showDeferredDocumentPressedBottomSheet = false)
-                }
+            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.PrimaryButtonPressed -> {
+                hideBottomSheet()
                 deleteDocument(event = event, documentId = event.documentId)
             }
 
-            is Event.DeferredNotReadyYet.SecondaryButtonPressed -> {
-                setState {
-                    copy(showDeferredDocumentPressedBottomSheet = false)
-                }
+            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.SecondaryButtonPressed -> {
+                hideBottomSheet()
+            }
+
+            is Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected -> {
+                hideBottomSheet()
+                goToDocumentDetails(docId = event.documentId)
             }
         }
     }
@@ -386,53 +408,20 @@ class DocumentsViewModel(
 
                     is DocumentInteractorRetryIssuingDeferredDocumentsPartialState.Result -> {
                         val successDocs = response.successfullyIssuedDeferredDocuments
-                        //TODO
-                        /*if (successDocs.isNotEmpty()
+                        if (successDocs.isNotEmpty()
                             && (!viewState.value.isBottomSheetOpen
                                     || (viewState.value.isBottomSheetOpen
-                                    && viewState.value.sheetContent !is DashboardBottomSheetContent.DeferredDocumentsReady)
+                                    && viewState.value.sheetContent !is DocumentsBottomSheetContent.DeferredDocumentsReady)
                                     )
                         ) {
                             showBottomSheet(
-                                sheetContent = DashboardBottomSheetContent.DeferredDocumentsReady(
+                                sheetContent = DocumentsBottomSheetContent.DeferredDocumentsReady(
                                     successfullyIssuedDeferredDocuments = successDocs,
                                     options = getBottomSheetOptions(
                                         deferredDocumentsData = successDocs
                                     )
                                 )
                             )
-                        }*/
-
-                        val isAnyBottomSheetOpen = with(viewState.value) {
-                            listOf(
-                                showAddDocumentBottomSheet,
-                                showFiltersBottomSheet,
-                                showDeferredDocumentsReadyBottomSheet,
-                                showDeferredDocumentPressedBottomSheet,
-                            ).any { it }
-                        }
-
-                        if (successDocs.isNotEmpty()
-                            && (!isAnyBottomSheetOpen || viewState.value.showDeferredDocumentsReadyBottomSheet)
-                        ) {
-                            val updatedItems: List<ModalOptionUi<Event>> =
-                                viewState.value.successfullyIssuedDeferredDocumentsUi + successDocs.map {
-                                    ModalOptionUi(
-                                        title = it.docName,
-                                        trailingIcon = AppIcons.KeyboardArrowRight,
-                                        event = Event.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
-                                            documentId = it.documentId
-                                        )
-                                    )
-                                }
-
-                            setState {
-                                copy(
-                                    successfullyIssuedDeferredDocumentsUi = updatedItems
-                                )
-                            }
-
-                            setEvent(Event.ShowDeferredDocumentsReadyBottomSheet(isOpen = true))
                         }
 
                         getDocuments(
@@ -442,6 +431,18 @@ class DocumentsViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentData>): List<ModalOptionUi<Event>> {
+        return deferredDocumentsData.map {
+            ModalOptionUi(
+                title = it.docName,
+                trailingIcon = AppIcons.KeyboardArrowRight,
+                event = Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
+                    documentId = it.documentId
+                )
+            )
         }
     }
 
@@ -476,13 +477,6 @@ class DocumentsViewModel(
                     }
 
                     is DocumentInteractorDeleteDocumentPartialState.SingleDocumentDeleted -> {
-                        //TODO remove that once BottomSheet Logic is sorted out.
-                        setState {
-                            copy(
-                                deferredSelectedDocumentToBeDeleted = null,
-                            )
-                        }
-
                         getDocuments(
                             event = event,
                             deferredFailedDocIds = viewState.value.deferredFailedDocIds
@@ -559,6 +553,21 @@ class DocumentsViewModel(
                 ),
                 inclusive = false
             )
+        }
+    }
+
+    private fun showBottomSheet(sheetContent: DocumentsBottomSheetContent) {
+        setState {
+            copy(sheetContent = sheetContent)
+        }
+        setEffect {
+            Effect.ShowBottomSheet
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet
         }
     }
 }

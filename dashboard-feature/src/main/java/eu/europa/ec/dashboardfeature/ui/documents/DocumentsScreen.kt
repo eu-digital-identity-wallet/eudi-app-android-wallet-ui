@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,11 +56,9 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
-import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -77,7 +76,6 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
@@ -85,9 +83,11 @@ import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Event
 typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Event.SideMenu.Show
@@ -99,12 +99,15 @@ fun DocumentsScreen(
     viewModel: DocumentsViewModel,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
-    val context = LocalContext.current
     val state = viewModel.viewState.value
+    val context = LocalContext.current
 
+    val isBottomSheetOpen = state.isBottomSheetOpen
+    val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+
     ContentScreen(
         isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
@@ -123,9 +126,31 @@ fun DocumentsScreen(
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navHostController, context)
             },
-            modalBottomSheetState = bottomSheetState,
             paddingValues = paddingValues,
+            coroutineScope = scope,
+            modalBottomSheetState = bottomSheetState
         )
+
+        if (isBottomSheetOpen) {
+            WrapModalBottomSheet(
+                onDismissRequest = {
+                    viewModel.setEvent(
+                        Event.BottomSheet.UpdateBottomSheetState(
+                            isOpen = false
+                        )
+                    )
+                },
+                sheetState = bottomSheetState
+            ) {
+                DocumentsSheetContent(
+                    sheetContent = state.sheetContent,
+                    state = state,
+                    onEventSent = {
+                        viewModel.setEvent(it)
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -176,7 +201,7 @@ private fun TopBar(
         WrapIconButton(
             iconData = AppIcons.Add
         ) {
-            onEventSend(Event.ShowAddDocumentBottomSheet(isOpen = true))
+            onEventSend(Event.AddDocumentPressed)
         }
     }
 }
@@ -188,14 +213,10 @@ private fun Content(
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
-    modalBottomSheetState: SheetState,
     paddingValues: PaddingValues,
+    coroutineScope: CoroutineScope,
+    modalBottomSheetState: SheetState,
 ) {
-    val isAddDocumentBottomSheetOpen = state.showAddDocumentBottomSheet
-    val isFiltersBottomSheetOpen = state.showFiltersBottomSheet
-    val isDeferredDocumentsReadyBottomSheetOpen = state.showDeferredDocumentsReadyBottomSheet
-    val isDeferredDocumentPressedBottomSheet = state.showDeferredDocumentPressedBottomSheet
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -216,7 +237,7 @@ private fun Content(
             FiltersSearchBar(
                 placeholder = searchItem.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
-                onFilterClick = { onEventSend(Event.ShowFiltersBottomSheet(isOpen = true)) },
+                onFilterClick = { onEventSend(Event.FiltersPressed) },
                 isFilteringActive = state.isFilteringActive
             )
         }
@@ -229,7 +250,13 @@ private fun Content(
                     if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Issued) {
                         { onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId)) }
                     } else {
-                        { onEventSend(Event.DeferredNotReadyYet.DocumentSelected(documentId = documentItem.uiData.itemId)) }
+                        {
+                            onEventSend(
+                                Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
+                                    documentId = documentItem.uiData.itemId
+                                )
+                            )
+                        }
                     }
                 },
                 supportingTextColor = when (documentItem.documentIssuanceState) {
@@ -237,37 +264,6 @@ private fun Content(
                     DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
                     DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
                 }
-            )
-        }
-    }
-
-    if (isAddDocumentBottomSheetOpen) {
-        AddDocumentBottomSheet(onEventSend, modalBottomSheetState)
-    }
-
-    if (isFiltersBottomSheetOpen) {
-        FiltersBottomSheet(
-            state.filters,
-            state.sortingOrderButtonData,
-            onEventSend,
-            modalBottomSheetState
-        )
-    }
-
-    if (isDeferredDocumentsReadyBottomSheetOpen) {
-        DeferredDocumentsReadyBottomSheet(
-            onEventSend = onEventSend,
-            modalBottomSheetState = modalBottomSheetState,
-            successfullyIssuedDeferredDocumentsUi = state.successfullyIssuedDeferredDocumentsUi,
-        )
-    }
-
-    state.deferredSelectedDocumentToBeDeleted?.let {
-        if (isDeferredDocumentPressedBottomSheet) {
-            DeferredDocumentPressedBottomSheet(
-                onEventSend = onEventSend,
-                modalBottomSheetState = modalBottomSheetState,
-                documentIdToBeDeleted = it
             )
         }
     }
@@ -291,6 +287,20 @@ private fun Content(
             when (effect) {
                 is Effect.Navigation -> onNavigationRequested(effect)
 
+                is Effect.CloseBottomSheet -> {
+                    coroutineScope.launch {
+                        modalBottomSheetState.hide()
+                    }.invokeOnCompletion {
+                        if (!modalBottomSheetState.isVisible) {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                        }
+                    }
+                }
+
+                is Effect.ShowBottomSheet -> {
+                    onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+                }
+
                 is Effect.DocumentsFetched -> {
                     onEventSend(Event.TryIssuingDeferredDocuments(effect.deferredDocs))
                 }
@@ -299,188 +309,142 @@ private fun Content(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddDocumentBottomSheet(
-    onEventSend: (Event) -> Unit,
-    modalBottomSheetState: SheetState,
+private fun DocumentsSheetContent(
+    sheetContent: DocumentsBottomSheetContent,
+    state: State,
+    onEventSent: (event: Event) -> Unit,
 ) {
-    WrapModalBottomSheet(
-        onDismissRequest = {
-            onEventSend(Event.ShowAddDocumentBottomSheet(isOpen = false))
-        },
-        sheetState = modalBottomSheetState
-    ) {
-        BottomSheetWithTwoBigIcons(
-            textData = BottomSheetTextData(
-                title = stringResource(R.string.documents_screen_add_document_title),
-                message = stringResource(R.string.documents_screen_add_document_description)
-            ),
-            options = listOf(
-                ModalOptionUi(
-                    title = stringResource(R.string.documents_screen_add_document_option_list),
-                    leadingIcon = AppIcons.AddDocumentFromList,
-                    leadingIconTint = MaterialTheme.colorScheme.primary,
-                    event = Event.GoToAddDocument,
-                ),
-                ModalOptionUi(
-                    title = stringResource(R.string.documents_screen_add_document_option_qr),
-                    leadingIcon = AppIcons.AddDocumentFromQr,
-                    leadingIconTint = MaterialTheme.colorScheme.primary,
-                    event = Event.GoToQrScan,
-                )
-            ),
-            onEventSent = { onEventSend(it) }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun FiltersBottomSheet(
-    filters: List<ExpandableListItemData>,
-    sortOrderButtonData: DualSelectorButtonData,
-    onEventSend: (Event) -> Unit,
-    modalBottomSheetState: SheetState,
-) {
-    WrapModalBottomSheet(
-        onDismissRequest = {
-            onEventSend(Event.ShowFiltersBottomSheet(isOpen = false))
-        },
-        sheetState = modalBottomSheetState
-    ) {
-
-        GenericBottomSheet(
-            titleContent = {
-                Text(
-                    text = stringResource(R.string.documents_screen_filters_title),
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            },
-            bodyContent = {
-                val expandStateList by remember {
-                    mutableStateOf(filters.map { false }.toMutableStateList())
-                }
-
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
-                ) {
-                    DualSelectorButtons(sortOrderButtonData) {
-                        onEventSend(Event.OnSortingOrderChanged(it))
-                    }
-                    filters.forEachIndexed { index, filter ->
-                        if (filter.expanded.isNotEmpty()) {
-                            WrapExpandableListItem(
-                                data = filter,
-                                isExpanded = expandStateList[index],
-                                onExpandedChange = {
-                                    expandStateList[index] = !expandStateList[index]
-                                },
-                                onItemClick = {
-                                    val id = it.itemId
-                                    val groupId = filter.collapsed.itemId
-                                    onEventSend(Event.OnFilterSelectionChanged(id, groupId))
-                                }
-                            )
-                        }
+    when (sheetContent) {
+        is DocumentsBottomSheetContent.Filters -> {
+            GenericBottomSheet(
+                titleContent = {
+                    Text(
+                        text = stringResource(R.string.documents_screen_filters_title),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                },
+                bodyContent = {
+                    val expandStateList by remember {
+                        mutableStateOf(state.filters.map { false }.toMutableStateList())
                     }
 
-                    VSpacer.Large()
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                    Column(
+                        modifier = Modifier.verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                     ) {
-                        WrapButton(
-                            modifier = Modifier.weight(1f),
-                            buttonConfig = ButtonConfig(type = ButtonType.SECONDARY, onClick = {
-                                onEventSend(Event.OnFiltersReset)
-                            })
-                        ) {
-                            Text(text = stringResource(R.string.documents_screen_filters_reset))
+                        DualSelectorButtons(state.sortingOrderButtonData) {
+                            onEventSent(Event.OnSortingOrderChanged(it))
                         }
-                        HSpacer.Small()
-                        WrapButton(
-                            modifier = Modifier.weight(1f),
-                            buttonConfig = ButtonConfig(type = ButtonType.PRIMARY, onClick = {
-                                onEventSend(Event.OnFiltersApply)
-                            })
+                        state.filters.forEachIndexed { index, filter ->
+                            if (filter.expanded.isNotEmpty()) {
+                                WrapExpandableListItem(
+                                    data = filter,
+                                    isExpanded = expandStateList[index],
+                                    onExpandedChange = {
+                                        expandStateList[index] = !expandStateList[index]
+                                    },
+                                    onItemClick = {
+                                        val id = it.itemId
+                                        val groupId = filter.collapsed.itemId
+                                        onEventSent(Event.OnFilterSelectionChanged(id, groupId))
+                                    }
+                                )
+                            }
+                        }
+
+                        VSpacer.Large()
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            Text(text = stringResource(R.string.documents_screen_filters_apply))
+                            WrapButton(
+                                modifier = Modifier.weight(1f),
+                                buttonConfig = ButtonConfig(type = ButtonType.SECONDARY, onClick = {
+                                    onEventSent(Event.OnFiltersReset)
+                                })
+                            ) {
+                                Text(text = stringResource(R.string.documents_screen_filters_reset))
+                            }
+                            HSpacer.Small()
+                            WrapButton(
+                                modifier = Modifier.weight(1f),
+                                buttonConfig = ButtonConfig(type = ButtonType.PRIMARY, onClick = {
+                                    onEventSent(Event.OnFiltersApply)
+                                })
+                            ) {
+                                Text(text = stringResource(R.string.documents_screen_filters_apply))
+                            }
                         }
                     }
                 }
-            }
-        )
-    }
-}
+            )
+        }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DeferredDocumentsReadyBottomSheet(
-    onEventSend: (Event) -> Unit,
-    modalBottomSheetState: SheetState,
-    successfullyIssuedDeferredDocumentsUi: List<ModalOptionUi<Event>>,
-) {
-    WrapModalBottomSheet(
-        onDismissRequest = {
-            onEventSend(Event.ShowDeferredDocumentsReadyBottomSheet(isOpen = false))
-        },
-        sheetState = modalBottomSheetState
-    ) {
-        BottomSheetWithOptionsList(
-            textData = BottomSheetTextData(
-                title = stringResource(
-                    id = R.string.dashboard_bottom_sheet_deferred_documents_ready_title
+        is DocumentsBottomSheetContent.AddDocument -> {
+            BottomSheetWithTwoBigIcons(
+                textData = BottomSheetTextData(
+                    title = stringResource(R.string.documents_screen_add_document_title),
+                    message = stringResource(R.string.documents_screen_add_document_description)
                 ),
-                message = stringResource(
-                    id = R.string.dashboard_bottom_sheet_deferred_documents_ready_subtitle
+                options = listOf(
+                    ModalOptionUi(
+                        title = stringResource(R.string.documents_screen_add_document_option_list),
+                        leadingIcon = AppIcons.AddDocumentFromList,
+                        event = Event.BottomSheet.AddDocument.FromList,
+                    ),
+                    ModalOptionUi(
+                        title = stringResource(R.string.documents_screen_add_document_option_qr),
+                        leadingIcon = AppIcons.AddDocumentFromQr,
+                        event = Event.BottomSheet.AddDocument.ScanQr,
+                    )
                 ),
-            ),
-            options = successfullyIssuedDeferredDocumentsUi,
-            onEventSent = onEventSend,
-        )
-    }
-}
+                onEventSent = onEventSent
+            )
+        }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DeferredDocumentPressedBottomSheet(
-    onEventSend: (Event) -> Unit,
-    modalBottomSheetState: SheetState,
-    documentIdToBeDeleted: DocumentId,
-) {
-    WrapModalBottomSheet(
-        onDismissRequest = {
-            onEventSend(Event.ShowDeferredDocumentPressedBottomSheet(isOpen = false))
-        },
-        sheetState = modalBottomSheetState
-    ) {
-        DialogBottomSheet(
-            textData = BottomSheetTextData(
-                title = stringResource(
-                    id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title
+        is DocumentsBottomSheetContent.DeferredDocumentPressed -> {
+            DialogBottomSheet(
+                textData = BottomSheetTextData(
+                    title = stringResource(
+                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title
+                    ),
+                    message = stringResource(
+                        id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle
+                    ),
+                    positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_primary_button_text),
+                    negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text),
                 ),
-                message = stringResource(
-                    id = R.string.dashboard_bottom_sheet_deferred_document_pressed_subtitle
+                onPositiveClick = {
+                    onEventSent(
+                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.PrimaryButtonPressed(
+                            documentId = sheetContent.documentId
+                        )
+                    )
+                },
+                onNegativeClick = {
+                    onEventSent(
+                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.SecondaryButtonPressed(
+                            documentId = sheetContent.documentId
+                        )
+                    )
+                }
+            )
+        }
+
+        is DocumentsBottomSheetContent.DeferredDocumentsReady -> {
+            BottomSheetWithOptionsList(
+                textData = BottomSheetTextData(
+                    title = stringResource(
+                        id = R.string.dashboard_bottom_sheet_deferred_documents_ready_title
+                    ),
+                    message = stringResource(
+                        id = R.string.dashboard_bottom_sheet_deferred_documents_ready_subtitle
+                    ),
                 ),
-                positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_primary_button_text),
-                negativeButtonText = stringResource(id = R.string.dashboard_bottom_sheet_deferred_document_pressed_secondary_button_text),
-            ),
-            onPositiveClick = {
-                onEventSend(
-                    Event.DeferredNotReadyYet.PrimaryButtonPressed(
-                        documentId = documentIdToBeDeleted
-                    )
-                )
-            },
-            onNegativeClick = {
-                onEventSend(
-                    Event.DeferredNotReadyYet.SecondaryButtonPressed(
-                        documentId = documentIdToBeDeleted
-                    )
-                )
-            }
-        )
+                options = sheetContent.options,
+                onEventSent = onEventSent,
+            )
+        }
     }
 }

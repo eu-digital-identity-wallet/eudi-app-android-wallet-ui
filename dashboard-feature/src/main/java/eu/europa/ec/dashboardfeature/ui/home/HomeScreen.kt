@@ -319,13 +319,11 @@ private fun HomeScreenSheetContent(
                         ModalOptionUi(
                             title = stringResource(R.string.home_screen_authenticate_option_in_person),
                             leadingIcon = AppIcons.PresentDocumentInPerson,
-                            leadingIconTint = MaterialTheme.colorScheme.primary,
                             event = Event.BottomSheet.Authenticate.OpenAuthenticateInPerson,
                         ),
                         ModalOptionUi(
                             title = stringResource(R.string.home_screen_add_document_option_online),
                             leadingIcon = AppIcons.PresentDocumentOnline,
-                            leadingIconTint = MaterialTheme.colorScheme.primary,
                             event = Event.BottomSheet.Authenticate.OpenAuthenticateOnLine,
                         )
                     ),
