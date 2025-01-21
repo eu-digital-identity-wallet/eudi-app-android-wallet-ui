@@ -161,13 +161,14 @@ object RequestTransformer {
                     documentId = documentDomainPayload.docId,
                 )
 
-                val leadingContent = if (keyIsPortrait(key = docItem.elementIdentifier)) {
-                    ListItemLeadingContentData.UserImage(userBase64Image = docItem.value)
-                } else {
-                    null
-                }
+                val leadingContent =
+                    if (keyIsPortrait(key = docItem.elementIdentifier) && docItem.isAvailable) {
+                        ListItemLeadingContentData.UserImage(userBase64Image = docItem.value)
+                    } else {
+                        null
+                    }
 
-                val mainText = when {
+                val mainContent = when {
                     keyIsPortrait(key = docItem.elementIdentifier) && docItem.isAvailable -> {
                         ListItemMainContentData.Text(text = "")
                     }
@@ -185,7 +186,7 @@ object RequestTransformer {
                     domainPayload = documentDomainPayload,
                     uiItem = ListItemData(
                         itemId = expandedItemId,
-                        mainContentData = mainText,
+                        mainContentData = mainContent,
                         overlineText = docItem.readableName,
                         leadingContentData = leadingContent,
                         trailingContentData = ListItemTrailingContentData.Checkbox(

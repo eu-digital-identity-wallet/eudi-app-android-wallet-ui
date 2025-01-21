@@ -100,7 +100,7 @@ object DocumentDetailsTransformer {
 
     fun DocumentItem.toListItemData(): ListItemData {
 
-        val mainTextContentData = when {
+        val mainContent = when {
             keyIsPortrait(key = this.elementIdentifier) -> {
                 ListItemMainContentData.Text(text = "")
             }
@@ -127,7 +127,7 @@ object DocumentDetailsTransformer {
 
         return ListItemData(
             itemId = itemId,
-            mainContentData = mainTextContentData,
+            mainContentData = mainContent,
             overlineText = this.readableName,
             leadingContentData = leadingContent
         )
