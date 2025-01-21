@@ -103,9 +103,11 @@ object RequestTransformer {
                     it.identifier == docItem.elementIdentifier
                 }
 
-                val readableName = documentClaim?.metadata?.display?.firstOrNull {
-                    resourceProvider.getLocale().compareLocaleLanguage(it.locale)
-                }?.name ?: docItem.elementIdentifier
+                val readableName: String = storageDocument.metadata?.claims
+                    ?.firstOrNull { it.name.name == docItem.elementIdentifier }
+                    ?.display
+                    ?.firstOrNull { resourceProvider.getLocale().compareLocaleLanguage(it.locale) }
+                    ?.name ?: docItem.elementIdentifier
 
                 val (value, isAvailable) = try {
                     val values = StringBuilder()
