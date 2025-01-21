@@ -176,7 +176,7 @@ class DocumentsViewModel(
 
                 getDocuments(
                     event = event,
-                    deferredFailedDocIds = emptyList()
+                    deferredFailedDocIds = viewState.value.deferredFailedDocIds
                 )
             }
 
