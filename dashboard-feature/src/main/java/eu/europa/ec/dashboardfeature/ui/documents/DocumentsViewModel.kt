@@ -23,11 +23,13 @@ import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.dashboardfeature.extensions.search
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
 import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
+import eu.europa.ec.dashboardfeature.model.FilterableDocuments
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -67,6 +69,7 @@ data class State(
 
     val filters: List<ExpandableListItemData> = emptyList(),
     val isFilteringActive: Boolean,
+    val queryText: String = "",
     val sortingOrderButtonData: DualSelectorButtonData,
 ) : ViewState
 
@@ -96,7 +99,7 @@ sealed class Event : ViewEvent {
 
         sealed class DeferredDocument : BottomSheet() {
             sealed class DeferredNotReadyYet(
-                open val documentId: DocumentId
+                open val documentId: DocumentId,
             ) : DeferredDocument() {
                 data class DocumentSelected(
                     override val documentId: DocumentId,
@@ -152,6 +155,10 @@ class DocumentsViewModel(
 ) : MviViewModel<Event, State, Effect>() {
 
     private var retryDeferredDocsJob: Job? = null
+    private var initialFilters: List<ExpandableListItemData> = emptyList()
+    private var allDocuments: FilterableDocuments? = null
+    private var filterableDocuments: FilterableDocuments? = null
+    private var query: String = ""
 
     override fun setInitialState(): State {
         return State(
@@ -168,12 +175,6 @@ class DocumentsViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.GetDocuments -> {
-                setState {
-                    copy(
-                        filters = interactor.getFilters()
-                    )
-                }
-
                 getDocuments(
                     event = event,
                     deferredFailedDocIds = viewState.value.deferredFailedDocIds
@@ -210,25 +211,35 @@ class DocumentsViewModel(
             }
 
             is Event.OnSearchQueryChanged -> {
-                val searchResult = interactor.searchDocuments(event.query)
+                query = event.query
+                val searchResult =
+                    filterableDocuments?.let { interactor.searchDocuments(event.query, it) }
                 setState {
                     copy(
-                        documents = searchResult.documents,
-                        filters = searchResult.filters
+                        documents = searchResult?.documents?.documents?.map { it.itemUi }
+                            ?: emptyList(),
+                        filters = searchResult?.filters ?: emptyList(),
+                        queryText = query
                     )
                 }
             }
 
             is Event.OnFilterSelectionChanged -> {
-                interactor.onFilterSelect(event.filterId, event.groupId) {
-                    setState { copy(filters = it) }
-                }
+                val updatedFilters =
+                    interactor.updateFilters(event.filterId, event.groupId, viewState.value.filters)
+                setState { copy(filters = updatedFilters.filters) }
             }
 
             is Event.OnFiltersApply -> {
+                val applied =
+                    allDocuments?.let { interactor.applyFilters(it, viewState.value.filters) }
+                filterableDocuments = applied?.documents
+                val appliedFilters = applied?.filters ?: emptyList()
                 setState {
                     copy(
-                        documents = interactor.applyFilters(documents),
+                        documents = filterableDocuments?.search(query)?.documents?.map { it.itemUi }
+                            ?: emptyList(),
+                        filters = appliedFilters,
                         isFilteringActive = true
                     )
                 }
@@ -236,20 +247,22 @@ class DocumentsViewModel(
             }
 
             is Event.OnFiltersReset -> {
-                val (documents, filters) = interactor.resetFilters()
+                val applied = allDocuments?.let { interactor.resetFilters(it, initialFilters) }
+                filterableDocuments = allDocuments
+                val appliedFilters = applied?.filters ?: emptyList()
                 setState {
                     copy(
-                        documents = documents,
-                        filters = filters,
-                        isFilteringActive = false,
-                        sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = DualSelectorButton.FIRST)
+                        documents = filterableDocuments?.search(query)?.documents?.map { it.itemUi }
+                            ?: emptyList(),
+                        filters = appliedFilters,
+                        isFilteringActive = false
                     )
                 }
                 hideBottomSheet()
             }
 
             is Event.OnSortingOrderChanged -> {
-                interactor.onSortingOrderChanged(event.sortingOrder)
+                filterableDocuments = filterableDocuments?.copy(sortingOrder = event.sortingOrder)
                 setState { copy(sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = event.sortingOrder)) }
             }
 
@@ -308,65 +321,78 @@ class DocumentsViewModel(
             )
         }
         viewModelScope.launch {
-            interactor.getDocuments().collect { response ->
-                when (response) {
-                    is DocumentInteractorGetDocumentsPartialState.Failure -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = response.error,
-                                    onCancel = {
-                                        setState { copy(error = null) }
-                                        setEvent(Event.Pop)
-                                    }
+            interactor.getDocuments(
+                viewState.value.sortingOrderButtonData.selectedButton,
+                viewState.value.filters,
+                query
+            )
+                .collect { response ->
+                    when (response) {
+                        is DocumentInteractorGetDocumentsPartialState.Failure -> {
+                            setState {
+                                copy(
+                                    isLoading = false,
+                                    error = ContentErrorConfig(
+                                        onRetry = { setEvent(event) },
+                                        errorSubTitle = response.error,
+                                        onCancel = {
+                                            setState { copy(error = null) }
+                                            setEvent(Event.Pop)
+                                        }
+                                    )
                                 )
-                            )
+                            }
                         }
-                    }
 
-                    is DocumentInteractorGetDocumentsPartialState.Success -> {
-                        val documents = response.documentsUi
-                            .map { documentUi ->
-                                if (documentUi.uiData.itemId in deferredFailedDocIds) {
-                                    documentUi.copy(
-                                        documentIssuanceState = DocumentUiIssuanceState.Failed,
-                                        uiData = documentUi.uiData.copy(
-                                            supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
-                                            trailingContentData = ListItemTrailingContentData.Icon(
-                                                iconData = AppIcons.ErrorFilled,
-                                                tint = ThemeColors.error
+                        is DocumentInteractorGetDocumentsPartialState.Success -> {
+                            val documentsUi = response.allDocuments.documents.map { it.itemUi }
+                            val documents = documentsUi
+                                .map { documentUi ->
+                                    if (documentUi.uiData.itemId in deferredFailedDocIds) {
+                                        documentUi.copy(
+                                            documentIssuanceState = DocumentUiIssuanceState.Failed,
+                                            uiData = documentUi.uiData.copy(
+                                                supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
+                                                trailingContentData = ListItemTrailingContentData.Icon(
+                                                    iconData = AppIcons.ErrorFilled,
+                                                    tint = ThemeColors.error
+                                                )
                                             )
                                         )
-                                    )
-                                } else {
-                                    documentUi
+                                    } else {
+                                        documentUi
+                                    }
                                 }
+
+                            val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
+                            documentsUi.filter { documentUi ->
+                                documentUi.documentIssuanceState == DocumentUiIssuanceState.Pending
+                            }.forEach { documentUi ->
+                                deferredDocs[documentUi.uiData.itemId] =
+                                    documentUi.documentIdentifier.formatType
                             }
 
-                        val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
-                        response.documentsUi.filter { documentUi ->
-                            documentUi.documentIssuanceState == DocumentUiIssuanceState.Pending
-                        }.forEach { documentUi ->
-                            deferredDocs[documentUi.uiData.itemId] =
-                                documentUi.documentIdentifier.formatType
-                        }
+                            filterableDocuments = response.filterableDocuments
+                            allDocuments = response.allDocuments
+                            val filters =
+                                filterableDocuments?.let { interactor.getFilters(it).filters }
+                                    ?: emptyList()
+                            initialFilters = filters
+                            setState {
+                                copy(
+                                    isLoading = false,
+                                    error = null,
+                                    documents = filterableDocuments?.search(query)?.documents?.map { it.itemUi } ?: emptyList(),
+                                    filters = filters,
+                                    deferredFailedDocIds = deferredFailedDocIds,
+                                    allowUserInteraction = response.shouldAllowUserInteraction,
+                                )
+                            }
 
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = null,
-                                documents = documents,
-                                deferredFailedDocIds = deferredFailedDocIds,
-                                allowUserInteraction = response.shouldAllowUserInteraction,
-                            )
+                            setEffect { Effect.DocumentsFetched(deferredDocs) }
                         }
-
-                        setEffect { Effect.DocumentsFetched(deferredDocs) }
                     }
                 }
-            }
         }
     }
 

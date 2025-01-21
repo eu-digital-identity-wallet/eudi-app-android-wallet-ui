@@ -246,6 +246,10 @@ object RequestTransformer {
                             (selectedItem.uiItem.leadingContentData as? ListItemLeadingContentData.UserImage)?.userBase64Image
                                 ?: mainContentData.text
                         }
+                        is ListItemMainContentData.Actionable<*> -> {
+                            (selectedItem.uiItem.leadingContentData as? ListItemLeadingContentData.UserImage)?.userBase64Image
+                                ?: mainContentData.text
+                        }
                     }
 
                     val elementIdentifier = documentPayload.documentDetailsDomain.items

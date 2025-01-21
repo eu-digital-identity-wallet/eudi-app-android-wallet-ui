@@ -16,14 +16,21 @@
 
 package eu.europa.ec.dashboardfeature.model
 
+import eu.europa.ec.uilogic.component.DualSelectorButton
 import java.time.Instant
 
 data class FilterableAttributes(
     val issuedDate: Instant?,
     val expiryDate: Instant?,
+    val issuer: String? = null,
 )
 
 data class FilterableDocumentItem(
     val itemUi: DocumentDetailsItemUi,
     val filterableAttributes: FilterableAttributes,
+)
+
+data class FilterableDocuments(
+    val documents: List<FilterableDocumentItem>,
+    val sortingOrder: DualSelectorButton = DualSelectorButton.FIRST,
 )

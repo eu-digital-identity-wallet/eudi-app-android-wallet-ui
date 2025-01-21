@@ -238,7 +238,8 @@ private fun Content(
                 placeholder = searchItem.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.FiltersPressed) },
-                isFilteringActive = state.isFilteringActive
+                isFilteringActive = state.isFilteringActive,
+                text = state.queryText
             )
         }
         items(state.documents) { documentItem ->

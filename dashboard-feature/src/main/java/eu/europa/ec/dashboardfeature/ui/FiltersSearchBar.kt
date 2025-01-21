@@ -46,12 +46,13 @@ import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 
 @Composable
 fun FiltersSearchBar(
+    text: String,
     placeholder: String,
     onValueChange: (String) -> Unit,
     onFilterClick: () -> Unit,
     isFilteringActive: Boolean = false,
 ) {
-    var value by remember { mutableStateOf("") }
+    var value by remember { mutableStateOf(text) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -105,7 +106,7 @@ fun FiltersSearchBar(
 private fun FiltersSearchBarPreview() {
     PreviewTheme {
         FiltersSearchBar(
-            placeholder = "Search documents", onValueChange = { }, onFilterClick = {}, true
+            text ="", placeholder = "Search documents", onValueChange = { }, onFilterClick = {}, true
         )
     }
 }

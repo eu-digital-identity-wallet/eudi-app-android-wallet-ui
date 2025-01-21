@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
+import eu.europa.ec.uilogic.component.ListItemMainContentData.Actionable
 import eu.europa.ec.uilogic.component.ListItemMainContentData.Image
 import eu.europa.ec.uilogic.component.ListItemMainContentData.Text
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Checkbox
@@ -102,6 +103,7 @@ data class ListItemData(
 sealed class ListItemMainContentData {
     data class Text(val text: String) : ListItemMainContentData()
     data class Image(val base64Image: String) : ListItemMainContentData()
+    data class Actionable<T>(val text: String, val action: (T) -> T) : ListItemMainContentData()
 }
 
 /**
@@ -278,6 +280,13 @@ fun ListItem(
                         )
 
                         is Text -> Text(
+                            modifier = blurModifier,
+                            text = mainContentData.text,
+                            style = mainTextStyle,
+                            overflow = textOverflow,
+                        )
+
+                        is Actionable<*> -> Text(
                             modifier = blurModifier,
                             text = mainContentData.text,
                             style = mainTextStyle,
