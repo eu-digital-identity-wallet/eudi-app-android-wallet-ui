@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard_new
 
+import android.content.Intent
 import android.net.Uri
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
@@ -54,7 +55,8 @@ data class State(
     val sideMenuTitle: String = "",
     val sideMenuOptions: List<SideMenuItemUi>,
     val sideMenuAnimation: SideMenuAnimation = SideMenuAnimation.SLIDE,
-    val menuAnimationDuration: Int = 1500
+    val menuAnimationDuration: Int = 1500,
+    val appVersion: String = ""
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -84,6 +86,8 @@ sealed class Effect : ViewSideEffect {
         data object OnAppSettings : Navigation()
         data object OnSystemSettings : Navigation()
     }
+
+    data class ShareLogFile(val intent: Intent, val chooserTitle: String) : Effect()
 }
 
 enum class SideMenuAnimation {
@@ -92,7 +96,7 @@ enum class SideMenuAnimation {
 
 @KoinViewModel
 class DashboardViewModelNew(
-    private val interactor: DashboardInteractorNew,
+    private val dashboardInteractor: DashboardInteractorNew,
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
@@ -100,6 +104,7 @@ class DashboardViewModelNew(
         return State(
             sideMenuTitle = resourceProvider.getString(R.string.dashboard_side_menu_title),
             sideMenuOptions = getSideMenuOptions(),
+            appVersion = dashboardInteractor.getAppVersion()
         )
     }
 
@@ -134,24 +139,40 @@ class DashboardViewModelNew(
     }
 
     private fun handleSideMenuItemClicked(itemType: SideMenuItemType) {
-        val nextScreenRoute = when (itemType) {
+        when (itemType) {
             SideMenuItemType.CHANGE_PIN -> {
-                generateComposableNavigationLink(
+                val nextScreenRoute = generateComposableNavigationLink(
                     screen = CommonScreens.QuickPin,
                     arguments = generateComposableArguments(
                         mapOf("pinFlow" to PinFlow.UPDATE)
                     )
                 )
+
+                setState {
+                    copy(
+                        isSideMenuVisible = false,
+                        sideMenuAnimation = SideMenuAnimation.FADE
+                    )
+                }
+                setEffect { Effect.Navigation.SwitchScreen(screenRoute = nextScreenRoute) }
+            }
+
+            SideMenuItemType.RETRIEVE_LOGS -> {
+                val logs = dashboardInteractor.retrieveLogFileUris()
+                if (logs.isNotEmpty()) {
+                    setEffect {
+                        Effect.ShareLogFile(
+                            intent = Intent().apply {
+                                action = Intent.ACTION_SEND_MULTIPLE
+                                putParcelableArrayListExtra(Intent.EXTRA_STREAM, logs)
+                                type = "text/*"
+                            },
+                            chooserTitle = resourceProvider.getString(R.string.dashboard_intent_chooser_logs_share_title)
+                        )
+                    }
+                }
             }
         }
-
-        setState {
-            copy(
-                isSideMenuVisible = false,
-                sideMenuAnimation = SideMenuAnimation.FADE
-            )
-        }
-        setEffect { Effect.Navigation.SwitchScreen(screenRoute = nextScreenRoute) }
     }
 
     private fun getSideMenuOptions(): List<SideMenuItemUi> {
@@ -166,6 +187,23 @@ class DashboardViewModelNew(
                         ),
                         leadingContentData = ListItemLeadingContentData.Icon(
                             iconData = AppIcons.ChangePin
+                        ),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        )
+                    )
+                ),
+            )
+            add(
+                SideMenuItemUi(
+                    type = SideMenuItemType.RETRIEVE_LOGS,
+                    data = ListItemData(
+                        itemId = "retrieveLogsId",
+                        mainContentData = ListItemMainContentData.Text(
+                            text = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs)
+                        ),
+                        leadingContentData = ListItemLeadingContentData.Icon(
+                            iconData = AppIcons.Info
                         ),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowRight

@@ -60,7 +60,13 @@ fun provideDashboardInteractor(
     )
 
 @Factory
-fun provideDashboardInteractorNew(): DashboardInteractorNew = DashboardInteractorNewImpl()
+fun provideDashboardInteractorNew(
+    configLogic: ConfigLogic,
+    logController: LogController,
+): DashboardInteractorNew = DashboardInteractorNewImpl(
+    configLogic,
+    logController
+)
 
 @Factory
 fun provideHomeInteractor(

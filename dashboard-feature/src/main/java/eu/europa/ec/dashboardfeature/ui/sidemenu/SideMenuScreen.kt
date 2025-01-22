@@ -25,10 +25,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.dashboardfeature.model.SideMenuItemType
 import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
@@ -82,15 +85,27 @@ private fun Content(
             .fillMaxSize()
             .padding(paddingValues)
     ) {
-        SimpleContentTitle(
-            modifier = Modifier.fillMaxWidth(),
-            title = state.sideMenuTitle,
-            subtitle = null
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            SimpleContentTitle(
+                modifier = Modifier.fillMaxWidth(),
+                title = state.sideMenuTitle,
+                subtitle = null
+            )
 
-        SideMenuOptions(
-            sideMenuOptions = state.sideMenuOptions,
-            onEventSent = onEventSent,
+            SideMenuOptions(
+                sideMenuOptions = state.sideMenuOptions,
+                onEventSent = onEventSent,
+            )
+        }
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = SPACING_MEDIUM.dp),
+            text = state.appVersion,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -181,7 +196,8 @@ private fun SideMenuContentPreview() {
                             )
                         )
                     ),
-                )
+                ),
+                appVersion = "1.0.0"
             ),
             onEventSent = {},
             paddingValues = PaddingValues(SPACING_MEDIUM.dp)

@@ -49,6 +49,7 @@ import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.extension.openBleSettings
+import eu.europa.ec.uilogic.extension.openIntentChooser
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -132,6 +133,13 @@ fun DashboardScreenNew(
         viewModel.effect.onEach { effect ->
             when (effect) {
                 is Effect.Navigation -> handleNavigationEffect(effect, hostNavController, context)
+
+                is Effect.ShareLogFile -> {
+                    context.openIntentChooser(
+                        effect.intent,
+                        effect.chooserTitle
+                    )
+                }
             }
         }.collect()
     }

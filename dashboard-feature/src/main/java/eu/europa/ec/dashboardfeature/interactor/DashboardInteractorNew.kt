@@ -16,9 +16,22 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import android.net.Uri
+import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.businesslogic.controller.log.LogController
+
 interface DashboardInteractorNew {
+    fun getAppVersion(): String
+    fun retrieveLogFileUris(): ArrayList<Uri>
 }
 
-class DashboardInteractorNewImpl : DashboardInteractorNew {
+class DashboardInteractorNewImpl(
+    private val configLogic: ConfigLogic,
+    private val logController: LogController
+) : DashboardInteractorNew {
+    override fun getAppVersion(): String = configLogic.appVersion
 
+    override fun retrieveLogFileUris(): ArrayList<Uri> {
+        return ArrayList(logController.retrieveLogFileUris())
+    }
 }

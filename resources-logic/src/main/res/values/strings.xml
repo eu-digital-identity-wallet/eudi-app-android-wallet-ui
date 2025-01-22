@@ -210,6 +210,7 @@
     <!-- Dashboard Side Menu -->
     <string name="dashboard_side_menu_title">My EU Wallet</string>
     <string name="dashboard_side_menu_change_pin">Change PIN</string>
+    <string name="dashboard_side_menu_retrieve_logs">Retrieve logs</string>
 
     <!-- Home Screen -->
     <string name="home_screen_title">Home</string>
