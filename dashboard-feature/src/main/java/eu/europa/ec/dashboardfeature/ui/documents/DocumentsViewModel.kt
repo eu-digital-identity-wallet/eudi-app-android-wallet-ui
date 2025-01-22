@@ -237,20 +237,26 @@ class DocumentsViewModel(
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-                if (!event.isOpen) {
-                    if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
-                        setState {
-                            copy(
-                                snapshotFilters = emptyList(),
-                                isBottomSheetOpen = false,
-                                filters = viewState.value.appliedFilters
-                            )
+                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
+                    if (!event.isOpen) {
+                        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
+                            setState {
+                                copy(
+                                    snapshotFilters = emptyList(),
+                                    isBottomSheetOpen = false,
+                                    filters = viewState.value.appliedFilters
+                                )
+                            }
+                            setEffect { Effect.ResumeOnApplyFilter }
                         }
-                        setEffect { Effect.ResumeOnApplyFilter }
+                    } else {
+                        setState {
+                            copy(isBottomSheetOpen = true)
+                        }
                     }
                 } else {
                     setState {
-                        copy(isBottomSheetOpen = true)
+                        copy(isBottomSheetOpen = event.isOpen)
                     }
                 }
             }
@@ -299,7 +305,7 @@ class DocumentsViewModel(
     ) {
         setState {
             copy(
-                isLoading = true,
+                isLoading = documents.isEmpty(),
                 error = null
             )
         }
@@ -613,8 +619,6 @@ class DocumentsViewModel(
         val appliedFilters = applied?.filters ?: emptyList()
         setState {
             copy(
-                documents = appliedFilterDocuments?.search(queryText)?.documents?.map { it.itemUi }
-                    ?: emptyList(),
                 filters = appliedFilters,
                 filteredDocuments = appliedFilterDocuments,
                 sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = DualSelectorButton.FIRST),
