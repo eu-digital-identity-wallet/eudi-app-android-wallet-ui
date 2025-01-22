@@ -283,11 +283,12 @@
 
     <string name="document_details_main_section_text">DOCUMENT DETAILS</string>
     <string name="document_details_issuer_section_text">ISSUER</string>
-    <string name="document_details_primary_button_text">View all transactions</string>
     <string name="document_details_secondary_button_text">Delete document</string>
 
     <string name="document_details_bottom_sheet_bookmark_info_title">Saved to favourites</string>
     <string name="document_details_bottom_sheet_bookmark_info_message">The document was successfully added to your favourites list.</string>
+    <string name="document_details_bottom_sheet_bookmark_removed_info_title">Removed from favourites</string>
+    <string name="document_details_bottom_sheet_bookmark_removed_info_message">The document was successfully removed from your favourites list.</string>
 
     <string name="document_details_bottom_sheet_badge_title">Trusted Relying Party</string>
     <string name="document_details_bottom_sheet_badge_subtitle">A Relying Party is considered trusted when it meets

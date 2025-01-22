@@ -57,7 +57,6 @@ import eu.europa.ec.uilogic.component.content.ToolbarConfig
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
@@ -100,7 +99,7 @@ fun DocumentDetailsScreen(
                     throttleClicks = true,
                 ),
                 ToolbarAction(
-                    icon = if (state.hideSensitiveContent) AppIcons.Visibility else AppIcons.VisibilityOff,
+                    icon = if (state.hideSensitiveContent) AppIcons.VisibilityOff else AppIcons.Visibility,
                     onClick = { viewModel.setEvent(Event.ChangeContentVisibility) },
                     enabled = !state.isLoading,
                     throttleClicks = false,
@@ -265,6 +264,10 @@ private fun Content(
                 is Effect.BookmarkStored -> {
                     onEventSend(Event.OnBookmarkStored)
                 }
+
+                is Effect.BookmarkRemoved -> {
+                    onEventSend(Event.OnBookmarkRemoved)
+                }
             }
         }.collect()
     }
@@ -303,6 +306,14 @@ private fun SheetContent(
             )
         }
 
+        is DocumentDetailsBottomSheetContent.BookmarkRemovedInfo -> {
+            SimpleBottomSheet(
+                textData = sheetContent.bottomSheetTextData,
+                leadingIcon = AppIcons.BookmarkFilled,
+                leadingIconTint = MaterialTheme.colorScheme.error,
+            )
+        }
+
         is DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo -> {
             SimpleBottomSheet(
                 textData = sheetContent.bottomSheetTextData,
@@ -319,24 +330,9 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                top = SPACING_EXTRA_SMALL.dp,
-                bottom = SPACING_MEDIUM.dp,
+                vertical = SPACING_MEDIUM.dp
             )
     ) {
-        WrapButton(
-            modifier = Modifier.fillMaxWidth(),
-            buttonConfig = ButtonConfig(
-                type = ButtonType.PRIMARY,
-                onClick = { onEventSend(Event.PrimaryButtonPressed) },
-                isWithoutContainerBackground = true,
-            )
-        ) {
-            Text(
-                text = stringResource(id = R.string.document_details_primary_button_text),
-                style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary)
-            )
-        }
-
         WrapButton(
             modifier = Modifier.fillMaxWidth(),
             buttonConfig = ButtonConfig(

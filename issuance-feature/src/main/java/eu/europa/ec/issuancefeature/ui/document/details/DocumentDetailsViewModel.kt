@@ -78,6 +78,7 @@ sealed class Event : ViewEvent {
     data object ChangeContentVisibility : Event()
     data object BookmarkPressed : Event()
     data object OnBookmarkStored : Event()
+    data object OnBookmarkRemoved : Event()
     data object IssuerCardPressed : Event()
 }
 
@@ -96,12 +97,17 @@ sealed class Effect : ViewSideEffect {
     data object CloseBottomSheet : Effect()
 
     data object BookmarkStored : Effect()
+    data object BookmarkRemoved : Effect()
 }
 
 sealed class DocumentDetailsBottomSheetContent {
     data object DeleteDocumentConfirmation : DocumentDetailsBottomSheetContent()
 
     data class BookmarkStoredInfo(
+        val bottomSheetTextData: BottomSheetTextData
+    ) : DocumentDetailsBottomSheetContent()
+
+    data class BookmarkRemovedInfo(
         val bottomSheetTextData: BottomSheetTextData
     ) : DocumentDetailsBottomSheetContent()
 
@@ -173,6 +179,14 @@ class DocumentDetailsViewModel(
                 showBottomSheet(
                     sheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo(
                         bottomSheetTextData = getBookmarkStoredBottomSheetTextData()
+                    )
+                )
+            }
+
+            is Event.OnBookmarkRemoved -> {
+                showBottomSheet(
+                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkRemovedInfo(
+                        bottomSheetTextData = getBookmarkRemovedBottomSheetTextData()
                     )
                 )
             }
@@ -320,6 +334,10 @@ class DocumentDetailsViewModel(
                             isDocumentBookmarked = false
                         )
                     }
+
+                    setEffect {
+                        Effect.BookmarkRemoved
+                    }
                 }
             }
         }
@@ -344,6 +362,13 @@ class DocumentDetailsViewModel(
         return BottomSheetTextData(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_message)
+        )
+    }
+
+    private fun getBookmarkRemovedBottomSheetTextData(): BottomSheetTextData {
+        return BottomSheetTextData(
+            title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_removed_info_title),
+            message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_removed_info_message)
         )
     }
 
