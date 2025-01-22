@@ -18,6 +18,8 @@ package eu.europa.ec.dashboardfeature.ui.dashboard_new
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
@@ -104,7 +106,10 @@ fun DashboardScreenNew(
         visible = state.isSideMenuVisible,
         modifier = Modifier.fillMaxSize(),
         enter = slideInHorizontally(initialOffsetX = { it }),
-        exit = slideOutHorizontally(targetOffsetX = { it })
+        exit = when (state.sideMenuAnimation) {
+            SideMenuAnimation.SLIDE -> slideOutHorizontally(targetOffsetX = { it })
+            SideMenuAnimation.FADE -> fadeOut(animationSpec = tween(state.menuAnimationDuration))
+        }
     ) {
         SideMenuScreen(
             state = state,

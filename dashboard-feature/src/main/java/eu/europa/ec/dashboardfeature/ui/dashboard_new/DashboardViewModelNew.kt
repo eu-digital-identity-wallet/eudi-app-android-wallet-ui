@@ -53,6 +53,8 @@ data class State(
     val isSideMenuVisible: Boolean = false,
     val sideMenuTitle: String = "",
     val sideMenuOptions: List<SideMenuItemUi>,
+    val sideMenuAnimation: SideMenuAnimation = SideMenuAnimation.SLIDE,
+    val menuAnimationDuration: Int = 1500
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -84,6 +86,10 @@ sealed class Effect : ViewSideEffect {
     }
 }
 
+enum class SideMenuAnimation {
+    SLIDE, FADE
+}
+
 @KoinViewModel
 class DashboardViewModelNew(
     private val interactor: DashboardInteractorNew,
@@ -108,11 +114,21 @@ class DashboardViewModelNew(
             }
 
             is Event.SideMenu.Hide -> {
-                setState { copy(isSideMenuVisible = false) }
+                setState {
+                    copy(
+                        isSideMenuVisible = false,
+                        sideMenuAnimation = SideMenuAnimation.SLIDE
+                    )
+                }
             }
 
             is Event.SideMenu.Show -> {
-                setState { copy(isSideMenuVisible = true) }
+                setState {
+                    copy(
+                        isSideMenuVisible = true,
+                        sideMenuAnimation = SideMenuAnimation.SLIDE
+                    )
+                }
             }
         }
     }
@@ -129,6 +145,12 @@ class DashboardViewModelNew(
             }
         }
 
+        setState {
+            copy(
+                isSideMenuVisible = false,
+                sideMenuAnimation = SideMenuAnimation.FADE
+            )
+        }
         setEffect { Effect.Navigation.SwitchScreen(screenRoute = nextScreenRoute) }
     }
 
