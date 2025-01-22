@@ -101,6 +101,7 @@
     <string name="content_description_wallet_secured_icon">Wallet secured</string>
     <string name="content_description_info_icon">Info</string>
     <string name="content_description_issuer_icon">Issuer</string>
+    <string name="content_description_issuer_logo_icon">Issuer logo</string>
     <string name="content_description_menu_icon">Menu</string>
     <string name="content_description_signature_icon">Signature</string>
     <string name="content_description_authenticate_icon">Authentication ID cards</string>

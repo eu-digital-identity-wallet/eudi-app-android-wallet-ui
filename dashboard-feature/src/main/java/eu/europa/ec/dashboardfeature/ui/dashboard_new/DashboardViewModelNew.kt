@@ -203,7 +203,7 @@ class DashboardViewModelNew(
                             text = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs)
                         ),
                         leadingContentData = ListItemLeadingContentData.Icon(
-                            iconData = AppIcons.Info
+                            iconData = AppIcons.OpenNew
                         ),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowRight

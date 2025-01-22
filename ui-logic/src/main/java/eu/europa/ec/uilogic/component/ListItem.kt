@@ -35,10 +35,12 @@ import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
 import eu.europa.ec.uilogic.component.ListItemMainContentData.Actionable
@@ -57,8 +59,8 @@ import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
-import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapRadioButton
 
 /**
@@ -111,14 +113,25 @@ sealed class ListItemMainContentData {
  * This can be either an icon or a User image encoded in base64 format.
  */
 sealed class ListItemLeadingContentData {
-    data class Icon(val iconData: IconData) : ListItemLeadingContentData()
+    abstract val size: Int
+
+    data class Icon(
+        override val size: Int = DEFAULT_ICON_SIZE,
+        val iconData: IconData,
+        val tint: Color? = null,
+    ) : ListItemLeadingContentData()
+
+    data class UserImage(
+        override val size: Int = ICON_SIZE_40,
+        val userBase64Image: String,
+    ) : ListItemLeadingContentData()
+
     data class AsyncImage(
+        override val size: Int = ICON_SIZE_40,
         val imageUrl: String,
         val errorImage: IconData? = null,
         val placeholderImage: IconData? = null,
     ) : ListItemLeadingContentData()
-
-    data class UserImage(val userBase64Image: String) : ListItemLeadingContentData()
 }
 
 /**
@@ -225,13 +238,15 @@ fun ListItem(
                 leadingContentData?.let { safeLeadingContentData ->
                     val leadingContentModifier = Modifier
                         .padding(end = SIZE_MEDIUM.dp)
-                        .size(ICON_SIZE_40.dp)
+                        .size(safeLeadingContentData.size.dp)
                         .then(blurModifier)
 
                     when (safeLeadingContentData) {
-                        is ListItemLeadingContentData.Icon -> WrapImage(
+                        is ListItemLeadingContentData.Icon -> WrapIcon(
                             modifier = leadingContentModifier,
                             iconData = safeLeadingContentData.iconData,
+                            customTint = safeLeadingContentData.tint
+                                ?: MaterialTheme.colorScheme.primary,
                         )
 
                         is ListItemLeadingContentData.UserImage -> ImageOrPlaceholder(
@@ -240,13 +255,11 @@ fun ListItem(
                         )
 
                         is ListItemLeadingContentData.AsyncImage -> WrapAsyncImage(
-                            modifier = Modifier
-                                .size(ICON_SIZE_40.dp)
-                                .padding(end = SIZE_MEDIUM.dp),
+                            modifier = leadingContentModifier,
                             source = safeLeadingContentData.imageUrl,
                             error = safeLeadingContentData.errorImage,
                             placeholder = safeLeadingContentData.placeholderImage,
-                            contentDescription = ""
+                            contentDescription = stringResource(R.string.content_description_issuer_logo_icon)
                         )
                     }
                 }
