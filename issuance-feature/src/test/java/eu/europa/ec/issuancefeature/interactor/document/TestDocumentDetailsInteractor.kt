@@ -60,6 +60,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import java.util.Locale
 
 class TestDocumentDetailsInteractor {
 
@@ -90,6 +91,7 @@ class TestDocumentDetailsInteractor {
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
+        whenever(resourceProvider.getLocale()).thenReturn(mockedDefaultLocale)
     }
 
     @After
@@ -752,5 +754,9 @@ class TestDocumentDetailsInteractor {
         whenever(bookmarkStorageController.retrieve(anyString()))
             .thenReturn(response)
     }
+    //endregion
+
+    //region mocked locale data
+    private val mockedDefaultLocale = Locale.getDefault()
     //endregion
 }
