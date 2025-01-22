@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.component
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -125,7 +126,7 @@ fun RoundedBorderText(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        if (isSelected) {
+        AnimatedVisibility(isSelected) {
             WrapIcon(
                 modifier = Modifier.padding(end = SPACING_SMALL.dp),
                 iconData = AppIcons.Check,
