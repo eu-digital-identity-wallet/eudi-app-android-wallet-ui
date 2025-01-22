@@ -36,6 +36,7 @@ import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.net.URI
 
 sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
     data class Success(
@@ -67,15 +68,23 @@ class DocumentIssuanceSuccessInteractorImpl(
 
             var issuerName =
                 resourceProvider.getString(R.string.issuance_success_header_issuer_default_name)
-            var issuerIsTrusted = false
+            val issuerIsTrusted = false
+            var issuerLogo: URI? = null
 
             documentIds.forEach { documentId ->
                 try {
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-                    document.localizedIssuerMetadata(resourceProvider.getLocale())?.name?.let { safeIssuerName ->
+                    val localizedIssuerMetadata =
+                        document.localizedIssuerMetadata(resourceProvider.getLocale())
+
+                    localizedIssuerMetadata?.name?.let { safeIssuerName ->
                         issuerName = safeIssuerName
+                    }
+
+                    localizedIssuerMetadata?.logo?.uri?.let { safeIssuerLogo ->
+                        issuerLogo = safeIssuerLogo
                     }
 
                     val detailsDocumentItems = document.data.claims
@@ -120,6 +129,7 @@ class DocumentIssuanceSuccessInteractorImpl(
             val headerConfig = ContentHeaderConfig(
                 description = headerConfigDescription,
                 relyingPartyData = RelyingPartyData(
+                    logo = issuerLogo,
                     name = issuerName,
                     isVerified = issuerIsTrusted,
                 )

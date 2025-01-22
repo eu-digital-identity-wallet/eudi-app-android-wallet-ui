@@ -170,7 +170,8 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.NoDocument(
-                    issuerName = mockedOffer.getIssuerName(locale)
+                    issuerName = mockedOffer.getIssuerName(locale),
+                    issuerLogo = null,
                 )
                 // Then
                 assertEquals(expectedResult, awaitItem())
@@ -320,7 +321,8 @@ class TestDocumentOfferInteractor {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
                     documents = expectedList,
                     issuerName = mockedIssuerName,
-                    txCodeLength = mockedTxCodeFourDigits
+                    txCodeLength = mockedTxCodeFourDigits,
+                    issuerLogo = null,
                 )
                 // Then
                 assertEquals(expectedResult, awaitItem())
@@ -373,7 +375,8 @@ class TestDocumentOfferInteractor {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
                     documents = expectedDocumentsUiList,
                     issuerName = mockedIssuerName,
-                    txCodeLength = mockedOffer.txCodeSpec?.length
+                    txCodeLength = mockedOffer.txCodeSpec?.length,
+                    issuerLogo = null,
                 )
 
                 // Then

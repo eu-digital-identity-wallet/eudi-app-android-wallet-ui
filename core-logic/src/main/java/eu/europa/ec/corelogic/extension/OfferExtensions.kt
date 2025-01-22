@@ -22,11 +22,15 @@ import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
+import java.net.URI
 import java.util.Locale
 
 fun Offer.getIssuerName(locale: Locale): String =
     issuerMetadata.display.find { it.locale?.let { locale.compareLocaleLanguage(Locale(it)) } == true }?.name
         ?: issuerMetadata.credentialIssuerIdentifier.value.value.host
+
+fun Offer.getIssuerLogo(locale: Locale): URI? =
+    issuerMetadata.display.find { it.locale?.let { locale.compareLocaleLanguage(Locale(it)) } == true }?.logo?.uri
 
 val Offer.OfferedDocument.documentIdentifier: DocumentIdentifier?
     get() = when (val format = documentFormat) {

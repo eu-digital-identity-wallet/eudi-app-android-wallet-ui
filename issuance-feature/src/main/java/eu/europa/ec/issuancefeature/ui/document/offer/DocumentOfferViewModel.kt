@@ -53,6 +53,7 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import java.net.URI
 
 data class State(
     val offerUiConfig: OfferUiConfig,
@@ -117,7 +118,7 @@ class DocumentOfferViewModel(
 
         return State(
             offerUiConfig = deserializedOfferUiConfig,
-            headerConfig = getHeaderConfig()
+            headerConfig = getInitialHeaderConfig()
         )
     }
 
@@ -233,9 +234,10 @@ class DocumentOfferViewModel(
                                 txCodeLength = response.txCodeLength,
                                 headerConfig = headerConfig.copy(
                                     relyingPartyData = getHeaderConfigIssuerData(
-                                        issuerName = response.issuerName
+                                        issuerName = response.issuerName,
+                                        issuerLogo = response.issuerLogo,
                                     )
-                                )
+                                ),
                             )
                         }
 
@@ -250,6 +252,12 @@ class DocumentOfferViewModel(
                                 documents = emptyList(),
                                 isInitialised = true,
                                 noDocument = true,
+                                headerConfig = headerConfig.copy(
+                                    relyingPartyData = getHeaderConfigIssuerData(
+                                        issuerName = response.issuerName,
+                                        issuerLogo = response.issuerLogo,
+                                    )
+                                ),
                             )
                         }
                     }
@@ -258,7 +266,7 @@ class DocumentOfferViewModel(
         }
     }
 
-    private fun getHeaderConfig(): ContentHeaderConfig {
+    private fun getInitialHeaderConfig(): ContentHeaderConfig {
         return ContentHeaderConfig(
             description = resourceProvider.getString(R.string.issuance_document_offer_description),
             mainText = resourceProvider.getString(R.string.issuance_document_offer_header_main_text),
@@ -270,8 +278,12 @@ class DocumentOfferViewModel(
         )
     }
 
-    private fun getHeaderConfigIssuerData(issuerName: String): RelyingPartyData {
+    private fun getHeaderConfigIssuerData(
+        issuerName: String,
+        issuerLogo: URI?,
+    ): RelyingPartyData {
         return RelyingPartyData(
+            logo = issuerLogo,
             isVerified = false,
             name = issuerName,
             description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)

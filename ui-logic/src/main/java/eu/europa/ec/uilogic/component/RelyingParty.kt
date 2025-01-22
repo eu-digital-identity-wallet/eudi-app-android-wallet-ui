@@ -72,7 +72,10 @@ fun RelyingParty(
     ) {
         with(relyingPartyData) {
             logo?.let { safeLogo ->
-                WrapAsyncImage(source = safeLogo.toString())
+                WrapAsyncImage(
+                    modifier = Modifier.fillMaxWidth(0.5f),
+                    source = safeLogo.toString(),
+                )
             }
 
             Row(

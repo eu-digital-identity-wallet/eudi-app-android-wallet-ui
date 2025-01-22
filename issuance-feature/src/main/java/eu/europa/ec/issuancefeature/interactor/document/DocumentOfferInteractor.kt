@@ -28,6 +28,7 @@ import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.documentIdentifier
+import eu.europa.ec.corelogic.extension.getIssuerLogo
 import eu.europa.ec.corelogic.extension.getIssuerName
 import eu.europa.ec.corelogic.extension.getName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -47,15 +48,21 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import java.net.URI
 
 sealed class ResolveDocumentOfferInteractorPartialState {
     data class Success(
         val documents: List<DocumentOfferItemUi>,
         val issuerName: String,
+        val issuerLogo: URI?,
         val txCodeLength: Int?
     ) : ResolveDocumentOfferInteractorPartialState()
 
-    data class NoDocument(val issuerName: String) : ResolveDocumentOfferInteractorPartialState()
+    data class NoDocument(
+        val issuerName: String,
+        val issuerLogo: URI?,
+    ) : ResolveDocumentOfferInteractorPartialState()
+
     data class Failure(val errorMessage: String) : ResolveDocumentOfferInteractorPartialState()
 }
 
@@ -122,7 +129,10 @@ class DocumentOfferInteractorImpl(
                             ResolveDocumentOfferInteractorPartialState.NoDocument(
                                 issuerName = response.offer.getIssuerName(
                                     resourceProvider.getLocale()
-                                )
+                                ),
+                                issuerLogo = response.offer.getIssuerLogo(
+                                    resourceProvider.getLocale()
+                                ),
                             )
                         } else {
 
@@ -167,6 +177,7 @@ class DocumentOfferInteractorImpl(
                                         )
                                     },
                                     issuerName = response.offer.getIssuerName(resourceProvider.getLocale()),
+                                    issuerLogo = response.offer.getIssuerLogo(resourceProvider.getLocale()),
                                     txCodeLength = response.offer.txCodeSpec?.length
                                 )
                             } else {
