@@ -16,13 +16,13 @@
 
 package eu.europa.ec.uilogic.component
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -34,8 +34,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 enum class DualSelectorButton {
     FIRST,
@@ -53,24 +56,19 @@ fun DualSelectorButtons(data: DualSelectorButtonData, onClick: (DualSelectorButt
 
     Row(
         modifier = Modifier
+            .height(SIZE_EXTRA_LARGE.dp)
             .fillMaxWidth()
     ) {
         RoundedBorderText(
             modifier = Modifier
                 .weight(1f)
+                .fillMaxHeight()
                 .background(
                     color = if (data.selectedButton == DualSelectorButton.FIRST) {
-                        MaterialTheme.colorScheme.primary
+                        MaterialTheme.colorScheme.secondary
                     } else {
-                        MaterialTheme.colorScheme.surfaceContainerLowest
+                        MaterialTheme.colorScheme.surfaceDim
                     },
-                    RoundedCornerShape(
-                        topStart = SIZE_LARGE.dp,
-                        bottomStart = SIZE_LARGE.dp
-                    )
-                )
-                .border(
-                    BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                     RoundedCornerShape(
                         topStart = SIZE_LARGE.dp,
                         bottomStart = SIZE_LARGE.dp
@@ -82,27 +80,21 @@ fun DualSelectorButtons(data: DualSelectorButtonData, onClick: (DualSelectorButt
                         bottomStart = SIZE_LARGE.dp
                     )
                 )
-                .padding(SIZE_SMALL.dp)
-                .clickable { onClick(DualSelectorButton.FIRST) },
+                .clickable { onClick(DualSelectorButton.FIRST) }
+                .padding(SIZE_SMALL.dp),
             text = data.first,
             isSelected = data.selectedButton == DualSelectorButton.FIRST
         )
         RoundedBorderText(
             modifier = Modifier
                 .weight(1f)
+                .fillMaxHeight()
                 .background(
                     color = if (data.selectedButton == DualSelectorButton.SECOND) {
-                        MaterialTheme.colorScheme.primary
+                        MaterialTheme.colorScheme.secondary
                     } else {
-                        MaterialTheme.colorScheme.surfaceContainerLowest
+                        MaterialTheme.colorScheme.surfaceDim
                     },
-                    RoundedCornerShape(
-                        topEnd = SIZE_LARGE.dp,
-                        bottomEnd = SIZE_LARGE.dp
-                    )
-                )
-                .border(
-                    BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                     RoundedCornerShape(
                         topEnd = SIZE_LARGE.dp,
                         bottomEnd = SIZE_LARGE.dp
@@ -114,8 +106,8 @@ fun DualSelectorButtons(data: DualSelectorButtonData, onClick: (DualSelectorButt
                         bottomEnd = SIZE_LARGE.dp
                     )
                 )
-                .padding(SIZE_SMALL.dp)
-                .clickable { onClick(DualSelectorButton.SECOND) },
+                .clickable { onClick(DualSelectorButton.SECOND) }
+                .padding(SIZE_SMALL.dp),
             text = data.second,
             isSelected = data.selectedButton == DualSelectorButton.SECOND
         )
@@ -128,16 +120,22 @@ fun RoundedBorderText(
     text: String,
     isSelected: Boolean,
 ) {
-    Box(
+    Row(
         modifier = modifier,
-        contentAlignment = Alignment.Center
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
     ) {
+        if (isSelected) {
+            WrapIcon(
+                modifier = Modifier.padding(end = SPACING_SMALL.dp),
+                iconData = AppIcons.Check,
+                customTint = MaterialTheme.colorScheme.onSurface
+            )
+        }
         Text(
-            text = text, color = if (isSelected) {
-                MaterialTheme.colorScheme.onPrimary
-            } else {
-                MaterialTheme.colorScheme.onSurfaceVariant
-            }
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -152,6 +150,6 @@ private fun DualSelectorButtonsPreview() {
                 second = "principes",
                 selectedButton = DualSelectorButton.SECOND
             )
-        ){}
+        ) {}
     }
 }

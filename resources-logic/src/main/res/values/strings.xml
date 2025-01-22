@@ -106,6 +106,7 @@
     <string name="content_description_signature_icon">Signature</string>
     <string name="content_description_authenticate_icon">Authentication ID cards</string>
     <string name="content_description_change_pin_icon">Change PIN</string>
+    <string name="content_description_check">Check</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>

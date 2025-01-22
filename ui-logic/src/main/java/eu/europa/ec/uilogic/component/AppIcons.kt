@@ -393,4 +393,10 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_change_pin_icon,
         imageVector = null
     )
+
+    val Check: IconData = IconData(
+        resourceId = R.drawable.ic_check,
+        contentDescriptionId = R.string.content_description_check,
+        imageVector = null
+    )
 }
