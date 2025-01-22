@@ -235,6 +235,7 @@ class DocumentsInteractorImpl(
                                 filterableAttributes = FilterableAttributes(
                                     issuedDate = null,
                                     expiryDate = null,
+                                    issuer = localizedIssuerMetadata?.name
                                 ),
                                 itemUi = DocumentDetailsItemUi(
                                     documentIssuanceState = DocumentUiIssuanceState.Pending,

@@ -41,7 +41,7 @@ internal fun FilterableDocuments.getEmptyUIifEmptyList(resourceProvider: Resourc
         listOf(
             FilterableDocumentItem(
                 itemUi = DocumentDetailsItemUi(
-                    documentIssuanceState = DocumentUiIssuanceState.Pending,
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
                     uiData = ListItemData(
                         itemId = "",
                         mainContentData = ListItemMainContentData.Text(

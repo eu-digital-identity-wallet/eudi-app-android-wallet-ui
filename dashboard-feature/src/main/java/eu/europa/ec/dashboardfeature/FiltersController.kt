@@ -325,17 +325,19 @@ class FiltersControllerImpl(
             initialFilters.find { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
                 ?.copy(expanded = filteredDocuments.documents
                     .distinctBy { it.filterableAttributes.issuer }
-                    .map { filter ->
-                        ListItemData(
-                            itemId = filter.filterableAttributes.issuer.toString(),
-                            mainContentData = ListItemMainContentData.Text(filter.filterableAttributes.issuer.toString()),
-                            trailingContentData = ListItemTrailingContentData.RadioButton(
-                                radioButtonData = RadioButtonData(
-                                    isSelected = false, // TODO make this dynamic or it will always reset
-                                    enabled = true
+                    .mapNotNull { filter ->
+                        filter.filterableAttributes.issuer?.let {
+                            ListItemData(
+                                itemId = filter.filterableAttributes.issuer,
+                                mainContentData = ListItemMainContentData.Text(filter.filterableAttributes.issuer),
+                                trailingContentData = ListItemTrailingContentData.RadioButton(
+                                    radioButtonData = RadioButtonData(
+                                        isSelected = false, // TODO make this dynamic or it will always reset
+                                        enabled = true
+                                    )
                                 )
                             )
-                        )
+                        }
                     })
 
         issuerFilter?.let {

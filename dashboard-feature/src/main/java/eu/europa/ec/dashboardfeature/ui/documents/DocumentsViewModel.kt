@@ -23,6 +23,7 @@ import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.dashboardfeature.extensions.getEmptyUIifEmptyList
 import eu.europa.ec.dashboardfeature.extensions.search
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
@@ -200,7 +201,7 @@ class DocumentsViewModel(
             }
 
             is Event.FiltersPressed -> {
-                //TODO Stamatis do we still need this logic?
+                //TODO Clear filters and dont apply filtering if user closes filter dialog
                 /*setState { copy(showFiltersBottomSheet = event.isOpen) }
                 if (!event.isOpen) {
                     interactor.clearFilters {
@@ -345,35 +346,21 @@ class DocumentsViewModel(
                         }
 
                         is DocumentInteractorGetDocumentsPartialState.Success -> {
-                            val documentsUi = response.allDocuments.documents.map { it.itemUi }
-                            val documents = documentsUi
-                                .map { documentUi ->
-                                    if (documentUi.uiData.itemId in deferredFailedDocIds) {
-                                        documentUi.copy(
-                                            documentIssuanceState = DocumentUiIssuanceState.Failed,
-                                            uiData = documentUi.uiData.copy(
-                                                supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
-                                                trailingContentData = ListItemTrailingContentData.Icon(
-                                                    iconData = AppIcons.ErrorFilled,
-                                                    tint = ThemeColors.error
-                                                )
-                                            )
-                                        )
-                                    } else {
-                                        documentUi
-                                    }
-                                }
-
                             val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
-                            documentsUi.filter { documentUi ->
-                                documentUi.documentIssuanceState == DocumentUiIssuanceState.Pending
+                            response.allDocuments.documents.filter { document ->
+                                document.itemUi.documentIssuanceState == DocumentUiIssuanceState.Pending
                             }.forEach { documentUi ->
-                                deferredDocs[documentUi.uiData.itemId] =
-                                    documentUi.documentIdentifier.formatType
+                                deferredDocs[documentUi.itemUi.uiData.itemId] =
+                                    documentUi.itemUi.documentIdentifier.formatType
                             }
 
-                            filterableDocuments = response.filterableDocuments
-                            allDocuments = response.allDocuments
+                            filterableDocuments =
+                                response.filterableDocuments.generateFailedDeferredDocs(
+                                    deferredFailedDocIds
+                                )
+                            allDocuments = response.allDocuments.generateFailedDeferredDocs(
+                                deferredFailedDocIds
+                            )
                             val filters =
                                 filterableDocuments?.let { interactor.getFilters(it).filters }
                                     ?: emptyList()
@@ -382,7 +369,9 @@ class DocumentsViewModel(
                                 copy(
                                     isLoading = false,
                                     error = null,
-                                    documents = filterableDocuments?.search(query)?.documents?.map { it.itemUi } ?: emptyList(),
+                                    documents = filterableDocuments?.search(query)
+                                        ?.getEmptyUIifEmptyList(resourceProvider)?.documents?.map { it.itemUi }
+                                        ?: emptyList(),
                                     filters = filters,
                                     deferredFailedDocIds = deferredFailedDocIds,
                                     allowUserInteraction = response.shouldAllowUserInteraction,
@@ -394,6 +383,27 @@ class DocumentsViewModel(
                     }
                 }
         }
+    }
+
+    private fun FilterableDocuments.generateFailedDeferredDocs(deferredFailedDocIds: List<DocumentId>): FilterableDocuments {
+        return copy(documents = documents.map { documentUi ->
+            if (documentUi.itemUi.uiData.itemId in deferredFailedDocIds) {
+                documentUi.copy(
+                    itemUi = documentUi.itemUi.copy(
+                        documentIssuanceState = DocumentUiIssuanceState.Failed,
+                        uiData = documentUi.itemUi.uiData.copy(
+                            supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = AppIcons.ErrorFilled,
+                                tint = ThemeColors.error
+                            )
+                        )
+                    )
+                )
+            } else {
+                documentUi
+            }
+        })
     }
 
     private fun tryIssuingDeferredDocuments(

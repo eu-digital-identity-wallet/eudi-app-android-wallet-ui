@@ -22,7 +22,7 @@ import java.time.Instant
 data class FilterableAttributes(
     val issuedDate: Instant?,
     val expiryDate: Instant?,
-    val issuer: String? = null,
+    val issuer: String?,
 )
 
 data class FilterableDocumentItem(
