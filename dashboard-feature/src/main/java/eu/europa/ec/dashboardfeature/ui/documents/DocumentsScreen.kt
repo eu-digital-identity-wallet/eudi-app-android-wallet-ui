@@ -157,7 +157,7 @@ fun DocumentsScreen(
 private fun handleNavigationEffect(
     navigationEffect: Effect.Navigation,
     navController: NavController,
-    context: Context
+    context: Context,
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> context.finish()
@@ -304,6 +304,10 @@ private fun Content(
 
                 is Effect.DocumentsFetched -> {
                     onEventSend(Event.TryIssuingDeferredDocuments(effect.deferredDocs))
+                }
+
+                is Effect.ResumeOnApplyFilter -> {
+                    onEventSend(Event.GetDocuments)
                 }
             }
         }.collect()

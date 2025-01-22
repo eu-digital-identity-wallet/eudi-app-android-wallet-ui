@@ -50,6 +50,7 @@ private const val FILTER_SORT_EXPIRY_DATE = "sort_expiry_date"
 interface FiltersController {
     fun applySearch(
         filterableDocuments: FilterableDocuments,
+        appliedFilters: List<ExpandableListItemData>,
         newQuery: String,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>>
 
@@ -60,7 +61,7 @@ interface FiltersController {
 
     fun resetFilters(
         filteredDocuments: FilterableDocuments,
-        initialFilters: List<ExpandableListItemData>
+        initialFilters: List<ExpandableListItemData>,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>>
 
     fun updateFilter(
@@ -69,7 +70,10 @@ interface FiltersController {
         appliedFilters: List<ExpandableListItemData>,
     ): List<ExpandableListItemData>
 
-    fun getAllFilter(filteredDocuments: FilterableDocuments): List<ExpandableListItemData>
+    fun getAllFilter(
+        filteredDocuments: FilterableDocuments,
+        appliedFilters: MutableList<ExpandableListItemData> = mutableListOf(),
+    ): List<ExpandableListItemData>
 }
 
 class FiltersControllerImpl(
@@ -282,10 +286,11 @@ class FiltersControllerImpl(
 
     override fun applySearch(
         filterableDocuments: FilterableDocuments,
+        appliedFilters: List<ExpandableListItemData>,
         newQuery: String,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>> {
         val searchedDocuments = filterableDocuments.search(newQuery)
-        val updatedFilters = getAllFilter(searchedDocuments)
+        val updatedFilters = getAllFilter(searchedDocuments, appliedFilters.toMutableList())
         return Pair(searchedDocuments.getEmptyUIifEmptyList(resourceProvider), updatedFilters)
     }
 
@@ -309,7 +314,10 @@ class FiltersControllerImpl(
             activeFilters.fold(filterableDocuments) { currentList, filter ->
                 filter.action.invoke(currentList)
             }
-        return Pair(documentsWithAppliedFilters.getEmptyUIifEmptyList(resourceProvider), selectedFilters)
+        return Pair(
+            documentsWithAppliedFilters.getEmptyUIifEmptyList(resourceProvider),
+            selectedFilters
+        )
     }
 
     override fun resetFilters(
@@ -317,19 +325,26 @@ class FiltersControllerImpl(
         initialFilters: List<ExpandableListItemData>,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>> {
         val searchAppliedFilters = applyFilters(initialDocuments, initialFilters).second
-        return applyFilters(initialDocuments.getEmptyUIifEmptyList(resourceProvider), searchAppliedFilters)
+        return applyFilters(
+            initialDocuments.getEmptyUIifEmptyList(resourceProvider),
+            searchAppliedFilters
+        )
     }
 
-    override fun getAllFilter(filteredDocuments: FilterableDocuments): List<ExpandableListItemData> {
+    override fun getAllFilter(
+        filteredDocuments: FilterableDocuments,
+        appliedFilters: MutableList<ExpandableListItemData>,
+    ): List<ExpandableListItemData> {
+        val filtersToApplyAgainst = appliedFilters.ifEmpty { initialFilters }
         val issuerFilter =
-            initialFilters.find { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
+            filtersToApplyAgainst.find { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
                 ?.copy(expanded = filteredDocuments.documents
                     .distinctBy { it.filterableAttributes.issuer }
-                    .mapNotNull { filter ->
-                        filter.filterableAttributes.issuer?.let {
+                    .mapNotNull { document ->
+                        document.filterableAttributes.issuer?.let {
                             ListItemData(
-                                itemId = filter.filterableAttributes.issuer,
-                                mainContentData = ListItemMainContentData.Text(filter.filterableAttributes.issuer),
+                                itemId = document.filterableAttributes.issuer,
+                                mainContentData = ListItemMainContentData.Text(document.filterableAttributes.issuer),
                                 trailingContentData = ListItemTrailingContentData.RadioButton(
                                     radioButtonData = RadioButtonData(
                                         isSelected = false, // TODO make this dynamic or it will always reset
@@ -341,9 +356,9 @@ class FiltersControllerImpl(
                     })
 
         issuerFilter?.let {
-            initialFilters.addOrReplace(issuerFilter) { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
+            filtersToApplyAgainst.addOrReplace(issuerFilter) { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
         }
-        return initialFilters
+        return filtersToApplyAgainst
     }
 
     override fun updateFilter(

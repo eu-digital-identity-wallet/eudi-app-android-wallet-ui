@@ -141,17 +141,6 @@ interface DocumentsInteractor {
         documentId: String,
     ): Flow<DocumentInteractorDeleteDocumentPartialState>
 
-    //    fun onSortingOrderChanged(sortingOrder: DualSelectorButton)
-//    fun applyFilters(queriedDocuments: List<DocumentDetailsItemUi>): List<DocumentDetailsItemUi>
-//    fun resetFilters(): DocumentInteractorFilterPartialState.ResetFilters
-//    fun clearFilters(setStateAction: (List<ExpandableListItemData>) -> Unit)
-//
-//    )
-//        setStateAction: (List<ExpandableListItemData>) -> Unit,
-//        groupId: String,
-//        id: String,
-//    fun onFilterSelect(
-//    fun searchDocuments(query: String): DocumentInteractorFilterPartialState.SearchResult
     fun getFilters(documents: FilterableDocuments): DocumentInteractorFilterPartialState.GetInitialFilters
     fun updateFilters(
         filterId: String,
@@ -172,6 +161,7 @@ interface DocumentsInteractor {
     fun searchDocuments(
         query: String,
         documents: FilterableDocuments,
+        appliedFilters: List<ExpandableListItemData>,
     ): DocumentInteractorFilterPartialState.SearchResult
 }
 
@@ -426,8 +416,13 @@ class DocumentsInteractorImpl(
     override fun searchDocuments(
         query: String,
         documents: FilterableDocuments,
+        appliedFilters: List<ExpandableListItemData>,
     ): DocumentInteractorFilterPartialState.SearchResult {
-        val (searchedDocuments, filters) = filtersController.applySearch(documents, query)
+        val (searchedDocuments, filters) = filtersController.applySearch(
+            documents,
+            appliedFilters,
+            query
+        )
         return DocumentInteractorFilterPartialState.SearchResult(searchedDocuments, filters)
     }
 }
