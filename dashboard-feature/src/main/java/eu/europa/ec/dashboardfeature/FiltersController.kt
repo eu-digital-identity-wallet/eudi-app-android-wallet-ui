@@ -48,28 +48,65 @@ private const val FILTER_SORT_DATE_ISSUED = "sort_date_issued"
 private const val FILTER_SORT_EXPIRY_DATE = "sort_expiry_date"
 
 interface FiltersController {
+    /**
+     * Applies a search query to the filterable documents.
+     *
+     * @param filterableDocuments The currently displayed documents.
+     * @param appliedFilters The currently applied filters.
+     * @param newQuery The search query.
+     * @return A pair of updated documents and updated filters after applying the search query.
+     */
     fun applySearch(
         filterableDocuments: FilterableDocuments,
         appliedFilters: List<ExpandableListItemData>,
         newQuery: String,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>>
 
+    /**
+     * Applies the selected filters to the filterable documents.
+     *
+     * @param filterableDocuments The currently displayed documents.
+     * @param selectedFilters The selected filters to apply.
+     * @return A pair of updated documents and updated filters after applying the selected filters.
+     */
     fun applyFilters(
         filterableDocuments: FilterableDocuments,
         selectedFilters: List<ExpandableListItemData>,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>>
 
+    /**
+     * Resets the filters to their initial state.
+     *
+     * @param filteredDocuments The currently filtered documents.
+     * @param initialFilters The initial filters.
+     * @return A pair of updated documents and updated filters after resetting the filters.
+     */
     fun resetFilters(
         filteredDocuments: FilterableDocuments,
         initialFilters: List<ExpandableListItemData>,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>>
 
+    /**
+     * Updates the selection state of a filter.
+     *
+     * @param filterId The ID of the filter to update.
+     * @param groupId The ID of the group the filter belongs to.
+     * @param appliedFilters The currently applied filters.
+     * @return The updated list of filters.
+     */
     fun updateFilter(
         filterId: String,
         groupId: String,
         appliedFilters: List<ExpandableListItemData>,
     ): List<ExpandableListItemData>
 
+    /**
+     * Gets all available filters.
+     *
+     * @param filteredDocuments The currently filtered documents.
+     * @param appliedFilters The currently applied filters or empty if no filters are applied or a filter reset is required.
+     * @return The list of all available filters.
+     */
     fun getAllFilter(
         filteredDocuments: FilterableDocuments,
         appliedFilters: MutableList<ExpandableListItemData> = mutableListOf(),
@@ -335,6 +372,7 @@ class FiltersControllerImpl(
         filteredDocuments: FilterableDocuments,
         appliedFilters: MutableList<ExpandableListItemData>,
     ): List<ExpandableListItemData> {
+        // If applied filters are present take those in consideration in order to preserve the filter state
         val filtersToApplyAgainst = appliedFilters.ifEmpty { initialFilters }
         val issuerFilter =
             filtersToApplyAgainst.find { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
@@ -347,7 +385,7 @@ class FiltersControllerImpl(
                                 mainContentData = ListItemMainContentData.Text(document.filterableAttributes.issuer),
                                 trailingContentData = ListItemTrailingContentData.RadioButton(
                                     radioButtonData = RadioButtonData(
-                                        isSelected = false, // TODO make this dynamic or it will always reset
+                                        isSelected = false,
                                         enabled = true
                                     )
                                 )
@@ -355,6 +393,7 @@ class FiltersControllerImpl(
                         }
                     })
 
+        // Update the issuer placeholder filter
         issuerFilter?.let {
             filtersToApplyAgainst.addOrReplace(issuerFilter) { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
         }

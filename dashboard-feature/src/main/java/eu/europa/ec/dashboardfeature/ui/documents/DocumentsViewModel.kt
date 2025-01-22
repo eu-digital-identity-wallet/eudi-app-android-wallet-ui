@@ -212,87 +212,19 @@ class DocumentsViewModel(
             }
 
             is Event.OnSearchQueryChanged -> {
-                val searchResult =
-                    viewState.value.filteredDocuments?.let { documents ->
-                        interactor.searchDocuments(
-                            query = event.query,
-                            documents = documents,
-                            appliedFilters = viewState.value.filters
-                        )
-                    }
-                setState {
-                    copy(
-                        documents = searchResult?.documents?.documents?.map { it.itemUi }
-                            ?: emptyList(),
-                        filters = searchResult?.filters ?: emptyList(),
-                        queryText = event.query
-                    )
-                }
+                applySearch(event.query)
             }
 
             is Event.OnFilterSelectionChanged -> {
-                val updatedFilters =
-                    interactor.updateFilters(
-                        event.filterId,
-                        event.groupId,
-                        viewState.value.filters
-                    )
-
-                setState {
-                    copy(
-                        snapshotFilters = updatedFilters.filters,
-                        filters = updatedFilters.filters
-                    )
-                }
+                updateFilter(event.filterId, event.groupId)
             }
 
             is Event.OnFiltersApply -> {
-                val filtersToApply = viewState.value.snapshotFilters.ifEmpty {
-                    viewState.value.filters
-                }
-                val applied =
-                    viewState.value.allDocuments?.let {
-                        interactor.applyFilters(
-                            it,
-                            filtersToApply
-                        )
-                    }
-                val appliedFilterDocuments = applied?.documents
-                val appliedFilters = applied?.filters ?: emptyList()
-                setState {
-                    copy(
-                        documents = appliedFilterDocuments?.search(queryText)?.documents?.map { it.itemUi }
-                            ?: emptyList(),
-                        filteredDocuments = appliedFilterDocuments,
-                        appliedFilters = appliedFilters,
-                        filters = appliedFilters,
-                        isFilteringActive = true
-                    )
-                }
-                hideBottomSheet()
+                applySelectedFilters()
             }
 
             is Event.OnFiltersReset -> {
-                val applied = viewState.value.allDocuments?.let { documents ->
-                    interactor.resetFilters(
-                        documents,
-                        viewState.value.initialFilters
-                    )
-                }
-                val appliedFilterDocuments = viewState.value.allDocuments
-                val appliedFilters = applied?.filters ?: emptyList()
-                setState {
-                    copy(
-                        documents = appliedFilterDocuments?.search(queryText)?.documents?.map { it.itemUi }
-                            ?: emptyList(),
-                        filters = appliedFilters,
-                        filteredDocuments = appliedFilterDocuments,
-                        sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = DualSelectorButton.FIRST),
-                        appliedFilters = appliedFilters,
-                        isFilteringActive = false
-                    )
-                }
-                hideBottomSheet()
+                resetFilters()
             }
 
             is Event.OnSortingOrderChanged -> {
@@ -607,6 +539,90 @@ class DocumentsViewModel(
                 }
             }
         }
+    }
+
+    private fun applySearch(queryText: String) {
+        val searchResult =
+            viewState.value.filteredDocuments?.let { documents ->
+                interactor.searchDocuments(
+                    query = queryText,
+                    documents = documents,
+                    appliedFilters = viewState.value.filters
+                )
+            }
+        setState {
+            copy(
+                documents = searchResult?.documents?.documents?.map { it.itemUi }
+                    ?: emptyList(),
+                filters = searchResult?.filters ?: emptyList(),
+                queryText = queryText
+            )
+        }
+    }
+
+    private fun updateFilter(filterId: String, groupId: String) {
+        val updatedFilters =
+            interactor.updateFilters(
+                filterId,
+                groupId,
+                viewState.value.filters
+            )
+
+        setState {
+            copy(
+                snapshotFilters = updatedFilters.filters,
+                filters = updatedFilters.filters
+            )
+        }
+    }
+
+    private fun applySelectedFilters() {
+        val filtersToApply = viewState.value.snapshotFilters.ifEmpty {
+            viewState.value.filters
+        }
+        val applied =
+            viewState.value.allDocuments?.let {
+                interactor.applyFilters(
+                    it,
+                    filtersToApply
+                )
+            }
+        val appliedFilterDocuments = applied?.documents
+        val appliedFilters = applied?.filters ?: emptyList()
+        setState {
+            copy(
+                documents = appliedFilterDocuments?.search(queryText)?.documents?.map { it.itemUi }
+                    ?: emptyList(),
+                filteredDocuments = appliedFilterDocuments,
+                appliedFilters = appliedFilters,
+                filters = appliedFilters,
+                isFilteringActive = true
+            )
+        }
+        hideBottomSheet()
+    }
+
+    private fun resetFilters() {
+        val applied = viewState.value.allDocuments?.let { documents ->
+            interactor.resetFilters(
+                documents,
+                viewState.value.initialFilters
+            )
+        }
+        val appliedFilterDocuments = viewState.value.allDocuments
+        val appliedFilters = applied?.filters ?: emptyList()
+        setState {
+            copy(
+                documents = appliedFilterDocuments?.search(queryText)?.documents?.map { it.itemUi }
+                    ?: emptyList(),
+                filters = appliedFilters,
+                filteredDocuments = appliedFilterDocuments,
+                sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = DualSelectorButton.FIRST),
+                appliedFilters = appliedFilters,
+                isFilteringActive = false
+            )
+        }
+        hideBottomSheet()
     }
 
     private fun goToDocumentDetails(docId: DocumentId) {
