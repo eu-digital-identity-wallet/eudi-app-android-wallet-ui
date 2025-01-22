@@ -52,6 +52,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import junit.framework.TestCase.assertEquals
 import org.junit.After
@@ -431,7 +432,6 @@ class TestAddDocumentInteractor {
     private val mockedTripleObject by lazy {
         Triple(
             first = SuccessUIConfig.TextElementsConfig(
-                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
                 text = resourceProvider.getString(R.string.issuance_add_document_deferred_success_text),
                 description = resourceProvider.getString(R.string.issuance_add_document_deferred_success_description),
                 color = ThemeColors.pending
@@ -439,6 +439,7 @@ class TestAddDocumentInteractor {
             second = SuccessUIConfig.ImageConfig(
                 type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
                 tint = ThemeColors.primary,
+                screenPercentageSize = PERCENTAGE_25,
             ),
             third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
         )

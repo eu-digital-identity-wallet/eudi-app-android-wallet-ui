@@ -23,7 +23,6 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePop
-import eu.europa.ec.commonfeature.util.TestsData.mockedDeferredSuccessTitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedInvalidCodeFormatMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuanceErrorMessage
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
@@ -76,6 +75,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import junit.framework.TestCase.assertEquals
 import org.junit.After
@@ -672,7 +672,6 @@ class TestDocumentOfferInteractor {
 
             val mockedTripleObject = Triple(
                 first = SuccessUIConfig.TextElementsConfig(
-                    title = mockedDeferredSuccessTitle,
                     text = mockedSuccessText,
                     description = mockedSuccessDescription,
                     color = ThemeColors.pending
@@ -680,6 +679,7 @@ class TestDocumentOfferInteractor {
                 second = SuccessUIConfig.ImageConfig(
                     type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
                     tint = ThemeColors.primary,
+                    screenPercentageSize = PERCENTAGE_25,
                 ),
                 third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
             )
@@ -757,7 +757,7 @@ class TestDocumentOfferInteractor {
                     nonIssuedDocuments = nonIssuedDeferredDocuments
                 )
             )
-            
+
             val config = SuccessUIConfig(
                 textElementsConfig = mockedTripleObject.first,
                 imageConfig = mockedTripleObject.second,
@@ -1054,8 +1054,6 @@ class TestDocumentOfferInteractor {
     }
 
     private fun mockIssuanceDocumentOfferDeferredSuccessStrings() {
-        whenever(resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title))
-            .thenReturn(mockedDeferredSuccessTitle)
         whenever(resourceProvider.getString(R.string.issuance_document_offer_deferred_success_text))
             .thenReturn(mockedSuccessText)
         whenever(resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text))

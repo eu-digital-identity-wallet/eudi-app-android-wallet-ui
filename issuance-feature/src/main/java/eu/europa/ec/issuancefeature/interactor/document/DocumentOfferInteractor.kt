@@ -38,6 +38,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
@@ -292,14 +293,16 @@ class DocumentOfferInteractorImpl(
     ): String {
         val (textElementsConfig, imageConfig, buttonText) = Triple(
             first = SuccessUIConfig.TextElementsConfig(
-                title = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_title),
                 text = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_text),
                 description = description,
                 color = ThemeColors.pending
             ),
             second = SuccessUIConfig.ImageConfig(
-                type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
+                type = SuccessUIConfig.ImageConfig.Type.Drawable(
+                    icon = AppIcons.InProgress,
+                ),
                 tint = ThemeColors.primary,
+                screenPercentageSize = PERCENTAGE_25,
             ),
             third = resourceProvider.getString(R.string.issuance_document_offer_deferred_success_primary_button_text)
         )

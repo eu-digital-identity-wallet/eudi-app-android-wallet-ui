@@ -36,6 +36,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -189,7 +190,6 @@ class AddDocumentInteractorImpl(
     ): String {
         val (textElementsConfig, imageConfig, buttonText) = Triple(
             first = SuccessUIConfig.TextElementsConfig(
-                title = resourceProvider.getString(R.string.issuance_add_document_deferred_success_title),
                 text = resourceProvider.getString(R.string.issuance_add_document_deferred_success_text),
                 description = resourceProvider.getString(R.string.issuance_add_document_deferred_success_description),
                 color = ThemeColors.pending
@@ -197,6 +197,7 @@ class AddDocumentInteractorImpl(
             second = SuccessUIConfig.ImageConfig(
                 type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
                 tint = ThemeColors.primary,
+                screenPercentageSize = PERCENTAGE_25,
             ),
             third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
         )

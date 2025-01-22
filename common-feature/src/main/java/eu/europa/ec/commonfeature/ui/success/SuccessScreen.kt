@@ -41,11 +41,12 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.SimpleContentTitle
+import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
@@ -127,15 +128,11 @@ private fun SuccessScreenView(
         modifier = Modifier
             .fillMaxSize()
             .padding(paddingValues),
-        verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        state.successConfig.textElementsConfig.title?.let { safeTitle ->
-            SimpleContentTitle(
-                modifier = Modifier.fillMaxWidth(),
-                title = safeTitle,
-                subtitle = null,
-            )
-        }
+        ContentHeader(
+            modifier = Modifier.fillMaxWidth(),
+            config = state.successConfig.headerConfig,
+        )
 
         val imageConfig = state.successConfig.imageConfig
         Column(
@@ -147,16 +144,18 @@ private fun SuccessScreenView(
         ) {
             when (imageConfig.type) {
                 is SuccessUIConfig.ImageConfig.Type.Default -> WrapImage(
-                    modifier = Modifier.fillMaxWidth(0.6f),
+                    modifier = Modifier.fillMaxWidth(imageConfig.screenPercentageSize),
                     iconData = AppIcons.Success,
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.success),
                     contentScale = ContentScale.FillWidth
                 )
 
                 is SuccessUIConfig.ImageConfig.Type.Drawable -> WrapImage(
-                    modifier = Modifier.fillMaxWidth(0.25f),
+                    modifier = Modifier.fillMaxWidth(imageConfig.screenPercentageSize),
                     iconData = imageConfig.type.icon,
-                    colorFilter = ColorFilter.tint(imageConfig.tint),
+                    colorFilter = imageConfig.tint?.let { safeImageColorTint ->
+                        ColorFilter.tint(safeImageColorTint)
+                    },
                     contentScale = ContentScale.FillWidth
                 )
             }
@@ -257,7 +256,6 @@ private fun SuccessDefaultPreview() {
             state = State(
                 successConfig = SuccessUIConfig(
                     textElementsConfig = SuccessUIConfig.TextElementsConfig(
-                        title = null,
                         text = stringResource(R.string.generic_success),
                         description = stringResource(R.string.quick_pin_change_success_description),
                     ),
@@ -292,14 +290,14 @@ private fun SuccessPendingPreview() {
             state = State(
                 successConfig = SuccessUIConfig(
                     textElementsConfig = SuccessUIConfig.TextElementsConfig(
-                        title = stringResource(R.string.issuance_add_document_deferred_success_title),
                         text = stringResource(R.string.issuance_add_document_deferred_success_text),
-                        description = "Your document Digital ID from Issuance Service has been requested. You will be notified when it has been issued to your wallet.",
+                        description = stringResource(R.string.issuance_add_document_deferred_success_description),
                         color = ThemeColors.pending,
                     ),
                     imageConfig = SuccessUIConfig.ImageConfig(
                         type = SuccessUIConfig.ImageConfig.Type.Drawable(icon = AppIcons.InProgress),
                         tint = ThemeColors.primary,
+                        screenPercentageSize = PERCENTAGE_25,
                     ),
                     buttonConfig = listOf(
                         SuccessUIConfig.ButtonConfig(

@@ -28,6 +28,7 @@ import eu.europa.ec.commonfeature.interactor.QuickPinInteractorSetPinPartialStat
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -367,13 +368,25 @@ class PinViewModel(
                     SuccessUIConfig.serializedKeyName to uiSerializer.toBase64(
                         SuccessUIConfig(
                             textElementsConfig = SuccessUIConfig.TextElementsConfig(
-                                text = resourceProvider.getString(R.string.quick_pin_success_text),
+                                text = when (pinFlow) {
+                                    PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_text)
+                                    PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_text)
+                                },
                                 description = when (pinFlow) {
                                     PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_description)
                                     PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_description)
                                 }
                             ),
-                            imageConfig = SuccessUIConfig.ImageConfig(),
+                            imageConfig = when (pinFlow) {
+                                PinFlow.CREATE -> SuccessUIConfig.ImageConfig(
+                                    type = SuccessUIConfig.ImageConfig.Type.Drawable(
+                                        icon = AppIcons.WalletSecured
+                                    ),
+                                    tint = null,
+                                )
+
+                                PinFlow.UPDATE -> SuccessUIConfig.ImageConfig()
+                            },
                             buttonConfig = listOf(
                                 SuccessUIConfig.ButtonConfig(
                                     text = when (pinFlow) {

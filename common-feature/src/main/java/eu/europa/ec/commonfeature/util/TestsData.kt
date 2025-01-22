@@ -63,7 +63,6 @@ object TestsData {
     const val mockedOfferedDocumentName = "Offered Document"
     const val mockedOfferedDocumentDocType = "mocked_offered_document_doc_type"
     const val mockedTxCodeFourDigits = 4
-    const val mockedDeferredSuccessTitle = "Document pending"
     const val mockedSuccessText = "Success text"
     const val mockedSuccessDescription = "Success description"
     const val mockedSuccessContentDescription = "Content description"

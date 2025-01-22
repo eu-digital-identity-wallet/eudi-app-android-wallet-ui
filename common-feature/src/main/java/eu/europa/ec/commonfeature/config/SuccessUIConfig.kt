@@ -20,7 +20,10 @@ import androidx.compose.ui.graphics.Color
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
+import eu.europa.ec.uilogic.component.utils.PERCENTAGE_60
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.serializer.UiSerializable
@@ -29,6 +32,10 @@ import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
 data class SuccessUIConfig(
     val textElementsConfig: TextElementsConfig,
+    val headerConfig: ContentHeaderConfig = ContentHeaderConfig(
+        appIconAndTextData = AppIconAndTextData(),
+        description = null,
+    ),
     val imageConfig: ImageConfig,
     val buttonConfig: List<ButtonConfig>,
     val onBackScreenToNavigate: ConfigNavigation
@@ -36,7 +43,8 @@ data class SuccessUIConfig(
 
     data class ImageConfig(
         val type: Type = Type.Default,
-        val tint: Color = ThemeColors.success,
+        val tint: Color? = ThemeColors.success,
+        val screenPercentageSize: Float = PERCENTAGE_60,
     ) {
         sealed class Type {
             data object Default : Type()
@@ -55,7 +63,6 @@ data class SuccessUIConfig(
     }
 
     data class TextElementsConfig(
-        val title: String? = null,
         val text: String,
         val description: String,
         val color: Color = ThemeColors.success
