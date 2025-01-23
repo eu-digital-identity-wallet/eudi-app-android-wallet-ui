@@ -473,7 +473,7 @@ object TestsData {
                 configurationId = mockedConfigIssuerId,
                 isPid = false
             )
-        )
+        ).sortedBy { it.name.lowercase() }
 
     val mockedConfigNavigationTypePop = ConfigNavigation(navigationType = NavigationType.Pop)
     val mockedConfigNavigationTypePush = ConfigNavigation(

@@ -140,7 +140,7 @@ object RequestTransformer {
                     docId = docId,
                     docNamespace = docNamespace,
                     documentDetailsDomain = DocumentDetailsDomain(
-                        items = documentItemsDomain
+                        items = documentItemsDomain.sortedBy { it.readableName.lowercase() }
                     )
                 )
             )
@@ -246,6 +246,7 @@ object RequestTransformer {
                             (selectedItem.uiItem.leadingContentData as? ListItemLeadingContentData.UserImage)?.userBase64Image
                                 ?: mainContentData.text
                         }
+
                         is ListItemMainContentData.Actionable<*> -> {
                             (selectedItem.uiItem.leadingContentData as? ListItemLeadingContentData.UserImage)?.userBase64Image
                                 ?: mainContentData.text

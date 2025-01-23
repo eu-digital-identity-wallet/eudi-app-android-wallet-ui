@@ -97,22 +97,24 @@ class AddDocumentInteractorImpl(
 
                 is FetchScopedDocumentsPartialState.Success -> emit(
                     AddDocumentInteractorPartialState.Success(
-                        options = state.documents.mapNotNull {
-                            if (flowType != IssuanceFlowUiConfig.NO_DOCUMENT || it.isPid) {
-                                DocumentOptionItemUi(
-                                    itemData = ListItemData(
-                                        itemId = it.configurationId,
-                                        mainContentData = ListItemMainContentData.Text(text = it.name),
-                                        trailingContentData = ListItemTrailingContentData.Icon(
-                                            iconData = AppIcons.Add
-                                        )
-                                    ),
-                                    available = true,
-                                )
-                            } else {
-                                null
+                        options = state.documents
+                            .sortedBy { it.name.lowercase() }
+                            .mapNotNull {
+                                if (flowType != IssuanceFlowUiConfig.NO_DOCUMENT || it.isPid) {
+                                    DocumentOptionItemUi(
+                                        itemData = ListItemData(
+                                            itemId = it.configurationId,
+                                            mainContentData = ListItemMainContentData.Text(text = it.name),
+                                            trailingContentData = ListItemTrailingContentData.Icon(
+                                                iconData = AppIcons.Add
+                                            )
+                                        ),
+                                        available = true,
+                                    )
+                                } else {
+                                    null
+                                }
                             }
-                        }
                     )
                 )
             }

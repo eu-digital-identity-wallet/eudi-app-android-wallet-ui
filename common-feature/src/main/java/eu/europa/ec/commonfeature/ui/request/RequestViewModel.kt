@@ -98,14 +98,14 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         updatedItems: List<RequestDocumentItemUi>,
         allowShare: Boolean? = null
     ) {
-        val (hasVerificationItems, hasAtLeastOneFieldSelected) = hasVerificationItemsOrAtLeastOneFieldSelected(
+        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
             list = updatedItems
         )
 
         setState {
             copy(
                 items = updatedItems,
-                allowShare = allowShare ?: (hasAtLeastOneFieldSelected || hasVerificationItems)
+                allowShare = allowShare ?: hasAtLeastOneFieldSelected
             )
         }
     }
@@ -248,13 +248,13 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             )
         }
 
-        val (hasVerificationItems, hasAtLeastOneFieldSelected) = hasVerificationItemsOrAtLeastOneFieldSelected(
+        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
             list = updatedList
         )
 
         updateData(
             updatedItems = updatedList,
-            allowShare = hasAtLeastOneFieldSelected || hasVerificationItems
+            allowShare = hasAtLeastOneFieldSelected
         )
     }
 
@@ -277,33 +277,17 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         viewModelJob?.cancel()
     }
 
-    private fun hasVerificationItemsOrAtLeastOneFieldSelected(
+    private fun hasAtLeastOneFieldSelected(
         list: List<RequestDocumentItemUi>
-    ): Pair<Boolean, Boolean> {
-
-        var hasVerificationItems = false
-        var hasAtLeastOneFieldSelected = false
-
-        for (item in list) {
-            for (expandedItem in item.expandedUiItems) {
-                val trailingContentData = expandedItem.uiItem.trailingContentData
-                if (trailingContentData is ListItemTrailingContentData.Checkbox) {
-                    val checkbox = trailingContentData.checkboxData
-                    if (checkbox.isChecked) {
-                        hasVerificationItems = true
-                    }
-                    if (checkbox.isChecked && checkbox.enabled) {
-                        hasAtLeastOneFieldSelected = true
-                    }
-                }
-                // Exit early if both conditions are true
-                if (hasVerificationItems && hasAtLeastOneFieldSelected) {
-                    return Pair(true, true)
-                }
+    ): Boolean {
+        val hasAtLeastOneFieldSelected: Boolean = list.any { item ->
+            item.expandedUiItems.any { expandedUiItem ->
+                val trailingContentData = expandedUiItem.uiItem.trailingContentData
+                trailingContentData is ListItemTrailingContentData.Checkbox && trailingContentData.checkboxData.isChecked
             }
         }
 
-        return Pair(hasVerificationItems, hasAtLeastOneFieldSelected)
+        return hasAtLeastOneFieldSelected
     }
 
     override fun onCleared() {

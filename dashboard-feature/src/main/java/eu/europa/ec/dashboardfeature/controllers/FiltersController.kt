@@ -212,7 +212,7 @@ class FiltersControllerImpl(
                     mainContentData = ListItemMainContentData.Actionable<FilterableDocuments>(
                         resourceProvider.getString(R.string.documents_screen_filters_sort_default)
                     ) { filterable ->
-                        filterable.copy(documents = filterable.documents.sortByOrder(filterable.sortingOrder) { (it.itemUi.uiData.mainContentData as ListItemMainContentData.Text).text }
+                        filterable.copy(documents = filterable.documents.sortByOrder(filterable.sortingOrder) { (it.itemUi.uiData.mainContentData as ListItemMainContentData.Text).text.lowercase() }
                             .toMutableList())
                     },
                     trailingContentData = ListItemTrailingContentData.RadioButton(
