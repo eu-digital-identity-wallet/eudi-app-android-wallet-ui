@@ -75,7 +75,10 @@ fun String.toLocalDate(
     return result
 }
 
-fun Instant.formatInstant(zoneId: ZoneId = ZoneId.systemDefault(), locale: Locale = Locale.ENGLISH): String {
+fun Instant.formatInstant(
+    zoneId: ZoneId = ZoneId.systemDefault(),
+    locale: Locale = Locale.ENGLISH
+): String {
     val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
         .withZone(zoneId)
     return formatter.format(this)

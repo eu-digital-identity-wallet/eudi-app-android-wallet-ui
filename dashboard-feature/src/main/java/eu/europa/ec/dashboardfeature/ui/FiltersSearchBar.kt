@@ -106,7 +106,11 @@ fun FiltersSearchBar(
 private fun FiltersSearchBarPreview() {
     PreviewTheme {
         FiltersSearchBar(
-            text ="", placeholder = "Search documents", onValueChange = { }, onFilterClick = {}, true
+            text = "",
+            placeholder = "Search documents",
+            onValueChange = { },
+            onFilterClick = {},
+            true
         )
     }
 }
