@@ -82,9 +82,7 @@ object DocumentDetailsTransformer {
     }
 
     fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentUi {
-        val documentDetailsListItemData = this.detailsItems.map { documentItem ->
-            documentItem.toListItemData()
-        }
+        val documentDetailsListItemData = this.detailsItems.toListItemData()
         return DocumentUi(
             documentId = this.docId,
             documentName = this.docName,
@@ -98,39 +96,43 @@ object DocumentDetailsTransformer {
         )
     }
 
-    fun DocumentItem.toListItemData(): ListItemData {
+    fun List<DocumentItem>.toListItemData(): List<ListItemData> {
+        return this
+            .sortedBy { it.readableName.lowercase() }
+            .map {
 
-        val mainContent = when {
-            keyIsPortrait(key = this.elementIdentifier) -> {
-                ListItemMainContentData.Text(text = "")
+                val mainContent = when {
+                    keyIsPortrait(key = it.elementIdentifier) -> {
+                        ListItemMainContentData.Text(text = "")
+                    }
+
+                    keyIsSignature(key = it.elementIdentifier) -> {
+                        ListItemMainContentData.Image(base64Image = it.value)
+                    }
+
+                    else -> {
+                        ListItemMainContentData.Text(text = it.value)
+                    }
+                }
+
+                val itemId = generateUniqueFieldId(
+                    elementIdentifier = it.elementIdentifier,
+                    documentId = it.docId
+                )
+
+                val leadingContent = if (keyIsPortrait(key = it.elementIdentifier)) {
+                    ListItemLeadingContentData.UserImage(userBase64Image = it.value)
+                } else {
+                    null
+                }
+
+                ListItemData(
+                    itemId = itemId,
+                    mainContentData = mainContent,
+                    overlineText = it.readableName,
+                    leadingContentData = leadingContent
+                )
             }
-
-            keyIsSignature(key = this.elementIdentifier) -> {
-                ListItemMainContentData.Image(base64Image = this.value)
-            }
-
-            else -> {
-                ListItemMainContentData.Text(text = this.value)
-            }
-        }
-
-        val itemId = generateUniqueFieldId(
-            elementIdentifier = this.elementIdentifier,
-            documentId = this.docId
-        )
-
-        val leadingContent = if (keyIsPortrait(key = this.elementIdentifier)) {
-            ListItemLeadingContentData.UserImage(userBase64Image = this.value)
-        } else {
-            null
-        }
-
-        return ListItemData(
-            itemId = itemId,
-            mainContentData = mainContent,
-            overlineText = this.readableName,
-            leadingContentData = leadingContent
-        )
     }
 }
 

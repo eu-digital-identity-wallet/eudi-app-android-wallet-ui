@@ -98,8 +98,9 @@ class DocumentIssuanceSuccessInteractorImpl(
                                 item = claim.value ?: "",
                                 resourceProvider = resourceProvider,
                                 documentId = documentId
-                            ).toListItemData()
+                            )
                         }
+                        .toListItemData()
 
                     val documentUi = DocumentSuccessItemUi(
                         collapsedUiItem = CollapsedUiItem(
