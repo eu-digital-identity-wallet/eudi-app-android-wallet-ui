@@ -26,7 +26,7 @@ import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.uilogic.component.ListItemData
 
-//TODO Giannis To be removed
+//TODO To be removed
 data class RequestDocumentItemUiOld<T>(
     val id: String,
     val domainPayload: DocumentDomainPayload,
@@ -65,7 +65,7 @@ data class DocumentDomainPayload(
     val documentDetailsDomain: DocumentDetailsDomain
 )
 
-//TODO Giannis Should this be in other package?
+//TODO Should this be in other package?
 data class DocumentDetailsDomain(
     val items: List<DocumentItemDomain>
 )
