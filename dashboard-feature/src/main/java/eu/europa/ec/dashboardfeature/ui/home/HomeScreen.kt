@@ -84,8 +84,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
-typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Event
-typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard_new.Event.SideMenu.Show
+typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
+typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Show
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

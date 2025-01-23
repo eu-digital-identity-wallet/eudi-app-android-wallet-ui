@@ -18,31 +18,21 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Intent
 import android.net.Uri
-import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
-import eu.europa.ec.commonfeature.config.QrScanFlow
-import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.model.DocumentUi
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
-import eu.europa.ec.corelogic.model.DeferredDocumentData
-import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorDeleteDocumentPartialState
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorGetDocumentsPartialState
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorRetryIssuingDeferredDocumentsPartialState
-import eu.europa.ec.dashboardfeature.ui.home.BleAvailability
-import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.dashboardfeature.model.SideMenuItemType
+import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ModalOptionUi
-import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -51,89 +41,34 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.IssuanceScreens
-import eu.europa.ec.uilogic.navigation.ProximityScreens
-import eu.europa.ec.uilogic.navigation.StartupScreens
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 
 data class State(
-    val isLoading: Boolean = true,
-    val error: ContentErrorConfig? = null,
-    val isBottomSheetOpen: Boolean = false,
-    val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.Options(emptyList()),
 
-    val bleAvailability: BleAvailability = BleAvailability.UNKNOWN,
-    val isBleCentralClientModeEnabled: Boolean = false,
-
-    val userFirstName: String = "",
-    val userBase64Image: String = "",
-    val documents: List<DocumentUi> = emptyList(),
-    val deferredFailedDocIds: List<DocumentId> = emptyList(),
-    val allowUserInteraction: Boolean = false,
-
-    val appVersion: String = "",
+    // side menu
+    val isSideMenuVisible: Boolean = false,
+    val sideMenuTitle: String = "",
+    val sideMenuOptions: List<SideMenuItemUi>,
+    val sideMenuAnimation: SideMenuAnimation = SideMenuAnimation.SLIDE,
+    val menuAnimationDuration: Int = 1500,
+    val appVersion: String = ""
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data class Init(val deepLinkUri: Uri?) : Event()
-    data object OnPause : Event()
-    data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, FormatType>) : Event()
     data object Pop : Event()
-    data class NavigateToDocument(
-        val documentId: DocumentId
-    ) : Event()
 
-    data object OptionsPressed : Event()
-    data object StartProximityFlow : Event()
-    sealed class Fab : Event() {
-        data object PrimaryFabPressed : Fab()
-        data object SecondaryFabPressed : Fab()
+    // side menu events
+    sealed class SideMenu : Event() {
+        data object Show : SideMenu()
+        data object Hide : SideMenu()
+        data class ItemClicked(val itemType: SideMenuItemType) : SideMenu()
     }
-
-    sealed class BottomSheet : Event() {
-        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-        data object Close : BottomSheet()
-
-        sealed class Options : BottomSheet() {
-            data object OpenChangeQuickPin : Options()
-            data object OpenSignDocument : Options()
-            data object OpenScanQr : Options()
-            data object RetrieveLogs : Options()
-        }
-
-        sealed class Bluetooth : BottomSheet() {
-            data class PrimaryButtonPressed(val availability: BleAvailability) : Bluetooth()
-            data object SecondaryButtonPressed : Bluetooth()
-        }
-
-        sealed class DeferredDocument : BottomSheet() {
-            sealed class DeferredNotReadyYet(open val documentUi: DocumentUi) : DeferredDocument() {
-                data class DocumentSelected(override val documentUi: DocumentUi) :
-                    DeferredNotReadyYet(documentUi)
-
-                data class PrimaryButtonPressed(override val documentUi: DocumentUi) :
-                    DeferredNotReadyYet(documentUi)
-
-                data class SecondaryButtonPressed(override val documentUi: DocumentUi) :
-                    DeferredNotReadyYet(documentUi)
-            }
-
-            data class OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
-                val documentId: DocumentId
-            ) : DeferredDocument()
-        }
-    }
-
-    data object OnShowPermissionsRational : Event()
-    data class OnPermissionStateChanged(val availability: BleAvailability) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -152,141 +87,77 @@ sealed class Effect : ViewSideEffect {
         data object OnSystemSettings : Navigation()
     }
 
-    data class DocumentsFetched(val deferredDocs: Map<DocumentId, FormatType>) : Effect()
     data class ShareLogFile(val intent: Intent, val chooserTitle: String) : Effect()
-
-    data object ShowBottomSheet : Effect()
-    data object CloseBottomSheet : Effect()
 }
 
-sealed class DashboardBottomSheetContent {
-    data class Options(val options: List<ModalOptionUi<Event>>) : DashboardBottomSheetContent()
-
-    data class Bluetooth(val availability: BleAvailability) : DashboardBottomSheetContent()
-    data class DeferredDocumentPressed(val documentUi: DocumentUi) : DashboardBottomSheetContent()
-    data class DeferredDocumentsReady(
-        val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
-        val options: List<ModalOptionUi<Event>>,
-    ) : DashboardBottomSheetContent()
+enum class SideMenuAnimation {
+    SLIDE, FADE
 }
 
-@Deprecated("To be deleted")
 @KoinViewModel
 class DashboardViewModel(
     private val dashboardInteractor: DashboardInteractor,
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
-
-    private var retryDeferredDocsJob: Job? = null
-
-    override fun setInitialState(): State = State(
-        isBleCentralClientModeEnabled = dashboardInteractor.isBleCentralClientModeEnabled(),
-        appVersion = dashboardInteractor.getAppVersion()
-    )
+    override fun setInitialState(): State {
+        return State(
+            sideMenuTitle = resourceProvider.getString(R.string.dashboard_side_menu_title),
+            sideMenuOptions = getSideMenuOptions(),
+            appVersion = dashboardInteractor.getAppVersion()
+        )
+    }
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> {
-                getDocuments(
-                    event = event,
-                    deepLinkUri = event.deepLinkUri,
-                    deferredFailedDocIds = viewState.value.deferredFailedDocIds
-                )
-            }
-
-            is Event.OnPause -> {
-                retryDeferredDocsJob?.cancel()
-            }
-
-            is Event.TryIssuingDeferredDocuments -> {
-                tryIssuingDeferredDocuments(event, event.deferredDocs)
-            }
+            is Event.Init -> handleDeepLink(event.deepLinkUri)
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
-            is Event.NavigateToDocument -> {
-                goToDocumentDetails(docId = event.documentId)
+            is Event.SideMenu.ItemClicked -> {
+                handleSideMenuItemClicked(event.itemType)
             }
 
-            is Event.OptionsPressed -> {
-                showBottomSheet(
-                    sheetContent = DashboardBottomSheetContent.Options(
-                        listOf(
-                            ModalOptionUi(
-                                title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_1),
-                                trailingIcon = AppIcons.Edit,
-                                event = Event.BottomSheet.Options.OpenChangeQuickPin
-                            ),
-                            ModalOptionUi(
-                                title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_2),
-                                trailingIcon = AppIcons.QrScanner,
-                                event = Event.BottomSheet.Options.OpenScanQr
-                            ),
-                            ModalOptionUi(
-                                title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_4),
-                                trailingIcon = AppIcons.Sign,
-                                event = Event.BottomSheet.Options.OpenSignDocument
-                            ),
-                            ModalOptionUi(
-                                title = resourceProvider.getString(R.string.dashboard_bottom_sheet_options_action_3),
-                                trailingIcon = AppIcons.OpenNew,
-                                event = Event.BottomSheet.Options.RetrieveLogs
-                            )
-                        )
+            is Event.SideMenu.Hide -> {
+                setState {
+                    copy(
+                        isSideMenuVisible = false,
+                        sideMenuAnimation = SideMenuAnimation.SLIDE
+                    )
+                }
+            }
+
+            is Event.SideMenu.Show -> {
+                setState {
+                    copy(
+                        isSideMenuVisible = true,
+                        sideMenuAnimation = SideMenuAnimation.SLIDE
+                    )
+                }
+            }
+        }
+    }
+
+    private fun handleSideMenuItemClicked(itemType: SideMenuItemType) {
+        when (itemType) {
+            SideMenuItemType.CHANGE_PIN -> {
+                val nextScreenRoute = generateComposableNavigationLink(
+                    screen = CommonScreens.QuickPin,
+                    arguments = generateComposableArguments(
+                        mapOf("pinFlow" to PinFlow.UPDATE)
                     )
                 )
-            }
 
-            is Event.StartProximityFlow -> {
-                startProximityFlow()
-            }
-
-            is Event.Fab.PrimaryFabPressed -> {
-                checkIfBluetoothIsEnabled()
-            }
-
-            is Event.Fab.SecondaryFabPressed -> {
-                setEffect {
-                    Effect.Navigation.SwitchScreen(
-                        screenRoute = generateComposableNavigationLink(
-                            screen = IssuanceScreens.AddDocument,
-                            arguments = generateComposableArguments(
-                                mapOf("flowType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT)
-                            )
-                        )
+                setState {
+                    copy(
+                        isSideMenuVisible = false,
+                        sideMenuAnimation = SideMenuAnimation.FADE
                     )
                 }
+                setEffect { Effect.Navigation.SwitchScreen(screenRoute = nextScreenRoute) }
             }
 
-            is Event.BottomSheet.UpdateBottomSheetState -> {
-                setState {
-                    copy(isBottomSheetOpen = event.isOpen)
-                }
-            }
-
-            is Event.BottomSheet.Close -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.Options.OpenChangeQuickPin -> {
-                hideBottomSheet()
-                navigateToChangeQuickPin()
-            }
-
-            is Event.BottomSheet.Options.OpenSignDocument -> {
-                hideBottomSheet()
-                navigateToDocumentSign()
-
-            }
-
-            is Event.BottomSheet.Options.OpenScanQr -> {
-                hideBottomSheet()
-                navigateToQrScan()
-            }
-
-            is Event.BottomSheet.Options.RetrieveLogs -> {
-                hideBottomSheet()
+            SideMenuItemType.RETRIEVE_LOGS -> {
                 val logs = dashboardInteractor.retrieveLogFileUris()
                 if (logs.isNotEmpty()) {
                     setEffect {
@@ -301,297 +172,45 @@ class DashboardViewModel(
                     }
                 }
             }
+        }
+    }
 
-            is Event.BottomSheet.Bluetooth.PrimaryButtonPressed -> {
-                hideBottomSheet()
-                onBleUserAction(event.availability)
-            }
-
-            is Event.BottomSheet.Bluetooth.SecondaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.OnShowPermissionsRational -> {
-                setState { copy(bleAvailability = BleAvailability.UNKNOWN) }
-                showBottomSheet(sheetContent = DashboardBottomSheetContent.Bluetooth(BleAvailability.NO_PERMISSION))
-            }
-
-            is Event.OnPermissionStateChanged -> {
-                setState { copy(bleAvailability = event.availability) }
-            }
-
-            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected -> {
-                showBottomSheet(
-                    sheetContent = DashboardBottomSheetContent.DeferredDocumentPressed(
-                        documentUi = event.documentUi
+    private fun getSideMenuOptions(): List<SideMenuItemUi> {
+        return buildList {
+            add(
+                SideMenuItemUi(
+                    type = SideMenuItemType.CHANGE_PIN,
+                    data = ListItemData(
+                        itemId = "changePinId",
+                        mainContentData = ListItemMainContentData.Text(
+                            text = resourceProvider.getString(R.string.dashboard_side_menu_change_pin)
+                        ),
+                        leadingContentData = ListItemLeadingContentData.Icon(
+                            iconData = AppIcons.ChangePin
+                        ),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        )
                     )
-                )
-            }
-
-            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.PrimaryButtonPressed -> {
-                hideBottomSheet()
-                deleteDocument(event = event, documentId = event.documentUi.documentId)
-            }
-
-            is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.SecondaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected -> {
-                hideBottomSheet()
-                goToDocumentDetails(
-                    docId = event.documentId
-                )
-            }
-        }
-    }
-
-    private fun onBleUserAction(availability: BleAvailability) {
-        when (availability) {
-
-            BleAvailability.NO_PERMISSION -> {
-                setEffect { Effect.Navigation.OnAppSettings }
-            }
-
-            BleAvailability.DISABLED -> {
-                setEffect { Effect.Navigation.OnSystemSettings }
-            }
-
-            else -> {}
-        }
-    }
-
-    private fun checkIfBluetoothIsEnabled() {
-        if (dashboardInteractor.isBleAvailable()) {
-            setState { copy(bleAvailability = BleAvailability.NO_PERMISSION) }
-        } else {
-            setState { copy(bleAvailability = BleAvailability.DISABLED) }
-            showBottomSheet(sheetContent = DashboardBottomSheetContent.Bluetooth(BleAvailability.DISABLED))
-        }
-    }
-
-    private fun goToDocumentDetails(docId: DocumentId) {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.DocumentDetails,
-                    arguments = generateComposableArguments(
-                        mapOf(
-                            "documentId" to docId
+                ),
+            )
+            add(
+                SideMenuItemUi(
+                    type = SideMenuItemType.RETRIEVE_LOGS,
+                    data = ListItemData(
+                        itemId = "retrieveLogsId",
+                        mainContentData = ListItemMainContentData.Text(
+                            text = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs)
+                        ),
+                        leadingContentData = ListItemLeadingContentData.Icon(
+                            iconData = AppIcons.OpenNew
+                        ),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
                         )
                     )
                 )
             )
-        }
-    }
-
-    private fun getDocuments(
-        event: Event,
-        deepLinkUri: Uri?,
-        deferredFailedDocIds: List<DocumentId>,
-    ) {
-        setState {
-            copy(
-                isLoading = documents.isEmpty(),
-                error = null
-            )
-        }
-        viewModelScope.launch {
-            dashboardInteractor.getDocuments().collect { response ->
-                when (response) {
-                    is DashboardInteractorGetDocumentsPartialState.Failure -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = response.error,
-                                    onCancel = {
-                                        setState { copy(error = null) }
-                                        setEvent(Event.Pop)
-                                    }
-                                )
-                            )
-                        }
-                    }
-
-                    is DashboardInteractorGetDocumentsPartialState.Success -> {
-                        val shouldAllowUserInteraction =
-                            response.mainPid is IssuedDocument
-
-                        val documents = response.documentsUi
-                            .map { documentUi ->
-                                if (documentUi.documentId in deferredFailedDocIds) {
-                                    documentUi.copy(
-                                        documentIssuanceState = DocumentUiIssuanceState.Failed
-                                    )
-                                } else {
-                                    documentUi
-                                }
-                            }
-
-                        val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
-                        response.documentsUi.filter { documentUi ->
-                            documentUi.documentIssuanceState == DocumentUiIssuanceState.Pending
-                        }.forEach { documentUi ->
-                            deferredDocs[documentUi.documentId] =
-                                documentUi.documentIdentifier.formatType
-                        }
-
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = null,
-                                documents = documents,
-                                deferredFailedDocIds = deferredFailedDocIds,
-                                allowUserInteraction = shouldAllowUserInteraction,
-                                userFirstName = response.userFirstName,
-                                userBase64Image = response.userBase64Portrait
-                            )
-                        }
-
-                        setEffect { Effect.DocumentsFetched(deferredDocs) }
-
-                        handleDeepLink(deepLinkUri)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun tryIssuingDeferredDocuments(
-        event: Event,
-        deferredDocs: Map<DocumentId, FormatType>
-    ) {
-        setState {
-            copy(
-                isLoading = false,
-                error = null
-            )
-        }
-
-        retryDeferredDocsJob?.cancel()
-        retryDeferredDocsJob = viewModelScope.launch {
-            if (deferredDocs.isEmpty()) {
-                return@launch
-            }
-
-            delay(5000L)
-
-            dashboardInteractor.tryIssuingDeferredDocumentsFlow(deferredDocs).collect { response ->
-                when (response) {
-                    is DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Failure -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = response.errorMessage,
-                                    onCancel = {
-                                        setState { copy(error = null) }
-                                    }
-                                )
-                            )
-                        }
-                    }
-
-                    is DashboardInteractorRetryIssuingDeferredDocumentsPartialState.Result -> {
-                        val successDocs = response.successfullyIssuedDeferredDocuments
-                        if (successDocs.isNotEmpty()
-                            && (!viewState.value.isBottomSheetOpen
-                                    || (viewState.value.isBottomSheetOpen
-                                    && viewState.value.sheetContent !is DashboardBottomSheetContent.DeferredDocumentsReady)
-                                    )
-                        ) {
-                            showBottomSheet(
-                                sheetContent = DashboardBottomSheetContent.DeferredDocumentsReady(
-                                    successfullyIssuedDeferredDocuments = successDocs,
-                                    options = getBottomSheetOptions(
-                                        deferredDocumentsData = successDocs
-                                    )
-                                )
-                            )
-                        }
-
-                        getDocuments(
-                            event = event,
-                            deepLinkUri = null,
-                            deferredFailedDocIds = response.failedIssuedDeferredDocuments
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentData>): List<ModalOptionUi<Event>> {
-        return deferredDocumentsData.map {
-            ModalOptionUi(
-                title = it.docName,
-                trailingIcon = AppIcons.KeyboardArrowRight,
-                event = Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected(
-                    documentId = it.documentId
-                )
-            )
-        }
-    }
-
-    private fun deleteDocument(event: Event, documentId: DocumentId) {
-        setState {
-            copy(
-                isLoading = true,
-                error = null
-            )
-        }
-
-        viewModelScope.launch {
-            dashboardInteractor.deleteDocument(
-                documentId = documentId
-            ).collect { response ->
-                when (response) {
-                    is DashboardInteractorDeleteDocumentPartialState.AllDocumentsDeleted -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = null
-                            )
-                        }
-
-                        setEffect {
-                            Effect.Navigation.SwitchScreen(
-                                screenRoute = StartupScreens.Splash.screenRoute,
-                                popUpToScreenRoute = DashboardScreens.Dashboard.screenRoute,
-                                inclusive = true
-                            )
-                        }
-                    }
-
-                    is DashboardInteractorDeleteDocumentPartialState.SingleDocumentDeleted -> {
-                        getDocuments(
-                            event = event,
-                            deepLinkUri = null,
-                            deferredFailedDocIds = viewState.value.deferredFailedDocIds
-                        )
-                    }
-
-                    is DashboardInteractorDeleteDocumentPartialState.Failure -> {
-                        setState {
-                            copy(
-                                isLoading = false,
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = response.errorMessage,
-                                    onCancel = {
-                                        setState {
-                                            copy(error = null)
-                                        }
-                                    }
-                                )
-                            )
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -645,91 +264,5 @@ class DashboardViewModel(
                 }
             }
         }
-    }
-
-    private fun navigateToChangeQuickPin() {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = generateComposableNavigationLink(
-                    screen = CommonScreens.QuickPin,
-                    arguments = generateComposableArguments(
-                        mapOf("pinFlow" to PinFlow.UPDATE)
-                    )
-                )
-            )
-        }
-    }
-
-    private fun navigateToDocumentSign() {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = DashboardScreens.SignDocument.screenRoute
-            )
-        }
-    }
-
-    private fun startProximityFlow() {
-        setState { copy(bleAvailability = BleAvailability.AVAILABLE) }
-        // Create Koin scope for presentation
-        getOrCreatePresentationScope()
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = generateComposableNavigationLink(
-                    screen = ProximityScreens.QR,
-                    arguments = generateComposableArguments(
-                        mapOf(
-                            RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
-                                RequestUriConfig(PresentationMode.Ble(DashboardScreens.Dashboard.screenRoute)),
-                                RequestUriConfig.Parser
-                            )
-                        )
-                    )
-                )
-            )
-        }
-    }
-
-    private fun navigateToQrScan() {
-        val navigationEffect = Effect.Navigation.SwitchScreen(
-            screenRoute = generateComposableNavigationLink(
-                screen = CommonScreens.QrScan,
-                arguments = generateComposableArguments(
-                    mapOf(
-                        QrScanUiConfig.serializedKeyName to uiSerializer.toBase64(
-                            QrScanUiConfig(
-                                title = resourceProvider.getString(R.string.presentation_qr_scan_title),
-                                subTitle = resourceProvider.getString(R.string.presentation_qr_scan_subtitle),
-                                qrScanFlow = QrScanFlow.Presentation
-                            ),
-                            QrScanUiConfig.Parser
-                        )
-                    )
-                )
-            )
-        )
-
-        setEffect {
-            navigationEffect
-        }
-    }
-
-    private fun showBottomSheet(sheetContent: DashboardBottomSheetContent) {
-        setState {
-            copy(sheetContent = sheetContent)
-        }
-        setEffect {
-            Effect.ShowBottomSheet
-        }
-    }
-
-    private fun hideBottomSheet() {
-        setEffect {
-            Effect.CloseBottomSheet
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        retryDeferredDocsJob?.cancel()
     }
 }

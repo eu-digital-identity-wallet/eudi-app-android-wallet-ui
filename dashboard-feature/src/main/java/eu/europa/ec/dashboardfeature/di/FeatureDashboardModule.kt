@@ -24,8 +24,6 @@ import eu.europa.ec.dashboardfeature.controllers.FiltersController
 import eu.europa.ec.dashboardfeature.controllers.FiltersControllerImpl
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNew
-import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNewImpl
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
@@ -45,25 +43,9 @@ class FeatureDashboardModule
 
 @Factory
 fun provideDashboardInteractor(
-    resourceProvider: ResourceProvider,
-    walletCoreDocumentsController: WalletCoreDocumentsController,
-    walletCoreConfig: WalletCoreConfig,
     configLogic: ConfigLogic,
     logController: LogController,
-): DashboardInteractor =
-    DashboardInteractorImpl(
-        resourceProvider,
-        walletCoreDocumentsController,
-        walletCoreConfig,
-        configLogic,
-        logController
-    )
-
-@Factory
-fun provideDashboardInteractorNew(
-    configLogic: ConfigLogic,
-    logController: LogController,
-): DashboardInteractorNew = DashboardInteractorNewImpl(
+): DashboardInteractor = DashboardInteractorImpl(
     configLogic,
     logController
 )

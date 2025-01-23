@@ -35,8 +35,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.dashboardfeature.model.SideMenuItemType
 import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
-import eu.europa.ec.dashboardfeature.ui.dashboard_new.Event
-import eu.europa.ec.dashboardfeature.ui.dashboard_new.State
+import eu.europa.ec.dashboardfeature.ui.dashboard.Event
+import eu.europa.ec.dashboardfeature.ui.dashboard.State
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
