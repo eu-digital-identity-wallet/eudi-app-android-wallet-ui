@@ -117,8 +117,8 @@ fun IssuerDetailsCard(
                                 .padding(
                                     start = 0.dp,
                                     end = SPACING_EXTRA_SMALL.dp,
-                                    top = 3.dp,
-                                    bottom = 3.dp
+                                    top = SPACING_EXTRA_SMALL.dp,
+                                    bottom = SPACING_EXTRA_SMALL.dp
                                 ),
                             iconData = AppIcons.Verified,
                             customTint = MaterialTheme.colorScheme.success,

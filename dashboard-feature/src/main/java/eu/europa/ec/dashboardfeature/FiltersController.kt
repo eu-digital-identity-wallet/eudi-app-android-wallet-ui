@@ -211,7 +211,7 @@ class FiltersControllerImpl(
                     mainContentData = ListItemMainContentData.Actionable<FilterableDocuments>(
                         resourceProvider.getString(R.string.documents_screen_filters_sort_default)
                     ) { filterable ->
-                        filterable.copy(documents = filterable.documents.sortByOrder(filterable.sortingOrder) { (it.itemUi.uiData.mainContentData as ListItemMainContentData.Text).text }
+                        filterable.copy(documents = filterable.documents.sortByOrder(filterable.sortingOrder) { (it.itemUi.uiData.mainContentData as ListItemMainContentData.Text).text.lowercase() }
                             .toMutableList())
                     },
                     trailingContentData = ListItemTrailingContentData.RadioButton(
@@ -376,22 +376,23 @@ class FiltersControllerImpl(
         val filtersToApplyAgainst = appliedFilters.ifEmpty { initialFilters }
         val issuerFilter =
             filtersToApplyAgainst.find { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
-                ?.copy(expanded = filteredDocuments.documents
-                    .distinctBy { it.filterableAttributes.issuer }
-                    .mapNotNull { document ->
-                        document.filterableAttributes.issuer?.let {
-                            ListItemData(
-                                itemId = document.filterableAttributes.issuer,
-                                mainContentData = ListItemMainContentData.Text(document.filterableAttributes.issuer),
-                                trailingContentData = ListItemTrailingContentData.RadioButton(
-                                    radioButtonData = RadioButtonData(
-                                        isSelected = false,
-                                        enabled = true
+                ?.copy(
+                    expanded = filteredDocuments.documents
+                        .distinctBy { it.filterableAttributes.issuer }
+                        .mapNotNull { document ->
+                            document.filterableAttributes.issuer?.let {
+                                ListItemData(
+                                    itemId = document.filterableAttributes.issuer,
+                                    mainContentData = ListItemMainContentData.Text(document.filterableAttributes.issuer),
+                                    trailingContentData = ListItemTrailingContentData.RadioButton(
+                                        radioButtonData = RadioButtonData(
+                                            isSelected = false,
+                                            enabled = true
+                                        )
                                     )
                                 )
-                            )
-                        }
-                    })
+                            }
+                        })
 
         // Update the issuer placeholder filter
         issuerFilter?.let {
