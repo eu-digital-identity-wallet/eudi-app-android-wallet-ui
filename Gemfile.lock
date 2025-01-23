@@ -32,6 +32,7 @@ GEM
     colored2 (3.1.2)
     commander (4.6.0)
       highline (~> 2.0.0)
+    csv (3.3.2)
     declarative (0.0.20)
     digest-crc (0.6.5)
       rake (>= 12.0.0, < 14.0.0)
@@ -109,7 +110,8 @@ GEM
       xcodeproj (>= 1.13.0, < 2.0.0)
       xcpretty (~> 0.3.0)
       xcpretty-travis-formatter (>= 0.0.3, < 2.0.0)
-    fastlane-plugin-appcenter (2.1.2)
+    fastlane-plugin-appcenter (2.1.3)
+      csv
     fastlane-plugin-increment_version_code (0.4.3)
     fastlane-plugin-properties (1.1.2)
       java-properties
@@ -214,6 +216,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-22
+  arm64-darwin-24
   universal-darwin-23
   x64-mingw-ucrt
 
@@ -224,4 +227,4 @@ DEPENDENCIES
   fastlane-plugin-properties
 
 BUNDLED WITH
-   2.5.21
+   2.6.2
