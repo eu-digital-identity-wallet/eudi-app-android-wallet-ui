@@ -74,7 +74,9 @@ data class State(
     val appliedFilters: List<ExpandableListItemData> = emptyList(),
     var snapshotFilters: List<ExpandableListItemData> = emptyList(),
     val isFilteringActive: Boolean,
-    val sortingOrderButtonData: DualSelectorButtonData,
+    val sortingOrderButtonDataApplied: DualSelectorButtonData,
+    val sortingOrderButtonDataSnapshot: DualSelectorButtonData? = null,
+    val sortingOrderButtonDataPrevious: DualSelectorButtonData? = null,
 
     var allDocuments: FilterableDocuments? = null,
     var filteredDocuments: FilterableDocuments? = null,
@@ -170,7 +172,7 @@ class DocumentsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortingOrderButtonData = DualSelectorButtonData(
+            sortingOrderButtonDataApplied = DualSelectorButtonData(
                 first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
                 second = resourceProvider.getString(R.string.documents_screen_filters_descending),
                 selectedButton = DualSelectorButton.FIRST,
@@ -184,7 +186,7 @@ class DocumentsViewModel(
             is Event.GetDocuments -> {
                 getDocuments(
                     event = event,
-                    deferredFailedDocIds = viewState.value.deferredFailedDocIds
+                    deferredFailedDocIds = viewState.value.deferredFailedDocIds,
                 )
             }
 
@@ -228,10 +230,14 @@ class DocumentsViewModel(
             }
 
             is Event.OnSortingOrderChanged -> {
+                val selection = viewState.value.sortingOrderButtonDataApplied.copy(
+                    selectedButton = event.sortingOrder
+                )
                 setState {
                     copy(
-                        sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = event.sortingOrder),
-                        filteredDocuments = filteredDocuments?.copy(sortingOrder = event.sortingOrder)
+                        sortingOrderButtonDataSnapshot = selection,
+                        sortingOrderButtonDataApplied = selection,
+                        sortingOrderButtonDataPrevious = viewState.value.sortingOrderButtonDataApplied,
                     )
                 }
             }
@@ -240,11 +246,26 @@ class DocumentsViewModel(
                 if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
                     if (!event.isOpen) {
                         if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
+                            // Check if selection should be applied or discarded
+                            val appliedSorting =
+                                if (viewState.value.sortingOrderButtonDataSnapshot == null) {
+                                    // Applying filtering
+                                    viewState.value.sortingOrderButtonDataSnapshot
+                                        ?: viewState.value.sortingOrderButtonDataApplied
+                                } else {
+                                    // Closing the bottom sheet without apply action
+                                    viewState.value.sortingOrderButtonDataPrevious
+                                        ?: viewState.value.sortingOrderButtonDataApplied
+                                }
+
                             setState {
                                 copy(
                                     snapshotFilters = emptyList(),
                                     isBottomSheetOpen = false,
-                                    filters = viewState.value.appliedFilters
+                                    filters = viewState.value.appliedFilters,
+                                    sortingOrderButtonDataApplied = appliedSorting,
+                                    sortingOrderButtonDataSnapshot = null,
+                                    sortingOrderButtonDataPrevious = appliedSorting,
                                 )
                             }
                             setEffect { Effect.ResumeOnApplyFilter }
@@ -311,7 +332,7 @@ class DocumentsViewModel(
         }
         viewModelScope.launch {
             interactor.getDocuments(
-                viewState.value.sortingOrderButtonData.selectedButton,
+                viewState.value.sortingOrderButtonDataApplied.selectedButton,
                 viewState.value.filters,
                 viewState.value.queryText
             )
@@ -358,11 +379,11 @@ class DocumentsViewModel(
                                             viewState.value.filters
                                         ).filters
                                     } else {
-                                        interactor.getFilters(it).filters
+                                        interactor.getFilters(allDocumentsWithFailed).filters
                                     }
                                 }
                             val initialFilters =
-                                interactor.getFilters(filteredDocumentsWithFailed).filters
+                                interactor.getFilters(allDocumentsWithFailed).filters
 
                             setState {
                                 copy(
@@ -463,7 +484,7 @@ class DocumentsViewModel(
 
                         getDocuments(
                             event = event,
-                            deferredFailedDocIds = response.failedIssuedDeferredDocuments
+                            deferredFailedDocIds = response.failedIssuedDeferredDocuments,
                         )
                     }
                 }
@@ -522,7 +543,7 @@ class DocumentsViewModel(
                     is DocumentInteractorDeleteDocumentPartialState.SingleDocumentDeleted -> {
                         getDocuments(
                             event = event,
-                            deferredFailedDocIds = viewState.value.deferredFailedDocIds
+                            deferredFailedDocIds = viewState.value.deferredFailedDocIds,
                         )
                     }
 
@@ -601,6 +622,7 @@ class DocumentsViewModel(
                     ?: emptyList(),
                 filteredDocuments = appliedFilterDocuments,
                 appliedFilters = appliedFilters,
+                sortingOrderButtonDataSnapshot = null,
                 filters = appliedFilters,
                 isFilteringActive = true
             )
@@ -621,7 +643,8 @@ class DocumentsViewModel(
             copy(
                 filters = appliedFilters,
                 filteredDocuments = appliedFilterDocuments,
-                sortingOrderButtonData = sortingOrderButtonData.copy(selectedButton = DualSelectorButton.FIRST),
+                sortingOrderButtonDataSnapshot = null,
+                sortingOrderButtonDataApplied = sortingOrderButtonDataApplied.copy(selectedButton = DualSelectorButton.FIRST),
                 appliedFilters = appliedFilters,
                 isFilteringActive = false
             )

@@ -26,7 +26,7 @@ import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.dashboardfeature.FiltersController
+import eu.europa.ec.dashboardfeature.controllers.FiltersController
 import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
 import eu.europa.ec.dashboardfeature.model.FilterableAttributes
 import eu.europa.ec.dashboardfeature.model.FilterableDocumentItem

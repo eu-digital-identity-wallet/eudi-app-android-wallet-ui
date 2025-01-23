@@ -20,8 +20,8 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.dashboardfeature.FiltersController
-import eu.europa.ec.dashboardfeature.FiltersControllerImpl
+import eu.europa.ec.dashboardfeature.controllers.FiltersController
+import eu.europa.ec.dashboardfeature.controllers.FiltersControllerImpl
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorNew
@@ -83,8 +83,9 @@ fun provideHomeInteractor(
 fun provideDocumentsInteractor(
     resourceProvider: ResourceProvider,
     documentsController: WalletCoreDocumentsController,
-    filtersController: FiltersController
-): DocumentsInteractor = DocumentsInteractorImpl(resourceProvider, documentsController, filtersController)
+    filtersController: FiltersController,
+): DocumentsInteractor =
+    DocumentsInteractorImpl(resourceProvider, documentsController, filtersController)
 
 @Factory
 fun provideTransactionInteractor(): TransactionsInteractor = TransactionsInteractorImpl()

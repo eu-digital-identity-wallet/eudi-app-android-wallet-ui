@@ -338,7 +338,7 @@ private fun DocumentsSheetContent(
                         modifier = Modifier.verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                     ) {
-                        DualSelectorButtons(state.sortingOrderButtonData) {
+                        DualSelectorButtons(state.sortingOrderButtonDataApplied) {
                             onEventSent(Event.OnSortingOrderChanged(it))
                         }
                         state.filters.forEachIndexed { index, filter ->

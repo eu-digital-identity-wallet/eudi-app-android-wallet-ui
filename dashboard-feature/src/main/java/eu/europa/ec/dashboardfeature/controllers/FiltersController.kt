@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature
+package eu.europa.ec.dashboardfeature.controllers
 
 import eu.europa.ec.businesslogic.extension.addOrReplace
 import eu.europa.ec.dashboardfeature.extensions.getEmptyUIifEmptyList
@@ -37,6 +37,7 @@ private const val FILTER_BY_STATE_GROUP_ID = "state_group_id"
 private const val FILTER_BY_STATE_VALID = "state_valid"
 private const val FILTER_BY_STATE_EXPIRED = "state_expired"
 private const val FILTER_BY_ISSUER_GROUP_ID = "issuer_group_id"
+private const val FILTER_BY_ISSUER_ALL = "issuer_all"
 private const val FILTER_BY_PERIOD_GROUP_ID = "by_period_group_id"
 private const val FILTER_BY_PERIOD_NEXT_7 = "by_period_next_7"
 private const val FILTER_BY_PERIOD_NEXT_30 = "by_period_next_30"
@@ -327,8 +328,7 @@ class FiltersControllerImpl(
         newQuery: String,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>> {
         val searchedDocuments = filterableDocuments.search(newQuery)
-        val updatedFilters = getAllFilter(searchedDocuments, appliedFilters.toMutableList())
-        return Pair(searchedDocuments.getEmptyUIifEmptyList(resourceProvider), updatedFilters)
+        return Pair(searchedDocuments.getEmptyUIifEmptyList(resourceProvider), appliedFilters)
     }
 
     override fun applyFilters(
@@ -336,15 +336,10 @@ class FiltersControllerImpl(
         selectedFilters: List<ExpandableListItemData>,
     ): Pair<FilterableDocuments, List<ExpandableListItemData>> {
         // Filter only the selected filters
-        val activeFilters = selectedFilters
+        val activeFilters = selectedFilters.ifEmpty { initialFilters }
             .flatMap { it.expanded }
             .filter { (it.trailingContentData as ListItemTrailingContentData.RadioButton).radioButtonData.isSelected }
             .mapNotNull { it.mainContentData as? ListItemMainContentData.Actionable<FilterableDocuments> }
-
-        // If no filters are selected, return the original list
-        if (activeFilters.isEmpty()) {
-            return Pair(filterableDocuments, selectedFilters)
-        }
 
         // Chain the filtering actions
         val documentsWithAppliedFilters =
@@ -391,7 +386,26 @@ class FiltersControllerImpl(
                                 )
                             )
                         }
-                    })
+                    }.toMutableList().apply {
+                        // Add the "All" filter on the first place
+                        add(
+                            0, ListItemData(
+                                itemId = FILTER_BY_ISSUER_ALL,
+                                mainContentData = ListItemMainContentData.Actionable<FilterableDocuments>(
+                                    resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all)
+                                ) { filterable ->
+                                    filterable
+                                },
+                                trailingContentData = ListItemTrailingContentData.RadioButton(
+                                    radioButtonData = RadioButtonData(
+                                        isSelected = false,
+                                        enabled = true
+                                    )
+                                )
+                            )
+                        )
+                    }
+                )
 
         // Update the issuer placeholder filter
         issuerFilter?.let {
