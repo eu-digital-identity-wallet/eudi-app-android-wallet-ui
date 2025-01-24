@@ -41,7 +41,7 @@ enum class GradientEdge {
 @Composable
 fun ContentGradient(
     modifier: Modifier,
-    gradientStartColor: Color = MaterialTheme.colorScheme.background,
+    gradientStartColor: Color = MaterialTheme.colorScheme.surface,
     gradientEndColor: Color = Color.Transparent,
     gradientEdge: GradientEdge = GradientEdge.BOTTOM,
     height: Dp = SIZE_EXTRA_LARGE.dp,
@@ -138,7 +138,7 @@ private fun ContentGradientColoredPreview() {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(MaterialTheme.colorScheme.surface)
             )
         }
     }

@@ -288,34 +288,6 @@ class TestProximityLoadingInteractor {
 
     //endregion
 
-    //region stopPresentation
-
-    @Test
-    fun `when interactor stopPresentation is called then it delegates to walletCoreInteractor stopPresentation`() {
-        // When
-        interactor.stopPresentation()
-
-        // Then
-        verify(walletCorePresentationController, times(1))
-            .stopPresentation()
-    }
-
-    //endregion
-
-    //region verifierName
-
-    @Test
-    fun `when interactor verifierName is called, then verifierName should be invoked on the controller`() {
-        // When
-        interactor.verifierName
-
-        // Then
-        verify(walletCorePresentationController, times(1))
-            .verifierName
-    }
-
-    //endregion
-
     //region helper functions
     private fun mockWalletCorePresentationControllerEventEmission(event: WalletCorePartialState) {
         whenever(walletCorePresentationController.observeSentDocumentsRequest())

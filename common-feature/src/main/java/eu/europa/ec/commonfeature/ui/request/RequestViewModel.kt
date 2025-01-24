@@ -16,10 +16,12 @@
 
 package eu.europa.ec.commonfeature.ui.request
 
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.TitleWithBadge
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -30,50 +32,28 @@ import kotlinx.coroutines.Job
 data class State(
     val isLoading: Boolean = true,
     val isShowingFullUserInfo: Boolean = false,
+    val headerConfig: ContentHeaderConfig,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.SUBTITLE,
+    val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.WARNING,
+    val hasWarnedUser: Boolean = false,
 
-    val verifierName: String? = null,
-    val screenTitle: TitleWithBadge,
-    val screenSubtitle: String,
-    val screenClickableSubtitle: String?,
-    val warningText: String,
-
-    val items: List<RequestDataUi<Event>> = emptyList(),
+    val items: List<RequestDocumentItemUi> = emptyList(),
     val noItems: Boolean = false,
-    val showWarningCard: Boolean = false,
     val allowShare: Boolean = false
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data object DoWork : Event()
     data object DismissError : Event()
-    data object GoBack : Event()
-    data object ChangeContentVisibility : Event()
-    data class ExpandOrCollapseRequiredDataList(val id: Int) : Event()
-    data class UserIdentificationClicked(val itemId: String) : Event()
+    data object Pop : Event()
+    data object StickyButtonPressed : Event()
 
-    data object BadgeClicked : Event()
-    data object SubtitleClicked : Event()
-    data object PrimaryButtonPressed : Event()
-    data object SecondaryButtonPressed : Event()
+    data class UserIdentificationClicked(val itemId: String) : Event()
+    data class ExpandOrCollapseRequestDocumentItem(val itemId: String) : Event()
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-
-        sealed class Cancel : BottomSheet() {
-            data object PrimaryButtonPressed : Cancel()
-            data object SecondaryButtonPressed : Cancel()
-        }
-
-        sealed class Subtitle : BottomSheet() {
-            data object PrimaryButtonPressed : Subtitle()
-        }
-
-        sealed class Badge : BottomSheet() {
-            data object PrimaryButtonPressed : Subtitle()
-        }
     }
 }
 
@@ -94,16 +74,13 @@ sealed class Effect : ViewSideEffect {
 }
 
 enum class RequestBottomSheetContent {
-    BADGE, SUBTITLE, CANCEL
+    WARNING,
 }
 
 abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     protected var viewModelJob: Job? = null
 
-    abstract fun getScreenSubtitle(): String
-    abstract fun getScreenTitle(): TitleWithBadge
-    abstract fun getScreenClickableSubtitle(): String?
-    abstract fun getWarningText(): String
+    abstract fun getHeaderConfig(): ContentHeaderConfig
     abstract fun getNextScreen(): String
     abstract fun doWork()
 
@@ -117,32 +94,26 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         getOrCreatePresentationScope().close()
     }
 
-    open fun updateData(updatedItems: List<RequestDataUi<Event>>, allowShare: Boolean? = null) {
-        val hasVerificationItems = hasVerificationItems(updatedItems)
-
-        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(updatedItems)
+    open fun updateData(
+        updatedItems: List<RequestDocumentItemUi>,
+        allowShare: Boolean? = null
+    ) {
+        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
+            list = updatedItems
+        )
 
         setState {
             copy(
                 items = updatedItems,
-                showWarningCard = updatedItems.any {
-                    it is RequestDataUi.OptionalField
-                            && it.optionalFieldItemUi.requestDocumentItemUi.enabled
-                            && !it.optionalFieldItemUi.requestDocumentItemUi.checked
-                },
-                allowShare = allowShare ?: (hasAtLeastOneFieldSelected || hasVerificationItems)
+                allowShare = allowShare ?: hasAtLeastOneFieldSelected
             )
         }
     }
 
     override fun setInitialState(): State {
         return State(
-            screenTitle = getScreenTitle(),
-            screenSubtitle = getScreenSubtitle(),
-            screenClickableSubtitle = getScreenClickableSubtitle(),
-            warningText = getWarningText(),
+            headerConfig = getHeaderConfig(),
             error = null,
-            verifierName = null
         )
     }
 
@@ -156,64 +127,36 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 }
             }
 
-            is Event.GoBack -> {
+            is Event.Pop -> {
                 setState {
                     copy(error = null)
                 }
                 doNavigation(NavigationType.Pop)
             }
 
-            is Event.ChangeContentVisibility -> {
-                setState {
-                    copy(isShowingFullUserInfo = !isShowingFullUserInfo)
-                }
-            }
-
-            is Event.ExpandOrCollapseRequiredDataList -> {
-                expandOrCollapseRequiredDataList(id = event.id)
-            }
-
-            is Event.UserIdentificationClicked -> {
-                updateUserIdentificationItem(id = event.itemId)
-            }
-
-            is Event.BadgeClicked -> {
-                showBottomSheet(sheetContent = RequestBottomSheetContent.BADGE)
-            }
-
-            is Event.SubtitleClicked -> {
-                showBottomSheet(sheetContent = RequestBottomSheetContent.SUBTITLE)
-            }
-
-            is Event.PrimaryButtonPressed -> {
+            is Event.StickyButtonPressed -> {
                 doNavigation(NavigationType.PushRoute(getNextScreen()))
             }
 
-            is Event.SecondaryButtonPressed -> {
-                showBottomSheet(sheetContent = RequestBottomSheetContent.CANCEL)
+            is Event.UserIdentificationClicked -> {
+                if (viewState.value.hasWarnedUser) {
+                    updateUserIdentificationItem(id = event.itemId)
+                } else {
+                    setState {
+                        copy(hasWarnedUser = true)
+                    }
+                    showBottomSheet(sheetContent = RequestBottomSheetContent.WARNING)
+                }
+            }
+
+            is Event.ExpandOrCollapseRequestDocumentItem -> {
+                expandOrCollapseRequestDocumentItem(id = event.itemId)
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
                 setState {
                     copy(isBottomSheetOpen = event.isOpen)
                 }
-            }
-
-            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
-                hideBottomSheet()
-                doNavigation(NavigationType.Pop)
-            }
-
-            is Event.BottomSheet.Subtitle.PrimaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.Badge.PrimaryButtonPressed -> {
-                hideBottomSheet()
             }
         }
     }
@@ -242,15 +185,29 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         }
     }
 
-    private fun expandOrCollapseRequiredDataList(id: Int) {
-        val items = viewState.value.items
-        val updatedItems = items.map { item ->
-            if (item is RequestDataUi.RequiredFields
-                && id == item.requiredFieldsItemUi.id
-            ) {
+    private fun expandOrCollapseRequestDocumentItem(id: String) {
+        val currentItems = viewState.value.items
+        val updatedItems = currentItems.map { item ->
+            if (item.collapsedUiItem.uiItem.itemId == id) {
+
+                val newIsExpanded = !item.collapsedUiItem.isExpanded
+
+                // Change the Icon based on the new isExpanded state
+                val newIconData = if (newIsExpanded) {
+                    AppIcons.KeyboardArrowUp
+                } else {
+                    AppIcons.KeyboardArrowDown
+                }
+
                 item.copy(
-                    requiredFieldsItemUi = item.requiredFieldsItemUi
-                        .copy(expanded = !item.requiredFieldsItemUi.expanded)
+                    collapsedUiItem = item.collapsedUiItem.copy(
+                        isExpanded = newIsExpanded,
+                        uiItem = item.collapsedUiItem.uiItem.copy(
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = newIconData
+                            )
+                        )
+                    )
                 )
             } else {
                 item
@@ -260,31 +217,44 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun updateUserIdentificationItem(id: String) {
-        val items: List<RequestDataUi<Event>> = viewState.value.items
-        val updatedList = items.map { item ->
-            if (item is RequestDataUi.OptionalField
-                && id == item.optionalFieldItemUi.requestDocumentItemUi.id
-            ) {
-                val itemCurrentCheckedState = item.optionalFieldItemUi.requestDocumentItemUi.checked
-                val updatedUiItem = item.optionalFieldItemUi.requestDocumentItemUi.copy(
-                    checked = !itemCurrentCheckedState
-                )
-                item.copy(
-                    optionalFieldItemUi = item.optionalFieldItemUi
-                        .copy(requestDocumentItemUi = updatedUiItem)
-                )
-            } else {
-                item
+        val currentItems = viewState.value.items
+
+        // Iterate over the items and modify the matching expanded item
+        val updatedList: List<RequestDocumentItemUi> = currentItems.map { item ->
+            val updatedExpandedItems = item.expandedUiItems.map { expandedItem ->
+                if (expandedItem.uiItem.itemId == id
+                    && expandedItem.uiItem.trailingContentData is ListItemTrailingContentData.Checkbox
+                ) {
+                    val checkboxData =
+                        (expandedItem.uiItem.trailingContentData as ListItemTrailingContentData.Checkbox).checkboxData
+
+                    expandedItem.copy(
+                        uiItem = expandedItem.uiItem.copy(
+                            trailingContentData = ListItemTrailingContentData.Checkbox(
+                                checkboxData = checkboxData.copy(
+                                    isChecked = !checkboxData.isChecked
+                                )
+                            )
+                        )
+                    )
+                } else {
+                    expandedItem
+                }
             }
+
+            // Return the updated item with its expanded items updated
+            item.copy(
+                expandedUiItems = updatedExpandedItems
+            )
         }
 
-        val hasVerificationItems = hasVerificationItems(updatedList)
-
-        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(updatedList)
+        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
+            list = updatedList
+        )
 
         updateData(
             updatedItems = updatedList,
-            allowShare = hasAtLeastOneFieldSelected || hasVerificationItems
+            allowShare = hasAtLeastOneFieldSelected
         )
     }
 
@@ -307,30 +277,22 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         viewModelJob?.cancel()
     }
 
+    private fun hasAtLeastOneFieldSelected(
+        list: List<RequestDocumentItemUi>
+    ): Boolean {
+        val hasAtLeastOneFieldSelected: Boolean = list.any { item ->
+            item.expandedUiItems.any { expandedUiItem ->
+                val trailingContentData = expandedUiItem.uiItem.trailingContentData
+                trailingContentData is ListItemTrailingContentData.Checkbox && trailingContentData.checkboxData.isChecked
+            }
+        }
+
+        return hasAtLeastOneFieldSelected
+    }
+
     override fun onCleared() {
         super.onCleared()
         unsubscribe()
         cleanUp()
-    }
-
-    private fun hasVerificationItems(list: List<RequestDataUi<Event>>): Boolean {
-        return list
-            .filterIsInstance<RequestDataUi.RequiredFields<Event>>()
-            .any { requiredFields ->
-                requiredFields.requiredFieldsItemUi.requestDocumentItemsUi
-                    .any { itemUi ->
-                        itemUi.checked
-                    }
-            }
-    }
-
-    private fun hasAtLeastOneFieldSelected(list: List<RequestDataUi<Event>>): Boolean {
-        return list
-            .filterIsInstance<RequestDataUi.OptionalField<Event>>()
-            .any { optionalField ->
-                with(optionalField.optionalFieldItemUi.requestDocumentItemUi) {
-                    enabled && checked
-                }
-            }
     }
 }

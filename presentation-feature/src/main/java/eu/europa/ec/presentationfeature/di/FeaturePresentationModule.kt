@@ -24,6 +24,8 @@ import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationLoadingInteractorImpl
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorImpl
+import eu.europa.ec.presentationfeature.interactor.PresentationSuccessInteractor
+import eu.europa.ec.presentationfeature.interactor.PresentationSuccessInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -55,5 +57,18 @@ fun providePresentationLoadingInteractor(
     return PresentationLoadingInteractorImpl(
         walletCorePresentationController,
         deviceAuthenticationInteractor
+    )
+}
+
+@Factory
+fun providePresentationSuccessInteractor(
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController,
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    resourceProvider: ResourceProvider,
+): PresentationSuccessInteractor {
+    return PresentationSuccessInteractorImpl(
+        walletCorePresentationController,
+        walletCoreDocumentsController,
+        resourceProvider,
     )
 }

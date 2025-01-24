@@ -88,7 +88,7 @@ private fun Content(
             Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background),
+                .background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center
         ) {
             AnimatedVisibility(
@@ -97,7 +97,7 @@ private fun Content(
                 exit = fadeOut(animationSpec = tween(state.logoAnimationDuration)),
             ) {
                 WrapImage(
-                    iconData = AppIcons.Logo
+                    iconData = AppIcons.LogoFull
                 )
             }
         }

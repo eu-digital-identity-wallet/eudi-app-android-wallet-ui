@@ -32,7 +32,7 @@ data class OfferCodeUiConfig(
 ) : UiSerializable {
 
     companion object Parser : UiSerializableParser {
-        override val serializedKeyName = "offerCodeUiConfig"
+        override val serializedKeyName = "offerCodeConfig"
         override fun provideParser(): Gson {
             return GsonBuilder().registerTypeAdapter(
                 NavigationType::class.java,

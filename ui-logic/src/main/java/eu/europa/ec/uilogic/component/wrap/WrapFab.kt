@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeLarge
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -40,18 +39,18 @@ private val primaryFabContentColor: Color
     @Composable get() = if (isSystemInDarkTheme()) {
         Color.White
     } else {
-        MaterialTheme.colorScheme.background
+        MaterialTheme.colorScheme.surface
     }
 
 private val secondaryFabContainerColor: Color
     @Composable get() = if (isSystemInDarkTheme()) {
         Color.DarkGray
     } else {
-        MaterialTheme.colorScheme.background
+        MaterialTheme.colorScheme.surface
     }
 
 private val secondaryFabContentColor: Color
-    @Composable get() = MaterialTheme.colorScheme.textPrimaryDark
+    @Composable get() = MaterialTheme.colorScheme.onSurface
 
 /**
  * Data class that is used to construct and initialize a fab button.

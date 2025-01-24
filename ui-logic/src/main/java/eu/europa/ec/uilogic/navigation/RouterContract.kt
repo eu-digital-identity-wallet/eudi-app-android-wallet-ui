@@ -57,6 +57,7 @@ sealed class PresentationScreens {
 
     data object PresentationLoading : Screen(name = "PRESENTATION_LOADING")
 
+    data object PresentationSuccess : Screen(name = "PRESENTATION_SUCCESS")
 }
 
 sealed class ProximityScreens {
@@ -71,6 +72,8 @@ sealed class ProximityScreens {
     )
 
     data object Loading : Screen(name = "PROXIMITY_LOADING")
+
+    data object Success : Screen(name = "PROXIMITY_SUCCESS")
 }
 
 sealed class IssuanceScreens {
@@ -79,16 +82,9 @@ sealed class IssuanceScreens {
         parameters = "?flowType={flowType}"
     )
 
-    data object Success : Screen(
-        name = "ISSUANCE_SUCCESS",
-        parameters = "?flowType={flowType}"
-                + "&documentId={documentId}"
-    )
-
     data object DocumentDetails : Screen(
         name = "ISSUANCE_DOCUMENT_DETAILS",
-        parameters = "?detailsType={detailsType}"
-                + "&documentId={documentId}"
+        parameters = "?documentId={documentId}"
     )
 
     data object DocumentOffer : Screen(
@@ -98,7 +94,12 @@ sealed class IssuanceScreens {
 
     data object DocumentOfferCode : Screen(
         name = "ISSUANCE_DOCUMENT_OFFER_CODE",
-        parameters = "?offerCodeUiConfig={offerCodeUiConfig}"
+        parameters = "?offerCodeConfig={offerCodeConfig}"
+    )
+
+    data object DocumentIssuanceSuccess : Screen(
+        name = "ISSUANCE_DOCUMENT_SUCCESS",
+        parameters = "?issuanceSuccessConfig={issuanceSuccessConfig}"
     )
 }
 

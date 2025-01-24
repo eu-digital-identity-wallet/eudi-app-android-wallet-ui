@@ -17,18 +17,21 @@
 package eu.europa.ec.proximityfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
+import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.TitleWithBadge
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -48,20 +51,15 @@ class ProximityRequestViewModel(
     @InjectedParam private val requestUriConfigRaw: String
 ) : RequestViewModel() {
 
-    override fun getScreenSubtitle(): String {
-        return resourceProvider.getString(R.string.request_subtitle_one)
-    }
-
-    override fun getScreenClickableSubtitle(): String {
-        return resourceProvider.getString(R.string.request_subtitle_two)
-    }
-
-    override fun getWarningText(): String {
-        return resourceProvider.getString(R.string.request_warning_text)
-    }
-
-    override fun getScreenTitle(): TitleWithBadge {
-        return constructTitle()
+    override fun getHeaderConfig(): ContentHeaderConfig {
+        return ContentHeaderConfig(
+            description = resourceProvider.getString(R.string.request_header_description),
+            mainText = resourceProvider.getString(R.string.request_header_main_text),
+            relyingPartyData = getRelyingPartyData(
+                name = null,
+                isVerified = false,
+            ),
+        )
     }
 
     override fun getNextScreen(): String {
@@ -71,9 +69,11 @@ class ProximityRequestViewModel(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = viewState.value.screenTitle.plainText,
-                            subTitle = resourceProvider.getString(R.string.loading_biometry_share_subtitle),
-                            quickPinOnlySubTitle = resourceProvider.getString(R.string.loading_quick_pin_share_subtitle),
+                            mode = BiometricMode.Default(
+                                descriptionWhenBiometricsEnabled = resourceProvider.getString(R.string.loading_biometry_biometrics_enabled_description),
+                                descriptionWhenBiometricsNotEnabled = resourceProvider.getString(R.string.loading_biometry_biometrics_not_enabled_description),
+                                textAbovePin = resourceProvider.getString(R.string.biometric_default_mode_text_above_pin_field),
+                            ),
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
@@ -83,7 +83,7 @@ class ProximityRequestViewModel(
                                 onBackNavigation = ConfigNavigation(
                                     navigationType = NavigationType.PopTo(ProximityScreens.Request),
                                 ),
-                                hasToolbarCancelIcon = true
+                                hasToolbarBackIcon = true
                             )
                         ),
                         BiometricUiConfig.Parser
@@ -119,7 +119,7 @@ class ProximityRequestViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(Event.DoWork) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.GoBack) }
+                                    onCancel = { setEvent(Event.Pop) }
                                 )
                             )
                         }
@@ -127,34 +127,41 @@ class ProximityRequestViewModel(
 
                     is ProximityRequestInteractorPartialState.Success -> {
                         updateData(response.requestDocuments)
+
+                        val updatedHeaderConfig = viewState.value.headerConfig.copy(
+                            relyingPartyData = getRelyingPartyData(
+                                name = response.verifierName,
+                                isVerified = response.verifierIsTrusted,
+                            )
+                        )
+
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                verifierName = response.verifierName,
-                                screenTitle = constructTitle(
-                                    verifierName = response.verifierName,
-                                    verifierIsTrusted = response.verifierIsTrusted
-                                ),
+                                headerConfig = updatedHeaderConfig,
                                 items = response.requestDocuments
                             )
                         }
                     }
 
                     is ProximityRequestInteractorPartialState.Disconnect -> {
-                        setEvent(Event.GoBack)
+                        setEvent(Event.Pop)
                     }
 
                     is ProximityRequestInteractorPartialState.NoData -> {
+                        val updatedHeaderConfig = viewState.value.headerConfig.copy(
+                            relyingPartyData = getRelyingPartyData(
+                                name = response.verifierName,
+                                isVerified = response.verifierIsTrusted,
+                            )
+                        )
+
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                verifierName = response.verifierName,
-                                screenTitle = constructTitle(
-                                    verifierName = response.verifierName,
-                                    verifierIsTrusted = response.verifierIsTrusted
-                                ),
+                                headerConfig = updatedHeaderConfig,
                                 noItems = true,
                             )
                         }
@@ -164,7 +171,10 @@ class ProximityRequestViewModel(
         }
     }
 
-    override fun updateData(updatedItems: List<RequestDataUi<Event>>, allowShare: Boolean?) {
+    override fun updateData(
+        updatedItems: List<RequestDocumentItemUi>,
+        allowShare: Boolean?
+    ) {
         super.updateData(updatedItems, allowShare)
         interactor.updateRequestedDocuments(updatedItems)
     }
@@ -174,22 +184,16 @@ class ProximityRequestViewModel(
         interactor.stopPresentation()
     }
 
-    private fun constructTitle(
-        verifierName: String? = null,
-        verifierIsTrusted: Boolean = false
-    ): TitleWithBadge {
-        val textBeforeBadge = if (verifierName.isNullOrBlank()) {
-            resourceProvider.getString(R.string.request_title_before_badge)
-        } else {
-            verifierName
-        }
-
-        val textAfterBadge = resourceProvider.getString(R.string.request_title_after_badge)
-
-        return TitleWithBadge(
-            textBeforeBadge = textBeforeBadge,
-            textAfterBadge = textAfterBadge,
-            isTrusted = verifierIsTrusted
+    private fun getRelyingPartyData(
+        name: String?,
+        isVerified: Boolean,
+    ): RelyingPartyData {
+        return RelyingPartyData(
+            isVerified = isVerified,
+            name = name.ifEmptyOrNull(
+                default = resourceProvider.getString(R.string.request_relying_party_default_name)
+            ),
+            description = resourceProvider.getString(R.string.request_relying_party_description),
         )
     }
 }

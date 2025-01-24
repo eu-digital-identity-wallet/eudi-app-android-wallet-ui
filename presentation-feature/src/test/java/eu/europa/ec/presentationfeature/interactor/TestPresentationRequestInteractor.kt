@@ -21,7 +21,6 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.commonfeature.util.TestsData.mockedRequestElementIdentifierNotAvailable
-import eu.europa.ec.commonfeature.util.TestsData.mockedRequestRequiredFieldsTitle
 import eu.europa.ec.commonfeature.util.TestsData.mockedValidMdlWithBasicFieldsRequestDocument
 import eu.europa.ec.commonfeature.util.TestsData.mockedValidPidWithBasicFieldsRequestDocument
 import eu.europa.ec.commonfeature.util.TestsData.mockedVerifierName
@@ -29,7 +28,6 @@ import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemsCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
@@ -88,8 +86,6 @@ class TestPresentationRequestInteractor {
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
-        whenever(resourceProvider.getString(R.string.request_required_fields_title))
-            .thenReturn(mockedRequestRequiredFieldsTitle)
     }
 
     @After
@@ -230,7 +226,7 @@ class TestPresentationRequestInteractor {
 
     // Case 5 Expected Result:
     // ProximityRequestInteractorPartialState.Success state, with:
-    // 1. a list with the transformed basic fields to RequestDataUi items,
+    // 1. a list with the transformed basic fields to RequestDocumentsUi items,
     // 2. the same not null String for verifier name,
     // 3. true for verifierIsTrusted.
     @Test
@@ -261,21 +257,25 @@ class TestPresentationRequestInteractor {
             // When
             interactor.getRequestDocuments()
                 .runFlowTest {
-                    val expectedResult = PresentationRequestInteractorPartialState.Success(
-                        requestDocuments = RequestTransformer.transformToUiItems(
-                            storageDocuments = listOf(
-                                mockedPidWithBasicFields,
-                                mockedMdlWithBasicFields
-                            ),
-                            resourceProvider = resourceProvider,
-                            requestDocuments = listOf(
-                                mockedValidPidWithBasicFieldsRequestDocument,
-                                mockedValidMdlWithBasicFieldsRequestDocument
-                            ),
-                            requiredFieldsTitle = mockedRequestRequiredFieldsTitle
+                    val requestDataUi = RequestTransformer.transformToDomainItems(
+                        storageDocuments = listOf(
+                            mockedPidWithBasicFields,
+                            mockedMdlWithBasicFields
                         ),
+                        requestDocuments = listOf(
+                            mockedValidPidWithBasicFieldsRequestDocument,
+                            mockedValidMdlWithBasicFieldsRequestDocument
+                        ),
+                        resourceProvider = resourceProvider
+                    )
+
+                    val expectedResult = PresentationRequestInteractorPartialState.Success(
                         verifierName = mockedVerifierName,
-                        verifierIsTrusted = mockedVerifierIsTrusted
+                        verifierIsTrusted = mockedVerifierIsTrusted,
+                        requestDocuments = RequestTransformer.transformToUiItems(
+                            documentsDomain = requestDataUi.getOrThrow(),
+                            resourceProvider = resourceProvider,
+                        )
                     )
                     // Then
                     assertEquals(

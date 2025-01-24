@@ -136,9 +136,21 @@ object AppIcons {
         imageVector = null
     )
 
-    val Logo: IconData = IconData(
-        resourceId = R.drawable.ic_logo,
-        contentDescriptionId = R.string.content_description_logo_icon,
+    val LogoFull: IconData = IconData(
+        resourceId = R.drawable.ic_logo_full,
+        contentDescriptionId = R.string.content_description_logo_full_icon,
+        imageVector = null
+    )
+
+    val LogoPlain: IconData = IconData(
+        resourceId = R.drawable.ic_logo_plain,
+        contentDescriptionId = R.string.content_description_logo_plain_icon,
+        imageVector = null
+    )
+
+    val LogoText: IconData = IconData(
+        resourceId = R.drawable.ic_logo_text,
+        contentDescriptionId = R.string.content_description_logo_text_icon,
         imageVector = null
     )
 
@@ -198,25 +210,193 @@ object AppIcons {
 
     val Message: IconData = IconData(
         resourceId = R.drawable.ic_message,
-        contentDescriptionId = R.string.content_description_message,
+        contentDescriptionId = R.string.content_description_message_icon,
         imageVector = null
     )
 
     val ClockTimer: IconData = IconData(
         resourceId = R.drawable.ic_clock_timer,
-        contentDescriptionId = R.string.content_description_clock_timer,
+        contentDescriptionId = R.string.content_description_clock_timer_icon,
         imageVector = null
     )
 
     val OpenNew: IconData = IconData(
         resourceId = R.drawable.ic_open_new,
-        contentDescriptionId = R.string.content_description_open_new,
+        contentDescriptionId = R.string.content_description_open_new_icon,
         imageVector = null
     )
 
     val KeyboardArrowRight: IconData = IconData(
         resourceId = null,
-        contentDescriptionId = R.string.content_description_arrow_right,
+        contentDescriptionId = R.string.content_description_arrow_right_icon,
         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight
+    )
+
+    val HandleBar: IconData = IconData(
+        resourceId = R.drawable.ic_handle_bar,
+        contentDescriptionId = R.string.content_description_handle_bar_icon,
+        imageVector = null
+    )
+
+    val Search: IconData = IconData(
+        resourceId = R.drawable.ic_search,
+        contentDescriptionId = R.string.content_description_search_icon,
+        imageVector = null
+    )
+
+    val PresentDocumentInPerson: IconData = IconData(
+        resourceId = R.drawable.ic_present_document_same_device,
+        contentDescriptionId = R.string.content_description_present_document_same_device_icon,
+        imageVector = null
+    )
+
+    val PresentDocumentOnline: IconData = IconData(
+        resourceId = R.drawable.ic_present_document_cross_device,
+        contentDescriptionId = R.string.content_description_present_document_cross_device_icon,
+        imageVector = null
+    )
+
+    val AddDocumentFromList: IconData = IconData(
+        resourceId = R.drawable.ic_add_document_from_list,
+        contentDescriptionId = R.string.content_description_add_document_from_list_icon,
+        imageVector = null
+    )
+
+    val AddDocumentFromQr: IconData = IconData(
+        resourceId = R.drawable.ic_add_document_from_qr,
+        contentDescriptionId = R.string.content_description_add_document_from_qr_icon,
+        imageVector = null
+    )
+
+    val Bookmark: IconData = IconData(
+        resourceId = R.drawable.ic_bookmark,
+        contentDescriptionId = R.string.content_description_bookmark_icon,
+        imageVector = null
+    )
+
+    val BookmarkFilled: IconData = IconData(
+        resourceId = R.drawable.ic_bookmark_filled,
+        contentDescriptionId = R.string.content_description_bookmark_filled_icon,
+        imageVector = null
+    )
+
+    val Certified: IconData = IconData(
+        resourceId = R.drawable.ic_certified,
+        contentDescriptionId = R.string.content_description_certified_icon,
+        imageVector = null
+    )
+
+    val Success: IconData = IconData(
+        resourceId = R.drawable.ic_success,
+        contentDescriptionId = R.string.content_description_success_icon,
+        imageVector = null
+    )
+
+    val Documents: IconData = IconData(
+        resourceId = R.drawable.ic_documents,
+        contentDescriptionId = R.string.content_description_documents_icon,
+        imageVector = null
+    )
+
+    val Download: IconData = IconData(
+        resourceId = R.drawable.ic_download,
+        contentDescriptionId = R.string.content_description_download_icon,
+        imageVector = null
+    )
+
+    val Filters: IconData = IconData(
+        resourceId = R.drawable.ic_filters,
+        contentDescriptionId = R.string.content_description_filters_icon,
+        imageVector = null
+    )
+
+    val Home: IconData = IconData(
+        resourceId = R.drawable.ic_home,
+        contentDescriptionId = R.string.content_description_home_icon,
+        imageVector = null
+    )
+
+    val Menu: IconData = IconData(
+        resourceId = R.drawable.ic_menu,
+        contentDescriptionId = R.string.content_description_menu_icon,
+        imageVector = null
+    )
+
+    val Contract: IconData = IconData(
+        resourceId = R.drawable.ic_contract,
+        contentDescriptionId = R.string.content_description_signature_icon,
+        imageVector = null
+    )
+
+    val InProgress: IconData = IconData(
+        resourceId = R.drawable.ic_in_progress,
+        contentDescriptionId = R.string.content_description_in_progress_icon,
+        imageVector = null
+    )
+
+    val Notifications: IconData = IconData(
+        resourceId = R.drawable.ic_notifications,
+        contentDescriptionId = R.string.content_description_notifications_icon,
+        imageVector = null
+    )
+
+    val Transactions: IconData = IconData(
+        resourceId = R.drawable.ic_transactions,
+        contentDescriptionId = R.string.content_description_transactions_icon,
+        imageVector = null
+    )
+
+    val WalletActivated: IconData = IconData(
+        resourceId = R.drawable.ic_wallet_activated,
+        contentDescriptionId = R.string.content_description_wallet_activated_icon,
+        imageVector = null
+    )
+
+    val WalletSecured: IconData = IconData(
+        resourceId = R.drawable.ic_wallet_secured,
+        contentDescriptionId = R.string.content_description_wallet_secured_icon,
+        imageVector = null
+    )
+
+    val Info: IconData = IconData(
+        resourceId = R.drawable.ic_info,
+        contentDescriptionId = R.string.content_description_info_icon,
+        imageVector = null
+    )
+
+    val IssuerPlaceholder: IconData = IconData(
+        resourceId = R.drawable.issuer_placeholder,
+        contentDescriptionId = R.string.content_description_issuer_icon,
+        imageVector = null
+    )
+
+    val IdCards: IconData = IconData(
+        resourceId = R.drawable.ic_authenticate_id_cards,
+        contentDescriptionId = R.string.content_description_issuer_icon,
+        imageVector = null
+    )
+
+    val SignDocumentFromDevice: IconData = IconData(
+        resourceId = R.drawable.ic_sign_document_from_device,
+        contentDescriptionId = R.string.content_description_add_document_from_list_icon,
+        imageVector = null
+    )
+
+    val SignDocumentFromQr: IconData = IconData(
+        resourceId = R.drawable.ic_sign_document_from_qr,
+        contentDescriptionId = R.string.content_description_add_document_from_qr_icon,
+        imageVector = null
+    )
+
+    val ChangePin: IconData = IconData(
+        resourceId = R.drawable.ic_change_pin,
+        contentDescriptionId = R.string.content_description_change_pin_icon,
+        imageVector = null
+    )
+
+    val Check: IconData = IconData(
+        resourceId = R.drawable.ic_check,
+        contentDescriptionId = R.string.content_description_check,
+        imageVector = null
     )
 }

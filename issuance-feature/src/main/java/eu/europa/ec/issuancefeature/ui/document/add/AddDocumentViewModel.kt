@@ -21,10 +21,9 @@ import android.net.Uri
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
-import eu.europa.ec.commonfeature.config.QrScanFlow
-import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
@@ -42,7 +41,6 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
-import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
@@ -83,8 +81,6 @@ sealed class Event : ViewEvent {
         val configId: String,
         val context: Context
     ) : Event()
-
-    data object GoToQrScan : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -138,8 +134,6 @@ class AddDocumentViewModel(
             }
 
             is Event.Finish -> setEffect { Effect.Navigation.Finish }
-
-            is Event.GoToQrScan -> navigateToQrScanScreen()
 
             is Event.OnPause -> {
                 if (viewState.value.isInitialised) {
@@ -264,7 +258,7 @@ class AddDocumentViewModel(
                                 isLoading = false
                             )
                         }
-                        navigateToIssuanceSuccessScreen(
+                        navigateToDocumentIssuanceSuccessScreen(
                             documentId = response.documentId
                         )
                     }
@@ -303,15 +297,35 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun navigateToIssuanceSuccessScreen(documentId: String) {
+    private fun navigateToDocumentIssuanceSuccessScreen(documentId: String) {
+        val onSuccessNavigation = when (flowType) {
+            IssuanceFlowUiConfig.NO_DOCUMENT -> ConfigNavigation(
+                navigationType = NavigationType.PushScreen(
+                    screen = DashboardScreens.Dashboard,
+                    popUpToScreen = IssuanceScreens.AddDocument
+                )
+            )
+
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ConfigNavigation(
+                navigationType = NavigationType.PopTo(
+                    screen = DashboardScreens.Dashboard
+                )
+            )
+        }
+
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.Success,
+                    screen = IssuanceScreens.DocumentIssuanceSuccess,
                     arguments = generateComposableArguments(
                         mapOf(
-                            "flowType" to IssuanceFlowUiConfig.fromIssuanceFlowUiConfig(flowType),
-                            "documentId" to documentId,
+                            IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                model = IssuanceSuccessUiConfig(
+                                    documentIds = listOf(documentId),
+                                    onSuccessNavigation = onSuccessNavigation,
+                                ),
+                                parser = IssuanceSuccessUiConfig.Parser
+                            ).orEmpty()
                         )
                     )
                 ),
@@ -329,33 +343,10 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun navigateToQrScanScreen() {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = generateComposableNavigationLink(
-                    screen = CommonScreens.QrScan,
-                    arguments = generateComposableArguments(
-                        mapOf(
-                            QrScanUiConfig.serializedKeyName to uiSerializer.toBase64(
-                                QrScanUiConfig(
-                                    title = resourceProvider.getString(R.string.issuance_qr_scan_title),
-                                    subTitle = resourceProvider.getString(R.string.issuance_qr_scan_subtitle),
-                                    qrScanFlow = QrScanFlow.Issuance(flowType)
-                                ),
-                                QrScanUiConfig.Parser
-                            )
-                        )
-                    )
-                ),
-                inclusive = false
-            )
-        }
-    }
-
     private fun getNavigatableAction(flowType: IssuanceFlowUiConfig): ScreenNavigateAction {
         return when (flowType) {
             IssuanceFlowUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
+            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.BACKABLE
         }
     }
 

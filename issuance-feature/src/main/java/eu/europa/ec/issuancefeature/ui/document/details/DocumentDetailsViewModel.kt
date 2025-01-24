@@ -17,49 +17,52 @@
 package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
+import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteBookmarkPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
-import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.HeaderData
+import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorStoreBookmarkPartialState
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.StartupScreens
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import java.net.URI
 
 data class State(
-    val detailsType: IssuanceFlowUiConfig,
-    val navigatableAction: ScreenNavigateAction,
-    val onBackAction: (() -> Unit)? = null,
-    val shouldShowPrimaryButton: Boolean,
-    val hasCustomTopBar: Boolean,
-    val hasBottomPadding: Boolean,
-    val detailsHaveBottomGradient: Boolean,
-
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
 
     val document: DocumentUi? = null,
-    val headerData: HeaderData? = null
+    val title: String? = null,
+    val issuerName: String? = null,
+    val issuerLogo: URI? = null,
+    val documentDetailsSectionTitle: String,
+    val documentIssuerSectionTitle: String,
+
+    val isDocumentBookmarked: Boolean = false,
+    val hideSensitiveContent: Boolean = true,
+
+    val sheetContent: DocumentDetailsBottomSheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation,
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data object PrimaryButtonPressed : Event()
-    data object DeleteDocumentPressed : Event()
+    data object SecondaryButtonPressed : Event()
 
     data object DismissError : Event()
 
@@ -71,6 +74,12 @@ sealed class Event : ViewEvent {
             data object SecondaryButtonPressed : Delete()
         }
     }
+
+    data object ChangeContentVisibility : Event()
+    data object BookmarkPressed : Event()
+    data object OnBookmarkStored : Event()
+    data object OnBookmarkRemoved : Event()
+    data object IssuerCardPressed : Event()
 }
 
 
@@ -86,22 +95,36 @@ sealed class Effect : ViewSideEffect {
 
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
+
+    data object BookmarkStored : Effect()
+    data object BookmarkRemoved : Effect()
+}
+
+sealed class DocumentDetailsBottomSheetContent {
+    data object DeleteDocumentConfirmation : DocumentDetailsBottomSheetContent()
+
+    data class BookmarkStoredInfo(
+        val bottomSheetTextData: BottomSheetTextData
+    ) : DocumentDetailsBottomSheetContent()
+
+    data class BookmarkRemovedInfo(
+        val bottomSheetTextData: BottomSheetTextData
+    ) : DocumentDetailsBottomSheetContent()
+
+    data class TrustedRelyingPartyInfo(
+        val bottomSheetTextData: BottomSheetTextData
+    ) : DocumentDetailsBottomSheetContent()
 }
 
 @KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
-    @InjectedParam private val detailsType: IssuanceFlowUiConfig,
+    private val resourceProvider: ResourceProvider,
     @InjectedParam private val documentId: DocumentId,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        detailsType = detailsType,
-        navigatableAction = getNavigatableAction(detailsType),
-        onBackAction = getOnBackAction(detailsType),
-        shouldShowPrimaryButton = shouldShowPrimaryButton(detailsType),
-        hasCustomTopBar = hasCustomTopBar(detailsType),
-        hasBottomPadding = hasBottomPadding(detailsType),
-        detailsHaveBottomGradient = detailsHaveBottomGradient(detailsType),
+        documentDetailsSectionTitle = resourceProvider.getString(R.string.document_details_main_section_text),
+        documentIssuerSectionTitle = resourceProvider.getString(R.string.document_details_issuer_section_text),
     )
 
     override fun handleEvents(event: Event) {
@@ -114,17 +137,11 @@ class DocumentDetailsViewModel(
             }
 
             is Event.PrimaryButtonPressed -> {
-                setEffect {
-                    Effect.Navigation.SwitchScreen(
-                        screenRoute = DashboardScreens.Dashboard.screenRoute,
-                        popUpToScreenRoute = IssuanceScreens.DocumentDetails.screenRoute,
-                        inclusive = true
-                    )
-                }
+                // TODO: will redirect to transactions screen
             }
 
-            is Event.DeleteDocumentPressed -> {
-                showBottomSheet()
+            is Event.SecondaryButtonPressed -> {
+                showBottomSheet(sheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation)
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
@@ -143,6 +160,44 @@ class DocumentDetailsViewModel(
             }
 
             is Event.DismissError -> setState { copy(error = null) }
+
+            is Event.ChangeContentVisibility -> setState {
+                copy(
+                    hideSensitiveContent = !hideSensitiveContent,
+                )
+            }
+
+            is Event.BookmarkPressed -> {
+                if (!viewState.value.isDocumentBookmarked) {
+                    storeBookmark()
+                } else {
+                    deleteBookmark()
+                }
+            }
+
+            is Event.OnBookmarkStored -> {
+                showBottomSheet(
+                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo(
+                        bottomSheetTextData = getBookmarkStoredBottomSheetTextData()
+                    )
+                )
+            }
+
+            is Event.OnBookmarkRemoved -> {
+                showBottomSheet(
+                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkRemovedInfo(
+                        bottomSheetTextData = getBookmarkRemovedBottomSheetTextData()
+                    )
+                )
+            }
+
+            is Event.IssuerCardPressed -> {
+                showBottomSheet(
+                    sheetContent = DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo(
+                        bottomSheetTextData = getTrustedRelyingPartyBottomSheetTextData()
+                    )
+                )
+            }
         }
     }
 
@@ -160,19 +215,17 @@ class DocumentDetailsViewModel(
             ).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
-                        val documentUi = response.documentUi
+                        val documentUi =
+                            response.documentDetailsDomain.transformToDocumentDetailsUi()
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
                                 document = documentUi,
-                                headerData = HeaderData(
-                                    title = documentUi.documentName,
-                                    subtitle = documentUi.userFullName.orEmpty(),
-                                    documentHasExpired = documentUi.documentHasExpired,
-                                    base64Image = documentUi.documentImage,
-                                    icon = AppIcons.IdStroke
-                                )
+                                title = documentUi.documentName,
+                                isDocumentBookmarked = response.documentIsBookmarked,
+                                issuerName = response.issuerName,
+                                issuerLogo = response.issuerLogo
                             )
                         }
                     }
@@ -254,7 +307,46 @@ class DocumentDetailsViewModel(
         }
     }
 
-    private fun showBottomSheet() {
+    private fun storeBookmark() {
+        viewModelScope.launch {
+            documentDetailsInteractor.storeBookmark(documentId).collect {
+                if (it is DocumentDetailsInteractorStoreBookmarkPartialState.Success) {
+                    setState {
+                        copy(
+                            isDocumentBookmarked = true
+                        )
+                    }
+
+                    setEffect {
+                        Effect.BookmarkStored
+                    }
+                }
+            }
+        }
+    }
+
+    private fun deleteBookmark() {
+        viewModelScope.launch {
+            documentDetailsInteractor.deleteBookmark(documentId).collect {
+                if (it is DocumentDetailsInteractorDeleteBookmarkPartialState.Success) {
+                    setState {
+                        copy(
+                            isDocumentBookmarked = false
+                        )
+                    }
+
+                    setEffect {
+                        Effect.BookmarkRemoved
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showBottomSheet(sheetContent: DocumentDetailsBottomSheetContent) {
+        setState {
+            copy(sheetContent = sheetContent)
+        }
         setEffect {
             Effect.ShowBottomSheet
         }
@@ -266,47 +358,24 @@ class DocumentDetailsViewModel(
         }
     }
 
-    private fun getNavigatableAction(detailsType: IssuanceFlowUiConfig): ScreenNavigateAction {
-        return when (detailsType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> ScreenNavigateAction.NONE
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> ScreenNavigateAction.CANCELABLE
-        }
+    private fun getBookmarkStoredBottomSheetTextData(): BottomSheetTextData {
+        return BottomSheetTextData(
+            title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_title),
+            message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_message)
+        )
     }
 
-    private fun shouldShowPrimaryButton(detailsType: IssuanceFlowUiConfig): Boolean {
-        return when (detailsType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> true
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
-        }
+    private fun getBookmarkRemovedBottomSheetTextData(): BottomSheetTextData {
+        return BottomSheetTextData(
+            title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_removed_info_title),
+            message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_removed_info_message)
+        )
     }
 
-    private fun hasCustomTopBar(detailsType: IssuanceFlowUiConfig): Boolean {
-        return when (detailsType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> false
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> true
-        }
-    }
-
-    private fun hasBottomPadding(detailsType: IssuanceFlowUiConfig): Boolean {
-        return when (detailsType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> true
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
-        }
-    }
-
-    private fun detailsHaveBottomGradient(detailsType: IssuanceFlowUiConfig): Boolean {
-        return when (detailsType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> true
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> false
-        }
-    }
-
-    private fun getOnBackAction(flowType: IssuanceFlowUiConfig): (() -> Unit)? {
-        return when (flowType) {
-            IssuanceFlowUiConfig.NO_DOCUMENT -> null
-            IssuanceFlowUiConfig.EXTRA_DOCUMENT -> {
-                { setEvent(Event.Pop) }
-            }
-        }
+    private fun getTrustedRelyingPartyBottomSheetTextData(): BottomSheetTextData {
+        return BottomSheetTextData(
+            title = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_title),
+            message = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_subtitle)
+        )
     }
 }

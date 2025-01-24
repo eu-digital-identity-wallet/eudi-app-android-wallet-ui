@@ -29,7 +29,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
@@ -39,8 +38,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 fun ErrorInfo(
     informativeText: String,
     modifier: Modifier = Modifier,
-    contentColor: Color = MaterialTheme.colorScheme.textSecondaryDark,
-    iconAlpha: Float = 0.4f,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    isIconEnabled: Boolean = false,
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp
     val errorIconSize = (screenWidth / 6).dp
@@ -52,9 +51,10 @@ fun ErrorInfo(
     ) {
         WrapIcon(
             iconData = AppIcons.Error,
-            modifier = Modifier.size(errorIconSize),
+            modifier = Modifier
+                .size(errorIconSize),
             customTint = contentColor,
-            contentAlpha = iconAlpha
+            enabled = isIconEnabled,
         )
         Text(
             text = informativeText,

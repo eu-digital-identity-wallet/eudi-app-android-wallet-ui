@@ -20,14 +20,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import kotlinx.coroutines.flow.Flow
@@ -101,9 +102,9 @@ private fun Content(
         verticalArrangement = Arrangement.Top
     ) {
 
-        ContentTitle(
-            title = state.screenTitle,
-            subtitle = state.screenSubtitle
+        ContentHeader(
+            modifier = Modifier.fillMaxWidth(),
+            config = state.headerConfig,
         )
     }
 

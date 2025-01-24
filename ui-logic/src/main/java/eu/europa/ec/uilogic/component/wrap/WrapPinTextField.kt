@@ -35,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -79,7 +80,11 @@ fun WrapPinTextField(
     pinWidth: Dp? = null,
     clearCode: Boolean = false,
     focusOnCreate: Boolean = false,
-    shouldHideKeyboardOnCompletion: Boolean = false
+    shouldHideKeyboardOnCompletion: Boolean = false,
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+    )
 ) {
 
     fun List<FocusRequester>.requestFocus(index: Int) {
@@ -175,7 +180,7 @@ fun WrapPinTextField(
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
                             ),
-                            colors = OutlinedTextFieldDefaults.colors().copy(
+                            colors = colors.copy(
                                 cursorColor = Color.Transparent,
                                 errorCursorColor = Color.Transparent
                             ),
@@ -273,7 +278,7 @@ private fun PreviewWrapPinTextField() {
             onPinUpdate = {},
             length = 4,
             visualTransformation = PasswordVisualTransformation(),
-            pinWidth = 46.dp,
+            pinWidth = 42.dp,
         )
     }
 }

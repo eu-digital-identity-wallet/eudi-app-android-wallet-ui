@@ -26,6 +26,6 @@ class TextLengthPreviewProvider : PreviewParameterProvider<String> {
         get() = sequenceOf(
             "Short Text",
             "A bit longer text.",
-            "This one is really, really long. Like, really long!"
+            "This one is really, really long. Like, really really really really really really really really really long!"
         )
 }

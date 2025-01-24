@@ -17,7 +17,6 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,71 +24,256 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.dividerDark
-import eu.europa.ec.resourceslogic.theme.values.textDisabledDark
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
-import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_100
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 
-private val buttonsShape: RoundedCornerShape = RoundedCornerShape(SIZE_MEDIUM.dp)
-private val buttonsContentPadding: PaddingValues = PaddingValues(SPACING_MEDIUM.dp)
+enum class ButtonType {
+    PRIMARY,
+    SECONDARY,
+}
+
+private val buttonsShape: RoundedCornerShape = RoundedCornerShape(SIZE_100.dp)
+
+private val buttonsContentPadding: PaddingValues = PaddingValues(
+    vertical = 10.dp,
+    horizontal = SPACING_LARGE.dp
+)
+
+data class ButtonConfig(
+    val type: ButtonType,
+    val enabled: Boolean = true,
+    val onClick: () -> Unit,
+    val isWarning: Boolean = false,
+    val shape: Shape = buttonsShape,
+    val contentPadding: PaddingValues = buttonsContentPadding,
+    val isWithoutContainerBackground: Boolean = false,
+)
 
 @Composable
-fun WrapPrimaryButton(
+fun WrapButton(
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-    content: @Composable RowScope.() -> Unit
+    buttonConfig: ButtonConfig,
+    content: @Composable RowScope.() -> Unit,
 ) {
-    val textColor = if (isSystemInDarkTheme()) {
-        Color.White
+    when (buttonConfig.type) {
+        ButtonType.PRIMARY -> WrapPrimaryButton(
+            modifier = modifier,
+            buttonConfig = buttonConfig,
+            content = content,
+        )
+
+        ButtonType.SECONDARY -> WrapSecondaryButton(
+            modifier = modifier,
+            buttonConfig = buttonConfig,
+            content = content,
+        )
+    }
+}
+
+@Composable
+private fun WrapPrimaryButton(
+    modifier: Modifier = Modifier,
+    buttonConfig: ButtonConfig,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val colors = if (buttonConfig.isWarning) {
+        ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.error
+        )
+    } else if (buttonConfig.isWithoutContainerBackground) {
+        ButtonDefaults.filledTonalButtonColors(containerColor = Color.Transparent)
     } else {
-        MaterialTheme.colorScheme.background
+        ButtonDefaults.buttonColors()
     }
 
     Button(
         modifier = modifier,
-        enabled = enabled,
-        onClick = onClick,
-        shape = buttonsShape,
-        colors = ButtonDefaults.textButtonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = textColor,
-            disabledContainerColor = MaterialTheme.colorScheme.secondary,
-            disabledContentColor = MaterialTheme.colorScheme.textDisabledDark,
-        ),
-        contentPadding = buttonsContentPadding,
+        enabled = buttonConfig.enabled,
+        onClick = buttonConfig.onClick,
+        shape = buttonConfig.shape,
+        colors = colors,
+        contentPadding = buttonConfig.contentPadding,
         content = content
     )
 }
 
 @Composable
-fun WrapSecondaryButton(
+private fun WrapSecondaryButton(
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-    content: @Composable RowScope.() -> Unit
+    buttonConfig: ButtonConfig,
+    content: @Composable RowScope.() -> Unit,
 ) {
+    val borderColor = if (!buttonConfig.enabled) {
+        MaterialTheme.colorScheme.onSurface.copy(
+            alpha = 0.12f
+        )
+    } else {
+        if (buttonConfig.isWarning) {
+            MaterialTheme.colorScheme.error
+        } else {
+            MaterialTheme.colorScheme.primary
+        }
+    }
+
+    val colors = if (buttonConfig.isWarning) {
+        ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.error
+        )
+    } else {
+        ButtonDefaults.outlinedButtonColors()
+    }
+
     OutlinedButton(
         modifier = modifier,
-        enabled = enabled,
-        onClick = onClick,
-        shape = buttonsShape,
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.textPrimaryDark,
-            disabledContainerColor = MaterialTheme.colorScheme.background,
-            disabledContentColor = MaterialTheme.colorScheme.textDisabledDark,
-        ),
+        enabled = buttonConfig.enabled,
+        onClick = buttonConfig.onClick,
+        shape = buttonConfig.shape,
+        colors = colors,
         border = BorderStroke(
             width = 1.dp,
-            color = MaterialTheme.colorScheme.dividerDark,
+            color = borderColor,
         ),
-        contentPadding = buttonsContentPadding,
+        contentPadding = buttonConfig.contentPadding,
         content = content
     )
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapPrimaryButtonEnabledPreview() {
+    PreviewTheme {
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = true,
+                onClick = { }
+            ),
+        ) {
+            Text("Enabled Primary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapPrimaryButtonDisabledPreview() {
+    PreviewTheme {
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = false,
+                onClick = { }
+            ),
+        ) {
+            Text("Disabled Primary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapPrimaryButtonEnabledWarningPreview() {
+    PreviewTheme {
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = true,
+                isWarning = true,
+                onClick = { }
+            )
+        ) {
+            Text("Enabled Warning Primary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapPrimaryButtonDisabledWarningPreview() {
+    PreviewTheme {
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.PRIMARY,
+                enabled = false,
+                isWarning = true,
+                onClick = { }
+            )
+        ) {
+            Text("Disabled Warning Primary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSecondaryButtonEnabledPreview() {
+    PreviewTheme {
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                enabled = true,
+                onClick = { }
+            )
+        ) {
+            Text("Enabled Secondary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSecondaryButtonDisabledPreview() {
+    PreviewTheme {
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                enabled = false,
+                onClick = { }
+            )
+        ) {
+            Text("Disabled Secondary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSecondaryButtonEnabledWarningPreview() {
+    PreviewTheme {
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                enabled = true,
+                isWarning = true,
+                onClick = { }
+            )
+        ) {
+            Text("Enabled Warning Secondary Button")
+        }
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapSecondaryButtonDisabledWarningPreview() {
+    PreviewTheme {
+        WrapButton(
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                enabled = false,
+                isWarning = true,
+                onClick = { }
+            )
+        ) {
+            Text("Disabled Warning Secondary Button")
+        }
+    }
 }

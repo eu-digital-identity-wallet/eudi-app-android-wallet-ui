@@ -38,6 +38,7 @@ const val mockedPidId = "000001"
 const val mockedMdlId = "000002"
 const val mockedPidDocName = "EU PID"
 const val mockedMdlDocName = "mDL"
+const val mockedBookmarkId = "mockedBookmarkId"
 const val mockedVerifierIsTrusted = true
 const val mockedNotifyOnAuthenticationFailure = false
 val mockedPidFields: Map<String, ByteArray> = mapOf(

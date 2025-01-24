@@ -302,33 +302,6 @@ class TestPresentationLoadingInteractor {
     }
     //endregion
 
-    //region stopPresentation
-
-    @Test
-    fun `when interactor stopPresentation is called then it delegates to walletCoreInteractor stopPresentation`() {
-        // When
-        interactor.stopPresentation()
-
-        // Then
-        verify(walletCorePresentationController, times(1))
-            .stopPresentation()
-    }
-
-    //endregion
-
-    //region initiatorRoute
-
-    @Test
-    fun `when initiatorRoute on interactor is called then initiatorRoute on controller is expected to be invoked`() {
-        // When
-        interactor.initiatorRoute
-
-        //Then
-        verify(walletCorePresentationController).initiatorRoute
-    }
-
-    //endregion
-
 
     //region helper functions
     private fun mockWalletCorePresentationControllerEventEmission(event: WalletCorePartialState) {

@@ -42,7 +42,13 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
                 }
             )
         ) {
-            DashboardScreen(navController, koinViewModel())
+            DashboardScreen(
+                hostNavController = navController,
+                viewModel = koinViewModel(),
+                documentsViewModel = koinViewModel(),
+                homeViewModel = koinViewModel(),
+                transactionsViewModel = koinViewModel()
+            )
         }
 
         composable(

@@ -17,23 +17,19 @@
 package eu.europa.ec.issuancefeature.ui.document.add
 
 import android.content.Context
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.LayoutDirection
@@ -45,14 +41,10 @@ import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
-import eu.europa.ec.resourceslogic.theme.values.allCorneredShapeSmall
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
-import eu.europa.ec.resourceslogic.theme.values.topCorneredShapeSmall
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
-import eu.europa.ec.uilogic.component.IssuanceButton
-import eu.europa.ec.uilogic.component.IssuanceButtonData
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -60,15 +52,11 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
-import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
@@ -163,54 +151,49 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(
-                    PaddingValues(
-                        top = paddingValues.calculateTopPadding(),
-                        start = paddingValues.calculateLeftPadding(LayoutDirection.Ltr),
-                        end = paddingValues.calculateRightPadding(LayoutDirection.Ltr),
-                        bottom = SPACING_EXTRA_SMALL.dp
-                    )
+            .padding(
+                paddingValues = PaddingValues(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = 0.dp,
+                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
                 )
-        ) {
-            ContentTitle(
-                title = state.title,
-                subtitle = state.subtitle
             )
+    ) {
+        ContentTitle(
+            modifier = Modifier.fillMaxWidth(),
+            title = state.title,
+            subtitle = state.subtitle
+        )
 
-            LazyColumn {
-                state.options.forEach { option ->
-                    item {
-                        IssuanceButton(
-                            data = IssuanceButtonData(
-                                text = option.text,
-                                icon = option.icon
-                            ),
-                            enabled = option.available,
-                            onClick = {
-                                onEventSend(
-                                    Event.IssueDocument(
-                                        issuanceMethod = IssuanceMethod.OPENID4VCI,
-                                        configId = option.configId,
-                                        context = context
-                                    )
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
+            contentPadding = PaddingValues(
+                top = SPACING_MEDIUM.dp,
+                bottom = paddingValues.calculateBottomPadding()
+            ),
+        ) {
+            state.options.forEach { option ->
+                item {
+                    WrapListItem(
+                        modifier = Modifier.fillMaxWidth(),
+                        item = option.itemData,
+                        mainContentVerticalPadding = SPACING_LARGE.dp,
+                        mainContentTextStyle = MaterialTheme.typography.titleMedium,
+                        onItemClick = { optionListItemData ->
+                            onEventSend(
+                                Event.IssueDocument(
+                                    issuanceMethod = IssuanceMethod.OPENID4VCI,
+                                    configId = optionListItemData.itemId,
+                                    context = context
                                 )
-                            }
-                        )
-
-                        VSpacer.Medium()
-                    }
+                            )
+                        }
+                    )
                 }
             }
         }
-
-        QrScanSection(
-            onClick = { onEventSend(Event.GoToQrScan) }
-        )
     }
 
     LaunchedEffect(Unit) {
@@ -222,73 +205,6 @@ private fun Content(
     }
 }
 
-@Composable
-private fun QrScanSection(
-    onClick: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .background(
-                color = MaterialTheme.colorScheme.backgroundDefault.copy(alpha = 0.55f),
-                shape = MaterialTheme.shapes.topCorneredShapeSmall
-            )
-            .padding(
-                top = SPACING_EXTRA_LARGE.dp,
-                bottom = SPACING_LARGE.dp,
-                start = SPACING_LARGE.dp,
-                end = SPACING_LARGE.dp,
-            ),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(id = R.string.issuance_add_document_qr_scan_section_title),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.textSecondaryDark
-        )
-        VSpacer.Medium()
-        InnerSection(
-            icon = AppIcons.QR,
-            text = stringResource(id = R.string.issuance_add_document_qr_scan_section_subtitle),
-            onClick = onClick
-        )
-    }
-}
-
-@Composable
-private fun InnerSection(
-    icon: IconData,
-    text: String,
-    onClick: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .clip(shape = MaterialTheme.shapes.allCorneredShapeSmall)
-            .background(
-                color = MaterialTheme.colorScheme.backgroundDefault
-            )
-            .throttledClickable(onClick = onClick)
-            .padding(vertical = SPACING_MEDIUM.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        WrapIcon(
-            iconData = icon,
-            modifier = Modifier.size(40.dp),
-            customTint = MaterialTheme.colorScheme.primary
-        )
-        VSpacer.Small()
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleSmall
-        )
-    }
-}
-
 @ThemeModePreviews
 @Composable
 private fun IssuanceAddDocumentScreenPreview() {
@@ -296,20 +212,22 @@ private fun IssuanceAddDocumentScreenPreview() {
         Content(
             state = State(
                 navigatableAction = ScreenNavigateAction.NONE,
-                title = "Add document",
-                subtitle = "Select a document to add in your EUDI Wallet",
+                title = stringResource(R.string.issuance_add_document_title),
+                subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
                     DocumentOptionItemUi(
-                        text = "National ID",
-                        icon = AppIcons.Id,
-                        configId = "id",
-                        available = true,
+                        itemData = ListItemData(
+                            itemId = "configId1",
+                            mainContentData = ListItemMainContentData.Text(text = "National ID"),
+                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                        )
                     ),
                     DocumentOptionItemUi(
-                        text = "Driving License",
-                        icon = AppIcons.Id,
-                        configId = "id",
-                        available = false,
+                        itemData = ListItemData(
+                            itemId = "configId2",
+                            mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
+                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                        )
                     )
                 )
             ),
@@ -328,21 +246,23 @@ private fun DashboardAddDocumentScreenPreview() {
     PreviewTheme {
         Content(
             state = State(
-                navigatableAction = ScreenNavigateAction.CANCELABLE,
-                title = "Add document",
-                subtitle = "Select a document to add in your EUDI Wallet",
+                navigatableAction = ScreenNavigateAction.BACKABLE,
+                title = stringResource(R.string.issuance_add_document_title),
+                subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
                     DocumentOptionItemUi(
-                        text = "National ID",
-                        icon = AppIcons.Id,
-                        configId = "id",
-                        available = true,
+                        itemData = ListItemData(
+                            itemId = "configId1",
+                            mainContentData = ListItemMainContentData.Text(text = "National ID"),
+                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                        )
                     ),
                     DocumentOptionItemUi(
-                        text = "Driving License",
-                        icon = AppIcons.Id,
-                        configId = "id",
-                        available = false,
+                        itemData = ListItemData(
+                            itemId = "configId2",
+                            mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
+                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                        )
                     )
                 )
             ),

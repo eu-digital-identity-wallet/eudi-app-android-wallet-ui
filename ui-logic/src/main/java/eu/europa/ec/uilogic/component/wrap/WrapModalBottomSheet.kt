@@ -24,12 +24,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -37,16 +39,29 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.theme.values.backgroundDefault
-import eu.europa.ec.resourceslogic.theme.values.textPrimaryDark
-import eu.europa.ec.resourceslogic.theme.values.textSecondaryDark
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.theme.values.divider
+import eu.europa.ec.resourceslogic.theme.values.warning
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
+import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
+import eu.europa.ec.uilogic.component.utils.DEFAULT_BIG_ICON_SIZE
+import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
+import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -55,7 +70,45 @@ import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.mvi.ViewEvent
 
 private val defaultBottomSheetPadding: PaddingValues = PaddingValues(
-    all = SPACING_LARGE.dp
+    start = SPACING_LARGE.dp,
+    end = SPACING_LARGE.dp,
+    top = 0.dp,
+    bottom = SPACING_LARGE.dp
+)
+
+private val bottomSheetWithTwoBigIconsPadding: PaddingValues = PaddingValues(
+    start = SPACING_LARGE.dp,
+    end = SPACING_LARGE.dp,
+    top = 0.dp,
+    bottom = 0.dp
+)
+
+private val bottomSheetDefaultBackgroundColor: Color
+    @Composable get() = MaterialTheme.colorScheme.surfaceContainerLowest
+
+private val bottomSheetDefaultTextColor: Color
+    @Composable get() = MaterialTheme.colorScheme.onSurface
+
+/**
+ * Data class representing the text content for a bottom sheet.
+ *
+ * This class holds the title, message, and button texts for a bottom sheet.
+ * It also includes flags to indicate if a button should be styled as a warning.
+ *
+ * @property title The title of the bottom sheet.
+ * @property message The message displayed in the bottom sheet.
+ * @property positiveButtonText The text for the positive button (e.g., "OK", "Confirm"). Can be null if no positive button is needed.
+ * @property isPositiveButtonWarning A flag indicating if the positive button should be styled as a warning (e.g., red color). Defaults to false.
+ * @property negativeButtonText The text for the negative button (e.g., "Cancel", "Dismiss"). Can be null if no negative button is needed.
+ * @property isNegativeButtonWarning A flag indicating if the negative button should be styled as a warning (e.g., red color). Defaults to false.
+ */
+data class BottomSheetTextData(
+    val title: String,
+    val message: String,
+    val positiveButtonText: String? = null,
+    val isPositiveButtonWarning: Boolean = false,
+    val negativeButtonText: String? = null,
+    val isNegativeButtonWarning: Boolean = false,
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,9 +117,9 @@ fun WrapModalBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     sheetState: SheetState,
-    shape: Shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-    dragHandle: @Composable (() -> Unit)? = null,
-    sheetContent: @Composable ColumnScope.() -> Unit
+    shape: Shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+    dragHandle: @Composable (() -> Unit) = { BottomSheetDefaultHandle() },
+    sheetContent: @Composable ColumnScope.() -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -78,112 +131,267 @@ fun WrapModalBottomSheet(
     )
 }
 
+/**
+ * A generic composable function for creating a bottom sheet.
+ *
+ * This function provides a basic structure for a bottom sheet, including a title and body section.
+ * You can customize the content of the title and body by providing composable functions.
+ *
+ * The bottom sheet is displayed with a default background color and padding.
+ *
+ * @param titleContent A composable function that provides the content for the title section of the bottom sheet.
+ * This content is displayed at the top of the bottom sheet.
+ * @param bodyContent A composable function that provides the content for the body section of the bottom sheet.
+ * This content is displayed below the title, separated by a medium vertical spacer.
+ */
 @Composable
-fun GenericBaseSheetContent(
-    title: String,
-    bodyContent: @Composable () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .wrapContentHeight()
-            .background(color = MaterialTheme.colorScheme.background)
-            .fillMaxWidth()
-            .padding(defaultBottomSheetPadding)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge.copy(
-                color = MaterialTheme.colorScheme.textPrimaryDark
-            )
-        )
-        VSpacer.Small()
-        bodyContent()
-    }
-}
-
-@Composable
-fun GenericBaseSheetContent(
+fun GenericBottomSheet(
     titleContent: @Composable () -> Unit,
     bodyContent: @Composable () -> Unit,
+    sheetBackgroundColor: Color = bottomSheetDefaultBackgroundColor,
+    sheetPadding: PaddingValues = defaultBottomSheetPadding,
 ) {
     Column(
         modifier = Modifier
             .wrapContentHeight()
-            .background(color = MaterialTheme.colorScheme.background)
+            .background(color = sheetBackgroundColor)
             .fillMaxWidth()
-            .padding(defaultBottomSheetPadding)
+            .padding(sheetPadding)
     ) {
         titleContent()
-        VSpacer.Large()
+        VSpacer.Medium()
         bodyContent()
     }
 }
 
+/**
+ * A composable function that displays a dialog-style bottom sheet.
+ *
+ * This bottom sheet presents information to the user with optional icons,
+ * title, message, and two buttons for positive and negative actions.
+ *
+ * @param textData Data class containing the text content for the bottom sheet. This includes
+ *                 title, message, positive button text, and negative button text.
+ * @param leadingIcon An optional icon to be displayed at the beginning of the title.
+ * @param leadingIconTint An optional tint color for the leading icon.
+ * @param onPositiveClick A lambda function to be executed when the positive button is clicked.
+ * @param onNegativeClick A lambda function to be executed when the negative button is clicked.
+ */
 @Composable
 fun DialogBottomSheet(
-    title: String,
-    message: String,
-    positiveButtonText: String? = null,
-    negativeButtonText: String? = null,
-    onPositiveClick: () -> Unit? = {},
-    onNegativeClick: () -> Unit? = {}
+    textData: BottomSheetTextData,
+    leadingIcon: IconData? = null,
+    leadingIconTint: Color? = null,
+    onPositiveClick: () -> Unit = {},
+    onNegativeClick: () -> Unit = {},
 ) {
-    GenericBaseSheetContent(
-        title = title,
+    BaseBottomSheet(
+        textData = textData,
+        leadingIcon = leadingIcon,
+        leadingIconTint = leadingIconTint,
         bodyContent = {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    color = MaterialTheme.colorScheme.textSecondaryDark
-                )
-            )
-            VSpacer.Large()
-            positiveButtonText?.let {
-                WrapPrimaryButton(
-                    onClick = { onPositiveClick.invoke() },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = true
-                ) {
-                    Text(
-                        text = positiveButtonText
-                    )
+            Row(
+                modifier = Modifier.padding(vertical = SPACING_EXTRA_SMALL.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                textData.negativeButtonText?.let { safeNegativeButtonText ->
+                    WrapButton(
+                        modifier = Modifier.weight(1f),
+                        buttonConfig = ButtonConfig(
+                            type = ButtonType.SECONDARY,
+                            onClick = onNegativeClick,
+                            isWarning = textData.isNegativeButtonWarning,
+                        )
+                    ) {
+                        Text(
+                            text = safeNegativeButtonText,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                 }
-            }
-            VSpacer.Medium()
-            negativeButtonText?.let {
-                WrapSecondaryButton(
-                    onClick = { onNegativeClick.invoke() },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = true
-                ) {
-                    Text(
-                        text = negativeButtonText
-                    )
+
+                HSpacer.Small()
+
+                textData.positiveButtonText?.let { safePositiveButtonText ->
+                    WrapButton(
+                        modifier = Modifier.weight(1f),
+                        buttonConfig = ButtonConfig(
+                            type = ButtonType.PRIMARY,
+                            onClick = onPositiveClick,
+                            isWarning = textData.isPositiveButtonWarning,
+                        )
+                    ) {
+                        Text(
+                            text = safePositiveButtonText,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                 }
             }
         }
     )
 }
 
+/**
+ * A simple bottom sheet composable function.
+ *
+ * This function displays a basic bottom sheet with a title and message.
+ * It can optionally include a leading icon with a custom tint.
+ * It utilizes the `BaseBottomSheet` composable for its core functionality, providing a
+ * standardized structure for bottom sheets.
+ *
+ * @param textData An object of type `BottomSheetTextData` containing the title and message
+ * to be displayed in the bottom sheet.
+ * @param leadingIcon An optional `IconData` object representing the icon to be displayed
+ * at the leading edge of the bottom sheet.
+ * @param leadingIconTint An optional `Color` to apply as a tint to the leading icon. If null,
+ * the default icon color will be used.
+ */
+@Composable
+fun SimpleBottomSheet(
+    textData: BottomSheetTextData,
+    leadingIcon: IconData? = null,
+    leadingIconTint: Color? = null,
+) {
+    BaseBottomSheet(
+        textData = textData,
+        leadingIcon = leadingIcon,
+        leadingIconTint = leadingIconTint,
+    )
+}
+
+@Composable
+private fun BaseBottomSheet(
+    textData: BottomSheetTextData,
+    leadingIcon: IconData? = null,
+    leadingIconTint: Color? = null,
+    bodyContent: @Composable (() -> Unit)? = null,
+    sheetBackgroundColor: Color = bottomSheetDefaultBackgroundColor,
+    sheetPadding: PaddingValues = defaultBottomSheetPadding,
+) {
+    Column(
+        modifier = Modifier
+            .wrapContentHeight()
+            .background(color = sheetBackgroundColor)
+            .fillMaxWidth()
+            .padding(sheetPadding),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Start),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            leadingIcon?.let { safeLeadingIcon ->
+                WrapIcon(
+                    modifier = Modifier.size(DEFAULT_ICON_SIZE.dp),
+                    iconData = safeLeadingIcon,
+                    customTint = leadingIconTint
+                )
+            }
+            Text(
+                text = textData.title,
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    color = bottomSheetDefaultTextColor
+                )
+            )
+        }
+
+        Text(
+            text = textData.message,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = bottomSheetDefaultTextColor
+            )
+        )
+
+        bodyContent?.let { safeBodyContent ->
+            safeBodyContent()
+        }
+    }
+}
+
+@Composable
+fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
+    textData: BottomSheetTextData,
+    options: List<ModalOptionUi<T>>,
+    onEventSent: (T) -> Unit,
+) {
+    if (options.size == 2) {
+        BaseBottomSheet(
+            textData = textData,
+            sheetPadding = bottomSheetWithTwoBigIconsPadding,
+            bodyContent = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    options.forEachIndexed { index, item ->
+                        if (index == 1) {
+                            Text(
+                                modifier = Modifier.align(Alignment.CenterVertically),
+                                text = stringResource(
+                                    R.string.documents_screen_add_document_option_or
+                                ),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(vertical = SPACING_MEDIUM.dp),
+                            verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            item.leadingIcon?.let { safeLeadingIcon ->
+                                WrapImage(
+                                    modifier = Modifier
+                                        .size(DEFAULT_BIG_ICON_SIZE.dp)
+                                        .alpha(
+                                            alpha = ALPHA_ENABLED.takeIf { item.enabled }
+                                                ?: ALPHA_DISABLED
+                                        ),
+                                    iconData = safeLeadingIcon,
+                                )
+                            }
+                            WrapButton(
+                                modifier = Modifier.wrapContentWidth(),
+                                buttonConfig = ButtonConfig(
+                                    type = ButtonType.PRIMARY,
+                                    onClick = { onEventSent(item.event) },
+                                    enabled = item.enabled
+                                )
+                            ) {
+                                Text(
+                                    text = item.title,
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
+}
+
 @Composable
 fun <T : ViewEvent> BottomSheetWithOptionsList(
-    title: String,
-    message: String,
+    textData: BottomSheetTextData,
     options: List<ModalOptionUi<T>>,
-    onEventSent: (T) -> Unit
+    onEventSent: (T) -> Unit,
 ) {
     if (options.isNotEmpty()) {
-        GenericBaseSheetContent(
-            title = title,
+        BaseBottomSheet(
+            textData = textData,
             bodyContent = {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.textSecondaryDark
-                    )
-                )
-                VSpacer.Large()
-
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.Top,
@@ -202,16 +410,23 @@ fun <T : ViewEvent> BottomSheetWithOptionsList(
 @Composable
 private fun <T : ViewEvent> OptionsList(
     optionItems: List<ModalOptionUi<T>>,
-    itemSelected: (T) -> Unit
+    itemSelected: (T) -> Unit,
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
     ) {
-        items(optionItems) { item ->
+        itemsIndexed(optionItems) { index, item ->
+
             OptionListItem(
                 item = item,
                 itemSelected = itemSelected
             )
+
+            if (index < optionItems.lastIndex) {
+                HorizontalDivider(
+                    thickness = 1.dp,
+                )
+            }
         }
     }
 }
@@ -219,32 +434,99 @@ private fun <T : ViewEvent> OptionsList(
 @Composable
 private fun <T : ViewEvent> OptionListItem(
     item: ModalOptionUi<T>,
-    itemSelected: (T) -> Unit
+    itemSelected: (T) -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(SIZE_SMALL.dp))
-            .background(MaterialTheme.colorScheme.backgroundDefault)
+            .background(bottomSheetDefaultBackgroundColor)
             .throttledClickable {
                 itemSelected(item.event)
             }
             .padding(
-                horizontal = SPACING_SMALL.dp,
                 vertical = SPACING_MEDIUM.dp
             ),
-        horizontalArrangement = Arrangement.Start,
+        horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Start),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        item.leadingIcon?.let { safeLeadingIcon ->
+            WrapIcon(
+                modifier = Modifier.size(DEFAULT_ICON_SIZE.dp),
+                iconData = safeLeadingIcon,
+                customTint = item.leadingIconTint,
+            )
+        }
+
         Text(
             modifier = Modifier.weight(1f),
             text = item.title,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyLarge.copy(
+                color = bottomSheetDefaultTextColor
+            ),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
         )
+
+        item.trailingIcon?.let { safeTrailingIcon ->
+            WrapIcon(
+                modifier = Modifier.size(DEFAULT_ICON_SIZE.dp),
+                iconData = safeTrailingIcon,
+                customTint = item.trailingIconTint,
+            )
+        }
+    }
+}
+
+@Composable
+private fun BottomSheetDefaultHandle() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(bottomSheetDefaultBackgroundColor)
+            .padding(vertical = SPACING_MEDIUM.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         WrapIcon(
-            modifier = Modifier.wrapContentWidth(),
-            iconData = item.icon,
-            customTint = MaterialTheme.colorScheme.primary
+            iconData = AppIcons.HandleBar,
+            customTint = MaterialTheme.colorScheme.divider
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun BottomSheetDefaultHandlePreview() {
+    PreviewTheme {
+        BottomSheetDefaultHandle()
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun SimpleBottomSheetPreview() {
+    PreviewTheme {
+        SimpleBottomSheet(
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message",
+            )
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun SimpleBottomSheetWithLeadingIconPreview() {
+    PreviewTheme {
+        SimpleBottomSheet(
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message",
+            ),
+            leadingIcon = AppIcons.Warning,
+            leadingIconTint = MaterialTheme.colorScheme.warning,
         )
     }
 }
@@ -254,22 +536,133 @@ private fun <T : ViewEvent> OptionListItem(
 private fun DialogBottomSheetPreview() {
     PreviewTheme {
         DialogBottomSheet(
-            title = "Title",
-            message = "Message",
-            positiveButtonText = "OK",
-            negativeButtonText = "Cancel"
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message",
+                positiveButtonText = "OK",
+                negativeButtonText = "Cancel"
+            )
         )
     }
 }
+
+private data object DummyEventForPreview : ViewEvent
 
 @ThemeModePreviews
 @Composable
 private fun BottomSheetWithOptionsListPreview() {
     PreviewTheme {
         BottomSheetWithOptionsList(
-            title = "Title",
-            message = "Message",
-            options = listOf<ModalOptionUi<ViewEvent>>(),
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message"
+            ),
+            options = buildList {
+                addAll(
+                    listOf(
+                        ModalOptionUi(
+                            title = "Option with no icons",
+                            event = DummyEventForPreview,
+                        ),
+                        ModalOptionUi(
+                            title = "Option with leading icon",
+                            leadingIcon = AppIcons.Verified,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                        ),
+                        ModalOptionUi(
+                            title = "Option with leading icon",
+                            trailingIcon = AppIcons.Edit,
+                            trailingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                        ),
+                        ModalOptionUi(
+                            title = "Option with leading and trailing icon",
+                            leadingIcon = AppIcons.Add,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            trailingIcon = AppIcons.ClockTimer,
+                            trailingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                        ),
+                        ModalOptionUi(
+                            title = "Option with leading and trailing icon and really really really really really long text",
+                            leadingIcon = AppIcons.Add,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            trailingIcon = AppIcons.ClockTimer,
+                            trailingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                        ),
+                    )
+                )
+            },
+            onEventSent = {}
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun BottomSheetWithTwoBigIconsEvenTextPreview() {
+    PreviewTheme {
+        BottomSheetWithTwoBigIcons(
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message"
+            ),
+            options = buildList {
+                addAll(
+                    listOf(
+                        ModalOptionUi(
+                            title = "Enabled Option with leading icon",
+                            leadingIcon = AppIcons.PresentDocumentInPerson,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                            enabled = true,
+                        ),
+                        ModalOptionUi(
+                            title = "Disabled Option with leading icon",
+                            leadingIcon = AppIcons.PresentDocumentOnline,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                            enabled = false,
+                        ),
+                    )
+                )
+            },
+            onEventSent = {}
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun BottomSheetWithTwoBigIconsUnevenTextPreview() {
+    PreviewTheme {
+        BottomSheetWithTwoBigIcons(
+            textData = BottomSheetTextData(
+                title = "Title",
+                message = "Message"
+            ),
+            options = buildList {
+                addAll(
+                    listOf(
+                        ModalOptionUi(
+                            title = "Enabled Option a lot of text",
+                            leadingIcon = AppIcons.PresentDocumentInPerson,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                            enabled = true,
+                        ),
+                        ModalOptionUi(
+                            title = "Enabled Option",
+                            leadingIcon = AppIcons.PresentDocumentOnline,
+                            leadingIconTint = MaterialTheme.colorScheme.primary,
+                            event = DummyEventForPreview,
+                            enabled = true,
+                        ),
+                    )
+                )
+            },
             onEventSent = {}
         )
     }

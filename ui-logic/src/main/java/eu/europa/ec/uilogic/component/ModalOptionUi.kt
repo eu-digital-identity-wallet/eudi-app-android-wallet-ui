@@ -16,10 +16,15 @@
 
 package eu.europa.ec.uilogic.component
 
+import androidx.compose.ui.graphics.Color
 import eu.europa.ec.uilogic.mvi.ViewEvent
 
 data class ModalOptionUi<T : ViewEvent>(
     val title: String,
-    val icon: IconData,
-    val event: T
+    val leadingIcon: IconData? = null,
+    val leadingIconTint: Color? = null,
+    val trailingIcon: IconData? = null,
+    val trailingIconTint: Color? = null,
+    val enabled: Boolean = true,
+    val event: T,
 )

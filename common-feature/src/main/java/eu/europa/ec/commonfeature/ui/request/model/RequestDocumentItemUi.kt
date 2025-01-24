@@ -16,81 +16,37 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
-import eu.europa.ec.commonfeature.util.keyIsBase64
-import eu.europa.ec.corelogic.model.FormatType
-import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
-import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
-import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
-import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
+import eu.europa.ec.eudi.wallet.document.NameSpace
+import eu.europa.ec.uilogic.component.ListItemData
 
-data class RequestDocumentItemUi<T>(
-    val id: String,
-    val domainPayload: DocumentItemDomainPayload,
-    val readableName: String,
+data class RequestDocumentItemUi(
+    val collapsedUiItem: CollapsedUiItem,
+    val expandedUiItems: List<ExpandedUiItem>
+)
+
+data class CollapsedUiItem(
+    val isExpanded: Boolean,
+    val uiItem: ListItemData,
+)
+
+data class ExpandedUiItem(
+    val domainPayload: DocumentPayloadDomain,
+    val uiItem: ListItemData,
+)
+
+data class DocumentPayloadDomain(
+    val docName: String,
+    val docId: DocumentId,
+    val docNamespace: NameSpace?,
+    val docClaimsDomain: List<RequestDocumentClaim>,
+)
+
+data class RequestDocumentClaim(
+    val elementIdentifier: ElementIdentifier,
     val value: String,
-    val checked: Boolean,
-    val enabled: Boolean,
-    val docItem: DocItem,
-    val event: T? = null
-) {
-    val keyIsBase64: Boolean
-        get() {
-            return keyIsBase64(docItem.elementIdentifier)
-        }
-}
-
-data class DocumentItemDomainPayload(
-    val docId: String,
-    val formatType: FormatType,
-    val namespace: String?,
-    val elementIdentifier: ElementIdentifier
-) {
-    // We need to override equals in order for "groupBy" internal comparisons
-    override fun equals(other: Any?): Boolean {
-        return if (other is DocumentItemDomainPayload) {
-            other.docId == this.docId
-        } else {
-            false
-        }
-    }
-
-    override fun hashCode(): Int {
-        return docId.hashCode()
-    }
-}
-
-fun <T> DocItem.toRequestDocumentItemUi(
-    uID: String,
-    docPayload: DocumentItemDomainPayload,
-    readableName: String,
-    value: String,
-    optional: Boolean,
-    isChecked: Boolean,
-    event: T?
-): RequestDocumentItemUi<T> {
-    return RequestDocumentItemUi(
-        id = uID,
-        domainPayload = docPayload,
-        checked = isChecked,
-        enabled = optional,
-        readableName = readableName,
-        docItem = this,
-        event = event,
-        value = value
-    )
-}
-
-val Document.formatType: String
-    get() = when (this.format) {
-        is MsoMdocFormat -> (this.format as MsoMdocFormat).docType
-        is SdJwtVcFormat -> (this.format as SdJwtVcFormat).vct
-    }
-
-fun produceDocUID(
-    elementIdentifier: ElementIdentifier,
-    documentId: DocumentId,
-    docType: String
-): String =
-    docType + elementIdentifier + documentId
+    val readableName: String,
+    val isRequired: Boolean,
+    val isAvailable: Boolean,
+)

@@ -17,31 +17,40 @@
 package eu.europa.ec.commonfeature.ui.biometric
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.AppIconAndText
+import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.content.ContentHeader
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -69,9 +78,9 @@ fun BiometricScreen(
     val context = LocalContext.current
 
     ContentScreen(
-        loadingType = state.isLoading,
-        navigatableAction = if (state.isCancellable) {
-            ScreenNavigateAction.CANCELABLE
+        isLoading = state.isLoading,
+        navigatableAction = if (state.isBackable) {
+            ScreenNavigateAction.BACKABLE
         } else {
             ScreenNavigateAction.NONE
         },
@@ -172,31 +181,19 @@ private fun Body(
             .padding(padding),
         verticalArrangement = Arrangement.Center
     ) {
-        ContentTitle(
-            title = state.config.title,
-            subtitle = if (state.userBiometricsAreEnabled) {
-                state.config.subTitle
-            } else {
-                state.config.quickPinOnlySubTitle
-            }
-        )
-        Box(
-            Modifier
+        Column(
+            modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            contentAlignment = Alignment.TopStart
         ) {
-            PinFieldLayout(state) { quickPin ->
-                onEventSent(
-                    Event.OnQuickPinEntered(
-                        quickPin
-                    )
-                )
-            }
+            MainContent(
+                state = state,
+                onEventSent = onEventSent,
+            )
         }
 
         Row(
-            Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
         ) {
             if (state.userBiometricsAreEnabled) {
@@ -225,8 +222,8 @@ private fun Body(
                     is Effect.InitializeBiometricAuthOnCreate -> {
                         onEventSent(
                             Event.OnBiometricsClicked(
-                                context,
-                                false
+                                context = context,
+                                shouldThrowErrorIfNotAvailable = false,
                             )
                         )
                     }
@@ -237,19 +234,108 @@ private fun Body(
 }
 
 @Composable
+private fun MainContent(
+    state: State,
+    onEventSent: (event: Event) -> Unit
+) {
+    when (val mode = state.config.mode) {
+        is BiometricMode.Default -> {
+            val description = if (state.userBiometricsAreEnabled) {
+                mode.descriptionWhenBiometricsEnabled
+            } else {
+                mode.descriptionWhenBiometricsNotEnabled
+            }
+            ContentHeader(
+                modifier = Modifier.fillMaxWidth(),
+                config = ContentHeaderConfig(description = description)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_SMALL.dp)
+            ) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = SPACING_SMALL.dp),
+                    text = mode.textAbovePin,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+
+                PinFieldLayout(
+                    modifier = Modifier.fillMaxWidth(),
+                    state = state,
+                    onPinInput = { quickPin ->
+                        onEventSent(Event.OnQuickPinEntered(quickPin))
+                    }
+                )
+            }
+        }
+
+        is BiometricMode.Login -> {
+            AppIconAndText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = SPACING_LARGE.dp),
+                appIconAndTextData = AppIconAndTextData(),
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_LARGE.dp),
+                verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
+            ) {
+                Text(
+                    text = mode.title,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+
+                val subtitle = if (state.userBiometricsAreEnabled) {
+                    mode.subTitleWhenBiometricsEnabled
+                } else {
+                    mode.subTitleWhenBiometricsNotEnabled
+                }
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                )
+            }
+
+            PinFieldLayout(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = SPACING_LARGE.dp),
+                state = state,
+                onPinInput = { quickPin ->
+                    onEventSent(Event.OnQuickPinEntered(quickPin))
+                }
+            )
+        }
+    }
+}
+
+@Composable
 private fun PinFieldLayout(
+    modifier: Modifier = Modifier,
     state: State,
     onPinInput: (String) -> Unit,
 ) {
     WrapPinTextField(
-        onPinUpdate = {
-            onPinInput(it)
-        },
+        modifier = modifier,
+        onPinUpdate = onPinInput,
         length = state.quickPinSize,
         hasError = !state.quickPinError.isNullOrEmpty(),
         errorMessage = state.quickPinError,
         visualTransformation = PasswordVisualTransformation(),
-        pinWidth = 46.dp,
+        pinWidth = 42.dp,
         focusOnCreate = !state.userBiometricsAreEnabled
     )
 }
@@ -264,9 +350,11 @@ private fun PreviewBiometricScreen() {
         Body(
             state = State(
                 config = BiometricUiConfig(
-                    title = "Biometric Title",
-                    subTitle = "Biometric Subtitle",
-                    quickPinOnlySubTitle = "Quick Pin Subtitle",
+                    mode = BiometricMode.Default(
+                        descriptionWhenBiometricsEnabled = stringResource(R.string.loading_biometry_biometrics_enabled_description),
+                        descriptionWhenBiometricsNotEnabled = stringResource(R.string.loading_biometry_biometrics_not_enabled_description),
+                        textAbovePin = stringResource(R.string.biometric_default_mode_text_above_pin_field),
+                    ),
                     isPreAuthorization = true,
                     onSuccessNavigation = ConfigNavigation(
                         navigationType = NavigationType.PushScreen(CommonScreens.Biometric)
@@ -275,7 +363,7 @@ private fun PreviewBiometricScreen() {
                         onBackNavigation = ConfigNavigation(
                             navigationType = NavigationType.PushScreen(CommonScreens.Biometric),
                         ),
-                        hasToolbarCancelIcon = true
+                        hasToolbarBackIcon = true
                     )
                 )
             ),

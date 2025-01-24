@@ -20,18 +20,17 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,32 +38,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
 import eu.europa.ec.uilogic.component.loader.LoadingIndicator
-import eu.europa.ec.uilogic.component.snackbar.Snackbar
-import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
-import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.MAX_TOOLBAR_ACTIONS
 import eu.europa.ec.uilogic.component.utils.TopSpacing
 import eu.europa.ec.uilogic.component.utils.Z_STICKY
 import eu.europa.ec.uilogic.component.utils.screenPaddings
+import eu.europa.ec.uilogic.component.utils.stickyBottomPaddings
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
-
-enum class LoadingType {
-    NORMAL, NONE
-}
 
 data class ToolbarAction(
     val icon: IconData,
     val order: Int = 100,
+    val enabled: Boolean = true,
+    val customTint: Color? = null,
+    val clickable: Boolean = true,
+    val throttleClicks: Boolean = true,
     val onClick: () -> Unit,
-    val enabled: Boolean = true
 )
 
 data class ToolbarConfig(
@@ -84,50 +83,19 @@ fun ContentScreen(
     onBack: (() -> Unit)? = null,
     topBar: @Composable (() -> Unit)? = null,
     bottomBar: @Composable (() -> Unit)? = null,
-    stickyBottom: @Composable (() -> Unit)? = null,
+    stickyBottom: @Composable ((PaddingValues) -> Unit)? = null,
     fab: @Composable () -> Unit = {},
     fabPosition: FabPosition = FabPosition.End,
-    contentErrorConfig: ContentErrorConfig? = null,
-    bodyContent: @Composable (PaddingValues) -> Unit
-) {
-    ContentScreen(
-        loadingType = if (isLoading) LoadingType.NORMAL else LoadingType.NONE,
-        toolBarConfig = toolBarConfig,
-        navigatableAction = navigatableAction,
-        onBack = onBack,
-        topBar = topBar,
-        bottomBar = bottomBar,
-        stickyBottom = stickyBottom,
-        fab = fab,
-        fabPosition = fabPosition,
-        contentErrorConfig = contentErrorConfig,
-        bodyContent = bodyContent
-    )
-}
-
-@Composable
-fun ContentScreen(
-    loadingType: LoadingType = LoadingType.NONE,
-    toolBarConfig: ToolbarConfig? = null,
-    navigatableAction: ScreenNavigateAction = ScreenNavigateAction.BACKABLE,
-    onBack: (() -> Unit)? = null,
-    topBar: @Composable (() -> Unit)? = null,
-    bottomBar: @Composable (() -> Unit)? = null,
-    stickyBottom: @Composable (() -> Unit)? = null,
-    fab: @Composable () -> Unit = {},
-    fabPosition: FabPosition = FabPosition.End,
+    snackbarHost: @Composable () -> Unit = {},
     contentErrorConfig: ContentErrorConfig? = null,
     bodyContent: @Composable (PaddingValues) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    val snackbarHostState = remember {
-        SnackbarHostState()
-    }
-
     val hasToolBar = contentErrorConfig != null
             || navigatableAction != ScreenNavigateAction.NONE
             || topBar != null
+            || toolBarConfig?.actions?.isNotEmpty() == true
     val topSpacing = if (hasToolBar) TopSpacing.WithToolbar else TopSpacing.WithoutToolbar
 
     Scaffold(
@@ -147,9 +115,7 @@ fun ContentScreen(
         bottomBar = bottomBar ?: {},
         floatingActionButton = fab,
         floatingActionButtonPosition = fabPosition,
-        snackbarHost = {
-            Snackbar.PlaceHolder(snackbarHostState = snackbarHostState)
-        }
+        snackbarHost = snackbarHost,
     ) { padding ->
 
         Box(
@@ -172,16 +138,20 @@ fun ContentScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(screenPaddings(padding))
                                 .zIndex(Z_STICKY),
                             contentAlignment = Alignment.Center
                         ) {
-                            stickyBottomContent()
+                            stickyBottomContent(
+                                stickyBottomPaddings(
+                                    contentScreenPaddings = screenPaddings(padding),
+                                    layoutDirection = LocalLayoutDirection.current
+                                )
+                            )
                         }
                     }
                 }
 
-                if (loadingType == LoadingType.NORMAL) LoadingIndicator()
+                if (isLoading) LoadingIndicator()
             }
         }
     }
@@ -217,13 +187,14 @@ private fun DefaultToolBar(
                     else -> AppIcons.ArrowBack
                 }
 
-                WrapIconButton(
-                    iconData = navigationIcon,
-                    onClick = {
-                        onBack?.invoke()
-                        keyboardController?.hide()
-                    },
-                    customTint = MaterialTheme.colorScheme.primary
+                ToolbarIcon(
+                    toolbarAction = ToolbarAction(
+                        icon = navigationIcon,
+                        onClick = {
+                            onBack?.invoke()
+                            keyboardController?.hide()
+                        }
+                    )
                 )
             }
         },
@@ -235,35 +206,30 @@ private fun DefaultToolBar(
 }
 
 @Composable
-internal fun ToolBarActions(toolBarActions: List<ToolbarAction>?) {
+internal fun ToolBarActions(
+    toolBarActions: List<ToolbarAction>?
+) {
     toolBarActions?.let { actions ->
 
-        var dropDownMenuExpanded by remember {
-            mutableStateOf(false)
-        }
+        var dropDownMenuExpanded by remember { mutableStateOf(false) }
 
         // Show first [MAX_TOOLBAR_ACTIONS] actions.
         actions
             .sortedByDescending { it.order }
             .take(MAX_TOOLBAR_ACTIONS)
             .map { visibleToolbarAction ->
-                WrapIconButton(
-                    iconData = visibleToolbarAction.icon,
-                    onClick = visibleToolbarAction.onClick,
-                    enabled = visibleToolbarAction.enabled,
-                    customTint = MaterialTheme.colorScheme.primary
-                )
+                ToolbarIcon(toolbarAction = visibleToolbarAction)
             }
 
         // Check if there are more actions to show.
         if (actions.size > MAX_TOOLBAR_ACTIONS) {
             Box {
-                val iconMore = AppIcons.VerticalMore
-                WrapIconButton(
-                    onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
-                    iconData = iconMore,
-                    enabled = true,
-                    customTint = MaterialTheme.colorScheme.primary
+                ToolbarIcon(
+                    toolbarAction = ToolbarAction(
+                        icon = AppIcons.VerticalMore,
+                        onClick = { dropDownMenuExpanded = !dropDownMenuExpanded },
+                        enabled = true,
+                    )
                 )
                 DropdownMenu(
                     expanded = dropDownMenuExpanded,
@@ -273,29 +239,100 @@ internal fun ToolBarActions(toolBarActions: List<ToolbarAction>?) {
                         .sortedByDescending { it.order }
                         .drop(MAX_TOOLBAR_ACTIONS)
                         .map { dropDownMenuToolbarAction ->
-                            val dropDownMenuToolbarActionIcon =
-                                dropDownMenuToolbarAction.icon
-                            DropdownMenuItem(
-                                onClick = dropDownMenuToolbarAction.onClick,
-                                enabled = dropDownMenuToolbarAction.enabled,
-                                text = {
-                                    Text(text = stringResource(id = dropDownMenuToolbarActionIcon.contentDescriptionId))
-                                },
-                                trailingIcon = {
-                                    WrapIcon(
-                                        iconData = dropDownMenuToolbarActionIcon,
-                                        customTint = MaterialTheme.colorScheme.primary,
-                                        contentAlpha = if (dropDownMenuToolbarAction.enabled) {
-                                            ALPHA_ENABLED
-                                        } else {
-                                            ALPHA_DISABLED
-                                        }
-                                    )
-                                }
-                            )
+                            ToolbarIcon(toolbarAction = dropDownMenuToolbarAction)
                         }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ToolbarIcon(toolbarAction: ToolbarAction) {
+    val customIconTint = toolbarAction.customTint
+        ?: MaterialTheme.colorScheme.onSurface
+
+    if (toolbarAction.clickable) {
+        WrapIconButton(
+            iconData = toolbarAction.icon,
+            onClick = toolbarAction.onClick,
+            enabled = toolbarAction.enabled,
+            customTint = customIconTint,
+            throttleClicks = toolbarAction.throttleClicks
+        )
+    } else {
+        WrapIcon(
+            modifier = Modifier.minimumInteractiveComponentSize(),
+            iconData = toolbarAction.icon,
+            enabled = toolbarAction.enabled,
+            customTint = customIconTint,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun ToolbarIconClickablePreview() {
+    PreviewTheme {
+        val action = ToolbarAction(
+            icon = AppIcons.Verified,
+            onClick = {},
+            enabled = true,
+            clickable = true,
+        )
+
+        ToolbarIcon(toolbarAction = action)
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun ToolbarIconNotClickablePreview() {
+    PreviewTheme {
+        val action = ToolbarAction(
+            icon = AppIcons.Verified,
+            onClick = {},
+            enabled = true,
+            clickable = false,
+        )
+
+        ToolbarIcon(toolbarAction = action)
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun ToolBarActionsWithFourActionsPreview() {
+    PreviewTheme {
+        val toolBarActions = listOf(
+            ToolbarAction(
+                icon = AppIcons.Verified,
+                onClick = {},
+                enabled = true,
+                clickable = true,
+            ),
+            ToolbarAction(
+                icon = AppIcons.Verified,
+                onClick = {},
+                enabled = false,
+                clickable = true,
+            ),
+            ToolbarAction(
+                icon = AppIcons.Verified,
+                onClick = {},
+                enabled = true,
+                clickable = false,
+            ),
+            ToolbarAction(
+                icon = AppIcons.Verified,
+                onClick = {},
+                enabled = false,
+                clickable = false,
+            )
+        )
+
+        Row {
+            ToolBarActions(toolBarActions)
         }
     }
 }

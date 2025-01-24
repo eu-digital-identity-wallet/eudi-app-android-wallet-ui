@@ -26,24 +26,28 @@
     <string name="generic_cancel_capitalized" tools:ignore="ButtonCase">CANCEL</string>
     <string name="generic_next_capitalized" tools:ignore="ButtonCase">NEXT</string>
     <string name="generic_confirm_capitalized" tools:ignore="ButtonCase">CONFIRM</string>
+    <string name="generic_continue">Continue</string>
     <string name="generic_continue_capitalized" tools:ignore="ButtonCase">CONTINUE</string>
     <string name="generic_enable_capitalized" tools:ignore="ButtonCase">ENABLE</string>
     <string name="generic_success">Success</string>
+    <string name="generic_close">Close</string>
     <string name="generic_ok">OK</string>
     <string name="generic_dash">-</string>
-    <string name="generic_qr_scan_title">Scan QR</string>
-    <string name="generic_qr_scan_subtitle">Place the QR code within the frame to start scanning</string>
-    <string name="generic_deferred_success_title">In progress</string>
-    <string name="generic_bottom_sheet_delete_title">Delete %1$s?</string>
-    <string name="generic_bottom_sheet_delete_subtitle">You will not be able to use your %1$s for future verifications</string>
-    <string name="generic_bottom_sheet_delete_primary_button_text">yes</string>
-    <string name="generic_bottom_sheet_delete_secondary_button_text">no</string>
+    <string name="generic_default_relying_party_name">Relying Party</string>
+    <string name="generic_default_issuer_name">Issuer</string>
+    <string name="generic_view_details">View details</string>
+    <string name="generic_deferred_success_text">In progress!</string>
+    <string name="generic_bottom_sheet_delete_title">Delete document?</string>
+    <string name="generic_bottom_sheet_delete_subtitle">This document will be permanently deleted from your wallet and may affect access to services.</string>
+    <string name="generic_bottom_sheet_delete_primary_button_text">Delete</string>
+    <string name="generic_bottom_sheet_delete_secondary_button_text">Cancel</string>
+    <string name="generic_search_bar_placeholder_text">Search documents</string>
 
     <!-- Content Description -->
-    <string name="content_description_user_image">User image</string>
-    <string name="content_description_user_signature">User signature</string>
-    <string name="content_description_qr_code">QR Code</string>
-    <string name="content_description_more_vert_icon">More Items Vertically</string>
+    <string name="content_description_image_or_placeholder_icon">Image or placeholder icon</string>
+    <string name="content_description_user_signature_icon">User signature</string>
+    <string name="content_description_qr_code_icon">QR Code</string>
+    <string name="content_description_more_vert_icon">More Items</string>
     <string name="content_description_arrow_back_icon">Go Back</string>
     <string name="content_description_close_icon">Close</string>
     <string name="content_description_warning_icon">Warning</string>
@@ -57,7 +61,9 @@
     <string name="content_description_user_icon">User</string>
     <string name="content_description_id_icon">Id</string>
     <string name="content_description_id_stroke_icon">Id stroke</string>
-    <string name="content_description_logo_icon">Logo icon</string>
+    <string name="content_description_logo_full_icon">Full Logo icon</string>
+    <string name="content_description_logo_plain_icon">Plain Logo icon</string>
+    <string name="content_description_logo_text_icon">Text Logo icon</string>
     <string name="content_description_arrow_up_icon">Arrow up</string>
     <string name="content_description_arrow_down_icon">Arrow down</string>
     <string name="content_description_visibility_icon">Show</string>
@@ -65,30 +71,69 @@
     <string name="content_description_add_icon">Add</string>
     <string name="content_description_edit_icon">Edit</string>
     <string name="content_description_verified_icon">Verified</string>
-    <string name="content_description_message">Message</string>
-    <string name="content_description_success">Success</string>
-    <string name="content_description_clock_timer">Clock timer</string>
-    <string name="content_description_arrow_right">Arrow right</string>
-    <string name="content_description_open_new">Open new</string>
+    <string name="content_description_message_icon">Message</string>
+    <string name="content_description_success_icon">Success</string>
+    <string name="content_description_clock_timer_icon">Clock timer</string>
+    <string name="content_description_arrow_right_icon">Arrow right</string>
+    <string name="content_description_open_new_icon">Open new</string>
+    <string name="content_description_handle_bar_icon">Handle bar</string>
+    <string name="content_description_search_icon">Search</string>
+    <string name="content_description_present_document_same_device_icon">Present document in person</string>
+    <string name="content_description_present_document_cross_device_icon">Present document online</string>
+    <string name="content_description_add_document_from_list_icon">Add document from list</string>
+    <string name="content_description_add_document_from_qr_icon">Add document from QR</string>
+    <string name="content_description_authenticate_in_person_icon">Authenticate in person</string>
+    <string name="content_description_authenticate_online_icon">Authenticate online</string>
+    <string name="content_description_sign_document_from_device_icon">Sign document from device</string>
+    <string name="content_description_sign_document_from_qr_icon">Sign document from QR</string>
+
+    <string name="content_description_bookmark_icon">Bookmark</string>
+    <string name="content_description_bookmark_filled_icon">Bookmark filled</string>
+    <string name="content_description_certified_icon">Certified</string>
+    <string name="content_description_documents_icon">Documents</string>
+    <string name="content_description_download_icon">Download</string>
+    <string name="content_description_filters_icon">Filters</string>
+    <string name="content_description_home_icon">Home</string>
+    <string name="content_description_in_progress_icon">In progress</string>
+    <string name="content_description_notifications_icon">Notifications</string>
+    <string name="content_description_transactions_icon">Transactions</string>
+    <string name="content_description_wallet_activated_icon">Wallet activated</string>
+    <string name="content_description_wallet_secured_icon">Wallet secured</string>
+    <string name="content_description_info_icon">Info</string>
+    <string name="content_description_issuer_icon">Issuer</string>
+    <string name="content_description_issuer_logo_icon">Issuer logo</string>
+    <string name="content_description_menu_icon">Menu</string>
+    <string name="content_description_signature_icon">Signature</string>
+    <string name="content_description_authenticate_icon">Authentication ID cards</string>
+    <string name="content_description_change_pin_icon">Change PIN</string>
+    <string name="content_description_check">Check</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
     <string name="biometric_prompt_subtitle">Authenticate using your biometrics</string>
-    <string name="biometric_login_prompt_title">Login</string>
-    <string name="biometric_login_prompt_subtitle">Use your biometrics to login</string>
-    <string name="biometric_login_prompt_quickPinOnlySubTitle">Type your quick pin to login</string>
+    <string name="biometric_login_title">Welcome back</string>
+    <string name="biometric_login_biometrics_enabled_subtitle">Use your biometrics to access the EUDI Wallet.</string>
+    <string name="biometric_login_biometrics_not_enabled_subtitle">To access the EUDI Wallet you need to provide your PIN.</string>
 
     <!-- Biometrics -->
     <string name="biometric_no_hardware">Your device does not support biometric authentication</string>
     <string name="biometric_unknown_error">Something went wrong initializing biometric authentication. Please try again</string>
+    <string name="biometric_default_mode_text_above_pin_field">PIN</string>">
+
+    <!-- Document Success -->
+    <string name="document_success_header_description">You successfully shared the following information with</string>
+    <string name="document_success_header_description_when_error">You successfully shared the information with</string>
+    <string name="document_success_relying_party_default_name">@string/generic_default_relying_party_name</string>
+    <string name="document_success_collapsed_supporting_text">@string/generic_view_details</string>
+    <string name="document_success_sticky_button_text">@string/generic_close</string>
 
     <!-- Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid quick pin</string>
     <string name="quick_pin_numerical_rule_invalid_error_message">Only numerical values are allowed</string>
     <string name="quick_pin_non_match">Pins do not match</string>
 
-    <string name="quick_pin_create_title">Welcome to the EUDI Wallet</string>
-    <string name="quick_pin_create_enter_subtitle">Set a quick pin for future logins</string>
+    <string name="quick_pin_create_title">Welcome to your Wallet</string>
+    <string name="quick_pin_create_enter_subtitle">Secure your wallet with a PIN code and connect to your National System.</string>
     <string name="quick_pin_create_reenter_subtitle">Re-enter the quick pin</string>
 
     <string name="quick_pin_change_title">Change quick pin</string>
@@ -96,10 +141,11 @@
     <string name="quick_pin_change_enter_new_subtitle">Select a quick pin for future logins</string>
     <string name="quick_pin_change_reenter_new_subtitle">Re-enter the new quick pin</string>
 
-    <string name="quick_pin_success_title">@string/generic_success</string>
-    <string name="quick_pin_create_success_subtitle">You successfully set the quick pin</string>
-    <string name="quick_pin_create_success_btn">@string/generic_continue_capitalized</string>
-    <string name="quick_pin_change_success_subtitle">You successfully changed the quick pin</string>
+    <string name="quick_pin_create_success_text">Your wallet is secured!</string>
+    <string name="quick_pin_create_success_description">To activate your wallet, connect to your National System to add your Digital ID.</string>
+    <string name="quick_pin_create_success_btn">Add my Digital ID</string>
+    <string name="quick_pin_change_success_text">@string/generic_success</string>
+    <string name="quick_pin_change_success_description">You successfully changed the quick pin</string>
     <string name="quick_pin_change_success_btn">BACK TO HOME</string>
 
     <string name="quick_pin_bottom_sheet_cancel_title">Cancel quick pin changing?</string>
@@ -108,59 +154,34 @@
     <string name="quick_pin_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
 
     <!-- Request Screen -->
-    <string name="request_title_before_badge">Verifier</string>
-    <string name="request_title_after_badge">\ requests the following</string>
+    <string name="request_header_description">The following transaction requires your permission and authentication.</string>
+    <string name="request_header_main_text">DATA SHARING REQUEST</string>
+    <string name="request_relying_party_default_name">@string/generic_default_relying_party_name</string>
+    <string name="request_relying_party_description">requests the following</string>
+    <string name="request_warning_text">Please review carefully before sharing your data.</string>
+    <string name="request_collapsed_supporting_text">@string/generic_view_details</string>
     <string name="request_no_data">The requested document is not available in your EUDI Wallet.
         Please contact the authorised issuer for further information.</string>
-    <string name="request_subtitle_one">Please review carefully before sharing your data.</string>
-    <string name="request_subtitle_two">\ Why we need your data?</string>
-    <string name="request_warning_text">Your selection of data to be shared may impact the service</string>
-    <string name="request_primary_button_text">SHARE</string>
-    <string name="request_secondary_button_text">@string/generic_cancel_capitalized</string>
-    <string name="request_bottom_sheet_cancel_title">Cancel information sharing?</string>
-    <string name="request_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the login without sharing any information</string>
-    <string name="request_bottom_sheet_cancel_primary_button_text">CONTINUE SHARING</string>
-    <string name="request_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
-    <string name="request_bottom_sheet_subtitle_title">Why we need your data</string>
-    <string name="request_bottom_sheet_subtitle_subtitle">It allows us to verify your identity with the requesting party</string>
-    <string name="request_bottom_sheet_subtitle_primary_button_text">@string/generic_ok</string>
-    <string name="request_bottom_sheet_badge_title">Trusted relying party</string>
-    <string name="request_bottom_sheet_badge_subtitle">A relying party is considered trusted when it meets predefined criteria for security, data protection, compliance, and responsible data handling. Trust is reinforced through assessments, audits, and certifications.</string>
-    <string name="request_bottom_sheet_badge_primary_button_text">@string/generic_ok</string>
-    <string name="request_required_fields_title">Verification Data</string>
+    <string name="request_sticky_button_text">Share</string>
+    <string name="request_bottom_sheet_warning_title">Warning</string>
+    <string name="request_bottom_sheet_warning_subtitle">Choosing not to share certain data may result in failure to issue the requested document.</string>
     <string name="request_gender_male">male</string>
     <string name="request_gender_female">female</string>
     <string name="request_element_identifier_not_available">Not available</string>
 
     <!-- Loading Screen -->
-    <string name="loading_subtitle">Please wait…</string>
-    <string name="loading_success_config_title">@string/generic_success</string>
-    <string name="loading_success_config_primary_button_text">@string/generic_continue_capitalized</string>
-    <string name="loading_biometry_share_subtitle">Use your biometrics to share information</string>
-    <string name="loading_quick_pin_share_subtitle">Type your quick pin to share information</string>
-
-    <!-- Login -->
-    <string name="welcome_login_button_title">LOGIN</string>
-    <string name="welcome_faq_button_title">READ FAQs</string>
+    <string name="loading_header_description">Please wait…</string>
+    <string name="loading_biometry_biometrics_enabled_description">Use your biometrics to approve the transaction.</string>
+    <string name="loading_biometry_biometrics_not_enabled_description">To approve the transaction you need to verify your identity.</string>
 
     <!-- Dashboard -->
-    <string name="dashboard_title">Welcome back</string>
-    <string name="dashboard_document_has_not_expired">Valid until</string>
-    <string name="dashboard_document_has_expired_one">Expired\ </string>
-    <string name="dashboard_document_has_expired_two">on</string>
+    <string name="dashboard_document_has_not_expired">Valid until:\ %1$s</string>
+    <string name="dashboard_document_has_expired">Expired</string>
     <string name="dashboard_document_deferred_pending">Pending</string>
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
-    <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
-    <string name="dashboard_secondary_fab_text">ADD DOC</string>
-
-    <string name="dashboard_bottom_sheet_options_title">More options</string>
-    <string name="dashboard_bottom_sheet_options_action_1">Change quick pin</string>
-    <string name="dashboard_bottom_sheet_options_action_2">Scan a QR code</string>
-    <string name="dashboard_bottom_sheet_options_action_3">Retrieve logs</string>
-    <string name="dashboard_bottom_sheet_options_action_4">Sign document</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
-    <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the QR/TAP option</string>
+    <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the Authenticate in person or online option</string>
     <string name="dashboard_bottom_sheet_bluetooth_primary_button_text">@string/generic_enable_capitalized</string>
     <string name="dashboard_bottom_sheet_bluetooth_secondary_button_text">@string/generic_cancel_capitalized</string>
 
@@ -172,6 +193,62 @@
     <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
     <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
     <string name="dashboard_intent_chooser_logs_share_title">Share logs</string>
+
+    <!-- Dashboard Side Menu -->
+    <string name="dashboard_side_menu_title">My EU Wallet</string>
+    <string name="dashboard_side_menu_change_pin">Change PIN</string>
+    <string name="dashboard_side_menu_retrieve_logs">Retrieve logs</string>
+
+    <!-- Home Screen -->
+    <string name="home_screen_title">Home</string>
+    <string name="home_screen_welcome">Welcome back</string>
+    <string name="home_screen_welcome_user_message">Welcome back, %1$s</string>
+    <string name="home_screen_authentication_card_title">Authenticate, authorise transactions and share your digital documents in person or online.</string>
+    <string name="home_screen_sign_card_title">Electronically sign digital documents with your wallet by choosing a file from your device.</string>
+    <string name="home_screen_authenticate">Authenticate</string>
+    <string name="home_screen_authenticate_description">Authenticate by sharing your data in person (in close proximity) or online (website/service).</string>
+    <string name="home_screen_sign">Sign</string>
+    <string name="home_screen_learn_more">Learn more</string>
+    <string name="home_screen_authenticate_option_in_person">In person</string>
+    <string name="home_screen_add_document_option_online">Online</string>
+
+    <!-- Home Screen Learn More Popups content -->
+    <string name="home_screen_authenticate_learn_more_inner_title">Sign documents safely</string>
+    <string name="home_screen_authenticate_learn_more_description">Sign documents with just your wallet. Providing a legally binding e-signature will be faster and easier than ever, enabling you to conduct business whenever you are.</string>
+    <string name="home_screen_sign_learn_more_inner_title">Access online services</string>
+    <string name="home_screen_sign_learn_more_description">Identify yourself to a wide range of public and private online services while protecting your privacy. Prove who you are with just a few taps - no need to manage countless passwords.</string>
+
+    <!-- Documents Screen -->
+    <string name="documents_screen_title">Documents</string>
+    <string name="documents_screen_search_label">Search documents</string>
+    <string name="documents_screen_search_no_results">No documents match your search. Try changing your search query or filters.</string>
+    <string name="documents_screen_add_document_title">Add document</string>
+    <string name="documents_screen_add_document_description">Add documents to your wallet by choosing from a list or by scanning a provided QR code.</string>
+    <string name="documents_screen_add_document_option_list">From list</string>
+    <string name="documents_screen_add_document_option_qr">Scan QR</string>
+    <string name="documents_screen_add_document_option_or">OR</string>
+    <string name="documents_screen_filters_title">Filter</string>
+    <string name="documents_screen_filters_sort_by">Sort by</string>
+    <string name="documents_screen_filters_ascending">Ascending</string>
+    <string name="documents_screen_filters_descending">Descending</string>
+    <string name="documents_screen_filters_sort_default">Default</string>
+    <string name="documents_screen_filters_sort_date_issued">Date Issued</string>
+    <string name="documents_screen_filters_sort_expiry_date">Expiry Date</string>
+    <string name="documents_screen_filters_filter_by_issuer">Filter by issuer</string>
+    <string name="documents_screen_filters_filter_by_issuer_all">All</string>
+    <string name="documents_screen_filters_filter_by_state">Filter by state</string>
+    <string name="documents_screen_filters_filter_by_state_valid">Valid</string>
+    <string name="documents_screen_filters_filter_by_state_expired">Expired</string>
+    <string name="documents_screen_filters_filter_by_expiry_period">Filter by expiry period</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_1">Next 7 days</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_2">Next 30 days</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_3">Beyond 30 days</string>
+    <string name="documents_screen_filters_filter_by_expiry_period_4">Before today (expired)</string>
+    <string name="documents_screen_filters_apply">Apply</string>
+    <string name="documents_screen_filters_reset">Reset all</string>
+
+    <!-- Transactions Screen -->
+    <string name="transactions_screen_title">Transactions</string>
 
     <!-- Document Sign -->
     <string name="document_sign_title">Sign Document</string>
@@ -193,67 +270,62 @@
     <string name="document_details_bottom_sheet_delete_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
     <string name="document_details_bottom_sheet_delete_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
 
+    <string name="document_details_main_section_text">DOCUMENT DETAILS</string>
+    <string name="document_details_issuer_section_text">ISSUER</string>
+    <string name="document_details_secondary_button_text">Delete document</string>
+
+    <string name="document_details_bottom_sheet_bookmark_info_title">Saved to favourites</string>
+    <string name="document_details_bottom_sheet_bookmark_info_message">The document was successfully added to your favourites list.</string>
+    <string name="document_details_bottom_sheet_bookmark_removed_info_title">Removed from favourites</string>
+    <string name="document_details_bottom_sheet_bookmark_removed_info_message">The document was successfully removed from your favourites list.</string>
+
+    <string name="document_details_bottom_sheet_badge_title">Trusted Relying Party</string>
+    <string name="document_details_bottom_sheet_badge_subtitle">A Relying Party is considered trusted when it meets
+        predefined criteria for security, data protection, compliance, and responsible data handling.</string>
+
     <!-- Proximity QR -->
-    <string name="proximity_qr_title">Show QR or Tap</string>
-    <string name="proximity_qr_subtitle">Show this QR code to access the necessary information for sharing</string>
-    <string name="proximity_qr_use_nfc">Or use the NFC</string>
+    <string name="proximity_qr_title">Present document in person</string>
+    <string name="proximity_qr_subtitle">Show this QR code to a Relying Party to present a digital document.</string>
+    <string name="proximity_qr_use_nfc">Or share via NFC</string>
+    <string name="proximity_qr_hold_near_reader">Hold your phone near reader to scan.</string>
 
     <!-- Presentation Qr Scan -->
-    <string name="presentation_qr_scan_title">@string/generic_qr_scan_title</string>
-    <string name="presentation_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
-
-    <!-- Presentation Loading Screen -->
-    <string name="presentation_loading_success_config_subtitle">You successfully shared information with %1$s</string>
-    <string name="presentation_loading_success_config_verifier">Verifier</string>
+    <string name="presentation_qr_scan_title">Present document online</string>
+    <string name="presentation_qr_scan_subtitle">Scan a QR code provided from a Relying Party to present a digital document.</string>
 
     <!-- Issuance Add Document Screen -->
-    <string name="issuance_add_document">@string/generic_continue_capitalized</string>
-    <string name="issuance_add_document_title">Add document</string>
-    <string name="issuance_add_document_subtitle">Select a document to add in your EUDI Wallet</string>
-    <string name="issuance_add_document_user_auth_required">User authentication is required</string>
-    <string name="issuance_add_document_deferred_success_title">@string/generic_deferred_success_title</string>
-    <string name="issuance_add_document_deferred_success_subtitle">Your document has been requested. You will be notified when it has been issued to your wallet.</string>
+    <string name="issuance_add_document_title">Add document from list</string>
+    <string name="issuance_add_document_subtitle">Choose a digital document from the list below to add to your wallet.</string>
+    <string name="issuance_add_document_deferred_success_text">@string/generic_deferred_success_text</string>
+    <string name="issuance_add_document_deferred_success_description">Your document has been requested. You will be notified when it has been issued to your wallet.</string>
     <string name="issuance_add_document_deferred_success_primary_button_text">@string/generic_ok</string>
-    <string name="issuance_add_document_qr_scan_section_title">Or</string>
-    <string name="issuance_add_document_qr_scan_section_subtitle">SCAN QR</string>
 
     <!-- Issuance Success Screen -->
-    <string name="issuance_success_title">@string/generic_success</string>
-    <string name="issuance_success_subtitle">You can now add your %1$s</string>
-    <string name="issuance_success_primary_button_text">NEXT</string>
-
-    <!-- Issuance Documents Details Screen -->
-    <string name="issuance_document_details_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="issuance_success_header_description">You have successfully added the following to your wallet</string>
+    <string name="issuance_success_header_description_when_error">You have successfully added the document(s) to your wallet</string>
+    <string name="issuance_success_header_issuer_default_name">@string/generic_default_issuer_name</string>
 
     <!-- Issuance Qr Scan -->
-    <string name="issuance_qr_scan_title">@string/generic_qr_scan_title</string>
-    <string name="issuance_qr_scan_subtitle">@string/generic_qr_scan_subtitle</string>
+    <string name="issuance_qr_scan_title">Add document from QR</string>
+    <string name="issuance_qr_scan_subtitle">Scan a QR code provided from an issuer to add a digital document to your wallet.</string>
 
     <!-- Issuance Document Offer -->
-    <string name="issuance_document_offer_default_issuer_name">Issuer</string>
-    <string name="issuance_document_offer_title">%1$s wants to issue the following in your wallet</string>
-    <string name="issuance_document_offer_subtitle">Please confirm the issuance of the following</string>
-    <string name="issuance_document_offer_primary_button_text">ISSUE</string>
-    <string name="issuance_document_offer_secondary_button_text">@string/generic_cancel_capitalized</string>
-    <string name="issuance_document_offer_success_title">@string/generic_success</string>
-    <string name="issuance_document_offer_deferred_success_title">@string/generic_deferred_success_title</string>
-    <string name="issuance_document_offer_success_subtitle">Your documents from %1$s have been successfully issued.</string>
-    <string name="issuance_document_offer_partial_success_subtitle">Your documents from %1$s have been successfully issued except %2$s</string>
-    <string name="issuance_document_offer_deferred_success_subtitle">Your documents from %1$s have been requested. You will be notified when they have been issued to your wallet.</string>
-    <string name="issuance_document_offer_success_primary_button_text">@string/generic_continue_capitalized</string>
+    <string name="issuance_document_offer_primary_button_text_add">Add</string>
+    <string name="issuance_document_offer_deferred_success_text">@string/generic_deferred_success_text</string>
+    <string name="issuance_document_offer_deferred_success_description">Your documents from %1$s have been requested. You will be notified when they have been issued to your wallet.</string>
     <string name="issuance_document_offer_deferred_success_primary_button_text">@string/generic_ok</string>
     <string name="issuance_document_offer_error_missing_pid_text">Wallet needs to be activated first with a National ID</string>
     <string name="issuance_document_offer_error_invalid_txcode_format">Invalid transaction code format. Length should be between %1$d to %2$d digits and only numeric characters are allowed.</string>
     <string name="issuance_document_offer_error_no_document">Unable to fetch and process the credential offer</string>
 
-    <string name="issuance_document_offer_bottom_sheet_cancel_title">Cancel issuance process?</string>
-    <string name="issuance_document_offer_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the documents list with no new documents</string>
-    <string name="issuance_document_offer_bottom_sheet_cancel_primary_button_text">CONTINUE ISSUANCE</string>
-    <string name="issuance_document_offer_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
+    <string name="issuance_document_offer_description">The following transaction requires your permission and authentication.</string>
+    <string name="issuance_document_offer_header_main_text">ISSUANCE REQUEST</string>
+    <string name="issuance_document_offer_relying_party_default_name">@string/generic_default_issuer_name</string>
+    <string name="issuance_document_offer_relying_party_description">wants to add the following</string>
 
     <!-- Issuance Document Offer Code -->
     <string name="issuance_code_title">%1$s requires verification</string>
-    <string name="issuance_code_caption">Type the %1$d-digit transaction code you received</string>
+    <string name="issuance_code_caption">Type the %1$d-digit transaction code you received.</string>
 
     <!-- Issuance Document Errors -->
     <string name="issuance_generic_error">Something went wrong issuing your document(s)</string>

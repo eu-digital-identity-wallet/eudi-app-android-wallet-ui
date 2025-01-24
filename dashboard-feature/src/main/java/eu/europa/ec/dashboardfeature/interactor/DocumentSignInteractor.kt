@@ -18,14 +18,39 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import android.content.Context
 import android.net.Uri
+import eu.europa.ec.dashboardfeature.model.SignDocumentButtonUi
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 
 interface DocumentSignInteractor {
     fun launchRQESSdk(context: Context, uri: Uri)
+    fun getUiItem(): SignDocumentButtonUi
 }
 
-class DocumentSignInteractorImpl : DocumentSignInteractor {
+class DocumentSignInteractorImpl(
+    private val resourceProvider: ResourceProvider,
+) : DocumentSignInteractor {
+
     override fun launchRQESSdk(context: Context, uri: Uri) {
         EudiRQESUi.initiate(context, uri)
+    }
+
+    override fun getUiItem(): SignDocumentButtonUi {
+        return SignDocumentButtonUi(
+            data = ListItemData(
+                itemId = "signDocumentButtonId",
+                mainContentData = ListItemMainContentData.Text(
+                    text = resourceProvider.getString(R.string.document_sign_select_document)
+                ),
+                trailingContentData = ListItemTrailingContentData.Icon(
+                    iconData = AppIcons.Add
+                ),
+            )
+        )
     }
 }

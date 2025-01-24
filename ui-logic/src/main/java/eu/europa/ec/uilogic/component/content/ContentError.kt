@@ -31,7 +31,9 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
-import eu.europa.ec.uilogic.component.wrap.WrapPrimaryButton
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 
 @Composable
 internal fun ContentError(config: ContentErrorConfig, paddingValues: PaddingValues) {
@@ -53,10 +55,13 @@ internal fun ContentError(config: ContentErrorConfig, paddingValues: PaddingValu
         Spacer(modifier = Modifier.weight(1f))
 
         config.onRetry?.let { callback ->
-            WrapPrimaryButton(
-                onClick = {
-                    callback()
-                },
+            WrapButton(
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.PRIMARY,
+                    onClick = {
+                        callback()
+                    },
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(

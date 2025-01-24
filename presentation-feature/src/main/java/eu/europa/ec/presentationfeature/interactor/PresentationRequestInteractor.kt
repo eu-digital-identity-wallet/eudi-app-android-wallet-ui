@@ -19,26 +19,24 @@ package eu.europa.ec.presentationfeature.interactor
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
-import eu.europa.ec.commonfeature.ui.request.Event
-import eu.europa.ec.commonfeature.ui.request.model.RequestDataUi
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
 sealed class PresentationRequestInteractorPartialState {
     data class Success(
-        val verifierName: String? = null,
+        val verifierName: String?,
         val verifierIsTrusted: Boolean,
-        val requestDocuments: List<RequestDataUi<Event>>
+        val requestDocuments: List<RequestDocumentItemUi>
     ) : PresentationRequestInteractorPartialState()
 
     data class NoData(
-        val verifierName: String? = null,
+        val verifierName: String?,
         val verifierIsTrusted: Boolean,
     ) : PresentationRequestInteractorPartialState()
 
@@ -49,7 +47,7 @@ sealed class PresentationRequestInteractorPartialState {
 interface PresentationRequestInteractor {
     fun getRequestDocuments(): Flow<PresentationRequestInteractorPartialState>
     fun stopPresentation()
-    fun updateRequestedDocuments(items: List<RequestDataUi<Event>>)
+    fun updateRequestedDocuments(items: List<RequestDocumentItemUi>)
     fun setConfig(config: RequestUriConfig)
 }
 
@@ -76,16 +74,19 @@ class PresentationRequestInteractorImpl(
                             verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
-                        val requestDataUi = RequestTransformer.transformToUiItems(
+                        val requestDataUi = RequestTransformer.transformToDomainItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
-                            requiredFieldsTitle = resourceProvider.getString(R.string.request_required_fields_title),
                             resourceProvider = resourceProvider
                         )
+
                         PresentationRequestInteractorPartialState.Success(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
-                            requestDocuments = requestDataUi
+                            requestDocuments = RequestTransformer.transformToUiItems(
+                                documentsDomain = requestDataUi.getOrThrow(),
+                                resourceProvider = resourceProvider,
+                            )
                         )
                     }
                 }
@@ -110,8 +111,8 @@ class PresentationRequestInteractorImpl(
         walletCorePresentationController.stopPresentation()
     }
 
-    override fun updateRequestedDocuments(items: List<RequestDataUi<Event>>) {
-        val disclosedDocuments = RequestTransformer.transformToDomainItems(items)
+    override fun updateRequestedDocuments(items: List<RequestDocumentItemUi>) {
+        val disclosedDocuments = RequestTransformer.createDisclosedDocuments(items)
         walletCorePresentationController.updateRequestedDocuments(disclosedDocuments.toMutableList())
     }
 }

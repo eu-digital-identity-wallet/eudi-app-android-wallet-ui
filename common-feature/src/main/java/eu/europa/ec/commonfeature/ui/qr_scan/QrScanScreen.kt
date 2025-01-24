@@ -22,6 +22,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,11 +30,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,13 +43,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -62,19 +64,16 @@ import eu.europa.ec.commonfeature.ui.qr_scan.component.qrBorderCanvas
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
-import eu.europa.ec.uilogic.component.PreMeasuredContentWithAnimatedVisibility
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_100
 import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_SMALL
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
-import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.extension.openAppSettings
@@ -94,7 +93,7 @@ fun QrScanScreen(
 
     ContentScreen(
         isLoading = false,
-        navigatableAction = ScreenNavigateAction.CANCELABLE,
+        navigatableAction = ScreenNavigateAction.BACKABLE,
         onBack = { viewModel.setEvent(Event.GoBack) },
     ) { paddingValues ->
         Content(
@@ -142,19 +141,25 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues)
+            .padding(
+                top = paddingValues.calculateTopPadding(),
+            ),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         ContentTitle(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
+                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr),
+                ),
             title = state.qrScannedConfig.title,
-            subtitle = state.qrScannedConfig.subTitle
+            subtitle = state.qrScannedConfig.subTitle,
         )
 
-        // Occupy the rest of the screen.
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
         ) {
             OpenCamera(
                 hasCameraPermission = state.hasCameraPermission,
@@ -165,14 +170,7 @@ private fun Content(
                 }
             )
 
-            VSpacer.Large()
-
-            PreMeasuredContentWithAnimatedVisibility(
-                modifier = Modifier.fillMaxWidth(),
-                showContent = state.showInformativeText
-            ) {
-                InformativeText(text = state.informativeText)
-            }
+            AnimatedInformativeText(state = state, paddingValues = paddingValues)
         }
     }
 
@@ -182,6 +180,19 @@ private fun Content(
                 is Effect.Navigation -> onNavigationRequested(effect)
             }
         }.collect()
+    }
+}
+
+@Composable
+private fun AnimatedInformativeText(state: State, paddingValues: PaddingValues) {
+    AnimatedVisibility(visible = state.showInformativeText) {
+        Box(
+            modifier = Modifier.padding(
+                paddingValues.calculateBottomPadding()
+            )
+        ) {
+            InformativeText(text = state.informativeText)
+        }
     }
 }
 
@@ -200,8 +211,7 @@ private fun OpenCamera(
     }
 
     val screenWidth = LocalConfiguration.current.screenWidthDp
-    val cameraSize = (screenWidth - (SPACING_LARGE * 2)).dp
-    val cameraShape = RoundedCornerShape(SIZE_LARGE.dp)
+    val scannerAreaSize = (screenWidth - SIZE_100).dp
 
     val permissionState = rememberPermissionState(permission = android.Manifest.permission.CAMERA)
     when {
@@ -218,10 +228,9 @@ private fun OpenCamera(
     // The space the Camera is going to occupy.
     Box(
         modifier = Modifier
-            .size(cameraSize)
+            .fillMaxSize()
             .background(
                 color = Color.Black,
-                shape = cameraShape
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -230,8 +239,7 @@ private fun OpenCamera(
             // The Camera.
             AndroidView(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .clip(cameraShape),
+                    .fillMaxSize(),
                 factory = { context ->
 
                     val previewView = PreviewView(context)
@@ -241,7 +249,7 @@ private fun OpenCamera(
                         .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                         .build()
 
-                    preview.setSurfaceProvider(previewView.surfaceProvider)
+                    preview.surfaceProvider = previewView.surfaceProvider
 
                     val imageAnalysis = ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -271,28 +279,22 @@ private fun OpenCamera(
                 modifier = Modifier.throttledClickable { onEventSend(Event.GoToAppSettings) },
                 informativeText = stringResource(id = R.string.qr_scan_permission_not_granted),
                 contentColor = Color.White,
-                iconAlpha = 1f
+                isIconEnabled = true,
             )
         }
 
         // Draw indicators.
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
+        Canvas(
+            modifier = Modifier.size(scannerAreaSize)
         ) {
-            val borderColor = MaterialTheme.colorScheme.primary
-            Canvas(
-                modifier = Modifier.matchParentSize()
-            ) {
-                qrBorderCanvas(
-                    borderColor = borderColor,
-                    curve = SIZE_MEDIUM.dp,
-                    strokeWidth = SIZE_MEDIUM.dp,
-                    capSize = SIZE_XX_LARGE.dp,
-                    gapAngle = SIZE_EXTRA_SMALL,
-                    cap = StrokeCap.Round
-                )
-            }
+            qrBorderCanvas(
+                borderColor = Color.White,
+                curve = 0.dp,
+                strokeWidth = SIZE_EXTRA_SMALL.dp,
+                capSize = SIZE_LARGE.dp,
+                gapAngle = SIZE_EXTRA_SMALL,
+                cap = StrokeCap.Square
+            )
         }
     }
 }
@@ -309,7 +311,7 @@ private fun InformativeText(text: String) {
             Text(
                 modifier = Modifier.padding(all = SPACING_SMALL.dp),
                 text = text,
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.labelMedium,
                 textAlign = TextAlign.Center
             )
         }

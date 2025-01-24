@@ -41,6 +41,7 @@ internal fun Project.configureAndroidCompose(
 
             add("implementation", libs.findLibrary("coil.kt").get())
             add("implementation", libs.findLibrary("coil.kt.compose").get())
+            add("implementation", libs.findLibrary("coil.kt.svg").get())
 
             add("implementation", libs.findLibrary("androidx-navigation-compose").get())
 

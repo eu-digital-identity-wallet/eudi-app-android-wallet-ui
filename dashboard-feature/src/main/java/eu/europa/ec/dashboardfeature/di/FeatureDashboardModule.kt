@@ -20,10 +20,18 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.dashboardfeature.controllers.FiltersController
+import eu.europa.ec.dashboardfeature.controllers.FiltersControllerImpl
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
+import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
+import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
+import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
@@ -35,20 +43,43 @@ class FeatureDashboardModule
 
 @Factory
 fun provideDashboardInteractor(
+    configLogic: ConfigLogic,
+    logController: LogController,
+): DashboardInteractor = DashboardInteractorImpl(
+    configLogic,
+    logController
+)
+
+@Factory
+fun provideHomeInteractor(
     resourceProvider: ResourceProvider,
     walletCoreDocumentsController: WalletCoreDocumentsController,
     walletCoreConfig: WalletCoreConfig,
-    configLogic: ConfigLogic,
-    logController: LogController,
-): DashboardInteractor =
-    DashboardInteractorImpl(
-        resourceProvider,
-        walletCoreDocumentsController,
-        walletCoreConfig,
-        configLogic,
-        logController
-    )
+): HomeInteractor = HomeInteractorImpl(
+    resourceProvider,
+    walletCoreDocumentsController,
+    walletCoreConfig,
+)
 
 @Factory
-fun provideDocumentSignInteractor(): DocumentSignInteractor =
-    DocumentSignInteractorImpl()
+fun provideDocumentsInteractor(
+    resourceProvider: ResourceProvider,
+    documentsController: WalletCoreDocumentsController,
+    filtersController: FiltersController,
+): DocumentsInteractor =
+    DocumentsInteractorImpl(resourceProvider, documentsController, filtersController)
+
+@Factory
+fun provideTransactionInteractor(): TransactionsInteractor = TransactionsInteractorImpl()
+
+@Factory
+fun provideDocumentSignInteractor(
+    resourceProvider: ResourceProvider,
+): DocumentSignInteractor = DocumentSignInteractorImpl(
+    resourceProvider,
+)
+
+@Factory
+fun provideFiltersController(
+    resourceProvider: ResourceProvider,
+): FiltersController = FiltersControllerImpl(resourceProvider)

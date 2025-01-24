@@ -19,19 +19,25 @@ package eu.europa.ec.issuancefeature.ui.document.offer
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.toUri
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemUi
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.document.ResolveDocumentOfferInteractorPartialState
+import eu.europa.ec.issuancefeature.ui.document.offer.transformer.DocumentOfferTransformer.toListItemDataList
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -48,43 +54,31 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import java.net.URI
 
 data class State(
     val offerUiConfig: OfferUiConfig,
 
     val isLoading: Boolean = true,
+    val headerConfig: ContentHeaderConfig,
     val error: ContentErrorConfig? = null,
-    val isBottomSheetOpen: Boolean = false,
     val isInitialised: Boolean = false,
     val notifyOnAuthenticationFailure: Boolean = false,
 
-    val issuerName: String,
-    val screenTitle: String,
-    val screenSubtitle: String,
-    val documents: List<DocumentItemUi> = emptyList(),
+    val documents: List<ListItemData> = emptyList(),
     val noDocument: Boolean = false,
-    val txCodeLength: Int? = null
+    val txCodeLength: Int? = null,
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data class Init(val deepLink: Uri?) : Event()
-    data object Pop : Event()
+    data object BackButtonPressed : Event()
     data object OnPause : Event()
     data class OnResumeIssuance(val uri: String) : Event()
     data class OnDynamicPresentation(val uri: String) : Event()
     data object DismissError : Event()
 
-    data class PrimaryButtonPressed(val context: Context) : Event()
-    data object SecondaryButtonPressed : Event()
-
-    sealed class BottomSheet : Event() {
-        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-
-        sealed class Cancel : BottomSheet() {
-            data object PrimaryButtonPressed : Cancel()
-            data object SecondaryButtonPressed : Cancel()
-        }
-    }
+    data class StickyButtonPressed(val context: Context) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -106,9 +100,6 @@ sealed class Effect : ViewSideEffect {
             val routeToPop: String? = null
         ) : Navigation()
     }
-
-    data object ShowBottomSheet : Effect()
-    data object CloseBottomSheet : Effect()
 }
 
 @KoinViewModel
@@ -126,15 +117,9 @@ class DocumentOfferViewModel(
             OfferUiConfig.Parser
         ) ?: throw RuntimeException("OfferUiConfig:: is Missing or invalid")
 
-        val issuerName = resourceProvider.getString(
-            R.string.issuance_document_offer_default_issuer_name
-        )
-
         return State(
             offerUiConfig = deserializedOfferUiConfig,
-            issuerName = issuerName,
-            screenTitle = calculateScreenTitle(issuerName = issuerName),
-            screenSubtitle = resourceProvider.getString(R.string.issuance_document_offer_subtitle),
+            headerConfig = getInitialHeaderConfig()
         )
     }
 
@@ -151,42 +136,25 @@ class DocumentOfferViewModel(
                 }
             }
 
-            is Event.Pop -> {
+            is Event.BackButtonPressed -> {
                 setState { copy(error = null) }
-                setEffect { Effect.Navigation.Pop }
+                doNavigation(viewState.value.offerUiConfig.onCancelNavigation)
             }
 
             is Event.DismissError -> {
                 setState { copy(error = null) }
             }
 
-            is Event.PrimaryButtonPressed -> {
+            is Event.StickyButtonPressed -> {
                 issueDocuments(
                     context = event.context,
                     offerUri = viewState.value.offerUiConfig.offerURI,
-                    issuerName = viewState.value.issuerName,
+                    issuerName = viewState.value.headerConfig.relyingPartyData?.name.ifEmptyOrNull(
+                        default = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name)
+                    ),
                     onSuccessNavigation = viewState.value.offerUiConfig.onSuccessNavigation,
                     txCodeLength = viewState.value.txCodeLength
                 )
-            }
-
-            is Event.SecondaryButtonPressed -> {
-                showBottomSheet()
-            }
-
-            is Event.BottomSheet.UpdateBottomSheetState -> {
-                setState {
-                    copy(isBottomSheetOpen = event.isOpen)
-                }
-            }
-
-            is Event.BottomSheet.Cancel.PrimaryButtonPressed -> {
-                hideBottomSheet()
-            }
-
-            is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
-                hideBottomSheet()
-                doNavigation(viewState.value.offerUiConfig.onCancelNavigation)
             }
 
             is Event.OnPause -> {
@@ -262,12 +230,16 @@ class DocumentOfferViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                documents = response.documents,
+                                documents = response.documents.toListItemDataList(),
                                 isInitialised = true,
                                 noDocument = false,
-                                issuerName = response.issuerName,
-                                screenTitle = calculateScreenTitle(issuerName = response.issuerName),
-                                txCodeLength = response.txCodeLength
+                                txCodeLength = response.txCodeLength,
+                                headerConfig = headerConfig.copy(
+                                    relyingPartyData = getHeaderConfigIssuerData(
+                                        issuerName = response.issuerName,
+                                        issuerLogo = response.issuerLogo,
+                                    )
+                                ),
                             )
                         }
 
@@ -282,14 +254,42 @@ class DocumentOfferViewModel(
                                 documents = emptyList(),
                                 isInitialised = true,
                                 noDocument = true,
-                                issuerName = response.issuerName,
-                                screenTitle = calculateScreenTitle(issuerName = response.issuerName)
+                                headerConfig = headerConfig.copy(
+                                    relyingPartyData = getHeaderConfigIssuerData(
+                                        issuerName = response.issuerName,
+                                        issuerLogo = response.issuerLogo,
+                                    )
+                                ),
                             )
                         }
                     }
                 }
             }
         }
+    }
+
+    private fun getInitialHeaderConfig(): ContentHeaderConfig {
+        return ContentHeaderConfig(
+            description = resourceProvider.getString(R.string.issuance_document_offer_description),
+            mainText = resourceProvider.getString(R.string.issuance_document_offer_header_main_text),
+            relyingPartyData = RelyingPartyData(
+                isVerified = false,
+                name = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name),
+                description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
+            )
+        )
+    }
+
+    private fun getHeaderConfigIssuerData(
+        issuerName: String,
+        issuerLogo: URI?,
+    ): RelyingPartyData {
+        return RelyingPartyData(
+            logo = issuerLogo,
+            isVerified = false,
+            name = issuerName,
+            description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
+        )
     }
 
     private fun issueDocuments(
@@ -344,7 +344,10 @@ class DocumentOfferViewModel(
                             )
                         }
 
-                        goToSuccessScreen(route = response.successRoute)
+                        goToDocumentIssuanceSuccessScreen(
+                            documentIds = response.documentIds,
+                            onSuccessNavigation = onSuccessNavigation,
+                        )
                     }
 
                     is IssueDocumentsInteractorPartialState.DeferredSuccess -> {
@@ -368,6 +371,30 @@ class DocumentOfferViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun goToDocumentIssuanceSuccessScreen(
+        documentIds: List<DocumentId>,
+        onSuccessNavigation: ConfigNavigation,
+    ) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = IssuanceScreens.DocumentIssuanceSuccess,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                model = IssuanceSuccessUiConfig(
+                                    documentIds = documentIds,
+                                    onSuccessNavigation = onSuccessNavigation,
+                                ),
+                                parser = IssuanceSuccessUiConfig.Parser
+                            ).orEmpty()
+                        )
+                    )
+                )
+            )
         }
     }
 
@@ -410,25 +437,6 @@ class DocumentOfferViewModel(
         setEffect {
             navigationEffect
         }
-    }
-
-    private fun showBottomSheet() {
-        setEffect {
-            Effect.ShowBottomSheet
-        }
-    }
-
-    private fun hideBottomSheet() {
-        setEffect {
-            Effect.CloseBottomSheet
-        }
-    }
-
-    private fun calculateScreenTitle(issuerName: String): String {
-        return resourceProvider.getString(
-            R.string.issuance_document_offer_title,
-            issuerName
-        )
     }
 
     private fun navigateToOfferCodeScreen(

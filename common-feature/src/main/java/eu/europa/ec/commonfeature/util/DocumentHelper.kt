@@ -21,10 +21,17 @@ import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
+import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.eudi.wallet.document.NameSpace
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 fun extractValueFromDocumentOrEmpty(
     document: IssuedDocument,
@@ -60,6 +67,14 @@ fun extractFullNameFromDocumentOrEmpty(document: IssuedDocument): String {
 fun keyIsBase64(key: String): Boolean {
     val listOfBase64Keys = DocumentJsonKeys.BASE64_IMAGE_KEYS
     return listOfBase64Keys.contains(key)
+}
+
+fun keyIsPortrait(key: String): Boolean {
+    return key == DocumentJsonKeys.PORTRAIT
+}
+
+fun keyIsSignature(key: String): Boolean {
+    return key == DocumentJsonKeys.SIGNATURE
 }
 
 private fun keyIsUserPseudonym(key: String): Boolean {
@@ -178,5 +193,36 @@ fun documentHasExpired(
 
     return localDateOfDocumentExpirationDate?.let {
         currentDate.isAfter(it)
-    } ?: false
+    } == true
 }
+
+fun documentHasExpired(
+    documentExpirationDate: Instant,
+    currentDate: LocalDate = LocalDate.now(),
+    zoneId: ZoneId = ZoneId.systemDefault()
+): Boolean {
+    return runCatching {
+        // Convert Instant to LocalDate using the provided ZoneId
+        val localDateOfDocumentExpiration = documentExpirationDate
+            .atZone(zoneId)
+            .toLocalDate()
+
+        // Check if the current date is after the document expiration date
+        currentDate.isAfter(localDateOfDocumentExpiration)
+    }.getOrElse {
+        // Default to false in case of any exception
+        false
+    }
+}
+
+val IssuedDocument.docNamespace: NameSpace?
+    get() = when (val data = this.data) {
+        is MsoMdocData -> data.nameSpaces.keys.first()
+        is SdJwtVcData -> null
+    }
+
+fun generateUniqueFieldId(
+    elementIdentifier: ElementIdentifier,
+    documentId: DocumentId,
+): String =
+    elementIdentifier + documentId

@@ -18,17 +18,22 @@ package eu.europa.ec.issuancefeature.ui.document.code
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.LoadingType
+import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -39,7 +44,7 @@ private typealias PinCode = String
 data class State(
     val offerCodeUiConfig: OfferCodeUiConfig,
 
-    val isLoading: LoadingType = LoadingType.NONE,
+    val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val notifyOnAuthenticationFailure: Boolean = false,
 
@@ -111,7 +116,7 @@ class DocumentOfferCodeViewModel(
 
             setState {
                 copy(
-                    isLoading = LoadingType.NORMAL,
+                    isLoading = true,
                     error = null
                 )
             }
@@ -125,7 +130,7 @@ class DocumentOfferCodeViewModel(
                 when (response) {
                     is IssueDocumentsInteractorPartialState.Failure -> setState {
                         copy(
-                            isLoading = LoadingType.NONE,
+                            isLoading = false,
                             error = ContentErrorConfig(
                                 errorSubTitle = response.errorMessage,
                                 onCancel = { setEvent(Event.DismissError) }
@@ -136,17 +141,21 @@ class DocumentOfferCodeViewModel(
                     is IssueDocumentsInteractorPartialState.Success -> {
                         setState {
                             copy(
-                                isLoading = LoadingType.NONE,
+                                isLoading = false,
                                 error = null,
                             )
                         }
-                        goToSuccessScreen(route = response.successRoute)
+
+                        goToDocumentIssuanceSuccessScreen(
+                            documentIds = response.documentIds,
+                            onSuccessNavigation = viewState.value.offerCodeUiConfig.onSuccessNavigation,
+                        )
                     }
 
                     is IssueDocumentsInteractorPartialState.DeferredSuccess -> {
                         setState {
                             copy(
-                                isLoading = LoadingType.NONE,
+                                isLoading = false,
                                 error = null,
                             )
                         }
@@ -163,6 +172,30 @@ class DocumentOfferCodeViewModel(
                     }
                 }
             }
+        }
+    }
+
+    private fun goToDocumentIssuanceSuccessScreen(
+        documentIds: List<DocumentId>,
+        onSuccessNavigation: ConfigNavigation,
+    ) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = IssuanceScreens.DocumentIssuanceSuccess,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            IssuanceSuccessUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                model = IssuanceSuccessUiConfig(
+                                    documentIds = documentIds,
+                                    onSuccessNavigation = onSuccessNavigation,
+                                ),
+                                parser = IssuanceSuccessUiConfig.Parser
+                            ).orEmpty()
+                        )
+                    )
+                )
+            )
         }
     }
 

@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -31,12 +32,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
 import eu.europa.ec.uilogic.component.utils.ALPHA_ENABLED
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
@@ -48,16 +53,22 @@ import eu.europa.ec.uilogic.extension.throttledClickable
  * @param modifier the [Modifier] to be applied to the Composable.
  * @param iconData The actual data ([IconData]) the Icon has, like its resourceId and its contentDescriptionId.
  * @param customTint Nullable Color value to be applied as its tint. If null, it will use its default tint Color.
- * @param contentAlpha The alpha of its content. [ALPHA_ENABLED] by default.
+ * @param enabled Whether the icon should be displayed as enabled or disabled. This affects the alpha value of the tint color.
  */
 @Composable
 fun WrapIcon(
     iconData: IconData,
     modifier: Modifier = Modifier,
     customTint: Color? = null,
-    contentAlpha: Float = ALPHA_ENABLED,
+    enabled: Boolean = true,
 ) {
-    val iconTint = (customTint ?: LocalContentColor.current).copy(alpha = contentAlpha)
+    val iconTint = (customTint ?: LocalContentColor.current).copy(
+        alpha = if (enabled) {
+            ALPHA_ENABLED
+        } else {
+            ALPHA_DISABLED
+        }
+    )
     val iconContentDescription = stringResource(id = iconData.contentDescriptionId)
 
     iconData.resourceId?.let { resId ->
@@ -106,10 +117,11 @@ fun WrapIconButton(
     customTint: Color? = null,
     enabled: Boolean = true,
     size: Dp = DEFAULT_ICON_SIZE.dp,
+    shape: Shape? = CircleShape,
     throttleClicks: Boolean = true,
     throttleDuration: Long = 1_000L,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    onClick: () -> Unit
+    onClick: (() -> Unit)?
 ) {
     val role = Role.Button
     val rippleSize = if (size == DEFAULT_ICON_SIZE.dp) 40.dp else size
@@ -122,26 +134,28 @@ fun WrapIconButton(
         modifier = modifier
             .minimumInteractiveComponentSize()
             .size(rippleSize)
-            .clip(CircleShape)
+            .then(if (shape != null) Modifier.clip(shape) else Modifier)
             .then(
-                when (throttleClicks) {
-                    true -> Modifier.throttledClickable(
-                        onClick = onClick,
-                        throttleDuration = throttleDuration,
-                        enabled = enabled,
-                        role = role,
-                        interactionSource = interactionSource,
-                        indication = indication
-                    )
+                if (onClick != null) {
+                    when (throttleClicks) {
+                        true -> Modifier.throttledClickable(
+                            onClick = onClick,
+                            throttleDuration = throttleDuration,
+                            enabled = enabled,
+                            role = role,
+                            interactionSource = interactionSource,
+                            indication = indication
+                        )
 
-                    false -> Modifier.clickable(
-                        onClick = onClick,
-                        enabled = enabled,
-                        role = role,
-                        interactionSource = interactionSource,
-                        indication = indication
-                    )
-                }
+                        false -> Modifier.clickable(
+                            onClick = onClick,
+                            enabled = enabled,
+                            role = role,
+                            interactionSource = interactionSource,
+                            indication = indication
+                        )
+                    }
+                } else Modifier
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -149,11 +163,107 @@ fun WrapIconButton(
             modifier = Modifier.size(size),
             iconData = iconData,
             customTint = customTint,
-            contentAlpha = if (enabled) {
-                ALPHA_ENABLED
-            } else {
-                ALPHA_DISABLED
-            }
+            enabled = enabled,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapIconEnabledCustomTintPreview() {
+    PreviewTheme {
+        WrapIcon(
+            iconData = AppIcons.Verified,
+            enabled = true,
+            customTint = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapIconDisabledCustomTintPreview() {
+    PreviewTheme {
+        WrapIcon(
+            iconData = AppIcons.Verified,
+            enabled = false,
+            customTint = MaterialTheme.colorScheme.primary,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapIconEnabledNoTintPreview() {
+    PreviewTheme {
+        WrapIcon(
+            iconData = AppIcons.Verified,
+            enabled = true,
+            customTint = null,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapIconDisabledNoTintPreview() {
+    PreviewTheme {
+        WrapIcon(
+            iconData = AppIcons.Verified,
+            enabled = false,
+            customTint = null,
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapIconButtonEnabledCustomTintPreview() {
+    PreviewTheme {
+        WrapIconButton(
+            iconData = AppIcons.Verified,
+            enabled = true,
+            customTint = MaterialTheme.colorScheme.primary,
+            onClick = {},
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapIconButtonDisabledCustomTintPreview() {
+    PreviewTheme {
+        WrapIconButton(
+            iconData = AppIcons.Verified,
+            enabled = false,
+            customTint = MaterialTheme.colorScheme.primary,
+            onClick = {},
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapIconButtonEnabledNoTintPreview() {
+    PreviewTheme {
+        WrapIconButton(
+            iconData = AppIcons.Verified,
+            enabled = true,
+            customTint = null,
+            onClick = {},
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun WrapIconButtonDisabledNoTintPreview() {
+    PreviewTheme {
+        WrapIconButton(
+            iconData = AppIcons.Verified,
+            enabled = false,
+            customTint = null,
+            onClick = {},
         )
     }
 }

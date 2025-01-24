@@ -26,7 +26,6 @@ import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.content.LoadingType
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
@@ -55,13 +54,13 @@ sealed class Event : ViewEvent {
 }
 
 data class State(
-    val isLoading: LoadingType = LoadingType.NONE,
+    val isLoading: Boolean = false,
     val error: ContentErrorConfig? = null,
     val config: BiometricUiConfig,
     val quickPinError: String? = null,
     val quickPin: String = "",
     val userBiometricsAreEnabled: Boolean = false,
-    val isCancellable: Boolean = false,
+    val isBackable: Boolean = false,
     val notifyOnAuthenticationFailure: Boolean = true,
     val quickPinSize: Int = 6
 ) : ViewState
@@ -111,7 +110,7 @@ class BiometricViewModel(
         return State(
             config = config,
             userBiometricsAreEnabled = biometricInteractor.getBiometricUserSelection(),
-            isCancellable = config.onBackNavigationConfig.isCancellable
+            isBackable = config.onBackNavigationConfig.isBackable
         )
     }
 
@@ -264,7 +263,7 @@ class BiometricViewModel(
 
             is NavigationType.PushScreen -> {
                 Effect.Navigation.SwitchScreen(
-                    generateComposableNavigationLink(
+                    screen = generateComposableNavigationLink(
                         screen = nav.screen,
                         arguments = generateComposableArguments(nav.arguments)
                     ),
@@ -274,15 +273,15 @@ class BiometricViewModel(
 
             is NavigationType.PushRoute -> {
                 Effect.Navigation.SwitchScreen(
-                    nav.route,
+                    screen = nav.route,
                     screenPopUpTo = screenRoute
                 )
             }
 
             is NavigationType.Deeplink -> Effect.Navigation.Deeplink(
-                nav.link.toUri(),
-                viewState.value.config.isPreAuthorization,
-                nav.routeToPop
+                link = nav.link.toUri(),
+                isPreAuthorization = viewState.value.config.isPreAuthorization,
+                routeToPop = nav.routeToPop
             )
 
             is NavigationType.Pop -> Effect.Navigation.Pop

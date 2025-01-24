@@ -52,7 +52,14 @@ data class ThemeColorsTemplate(
     val onErrorContainer: Long,
     val outline: Long,
     val outlineVariant: Long,
-    val scrim: Long
+    val scrim: Long,
+    val surfaceBright: Long,
+    val surfaceDim: Long,
+    val surfaceContainer: Long,
+    val surfaceContainerHigh: Long,
+    val surfaceContainerHighest: Long,
+    val surfaceContainerLow: Long,
+    val surfaceContainerLowest: Long,
 ) {
     companion object {
         fun ThemeColorsTemplate.toColorScheme(): ColorScheme = ColorScheme(
@@ -85,13 +92,13 @@ data class ThemeColorsTemplate(
             outline = Color(outline),
             outlineVariant = Color(outlineVariant),
             scrim = Color(scrim),
-            surfaceBright = Color.Unspecified,
-            surfaceDim = Color.Unspecified,
-            surfaceContainer = Color.Unspecified,
-            surfaceContainerHigh = Color.Unspecified,
-            surfaceContainerHighest = Color.Unspecified,
-            surfaceContainerLow = Color(background),
-            surfaceContainerLowest = Color.Unspecified
+            surfaceBright = Color(surfaceBright),
+            surfaceDim = Color(surfaceDim),
+            surfaceContainer = Color(surfaceContainer),
+            surfaceContainerHigh = Color(surfaceContainerHigh),
+            surfaceContainerHighest = Color(surfaceContainerHighest),
+            surfaceContainerLow = Color(surfaceContainerLow),
+            surfaceContainerLowest = Color(surfaceContainerLowest)
         )
     }
 }

@@ -16,6 +16,7 @@
 
 package eu.europa.ec.startupfeature.interactor.splash
 
+import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
@@ -71,9 +72,11 @@ class SplashInteractorImpl(
                 mapOf(
                     BiometricUiConfig.serializedKeyName to uiSerializer.toBase64(
                         BiometricUiConfig(
-                            title = resourceProvider.getString(R.string.biometric_login_prompt_title),
-                            subTitle = resourceProvider.getString(R.string.biometric_login_prompt_subtitle),
-                            quickPinOnlySubTitle = resourceProvider.getString(R.string.biometric_login_prompt_quickPinOnlySubTitle),
+                            mode = BiometricMode.Login(
+                                title = resourceProvider.getString(R.string.biometric_login_title),
+                                subTitleWhenBiometricsEnabled = resourceProvider.getString(R.string.biometric_login_biometrics_enabled_subtitle),
+                                subTitleWhenBiometricsNotEnabled = resourceProvider.getString(R.string.biometric_login_biometrics_not_enabled_subtitle),
+                            ),
                             isPreAuthorization = true,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
@@ -94,7 +97,7 @@ class SplashInteractorImpl(
                                 onBackNavigation = ConfigNavigation(
                                     navigationType = NavigationType.Finish
                                 ),
-                                hasToolbarCancelIcon = false
+                                hasToolbarBackIcon = false
                             )
                         ),
                         BiometricUiConfig.Parser

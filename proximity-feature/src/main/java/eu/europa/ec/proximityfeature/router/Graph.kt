@@ -28,6 +28,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.proximityfeature.BuildConfig
 import eu.europa.ec.proximityfeature.ui.loading.ProximityLoadingScreen
 import eu.europa.ec.proximityfeature.ui.qr.ProximityQRScreen
+import eu.europa.ec.proximityfeature.ui.success.ProximitySuccessScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import org.koin.androidx.compose.getViewModel
@@ -98,6 +99,22 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
             route = ProximityScreens.Loading.screenRoute,
         ) {
             ProximityLoadingScreen(
+                navController,
+                koinViewModel()
+            )
+        }
+
+        // Success
+        composable(
+            route = ProximityScreens.Success.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + ProximityScreens.Request.screenRoute
+                }
+            ),
+        ) {
+            ProximitySuccessScreen(
                 navController,
                 koinViewModel()
             )

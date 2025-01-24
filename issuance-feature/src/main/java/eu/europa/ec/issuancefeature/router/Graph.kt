@@ -24,6 +24,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.issuancefeature.BuildConfig
@@ -31,7 +32,7 @@ import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.document.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
-import eu.europa.ec.issuancefeature.ui.success.SuccessScreen
+import eu.europa.ec.issuancefeature.ui.document.success.DocumentIssuanceSuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel
@@ -71,33 +72,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
             )
         }
 
-        // Success
-        composable(
-            route = IssuanceScreens.Success.screenRoute,
-            arguments = listOf(
-                navArgument("flowType") {
-                    type = NavType.StringType
-                },
-                navArgument("documentId") {
-                    type = NavType.StringType
-                },
-            )
-        ) {
-            SuccessScreen(
-                navController,
-                getViewModel(
-                    parameters = {
-                        parametersOf(
-                            IssuanceFlowUiConfig.fromString(
-                                it.arguments?.getString("flowType").orEmpty()
-                            ),
-                            it.arguments?.getString("documentId").orEmpty(),
-                        )
-                    }
-                )
-            )
-        }
-
         // Document Details
         composable(
             route = IssuanceScreens.DocumentDetails.screenRoute,
@@ -108,9 +82,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 }
             ),
             arguments = listOf(
-                navArgument("detailsType") {
-                    type = NavType.StringType
-                },
                 navArgument("documentId") {
                     type = NavType.StringType
                 },
@@ -121,9 +92,6 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                 getViewModel(
                     parameters = {
                         parametersOf(
-                            IssuanceFlowUiConfig.fromString(
-                                it.arguments?.getString("detailsType").orEmpty()
-                            ),
                             it.arguments?.getString("documentId").orEmpty(),
                         )
                     }
@@ -179,6 +147,34 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(OfferCodeUiConfig.serializedKeyName).orEmpty()
+                        )
+                    }
+                )
+            )
+        }
+
+        // Document Issuance Success
+        composable(
+            route = IssuanceScreens.DocumentIssuanceSuccess.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + IssuanceScreens.DocumentIssuanceSuccess.screenRoute
+                }
+            ),
+            arguments = listOf(
+                navArgument(IssuanceSuccessUiConfig.serializedKeyName) {
+                    type = NavType.StringType
+                },
+            )
+        ) {
+            DocumentIssuanceSuccessScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString(IssuanceSuccessUiConfig.serializedKeyName)
+                                .orEmpty(),
                         )
                     }
                 )

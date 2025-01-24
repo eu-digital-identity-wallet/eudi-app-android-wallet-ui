@@ -27,6 +27,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.presentationfeature.BuildConfig
 import eu.europa.ec.presentationfeature.ui.loading.PresentationLoadingScreen
 import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
+import eu.europa.ec.presentationfeature.ui.success.PresentationSuccessScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import org.koin.androidx.compose.getViewModel
@@ -69,6 +70,21 @@ fun NavGraphBuilder.presentationGraph(navController: NavController) {
             route = PresentationScreens.PresentationLoading.screenRoute,
         ) {
             PresentationLoadingScreen(
+                navController,
+                koinViewModel()
+            )
+        }
+
+        composable(
+            route = PresentationScreens.PresentationSuccess.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + PresentationScreens.PresentationSuccess.screenRoute
+                }
+            ),
+        ) {
+            PresentationSuccessScreen(
                 navController,
                 koinViewModel()
             )

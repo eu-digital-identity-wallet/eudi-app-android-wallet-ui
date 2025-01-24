@@ -16,12 +16,12 @@
 
 package eu.europa.ec.commonfeature.model
 
-import eu.europa.ec.commonfeature.ui.document_details.model.DocumentDetailsUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.uilogic.component.ListItemData
 
 enum class DocumentUiIssuanceState {
-    Issued, Pending, Failed
+    Issued, Pending, Failed, Expired
 }
 
 data class DocumentUi(
@@ -31,7 +31,7 @@ data class DocumentUi(
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,
     val documentImage: String,
-    val documentDetails: List<DocumentDetailsUi>,
+    val documentDetails: List<ListItemData>,
     val userFullName: String? = null,
     val documentId: DocumentId,
 )
