@@ -98,7 +98,9 @@ class ProximityLoadingViewModel(
                             screenRoute = ProximityScreens.Request.screenRoute,
                             inclusive = false
                         )
-                        openAuthenticationPrompt(context,
+
+                        openAuthenticationPrompt(
+                            context,
                             popEffect,
                             it.authenticationData,
                             {

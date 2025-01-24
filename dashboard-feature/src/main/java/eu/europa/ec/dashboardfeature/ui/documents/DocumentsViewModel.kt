@@ -66,7 +66,7 @@ data class State(
 
     val documents: List<DocumentDetailsItemUi> = emptyList(),
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
-    val allowUserInteraction: Boolean = true, //TODO
+    val allowUserInteraction: Boolean = true,
     val isInitialDocumentLoading: Boolean = true,
 
     var filters: List<ExpandableListItemData> = emptyList(),

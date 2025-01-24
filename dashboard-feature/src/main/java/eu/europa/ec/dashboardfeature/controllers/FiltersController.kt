@@ -331,6 +331,7 @@ class FiltersControllerImpl(
         return Pair(searchedDocuments.getEmptyUIifEmptyList(resourceProvider), appliedFilters)
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun applyFilters(
         filterableDocuments: FilterableDocuments,
         selectedFilters: List<ExpandableListItemData>,
@@ -371,40 +372,41 @@ class FiltersControllerImpl(
         val filtersToApplyAgainst = appliedFilters.ifEmpty { initialFilters }
         val issuerFilter =
             filtersToApplyAgainst.find { it.collapsed.itemId == FILTER_BY_ISSUER_GROUP_ID }
-                ?.copy(expanded = filteredDocuments.documents
-                    .distinctBy { it.filterableAttributes.issuer }
-                    .mapNotNull { document ->
-                        document.filterableAttributes.issuer?.let {
-                            ListItemData(
-                                itemId = document.filterableAttributes.issuer,
-                                mainContentData = ListItemMainContentData.Text(document.filterableAttributes.issuer),
-                                trailingContentData = ListItemTrailingContentData.RadioButton(
-                                    radioButtonData = RadioButtonData(
-                                        isSelected = false,
-                                        enabled = true
+                ?.copy(
+                    expanded = filteredDocuments.documents
+                        .distinctBy { it.filterableAttributes.issuer }
+                        .mapNotNull { document ->
+                            document.filterableAttributes.issuer?.let {
+                                ListItemData(
+                                    itemId = document.filterableAttributes.issuer,
+                                    mainContentData = ListItemMainContentData.Text(document.filterableAttributes.issuer),
+                                    trailingContentData = ListItemTrailingContentData.RadioButton(
+                                        radioButtonData = RadioButtonData(
+                                            isSelected = false,
+                                            enabled = true
+                                        )
+                                    )
+                                )
+                            }
+                        }.toMutableList().apply {
+                            // Add the "All" filter on the first place
+                            add(
+                                0, ListItemData(
+                                    itemId = FILTER_BY_ISSUER_ALL,
+                                    mainContentData = ListItemMainContentData.Actionable<FilterableDocuments>(
+                                        resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all)
+                                    ) { filterable ->
+                                        filterable
+                                    },
+                                    trailingContentData = ListItemTrailingContentData.RadioButton(
+                                        radioButtonData = RadioButtonData(
+                                            isSelected = false,
+                                            enabled = true
+                                        )
                                     )
                                 )
                             )
                         }
-                    }.toMutableList().apply {
-                        // Add the "All" filter on the first place
-                        add(
-                            0, ListItemData(
-                                itemId = FILTER_BY_ISSUER_ALL,
-                                mainContentData = ListItemMainContentData.Actionable<FilterableDocuments>(
-                                    resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all)
-                                ) { filterable ->
-                                    filterable
-                                },
-                                trailingContentData = ListItemTrailingContentData.RadioButton(
-                                    radioButtonData = RadioButtonData(
-                                        isSelected = false,
-                                        enabled = true
-                                    )
-                                )
-                            )
-                        )
-                    }
                 )
 
         // Update the issuer placeholder filter
