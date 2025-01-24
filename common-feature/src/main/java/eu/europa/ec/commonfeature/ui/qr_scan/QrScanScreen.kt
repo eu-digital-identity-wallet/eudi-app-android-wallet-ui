@@ -64,8 +64,8 @@ import eu.europa.ec.commonfeature.ui.qr_scan.component.qrBorderCanvas
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
-import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -146,7 +146,7 @@ private fun Content(
             ),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
-        SimpleContentTitle(
+        ContentTitle(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(

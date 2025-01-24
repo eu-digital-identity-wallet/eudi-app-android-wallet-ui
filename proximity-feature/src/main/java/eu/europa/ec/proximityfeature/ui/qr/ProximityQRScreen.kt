@@ -42,8 +42,8 @@ import androidx.navigation.NavController
 import eu.europa.ec.proximityfeature.ui.qr.component.rememberQrBitmapPainter
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -141,7 +141,7 @@ private fun Content(
                 .weight(1f)
                 .padding(paddingValues)
         ) {
-            SimpleContentTitle(
+            ContentTitle(
                 modifier = Modifier.fillMaxWidth(),
                 title = stringResource(id = R.string.proximity_qr_title),
                 subtitle = stringResource(id = R.string.proximity_qr_subtitle)

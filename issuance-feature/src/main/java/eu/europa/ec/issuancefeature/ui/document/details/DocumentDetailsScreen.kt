@@ -198,7 +198,11 @@ private fun Content(
             )
         ) {
             // Screen title
-            ContentTitle(title = state.title)
+            state.title?.let { safeTitle ->
+                ContentTitle(
+                    title = safeTitle,
+                )
+            }
 
             Column(
                 modifier = Modifier
