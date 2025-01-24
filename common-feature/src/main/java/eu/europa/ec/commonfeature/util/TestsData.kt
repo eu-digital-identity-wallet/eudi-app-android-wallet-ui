@@ -500,7 +500,6 @@ object TestsData {
             mainContentData = ListItemMainContentData.Text(text = mockedDocUiNamePid),
             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
         ),
-        available = true
     )
 
     val mockedMdlOptionItemUi = DocumentOptionItemUi(
@@ -509,7 +508,6 @@ object TestsData {
             mainContentData = ListItemMainContentData.Text(text = mockedDocUiNameMdl),
             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
         ),
-        available = true
     )
 
     val mockedAgeOptionItemUi = DocumentOptionItemUi(
@@ -518,7 +516,6 @@ object TestsData {
             mainContentData = ListItemMainContentData.Text(text = mockedDocUiNameAge),
             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
         ),
-        available = true
     )
 
     val mockedPhotoIdOptionItemUi = DocumentOptionItemUi(
@@ -527,6 +524,5 @@ object TestsData {
             mainContentData = ListItemMainContentData.Text(text = mockedDocUiNamePhotoId),
             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
         ),
-        available = true
     )
 }

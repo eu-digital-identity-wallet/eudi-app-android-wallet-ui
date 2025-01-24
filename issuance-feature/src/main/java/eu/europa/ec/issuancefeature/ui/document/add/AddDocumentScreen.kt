@@ -181,7 +181,7 @@ private fun Content(
                         item = option.itemData,
                         mainContentVerticalPadding = SPACING_LARGE.dp,
                         mainContentTextStyle = MaterialTheme.typography.titleMedium,
-                        onItemClick = if (option.available) { optionListItemData ->
+                        onItemClick = { optionListItemData ->
                             onEventSend(
                                 Event.IssueDocument(
                                     issuanceMethod = IssuanceMethod.OPENID4VCI,
@@ -189,7 +189,7 @@ private fun Content(
                                     context = context
                                 )
                             )
-                        } else null
+                        }
                     )
                 }
             }
@@ -216,7 +216,6 @@ private fun IssuanceAddDocumentScreenPreview() {
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
                     DocumentOptionItemUi(
-                        available = true,
                         itemData = ListItemData(
                             itemId = "configId1",
                             mainContentData = ListItemMainContentData.Text(text = "National ID"),
@@ -224,7 +223,6 @@ private fun IssuanceAddDocumentScreenPreview() {
                         )
                     ),
                     DocumentOptionItemUi(
-                        available = false,
                         itemData = ListItemData(
                             itemId = "configId2",
                             mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
@@ -253,7 +251,6 @@ private fun DashboardAddDocumentScreenPreview() {
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
                     DocumentOptionItemUi(
-                        available = true,
                         itemData = ListItemData(
                             itemId = "configId1",
                             mainContentData = ListItemMainContentData.Text(text = "National ID"),
@@ -261,7 +258,6 @@ private fun DashboardAddDocumentScreenPreview() {
                         )
                     ),
                     DocumentOptionItemUi(
-                        available = false,
                         itemData = ListItemData(
                             itemId = "configId2",
                             mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
