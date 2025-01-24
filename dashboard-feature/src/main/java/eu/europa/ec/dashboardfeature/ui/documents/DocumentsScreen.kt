@@ -248,9 +248,9 @@ private fun Content(
                 onItemClick = if (documentItem.uiData.itemId.isBlank()) {
                     null
                 } else {
-                    if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Issued) {
-                        { onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId)) }
-                    } else {
+                    if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Pending
+                        || documentItem.documentIssuanceState == DocumentUiIssuanceState.Failed
+                    ) {
                         {
                             onEventSend(
                                 Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
@@ -258,12 +258,17 @@ private fun Content(
                                 )
                             )
                         }
+                    } else {
+                        {
+                            onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId))
+                        }
                     }
                 },
                 supportingTextColor = when (documentItem.documentIssuanceState) {
                     DocumentUiIssuanceState.Issued -> null
                     DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
                     DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
+                    DocumentUiIssuanceState.Expired -> MaterialTheme.colorScheme.error
                 }
             )
         }

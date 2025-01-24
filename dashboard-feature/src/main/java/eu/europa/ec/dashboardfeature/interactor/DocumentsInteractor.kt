@@ -19,6 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -190,6 +191,24 @@ class DocumentsInteractorImpl(
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(resourceProvider.getLocale())
 
+                            val documentHasExpired =
+                                documentHasExpired(documentExpirationDate = document.validUntil)
+
+                            val documentIssuanceState = if (documentHasExpired) {
+                                DocumentUiIssuanceState.Expired
+                            } else {
+                                DocumentUiIssuanceState.Issued
+                            }
+
+                            val supportingText = if (documentHasExpired) {
+                                resourceProvider.getString(R.string.dashboard_document_has_expired)
+                            } else {
+                                resourceProvider.getString(
+                                    R.string.dashboard_document_has_not_expired,
+                                    document.validUntil.formatInstant()
+                                )
+                            }
+
                             FilterableDocumentItem(
                                 filterableAttributes = FilterableAttributes(
                                     issuedDate = document.issuedAt,
@@ -197,13 +216,12 @@ class DocumentsInteractorImpl(
                                     issuer = localizedIssuerMetadata?.name
                                 ),
                                 itemUi = DocumentDetailsItemUi(
-                                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                                    documentIssuanceState = documentIssuanceState,
                                     uiData = ListItemData(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentData.Text(text = document.name),
                                         overlineText = localizedIssuerMetadata?.name,
-                                        supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
-                                                document.validUntil.formatInstant(),
+                                        supportingText = supportingText,
                                         leadingContentData = ListItemLeadingContentData.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
                                             errorImage = AppIcons.Id,

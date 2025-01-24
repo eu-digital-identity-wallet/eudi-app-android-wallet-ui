@@ -180,9 +180,8 @@
 
     <!-- Dashboard -->
     <string name="dashboard_title">Welcome back</string>
-    <string name="dashboard_document_has_not_expired">Valid until</string>
-    <string name="dashboard_document_has_expired_one">Expired\ </string>
-    <string name="dashboard_document_has_expired_two">on</string>
+    <string name="dashboard_document_has_not_expired">Valid until:\ %1$s</string>
+    <string name="dashboard_document_has_expired">Expired</string>
     <string name="dashboard_document_deferred_pending">Pending</string>
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
     <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
