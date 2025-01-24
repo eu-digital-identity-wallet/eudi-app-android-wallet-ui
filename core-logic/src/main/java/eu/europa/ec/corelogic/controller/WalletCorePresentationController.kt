@@ -16,8 +16,8 @@
 
 package eu.europa.ec.corelogic.controller
 
-import android.net.Uri
 import androidx.activity.ComponentActivity
+import androidx.core.net.toUri
 import com.android.identity.crypto.Algorithm
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.addOrReplace
@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.launch
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
 import java.net.URI
@@ -198,7 +199,7 @@ interface WalletCorePresentationController {
 class WalletCorePresentationControllerImpl(
     private val eudiWallet: EudiWallet,
     private val resourceProvider: ResourceProvider,
-    dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : WalletCorePresentationController {
 
     private val genericErrorMessage = resourceProvider.genericErrorMessage()
@@ -460,15 +461,17 @@ class WalletCorePresentationControllerImpl(
     }
 
     override fun stopPresentation() {
-        eudiWallet.stopProximityPresentation()
         coroutineScope.cancel()
+        CoroutineScope(dispatcher).launch {
+            eudiWallet.stopProximityPresentation()
+        }
     }
 
     private fun addListener(listener: EudiWalletListenerWrapper) {
         val config = requireInit { _config }
         eudiWallet.addTransferEventListener(listener)
         if (config is PresentationControllerConfig.OpenId4VP) {
-            eudiWallet.startRemotePresentation(Uri.parse(config.uri))
+            eudiWallet.startRemotePresentation(config.uri.toUri())
         }
     }
 
