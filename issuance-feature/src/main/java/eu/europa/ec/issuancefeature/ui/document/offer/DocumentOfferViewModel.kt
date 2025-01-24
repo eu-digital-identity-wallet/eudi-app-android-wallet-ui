@@ -19,6 +19,7 @@ package eu.europa.ec.issuancefeature.ui.document.offer
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
@@ -148,8 +149,9 @@ class DocumentOfferViewModel(
                 issueDocuments(
                     context = event.context,
                     offerUri = viewState.value.offerUiConfig.offerURI,
-                    issuerName = viewState.value.headerConfig.relyingPartyData?.name
-                        ?: resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name),
+                    issuerName = viewState.value.headerConfig.relyingPartyData?.name.ifEmptyOrNull(
+                        default = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name)
+                    ),
                     onSuccessNavigation = viewState.value.offerUiConfig.onSuccessNavigation,
                     txCodeLength = viewState.value.txCodeLength
                 )
