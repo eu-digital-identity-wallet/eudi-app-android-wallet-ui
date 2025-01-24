@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.MaterialTheme
@@ -93,7 +94,7 @@ fun IssuerDetailsCard(
                     vertical = SPACING_SMALL.dp
                 ),
             verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -101,7 +102,9 @@ fun IssuerDetailsCard(
                 horizontalAlignment = Alignment.Start
             ) {
                 WrapAsyncImage(
-                    modifier = Modifier.fillMaxWidth(0.5f),
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .wrapContentWidth(align = Alignment.Start),
                     source = item.issuerLogo.toString()
                 )
 
