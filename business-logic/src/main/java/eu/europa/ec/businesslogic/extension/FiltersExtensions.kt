@@ -14,20 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.businesslogic.extension
 
-import eu.europa.ec.businesslogic.model.FilterableAttributes
-import java.time.Instant
+import eu.europa.ec.businesslogic.model.SortOrder
 
-data class FilterableDocumentItem(
-    val itemUi: DocumentItemUi,
-    val filterableAttributes: DocumentsFilterableAttributes,
-)
-
-data class DocumentsFilterableAttributes(
-    override val searchText: String,
-    val name: String,
-    val expiryDate: Instant?,
-    val issuedDate: Instant?,
-    val issuer: String?,
-) : FilterableAttributes
+internal fun <T, R : Comparable<R>> List<T>.sortByOrder(
+    sortOrder: SortOrder,
+    selector: (T) -> R?,
+): List<T> {
+    return when (sortOrder) {
+        SortOrder.ASCENDING -> sortedBy(selector)
+        SortOrder.DESCENDING -> sortedByDescending(selector)
+    }
+}

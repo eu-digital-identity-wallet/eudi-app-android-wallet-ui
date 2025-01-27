@@ -17,6 +17,14 @@
 package eu.europa.ec.dashboardfeature.ui.documents
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.extension.isBeyondNextDays
+import eu.europa.ec.businesslogic.extension.isExpired
+import eu.europa.ec.businesslogic.extension.isWithinNextDays
+import eu.europa.ec.businesslogic.model.FilterAction
+import eu.europa.ec.businesslogic.model.FilterGroup
+import eu.europa.ec.businesslogic.model.FilterItem
+import eu.europa.ec.businesslogic.model.Filters
+import eu.europa.ec.businesslogic.model.SortOrder
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
@@ -29,15 +37,15 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocument
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
-import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
-import eu.europa.ec.dashboardfeature.model.FilterableDocuments
+import eu.europa.ec.dashboardfeature.model.DocumentItemUi
+import eu.europa.ec.dashboardfeature.model.DocumentsFilterableAttributes
+import eu.europa.ec.dashboardfeature.model.FilterIds
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -57,6 +65,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import java.time.Instant
 
 data class State(
     val isLoading: Boolean,
@@ -64,27 +73,28 @@ data class State(
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
 
-    val documents: List<DocumentDetailsItemUi> = emptyList(),
+    val documents: List<DocumentItemUi> = emptyList(),
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val allowUserInteraction: Boolean = true, //TODO
     val isInitialDocumentLoading: Boolean = true,
 
     var filters: List<ExpandableListItemData> = emptyList(),
-    var initialFilters: List<ExpandableListItemData> = emptyList(),
-    val appliedFilters: List<ExpandableListItemData> = emptyList(),
-    var snapshotFilters: List<ExpandableListItemData> = emptyList(),
     val isFilteringActive: Boolean,
-    val sortingOrderButtonDataApplied: DualSelectorButtonData,
-    val sortingOrderButtonDataSnapshot: DualSelectorButtonData? = null,
-    val sortingOrderButtonDataPrevious: DualSelectorButtonData? = null,
+//    var initialFilters: List<ExpandableListItemData> = emptyList(),
+//    val appliedFilters: List<ExpandableListItemData> = emptyList(),
+//    var snapshotFilters: List<ExpandableListItemData> = emptyList(),
+//    val sortingOrderButtonDataApplied: DualSelectorButtonData,
+//    val sortingOrderButtonDataSnapshot: DualSelectorButtonData? = null,
+//    val sortingOrderButtonDataPrevious: DualSelectorButtonData? = null,
+//
+//    var allDocuments: FilterableDocuments? = null,
+//    var filteredDocuments: FilterableDocuments? = null,
 
-    var allDocuments: FilterableDocuments? = null,
-    var filteredDocuments: FilterableDocuments? = null,
-
-    val queryText: String = "",
+//    val queryText: String = "",
 ) : ViewState
 
 sealed class Event : ViewEvent {
+    data object Init : Event()
     data object GetDocuments : Event()
     data object OnPause : Event()
     data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, FormatType>) : Event()
@@ -172,17 +182,21 @@ class DocumentsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortingOrderButtonDataApplied = DualSelectorButtonData(
-                first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
-                second = resourceProvider.getString(R.string.documents_screen_filters_descending),
-                selectedButton = DualSelectorButton.FIRST,
-            ),
+//            sortingOrderButtonDataApplied = DualSelectorButtonData(
+//                first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
+//                second = resourceProvider.getString(R.string.documents_screen_filters_descending),
+//                selectedButton = DualSelectorButton.FIRST,
+//            ),
             isFilteringActive = false
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
+            is Event.Init -> {
+                filterStateChange()
+            }
+
             is Event.GetDocuments -> {
                 getDocuments(
                     event = event,
@@ -230,55 +244,55 @@ class DocumentsViewModel(
             }
 
             is Event.OnSortingOrderChanged -> {
-                val selection = viewState.value.sortingOrderButtonDataApplied.copy(
-                    selectedButton = event.sortingOrder
-                )
-                setState {
-                    copy(
-                        sortingOrderButtonDataSnapshot = selection,
-                        sortingOrderButtonDataApplied = selection,
-                        sortingOrderButtonDataPrevious = viewState.value.sortingOrderButtonDataApplied,
-                    )
-                }
+//                val selection = viewState.value.sortingOrderButtonDataApplied.copy(
+//                    selectedButton = event.sortingOrder
+//                )
+//                setState {
+//                    copy(
+//                        sortingOrderButtonDataSnapshot = selection,
+//                        sortingOrderButtonDataApplied = selection,
+//                        sortingOrderButtonDataPrevious = viewState.value.sortingOrderButtonDataApplied,
+//                    )
+//                }
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
-                    if (!event.isOpen) {
-                        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
-                            // Check if selection should be applied or discarded
-                            val appliedSorting =
-                                if (viewState.value.sortingOrderButtonDataSnapshot == null) {
-                                    // Applying filtering
-                                    viewState.value.sortingOrderButtonDataSnapshot
-                                        ?: viewState.value.sortingOrderButtonDataApplied
-                                } else {
-                                    // Closing the bottom sheet without apply action
-                                    viewState.value.sortingOrderButtonDataPrevious
-                                        ?: viewState.value.sortingOrderButtonDataApplied
-                                }
-
-                            setState {
-                                copy(
-                                    snapshotFilters = emptyList(),
-                                    isBottomSheetOpen = false,
-                                    filters = viewState.value.appliedFilters,
-                                    sortingOrderButtonDataApplied = appliedSorting,
-                                    sortingOrderButtonDataSnapshot = null,
-                                    sortingOrderButtonDataPrevious = appliedSorting,
-                                )
-                            }
-                            setEffect { Effect.ResumeOnApplyFilter }
-                        }
-                    } else {
-                        setState {
-                            copy(isBottomSheetOpen = true)
-                        }
-                    }
-                } else {
-                    setState {
-                        copy(isBottomSheetOpen = event.isOpen)
-                    }
+//                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
+//                    if (!event.isOpen) {
+//                        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
+//                            // Check if selection should be applied or discarded
+//                            val appliedSorting =
+//                                if (viewState.value.sortingOrderButtonDataSnapshot == null) {
+//                                    // Applying filtering
+//                                    viewState.value.sortingOrderButtonDataSnapshot
+//                                        ?: viewState.value.sortingOrderButtonDataApplied
+//                                } else {
+//                                    // Closing the bottom sheet without apply action
+//                                    viewState.value.sortingOrderButtonDataPrevious
+//                                        ?: viewState.value.sortingOrderButtonDataApplied
+//                                }
+//
+//                            setState {
+//                                copy(
+//                                    snapshotFilters = emptyList(),
+//                                    isBottomSheetOpen = false,
+//                                    filters = viewState.value.appliedFilters,
+//                                    sortingOrderButtonDataApplied = appliedSorting,
+//                                    sortingOrderButtonDataSnapshot = null,
+//                                    sortingOrderButtonDataPrevious = appliedSorting,
+//                                )
+//                            }
+//                            setEffect { Effect.ResumeOnApplyFilter }
+//                        }
+//                    } else {
+//                        setState {
+//                            copy(isBottomSheetOpen = true)
+//                        }
+//                    }
+//                } else {
+//                }
+                setState {
+                    copy(isBottomSheetOpen = event.isOpen)
                 }
             }
 
@@ -320,6 +334,13 @@ class DocumentsViewModel(
         }
     }
 
+    private fun filterStateChange() {
+        viewModelScope.launch {
+            interactor.onFilterStateChange().collect {
+            }
+        }
+    }
+
     private fun getDocuments(
         event: Event,
         deferredFailedDocIds: List<DocumentId>,
@@ -331,11 +352,7 @@ class DocumentsViewModel(
             )
         }
         viewModelScope.launch {
-            interactor.getDocuments(
-                viewState.value.sortingOrderButtonDataApplied.selectedButton,
-                viewState.value.filters,
-                viewState.value.queryText
-            )
+            interactor.getDocuments()
                 .collect { response ->
                     when (response) {
                         is DocumentInteractorGetDocumentsPartialState.Failure -> {
@@ -356,11 +373,15 @@ class DocumentsViewModel(
 
                         is DocumentInteractorGetDocumentsPartialState.Success -> {
                             val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
-                            response.allDocuments.documents.filter { document ->
-                                document.itemUi.documentIssuanceState == DocumentUiIssuanceState.Pending
-                            }.forEach { documentUi ->
-                                deferredDocs[documentUi.itemUi.uiData.itemId] =
-                                    documentUi.itemUi.documentIdentifier.formatType
+                            response.allDocuments.items.filter { document ->
+                                with(document.data as DocumentItemUi) {
+                                    documentIssuanceState == DocumentUiIssuanceState.Pending
+                                }
+                            }.forEach { documentItem ->
+                                with(documentItem.data as DocumentItemUi) {
+                                    deferredDocs[uiData.itemId] =
+                                        documentIdentifier.formatType
+                                }
                             }
 
                             val filteredDocumentsWithFailed =
@@ -421,9 +442,9 @@ class DocumentsViewModel(
                             )
                         )
                     )
-                )
-            } else {
-                documentUi
+                } else {
+                    documentUi
+                }
             }
         })
     }
@@ -718,4 +739,119 @@ class DocumentsViewModel(
             Effect.CloseBottomSheet
         }
     }
+
+    val filters = Filters(
+        filterGroups = listOf(
+            // Filter by expiry period
+            FilterGroup(
+                id = FilterIds.FILTER_BY_PERIOD_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period),
+                filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_NEXT_7,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_1),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                            attributes.expiryDate.isWithinNextDays(7)
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_NEXT_30,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_2),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                            attributes.expiryDate.isWithinNextDays(30)
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_BEYOND_30,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_3),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                            attributes.expiryDate.isBeyondNextDays(30)
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_EXPIRED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_4),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                            attributes.expiryDate.isExpired()
+                        }
+                    )
+                )
+            ),
+            // Sort
+            FilterGroup(
+                id = FilterIds.FILTER_SORT_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
+                filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_DEFAULT,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
+                        selected = true,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
+                            attributes.name
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_DATE_ISSUED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
+                        selected = true,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
+                            attributes.issuedDate
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_EXPIRY_DATE,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
+                        selected = true,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
+                            attributes.expiryDate
+                        }
+                    )
+                )
+            ),
+            // Filter by Issuer
+            FilterGroup(
+                id = FilterIds.FILTER_BY_ISSUER_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer),
+                filters = listOf(
+                    // TODO this is wrong. This is the all filter with the specific issuer action
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_ISSUER_ALL,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                            attributes.issuer == filter.name
+                        }
+                    )
+                )
+            ),
+            // Filter by State
+            FilterGroup(
+                id = FilterIds.FILTER_BY_STATE_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state),
+                filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_STATE_VALID,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                            !attributes.expiryDate.isExpired()
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_STATE_EXPIRED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                            attributes.expiryDate.isExpired()
+                        }
+                    )
+                )
+            )
+        ),
+        sortOrder = SortOrder.ASCENDING
+    )
 }

@@ -14,20 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.businesslogic.model
 
-import eu.europa.ec.businesslogic.model.FilterableAttributes
-import java.time.Instant
+data class FilterableList(val items: List<FilterableItem>)
 
-data class FilterableDocumentItem(
-    val itemUi: DocumentItemUi,
-    val filterableAttributes: DocumentsFilterableAttributes,
-)
+data class FilterableItem(val data: Any, val attributes: FilterableAttributes)
 
-data class DocumentsFilterableAttributes(
-    override val searchText: String,
-    val name: String,
-    val expiryDate: Instant?,
-    val issuedDate: Instant?,
-    val issuer: String?,
-) : FilterableAttributes
+interface FilterableAttributes{
+    val searchText: String
+}

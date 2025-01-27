@@ -14,20 +14,22 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.businesslogic.extension
 
-import eu.europa.ec.businesslogic.model.FilterableAttributes
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
-data class FilterableDocumentItem(
-    val itemUi: DocumentItemUi,
-    val filterableAttributes: DocumentsFilterableAttributes,
-)
+fun Instant.isWithinNextDays(days: Long): Boolean {
+    val now = Instant.now()
+    val future = now.plus(days, ChronoUnit.DAYS)
+    return this.isAfter(now) && !this.isAfter(future)
+}
 
-data class DocumentsFilterableAttributes(
-    override val searchText: String,
-    val name: String,
-    val expiryDate: Instant?,
-    val issuedDate: Instant?,
-    val issuer: String?,
-) : FilterableAttributes
+fun Instant.isBeyondNextDays(days: Long): Boolean {
+    val now = Instant.now()
+    return this.isAfter(now.plus(days, ChronoUnit.DAYS))
+}
+
+fun Instant.isExpired(): Boolean {
+    return this.isBefore(Instant.now())
+}

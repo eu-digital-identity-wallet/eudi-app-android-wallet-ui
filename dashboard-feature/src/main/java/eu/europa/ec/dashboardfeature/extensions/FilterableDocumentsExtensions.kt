@@ -18,7 +18,7 @@ package eu.europa.ec.dashboardfeature.extensions
 
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
+import eu.europa.ec.dashboardfeature.model.DocumentItemUi
 import eu.europa.ec.dashboardfeature.model.FilterableAttributes
 import eu.europa.ec.dashboardfeature.model.FilterableDocumentItem
 import eu.europa.ec.dashboardfeature.model.FilterableDocuments
@@ -40,7 +40,7 @@ internal fun FilterableDocuments.getEmptyUIifEmptyList(resourceProvider: Resourc
     return copy(documents = documents.ifEmpty {
         listOf(
             FilterableDocumentItem(
-                itemUi = DocumentDetailsItemUi(
+                itemUi = DocumentItemUi(
                     documentIssuanceState = DocumentUiIssuanceState.Issued,
                     uiData = ListItemData(
                         itemId = "",
