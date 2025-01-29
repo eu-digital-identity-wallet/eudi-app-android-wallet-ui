@@ -23,6 +23,7 @@ import eu.europa.ec.businesslogic.extension.isWithinNextDays
 import eu.europa.ec.businesslogic.model.FilterAction
 import eu.europa.ec.businesslogic.model.FilterGroup
 import eu.europa.ec.businesslogic.model.FilterItem
+import eu.europa.ec.businesslogic.model.FilterableList
 import eu.europa.ec.businesslogic.model.Filters
 import eu.europa.ec.businesslogic.model.SortOrder
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
@@ -31,8 +32,6 @@ import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.FormatType
-import eu.europa.ec.dashboardfeature.extensions.getEmptyUIifEmptyList
-import eu.europa.ec.dashboardfeature.extensions.search
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
@@ -46,6 +45,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
+import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -77,20 +77,11 @@ data class State(
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val allowUserInteraction: Boolean = true, //TODO
     val isInitialDocumentLoading: Boolean = true,
+    val shouldRevertFilterChanges: Boolean = true,
 
     var filters: List<ExpandableListItemData> = emptyList(),
+    val sortOrder: DualSelectorButtonData,
     val isFilteringActive: Boolean,
-//    var initialFilters: List<ExpandableListItemData> = emptyList(),
-//    val appliedFilters: List<ExpandableListItemData> = emptyList(),
-//    var snapshotFilters: List<ExpandableListItemData> = emptyList(),
-//    val sortingOrderButtonDataApplied: DualSelectorButtonData,
-//    val sortingOrderButtonDataSnapshot: DualSelectorButtonData? = null,
-//    val sortingOrderButtonDataPrevious: DualSelectorButtonData? = null,
-//
-//    var allDocuments: FilterableDocuments? = null,
-//    var filteredDocuments: FilterableDocuments? = null,
-
-//    val queryText: String = "",
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -182,11 +173,11 @@ class DocumentsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-//            sortingOrderButtonDataApplied = DualSelectorButtonData(
-//                first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
-//                second = resourceProvider.getString(R.string.documents_screen_filters_descending),
-//                selectedButton = DualSelectorButton.FIRST,
-//            ),
+            sortOrder = DualSelectorButtonData(
+                first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
+                second = resourceProvider.getString(R.string.documents_screen_filters_descending),
+                selectedButton = DualSelectorButton.FIRST,
+            ),
             isFilteringActive = false
         )
     }
@@ -244,56 +235,16 @@ class DocumentsViewModel(
             }
 
             is Event.OnSortingOrderChanged -> {
-//                val selection = viewState.value.sortingOrderButtonDataApplied.copy(
-//                    selectedButton = event.sortingOrder
-//                )
-//                setState {
-//                    copy(
-//                        sortingOrderButtonDataSnapshot = selection,
-//                        sortingOrderButtonDataApplied = selection,
-//                        sortingOrderButtonDataPrevious = viewState.value.sortingOrderButtonDataApplied,
-//                    )
-//                }
+                sortOrderChanged(event.sortingOrder)
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-//                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
-//                    if (!event.isOpen) {
-//                        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
-//                            // Check if selection should be applied or discarded
-//                            val appliedSorting =
-//                                if (viewState.value.sortingOrderButtonDataSnapshot == null) {
-//                                    // Applying filtering
-//                                    viewState.value.sortingOrderButtonDataSnapshot
-//                                        ?: viewState.value.sortingOrderButtonDataApplied
-//                                } else {
-//                                    // Closing the bottom sheet without apply action
-//                                    viewState.value.sortingOrderButtonDataPrevious
-//                                        ?: viewState.value.sortingOrderButtonDataApplied
-//                                }
-//
-//                            setState {
-//                                copy(
-//                                    snapshotFilters = emptyList(),
-//                                    isBottomSheetOpen = false,
-//                                    filters = viewState.value.appliedFilters,
-//                                    sortingOrderButtonDataApplied = appliedSorting,
-//                                    sortingOrderButtonDataSnapshot = null,
-//                                    sortingOrderButtonDataPrevious = appliedSorting,
-//                                )
-//                            }
-//                            setEffect { Effect.ResumeOnApplyFilter }
-//                        }
-//                    } else {
-//                        setState {
-//                            copy(isBottomSheetOpen = true)
-//                        }
-//                    }
-//                } else {
-//                }
-                setState {
-                    copy(isBottomSheetOpen = event.isOpen)
+                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+                    && !event.isOpen
+                ) {
+                    setEffect { Effect.ResumeOnApplyFilter }
                 }
+                revertFilters(event.isOpen)
             }
 
             is Event.BottomSheet.Close -> {
@@ -336,7 +287,14 @@ class DocumentsViewModel(
 
     private fun filterStateChange() {
         viewModelScope.launch {
-            interactor.onFilterStateChange().collect {
+            interactor.onFilterStateChange().collect { result ->
+                setState {
+                    copy(
+                        documents = result.documents,
+                        filters = result.filters,
+                        sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                    )
+                }
             }
         }
     }
@@ -383,39 +341,21 @@ class DocumentsViewModel(
                                         documentIdentifier.formatType
                                 }
                             }
-
-                            val filteredDocumentsWithFailed =
-                                response.filterableDocuments.generateFailedDeferredDocs(
-                                    deferredFailedDocIds
-                                )
-                            val allDocumentsWithFailed =
+                            val documentsWithFailed =
                                 response.allDocuments.generateFailedDeferredDocs(
                                     deferredFailedDocIds
                                 )
-                            val filters =
-                                filteredDocumentsWithFailed.let {
-                                    if (shouldApplyFilters()) {
-                                        interactor.applyFilters(
-                                            it,
-                                            viewState.value.filters
-                                        ).filters
-                                    } else {
-                                        interactor.getFilters(allDocumentsWithFailed).filters
-                                    }
-                                }
-                            val initialFilters =
-                                interactor.getFilters(allDocumentsWithFailed).filters
+
+                            if (viewState.value.isInitialDocumentLoading) {
+                                interactor.initializeFilters(filters, documentsWithFailed)
+                            }
+
+                            interactor.applyFilters()
 
                             setState {
                                 copy(
                                     isLoading = false,
                                     error = null,
-                                    documents = filteredDocumentsWithFailed.search(viewState.value.queryText)
-                                        .getEmptyUIifEmptyList(resourceProvider).documents.map { it.itemUi },
-                                    filteredDocuments = filteredDocumentsWithFailed,
-                                    allDocuments = allDocumentsWithFailed,
-                                    filters = filters,
-                                    initialFilters = initialFilters,
                                     deferredFailedDocIds = deferredFailedDocIds,
                                     allowUserInteraction = response.shouldAllowUserInteraction,
                                     isInitialDocumentLoading = false
@@ -428,24 +368,25 @@ class DocumentsViewModel(
         }
     }
 
-    private fun FilterableDocuments.generateFailedDeferredDocs(deferredFailedDocIds: List<DocumentId>): FilterableDocuments {
-        return copy(documents = documents.map { documentUi ->
-            if (documentUi.itemUi.uiData.itemId in deferredFailedDocIds) {
-                documentUi.copy(
-                    itemUi = documentUi.itemUi.copy(
-                        documentIssuanceState = DocumentUiIssuanceState.Failed,
-                        uiData = documentUi.itemUi.uiData.copy(
-                            supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = AppIcons.ErrorFilled,
-                                tint = ThemeColors.error
-                            )
+    private fun FilterableList.generateFailedDeferredDocs(deferredFailedDocIds: List<DocumentId>): FilterableList {
+        return copy(items = items.map { filterableItem ->
+            val data = filterableItem.data as DocumentItemUi
+            val failedUiItem = if (data.uiData.itemId in deferredFailedDocIds) {
+                data.copy(
+                    documentIssuanceState = DocumentUiIssuanceState.Failed,
+                    uiData = data.uiData.copy(
+                        supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.ErrorFilled,
+                            tint = ThemeColors.error
                         )
                     )
-                } else {
-                    documentUi
-                }
+                )
+            } else {
+                data
             }
+
+            filterableItem.copy(data = failedUiItem)
         })
     }
 
@@ -510,12 +451,6 @@ class DocumentsViewModel(
                     }
                 }
             }
-        }
-    }
-
-    private fun shouldApplyFilters(): Boolean {
-        return with(viewState.value) {
-            isFilteringActive && !isInitialDocumentLoading
         }
     }
 
@@ -590,87 +525,54 @@ class DocumentsViewModel(
     }
 
     private fun applySearch(queryText: String) {
-        val searchResult =
-            viewState.value.filteredDocuments?.let { documents ->
-                interactor.searchDocuments(
-                    query = queryText,
-                    documents = documents,
-                    appliedFilters = viewState.value.filters
-                )
-            }
-        setState {
-            copy(
-                documents = searchResult?.documents?.documents?.map { it.itemUi }
-                    ?: emptyList(),
-                filters = searchResult?.filters ?: emptyList(),
-                queryText = queryText
-            )
-        }
+//        interactor.applySearch(queryText)
     }
 
     private fun updateFilter(filterId: String, groupId: String) {
-        val updatedFilters =
-            interactor.updateFilters(
-                filterId,
-                groupId,
-                viewState.value.filters
-            )
-
-        setState {
-            copy(
-                snapshotFilters = updatedFilters.filters,
-                filters = updatedFilters.filters
-            )
-        }
+        interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
     }
 
     private fun applySelectedFilters() {
-        val filtersToApply = viewState.value.snapshotFilters.ifEmpty {
-            viewState.value.filters
-        }
-        val applied =
-            viewState.value.allDocuments?.let {
-                interactor.applyFilters(
-                    it,
-                    filtersToApply
-                )
-            }
-        val appliedFilterDocuments = applied?.documents
-        val appliedFilters = applied?.filters ?: emptyList()
+        interactor.applyFilters()
         setState {
             copy(
-                documents = appliedFilterDocuments?.search(queryText)?.documents?.map { it.itemUi }
-                    ?: emptyList(),
-                filteredDocuments = appliedFilterDocuments,
-                appliedFilters = appliedFilters,
-                sortingOrderButtonDataSnapshot = null,
-                filters = appliedFilters,
-                isFilteringActive = true
+                isFilteringActive = true,
+                shouldRevertFilterChanges = false
             )
         }
         hideBottomSheet()
     }
 
     private fun resetFilters() {
-        val applied = viewState.value.allDocuments?.let { documents ->
-            interactor.resetFilters(
-                documents,
-                viewState.value.initialFilters
-            )
-        }
-        val appliedFilterDocuments = viewState.value.allDocuments
-        val appliedFilters = applied?.filters ?: emptyList()
+        interactor.resetFilters()
         setState {
             copy(
-                filters = appliedFilters,
-                filteredDocuments = appliedFilterDocuments,
-                sortingOrderButtonDataSnapshot = null,
-                sortingOrderButtonDataApplied = sortingOrderButtonDataApplied.copy(selectedButton = DualSelectorButton.FIRST),
-                appliedFilters = appliedFilters,
-                isFilteringActive = false
+                isFilteringActive = false,
             )
         }
         hideBottomSheet()
+    }
+
+    private fun revertFilters(isOpening: Boolean) {
+        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+            && !isOpening
+            && viewState.value.shouldRevertFilterChanges
+        ) {
+            interactor.revertFilters()
+            setState { copy(shouldRevertFilterChanges = true) }
+        }
+
+        setState {
+            copy(isBottomSheetOpen = isOpening)
+        }
+    }
+
+    private fun sortOrderChanged(orderButton: DualSelectorButton) {
+        val sortOrder = when (orderButton) {
+            DualSelectorButton.FIRST -> SortOrder.ASCENDING
+            DualSelectorButton.SECOND -> SortOrder.DESCENDING
+        }
+        interactor.updateSortOrder(sortOrder)
     }
 
     private fun goToDocumentDetails(docId: DocumentId) {
@@ -751,32 +653,32 @@ class DocumentsViewModel(
                         id = FilterIds.FILTER_BY_PERIOD_NEXT_7,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_1),
                         selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                            attributes.expiryDate.isWithinNextDays(7)
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isWithinNextDays(7) == true
                         }
                     ),
                     FilterItem(
                         id = FilterIds.FILTER_BY_PERIOD_NEXT_30,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_2),
                         selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                            attributes.expiryDate.isWithinNextDays(30)
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isWithinNextDays(30) == true
                         }
                     ),
                     FilterItem(
                         id = FilterIds.FILTER_BY_PERIOD_BEYOND_30,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_3),
                         selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                            attributes.expiryDate.isBeyondNextDays(30)
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isBeyondNextDays(30) == true
                         }
                     ),
                     FilterItem(
                         id = FilterIds.FILTER_BY_PERIOD_EXPIRED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_4),
                         selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                            attributes.expiryDate.isExpired()
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isExpired() == true
                         }
                     )
                 )
@@ -797,7 +699,7 @@ class DocumentsViewModel(
                     FilterItem(
                         id = FilterIds.FILTER_SORT_DATE_ISSUED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
-                        selected = true,
+                        selected = false,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
                             attributes.issuedDate
                         }
@@ -805,7 +707,7 @@ class DocumentsViewModel(
                     FilterItem(
                         id = FilterIds.FILTER_SORT_EXPIRY_DATE,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
-                        selected = true,
+                        selected = false,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
                             attributes.expiryDate
                         }
@@ -837,16 +739,16 @@ class DocumentsViewModel(
                         id = FilterIds.FILTER_BY_STATE_VALID,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid),
                         selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                            !attributes.expiryDate.isExpired()
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isExpired() == false
                         }
                     ),
                     FilterItem(
                         id = FilterIds.FILTER_BY_STATE_EXPIRED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
                         selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                            attributes.expiryDate.isExpired()
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isExpired() == true
                         }
                     )
                 )

@@ -239,7 +239,7 @@ private fun Content(
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.FiltersPressed) },
                 isFilteringActive = state.isFilteringActive,
-                text = state.queryText
+                text = "state.queryText" // TODO get from filters or something
             )
         }
         items(state.documents) { documentItem ->
@@ -274,6 +274,13 @@ private fun Content(
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         onEventSend(Event.GetDocuments)
+    }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_START
+    ) {
+        onEventSend(Event.Init)
     }
 
     LifecycleEffect(
@@ -338,7 +345,7 @@ private fun DocumentsSheetContent(
                         modifier = Modifier.verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                     ) {
-                        DualSelectorButtons(state.sortingOrderButtonDataApplied) {
+                        DualSelectorButtons(state.sortOrder) {
                             onEventSent(Event.OnSortingOrderChanged(it))
                         }
                         state.filters.forEachIndexed { index, filter ->

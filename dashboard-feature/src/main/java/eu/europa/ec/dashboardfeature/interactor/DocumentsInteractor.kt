@@ -33,8 +33,6 @@ import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.model.DocumentItemUi
 import eu.europa.ec.dashboardfeature.model.DocumentsFilterableAttributes
-import eu.europa.ec.dashboardfeature.model.FilterableDocumentItem
-import eu.europa.ec.dashboardfeature.model.FilterableDocuments
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
@@ -42,12 +40,14 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
@@ -57,29 +57,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 sealed class DocumentInteractorFilterPartialState {
-    data class FilterResult(val filterableList: FilterableList)
-//    data class ResetFilters(
-//        val documents: FilterableDocuments,
-//        val filters: List<ExpandableListItemData>,
-//    ) : DocumentInteractorFilterPartialState()
-//
-//    data class ApplyFilters(
-//        val documents: FilterableDocuments,
-//        val filters: List<ExpandableListItemData>,
-//    )
-//
-//    data class SearchResult(
-//        val documents: FilterableDocuments,
-//        val filters: List<ExpandableListItemData>,
-//    )
-//
-//    data class UpdateFilters(
-//        val filters: List<ExpandableListItemData>,
-//    )
-//
-//    data class GetInitialFilters(
-//        val filters: List<ExpandableListItemData>,
-//    )
+    data class FilterResult(
+        val documents: List<DocumentItemUi>,
+        val filters: List<ExpandableListItemData>,
+        val sortOrder: DualSelectorButton
+    )
 }
 
 sealed class DocumentInteractorGetDocumentsPartialState {
@@ -140,35 +122,12 @@ interface DocumentsInteractor {
         documentId: String,
     ): Flow<DocumentInteractorDeleteDocumentPartialState>
 
-//    fun getFilters(documents: FilterableDocuments): DocumentInteractorFilterPartialState.GetInitialFilters
-//    fun updateFilters(
-//        filterId: String,
-//        groupId: String,
-//        appliedFilters: List<ExpandableListItemData>,
-//    ): DocumentInteractorFilterPartialState.UpdateFilters
-//
-//    fun applyFilters(
-//        documents: FilterableDocuments,
-//        appliedFilters: List<ExpandableListItemData>,
-//    ): DocumentInteractorFilterPartialState.ApplyFilters
-//
-//    fun resetFilters(
-//        documents: FilterableDocuments,
-//        appliedFilters: List<ExpandableListItemData>,
-//    ): DocumentInteractorFilterPartialState.ResetFilters
-//
-//    fun searchDocuments(
-//        query: String,
-//        documents: FilterableDocuments,
-//        appliedFilters: List<ExpandableListItemData>,
-//    ): DocumentInteractorFilterPartialState.SearchResult
-
     fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState.FilterResult>
     fun initializeFilters(
         filters: Filters,
-        filterableDocuments: List<FilterableDocumentItem>,
-        scope: CoroutineScope? = null,
+        filterableList: FilterableList
     )
+
     fun updateLists(filterableList: FilterableList)
     fun applyFilters()
     fun applySearch(query: String)
@@ -187,34 +146,64 @@ class DocumentsInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState.FilterResult> = filtersController.onFilterStateChange().map { result ->
-        val s = result.filteredList.items.map {
-            it.data
-        }
+    override fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState.FilterResult> =
+        filtersController.onFilterStateChange().map { result ->
+            val documentsUi = result.filteredList.items.map { filterableItem ->
+                    filterableItem.data as DocumentItemUi
+            }
+            val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
+                ExpandableListItemData(
+                    collapsed = ListItemData(
+                        itemId = filterGroup.id,
+                        mainContentData = ListItemMainContentData.Text(filterGroup.name),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        )
+                    ), expanded = filterGroup.filters.map { filterItem ->
+                        ListItemData(
+                            itemId = filterItem.id,
+                            mainContentData = ListItemMainContentData.Text(filterItem.name),
+                            trailingContentData = ListItemTrailingContentData.RadioButton(
+                                radioButtonData = RadioButtonData(
+                                    isSelected = filterItem.selected,
+                                    enabled = true)
+                            ),
+                        )
+                    }
+                )
+            }
 
-        DocumentInteractorFilterPartialState.FilterResult(
-            filterableList = listOf()
-        )
-    }
+            val sortOrderUi = when(result.updatedFilters.sortOrder){
+                SortOrder.ASCENDING -> DualSelectorButton.FIRST
+                SortOrder.DESCENDING -> DualSelectorButton.SECOND
+            }
+
+            DocumentInteractorFilterPartialState.FilterResult(
+                documents = documentsUi,
+                filters = filtersUi,
+                sortOrder = sortOrderUi
+            )
+        }
 
     override fun initializeFilters(
         filters: Filters,
-        filterableDocuments: FilterableDocuments,
-        scope: CoroutineScope?,
+        filterableList: FilterableList
     ) {
-        val filterableList
-        filtersController.initializeFilters(filters, filterableList, scope)
+        filtersController.initializeFilters(filters, filterableList)
     }
 
-    override fun updateLists(filterableList: FilterableList) = filtersController.updateLists(filterableList)
+    override fun updateLists(filterableList: FilterableList) =
+        filtersController.updateLists(filterableList)
 
     override fun applySearch(query: String) = filtersController.applySearch(query)
 
     override fun revertFilters() = filtersController.revertFilters()
 
-    override fun updateFilter(filterGroupId: String, filterId: String) = filtersController.updateFilter(filterGroupId, filterId)
+    override fun updateFilter(filterGroupId: String, filterId: String) =
+        filtersController.updateFilter(filterGroupId, filterId)
 
-    override fun updateSortOrder(sortOrder: SortOrder) = filtersController.updateSortOrder(sortOrder)
+    override fun updateSortOrder(sortOrder: SortOrder) =
+        filtersController.updateSortOrder(sortOrder)
 
     override fun applyFilters() = filtersController.applyFilters()
 
@@ -225,7 +214,8 @@ class DocumentsInteractorImpl(
             val shouldAllowUserInteraction =
                 walletCoreDocumentsController.getMainPidDocument() != null
 
-            val allDocuments = FilterableList(items = walletCoreDocumentsController.getAllDocuments().map { document ->
+            val allDocuments = FilterableList(
+                items = walletCoreDocumentsController.getAllDocuments().map { document ->
                     when (document) {
                         is IssuedDocument -> {
                             val localizedIssuerMetadata =
@@ -257,33 +247,6 @@ class DocumentsInteractorImpl(
                                     searchText = document.name
                                 )
                             )
-//                            FilterableDocumentItem(
-//                                filterableAttributes = DocumentsFilterableAttributes(
-//                                    issuedDate = document.issuedAt,
-//                                    expiryDate = document.validUntil,
-//                                    issuer = localizedIssuerMetadata?.name,
-//                                    name = document.name,
-//                                    searchText = document.name
-//                                ),
-//                                itemUi = DocumentItemUi(
-//                                    documentIssuanceState = DocumentUiIssuanceState.Issued,
-//                                    uiData = ListItemData(
-//                                        itemId = document.id,
-//                                        mainContentData = ListItemMainContentData.Text(text = document.name),
-//                                        overlineText = localizedIssuerMetadata?.name,
-//                                        supportingText = "${resourceProvider.getString(R.string.dashboard_document_has_not_expired)}: " +
-//                                                document.validUntil.formatInstant(),
-//                                        leadingContentData = ListItemLeadingContentData.AsyncImage(
-//                                            imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
-//                                            errorImage = AppIcons.Id,
-//                                        ),
-//                                        trailingContentData = ListItemTrailingContentData.Icon(
-//                                            iconData = AppIcons.KeyboardArrowRight
-//                                        )
-//                                    ),
-//                                    documentIdentifier = document.toDocumentIdentifier(),
-//                                )
-//                            )
                         }
 
                         is UnsignedDocument -> {
@@ -317,33 +280,6 @@ class DocumentsInteractorImpl(
                                     searchText = document.name
                                 )
                             )
-//                            FilterableDocumentItem(
-//                                filterableAttributes = DocumentsFilterableAttributes(
-//                                    issuedDate = null,
-//                                    expiryDate = null,
-//                                    issuer = localizedIssuerMetadata?.name,
-//                                    name = document.name,
-//                                    searchText = document.name
-//                                ),
-//                                itemUi = DocumentItemUi(
-//                                    documentIssuanceState = DocumentUiIssuanceState.Pending,
-//                                    uiData = ListItemData(
-//                                        itemId = document.id,
-//                                        mainContentData = ListItemMainContentData.Text(text = document.name),
-//                                        overlineText = localizedIssuerMetadata?.name,
-//                                        supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
-//                                        leadingContentData = ListItemLeadingContentData.AsyncImage(
-//                                            imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
-//                                            errorImage = AppIcons.Id,
-//                                        ),
-//                                        trailingContentData = ListItemTrailingContentData.Icon(
-//                                            iconData = AppIcons.ClockTimer,
-//                                            tint = ThemeColors.warning,
-//                                        )
-//                                    ),
-//                                    documentIdentifier = document.toDocumentIdentifier(),
-//                                )
-//                            )
                         }
                     }
                 }
@@ -476,49 +412,4 @@ class DocumentsInteractorImpl(
                 errorMessage = it.localizedMessage ?: genericErrorMsg
             )
         }
-
-//    override fun getFilters(documents: FilterableDocuments): DocumentInteractorFilterPartialState.GetInitialFilters {
-//        return DocumentInteractorFilterPartialState.GetInitialFilters(
-//            filtersController.getAllFilter(documents)
-//        )
-//    }
-
-//    override fun updateFilters(
-//        filterId: String,
-//        groupId: String,
-//        appliedFilters: List<ExpandableListItemData>,
-//    ): DocumentInteractorFilterPartialState.UpdateFilters {
-//        return DocumentInteractorFilterPartialState.UpdateFilters(
-//            filters = filtersController.updateFilter(filterId, groupId, appliedFilters)
-//        )
-//    }
-//
-//    override fun applyFilters(
-//        documents: FilterableDocuments,
-//        appliedFilters: List<ExpandableListItemData>,
-//    ): DocumentInteractorFilterPartialState.ApplyFilters {
-//        val (filteredDocuments, filters) = filtersController.applyFilters(documents, appliedFilters)
-//        return DocumentInteractorFilterPartialState.ApplyFilters(filteredDocuments, filters)
-//    }
-
-//    override fun resetFilters(
-//        documents: FilterableDocuments,
-//        appliedFilters: List<ExpandableListItemData>,
-//    ): DocumentInteractorFilterPartialState.ResetFilters {
-//        val (filteredDocuments, filters) = filtersController.resetFilters(documents, appliedFilters)
-//        return DocumentInteractorFilterPartialState.ResetFilters(filteredDocuments, filters)
-//    }
-
-//    override fun searchDocuments(
-//        query: String,
-//        documents: FilterableDocuments,
-//        appliedFilters: List<ExpandableListItemData>,
-//    ): DocumentInteractorFilterPartialState.SearchResult {
-//        val (searchedDocuments, filters) = filtersController.applySearch(
-//            documents,
-//            appliedFilters,
-//            query
-//        )
-//        return DocumentInteractorFilterPartialState.SearchResult(searchedDocuments, filters)
-//    }
 }

@@ -19,11 +19,6 @@ package eu.europa.ec.dashboardfeature.model
 import eu.europa.ec.businesslogic.model.FilterableAttributes
 import java.time.Instant
 
-data class FilterableDocumentItem(
-    val itemUi: DocumentItemUi,
-    val filterableAttributes: DocumentsFilterableAttributes,
-)
-
 data class DocumentsFilterableAttributes(
     override val searchText: String,
     val name: String,
