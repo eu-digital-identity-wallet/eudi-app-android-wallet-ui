@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.dashboardfeature.model.SearchItem
@@ -99,7 +100,7 @@ fun DocumentsScreen(
     viewModel: DocumentsViewModel,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
-    val state = viewModel.viewState.value
+    val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     val isBottomSheetOpen = state.isBottomSheetOpen
