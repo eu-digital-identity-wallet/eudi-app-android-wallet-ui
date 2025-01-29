@@ -26,10 +26,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.dashboardfeature.model.SignDocumentButtonUi
 import eu.europa.ec.resourceslogic.R
@@ -57,7 +59,7 @@ internal fun DocumentSignScreen(
     navController: NavController,
     viewModel: DocumentSignViewModel,
 ) {
-    val state = viewModel.viewState.value
+    val state: State by viewModel.viewState.collectAsStateWithLifecycle()
 
     ContentScreen(
         isLoading = state.isLoading,

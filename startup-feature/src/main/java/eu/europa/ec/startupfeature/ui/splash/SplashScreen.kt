@@ -29,9 +29,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
@@ -47,8 +49,9 @@ fun SplashScreen(
     navController: NavController,
     viewModel: SplashViewModel
 ) {
+    val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     Content(
-        state = viewModel.viewState.value,
+        state = state,
         effectFlow = viewModel.effect,
         onNavigationRequested = {
             when (it) {

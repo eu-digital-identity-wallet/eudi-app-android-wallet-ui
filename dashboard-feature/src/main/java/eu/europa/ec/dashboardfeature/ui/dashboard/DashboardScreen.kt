@@ -27,10 +27,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -64,7 +66,7 @@ fun DashboardScreen(
 ) {
     val context = LocalContext.current
     val bottomNavigationController = rememberNavController()
-    val state = viewModel.viewState.value
+    val state: State by viewModel.viewState.collectAsStateWithLifecycle()
 
     Scaffold(
         bottomBar = { BottomNavigationBar(bottomNavigationController) }

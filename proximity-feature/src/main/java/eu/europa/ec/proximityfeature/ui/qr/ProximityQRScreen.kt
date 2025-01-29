@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.proximityfeature.ui.qr.component.rememberQrBitmapPainter
 import eu.europa.ec.resourceslogic.R
@@ -64,7 +66,7 @@ fun ProximityQRScreen(
     navController: NavController,
     viewModel: ProximityQRViewModel
 ) {
-    val state = viewModel.viewState.value
+    val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     ContentScreen(
