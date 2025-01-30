@@ -62,7 +62,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
+import eu.europa.ec.uilogic.component.utils.SIZE_XXX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
@@ -159,7 +159,7 @@ private fun TopBar(
 ) {
     Row(
         modifier = Modifier
-            .height(SIZE_XX_LARGE.dp)
+            .height(SIZE_XXX_LARGE.dp)
             .fillMaxSize()
             .padding(SPACING_MEDIUM.dp),
         Arrangement.SpaceBetween
@@ -176,7 +176,7 @@ private fun TopBar(
         // wallet logo
         AppIconAndText(appIconAndTextData = AppIconAndTextData())
 
-        HSpacer.ExtraLarge()
+        HSpacer.XXLarge()
     }
 }
 

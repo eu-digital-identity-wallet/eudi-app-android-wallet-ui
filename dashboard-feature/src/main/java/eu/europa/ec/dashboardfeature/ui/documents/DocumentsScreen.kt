@@ -66,7 +66,7 @@ import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
+import eu.europa.ec.uilogic.component.utils.SIZE_XXX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -179,7 +179,7 @@ private fun TopBar(
 ) {
     Row(
         modifier = Modifier
-            .height(SIZE_XX_LARGE.dp)
+            .height(SIZE_XXX_LARGE.dp)
             .fillMaxSize()
             .padding(SPACING_MEDIUM.dp),
         horizontalArrangement = Arrangement.SpaceEvenly

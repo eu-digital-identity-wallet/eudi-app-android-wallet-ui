@@ -35,9 +35,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
@@ -57,7 +57,7 @@ fun DualSelectorButtons(data: DualSelectorButtonData, onClick: (DualSelectorButt
 
     Row(
         modifier = Modifier
-            .height(SIZE_EXTRA_LARGE.dp)
+            .height(SIZE_XX_LARGE.dp)
             .fillMaxWidth()
     ) {
         RoundedBorderText(

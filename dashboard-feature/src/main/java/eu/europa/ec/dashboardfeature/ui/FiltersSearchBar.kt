@@ -39,7 +39,6 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
-import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
@@ -55,8 +54,7 @@ fun FiltersSearchBar(
     var value by remember { mutableStateOf(text) }
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = SPACING_MEDIUM.dp, bottom = SPACING_MEDIUM.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         OutlinedTextField(
