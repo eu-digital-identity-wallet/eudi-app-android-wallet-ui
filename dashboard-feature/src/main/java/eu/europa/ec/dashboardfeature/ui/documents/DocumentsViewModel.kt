@@ -293,6 +293,7 @@ class DocumentsViewModel(
                     is DocumentInteractorFilterPartialState.FilterApplyResult -> {
                         setState {
                             copy(
+                                isFilteringActive = result.hasMoreThanDefaultFilterApplied,
                                 documents = result.documents,
                                 filters = result.filters,
                                 sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
@@ -359,6 +360,8 @@ class DocumentsViewModel(
                                 response.allDocuments.generateFailedDeferredDocs(
                                     deferredFailedDocIds
                                 )
+
+                            addIssuerFilters(documentsWithFailed)
 
                             if (viewState.value.isInitialDocumentLoading) {
                                 interactor.initializeFilters(filters, documentsWithFailed)
@@ -553,7 +556,6 @@ class DocumentsViewModel(
         interactor.applyFilters()
         setState {
             copy(
-                isFilteringActive = true,
                 shouldRevertFilterChanges = false
             )
         }
@@ -660,7 +662,47 @@ class DocumentsViewModel(
         }
     }
 
-    val filters = Filters(
+    private fun addIssuerFilters(documents: FilterableList) {
+        filters = filters.copy(filterGroups = filters.filterGroups.map { filterGroup ->
+            if (filterGroup.id == FilterIds.FILTER_BY_ISSUER_GROUP_ID) {
+                filterGroup.copy(
+                    filters = documents.items.distinctBy { (it.attributes as DocumentsFilterableAttributes).issuer }
+                        .mapNotNull { filterableItem ->
+                            with(filterableItem.attributes as DocumentsFilterableAttributes) {
+                                if (issuer != null) {
+                                    FilterItem(
+                                        id = issuer,
+                                        name = issuer,
+                                        selected = false,
+                                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                                            attributes.issuer == filter.name
+                                        }
+                                    )
+                                } else {
+                                    null
+                                }
+                            }
+                        }.toMutableList().apply {
+                            add(
+                                0,
+                                FilterItem(
+                                    id = FilterIds.FILTER_BY_ISSUER_ALL,
+                                    name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all),
+                                    selected = true,
+                                    filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
+                                        true // Get all
+                                    }
+                                )
+                            )
+                        }
+                )
+            } else {
+                filterGroup
+            }
+        })
+    }
+
+    var filters = Filters(
         filterGroups = listOf(
             // Filter by expiry period
             FilterGroup(

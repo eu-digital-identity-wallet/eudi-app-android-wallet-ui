@@ -62,6 +62,7 @@ sealed class DocumentInteractorFilterPartialState {
         val documents: List<DocumentItemUi>,
         val filters: List<ExpandableListItemData>,
         val sortOrder: DualSelectorButton,
+        val hasMoreThanDefaultFilterApplied: Boolean,
     ) : DocumentInteractorFilterPartialState()
 
     data class FilterUpdateResult(
@@ -195,7 +196,8 @@ class DocumentsInteractorImpl(
                 DocumentInteractorFilterPartialState.FilterApplyResult(
                     documents = documentsUi,
                     filters = filtersUi,
-                    sortOrder = sortOrderUi
+                    sortOrder = sortOrderUi,
+                    hasMoreThanDefaultFilterApplied = result.hasMoreThanDefaultFilters
                 )
             } else {
                 DocumentInteractorFilterPartialState.FilterUpdateResult(

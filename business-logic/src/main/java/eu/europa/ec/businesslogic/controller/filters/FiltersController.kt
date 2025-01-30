@@ -16,6 +16,7 @@
 
 package eu.europa.ec.businesslogic.controller.filters
 
+import eu.europa.ec.businesslogic.extension.sortByOrder
 import eu.europa.ec.businesslogic.model.FilterableList
 import eu.europa.ec.businesslogic.model.Filters
 import eu.europa.ec.businesslogic.model.SortOrder
@@ -26,7 +27,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
@@ -35,6 +35,7 @@ sealed interface FiltersControllerPartialState {
 
     data class FilterApplyResult(
         val filteredList: FilterableList,
+        val hasMoreThanDefaultFilters: Boolean,
         override val updatedFilters: Filters,
     ) : FiltersControllerPartialState
 
@@ -71,19 +72,19 @@ class FiltersControllerImpl : FiltersController {
 
     // Collection
     private lateinit var initialList: FilterableList
-    private lateinit var filteredList: FilterableList
 
     // Flow
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
     private val filterResultMutableFlow = MutableSharedFlow<FiltersControllerPartialState>()
     private val filterResultFlow: SharedFlow<FiltersControllerPartialState> =
         filterResultMutableFlow
-            .debounce(300)
             .shareIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(),
                 replay = 1
             )
+
+    private var hasMoreThanDefaultFilterApplied: Boolean = false
 
     override fun initializeFilters(
         filters: Filters,
@@ -91,14 +92,19 @@ class FiltersControllerImpl : FiltersController {
     ) {
         this.initialFilters = filters
         this.appliedFilters = filters
-        this.initialList = filterableList
-        this.filteredList = filterableList
+        // We want to sort by name (this is the default)
+        // in order to prevent the random order.
+        // Maybe think of a way for the FiltersController's user to define the default sort order.
+        this.initialList = filterableList.copy(
+            items = filterableList.items
+                .sortByOrder(filters.sortOrder) {
+                    it.attributes.searchText
+                }
+        )
     }
 
     override fun updateLists(filterableList: FilterableList) {
         this.initialList = filterableList
-        this.filteredList = filterableList
-        applyFilters()
     }
 
     override fun onFilterStateChange(): Flow<FiltersControllerPartialState> = filterResultFlow
@@ -108,18 +114,14 @@ class FiltersControllerImpl : FiltersController {
         val updatedFilterGroups = filtersToUpdate.filterGroups.map { group ->
             if (group.id == filterGroupId) {
                 group.copy(filters = group.filters.map { filter ->
-                    if (filter.id == filterId) {
-                        filter.copy(selected = true) // Select the target filter
-                    } else {
-                        filter.copy(selected = false) // Deselect other filters in the same group
-                    }
+                    filter.copy(selected = filter.id == filterId) // Select the target filter
                 })
             } else {
                 group // Keep other groups unchanged
             }
         }
 
-        val updatedFilters = appliedFilters.copy(filterGroups = updatedFilterGroups)
+        val updatedFilters = filtersToUpdate.copy(filterGroups = updatedFilterGroups)
         snapshotFilters = updatedFilters
 
         scope.launch {
@@ -132,15 +134,13 @@ class FiltersControllerImpl : FiltersController {
     }
 
     override fun resetFilters() {
+        // Return back to default filters
         appliedFilters = initialFilters
-        scope.launch {
-            filterResultMutableFlow.emit(
-                FiltersControllerPartialState.FilterApplyResult(
-                    filteredList = initialList,
-                    updatedFilters = appliedFilters
-                )
-            )
-        }
+        // Remove if any selected filter
+        snapshotFilters = Filters.emptyFilters()
+        // Apply the default
+        hasMoreThanDefaultFilterApplied = false
+        applyFilters()
     }
 
     override fun revertFilters() {
@@ -155,7 +155,9 @@ class FiltersControllerImpl : FiltersController {
     }
 
     override fun updateSortOrder(sortOrder: SortOrder) {
-        snapshotFilters = appliedFilters.copy(sortOrder = sortOrder)
+        val filterToUpdateOrderChange =
+            if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
+        snapshotFilters = filterToUpdateOrderChange.copy(sortOrder = sortOrder)
         scope.launch {
             filterResultMutableFlow.emit(
                 FiltersControllerPartialState.FilterUpdateResult(
@@ -169,12 +171,14 @@ class FiltersControllerImpl : FiltersController {
         if (!snapshotFilters.isEmpty) {
             appliedFilters = snapshotFilters.copy()
             snapshotFilters = Filters.emptyFilters()
+            hasMoreThanDefaultFilterApplied = true
         }
+
         val newList = appliedFilters
             .filterGroups
             .flatMap { it.filters }
             .filter { it.selected }
-            .fold(filteredList) { currentList, filter ->
+            .fold(initialList) { currentList, filter ->
                 filter.filterableAction.applyFilter(appliedFilters.sortOrder, currentList, filter)
             }.let {
                 it.copy(items = it.items.filter { item ->
@@ -189,7 +193,8 @@ class FiltersControllerImpl : FiltersController {
             filterResultMutableFlow.emit(
                 FiltersControllerPartialState.FilterApplyResult(
                     filteredList = newList,
-                    updatedFilters = appliedFilters
+                    updatedFilters = appliedFilters,
+                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
                 )
             )
         }
@@ -197,14 +202,15 @@ class FiltersControllerImpl : FiltersController {
 
     override fun applySearch(query: String) {
         searchQuery = query
-        val newList = filteredList.copy(items = filteredList.items.filter {
+        val newList = initialList.copy(items = initialList.items.filter {
             it.attributes.searchText.contains(query, ignoreCase = true)
         })
         scope.launch {
             filterResultMutableFlow.emit(
                 FiltersControllerPartialState.FilterApplyResult(
                     filteredList = newList,
-                    updatedFilters = appliedFilters
+                    updatedFilters = appliedFilters,
+                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
                 )
             )
         }
