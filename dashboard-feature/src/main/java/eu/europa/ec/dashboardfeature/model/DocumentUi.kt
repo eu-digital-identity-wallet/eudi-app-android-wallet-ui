@@ -17,11 +17,13 @@
 package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.uilogic.component.ListItemData
 
-data class DocumentDetailsItemUi(
+data class DocumentUi(
     val documentIssuanceState: DocumentUiIssuanceState,
     val uiData: ListItemData,
     val documentIdentifier: DocumentIdentifier,
+    val documentCategory: DocumentCategory,
 )

@@ -17,8 +17,9 @@
 package eu.europa.ec.dashboardfeature.extensions
 
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.FilterableAttributes
 import eu.europa.ec.dashboardfeature.model.FilterableDocumentItem
 import eu.europa.ec.dashboardfeature.model.FilterableDocuments
@@ -40,7 +41,7 @@ internal fun FilterableDocuments.getEmptyUIifEmptyList(resourceProvider: Resourc
     return copy(documents = documents.ifEmpty {
         listOf(
             FilterableDocumentItem(
-                itemUi = DocumentDetailsItemUi(
+                itemUi = DocumentUi(
                     documentIssuanceState = DocumentUiIssuanceState.Issued,
                     uiData = ListItemData(
                         itemId = "",
@@ -56,8 +57,10 @@ internal fun FilterableDocuments.getEmptyUIifEmptyList(resourceProvider: Resourc
                     ),
                     documentIdentifier = DocumentIdentifier.OTHER(
                         formatType = ""
-                    )
-                ), filterableAttributes = FilterableAttributes(
+                    ),
+                    documentCategory = DocumentCategory.Other,
+                ),
+                filterableAttributes = FilterableAttributes(
                     issuedDate = null,
                     expiryDate = null,
                     issuer = null

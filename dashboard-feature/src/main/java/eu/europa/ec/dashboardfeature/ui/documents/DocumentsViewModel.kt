@@ -29,7 +29,7 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocument
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
-import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.FilterableDocuments
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
@@ -64,7 +64,7 @@ data class State(
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
 
-    val documents: List<DocumentDetailsItemUi> = emptyList(),
+    val documents: List<DocumentUi> = emptyList(),
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val allowUserInteraction: Boolean = true,
     val isInitialDocumentLoading: Boolean = true,
@@ -82,7 +82,10 @@ data class State(
     var filteredDocuments: FilterableDocuments? = null,
 
     val queryText: String = "",
-) : ViewState
+) : ViewState {
+    val groups = documents.groupBy { it.documentCategory }
+        .toList()
+}
 
 sealed class Event : ViewEvent {
     data object GetDocuments : Event()

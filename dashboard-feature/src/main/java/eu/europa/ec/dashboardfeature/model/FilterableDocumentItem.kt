@@ -26,7 +26,7 @@ data class FilterableAttributes(
 )
 
 data class FilterableDocumentItem(
-    val itemUi: DocumentDetailsItemUi,
+    val itemUi: DocumentUi,
     val filterableAttributes: FilterableAttributes,
 )
 

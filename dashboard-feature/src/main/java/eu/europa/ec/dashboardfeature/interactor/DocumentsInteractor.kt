@@ -20,15 +20,17 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.documentHasExpired
+import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.corelogic.model.toDocumentCategory
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.controllers.FiltersController
-import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.FilterableAttributes
 import eu.europa.ec.dashboardfeature.model.FilterableDocumentItem
 import eu.europa.ec.dashboardfeature.model.FilterableDocuments
@@ -170,6 +172,7 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filtersController: FiltersController,
+    private val walletCoreConfig: WalletCoreConfig,
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -190,6 +193,12 @@ class DocumentsInteractorImpl(
                         is IssuedDocument -> {
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(resourceProvider.getLocale())
+
+                            val documentIdentifier = document.toDocumentIdentifier()
+
+                            val documentCategory = documentIdentifier.toDocumentCategory(
+                                allCategories = walletCoreConfig.documentsCategories
+                            )
 
                             val documentHasExpired =
                                 documentHasExpired(documentExpirationDate = document.validUntil)
@@ -215,7 +224,7 @@ class DocumentsInteractorImpl(
                                     expiryDate = document.validUntil,
                                     issuer = localizedIssuerMetadata?.name
                                 ),
-                                itemUi = DocumentDetailsItemUi(
+                                itemUi = DocumentUi(
                                     documentIssuanceState = documentIssuanceState,
                                     uiData = ListItemData(
                                         itemId = document.id,
@@ -230,7 +239,8 @@ class DocumentsInteractorImpl(
                                             iconData = AppIcons.KeyboardArrowRight
                                         )
                                     ),
-                                    documentIdentifier = document.toDocumentIdentifier(),
+                                    documentIdentifier = documentIdentifier,
+                                    documentCategory = documentCategory,
                                 )
                             )
                         }
@@ -239,13 +249,19 @@ class DocumentsInteractorImpl(
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(resourceProvider.getLocale())
 
+                            val documentIdentifier = document.toDocumentIdentifier()
+
+                            val documentCategory = documentIdentifier.toDocumentCategory(
+                                allCategories = walletCoreConfig.documentsCategories
+                            )
+
                             FilterableDocumentItem(
                                 filterableAttributes = FilterableAttributes(
                                     issuedDate = null,
                                     expiryDate = null,
                                     issuer = localizedIssuerMetadata?.name
                                 ),
-                                itemUi = DocumentDetailsItemUi(
+                                itemUi = DocumentUi(
                                     documentIssuanceState = DocumentUiIssuanceState.Pending,
                                     uiData = ListItemData(
                                         itemId = document.id,
@@ -261,12 +277,14 @@ class DocumentsInteractorImpl(
                                             tint = ThemeColors.warning,
                                         )
                                     ),
-                                    documentIdentifier = document.toDocumentIdentifier(),
+                                    documentIdentifier = documentIdentifier,
+                                    documentCategory = documentCategory,
                                 )
                             )
                         }
                     }
-                }, sortingOrder = sortingOrder
+                },
+                sortingOrder = sortingOrder
             )
             val filteredDocuments =
                 filtersController.applyFilters(allDocuments, selectedFilters).first

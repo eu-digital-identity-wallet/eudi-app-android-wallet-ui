@@ -16,8 +16,11 @@
 
 package eu.europa.ec.corelogic.config
 
+import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 
 interface WalletCoreConfig {
     val config: EudiWalletConfig
+
+    val documentsCategories: DocumentCategories
 }
