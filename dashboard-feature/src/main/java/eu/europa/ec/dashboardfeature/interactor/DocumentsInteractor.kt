@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.controller.filters.FiltersController
+import eu.europa.ec.businesslogic.controller.filters.FiltersControllerPartialState
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.model.FilterableItem
 import eu.europa.ec.businesslogic.model.FilterableList
@@ -57,11 +58,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 sealed class DocumentInteractorFilterPartialState {
-    data class FilterResult(
+    data class FilterApplyResult(
         val documents: List<DocumentItemUi>,
         val filters: List<ExpandableListItemData>,
-        val sortOrder: DualSelectorButton
-    )
+        val sortOrder: DualSelectorButton,
+    ) : DocumentInteractorFilterPartialState()
+
+    data class FilterUpdateResult(
+        val filters: List<ExpandableListItemData>,
+        val sortOrder: DualSelectorButton,
+    ) : DocumentInteractorFilterPartialState()
 }
 
 sealed class DocumentInteractorGetDocumentsPartialState {
@@ -122,10 +128,10 @@ interface DocumentsInteractor {
         documentId: String,
     ): Flow<DocumentInteractorDeleteDocumentPartialState>
 
-    fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState.FilterResult>
+    fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState>
     fun initializeFilters(
         filters: Filters,
-        filterableList: FilterableList
+        filterableList: FilterableList,
     )
 
     fun updateLists(filterableList: FilterableList)
@@ -146,11 +152,17 @@ class DocumentsInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState.FilterResult> =
+    override fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState> =
         filtersController.onFilterStateChange().map { result ->
-            val documentsUi = result.filteredList.items.map { filterableItem ->
-                    filterableItem.data as DocumentItemUi
-            }
+            val documentsUi: List<DocumentItemUi> =
+                if (result is FiltersControllerPartialState.FilterApplyResult) {
+                    result.filteredList.items.map { filterableItem ->
+                        filterableItem.payload as DocumentItemUi
+                    }
+                } else {
+                    emptyList()
+                }
+
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
                 ExpandableListItemData(
                     collapsed = ListItemData(
@@ -166,28 +178,36 @@ class DocumentsInteractorImpl(
                             trailingContentData = ListItemTrailingContentData.RadioButton(
                                 radioButtonData = RadioButtonData(
                                     isSelected = filterItem.selected,
-                                    enabled = true)
+                                    enabled = true
+                                )
                             ),
                         )
                     }
                 )
             }
 
-            val sortOrderUi = when(result.updatedFilters.sortOrder){
+            val sortOrderUi = when (result.updatedFilters.sortOrder) {
                 SortOrder.ASCENDING -> DualSelectorButton.FIRST
                 SortOrder.DESCENDING -> DualSelectorButton.SECOND
             }
 
-            DocumentInteractorFilterPartialState.FilterResult(
-                documents = documentsUi,
-                filters = filtersUi,
-                sortOrder = sortOrderUi
-            )
+            if (result is FiltersControllerPartialState.FilterApplyResult) {
+                DocumentInteractorFilterPartialState.FilterApplyResult(
+                    documents = documentsUi,
+                    filters = filtersUi,
+                    sortOrder = sortOrderUi
+                )
+            } else {
+                DocumentInteractorFilterPartialState.FilterUpdateResult(
+                    filters = filtersUi,
+                    sortOrder = sortOrderUi
+                )
+            }
         }
 
     override fun initializeFilters(
         filters: Filters,
-        filterableList: FilterableList
+        filterableList: FilterableList,
     ) {
         filtersController.initializeFilters(filters, filterableList)
     }
@@ -221,7 +241,7 @@ class DocumentsInteractorImpl(
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(resourceProvider.getLocale())
                             FilterableItem(
-                                data = DocumentItemUi(
+                                payload = DocumentItemUi(
                                     documentIssuanceState = DocumentUiIssuanceState.Issued,
                                     uiData = ListItemData(
                                         itemId = document.id,
@@ -254,7 +274,7 @@ class DocumentsInteractorImpl(
                                 document.localizedIssuerMetadata(resourceProvider.getLocale())
 
                             FilterableItem(
-                                data = DocumentItemUi(
+                                payload = DocumentItemUi(
                                     documentIssuanceState = DocumentUiIssuanceState.Pending,
                                     uiData = ListItemData(
                                         itemId = document.id,

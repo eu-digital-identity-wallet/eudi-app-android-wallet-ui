@@ -25,20 +25,31 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
-data class FilterResult(
-    val filteredList: FilterableList,
-    val updatedFilters: Filters,
-)
+sealed interface FiltersControllerPartialState {
+    val updatedFilters: Filters
+
+    data class FilterApplyResult(
+        val filteredList: FilterableList,
+        override val updatedFilters: Filters,
+    ) : FiltersControllerPartialState
+
+    data class FilterUpdateResult(
+        override val updatedFilters: Filters,
+    ) : FiltersControllerPartialState
+}
 
 interface FiltersController {
-    fun onFilterStateChange(): Flow<FilterResult>
+    fun onFilterStateChange(): Flow<FiltersControllerPartialState>
     fun initializeFilters(
         filters: Filters,
-        filterableList: FilterableList
+        filterableList: FilterableList,
     )
+
     fun updateLists(filterableList: FilterableList)
     fun applyFilters()
     fun applySearch(query: String)
@@ -64,12 +75,19 @@ class FiltersControllerImpl : FiltersController {
 
     // Flow
     private val scope = CoroutineScope(Job() + Dispatchers.Main)
-    private val filterResultMutableFlow = MutableSharedFlow<FilterResult>()
-    private val filterResultFlow: SharedFlow<FilterResult> = filterResultMutableFlow.asSharedFlow()
+    private val filterResultMutableFlow = MutableSharedFlow<FiltersControllerPartialState>()
+    private val filterResultFlow: SharedFlow<FiltersControllerPartialState> =
+        filterResultMutableFlow
+            .debounce(300)
+            .shareIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(),
+                replay = 1
+            )
 
     override fun initializeFilters(
         filters: Filters,
-        filterableList: FilterableList
+        filterableList: FilterableList,
     ) {
         this.initialFilters = filters
         this.appliedFilters = filters
@@ -83,10 +101,10 @@ class FiltersControllerImpl : FiltersController {
         applyFilters()
     }
 
-    override fun onFilterStateChange(): Flow<FilterResult> = filterResultFlow
+    override fun onFilterStateChange(): Flow<FiltersControllerPartialState> = filterResultFlow
 
     override fun updateFilter(filterGroupId: String, filterId: String) {
-        val filtersToUpdate = if(snapshotFilters.isEmpty) appliedFilters else snapshotFilters
+        val filtersToUpdate = if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
         val updatedFilterGroups = filtersToUpdate.filterGroups.map { group ->
             if (group.id == filterGroupId) {
                 group.copy(filters = group.filters.map { filter ->
@@ -105,28 +123,45 @@ class FiltersControllerImpl : FiltersController {
         snapshotFilters = updatedFilters
 
         scope.launch {
-            filterResultMutableFlow.emit(FilterResult(filteredList, snapshotFilters))
+            filterResultMutableFlow.emit(
+                FiltersControllerPartialState.FilterUpdateResult(
+                    updatedFilters = snapshotFilters
+                )
+            )
         }
     }
 
     override fun resetFilters() {
         appliedFilters = initialFilters
         scope.launch {
-            filterResultMutableFlow.emit(FilterResult(initialList, appliedFilters))
+            filterResultMutableFlow.emit(
+                FiltersControllerPartialState.FilterApplyResult(
+                    filteredList = initialList,
+                    updatedFilters = appliedFilters
+                )
+            )
         }
     }
 
     override fun revertFilters() {
         snapshotFilters = Filters.emptyFilters()
         scope.launch {
-            filterResultMutableFlow.emit(FilterResult(filteredList, appliedFilters))
+            filterResultMutableFlow.emit(
+                FiltersControllerPartialState.FilterUpdateResult(
+                    updatedFilters = appliedFilters
+                )
+            )
         }
     }
 
     override fun updateSortOrder(sortOrder: SortOrder) {
         snapshotFilters = appliedFilters.copy(sortOrder = sortOrder)
         scope.launch {
-            filterResultMutableFlow.emit(FilterResult(filteredList, snapshotFilters))
+            filterResultMutableFlow.emit(
+                FiltersControllerPartialState.FilterUpdateResult(
+                    updatedFilters = snapshotFilters
+                )
+            )
         }
     }
 
@@ -151,7 +186,12 @@ class FiltersControllerImpl : FiltersController {
             }
 
         scope.launch {
-            filterResultMutableFlow.emit(FilterResult(newList, appliedFilters))
+            filterResultMutableFlow.emit(
+                FiltersControllerPartialState.FilterApplyResult(
+                    filteredList = newList,
+                    updatedFilters = appliedFilters
+                )
+            )
         }
     }
 
@@ -161,7 +201,12 @@ class FiltersControllerImpl : FiltersController {
             it.attributes.searchText.contains(query, ignoreCase = true)
         })
         scope.launch {
-            filterResultMutableFlow.emit(FilterResult(newList, appliedFilters))
+            filterResultMutableFlow.emit(
+                FiltersControllerPartialState.FilterApplyResult(
+                    filteredList = newList,
+                    updatedFilters = appliedFilters
+                )
+            )
         }
     }
 }

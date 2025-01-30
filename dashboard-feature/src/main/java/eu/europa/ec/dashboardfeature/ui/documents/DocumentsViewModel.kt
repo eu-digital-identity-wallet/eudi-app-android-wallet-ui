@@ -33,6 +33,7 @@ import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
+import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
@@ -79,7 +80,7 @@ data class State(
     val isInitialDocumentLoading: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 
-    var filters: List<ExpandableListItemData> = emptyList(),
+    val filters: List<ExpandableListItemData> = emptyList(),
     val sortOrder: DualSelectorButtonData,
     val isFilteringActive: Boolean,
 ) : ViewState
@@ -288,12 +289,25 @@ class DocumentsViewModel(
     private fun filterStateChange() {
         viewModelScope.launch {
             interactor.onFilterStateChange().collect { result ->
-                setState {
-                    copy(
-                        documents = result.documents,
-                        filters = result.filters,
-                        sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
-                    )
+                when (result) {
+                    is DocumentInteractorFilterPartialState.FilterApplyResult -> {
+                        setState {
+                            copy(
+                                documents = result.documents,
+                                filters = result.filters,
+                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                            )
+                        }
+                    }
+
+                    is DocumentInteractorFilterPartialState.FilterUpdateResult -> {
+                        setState {
+                            copy(
+                                filters = result.filters,
+                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -332,11 +346,11 @@ class DocumentsViewModel(
                         is DocumentInteractorGetDocumentsPartialState.Success -> {
                             val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
                             response.allDocuments.items.filter { document ->
-                                with(document.data as DocumentItemUi) {
+                                with(document.payload as DocumentItemUi) {
                                     documentIssuanceState == DocumentUiIssuanceState.Pending
                                 }
                             }.forEach { documentItem ->
-                                with(documentItem.data as DocumentItemUi) {
+                                with(documentItem.payload as DocumentItemUi) {
                                     deferredDocs[uiData.itemId] =
                                         documentIdentifier.formatType
                                 }
@@ -348,6 +362,8 @@ class DocumentsViewModel(
 
                             if (viewState.value.isInitialDocumentLoading) {
                                 interactor.initializeFilters(filters, documentsWithFailed)
+                            } else {
+                                interactor.updateLists(documentsWithFailed)
                             }
 
                             interactor.applyFilters()
@@ -370,7 +386,7 @@ class DocumentsViewModel(
 
     private fun FilterableList.generateFailedDeferredDocs(deferredFailedDocIds: List<DocumentId>): FilterableList {
         return copy(items = items.map { filterableItem ->
-            val data = filterableItem.data as DocumentItemUi
+            val data = filterableItem.payload as DocumentItemUi
             val failedUiItem = if (data.uiData.itemId in deferredFailedDocIds) {
                 data.copy(
                     documentIssuanceState = DocumentUiIssuanceState.Failed,
@@ -386,7 +402,7 @@ class DocumentsViewModel(
                 data
             }
 
-            filterableItem.copy(data = failedUiItem)
+            filterableItem.copy(payload = failedUiItem)
         })
     }
 
@@ -529,6 +545,7 @@ class DocumentsViewModel(
     }
 
     private fun updateFilter(filterId: String, groupId: String) {
+        setState { copy(shouldRevertFilterChanges = true) }
         interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
     }
 
@@ -572,6 +589,7 @@ class DocumentsViewModel(
             DualSelectorButton.FIRST -> SortOrder.ASCENDING
             DualSelectorButton.SECOND -> SortOrder.DESCENDING
         }
+        setState { copy(shouldRevertFilterChanges = true) }
         interactor.updateSortOrder(sortOrder)
     }
 

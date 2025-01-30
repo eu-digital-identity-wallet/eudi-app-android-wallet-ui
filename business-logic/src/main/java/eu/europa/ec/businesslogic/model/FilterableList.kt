@@ -18,7 +18,9 @@ package eu.europa.ec.businesslogic.model
 
 data class FilterableList(val items: List<FilterableItem>)
 
-data class FilterableItem(val data: Any, val attributes: FilterableAttributes)
+data class FilterableItem(val payload: FilterableItemPayload, val attributes: FilterableAttributes)
+
+interface FilterableItemPayload
 
 interface FilterableAttributes{
     val searchText: String
