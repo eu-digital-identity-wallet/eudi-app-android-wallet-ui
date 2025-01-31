@@ -50,5 +50,5 @@ internal fun stickyBottomPaddings(
 
 private fun calculateTopSpacing(topSpacing: TopSpacing): Int = when (topSpacing) {
     TopSpacing.WithToolbar -> SPACING_SMALL
-    TopSpacing.WithoutToolbar -> SPACING_EXTRA_LARGE
+    TopSpacing.WithoutToolbar -> SPACING_XX_LARGE
 }

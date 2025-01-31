@@ -29,7 +29,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -55,6 +55,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.corelogic.model.DocumentCategory
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
@@ -62,11 +64,12 @@ import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.ModalOptionUi
+import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
+import eu.europa.ec.uilogic.component.utils.SIZE_XXX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -179,7 +182,7 @@ private fun TopBar(
 ) {
     Row(
         modifier = Modifier
-            .height(SIZE_XX_LARGE.dp)
+            .height(SIZE_XXX_LARGE.dp)
             .fillMaxSize()
             .padding(SPACING_MEDIUM.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -230,7 +233,6 @@ private fun Content(
                 )
             ),
         contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         item {
             val searchItem =
@@ -242,36 +244,20 @@ private fun Content(
                 isFilteringActive = state.isFilteringActive,
                 text = state.searchText
             )
+            VSpacer.Large()
         }
-        items(state.documentsUi) { documentItem ->
-            WrapListItem(
-                item = documentItem.uiData,
-                onItemClick = if (documentItem.uiData.itemId.isBlank()) {
-                    null
-                } else {
-                    if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Pending
-                        || documentItem.documentIssuanceState == DocumentUiIssuanceState.Failed
-                    ) {
-                        {
-                            onEventSend(
-                                Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
-                                    documentId = documentItem.uiData.itemId
-                                )
-                            )
-                        }
-                    } else {
-                        {
-                            onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId))
-                        }
-                    }
-                },
-                supportingTextColor = when (documentItem.documentIssuanceState) {
-                    DocumentUiIssuanceState.Issued -> null
-                    DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
-                    DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
-                    DocumentUiIssuanceState.Expired -> MaterialTheme.colorScheme.error
-                }
+
+        itemsIndexed(items = state.groups) { index, (documentCategory, documents) ->
+            DocumentCategory(
+                modifier = Modifier.fillMaxWidth(),
+                category = documentCategory,
+                documents = documents,
+                onEventSend = onEventSend
             )
+
+            if (index != state.groups.lastIndex) {
+                VSpacer.ExtraLarge()
+            }
         }
     }
 
@@ -324,6 +310,56 @@ private fun Content(
                 }
             }
         }.collect()
+    }
+}
+
+@Composable
+private fun DocumentCategory(
+    modifier: Modifier = Modifier,
+    category: DocumentCategory,
+    documents: List<DocumentUi>,
+    onEventSend: (Event) -> Unit,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        SectionTitle(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(category.stringResId)
+        )
+
+        documents.forEach { documentItem: DocumentUi ->
+            WrapListItem(
+                modifier = Modifier.fillMaxWidth(),
+                item = documentItem.uiData,
+                onItemClick = if (documentItem.uiData.itemId.isBlank()) {
+                    null
+                } else {
+                    if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Pending
+                        || documentItem.documentIssuanceState == DocumentUiIssuanceState.Failed
+                    ) {
+                        {
+                            onEventSend(
+                                Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
+                                    documentId = documentItem.uiData.itemId
+                                )
+                            )
+                        }
+                    } else {
+                        {
+                            onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId))
+                        }
+                    }
+                },
+                supportingTextColor = when (documentItem.documentIssuanceState) {
+                    DocumentUiIssuanceState.Issued -> null
+                    DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
+                    DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
+                    DocumentUiIssuanceState.Expired -> MaterialTheme.colorScheme.error
+                }
+            )
+        }
     }
 }
 

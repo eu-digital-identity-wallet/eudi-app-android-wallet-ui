@@ -86,7 +86,10 @@ data class State(
     val isFilteringActive: Boolean,
 
     val filters: Filters,
-) : ViewState
+) : ViewState {
+    val groups = documentsUi.groupBy { it.documentCategory }
+        .toList()
+}
 
 sealed class Event : ViewEvent {
     data object Init : Event()

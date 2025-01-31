@@ -43,6 +43,9 @@ object VSpacer {
     @Composable
     fun ExtraLarge() = Spacer(modifier = Modifier.height(SPACING_EXTRA_LARGE.dp))
 
+    @Composable
+    fun XXLarge() = Spacer(modifier = Modifier.height(SPACING_XX_LARGE.dp))
+
 }
 
 object HSpacer {
@@ -64,5 +67,8 @@ object HSpacer {
 
     @Composable
     fun ExtraLarge() = Spacer(modifier = Modifier.width(SPACING_EXTRA_LARGE.dp))
+
+    @Composable
+    fun XXLarge() = Spacer(modifier = Modifier.width(SPACING_XX_LARGE.dp))
 
 }

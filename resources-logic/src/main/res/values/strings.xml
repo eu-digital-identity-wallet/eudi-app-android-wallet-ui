@@ -330,4 +330,14 @@
     <!-- Issuance Document Errors -->
     <string name="issuance_generic_error">Something went wrong issuing your document(s)</string>
 
+    <!-- Document Categories -->
+    <string name="document_category_government">GOVERNMENT</string>
+    <string name="document_category_travel">TRAVEL</string>
+    <string name="document_category_finance">FINANCE</string>
+    <string name="document_category_education">EDUCATION</string>
+    <string name="document_category_health">HEALTH</string>
+    <string name="document_category_social_security">SOCIAL SECURITY</string>
+    <string name="document_category_retail">RETAIL</string>
+    <string name="document_category_other">OTHER</string>
+
 </resources>

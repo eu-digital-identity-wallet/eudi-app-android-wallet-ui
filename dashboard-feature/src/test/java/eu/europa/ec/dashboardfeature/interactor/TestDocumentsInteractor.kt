@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingPidUi
+import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -62,6 +63,9 @@ class TestDocumentsInteractor {
     @Mock
     private lateinit var filtersController: FiltersController
 
+    @Mock
+    private lateinit var walletCoreConfig: WalletCoreConfig
+
     private lateinit var interactor: DocumentsInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -77,6 +81,7 @@ class TestDocumentsInteractor {
             resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
             filtersController = filtersController,
+            walletCoreConfig = walletCoreConfig,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)

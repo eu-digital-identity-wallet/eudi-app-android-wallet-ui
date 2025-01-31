@@ -26,13 +26,16 @@ import eu.europa.ec.businesslogic.model.SortOrder
 import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.documentHasExpired
+import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.corelogic.model.toDocumentCategory
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.DocumentsFilterableAttributes
@@ -150,6 +153,7 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filtersController: FiltersController,
+    private val walletCoreConfig: WalletCoreConfig,
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -180,7 +184,8 @@ class DocumentsInteractorImpl(
                                 leadingContentData = null,
                                 trailingContentData = null
                             ),
-                            documentIdentifier = DocumentIdentifier.OTHER(FormatType())
+                            documentIdentifier = DocumentIdentifier.OTHER(FormatType()),
+                            documentCategory = DocumentCategory.Other
                         )
                     )
                 }
@@ -272,6 +277,12 @@ class DocumentsInteractorImpl(
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(resourceProvider.getLocale())
 
+                            val documentIdentifier = document.toDocumentIdentifier()
+
+                            val documentCategory = documentIdentifier.toDocumentCategory(
+                                allCategories = walletCoreConfig.documentsCategories
+                            )
+
                             val documentHasExpired =
                                 documentHasExpired(documentExpirationDate = document.validUntil)
 
@@ -305,7 +316,8 @@ class DocumentsInteractorImpl(
                                             iconData = AppIcons.KeyboardArrowRight
                                         )
                                     ),
-                                    documentIdentifier = document.toDocumentIdentifier(),
+                                    documentIdentifier = documentIdentifier,
+                                    documentCategory = documentCategory,
                                 ),
                                 attributes = DocumentsFilterableAttributes(
                                     issuedDate = document.issuedAt,
@@ -320,6 +332,12 @@ class DocumentsInteractorImpl(
                         is UnsignedDocument -> {
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(resourceProvider.getLocale())
+
+                            val documentIdentifier = document.toDocumentIdentifier()
+
+                            val documentCategory = documentIdentifier.toDocumentCategory(
+                                allCategories = walletCoreConfig.documentsCategories
+                            )
 
                             FilterableItem(
                                 payload = DocumentUi(
@@ -338,7 +356,8 @@ class DocumentsInteractorImpl(
                                             tint = ThemeColors.warning,
                                         )
                                     ),
-                                    documentIdentifier = document.toDocumentIdentifier(),
+                                    documentIdentifier = documentIdentifier,
+                                    documentCategory = documentCategory
                                 ),
                                 attributes = DocumentsFilterableAttributes(
                                     issuedDate = null,
