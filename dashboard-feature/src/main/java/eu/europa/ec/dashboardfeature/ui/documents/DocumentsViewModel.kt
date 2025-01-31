@@ -76,6 +76,7 @@ data class State(
 
     val documents: List<DocumentItemUi> = emptyList(),
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
+    val searchText: String = "",
     val allowUserInteraction: Boolean = true, //TODO
     val isInitialDocumentLoading: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
@@ -544,7 +545,10 @@ class DocumentsViewModel(
     }
 
     private fun applySearch(queryText: String) {
-//        interactor.applySearch(queryText)
+        interactor.applySearch(queryText)
+        setState {
+            copy(searchText = queryText)
+        }
     }
 
     private fun updateFilter(filterId: String, groupId: String) {
@@ -778,17 +782,7 @@ class DocumentsViewModel(
             FilterGroup(
                 id = FilterIds.FILTER_BY_ISSUER_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer),
-                filters = listOf(
-                    // TODO this is wrong. This is the all filter with the specific issuer action
-                    FilterItem(
-                        id = FilterIds.FILTER_BY_ISSUER_ALL,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all),
-                        selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                            attributes.issuer == filter.name
-                        }
-                    )
-                )
+                filters = emptyList()
             ),
             // Filter by State
             FilterGroup(

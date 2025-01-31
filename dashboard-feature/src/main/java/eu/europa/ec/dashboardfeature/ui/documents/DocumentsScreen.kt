@@ -239,7 +239,7 @@ private fun Content(
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.FiltersPressed) },
                 isFilteringActive = state.isFilteringActive,
-                text = "state.queryText" // TODO get from filters or something
+                text = state.searchText
             )
         }
         items(state.documents) { documentItem ->
