@@ -17,6 +17,7 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
+import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.toListItemData
 import eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsDocumentItem
@@ -131,8 +132,9 @@ class PresentationSuccessInteractorImpl(
             val headerConfig = ContentHeaderConfig(
                 description = headerConfigDescription,
                 relyingPartyData = RelyingPartyData(
-                    name = verifierName
-                        ?: resourceProvider.getString(R.string.document_success_relying_party_default_name),
+                    name = verifierName.ifEmptyOrNull(
+                        default = resourceProvider.getString(R.string.document_success_relying_party_default_name)
+                    ),
                     isVerified = isVerified,
                 )
             )

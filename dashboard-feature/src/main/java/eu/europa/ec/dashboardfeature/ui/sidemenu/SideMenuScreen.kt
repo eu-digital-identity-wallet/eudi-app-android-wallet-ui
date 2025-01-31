@@ -43,8 +43,8 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -86,10 +86,9 @@ private fun Content(
             .padding(paddingValues)
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            SimpleContentTitle(
+            ContentTitle(
                 modifier = Modifier.fillMaxWidth(),
                 title = state.sideMenuTitle,
-                subtitle = null
             )
 
             SideMenuOptions(

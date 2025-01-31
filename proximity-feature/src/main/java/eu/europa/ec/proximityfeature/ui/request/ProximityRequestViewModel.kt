@@ -17,6 +17,7 @@
 package eu.europa.ec.proximityfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
@@ -189,8 +190,9 @@ class ProximityRequestViewModel(
     ): RelyingPartyData {
         return RelyingPartyData(
             isVerified = isVerified,
-            name = name
-                ?: resourceProvider.getString(R.string.request_relying_party_default_name),
+            name = name.ifEmptyOrNull(
+                default = resourceProvider.getString(R.string.request_relying_party_default_name)
+            ),
             description = resourceProvider.getString(R.string.request_relying_party_description),
         )
     }

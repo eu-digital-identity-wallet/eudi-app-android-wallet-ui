@@ -16,32 +16,10 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
-import eu.europa.ec.commonfeature.util.keyIsBase64
-import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
-import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.NameSpace
-import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
-import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.uilogic.component.ListItemData
-
-//TODO To be removed
-data class RequestDocumentItemUiOld<T>(
-    val id: String,
-    val domainPayload: DocumentDomainPayload,
-    val readableName: String,
-    val value: String,
-    val checked: Boolean,
-    val enabled: Boolean,
-    val docItem: DocItem,
-    val event: T? = null
-) {
-    val keyIsBase64: Boolean
-        get() {
-            return keyIsBase64(docItem.elementIdentifier)
-        }
-}
 
 data class RequestDocumentItemUi(
     val collapsedUiItem: CollapsedUiItem,
@@ -54,39 +32,21 @@ data class CollapsedUiItem(
 )
 
 data class ExpandedUiItem(
-    val domainPayload: DocumentDomainPayload,
+    val domainPayload: DocumentPayloadDomain,
     val uiItem: ListItemData,
 )
 
-data class DocumentDomainPayload(
+data class DocumentPayloadDomain(
     val docName: String,
     val docId: DocumentId,
     val docNamespace: NameSpace?,
-    val documentDetailsDomain: DocumentDetailsDomain
+    val docClaimsDomain: List<RequestDocumentClaim>,
 )
 
-//TODO Should this be in other package?
-data class DocumentDetailsDomain(
-    val items: List<DocumentItemDomain>
-)
-
-data class DocumentItemDomain(
+data class RequestDocumentClaim(
     val elementIdentifier: ElementIdentifier,
     val value: String,
     val readableName: String,
     val isRequired: Boolean,
     val isAvailable: Boolean,
 )
-
-//TODO Will this be needed in future or not?
-val Document.formatType: String
-    get() = when (this.format) {
-        is MsoMdocFormat -> (this.format as MsoMdocFormat).docType
-        is SdJwtVcFormat -> (this.format as SdJwtVcFormat).vct
-    }
-
-fun generateUniqueFieldId(
-    elementIdentifier: ElementIdentifier,
-    documentId: DocumentId,
-): String =
-    elementIdentifier + documentId

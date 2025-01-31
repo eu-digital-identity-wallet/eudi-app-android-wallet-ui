@@ -174,25 +174,11 @@
     <string name="loading_biometry_biometrics_enabled_description">Use your biometrics to approve the transaction.</string>
     <string name="loading_biometry_biometrics_not_enabled_description">To approve the transaction you need to verify your identity.</string>
 
-    <!-- Login -->
-    <string name="welcome_login_button_title">LOGIN</string>
-    <string name="welcome_faq_button_title">READ FAQs</string>
-
     <!-- Dashboard -->
-    <string name="dashboard_title">Welcome back</string>
-    <string name="dashboard_document_has_not_expired">Valid until</string>
-    <string name="dashboard_document_has_expired_one">Expired\ </string>
-    <string name="dashboard_document_has_expired_two">on</string>
+    <string name="dashboard_document_has_not_expired">Valid until:\ %1$s</string>
+    <string name="dashboard_document_has_expired">Expired</string>
     <string name="dashboard_document_deferred_pending">Pending</string>
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
-    <string name="dashboard_primary_fab_text">SHOW QR / TAP</string>
-    <string name="dashboard_secondary_fab_text">ADD DOC</string>
-
-    <string name="dashboard_bottom_sheet_options_title">More options</string>
-    <string name="dashboard_bottom_sheet_options_action_1">Change quick pin</string>
-    <string name="dashboard_bottom_sheet_options_action_2">Scan a QR code</string>
-    <string name="dashboard_bottom_sheet_options_action_3">Retrieve logs</string>
-    <string name="dashboard_bottom_sheet_options_action_4">Sign document</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
     <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the Authenticate in person or online option</string>

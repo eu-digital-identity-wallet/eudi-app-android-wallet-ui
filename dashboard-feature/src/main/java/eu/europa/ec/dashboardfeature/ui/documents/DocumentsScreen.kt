@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.dashboardfeature.model.SearchItem
@@ -99,7 +100,7 @@ fun DocumentsScreen(
     viewModel: DocumentsViewModel,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
-    val state = viewModel.viewState.value
+    val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     val isBottomSheetOpen = state.isBottomSheetOpen
@@ -248,9 +249,9 @@ private fun Content(
                 onItemClick = if (documentItem.uiData.itemId.isBlank()) {
                     null
                 } else {
-                    if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Issued) {
-                        { onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId)) }
-                    } else {
+                    if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Pending
+                        || documentItem.documentIssuanceState == DocumentUiIssuanceState.Failed
+                    ) {
                         {
                             onEventSend(
                                 Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
@@ -258,12 +259,17 @@ private fun Content(
                                 )
                             )
                         }
+                    } else {
+                        {
+                            onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId))
+                        }
                     }
                 },
                 supportingTextColor = when (documentItem.documentIssuanceState) {
                     DocumentUiIssuanceState.Issued -> null
                     DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
                     DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
+                    DocumentUiIssuanceState.Expired -> MaterialTheme.colorScheme.error
                 }
             )
         }

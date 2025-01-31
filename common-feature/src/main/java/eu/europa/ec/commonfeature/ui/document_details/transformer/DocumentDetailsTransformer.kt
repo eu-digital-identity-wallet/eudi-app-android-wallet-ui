@@ -17,16 +17,17 @@
 package eu.europa.ec.commonfeature.ui.document_details.transformer
 
 import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
+import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
-import eu.europa.ec.commonfeature.ui.request.model.generateUniqueFieldId
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
+import eu.europa.ec.commonfeature.util.generateUniqueFieldId
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
@@ -145,7 +146,7 @@ fun transformToDocumentDetailsDocumentItem(
 ): DocumentItem {
 
     val values = StringBuilder()
-    val localizedKey = displayKey ?: key
+    val localizedKey = displayKey.ifEmptyOrNull(default = key)
 
     parseKeyValueUi(
         item = item,

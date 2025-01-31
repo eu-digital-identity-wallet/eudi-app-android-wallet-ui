@@ -77,7 +77,7 @@ data class State(
     val documentsUi: List<DocumentItemUi> = emptyList(),
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val searchText: String = "",
-    val allowUserInteraction: Boolean = true, //TODO
+    val allowUserInteraction: Boolean = true,
     val isInitialDocumentLoading: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 

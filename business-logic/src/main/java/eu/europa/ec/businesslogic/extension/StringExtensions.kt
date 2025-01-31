@@ -86,3 +86,28 @@ fun String.splitToLines(lineLength: Int): String {
 }
 
 fun String.firstPart(separator: String): String = this.split(separator).firstOrNull() ?: this
+
+/**
+ * Returns the current string if it is not `null`, empty, or blank.
+ * Otherwise, returns the specified default string.
+ *
+ * This function checks both nullability and blankness, meaning
+ * it treats strings containing only whitespace as invalid.
+ *
+ * @param default The string to return if the current string is `null`, empty, or blank.
+ * @return The current string if it is not `null`, empty, or blank; otherwise, the default string.
+ *
+ * Example usage:
+ * ```
+ * val str1: String? = null
+ * val str2: String? = "   "
+ * val str3: String? = "Hello, Kotlin!"
+ *
+ * println(str1.ifEmptyOrNull("Default")) // Output: Default
+ * println(str2.ifEmptyOrNull("Default")) // Output: Default
+ * println(str3.ifEmptyOrNull("Default")) // Output: Hello, Kotlin!
+ * ```
+ */
+fun String?.ifEmptyOrNull(default: String): String {
+    return if (this.isNullOrBlank()) default else this
+}

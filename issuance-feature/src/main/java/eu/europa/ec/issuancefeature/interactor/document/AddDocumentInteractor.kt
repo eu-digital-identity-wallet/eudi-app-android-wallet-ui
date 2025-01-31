@@ -108,8 +108,7 @@ class AddDocumentInteractorImpl(
                                             trailingContentData = ListItemTrailingContentData.Icon(
                                                 iconData = AppIcons.Add
                                             )
-                                        ),
-                                        available = true,
+                                        )
                                     )
                                 } else {
                                     null

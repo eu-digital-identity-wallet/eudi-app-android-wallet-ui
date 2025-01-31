@@ -20,5 +20,4 @@ import eu.europa.ec.uilogic.component.ListItemData
 
 data class DocumentOptionItemUi(
     val itemData: ListItemData,
-    val available: Boolean,
 )

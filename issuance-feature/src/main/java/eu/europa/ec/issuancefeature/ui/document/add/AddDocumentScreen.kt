@@ -29,6 +29,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
@@ -45,9 +47,9 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.SimpleContentTitle
 import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -70,7 +72,7 @@ fun AddDocumentScreen(
     navController: NavController,
     viewModel: AddDocumentViewModel
 ) {
-    val state = viewModel.viewState.value
+    val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     ContentScreen(
@@ -160,7 +162,7 @@ private fun Content(
                 )
             )
     ) {
-        SimpleContentTitle(
+        ContentTitle(
             modifier = Modifier.fillMaxWidth(),
             title = state.title,
             subtitle = state.subtitle
@@ -181,7 +183,7 @@ private fun Content(
                         item = option.itemData,
                         mainContentVerticalPadding = SPACING_LARGE.dp,
                         mainContentTextStyle = MaterialTheme.typography.titleMedium,
-                        onItemClick = if (option.available) { optionListItemData ->
+                        onItemClick = { optionListItemData ->
                             onEventSend(
                                 Event.IssueDocument(
                                     issuanceMethod = IssuanceMethod.OPENID4VCI,
@@ -189,7 +191,7 @@ private fun Content(
                                     context = context
                                 )
                             )
-                        } else null
+                        }
                     )
                 }
             }
@@ -216,7 +218,6 @@ private fun IssuanceAddDocumentScreenPreview() {
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
                     DocumentOptionItemUi(
-                        available = true,
                         itemData = ListItemData(
                             itemId = "configId1",
                             mainContentData = ListItemMainContentData.Text(text = "National ID"),
@@ -224,7 +225,6 @@ private fun IssuanceAddDocumentScreenPreview() {
                         )
                     ),
                     DocumentOptionItemUi(
-                        available = false,
                         itemData = ListItemData(
                             itemId = "configId2",
                             mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
@@ -253,7 +253,6 @@ private fun DashboardAddDocumentScreenPreview() {
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
                     DocumentOptionItemUi(
-                        available = true,
                         itemData = ListItemData(
                             itemId = "configId1",
                             mainContentData = ListItemMainContentData.Text(text = "National ID"),
@@ -261,7 +260,6 @@ private fun DashboardAddDocumentScreenPreview() {
                         )
                     ),
                     DocumentOptionItemUi(
-                        available = false,
                         itemData = ListItemData(
                             itemId = "configId2",
                             mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),

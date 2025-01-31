@@ -31,16 +31,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
-import eu.europa.ec.commonfeature.ui.request.model.DocumentDetailsDomain
-import eu.europa.ec.commonfeature.ui.request.model.DocumentDomainPayload
-import eu.europa.ec.commonfeature.ui.request.model.DocumentItemDomain
+import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.ExpandedUiItem
+import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentClaim
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -86,7 +87,7 @@ fun RequestScreen(
     navController: NavController,
     viewModel: RequestViewModel,
 ) {
-    val state = viewModel.viewState.value
+    val state: State by viewModel.viewState.collectAsStateWithLifecycle()
 
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
@@ -317,8 +318,8 @@ private fun ContentPreview() {
                     mainText = stringResource(R.string.request_header_main_text),
                     relyingPartyData = RelyingPartyData(
                         isVerified = true,
-                        name = "Relying Party",
-                        description = "requests the following"
+                        name = stringResource(R.string.request_relying_party_default_name),
+                        description = stringResource(R.string.request_relying_party_description)
                     )
                 ),
                 items = listOf(
@@ -336,19 +337,17 @@ private fun ContentPreview() {
                         ),
                         expandedUiItems = listOf(
                             ExpandedUiItem(
-                                domainPayload = DocumentDomainPayload(
+                                domainPayload = DocumentPayloadDomain(
                                     docName = "docName",
                                     docId = "docId",
                                     docNamespace = "docNamespace",
-                                    documentDetailsDomain = DocumentDetailsDomain(
-                                        items = listOf(
-                                            DocumentItemDomain(
-                                                elementIdentifier = "elementIdentifier",
-                                                value = "value",
-                                                readableName = "readableName",
-                                                isRequired = true,
-                                                isAvailable = true,
-                                            )
+                                    docClaimsDomain = listOf(
+                                        RequestDocumentClaim(
+                                            elementIdentifier = "elementIdentifier",
+                                            value = "value",
+                                            readableName = "readableName",
+                                            isRequired = true,
+                                            isAvailable = true,
                                         )
                                     )
                                 ),
@@ -374,19 +373,17 @@ private fun ContentPreview() {
                         ),
                         expandedUiItems = listOf(
                             ExpandedUiItem(
-                                domainPayload = DocumentDomainPayload(
+                                domainPayload = DocumentPayloadDomain(
                                     docName = "docName",
                                     docId = "docId",
                                     docNamespace = "docNamespace",
-                                    documentDetailsDomain = DocumentDetailsDomain(
-                                        items = listOf(
-                                            DocumentItemDomain(
-                                                elementIdentifier = "elementIdentifier",
-                                                value = "value",
-                                                readableName = "readableName",
-                                                isRequired = true,
-                                                isAvailable = true,
-                                            )
+                                    docClaimsDomain = listOf(
+                                        RequestDocumentClaim(
+                                            elementIdentifier = "elementIdentifier",
+                                            value = "value",
+                                            readableName = "readableName",
+                                            isRequired = true,
+                                            isAvailable = true,
                                         )
                                     )
                                 ),
@@ -402,19 +399,17 @@ private fun ContentPreview() {
                                 ),
                             ),
                             ExpandedUiItem(
-                                domainPayload = DocumentDomainPayload(
+                                domainPayload = DocumentPayloadDomain(
                                     docName = "docName",
                                     docId = "docId",
                                     docNamespace = "docNamespace",
-                                    documentDetailsDomain = DocumentDetailsDomain(
-                                        items = listOf(
-                                            DocumentItemDomain(
-                                                elementIdentifier = "elementIdentifier",
-                                                value = "value",
-                                                readableName = "readableName",
-                                                isRequired = true,
-                                                isAvailable = true,
-                                            )
+                                    docClaimsDomain = listOf(
+                                        RequestDocumentClaim(
+                                            elementIdentifier = "elementIdentifier",
+                                            value = "value",
+                                            readableName = "readableName",
+                                            isRequired = true,
+                                            isAvailable = true,
                                         )
                                     )
                                 ),
@@ -430,19 +425,17 @@ private fun ContentPreview() {
                                 ),
                             ),
                             ExpandedUiItem(
-                                domainPayload = DocumentDomainPayload(
+                                domainPayload = DocumentPayloadDomain(
                                     docName = "docName",
                                     docId = "docId",
                                     docNamespace = "docNamespace",
-                                    documentDetailsDomain = DocumentDetailsDomain(
-                                        items = listOf(
-                                            DocumentItemDomain(
-                                                elementIdentifier = "elementIdentifier",
-                                                value = "value",
-                                                readableName = "readableName",
-                                                isRequired = true,
-                                                isAvailable = true,
-                                            )
+                                    docClaimsDomain = listOf(
+                                        RequestDocumentClaim(
+                                            elementIdentifier = "elementIdentifier",
+                                            value = "value",
+                                            readableName = "readableName",
+                                            isRequired = true,
+                                            isAvailable = true,
                                         )
                                     )
                                 ),
