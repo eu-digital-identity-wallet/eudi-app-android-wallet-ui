@@ -42,6 +42,7 @@ data class FilterItem(
     val id: String,
     val name: String,
     val selected: Boolean,
+    val isDefault: Boolean = false,
     val filterableAction: FilterAction,
 )
 

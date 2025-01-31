@@ -17,6 +17,7 @@
 package eu.europa.ec.businesslogic.controller.filters
 
 import eu.europa.ec.businesslogic.extension.sortByOrder
+import eu.europa.ec.businesslogic.model.FilterGroup
 import eu.europa.ec.businesslogic.model.FilterableList
 import eu.europa.ec.businesslogic.model.Filters
 import eu.europa.ec.businesslogic.model.SortOrder
@@ -34,7 +35,7 @@ import kotlinx.coroutines.launch
 sealed interface FiltersControllerPartialState {
     val updatedFilters: Filters
 
-    sealed interface FilterListResult: FiltersControllerPartialState{
+    sealed interface FilterListResult : FiltersControllerPartialState {
         val hasMoreThanDefaultFilters: Boolean
 
         data class FilterListEmptyResult(
@@ -120,15 +121,39 @@ class FiltersControllerImpl : FiltersController {
 
     override fun onFilterStateChange(): Flow<FiltersControllerPartialState> = filterResultFlow
 
+    private fun updateFilterInGroup(group: FilterGroup, filterId: String): FilterGroup {
+        val defaultFilter = group.filters.find { it.isDefault }
+        val isClickedFilterDefault = defaultFilter?.id == filterId
+        val updatedFilters = group.filters.map { filter ->
+            when {
+                isClickedFilterDefault -> filter.copy(selected = filter.isDefault)
+                filter.id == filterId -> filter.copy(selected = !filter.selected)
+                else -> filter.copy(selected = false)
+            }
+        }
+        val noFilterSelected = updatedFilters.none { it.selected }
+        return when {
+            defaultFilter != null && noFilterSelected -> group.copy(filters = updatedFilters.map { filter ->
+                filter.copy(selected = filter.isDefault)
+            })
+
+            !isClickedFilterDefault && updatedFilters.any { it.id == filterId && it.selected } -> group.copy(
+                filters = updatedFilters.map { filter ->
+                    if (filter.isDefault) filter.copy(selected = false) else filter
+                }
+            )
+
+            else -> group.copy(filters = updatedFilters)
+        }
+    }
+
     override fun updateFilter(filterGroupId: String, filterId: String) {
         val filtersToUpdate = if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
         val updatedFilterGroups = filtersToUpdate.filterGroups.map { group ->
             if (group.id == filterGroupId) {
-                group.copy(filters = group.filters.map { filter ->
-                    filter.copy(selected = filter.id == filterId) // Select the target filter
-                })
+                updateFilterInGroup(group, filterId)
             } else {
-                group // Keep other groups unchanged
+                group
             }
         }
 

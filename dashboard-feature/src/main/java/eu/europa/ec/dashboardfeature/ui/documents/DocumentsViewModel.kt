@@ -373,7 +373,10 @@ class DocumentsViewModel(
                                     documentsWithFailed
                                 )
                             } else {
-                                interactor.updateLists(documentsWithFailed, viewState.value.filters)
+                                interactor.updateLists(
+                                    documentsWithFailed,
+                                    viewState.value.filters
+                                )
                             }
 
                             interactor.applyFilters()
@@ -646,6 +649,7 @@ class DocumentsViewModel(
                                             id = FilterIds.FILTER_BY_ISSUER_ALL,
                                             name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all),
                                             selected = true,
+                                            isDefault = true,
                                             filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
                                                 true // Get all
                                             }
@@ -711,6 +715,7 @@ class DocumentsViewModel(
                         id = FilterIds.FILTER_SORT_DEFAULT,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
+                        isDefault = true,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
                             attributes.name.lowercase()
                         }
