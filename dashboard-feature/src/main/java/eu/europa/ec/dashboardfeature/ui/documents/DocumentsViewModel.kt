@@ -757,7 +757,7 @@ class DocumentsViewModel(
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
-                            attributes.name
+                            attributes.name.lowercase()
                         }
                     ),
                     FilterItem(

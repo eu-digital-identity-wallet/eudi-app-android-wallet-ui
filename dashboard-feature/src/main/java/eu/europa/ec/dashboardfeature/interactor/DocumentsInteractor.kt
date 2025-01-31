@@ -30,6 +30,7 @@ import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.model.DocumentItemUi
@@ -155,14 +156,38 @@ class DocumentsInteractorImpl(
 
     override fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState> =
         filtersController.onFilterStateChange().map { result ->
-            val documentsUi: List<DocumentItemUi> =
-                if (result is FiltersControllerPartialState.FilterApplyResult) {
+            val documentsUi = when (result) {
+                is FiltersControllerPartialState.FilterListResult.FilterApplyResult -> {
                     result.filteredList.items.map { filterableItem ->
                         filterableItem.payload as DocumentItemUi
                     }
-                } else {
+                }
+
+                is FiltersControllerPartialState.FilterListResult.FilterListEmptyResult -> {
+                    listOf(
+                        DocumentItemUi(
+                            documentIssuanceState = DocumentUiIssuanceState.Issued,
+                            uiData = ListItemData(
+                                itemId = "-1",
+                                mainContentData = ListItemMainContentData.Text(
+                                    text = resourceProvider.getString(
+                                        R.string.documents_screen_search_no_results
+                                    )
+                                ),
+                                overlineText = null,
+                                supportingText = null,
+                                leadingContentData = null,
+                                trailingContentData = null
+                            ),
+                            documentIdentifier = DocumentIdentifier.OTHER(FormatType())
+                        )
+                    )
+                }
+
+                else -> {
                     emptyList()
                 }
+            }
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
                 ExpandableListItemData(
@@ -192,18 +217,21 @@ class DocumentsInteractorImpl(
                 SortOrder.DESCENDING -> DualSelectorButton.SECOND
             }
 
-            if (result is FiltersControllerPartialState.FilterApplyResult) {
-                DocumentInteractorFilterPartialState.FilterApplyResult(
-                    documents = documentsUi,
-                    filters = filtersUi,
-                    sortOrder = sortOrderUi,
-                    hasMoreThanDefaultFilterApplied = result.hasMoreThanDefaultFilters
-                )
-            } else {
-                DocumentInteractorFilterPartialState.FilterUpdateResult(
-                    filters = filtersUi,
-                    sortOrder = sortOrderUi
-                )
+            when(result) {
+                is FiltersControllerPartialState.FilterListResult -> {
+                    DocumentInteractorFilterPartialState.FilterApplyResult(
+                        documents = documentsUi,
+                        filters = filtersUi,
+                        sortOrder = sortOrderUi,
+                        hasMoreThanDefaultFilterApplied = result.hasMoreThanDefaultFilters
+                    )
+                }
+                is FiltersControllerPartialState.FilterUpdateResult -> {
+                    DocumentInteractorFilterPartialState.FilterUpdateResult(
+                        filters = filtersUi,
+                        sortOrder = sortOrderUi
+                    )
+                }
             }
         }
 

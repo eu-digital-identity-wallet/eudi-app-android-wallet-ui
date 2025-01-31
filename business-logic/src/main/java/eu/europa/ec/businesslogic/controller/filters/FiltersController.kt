@@ -34,11 +34,20 @@ import kotlinx.coroutines.launch
 sealed interface FiltersControllerPartialState {
     val updatedFilters: Filters
 
-    data class FilterApplyResult(
-        val filteredList: FilterableList,
-        val hasMoreThanDefaultFilters: Boolean,
-        override val updatedFilters: Filters,
-    ) : FiltersControllerPartialState
+    sealed interface FilterListResult: FiltersControllerPartialState{
+        val hasMoreThanDefaultFilters: Boolean
+
+        data class FilterListEmptyResult(
+            override val updatedFilters: Filters,
+            override val hasMoreThanDefaultFilters: Boolean,
+        ) : FilterListResult
+
+        data class FilterApplyResult(
+            val filteredList: FilterableList,
+            override val hasMoreThanDefaultFilters: Boolean,
+            override val updatedFilters: Filters,
+        ) : FilterListResult
+    }
 
     data class FilterUpdateResult(
         override val updatedFilters: Filters,
@@ -100,7 +109,7 @@ class FiltersControllerImpl : FiltersController {
         this.initialList = filterableList.copy(
             items = filterableList.items
                 .sortByOrder(filters.sortOrder) {
-                    it.attributes.searchText
+                    it.attributes.searchText.lowercase()
                 }
         )
     }
@@ -192,13 +201,22 @@ class FiltersControllerImpl : FiltersController {
             }
 
         scope.launch {
-            emissionMutableFlow.emit(
-                FiltersControllerPartialState.FilterApplyResult(
-                    filteredList = newList,
-                    updatedFilters = appliedFilters,
-                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
+            if (newList.items.isEmpty()) {
+                emissionMutableFlow.emit(
+                    FiltersControllerPartialState.FilterListResult.FilterListEmptyResult(
+                        hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied,
+                        updatedFilters = appliedFilters
+                    )
                 )
-            )
+            } else {
+                emissionMutableFlow.emit(
+                    FiltersControllerPartialState.FilterListResult.FilterApplyResult(
+                        filteredList = newList,
+                        updatedFilters = appliedFilters,
+                        hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
+                    )
+                )
+            }
         }
     }
 
