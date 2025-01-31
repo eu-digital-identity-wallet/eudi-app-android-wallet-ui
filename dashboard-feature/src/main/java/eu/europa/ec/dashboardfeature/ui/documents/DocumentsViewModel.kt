@@ -37,7 +37,7 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorFilterPartialS
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
-import eu.europa.ec.dashboardfeature.model.DocumentItemUi
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.DocumentsFilterableAttributes
 import eu.europa.ec.dashboardfeature.model.FilterIds
 import eu.europa.ec.eudi.wallet.document.DocumentId
@@ -74,7 +74,7 @@ data class State(
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
 
-    val documentsUi: List<DocumentItemUi> = emptyList(),
+    val documentsUi: List<DocumentUi> = emptyList(),
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val searchText: String = "",
     val allowUserInteraction: Boolean = true,
@@ -351,11 +351,11 @@ class DocumentsViewModel(
                         is DocumentInteractorGetDocumentsPartialState.Success -> {
                             val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
                             response.allDocuments.items.filter { document ->
-                                with(document.payload as DocumentItemUi) {
+                                with(document.payload as DocumentUi) {
                                     documentIssuanceState == DocumentUiIssuanceState.Pending
                                 }
                             }.forEach { documentItem ->
-                                with(documentItem.payload as DocumentItemUi) {
+                                with(documentItem.payload as DocumentUi) {
                                     deferredDocs[uiData.itemId] =
                                         documentIdentifier.formatType
                                 }
@@ -399,7 +399,7 @@ class DocumentsViewModel(
 
     private fun FilterableList.generateFailedDeferredDocs(deferredFailedDocIds: List<DocumentId>): FilterableList {
         return copy(items = items.map { filterableItem ->
-            val data = filterableItem.payload as DocumentItemUi
+            val data = filterableItem.payload as DocumentUi
             val failedUiItem = if (data.uiData.itemId in deferredFailedDocIds) {
                 data.copy(
                     documentIssuanceState = DocumentUiIssuanceState.Failed,

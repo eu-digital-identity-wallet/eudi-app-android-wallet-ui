@@ -34,7 +34,7 @@ import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.dashboardfeature.model.DocumentItemUi
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.DocumentsFilterableAttributes
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -61,7 +61,7 @@ import kotlinx.coroutines.withContext
 
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
-        val documents: List<DocumentItemUi>,
+        val documents: List<DocumentUi>,
         val filters: List<ExpandableListItemData>,
         val sortOrder: DualSelectorButton,
         val hasMoreThanDefaultFilterApplied: Boolean,
@@ -160,13 +160,13 @@ class DocumentsInteractorImpl(
             val documentsUi = when (result) {
                 is FiltersControllerPartialState.FilterListResult.FilterApplyResult -> {
                     result.filteredList.items.map { filterableItem ->
-                        filterableItem.payload as DocumentItemUi
+                        filterableItem.payload as DocumentUi
                     }
                 }
 
                 is FiltersControllerPartialState.FilterListResult.FilterListEmptyResult -> {
                     listOf(
-                        DocumentItemUi(
+                        DocumentUi(
                             documentIssuanceState = DocumentUiIssuanceState.Issued,
                             uiData = ListItemData(
                                 itemId = "-1",
@@ -290,7 +290,7 @@ class DocumentsInteractorImpl(
                                 )
                             }
                             FilterableItem(
-                                payload = DocumentItemUi(
+                                payload = DocumentUi(
                                     documentIssuanceState = documentIssuanceState,
                                     uiData = ListItemData(
                                         itemId = document.id,
@@ -322,7 +322,7 @@ class DocumentsInteractorImpl(
                                 document.localizedIssuerMetadata(resourceProvider.getLocale())
 
                             FilterableItem(
-                                payload = DocumentItemUi(
+                                payload = DocumentUi(
                                     documentIssuanceState = DocumentUiIssuanceState.Pending,
                                     uiData = ListItemData(
                                         itemId = document.id,

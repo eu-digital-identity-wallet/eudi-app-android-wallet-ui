@@ -21,7 +21,7 @@ import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.uilogic.component.ListItemData
 
-data class DocumentItemUi(
+data class DocumentUi(
     val documentIssuanceState: DocumentUiIssuanceState,
     val uiData: ListItemData,
     val documentIdentifier: DocumentIdentifier,
