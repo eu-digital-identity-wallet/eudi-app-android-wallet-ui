@@ -242,7 +242,7 @@ private fun Content(
                 text = state.searchText
             )
         }
-        items(state.documents) { documentItem ->
+        items(state.documentsUi) { documentItem ->
             WrapListItem(
                 item = documentItem.uiData,
                 onItemClick = if (documentItem.uiData.itemId.isBlank()) {
@@ -338,7 +338,7 @@ private fun DocumentsSheetContent(
                 },
                 bodyContent = {
                     val expandStateList by remember {
-                        mutableStateOf(state.filters.map { false }.toMutableStateList())
+                        mutableStateOf(state.filtersUi.map { false }.toMutableStateList())
                     }
 
                     Column(
@@ -348,7 +348,7 @@ private fun DocumentsSheetContent(
                         DualSelectorButtons(state.sortOrder) {
                             onEventSent(Event.OnSortingOrderChanged(it))
                         }
-                        state.filters.forEachIndexed { index, filter ->
+                        state.filtersUi.forEachIndexed { index, filter ->
                             if (filter.expanded.isNotEmpty()) {
                                 WrapExpandableListItem(
                                     data = filter,

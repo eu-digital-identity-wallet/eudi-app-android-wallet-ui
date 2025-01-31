@@ -61,7 +61,7 @@ interface FiltersController {
         filterableList: FilterableList,
     )
 
-    fun updateLists(filterableList: FilterableList)
+    fun updateLists(filterableList: FilterableList, filters: Filters)
     fun applyFilters()
     fun applySearch(query: String)
     fun resetFilters()
@@ -104,8 +104,7 @@ class FiltersControllerImpl : FiltersController {
         this.initialFilters = filters
         this.appliedFilters = filters
         // We want to sort by name (this is the default)
-        // in order to prevent the random order.
-        // Maybe think of a way for the FiltersController's user to define the default sort order.
+        // in order to prevent the random order
         this.initialList = filterableList.copy(
             items = filterableList.items
                 .sortByOrder(filters.sortOrder) {
@@ -114,8 +113,9 @@ class FiltersControllerImpl : FiltersController {
         )
     }
 
-    override fun updateLists(filterableList: FilterableList) {
+    override fun updateLists(filterableList: FilterableList, filters: Filters) {
         this.initialList = filterableList
+        this.initialFilters = filters
     }
 
     override fun onFilterStateChange(): Flow<FiltersControllerPartialState> = filterResultFlow

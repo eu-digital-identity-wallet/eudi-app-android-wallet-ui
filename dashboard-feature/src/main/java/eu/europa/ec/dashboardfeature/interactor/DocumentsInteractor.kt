@@ -136,7 +136,7 @@ interface DocumentsInteractor {
         filterableList: FilterableList,
     )
 
-    fun updateLists(filterableList: FilterableList)
+    fun updateLists(filterableList: FilterableList, filters: Filters)
     fun applyFilters()
     fun applySearch(query: String)
     fun resetFilters()
@@ -242,8 +242,8 @@ class DocumentsInteractorImpl(
         filtersController.initializeFilters(filters, filterableList)
     }
 
-    override fun updateLists(filterableList: FilterableList) =
-        filtersController.updateLists(filterableList)
+    override fun updateLists(filterableList: FilterableList, filters: Filters) =
+        filtersController.updateLists(filterableList, filters)
 
     override fun applySearch(query: String) = filtersController.applySearch(query)
 

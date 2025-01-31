@@ -74,16 +74,18 @@ data class State(
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
 
-    val documents: List<DocumentItemUi> = emptyList(),
+    val documentsUi: List<DocumentItemUi> = emptyList(),
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val searchText: String = "",
     val allowUserInteraction: Boolean = true, //TODO
     val isInitialDocumentLoading: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 
-    val filters: List<ExpandableListItemData> = emptyList(),
+    val filtersUi: List<ExpandableListItemData> = emptyList(),
     val sortOrder: DualSelectorButtonData,
     val isFilteringActive: Boolean,
+
+    val filters: Filters,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -180,14 +182,15 @@ class DocumentsViewModel(
                 second = resourceProvider.getString(R.string.documents_screen_filters_descending),
                 selectedButton = DualSelectorButton.FIRST,
             ),
-            isFilteringActive = false
+            isFilteringActive = false,
+            filters = createFilters()
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                filterStateChange()
+                filterStateChanged()
             }
 
             is Event.GetDocuments -> {
@@ -287,7 +290,7 @@ class DocumentsViewModel(
         }
     }
 
-    private fun filterStateChange() {
+    private fun filterStateChanged() {
         viewModelScope.launch {
             interactor.onFilterStateChange().collect { result ->
                 when (result) {
@@ -295,8 +298,8 @@ class DocumentsViewModel(
                         setState {
                             copy(
                                 isFilteringActive = result.hasMoreThanDefaultFilterApplied,
-                                documents = result.documents,
-                                filters = result.filters,
+                                documentsUi = result.documents,
+                                filtersUi = result.filters,
                                 sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
                             )
                         }
@@ -305,7 +308,7 @@ class DocumentsViewModel(
                     is DocumentInteractorFilterPartialState.FilterUpdateResult -> {
                         setState {
                             copy(
-                                filters = result.filters,
+                                filtersUi = result.filters,
                                 sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
                             )
                         }
@@ -321,7 +324,7 @@ class DocumentsViewModel(
     ) {
         setState {
             copy(
-                isLoading = documents.isEmpty(),
+                isLoading = documentsUi.isEmpty(),
                 error = null
             )
         }
@@ -365,9 +368,12 @@ class DocumentsViewModel(
                             addIssuerFilters(documentsWithFailed)
 
                             if (viewState.value.isInitialDocumentLoading) {
-                                interactor.initializeFilters(filters, documentsWithFailed)
+                                interactor.initializeFilters(
+                                    viewState.value.filters,
+                                    documentsWithFailed
+                                )
                             } else {
-                                interactor.updateLists(documentsWithFailed)
+                                interactor.updateLists(documentsWithFailed, viewState.value.filters)
                             }
 
                             interactor.applyFilters()
@@ -544,61 +550,6 @@ class DocumentsViewModel(
         }
     }
 
-    private fun applySearch(queryText: String) {
-        interactor.applySearch(queryText)
-        setState {
-            copy(searchText = queryText)
-        }
-    }
-
-    private fun updateFilter(filterId: String, groupId: String) {
-        setState { copy(shouldRevertFilterChanges = true) }
-        interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
-    }
-
-    private fun applySelectedFilters() {
-        interactor.applyFilters()
-        setState {
-            copy(
-                shouldRevertFilterChanges = false
-            )
-        }
-        hideBottomSheet()
-    }
-
-    private fun resetFilters() {
-        interactor.resetFilters()
-        setState {
-            copy(
-                isFilteringActive = false,
-            )
-        }
-        hideBottomSheet()
-    }
-
-    private fun revertFilters(isOpening: Boolean) {
-        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
-            && !isOpening
-            && viewState.value.shouldRevertFilterChanges
-        ) {
-            interactor.revertFilters()
-            setState { copy(shouldRevertFilterChanges = true) }
-        }
-
-        setState {
-            copy(isBottomSheetOpen = isOpening)
-        }
-    }
-
-    private fun sortOrderChanged(orderButton: DualSelectorButton) {
-        val sortOrder = when (orderButton) {
-            DualSelectorButton.FIRST -> SortOrder.ASCENDING
-            DualSelectorButton.SECOND -> SortOrder.DESCENDING
-        }
-        setState { copy(shouldRevertFilterChanges = true) }
-        interactor.updateSortOrder(sortOrder)
-    }
-
     private fun goToDocumentDetails(docId: DocumentId) {
         setEffect {
             Effect.Navigation.SwitchScreen(
@@ -667,46 +618,50 @@ class DocumentsViewModel(
     }
 
     private fun addIssuerFilters(documents: FilterableList) {
-        filters = filters.copy(filterGroups = filters.filterGroups.map { filterGroup ->
-            if (filterGroup.id == FilterIds.FILTER_BY_ISSUER_GROUP_ID) {
-                filterGroup.copy(
-                    filters = documents.items.distinctBy { (it.attributes as DocumentsFilterableAttributes).issuer }
-                        .mapNotNull { filterableItem ->
-                            with(filterableItem.attributes as DocumentsFilterableAttributes) {
-                                if (issuer != null) {
-                                    FilterItem(
-                                        id = issuer,
-                                        name = issuer,
-                                        selected = false,
-                                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                                            attributes.issuer == filter.name
+        setState {
+            copy(
+                filters = filters.copy(filterGroups = filters.filterGroups.map { filterGroup ->
+                    if (filterGroup.id == FilterIds.FILTER_BY_ISSUER_GROUP_ID) {
+                        filterGroup.copy(
+                            filters = documents.items.distinctBy { (it.attributes as DocumentsFilterableAttributes).issuer }
+                                .mapNotNull { filterableItem ->
+                                    with(filterableItem.attributes as DocumentsFilterableAttributes) {
+                                        if (issuer != null) {
+                                            FilterItem(
+                                                id = issuer,
+                                                name = issuer,
+                                                selected = false,
+                                                filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                                                    attributes.issuer == filter.name
+                                                }
+                                            )
+                                        } else {
+                                            null
                                         }
-                                    )
-                                } else {
-                                    null
-                                }
-                            }
-                        }.toMutableList().apply {
-                            add(
-                                0,
-                                FilterItem(
-                                    id = FilterIds.FILTER_BY_ISSUER_ALL,
-                                    name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all),
-                                    selected = true,
-                                    filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
-                                        true // Get all
                                     }
-                                )
-                            )
-                        }
-                )
-            } else {
-                filterGroup
-            }
-        })
+                                }.toMutableList().apply {
+                                    add(
+                                        0,
+                                        FilterItem(
+                                            id = FilterIds.FILTER_BY_ISSUER_ALL,
+                                            name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer_all),
+                                            selected = true,
+                                            filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
+                                                true // Get all
+                                            }
+                                        )
+                                    )
+                                }
+                        )
+                    } else {
+                        filterGroup
+                    }
+                })
+            )
+        }
     }
 
-    var filters = Filters(
+    private fun createFilters(): Filters = Filters(
         filterGroups = listOf(
             // Filter by expiry period
             FilterGroup(
@@ -810,4 +765,59 @@ class DocumentsViewModel(
         ),
         sortOrder = SortOrder.ASCENDING
     )
+
+    private fun applySearch(queryText: String) {
+        interactor.applySearch(queryText)
+        setState {
+            copy(searchText = queryText)
+        }
+    }
+
+    private fun updateFilter(filterId: String, groupId: String) {
+        setState { copy(shouldRevertFilterChanges = true) }
+        interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
+    }
+
+    private fun applySelectedFilters() {
+        interactor.applyFilters()
+        setState {
+            copy(
+                shouldRevertFilterChanges = false
+            )
+        }
+        hideBottomSheet()
+    }
+
+    private fun resetFilters() {
+        interactor.resetFilters()
+        setState {
+            copy(
+                isFilteringActive = false,
+            )
+        }
+        hideBottomSheet()
+    }
+
+    private fun revertFilters(isOpening: Boolean) {
+        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+            && !isOpening
+            && viewState.value.shouldRevertFilterChanges
+        ) {
+            interactor.revertFilters()
+            setState { copy(shouldRevertFilterChanges = true) }
+        }
+
+        setState {
+            copy(isBottomSheetOpen = isOpening)
+        }
+    }
+
+    private fun sortOrderChanged(orderButton: DualSelectorButton) {
+        val sortOrder = when (orderButton) {
+            DualSelectorButton.FIRST -> SortOrder.ASCENDING
+            DualSelectorButton.SECOND -> SortOrder.DESCENDING
+        }
+        setState { copy(shouldRevertFilterChanges = true) }
+        interactor.updateSortOrder(sortOrder)
+    }
 }
