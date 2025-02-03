@@ -41,7 +41,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.resourceslogic.R
@@ -363,13 +363,12 @@ private fun DocumentDetailsScreenPreview() {
         val state = State(
             documentDetailsSectionTitle = "DOCUMENT DETAILS",
             documentIssuerSectionTitle = "ISSUER",
-            document = DocumentUi(
+            document = DocumentDetailsUi(
                 documentId = "1",
                 documentName = "National ID",
                 documentIdentifier = DocumentIdentifier.MdocPid,
                 documentExpirationDateFormatted = "30 Mar 2050",
                 documentHasExpired = false,
-                documentImage = "image1",
                 documentDetails = emptyList(),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,
             ),

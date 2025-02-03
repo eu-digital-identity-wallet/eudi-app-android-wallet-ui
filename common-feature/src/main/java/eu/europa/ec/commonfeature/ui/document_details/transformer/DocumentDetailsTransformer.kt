@@ -18,15 +18,12 @@ package eu.europa.ec.commonfeature.ui.document_details.transformer
 
 import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
-import eu.europa.ec.businesslogic.util.toDateFormatted
-import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.businesslogic.util.formatInstant
+import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
-import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
-import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
-import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.generateUniqueFieldId
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
@@ -58,41 +55,27 @@ object DocumentDetailsTransformer {
                 )
             }
 
-        val documentImage = extractValueFromDocumentOrEmpty(
-            document = document,
-            key = DocumentJsonKeys.PORTRAIT
-        )
-
-        val documentExpirationDate = extractValueFromDocumentOrEmpty(
-            document = document,
-            key = DocumentJsonKeys.EXPIRY_DATE
-        )
-
-        val docHasExpired = documentHasExpired(documentExpirationDate)
+        val docHasExpired = documentHasExpired(document.validUntil)
 
         return@runCatching DocumentDetailsDomain(
             docName = document.name,
             docId = document.id,
             documentIdentifier = document.toDocumentIdentifier(),
-            documentExpirationDateFormatted = documentExpirationDate.toDateFormatted().orEmpty(),
+            documentExpirationDateFormatted = document.validUntil.formatInstant(),
             documentHasExpired = docHasExpired,
-            documentImage = documentImage,
-            userFullName = extractFullNameFromDocumentOrEmpty(document),
             detailsItems = detailsDocumentItems
         )
     }
 
-    fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentUi {
+    fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentDetailsUi {
         val documentDetailsListItemData = this.detailsItems.toListItemData()
-        return DocumentUi(
+        return DocumentDetailsUi(
             documentId = this.docId,
             documentName = this.docName,
             documentIdentifier = this.documentIdentifier,
             documentExpirationDateFormatted = this.documentExpirationDateFormatted,
             documentHasExpired = this.documentHasExpired,
-            documentImage = this.documentImage,
             documentDetails = documentDetailsListItemData,
-            userFullName = this.userFullName,
             documentIssuanceState = DocumentUiIssuanceState.Issued,
         )
     }

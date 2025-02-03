@@ -17,7 +17,7 @@
 package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
@@ -45,7 +45,7 @@ data class State(
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
 
-    val document: DocumentUi? = null,
+    val document: DocumentDetailsUi? = null,
     val title: String? = null,
     val issuerName: String? = null,
     val issuerLogo: URI? = null,

@@ -24,14 +24,12 @@ enum class DocumentUiIssuanceState {
     Issued, Pending, Failed, Expired
 }
 
-data class DocumentUi(
-    val documentIssuanceState: DocumentUiIssuanceState,
+data class DocumentDetailsUi(
+    val documentId: DocumentId,
     val documentName: String,
     val documentIdentifier: DocumentIdentifier,
+    val documentIssuanceState: DocumentUiIssuanceState,
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,
-    val documentImage: String,
     val documentDetails: List<ListItemData>,
-    val userFullName: String? = null,
-    val documentId: DocumentId,
 )

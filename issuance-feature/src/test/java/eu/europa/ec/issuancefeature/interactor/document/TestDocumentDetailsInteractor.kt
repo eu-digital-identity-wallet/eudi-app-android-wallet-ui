@@ -22,6 +22,7 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
 import eu.europa.ec.commonfeature.util.TestsData.mockedDocumentHasExpired
+import eu.europa.ec.commonfeature.util.TestsData.mockedFormattedExpirationDate
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -192,9 +193,7 @@ class TestDocumentDetailsInteractor {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
-                        documentDetailsDomain = mockedBasicMdlDomain.copy(
-                            documentImage = "SE"
-                        ),
+                        documentDetailsDomain = mockedBasicMdlDomain,
                         documentIsBookmarked = false,
                         issuerName = null,
                         issuerLogo = null
@@ -277,10 +276,8 @@ class TestDocumentDetailsInteractor {
                             docName = mockedDocUiNamePid,
                             docId = mockedPidId,
                             documentIdentifier = DocumentIdentifier.MdocPid,
-                            documentExpirationDateFormatted = "",
+                            documentExpirationDateFormatted = mockedFormattedExpirationDate,
                             documentHasExpired = mockedDocumentHasExpired,
-                            documentImage = "",
-                            userFullName = "",
                             detailsItems = listOf(
                                 DocumentItem(
                                     elementIdentifier = "no_data_item",

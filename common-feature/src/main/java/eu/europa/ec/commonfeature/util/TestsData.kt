@@ -17,8 +17,8 @@
 package eu.europa.ec.commonfeature.util
 
 import androidx.annotation.VisibleForTesting
+import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
-import eu.europa.ec.commonfeature.model.DocumentUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
@@ -55,7 +55,7 @@ object TestsData {
     const val mockedNoUserFistNameFound = ""
     const val mockedNoUserBase64PortraitFound = ""
     const val mockedNoExpirationDateFound = ""
-    const val mockedFormattedExpirationDate = "30 Mar 2050"
+    const val mockedFormattedExpirationDate = "13 May 2025"
     const val mockedDocumentHasExpired = false
     const val mockedVerifierName = "EUDIW Verifier"
     const val mockedIssuerName = "EUDIW Issuer"
@@ -177,13 +177,12 @@ object TestsData {
 
     val mockedValidMdlWithBasicFieldsRequestDocument = mockedMdlWithBasicFieldsDocRequest
 
-    val mockedFullPidUi = DocumentUi(
+    val mockedFullPidUi = DocumentDetailsUi(
         documentId = mockedPidId,
         documentName = mockedPidDocName,
         documentIdentifier = DocumentIdentifier.MdocPid,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        documentImage = "",
         documentDetails = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
@@ -242,7 +241,6 @@ object TestsData {
                 mainContentData = ListItemMainContentData.Text("no")
             )
         ),
-        userFullName = "JAN ANDERSSON"
     )
 
     val mockedBasicPidDomain = DocumentDetailsDomain(
@@ -251,8 +249,6 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.MdocPid,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        documentImage = "",
-        userFullName = "JAN ANDERSSON",
         detailsItems = listOf(
             DocumentItem(
                 elementIdentifier = "family_name",
@@ -306,13 +302,12 @@ object TestsData {
         )
     )
 
-    val mockedFullMdlUi = DocumentUi(
+    val mockedFullMdlUi = DocumentDetailsUi(
         documentId = mockedMdlId,
         documentName = mockedMdlDocName,
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        documentImage = "",
         documentDetails = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
@@ -373,7 +368,6 @@ object TestsData {
                 mainContentData = ListItemMainContentData.Image("SE")
             )
         ),
-        userFullName = "JAN ANDERSSON"
     )
 
     val mockedBasicMdlDomain = DocumentDetailsDomain(
@@ -382,8 +376,6 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        documentImage = "",
-        userFullName = "JAN ANDERSSON",
         detailsItems = listOf(
             DocumentItem(
                 elementIdentifier = "family_name",
@@ -441,13 +433,13 @@ object TestsData {
         )
     )
 
-    val mockedMdlUiWithNoUserNameAndNoUserImage: DocumentUi = mockedFullMdlUi
+    val mockedMdlUiWithNoUserNameAndNoUserImage: DocumentDetailsUi = mockedFullMdlUi
 
-    val mockedMdlUiWithNoExpirationDate: DocumentUi = mockedFullMdlUi.copy(
+    val mockedMdlUiWithNoExpirationDate: DocumentDetailsUi = mockedFullMdlUi.copy(
         documentExpirationDateFormatted = mockedNoExpirationDateFound
     )
 
-    val mockedFullDocumentsUi: List<DocumentUi> = listOf(
+    val mockedFullDocumentsUi: List<DocumentDetailsUi> = listOf(
         mockedFullPidUi, mockedFullMdlUi
     )
 
