@@ -52,6 +52,7 @@ fun WrapExpandableListItem(
     collapsedClickableAreas: List<ClickableArea>? = null,
     expandedMainContentVerticalPadding: Dp = 12.dp,
     expandedClickableAreas: List<ClickableArea>? = null,
+    expandedAddDivider: Boolean = true,
     colors: CardColors? = null,
 ) {
     WrapExpandableCard(
@@ -76,6 +77,7 @@ fun WrapExpandableListItem(
                 hideSensitiveContent = hideSensitiveContent,
                 mainContentVerticalPadding = expandedMainContentVerticalPadding,
                 clickableAreas = expandedClickableAreas,
+                addDivider = expandedAddDivider,
                 shape = RoundedCornerShape(
                     bottomStart = SIZE_SMALL.dp,
                     bottomEnd = SIZE_SMALL.dp,

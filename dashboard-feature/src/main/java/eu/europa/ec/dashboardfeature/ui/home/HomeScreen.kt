@@ -20,14 +20,14 @@ import android.Manifest
 import android.content.Context
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -56,16 +56,13 @@ import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
-import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_XXX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ActionCardConfig
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
@@ -157,26 +154,28 @@ fun HomeScreen(
 private fun TopBar(
     onEventSent: (DashboardEvent) -> Unit
 ) {
-    Row(
+    Box(
         modifier = Modifier
-            .height(SIZE_XXX_LARGE.dp)
-            .fillMaxSize()
-            .padding(SPACING_MEDIUM.dp),
-        Arrangement.SpaceBetween
+            .fillMaxWidth()
+            .padding(
+                horizontal = SPACING_SMALL.dp,
+                vertical = SPACING_MEDIUM.dp
+            )
     ) {
         // home menu icon
         WrapIconButton(
-            modifier = Modifier.offset(x = -SPACING_SMALL.dp),
+            modifier = Modifier.align(Alignment.CenterStart),
             iconData = AppIcons.Menu,
-            shape = null
+            customTint = MaterialTheme.colorScheme.onSurface,
         ) {
             onEventSent(ShowSideMenuEvent)
         }
 
         // wallet logo
-        AppIconAndText(appIconAndTextData = AppIconAndTextData())
-
-        HSpacer.XXLarge()
+        AppIconAndText(
+            modifier = Modifier.align(Alignment.Center),
+            appIconAndTextData = AppIconAndTextData()
+        )
     }
 }
 
@@ -203,14 +202,15 @@ private fun Content(
                     end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
                 )
             )
-            .verticalScroll(scrollState),
+            .verticalScroll(scrollState)
+            .padding(vertical = SPACING_MEDIUM.dp),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
-        VSpacer.Small()
-
-        ContentTitle(
-            title = state.welcomeUserMessage,
-            titleStyle = MaterialTheme.typography.headlineMedium
+        Text(
+            text = state.welcomeUserMessage,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface
+            )
         )
 
         WrapActionCard(
@@ -240,8 +240,6 @@ private fun Content(
                 )
             }
         )
-
-        VSpacer.Medium()
     }
 
     if (state.bleAvailability == BleAvailability.NO_PERMISSION) {
@@ -513,30 +511,41 @@ private fun RequiredPermissionsAsk(
 @Composable
 private fun HomeScreenContentPreview() {
     PreviewTheme {
-        Content(
-            state = State(
-                isBottomSheetOpen = false,
-                welcomeUserMessage = "Welcome back, Alex",
-                authenticateCardConfig = ActionCardConfig(
-                    title = "Authenticate, authorise transactions and share your digital documents in person or online.",
-                    icon = AppIcons.WalletActivated,
-                    primaryButtonText = "Authenticate",
-                    secondaryButtonText = "Learn more",
-                ),
-                signCardConfig = ActionCardConfig(
-                    title = "Sign, authorise transactions and share your digital documents in person or online.",
-                    icon = AppIcons.Contract,
-                    primaryButtonText = "Sign",
-                    secondaryButtonText = "Learn more",
+        ContentScreen(
+            isLoading = false,
+            navigatableAction = ScreenNavigateAction.NONE,
+            onBack = { },
+            topBar = {
+                TopBar(
+                    onEventSent = {}
                 )
+            }
+        ) { paddingValues ->
+            Content(
+                state = State(
+                    isBottomSheetOpen = false,
+                    welcomeUserMessage = "Welcome back, Alex",
+                    authenticateCardConfig = ActionCardConfig(
+                        title = stringResource(R.string.home_screen_authentication_card_title),
+                        icon = AppIcons.WalletActivated,
+                        primaryButtonText = stringResource(R.string.home_screen_authenticate),
+                        secondaryButtonText = stringResource(R.string.home_screen_learn_more),
+                    ),
+                    signCardConfig = ActionCardConfig(
+                        title = stringResource(R.string.home_screen_sign_card_title),
+                        icon = AppIcons.Contract,
+                        primaryButtonText = stringResource(R.string.home_screen_sign),
+                        secondaryButtonText = stringResource(R.string.home_screen_learn_more),
+                    )
 
-            ),
-            effectFlow = Channel<Effect>().receiveAsFlow(),
-            onNavigationRequested = {},
-            coroutineScope = rememberCoroutineScope(),
-            modalBottomSheetState = rememberModalBottomSheetState(),
-            onEventSent = {},
-            paddingValues = PaddingValues(SPACING_MEDIUM.dp)
-        )
+                ),
+                effectFlow = Channel<Effect>().receiveAsFlow(),
+                onNavigationRequested = {},
+                coroutineScope = rememberCoroutineScope(),
+                modalBottomSheetState = rememberModalBottomSheetState(),
+                onEventSent = {},
+                paddingValues = paddingValues,
+            )
+        }
     }
 }

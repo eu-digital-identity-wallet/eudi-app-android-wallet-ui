@@ -50,7 +50,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 data class RadioButtonData(
     val isSelected: Boolean,
     val enabled: Boolean = true,
-    val onCheckedChange: ((Boolean) -> Unit)? = null,
+    val onCheckedChange: (() -> Unit)? = null,
 )
 
 @Composable
@@ -65,9 +65,7 @@ fun WrapRadioButton(
         RadioButton(
             modifier = modifier,
             selected = radioButtonData.isSelected,
-            onClick = {
-                radioButtonData.onCheckedChange?.let { it(radioButtonData.isSelected) }
-            },
+            onClick = radioButtonData.onCheckedChange,
             enabled = radioButtonData.enabled,
             colors = RadioButtonDefaults.colors(
                 unselectedColor = MaterialTheme.colorScheme.primary
@@ -87,7 +85,7 @@ private fun WrapRadioButtonPreview() {
         isSelected = isChecked,
         enabled = true,
         onCheckedChange = {
-            isChecked = it
+            isChecked = !isChecked
         }
     )
 

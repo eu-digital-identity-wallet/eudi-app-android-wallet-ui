@@ -37,6 +37,7 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @Composable
@@ -47,6 +48,7 @@ fun WrapListItems(
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     clickableAreas: List<ClickableArea>? = null,
+    addDivider: Boolean = true,
     shape: Shape? = null,
     colors: CardColors? = null,
 ) {
@@ -70,11 +72,11 @@ fun WrapListItems(
                     modifier = itemModifier,
                     hideSensitiveContent = hideSensitiveContent,
                     mainContentVerticalPadding = mainContentVerticalPadding,
-                    clickableAreas = clickableAreas ?: listOf(ClickableArea.TRAILING_CONTENT),
+                    clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
                 )
 
-                if (index < items.lastIndex) {
-                    HorizontalDivider()
+                if (addDivider && index < items.lastIndex) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = SPACING_MEDIUM.dp))
                 }
             }
         }

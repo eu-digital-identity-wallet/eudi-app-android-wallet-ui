@@ -80,7 +80,7 @@ fun WrapActionCard(
                         .padding(end = SPACING_MEDIUM.dp),
                     text = config.title,
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 WrapImage(

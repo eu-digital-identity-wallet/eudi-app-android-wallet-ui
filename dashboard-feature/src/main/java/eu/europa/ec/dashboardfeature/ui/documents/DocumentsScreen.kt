@@ -27,8 +27,6 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -59,12 +57,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentCategory
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DualSelectorButton
+import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -72,9 +73,10 @@ import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_XXX_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
@@ -94,9 +96,11 @@ import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
@@ -186,30 +190,34 @@ private fun TopBar(
     onEventSend: (Event) -> Unit,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
-    Row(
+    Box(
         modifier = Modifier
-            .height(SIZE_XXX_LARGE.dp)
-            .fillMaxSize()
-            .padding(SPACING_MEDIUM.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+            .fillMaxWidth()
+            .padding(
+                horizontal = SPACING_SMALL.dp,
+                vertical = SPACING_MEDIUM.dp
+            )
     ) {
         WrapIconButton(
-            modifier = Modifier.offset(x = -SPACING_SMALL.dp),
+            modifier = Modifier.align(Alignment.CenterStart),
             iconData = AppIcons.Menu,
-            shape = null
+            customTint = MaterialTheme.colorScheme.onSurface,
         ) {
             onDashboardEventSent(ShowSideMenuEvent)
         }
 
         Text(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.align(Alignment.Center),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.headlineMedium,
             text = stringResource(R.string.documents_screen_title)
         )
+
         WrapIconButton(
-            iconData = AppIcons.Add
+            modifier = Modifier.align(Alignment.CenterEnd),
+            iconData = AppIcons.Add,
+            customTint = MaterialTheme.colorScheme.onSurfaceVariant,
         ) {
             onEventSend(Event.AddDocumentPressed)
         }
@@ -428,7 +436,8 @@ private fun DocumentsSheetContent(
                                             val id = it.itemId
                                             val groupId = filter.collapsed.itemId
                                             onEventSent(Event.OnFilterSelectionChanged(id, groupId))
-                                        }
+                                        },
+                                        expandedAddDivider = false,
                                     )
                                 }
                             }
@@ -527,6 +536,103 @@ private fun DocumentsSheetContent(
                 ),
                 options = sheetContent.options,
                 onEventSent = onEventSent,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@ThemeModePreviews
+@Composable
+private fun DocumentsScreenPreview() {
+    PreviewTheme {
+        val scope = rememberCoroutineScope()
+        val bottomSheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+        ContentScreen(
+            isLoading = false,
+            navigatableAction = ScreenNavigateAction.NONE,
+            onBack = { },
+            topBar = {
+                TopBar(
+                    onEventSend = { },
+                    onDashboardEventSent = {}
+                )
+            },
+        ) { paddingValues ->
+            val issuerName = "Issuer name"
+            val validUntil = "Valid Until"
+            Content(
+                state = State(
+                    isLoading = false,
+                    isFilteringActive = false,
+                    sortingOrderButtonDataApplied = DualSelectorButtonData(
+                        first = "first",
+                        second = "second",
+                        selectedButton = DualSelectorButton.FIRST,
+                    ),
+                    documents = listOf(
+                        DocumentUi(
+                            documentIssuanceState = DocumentUiIssuanceState.Issued,
+                            uiData = ListItemData(
+                                itemId = "id1",
+                                mainContentData = ListItemMainContentData.Text(text = "Document 1"),
+                                overlineText = issuerName,
+                                supportingText = validUntil,
+                                leadingContentData = null,
+                                trailingContentData = null
+                            ),
+                            documentIdentifier = DocumentIdentifier.MdocPid,
+                            documentCategory = DocumentCategory.Government
+                        ),
+                        DocumentUi(
+                            documentIssuanceState = DocumentUiIssuanceState.Issued,
+                            uiData = ListItemData(
+                                itemId = "id2",
+                                mainContentData = ListItemMainContentData.Text(text = "Document 2"),
+                                overlineText = issuerName,
+                                supportingText = validUntil,
+                                leadingContentData = null,
+                                trailingContentData = null
+                            ),
+                            documentIdentifier = DocumentIdentifier.MdocPid,
+                            documentCategory = DocumentCategory.Government
+                        ),
+                        DocumentUi(
+                            documentIssuanceState = DocumentUiIssuanceState.Issued,
+                            uiData = ListItemData(
+                                itemId = "id3",
+                                mainContentData = ListItemMainContentData.Text(text = "Document 3"),
+                                overlineText = issuerName,
+                                supportingText = validUntil,
+                                leadingContentData = null,
+                                trailingContentData = null
+                            ),
+                            documentIdentifier = DocumentIdentifier.OTHER(formatType = ""),
+                            documentCategory = DocumentCategory.Finance
+                        ),
+                        DocumentUi(
+                            documentIssuanceState = DocumentUiIssuanceState.Issued,
+                            uiData = ListItemData(
+                                itemId = "id4",
+                                mainContentData = ListItemMainContentData.Text(text = "Document 4"),
+                                overlineText = issuerName,
+                                supportingText = validUntil,
+                                leadingContentData = null,
+                                trailingContentData = null
+                            ),
+                            documentIdentifier = DocumentIdentifier.OTHER(formatType = ""),
+                            documentCategory = DocumentCategory.Other
+                        ),
+                    )
+                ),
+                effectFlow = Channel<Effect>().receiveAsFlow(),
+                onEventSend = {},
+                onNavigationRequested = {},
+                paddingValues = paddingValues,
+                coroutineScope = scope,
+                modalBottomSheetState = bottomSheetState,
             )
         }
     }
