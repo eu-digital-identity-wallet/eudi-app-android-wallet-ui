@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -38,7 +39,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 sealed class BottomNavigationItem(
     val route: String,
-    val titleRes: Int,
+    @StringRes val titleRes: Int,
     val icon: IconData,
 ) {
     data object Home : BottomNavigationItem(
@@ -75,8 +76,14 @@ fun BottomNavigationBar(navController: NavController) {
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
         navItems.forEach { screen ->
+            val enabled = screen.route != BottomNavigationItem.Transactions.route
             NavigationBarItem(
-                icon = { WrapIcon(screen.icon) },
+                icon = {
+                    WrapIcon(
+                        iconData = screen.icon,
+                        enabled = enabled,
+                    )
+                },
                 label = { Text(text = stringResource(screen.titleRes)) },
                 colors = NavigationBarItemDefaults.colors()
                     .copy(
@@ -86,10 +93,8 @@ fun BottomNavigationBar(navController: NavController) {
                 selected = currentDestination?.hierarchy?.any {
                     it.route == screen.route
                 } == true,
+                enabled = enabled,
                 onClick = {
-                    if (screen.route == "TRANSACTIONS") { // TODO remove when transactions feature is ready
-                        return@NavigationBarItem
-                    }
                     navController.navigate(screen.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
