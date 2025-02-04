@@ -235,7 +235,8 @@
     <string name="documents_screen_filters_sort_date_issued">Date Issued</string>
     <string name="documents_screen_filters_sort_expiry_date">Expiry Date</string>
     <string name="documents_screen_filters_filter_by_issuer">Filter by issuer</string>
-    <string name="documents_screen_filters_filter_by_issuer_all">All</string>
+    <string name="documents_screen_filters_filter_by_category">Filter by category</string>
+    <string name="documents_screen_filters_filter_by_all">All</string>
     <string name="documents_screen_filters_filter_by_state">Filter by state</string>
     <string name="documents_screen_filters_filter_by_state_valid">Valid</string>
     <string name="documents_screen_filters_filter_by_state_expired">Expired</string>

@@ -247,7 +247,7 @@ private fun Content(
             VSpacer.Large()
         }
 
-        itemsIndexed(items = state.groups) { index, (documentCategory, documents) ->
+        itemsIndexed(items = state.documentsUi) { index, (documentCategory, documents) ->
             DocumentCategory(
                 modifier = Modifier.fillMaxWidth(),
                 category = documentCategory,
@@ -255,7 +255,7 @@ private fun Content(
                 onEventSend = onEventSend
             )
 
-            if (index != state.groups.lastIndex) {
+            if (index != state.documentsUi.lastIndex) {
                 VSpacer.ExtraLarge()
             }
         }

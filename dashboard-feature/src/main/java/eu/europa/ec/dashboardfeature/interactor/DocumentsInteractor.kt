@@ -16,10 +16,16 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.extension.isBeyondNextDays
+import eu.europa.ec.businesslogic.extension.isExpired
+import eu.europa.ec.businesslogic.extension.isWithinNextDays
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
+import eu.europa.ec.businesslogic.validator.model.FilterAction
+import eu.europa.ec.businesslogic.validator.model.FilterGroup
+import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
@@ -39,6 +45,7 @@ import eu.europa.ec.corelogic.model.toDocumentCategory
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.DocumentsFilterableAttributes
+import eu.europa.ec.dashboardfeature.model.FilterIds
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
@@ -61,10 +68,11 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.time.Instant
 
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
-        val documents: List<DocumentUi>,
+        val documents: List<Pair<DocumentCategory, List<DocumentUi>>>,
         val filters: List<ExpandableListItemData>,
         val sortOrder: DualSelectorButton,
         val hasMoreThanDefaultFilterApplied: Boolean,
@@ -136,8 +144,8 @@ interface DocumentsInteractor {
 
     fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState>
     fun initializeFilters(
-        filters: Filters,
         filterableList: FilterableList,
+        filters: Filters,
     )
 
     fun updateLists(filterableList: FilterableList, filters: Filters)
@@ -147,6 +155,8 @@ interface DocumentsInteractor {
     fun revertFilters()
     fun updateFilter(filterGroupId: String, filterId: String)
     fun updateSortOrder(sortOrder: SortOrder)
+    fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters
+    fun createFilters(): Filters
 }
 
 class DocumentsInteractorImpl(
@@ -223,15 +233,18 @@ class DocumentsInteractorImpl(
                 SortOrder.DESCENDING -> DualSelectorButton.SECOND
             }
 
-            when(result) {
+            when (result) {
                 is FilterValidatorPartialState.FilterListResult -> {
                     DocumentInteractorFilterPartialState.FilterApplyResult(
-                        documents = documentsUi,
+                        documents = documentsUi.groupBy {
+                            it.documentCategory
+                        }.toList().sortedBy { it.first.order },
                         filters = filtersUi,
                         sortOrder = sortOrderUi,
                         hasMoreThanDefaultFilterApplied = result.hasMoreThanDefaultFilters
                     )
                 }
+
                 is FilterValidatorPartialState.FilterUpdateResult -> {
                     DocumentInteractorFilterPartialState.FilterUpdateResult(
                         filters = filtersUi,
@@ -242,8 +255,8 @@ class DocumentsInteractorImpl(
         }
 
     override fun initializeFilters(
-        filters: Filters,
         filterableList: FilterableList,
+        filters: Filters,
     ) {
         filterValidator.initializeFilters(filters, filterableList)
     }
@@ -324,7 +337,8 @@ class DocumentsInteractorImpl(
                                     expiryDate = document.validUntil,
                                     issuer = localizedIssuerMetadata?.name,
                                     name = document.name,
-                                    searchText = document.name
+                                    searchText = document.name,
+                                    category = documentCategory
                                 )
                             )
                         }
@@ -364,7 +378,8 @@ class DocumentsInteractorImpl(
                                     expiryDate = null,
                                     issuer = localizedIssuerMetadata?.name,
                                     name = document.name,
-                                    searchText = document.name
+                                    searchText = document.name,
+                                    category = documentCategory
                                 )
                             )
                         }
@@ -499,4 +514,201 @@ class DocumentsInteractorImpl(
                 errorMessage = it.localizedMessage ?: genericErrorMsg
             )
         }
+
+    override fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters {
+        return filters.copy(filterGroups = filters.filterGroups.map { filterGroup ->
+            when (filterGroup.id) {
+                FilterIds.FILTER_BY_ISSUER_GROUP_ID -> {
+                    filterGroup.copy(
+                        filters = addIssuerFilter(documents)
+                    )
+                }
+
+                FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID -> {
+                    filterGroup.copy(
+                        filters = addDocumentCategoryFilter(documents)
+                    )
+                }
+
+                else -> {
+                    filterGroup
+                }
+            }
+        })
+    }
+
+    override fun createFilters(): Filters = Filters(
+        filterGroups = listOf(
+            // Filter by expiry period
+            FilterGroup(
+                id = FilterIds.FILTER_BY_PERIOD_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period),
+                filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_NEXT_7,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_1),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isWithinNextDays(7) == true
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_NEXT_30,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_2),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isWithinNextDays(30) == true
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_BEYOND_30,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_3),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isBeyondNextDays(30) == true
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_EXPIRED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_4),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isExpired() == true
+                        }
+                    )
+                )
+            ),
+            // Sort
+            FilterGroup(
+                id = FilterIds.FILTER_SORT_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
+                filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_DEFAULT,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
+                        selected = true,
+                        isDefault = true,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
+                            attributes.name
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_DATE_ISSUED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
+                        selected = false,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
+                            attributes.issuedDate
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_EXPIRY_DATE,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
+                        selected = false,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
+                            attributes.expiryDate
+                        }
+                    )
+                )
+            ),
+            // Filter by Issuer
+            FilterGroup(
+                id = FilterIds.FILTER_BY_ISSUER_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer),
+                filters = emptyList()
+            ),
+            FilterGroup(
+                id = FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_category),
+                filters = emptyList()
+            ),
+            // Filter by State
+            FilterGroup(
+                id = FilterIds.FILTER_BY_STATE_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state),
+                filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_STATE_VALID,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isExpired() == false
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_STATE_EXPIRED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
+                            attributes.expiryDate?.isExpired() == true
+                        }
+                    )
+                )
+            )
+        ),
+        sortOrder = SortOrder.ASCENDING
+    )
+
+    // TODO Deleting documents doesnt update UI
+    private fun addDocumentCategoryFilter(documents: FilterableList): List<FilterItem> {
+        return documents.items.distinctBy { (it.attributes as DocumentsFilterableAttributes).category }
+            .map { filterableItem ->
+                with(filterableItem.attributes as DocumentsFilterableAttributes) {
+                    FilterItem(
+                        id = category.id.toString(),
+                        name = resourceProvider.getString(category.stringResId),
+                        selected = false,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                            attributes.category.id.toString() == filter.id
+                        }
+                    )
+                }
+            }.toMutableList().apply {
+                add(
+                    0,
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_ALL,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_all),
+                        selected = true,
+                        isDefault = true,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
+                            true // Get all
+                        }
+                    )
+                )
+            }
+    }
+
+    private fun addIssuerFilter(documents: FilterableList): List<FilterItem> {
+        return documents.items.distinctBy { (it.attributes as DocumentsFilterableAttributes).issuer }
+            .mapNotNull { filterableItem ->
+                with(filterableItem.attributes as DocumentsFilterableAttributes) {
+                    if (issuer != null) {
+                        FilterItem(
+                            id = issuer,
+                            name = issuer,
+                            selected = false,
+                            filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
+                                attributes.issuer == filter.name
+                            }
+                        )
+                    } else {
+                        null
+                    }
+                }
+            }.toMutableList().apply {
+                add(
+                    0,
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_ALL,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_all),
+                        selected = true,
+                        isDefault = true,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
+                            true // Get all
+                        }
+                    )
+                )
+            }
+    }
+
 }

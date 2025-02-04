@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
+import eu.europa.ec.corelogic.model.DocumentCategory
 import java.time.Instant
 
 data class DocumentsFilterableAttributes(
@@ -25,4 +26,5 @@ data class DocumentsFilterableAttributes(
     val expiryDate: Instant?,
     val issuedDate: Instant?,
     val issuer: String?,
+    val category: DocumentCategory,
 ) : FilterableAttributes

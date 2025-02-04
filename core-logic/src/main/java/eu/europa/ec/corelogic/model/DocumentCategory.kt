@@ -39,7 +39,7 @@ import eu.europa.ec.resourceslogic.R
  */
 @JvmInline
 value class DocumentCategories(
-    val value: Map<DocumentCategory, List<DocumentIdentifier>>
+    val value: Map<DocumentCategory, List<DocumentIdentifier>>,
 )
 
 /**
@@ -51,36 +51,38 @@ value class DocumentCategories(
  */
 sealed class DocumentCategory(
     @StringRes val stringResId: Int,
+    val id: Int,
+    val order: Int,
 ) {
     data object Government : DocumentCategory(
-        stringResId = R.string.document_category_government
+        stringResId = R.string.document_category_government, id = 1, order = 1
     )
 
     data object Travel : DocumentCategory(
-        stringResId = R.string.document_category_travel
+        stringResId = R.string.document_category_travel, id = 2, order = 2
     )
 
     data object Finance : DocumentCategory(
-        stringResId = R.string.document_category_finance
+        stringResId = R.string.document_category_finance, id = 3, order = 3
     )
 
     data object Education : DocumentCategory(
-        stringResId = R.string.document_category_education
+        stringResId = R.string.document_category_education, id = 4, order = 4
     )
 
     data object Health : DocumentCategory(
-        stringResId = R.string.document_category_health
+        stringResId = R.string.document_category_health, id = 5, order = 5
     )
 
     data object SocialSecurity : DocumentCategory(
-        stringResId = R.string.document_category_social_security
+        stringResId = R.string.document_category_social_security, id = 6, order = 6
     )
 
     data object Retail : DocumentCategory(
-        stringResId = R.string.document_category_retail
+        stringResId = R.string.document_category_retail, id = 7, order = 7
     )
 
     data object Other : DocumentCategory(
-        stringResId = R.string.document_category_other
+        stringResId = R.string.document_category_other, id = 8, order = 8
     )
 }

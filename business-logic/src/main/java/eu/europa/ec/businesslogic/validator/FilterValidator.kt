@@ -71,7 +71,7 @@ interface FilterValidator {
     fun updateSortOrder(sortOrder: SortOrder)
 }
 
-class FilterValidatorImpl(val dispatcher: CoroutineDispatcher = Dispatchers.IO) : FilterValidator {
+class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : FilterValidator {
 
     // Filters
     private var appliedFilters: Filters = Filters.emptyFilters()
