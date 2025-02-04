@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.model
 
-import eu.europa.ec.businesslogic.model.FilterableAttributes
+import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
 import java.time.Instant
 
 data class DocumentsFilterableAttributes(

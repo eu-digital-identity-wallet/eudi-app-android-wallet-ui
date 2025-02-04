@@ -16,14 +16,14 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import eu.europa.ec.businesslogic.controller.filters.FiltersController
-import eu.europa.ec.businesslogic.controller.filters.FiltersControllerPartialState
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.businesslogic.model.FilterableItem
-import eu.europa.ec.businesslogic.model.FilterableList
-import eu.europa.ec.businesslogic.model.Filters
-import eu.europa.ec.businesslogic.model.SortOrder
 import eu.europa.ec.businesslogic.util.formatInstant
+import eu.europa.ec.businesslogic.validator.FiltersValidator
+import eu.europa.ec.businesslogic.validator.FiltersValidatorPartialState
+import eu.europa.ec.businesslogic.validator.model.FilterableItem
+import eu.europa.ec.businesslogic.validator.model.FilterableList
+import eu.europa.ec.businesslogic.validator.model.Filters
+import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.corelogic.config.WalletCoreConfig
@@ -152,7 +152,7 @@ interface DocumentsInteractor {
 class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val filtersController: FiltersController,
+    private val filtersController: FiltersValidator,
     private val walletCoreConfig: WalletCoreConfig,
 ) : DocumentsInteractor {
 
@@ -162,13 +162,13 @@ class DocumentsInteractorImpl(
     override fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState> =
         filtersController.onFilterStateChange().map { result ->
             val documentsUi = when (result) {
-                is FiltersControllerPartialState.FilterListResult.FilterApplyResult -> {
-                    result.filteredList.items.map { filterableItem ->
-                        filterableItem.payload as DocumentUi
+                is FiltersValidatorPartialState.FilterListResult.FilterApplyResult -> {
+                    result.filteredList.items.mapNotNull { filterableItem ->
+                        filterableItem.payload as? DocumentUi
                     }
                 }
 
-                is FiltersControllerPartialState.FilterListResult.FilterListEmptyResult -> {
+                is FiltersValidatorPartialState.FilterListResult.FilterListEmptyResult -> {
                     listOf(
                         DocumentUi(
                             documentIssuanceState = DocumentUiIssuanceState.Issued,
@@ -224,7 +224,7 @@ class DocumentsInteractorImpl(
             }
 
             when(result) {
-                is FiltersControllerPartialState.FilterListResult -> {
+                is FiltersValidatorPartialState.FilterListResult -> {
                     DocumentInteractorFilterPartialState.FilterApplyResult(
                         documents = documentsUi,
                         filters = filtersUi,
@@ -232,7 +232,7 @@ class DocumentsInteractorImpl(
                         hasMoreThanDefaultFilterApplied = result.hasMoreThanDefaultFilters
                     )
                 }
-                is FiltersControllerPartialState.FilterUpdateResult -> {
+                is FiltersValidatorPartialState.FilterUpdateResult -> {
                     DocumentInteractorFilterPartialState.FilterUpdateResult(
                         filters = filtersUi,
                         sortOrder = sortOrderUi

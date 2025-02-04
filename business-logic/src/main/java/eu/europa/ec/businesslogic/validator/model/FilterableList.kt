@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.model
+package eu.europa.ec.businesslogic.validator.model
 
 data class FilterableList(val items: List<FilterableItem>)
 

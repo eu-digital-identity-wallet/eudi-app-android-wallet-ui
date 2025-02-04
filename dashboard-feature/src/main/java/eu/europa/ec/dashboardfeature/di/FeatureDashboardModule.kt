@@ -17,8 +17,8 @@
 package eu.europa.ec.dashboardfeature.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
-import eu.europa.ec.businesslogic.controller.filters.FiltersController
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.businesslogic.validator.FiltersValidator
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
@@ -64,7 +64,7 @@ fun provideHomeInteractor(
 fun provideDocumentsInteractor(
     resourceProvider: ResourceProvider,
     documentsController: WalletCoreDocumentsController,
-    filtersController: FiltersController,
+    filtersController: FiltersValidator,
     walletCoreConfig: WalletCoreConfig,
 ): DocumentsInteractor =
     DocumentsInteractorImpl(

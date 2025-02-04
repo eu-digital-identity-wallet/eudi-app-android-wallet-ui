@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.model
 
-import eu.europa.ec.businesslogic.model.FilterableItemPayload
+import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier

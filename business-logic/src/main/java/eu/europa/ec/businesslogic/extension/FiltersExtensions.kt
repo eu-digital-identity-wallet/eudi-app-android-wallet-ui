@@ -16,7 +16,7 @@
 
 package eu.europa.ec.businesslogic.extension
 
-import eu.europa.ec.businesslogic.model.SortOrder
+import eu.europa.ec.businesslogic.validator.model.SortOrder
 
 internal fun <T, R : Comparable<R>> List<T>.sortByOrder(
     sortOrder: SortOrder,

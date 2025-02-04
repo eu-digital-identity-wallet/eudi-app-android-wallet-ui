@@ -14,18 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.model
+package eu.europa.ec.businesslogic.validator.model
 
 import eu.europa.ec.businesslogic.extension.sortByOrder
 
 data class Filters(
     val filterGroups: List<FilterGroup>,
-    val sortOrder: SortOrder
-){
+    val sortOrder: SortOrder,
+) {
     val isEmpty: Boolean
         get() = filterGroups.isEmpty()
 
-    companion object{
+    companion object {
         fun emptyFilters(): Filters {
             return Filters(filterGroups = emptyList(), SortOrder.ASCENDING)
         }
@@ -46,7 +46,7 @@ data class FilterItem(
     val filterableAction: FilterAction,
 )
 
-enum class SortOrder{
+enum class SortOrder {
     ASCENDING,
     DESCENDING
 }
@@ -81,13 +81,18 @@ sealed class FilterAction {
      * @param R The type of the attribute to be sorted by
      * */
     @Suppress("UNCHECKED_CAST")
-    data class Sort<T: FilterableAttributes, R : Comparable<R>>(val selector: (T) -> R?) : FilterAction() {
+    data class Sort<T : FilterableAttributes, R : Comparable<R>>(val selector: (T) -> R?) :
+        FilterAction() {
         override fun applyFilter(
             sortOrder: SortOrder,
             filterableItems: FilterableList,
             filter: FilterItem,
         ): FilterableList {
-            return filterableItems.copy(items = filterableItems.items.sortByOrder(sortOrder) { selector(it.attributes as T) }
+            return filterableItems.copy(items = filterableItems.items.sortByOrder(sortOrder) {
+                selector(
+                    it.attributes as T
+                )
+            }
                 .toMutableList())
         }
     }

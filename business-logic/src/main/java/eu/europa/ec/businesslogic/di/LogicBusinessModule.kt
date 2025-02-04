@@ -23,14 +23,14 @@ import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.controller.crypto.CryptoControllerImpl
 import eu.europa.ec.businesslogic.controller.crypto.KeystoreController
 import eu.europa.ec.businesslogic.controller.crypto.KeystoreControllerImpl
-import eu.europa.ec.businesslogic.controller.filters.FiltersController
-import eu.europa.ec.businesslogic.controller.filters.FiltersControllerImpl
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.log.LogControllerImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.controller.storage.PrefKeysImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
 import eu.europa.ec.businesslogic.controller.storage.PrefsControllerImpl
+import eu.europa.ec.businesslogic.validator.FiltersControllerImpl
+import eu.europa.ec.businesslogic.validator.FiltersValidator
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.businesslogic.validator.FormValidatorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -74,4 +74,4 @@ fun provideFormValidator(logController: LogController): FormValidator =
     FormValidatorImpl(logController)
 
 @Factory
-fun provideFiltersController(): FiltersController = FiltersControllerImpl()
+fun provideFiltersController(): FiltersValidator = FiltersControllerImpl()

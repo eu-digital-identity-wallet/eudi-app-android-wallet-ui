@@ -14,13 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.controller.filters
+package eu.europa.ec.businesslogic.validator
 
 import eu.europa.ec.businesslogic.extension.sortByOrder
-import eu.europa.ec.businesslogic.model.FilterGroup
-import eu.europa.ec.businesslogic.model.FilterableList
-import eu.europa.ec.businesslogic.model.Filters
-import eu.europa.ec.businesslogic.model.SortOrder
+import eu.europa.ec.businesslogic.validator.model.FilterGroup
+import eu.europa.ec.businesslogic.validator.model.FilterableList
+import eu.europa.ec.businesslogic.validator.model.Filters
+import eu.europa.ec.businesslogic.validator.model.SortOrder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,10 +32,10 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 
-sealed interface FiltersControllerPartialState {
+sealed interface FiltersValidatorPartialState {
     val updatedFilters: Filters
 
-    sealed interface FilterListResult : FiltersControllerPartialState {
+    sealed interface FilterListResult : FiltersValidatorPartialState {
         val hasMoreThanDefaultFilters: Boolean
 
         data class FilterListEmptyResult(
@@ -52,16 +52,15 @@ sealed interface FiltersControllerPartialState {
 
     data class FilterUpdateResult(
         override val updatedFilters: Filters,
-    ) : FiltersControllerPartialState
+    ) : FiltersValidatorPartialState
 }
 
-interface FiltersController {
-    fun onFilterStateChange(): Flow<FiltersControllerPartialState>
+interface FiltersValidator {
+    fun onFilterStateChange(): Flow<FiltersValidatorPartialState>
     fun initializeFilters(
         filters: Filters,
         filterableList: FilterableList,
     )
-
     fun updateLists(filterableList: FilterableList, filters: Filters)
     fun applyFilters()
     fun applySearch(query: String)
@@ -71,7 +70,7 @@ interface FiltersController {
     fun updateSortOrder(sortOrder: SortOrder)
 }
 
-class FiltersControllerImpl : FiltersController {
+class FiltersControllerImpl : FiltersValidator {
 
     // Filters
     private var appliedFilters: Filters = Filters.emptyFilters()
@@ -85,13 +84,13 @@ class FiltersControllerImpl : FiltersController {
     private lateinit var initialList: FilterableList
 
     // Flow
-    private val scope = CoroutineScope(Job() + Dispatchers.Main)
-    private val emissionMutableFlow = MutableSharedFlow<FiltersControllerPartialState>()
-    private val filterResultFlow: SharedFlow<FiltersControllerPartialState> = emissionMutableFlow
-        .debounce(200)
+    private val scope = CoroutineScope(Job() + Dispatchers.IO)
+    private val emissionMutableFlow = MutableSharedFlow<FiltersValidatorPartialState>()
+    private val filterResultFlow: SharedFlow<FiltersValidatorPartialState> = emissionMutableFlow
+        .debounce(200L)
         .shareIn(
             scope,
-            SharingStarted.WhileSubscribed(),
+            SharingStarted.WhileSubscribed(5000L),
             replay = 1
         )
 
@@ -119,7 +118,7 @@ class FiltersControllerImpl : FiltersController {
         this.initialFilters = filters
     }
 
-    override fun onFilterStateChange(): Flow<FiltersControllerPartialState> = filterResultFlow
+    override fun onFilterStateChange(): Flow<FiltersValidatorPartialState> = filterResultFlow
 
     private fun updateFilterInGroup(group: FilterGroup, filterId: String): FilterGroup {
         val defaultFilter = group.filters.find { it.isDefault }
@@ -148,21 +147,21 @@ class FiltersControllerImpl : FiltersController {
     }
 
     override fun updateFilter(filterGroupId: String, filterId: String) {
-        val filtersToUpdate = if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
-        val updatedFilterGroups = filtersToUpdate.filterGroups.map { group ->
-            if (group.id == filterGroupId) {
-                updateFilterInGroup(group, filterId)
-            } else {
-                group
-            }
-        }
-
-        val updatedFilters = filtersToUpdate.copy(filterGroups = updatedFilterGroups)
-        snapshotFilters = updatedFilters
-
         scope.launch {
+            val filtersToUpdate = if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
+            val updatedFilterGroups = filtersToUpdate.filterGroups.map { group ->
+                if (group.id == filterGroupId) {
+                    updateFilterInGroup(group, filterId)
+                } else {
+                    group
+                }
+            }
+
+            val updatedFilters = filtersToUpdate.copy(filterGroups = updatedFilterGroups)
+            snapshotFilters = updatedFilters
+
             emissionMutableFlow.emit(
-                FiltersControllerPartialState.FilterUpdateResult(
+                FiltersValidatorPartialState.FilterUpdateResult(
                     updatedFilters = snapshotFilters
                 )
             )
@@ -180,10 +179,10 @@ class FiltersControllerImpl : FiltersController {
     }
 
     override fun revertFilters() {
-        snapshotFilters = Filters.emptyFilters()
         scope.launch {
+            snapshotFilters = Filters.emptyFilters()
             emissionMutableFlow.emit(
-                FiltersControllerPartialState.FilterUpdateResult(
+                FiltersValidatorPartialState.FilterUpdateResult(
                     updatedFilters = appliedFilters
                 )
             )
@@ -191,12 +190,12 @@ class FiltersControllerImpl : FiltersController {
     }
 
     override fun updateSortOrder(sortOrder: SortOrder) {
-        val filterToUpdateOrderChange =
-            if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
-        snapshotFilters = filterToUpdateOrderChange.copy(sortOrder = sortOrder)
         scope.launch {
+            val filterToUpdateOrderChange =
+                if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
+            snapshotFilters = filterToUpdateOrderChange.copy(sortOrder = sortOrder)
             emissionMutableFlow.emit(
-                FiltersControllerPartialState.FilterUpdateResult(
+                FiltersValidatorPartialState.FilterUpdateResult(
                     updatedFilters = snapshotFilters
                 )
             )
@@ -204,38 +203,38 @@ class FiltersControllerImpl : FiltersController {
     }
 
     override fun applyFilters() {
-        if (!snapshotFilters.isEmpty) {
-            appliedFilters = snapshotFilters.copy()
-            snapshotFilters = Filters.emptyFilters()
-            hasMoreThanDefaultFilterApplied = true
-        }
-
-        val newList = appliedFilters
-            .filterGroups
-            .flatMap { it.filters }
-            .filter { it.selected }
-            .fold(initialList) { currentList, filter ->
-                filter.filterableAction.applyFilter(appliedFilters.sortOrder, currentList, filter)
-            }.let {
-                it.copy(items = it.items.filter { item ->
-                    item.attributes.searchText.contains(
-                        searchQuery,
-                        ignoreCase = true
-                    )
-                })
+        scope.launch {
+            if (!snapshotFilters.isEmpty) {
+                appliedFilters = snapshotFilters.copy()
+                snapshotFilters = Filters.emptyFilters()
+                hasMoreThanDefaultFilterApplied = true
             }
 
-        scope.launch {
+            val newList = appliedFilters
+                .filterGroups
+                .flatMap { it.filters }
+                .filter { it.selected }
+                .fold(initialList) { currentList, filter ->
+                    filter.filterableAction.applyFilter(appliedFilters.sortOrder, currentList, filter)
+                }.let {
+                    it.copy(items = it.items.filter { item ->
+                        item.attributes.searchText.contains(
+                            searchQuery,
+                            ignoreCase = true
+                        )
+                    })
+                }
+
             if (newList.items.isEmpty()) {
                 emissionMutableFlow.emit(
-                    FiltersControllerPartialState.FilterListResult.FilterListEmptyResult(
+                    FiltersValidatorPartialState.FilterListResult.FilterListEmptyResult(
                         hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied,
                         updatedFilters = appliedFilters
                     )
                 )
             } else {
                 emissionMutableFlow.emit(
-                    FiltersControllerPartialState.FilterListResult.FilterApplyResult(
+                    FiltersValidatorPartialState.FilterListResult.FilterApplyResult(
                         filteredList = newList,
                         updatedFilters = appliedFilters,
                         hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
