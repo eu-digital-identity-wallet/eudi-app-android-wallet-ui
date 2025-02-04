@@ -152,7 +152,7 @@ interface DocumentsInteractor {
 class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val filtersController: FiltersValidator,
+    private val filtersValidator: FiltersValidator,
     private val walletCoreConfig: WalletCoreConfig,
 ) : DocumentsInteractor {
 
@@ -160,7 +160,7 @@ class DocumentsInteractorImpl(
         get() = resourceProvider.genericErrorMessage()
 
     override fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState> =
-        filtersController.onFilterStateChange().map { result ->
+        filtersValidator.onFilterStateChange().map { result ->
             val documentsUi = when (result) {
                 is FiltersValidatorPartialState.FilterListResult.FilterApplyResult -> {
                     result.filteredList.items.mapNotNull { filterableItem ->
@@ -245,25 +245,25 @@ class DocumentsInteractorImpl(
         filters: Filters,
         filterableList: FilterableList,
     ) {
-        filtersController.initializeFilters(filters, filterableList)
+        filtersValidator.initializeFilters(filters, filterableList)
     }
 
     override fun updateLists(filterableList: FilterableList, filters: Filters) =
-        filtersController.updateLists(filterableList, filters)
+        filtersValidator.updateLists(filterableList, filters)
 
-    override fun applySearch(query: String) = filtersController.applySearch(query)
+    override fun applySearch(query: String) = filtersValidator.applySearch(query)
 
-    override fun revertFilters() = filtersController.revertFilters()
+    override fun revertFilters() = filtersValidator.revertFilters()
 
     override fun updateFilter(filterGroupId: String, filterId: String) =
-        filtersController.updateFilter(filterGroupId, filterId)
+        filtersValidator.updateFilter(filterGroupId, filterId)
 
     override fun updateSortOrder(sortOrder: SortOrder) =
-        filtersController.updateSortOrder(sortOrder)
+        filtersValidator.updateSortOrder(sortOrder)
 
-    override fun applyFilters() = filtersController.applyFilters()
+    override fun applyFilters() = filtersValidator.applyFilters()
 
-    override fun resetFilters() = filtersController.resetFilters()
+    override fun resetFilters() = filtersValidator.resetFilters()
 
     override fun getDocuments(): Flow<DocumentInteractorGetDocumentsPartialState> =
         flow<DocumentInteractorGetDocumentsPartialState> {

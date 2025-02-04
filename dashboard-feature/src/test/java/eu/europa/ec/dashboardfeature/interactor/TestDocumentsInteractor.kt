@@ -80,7 +80,7 @@ class TestDocumentsInteractor {
         interactor = DocumentsInteractorImpl(
             resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
-            filtersController = filtersController,
+            filtersValidator = filtersController,
             walletCoreConfig = walletCoreConfig,
         )
 
