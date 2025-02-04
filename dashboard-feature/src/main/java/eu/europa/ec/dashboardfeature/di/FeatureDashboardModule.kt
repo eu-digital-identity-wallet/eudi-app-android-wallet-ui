@@ -64,13 +64,13 @@ fun provideHomeInteractor(
 fun provideDocumentsInteractor(
     resourceProvider: ResourceProvider,
     documentsController: WalletCoreDocumentsController,
-    filtersController: FiltersValidator,
+    filtersValidator: FiltersValidator,
     walletCoreConfig: WalletCoreConfig,
 ): DocumentsInteractor =
     DocumentsInteractorImpl(
         resourceProvider,
         documentsController,
-        filtersController,
+        filtersValidator,
         walletCoreConfig,
     )
 

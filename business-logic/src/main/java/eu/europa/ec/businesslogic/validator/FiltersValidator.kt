@@ -70,7 +70,7 @@ interface FiltersValidator {
     fun updateSortOrder(sortOrder: SortOrder)
 }
 
-class FiltersControllerImpl : FiltersValidator {
+class FiltersValidatorImpl : FiltersValidator {
 
     // Filters
     private var appliedFilters: Filters = Filters.emptyFilters()

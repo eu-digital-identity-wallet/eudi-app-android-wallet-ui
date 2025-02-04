@@ -29,8 +29,8 @@ import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.controller.storage.PrefKeysImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
 import eu.europa.ec.businesslogic.controller.storage.PrefsControllerImpl
-import eu.europa.ec.businesslogic.validator.FiltersControllerImpl
 import eu.europa.ec.businesslogic.validator.FiltersValidator
+import eu.europa.ec.businesslogic.validator.FiltersValidatorImpl
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.businesslogic.validator.FormValidatorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -74,4 +74,4 @@ fun provideFormValidator(logController: LogController): FormValidator =
     FormValidatorImpl(logController)
 
 @Factory
-fun provideFiltersController(): FiltersValidator = FiltersControllerImpl()
+fun provideFiltersValidator(): FiltersValidator = FiltersValidatorImpl()
