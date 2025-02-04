@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import eu.europa.ec.businesslogic.validator.FiltersValidator
+import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingPidUi
 import eu.europa.ec.corelogic.config.WalletCoreConfig
@@ -61,7 +61,7 @@ class TestDocumentsInteractor {
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     @Mock
-    private lateinit var filtersValidator: FiltersValidator
+    private lateinit var filterValidator: FilterValidator
 
     @Mock
     private lateinit var walletCoreConfig: WalletCoreConfig
@@ -80,7 +80,7 @@ class TestDocumentsInteractor {
         interactor = DocumentsInteractorImpl(
             resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
-            filtersValidator = filtersValidator,
+            filterValidator = filterValidator,
             walletCoreConfig = walletCoreConfig,
         )
 
