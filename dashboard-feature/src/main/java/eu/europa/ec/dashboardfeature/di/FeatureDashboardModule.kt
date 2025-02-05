@@ -65,13 +65,11 @@ fun provideDocumentsInteractor(
     resourceProvider: ResourceProvider,
     documentsController: WalletCoreDocumentsController,
     filterValidator: FilterValidator,
-    walletCoreConfig: WalletCoreConfig,
 ): DocumentsInteractor =
     DocumentsInteractorImpl(
         resourceProvider,
         documentsController,
         filterValidator,
-        walletCoreConfig,
     )
 
 @Factory

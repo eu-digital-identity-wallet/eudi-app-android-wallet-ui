@@ -60,11 +60,13 @@ fun provideWalletCoreLogController(logController: LogController): WalletCoreLogC
 @Factory
 fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
-    eudiWallet: EudiWallet
+    eudiWallet: EudiWallet,
+    walletCoreConfig: WalletCoreConfig,
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
         resourceProvider,
-        eudiWallet
+        eudiWallet,
+        walletCoreConfig,
     )
 
 /**

@@ -18,9 +18,6 @@ package eu.europa.ec.corelogic.config
 
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
-import eu.europa.ec.corelogic.model.DocumentCategories
-import eu.europa.ec.corelogic.model.DocumentCategory
-import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
@@ -87,64 +84,4 @@ internal class WalletCoreConfigImpl(
             }
             return _config!!
         }
-
-    override val documentsCategories: DocumentCategories
-        get() = DocumentCategories(
-            value = mapOf(
-                DocumentCategory.Government to listOf(
-                    DocumentIdentifier.MdocPid,
-                    DocumentIdentifier.SdJwtPid,
-                    DocumentIdentifier.OTHER(
-                        formatType = "org.iso.18013.5.1.mDL"
-                    ),
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.tax.1"
-                    ),
-                    DocumentIdentifier.MdocPseudonym,
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.pseudonym.age_over_18.deferred_endpoint"
-                    )
-                ),
-                DocumentCategory.Travel to listOf(
-                    DocumentIdentifier.OTHER(
-                        formatType = "org.iso.23220.2.photoid.1"
-                    ),
-                    DocumentIdentifier.OTHER(
-                        formatType = "org.iso.18013.5.1.reservation"
-                    ),
-                ),
-                DocumentCategory.Finance to listOf(
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.iban.1"
-                    )
-                ),
-                DocumentCategory.Education to emptyList(),
-                DocumentCategory.Health to listOf(
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.hiid.1"
-                    ),
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.ehic.1"
-                    ),
-                ),
-                DocumentCategory.SocialSecurity to listOf(
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.samplepda1.1"
-                    )
-                ),
-                DocumentCategory.Retail to listOf(
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.loyalty.1"
-                    ),
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.msisdn.1"
-                    ),
-                ),
-                DocumentCategory.Other to listOf(
-                    DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.por.1"
-                    )
-                ),
-            )
-        )
 }

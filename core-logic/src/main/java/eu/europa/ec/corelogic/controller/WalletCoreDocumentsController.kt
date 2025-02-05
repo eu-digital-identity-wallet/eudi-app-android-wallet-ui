@@ -21,7 +21,9 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.ScopedDocument
@@ -167,11 +169,14 @@ interface WalletCoreDocumentsController {
     fun resumeOpenId4VciWithAuthorization(uri: String)
 
     suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState
+
+    fun getAllDocumentCategories(): DocumentCategories
 }
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val eudiWallet: EudiWallet,
+    private val walletCoreConfig: WalletCoreConfig,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : WalletCoreDocumentsController {
 
@@ -500,6 +505,10 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun resumeOpenId4VciWithAuthorization(uri: String) {
         openId4VciManager.resumeWithAuthorization(uri)
+    }
+
+    override fun getAllDocumentCategories(): DocumentCategories {
+        return walletCoreConfig.documentCategories
     }
 
     private fun issueDocumentWithOpenId4VCI(configId: String): Flow<IssueDocumentsPartialState> =

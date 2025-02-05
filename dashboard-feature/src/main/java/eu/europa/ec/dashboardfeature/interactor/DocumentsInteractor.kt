@@ -34,7 +34,6 @@ import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.documentHasExpired
-import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -168,7 +167,6 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filterValidator: FilterValidator,
-    private val walletCoreConfig: WalletCoreConfig,
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -283,6 +281,8 @@ class DocumentsInteractorImpl(
             val shouldAllowUserInteraction =
                 walletCoreDocumentsController.getMainPidDocument() != null
 
+            val documentCategories = walletCoreDocumentsController.getAllDocumentCategories()
+
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
                     when (document) {
@@ -293,7 +293,7 @@ class DocumentsInteractorImpl(
                             val documentIdentifier = document.toDocumentIdentifier()
 
                             val documentCategory = documentIdentifier.toDocumentCategory(
-                                allCategories = walletCoreConfig.documentsCategories
+                                allCategories = documentCategories
                             )
 
                             val documentHasExpired =
@@ -350,7 +350,7 @@ class DocumentsInteractorImpl(
                             val documentIdentifier = document.toDocumentIdentifier()
 
                             val documentCategory = documentIdentifier.toDocumentCategory(
-                                allCategories = walletCoreConfig.documentsCategories
+                                allCategories = documentCategories
                             )
 
                             FilterableItem(
