@@ -55,6 +55,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -563,69 +564,71 @@ private fun DocumentsScreenPreview() {
         ) { paddingValues ->
             val issuerName = "Issuer name"
             val validUntil = "Valid Until"
+            val documentsList = listOf(
+                DocumentUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "id1",
+                        mainContentData = ListItemMainContentData.Text(text = "Document 1"),
+                        overlineText = issuerName,
+                        supportingText = validUntil,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.MdocPid,
+                    documentCategory = DocumentCategory.Government
+                ),
+                DocumentUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "id2",
+                        mainContentData = ListItemMainContentData.Text(text = "Document 2"),
+                        overlineText = issuerName,
+                        supportingText = validUntil,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.MdocPid,
+                    documentCategory = DocumentCategory.Government
+                ),
+                DocumentUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "id3",
+                        mainContentData = ListItemMainContentData.Text(text = "Document 3"),
+                        overlineText = issuerName,
+                        supportingText = validUntil,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.OTHER(formatType = ""),
+                    documentCategory = DocumentCategory.Finance
+                ),
+                DocumentUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "id4",
+                        mainContentData = ListItemMainContentData.Text(text = "Document 4"),
+                        overlineText = issuerName,
+                        supportingText = validUntil,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.OTHER(formatType = ""),
+                    documentCategory = DocumentCategory.Other
+                ),
+            )
             Content(
                 state = State(
                     isLoading = false,
                     isFilteringActive = false,
-                    sortingOrderButtonDataApplied = DualSelectorButtonData(
+                    sortOrder = DualSelectorButtonData(
                         first = "first",
                         second = "second",
                         selectedButton = DualSelectorButton.FIRST,
                     ),
-                    documents = listOf(
-                        DocumentUi(
-                            documentIssuanceState = DocumentUiIssuanceState.Issued,
-                            uiData = ListItemData(
-                                itemId = "id1",
-                                mainContentData = ListItemMainContentData.Text(text = "Document 1"),
-                                overlineText = issuerName,
-                                supportingText = validUntil,
-                                leadingContentData = null,
-                                trailingContentData = null
-                            ),
-                            documentIdentifier = DocumentIdentifier.MdocPid,
-                            documentCategory = DocumentCategory.Government
-                        ),
-                        DocumentUi(
-                            documentIssuanceState = DocumentUiIssuanceState.Issued,
-                            uiData = ListItemData(
-                                itemId = "id2",
-                                mainContentData = ListItemMainContentData.Text(text = "Document 2"),
-                                overlineText = issuerName,
-                                supportingText = validUntil,
-                                leadingContentData = null,
-                                trailingContentData = null
-                            ),
-                            documentIdentifier = DocumentIdentifier.MdocPid,
-                            documentCategory = DocumentCategory.Government
-                        ),
-                        DocumentUi(
-                            documentIssuanceState = DocumentUiIssuanceState.Issued,
-                            uiData = ListItemData(
-                                itemId = "id3",
-                                mainContentData = ListItemMainContentData.Text(text = "Document 3"),
-                                overlineText = issuerName,
-                                supportingText = validUntil,
-                                leadingContentData = null,
-                                trailingContentData = null
-                            ),
-                            documentIdentifier = DocumentIdentifier.OTHER(formatType = ""),
-                            documentCategory = DocumentCategory.Finance
-                        ),
-                        DocumentUi(
-                            documentIssuanceState = DocumentUiIssuanceState.Issued,
-                            uiData = ListItemData(
-                                itemId = "id4",
-                                mainContentData = ListItemMainContentData.Text(text = "Document 4"),
-                                overlineText = issuerName,
-                                supportingText = validUntil,
-                                leadingContentData = null,
-                                trailingContentData = null
-                            ),
-                            documentIdentifier = DocumentIdentifier.OTHER(formatType = ""),
-                            documentCategory = DocumentCategory.Other
-                        ),
-                    )
+                    documentsUi = documentsList.groupBy { it.documentCategory }.toList(),
+                    filters = Filters.emptyFilters(),
                 ),
                 effectFlow = Channel<Effect>().receiveAsFlow(),
                 onEventSend = {},
