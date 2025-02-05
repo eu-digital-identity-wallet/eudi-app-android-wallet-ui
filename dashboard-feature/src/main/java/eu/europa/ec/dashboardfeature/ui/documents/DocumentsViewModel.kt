@@ -66,6 +66,7 @@ data class State(
     val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
 
     val documentsUi: List<Pair<DocumentCategory, List<DocumentUi>>> = emptyList(),
+    val showNoResultsFound: Boolean = false,
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val searchText: String = "",
     val allowUserInteraction: Boolean = true,
@@ -288,6 +289,7 @@ class DocumentsViewModel(
                             copy(
                                 isFilteringActive = result.hasMoreThanDefaultFilterApplied,
                                 documentsUi = result.documents,
+                                showNoResultsFound = result.documents.isEmpty(),
                                 filtersUi = result.filters,
                                 sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
                             )

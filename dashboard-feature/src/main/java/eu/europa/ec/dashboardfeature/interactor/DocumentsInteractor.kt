@@ -41,7 +41,6 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentCategory
-import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentCategory
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
@@ -185,31 +184,15 @@ class DocumentsInteractorImpl(
                 }
 
                 is FilterValidatorPartialState.FilterListResult.FilterListEmptyResult -> {
-                    listOf(
-                        DocumentUi(
-                            documentIssuanceState = DocumentUiIssuanceState.Issued,
-                            uiData = ListItemData(
-                                itemId = "-1",
-                                mainContentData = ListItemMainContentData.Text(
-                                    text = resourceProvider.getString(
-                                        R.string.documents_screen_search_no_results
-                                    )
-                                ),
-                                overlineText = null,
-                                supportingText = null,
-                                leadingContentData = null,
-                                trailingContentData = null
-                            ),
-                            documentIdentifier = DocumentIdentifier.OTHER(FormatType()),
-                            documentCategory = DocumentCategory.Other
-                        )
-                    )
+                    emptyList()
                 }
 
                 else -> {
                     emptyList()
                 }
-            }
+            }.groupBy {
+                it.documentCategory
+            }.toList().sortedBy { it.first.order }
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
                 ExpandableListItemData(
@@ -255,9 +238,7 @@ class DocumentsInteractorImpl(
             when (result) {
                 is FilterValidatorPartialState.FilterListResult -> {
                     DocumentInteractorFilterPartialState.FilterApplyResult(
-                        documents = documentsUi.groupBy {
-                            it.documentCategory
-                        }.toList().sortedBy { it.first.order },
+                        documents = documentsUi,
                         filters = filtersUi,
                         sortOrder = sortOrderUi,
                         hasMoreThanDefaultFilterApplied = result.hasMoreThanDefaultFilters

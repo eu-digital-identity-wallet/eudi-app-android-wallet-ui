@@ -66,6 +66,8 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButtons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -251,16 +253,22 @@ private fun Content(
             VSpacer.Large()
         }
 
-        itemsIndexed(items = state.documentsUi) { index, (documentCategory, documents) ->
-            DocumentCategory(
-                modifier = Modifier.fillMaxWidth(),
-                category = documentCategory,
-                documents = documents,
-                onEventSend = onEventSend
-            )
+        if (state.showNoResultsFound) {
+            item {
+                NoResults(modifier = Modifier.fillMaxWidth())
+            }
+        } else {
+            itemsIndexed(items = state.documentsUi) { index, (documentCategory, documents) ->
+                DocumentCategory(
+                    modifier = Modifier.fillMaxWidth(),
+                    category = documentCategory,
+                    documents = documents,
+                    onEventSend = onEventSend
+                )
 
-            if (index != state.documentsUi.lastIndex) {
-                VSpacer.ExtraLarge()
+                if (index != state.documentsUi.lastIndex) {
+                    VSpacer.ExtraLarge()
+                }
             }
         }
     }
@@ -337,24 +345,18 @@ private fun DocumentCategory(
             WrapListItem(
                 modifier = Modifier.fillMaxWidth(),
                 item = documentItem.uiData,
-                onItemClick = if (documentItem.uiData.itemId.isBlank()) {
-                    null
-                } else {
-                    if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Pending
+                onItemClick = {
+                    val onItemClickEvent = if (
+                        documentItem.documentIssuanceState == DocumentUiIssuanceState.Pending
                         || documentItem.documentIssuanceState == DocumentUiIssuanceState.Failed
                     ) {
-                        {
-                            onEventSend(
-                                Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
-                                    documentId = documentItem.uiData.itemId
-                                )
-                            )
-                        }
+                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
+                            documentId = documentItem.uiData.itemId
+                        )
                     } else {
-                        {
-                            onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId))
-                        }
+                        Event.GoToDocumentDetails(documentItem.uiData.itemId)
                     }
+                    onEventSend(onItemClickEvent)
                 },
                 supportingTextColor = when (documentItem.documentIssuanceState) {
                     DocumentUiIssuanceState.Issued -> null
@@ -364,6 +366,23 @@ private fun DocumentCategory(
                 }
             )
         }
+    }
+}
+
+@Composable
+private fun NoResults(
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        WrapListItem(
+            item = ListItemData(
+                itemId = stringResource(R.string.documents_screen_search_no_results_id),
+                mainContentData = ListItemMainContentData.Text(text = stringResource(R.string.documents_screen_search_no_results)),
+            ),
+            onItemClick = null,
+            modifier = Modifier.fillMaxWidth(),
+            mainContentVerticalPadding = SPACING_MEDIUM.dp,
+        )
     }
 }
 
