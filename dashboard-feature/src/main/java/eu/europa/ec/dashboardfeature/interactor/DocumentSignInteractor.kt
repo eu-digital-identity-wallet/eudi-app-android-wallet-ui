@@ -43,7 +43,7 @@ class DocumentSignInteractorImpl(
     override fun getUiItem(): SignDocumentButtonUi {
         return SignDocumentButtonUi(
             data = ListItemData(
-                itemId = "signDocumentButtonId",
+                itemId = resourceProvider.getString(R.string.document_sign_select_document_button_id),
                 mainContentData = ListItemMainContentData.Text(
                     text = resourceProvider.getString(R.string.document_sign_select_document)
                 ),

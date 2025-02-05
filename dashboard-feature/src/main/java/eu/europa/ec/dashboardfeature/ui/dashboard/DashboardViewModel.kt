@@ -181,7 +181,7 @@ class DashboardViewModel(
                 SideMenuItemUi(
                     type = SideMenuItemType.CHANGE_PIN,
                     data = ListItemData(
-                        itemId = "changePinId",
+                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_change_pin_id),
                         mainContentData = ListItemMainContentData.Text(
                             text = resourceProvider.getString(R.string.dashboard_side_menu_change_pin)
                         ),
@@ -198,7 +198,7 @@ class DashboardViewModel(
                 SideMenuItemUi(
                     type = SideMenuItemType.RETRIEVE_LOGS,
                     data = ListItemData(
-                        itemId = "retrieveLogsId",
+                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs_id),
                         mainContentData = ListItemMainContentData.Text(
                             text = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs)
                         ),

@@ -197,7 +197,9 @@
     <!-- Dashboard Side Menu -->
     <string name="dashboard_side_menu_title">My EU Wallet</string>
     <string name="dashboard_side_menu_change_pin">Change PIN</string>
+    <string name="dashboard_side_menu_change_pin_id">changePinId</string>
     <string name="dashboard_side_menu_retrieve_logs">Retrieve logs</string>
+    <string name="dashboard_side_menu_retrieve_logs_id">retrieveLogsId</string>
 
     <!-- Home Screen -->
     <string name="home_screen_title">Home</string>
@@ -255,6 +257,7 @@
     <string name="document_sign_title">Sign Document</string>
     <string name="document_sign_subtitle">Select a document from your device to sign electronically.</string>
     <string name="document_sign_select_document">Select document</string>
+    <string name="document_sign_select_document_button_id">signDocumentButtonId</string>
 
     <!-- Qr Scan -->
     <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>
