@@ -34,6 +34,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -43,7 +44,8 @@ fun rememberQrBitmapPainter(
     @ColorInt primaryPixelsColor: Int = Color.BLACK,
     @ColorInt secondaryPixelsColor: Int = Color.WHITE,
     size: Dp = 150.dp,
-    padding: Dp = 0.dp
+    padding: Dp = 0.dp,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO
 ): BitmapPainter {
 
     val density = LocalDensity.current
@@ -58,7 +60,7 @@ fun rememberQrBitmapPainter(
     LaunchedEffect(bitmap) {
         if (bitmap != null) return@LaunchedEffect
 
-        launch(Dispatchers.IO) {
+        launch(dispatcher) {
             val qrCodeWriter = QRCodeWriter()
 
             val encodeHints = mutableMapOf<EncodeHintType, Any?>()
