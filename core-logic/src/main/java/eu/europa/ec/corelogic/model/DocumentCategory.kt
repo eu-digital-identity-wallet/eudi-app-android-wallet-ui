@@ -44,10 +44,13 @@ value class DocumentCategories(
 
 /**
  * Represents the category of a document.
- * Each category is associated with a string resource ID for localization.
+ * Each category is associated with a string resource ID for localization, a unique ID, and an order value for sorting.
+ * This sealed class provides a type-safe way to represent document categories.
  *
  * @property stringResId The string resource ID associated with this document category.
- * This is used for displaying a user-friendly name for the category in the UI.
+ * This is used for displaying a user-friendly, localized name for the category in the UI.
+ * @property id A unique integer identifier for the category.
+ * @property order An integer representing the desired display order of the category. Categories with lower order values are displayed first.
  */
 sealed class DocumentCategory(
     @StringRes val stringResId: Int,
