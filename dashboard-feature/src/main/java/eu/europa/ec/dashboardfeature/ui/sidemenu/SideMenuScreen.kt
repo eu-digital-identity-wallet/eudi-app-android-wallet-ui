@@ -196,7 +196,8 @@ private fun SideMenuContentPreview() {
                         )
                     ),
                 ),
-                appVersion = "1.0.0"
+                appVersion = "1.0.0",
+                changelogUrl = null,
             ),
             onEventSent = {},
             paddingValues = PaddingValues(SPACING_MEDIUM.dp)

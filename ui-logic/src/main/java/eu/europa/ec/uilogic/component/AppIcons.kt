@@ -396,7 +396,13 @@ object AppIcons {
 
     val Check: IconData = IconData(
         resourceId = R.drawable.ic_check,
-        contentDescriptionId = R.string.content_description_check,
+        contentDescriptionId = R.string.content_description_check_icon,
+        imageVector = null
+    )
+
+    val OpenInBrowser: IconData = IconData(
+        resourceId = R.drawable.ic_open_in_browser,
+        contentDescriptionId = R.string.content_description_open_in_browser_icon,
         imageVector = null
     )
 }

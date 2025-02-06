@@ -17,11 +17,11 @@
 package eu.europa.ec.corelogic.controller
 
 import androidx.activity.ComponentActivity
-import androidx.core.net.toUri
 import com.android.identity.crypto.Algorithm
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.addOrReplace
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.corelogic.di.WalletPresentationScope
 import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.corelogic.util.EudiWalletListenerWrapper

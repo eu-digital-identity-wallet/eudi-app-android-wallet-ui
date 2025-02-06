@@ -22,6 +22,7 @@ import eu.europa.ec.businesslogic.controller.log.LogController
 
 interface DashboardInteractor {
     fun getAppVersion(): String
+    fun getChangelogUrl(): String?
     fun retrieveLogFileUris(): ArrayList<Uri>
 }
 
@@ -30,6 +31,8 @@ class DashboardInteractorImpl(
     private val logController: LogController
 ) : DashboardInteractor {
     override fun getAppVersion(): String = configLogic.appVersion
+
+    override fun getChangelogUrl(): String? = configLogic.changelogUrl
 
     override fun retrieveLogFileUris(): ArrayList<Uri> {
         return ArrayList(logController.retrieveLogFileUris())

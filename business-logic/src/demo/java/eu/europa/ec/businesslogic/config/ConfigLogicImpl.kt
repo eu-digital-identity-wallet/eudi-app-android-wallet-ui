@@ -27,6 +27,9 @@ class ConfigLogicImpl : ConfigLogic {
 
     override val rqesConfig: EudiRQESUiConfig
         get() = RQESConfigImpl()
+
+    override val changelogUrl: String?
+        get() = "https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases"
 }
 
 private class DemoEnvironmentConfig : EnvironmentConfig() {
