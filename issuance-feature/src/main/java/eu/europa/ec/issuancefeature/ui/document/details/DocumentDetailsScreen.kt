@@ -16,6 +16,7 @@
 
 package eu.europa.ec.issuancefeature.ui.document.details
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -50,6 +51,9 @@ import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IssuerDetailsCard
 import eu.europa.ec.uilogic.component.IssuerDetailsCardData
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -59,8 +63,8 @@ import eu.europa.ec.uilogic.component.content.ToolbarConfig
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
@@ -76,6 +80,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.net.URI
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -188,7 +193,7 @@ private fun Content(
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
 ) {
-    state.document?.let { documentUi ->
+    state.documentDetailsUi?.let { safeDocumentDetailsUi ->
         Column(
             modifier = Modifier.padding(
                 PaddingValues(
@@ -211,33 +216,19 @@ private fun Content(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
             ) {
-
-                SectionTitle(
-                    modifier = Modifier.padding(vertical = SPACING_MEDIUM.dp),
-                    text = state.documentDetailsSectionTitle,
-                )
-
-                WrapListItems(
-                    items = documentUi.documentDetails,
+                DocumentDetails(
+                    sectionTitle = state.documentDetailsSectionTitle,
+                    documentDetailsUi = safeDocumentDetailsUi,
                     hideSensitiveContent = state.hideSensitiveContent,
-                    onItemClick = null,
                 )
 
                 if (state.issuerName != null || state.issuerLogo != null) {
-                    SectionTitle(
-                        modifier = Modifier.padding(
-                            top = SPACING_LARGE.dp,
-                            bottom = SPACING_MEDIUM.dp,
-                        ),
-                        text = state.documentIssuerSectionTitle,
-                    )
-                    IssuerDetailsCard(
-                        item = IssuerDetailsCardData(
-                            issuerName = state.issuerName,
-                            issuerLogo = state.issuerLogo,
-                            issuerIsVerified = false,
-                        ),
-                        onClick = null
+                    VSpacer.ExtraLarge()
+
+                    IssuerDetails(
+                        sectionTitle = state.documentIssuerSectionTitle,
+                        issuerName = state.issuerName,
+                        issuerLogo = state.issuerLogo,
                     )
                 }
 
@@ -331,6 +322,56 @@ private fun SheetContent(
 }
 
 @Composable
+private fun IssuerDetails(
+    sectionTitle: String,
+    issuerName: String?,
+    issuerLogo: URI?,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        SectionTitle(
+            modifier = Modifier.fillMaxWidth(),
+            text = sectionTitle,
+        )
+        IssuerDetailsCard(
+            modifier = Modifier.fillMaxWidth(),
+            item = IssuerDetailsCardData(
+                issuerName = issuerName,
+                issuerLogo = issuerLogo,
+                issuerIsVerified = false,
+            ),
+            onClick = null,
+        )
+    }
+}
+
+@Composable
+private fun DocumentDetails(
+    sectionTitle: String,
+    documentDetailsUi: DocumentDetailsUi,
+    hideSensitiveContent: Boolean,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        SectionTitle(
+            modifier = Modifier.fillMaxWidth(),
+            text = sectionTitle,
+        )
+
+        WrapListItems(
+            modifier = Modifier.fillMaxWidth(),
+            items = documentDetailsUi.documentDetails,
+            hideSensitiveContent = hideSensitiveContent,
+            onItemClick = null,
+        )
+    }
+}
+
+@Composable
 private fun ButtonsSection(onEventSend: (Event) -> Unit) {
     Column(
         modifier = Modifier
@@ -361,17 +402,41 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
 private fun DocumentDetailsScreenPreview() {
     PreviewTheme {
         val state = State(
-            documentDetailsSectionTitle = "DOCUMENT DETAILS",
-            documentIssuerSectionTitle = "ISSUER",
-            document = DocumentDetailsUi(
+            documentDetailsSectionTitle = stringResource(R.string.document_details_main_section_text),
+            documentIssuerSectionTitle = stringResource(R.string.document_details_issuer_section_text),
+            documentDetailsUi = DocumentDetailsUi(
                 documentId = "1",
-                documentName = "National ID",
-                documentIdentifier = DocumentIdentifier.MdocPid,
-                documentExpirationDateFormatted = "30 Mar 2050",
+                documentName = "Mobile Driving License",
+                documentIdentifier = DocumentIdentifier.OTHER(formatType = "org.iso.18013.5.1.mDL"),
+                documentExpirationDateFormatted = "10 Feb 2025",
                 documentHasExpired = false,
-                documentDetails = emptyList(),
+                documentDetails = listOf(
+                    ListItemData(
+                        itemId = "1",
+                        mainContentData = ListItemMainContentData.Text(text = ""),
+                        overlineText = "A reproduction of the mDL holder’s portrait.",
+                        leadingContentData = ListItemLeadingContentData.UserImage(userBase64Image = ""),
+                    ),
+                    ListItemData(
+                        itemId = "2",
+                        mainContentData = ListItemMainContentData.Text(text = "GR"),
+                        overlineText = "Alpha-2 country code, as defined in ISO 3166-1 of the issuing authority’s country or territory.",
+                    ),
+                    ListItemData(
+                        itemId = "3",
+                        mainContentData = ListItemMainContentData.Text(text = "12345678900"),
+                        overlineText = "An audit control number assigned by the issuing authority.",
+                    ),
+                    ListItemData(
+                        itemId = "4",
+                        mainContentData = ListItemMainContentData.Text(text = "31 Dec 2040"),
+                        overlineText = "Date when mDL expires.",
+                    ),
+                ),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,
             ),
+            issuerName = "Digital Credentials Issuer",
+            hideSensitiveContent = false,
             sheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation
         )
 

@@ -95,18 +95,16 @@ fun IssuerDetailsCard(
             verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp),
-                horizontalAlignment = Alignment.Start
-            ) {
+            item.issuerLogo?.let { safeIssuerLogo ->
                 WrapAsyncImage(
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .wrapContentWidth(align = Alignment.Start),
-                    source = item.issuerLogo.toString()
+                    source = safeIssuerLogo.toString()
                 )
+            }
 
+            item.issuerName?.let { safeIssuerName ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start,
@@ -126,16 +124,17 @@ fun IssuerDetailsCard(
                             customTint = MaterialTheme.colorScheme.success,
                         )
                     }
-                    item.issuerName?.let { safeIssuerName ->
-                        Text(
-                            text = safeIssuerName,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                color = MaterialTheme.colorScheme.onSurface
-                            ),
-                        )
-                    }
+
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = safeIssuerName,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = MaterialTheme.colorScheme.onSurface
+                        ),
+                    )
                 }
             }
+
         }
     }
 }
@@ -147,7 +146,7 @@ private fun IssuerDetailsCardPreview() {
         Column(modifier = Modifier.fillMaxWidth()) {
             val issuerDetails = IssuerDetailsCardData(
                 issuerName = "Hellenic Government",
-                issuerLogo = URI.create("www.logo.gr"),
+                issuerLogo = null,
                 issuerIsVerified = false,
             )
 

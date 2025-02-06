@@ -53,7 +53,7 @@ fun WrapListItems(
     colors: CardColors? = null,
 ) {
     WrapCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         shape = shape,
         colors = colors,
     ) {
@@ -61,7 +61,7 @@ fun WrapListItems(
             modifier = Modifier.fillMaxWidth(),
         ) {
             items.forEachIndexed { index, item ->
-                val itemModifier = modifier.padding(
+                val itemModifier = Modifier.padding(
                     top = if (index == 0) SPACING_SMALL.dp else 0.dp,
                     bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
                 )
