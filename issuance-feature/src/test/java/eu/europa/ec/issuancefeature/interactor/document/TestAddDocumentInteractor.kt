@@ -44,6 +44,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.testfeature.mockedDefaultLocale
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
@@ -65,7 +66,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.Locale
 
 class TestAddDocumentInteractor {
 
@@ -110,7 +110,7 @@ class TestAddDocumentInteractor {
         crypto = BiometricCrypto(cryptoObject = null)
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
-        whenever(resourceProvider.getLocale()).thenReturn(locale)
+        whenever(resourceProvider.getLocale()).thenReturn(mockedDefaultLocale)
     }
 
     @After
@@ -444,7 +444,5 @@ class TestAddDocumentInteractor {
             third = resourceProvider.getString(R.string.issuance_add_document_deferred_success_primary_button_text)
         )
     }
-
-    private val locale: Locale = Locale("en")
     //endregion
 }

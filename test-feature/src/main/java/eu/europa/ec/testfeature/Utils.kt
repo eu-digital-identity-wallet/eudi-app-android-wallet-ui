@@ -74,5 +74,7 @@ object MockResourceProviderForStringCalls {
         whenever(resourceProvider.getString(R.string.request_element_identifier_not_available))
             .thenReturn(notAvailableString)
         mockGetKeyValueUiCall(resourceProvider)
+        whenever(resourceProvider.getLocale())
+            .thenReturn(mockedDefaultLocale)
     }
 }

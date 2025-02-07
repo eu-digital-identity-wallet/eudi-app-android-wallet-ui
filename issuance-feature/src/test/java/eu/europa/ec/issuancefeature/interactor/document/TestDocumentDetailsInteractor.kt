@@ -36,6 +36,7 @@ import eu.europa.ec.storagelogic.model.Bookmark
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemCall
 import eu.europa.ec.testfeature.createMockedNamespaceData
 import eu.europa.ec.testfeature.mockedBookmarkId
+import eu.europa.ec.testfeature.mockedDefaultLocale
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
@@ -61,7 +62,6 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
-import java.util.Locale
 
 class TestDocumentDetailsInteractor {
 
@@ -751,9 +751,5 @@ class TestDocumentDetailsInteractor {
         whenever(bookmarkStorageController.retrieve(anyString()))
             .thenReturn(response)
     }
-    //endregion
-
-    //region mocked locale data
-    private val mockedDefaultLocale = Locale.getDefault()
     //endregion
 }

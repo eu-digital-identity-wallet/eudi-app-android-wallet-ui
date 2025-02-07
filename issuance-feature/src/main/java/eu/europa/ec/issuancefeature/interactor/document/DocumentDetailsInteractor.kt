@@ -110,14 +110,11 @@ class DocumentDetailsInteractorImpl(
                         document = safeIssuedDocument,
                         resourceProvider = resourceProvider
                     )
-
                 val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
 
-                val issuerName =
-                    safeIssuedDocument.localizedIssuerMetadata(resourceProvider.getLocale())?.name
-
-                val issuerLogo =
-                    safeIssuedDocument.localizedIssuerMetadata(resourceProvider.getLocale())?.logo
+                val userLocale = resourceProvider.getLocale()
+                val issuerName = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.name
+                val issuerLogo = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.logo
 
                 val documentIsBookmarked = bookmarkStorageController.retrieve(documentId) != null
 

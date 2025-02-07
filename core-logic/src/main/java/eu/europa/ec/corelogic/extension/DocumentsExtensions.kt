@@ -16,13 +16,16 @@
 
 package eu.europa.ec.corelogic.extension
 
-import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
+import eu.europa.ec.businesslogic.extension.getLocalizedValue
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import java.util.Locale
 
 fun Document.localizedIssuerMetadata(locale: Locale): DocumentMetaData.IssuerDisplay? {
-    return metadata?.issuerDisplay?.firstOrNull {
-        locale.compareLocaleLanguage(it.locale)
-    }
+    return metadata?.issuerDisplay.getLocalizedValue(
+        userLocale = locale,
+        fallback = null,
+        localeExtractor = { it.locale },
+        valueExtractor = { it }
+    )
 }

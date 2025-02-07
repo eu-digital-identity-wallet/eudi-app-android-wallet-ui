@@ -19,9 +19,9 @@ package eu.europa.ec.corelogic.controller
 import com.android.identity.securearea.KeyUnlockData
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -204,11 +204,10 @@ class WalletCoreDocumentsControllerImpl(
                 val documents =
                     metadata.credentialConfigurationsSupported.map { (id, config) ->
 
-                        val name: String = config.display
-                            .firstOrNull { locale.compareLocaleLanguage(it.locale) }
-                            ?.name
-                            ?: config.display.firstOrNull()?.name
-                            ?: id.value
+                        val name: String = config.display.getLocalizedDisplayName(
+                            userLocale = locale,
+                            fallback = id.value
+                        )
 
                         val isPid: Boolean = when (config) {
                             is MsoMdocCredential -> config.docType.toDocumentIdentifier() == DocumentIdentifier.MdocPid

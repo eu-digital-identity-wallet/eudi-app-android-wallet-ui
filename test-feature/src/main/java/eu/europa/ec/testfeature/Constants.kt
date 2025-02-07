@@ -24,12 +24,15 @@ import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import java.time.Instant
+import java.util.Locale
 
 const val mockedGenericErrorMessage = "resourceProvider's genericErrorMessage"
 const val mockedPlainFailureMessage = "failure message"
 
 val mockedExceptionWithMessage = RuntimeException("Exception to test interactor.")
 val mockedExceptionWithNoMessage = RuntimeException()
+
+val mockedDefaultLocale: Locale = Locale.ENGLISH
 
 const val mockedOldestDocumentCreationDate = "2000-01-25T14:25:00.073Z"
 const val mockedDocumentCreationDate = "2024-01-25T14:25:00.073Z"

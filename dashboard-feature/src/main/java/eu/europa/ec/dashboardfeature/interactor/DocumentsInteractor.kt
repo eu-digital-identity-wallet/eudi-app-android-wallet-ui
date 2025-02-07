@@ -283,12 +283,14 @@ class DocumentsInteractorImpl(
 
             val documentCategories = walletCoreDocumentsController.getAllDocumentCategories()
 
+            val userLocale = resourceProvider.getLocale()
+
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
                     when (document) {
                         is IssuedDocument -> {
                             val localizedIssuerMetadata =
-                                document.localizedIssuerMetadata(resourceProvider.getLocale())
+                                document.localizedIssuerMetadata(userLocale)
 
                             val documentIdentifier = document.toDocumentIdentifier()
 
@@ -345,7 +347,7 @@ class DocumentsInteractorImpl(
 
                         is UnsignedDocument -> {
                             val localizedIssuerMetadata =
-                                document.localizedIssuerMetadata(resourceProvider.getLocale())
+                                document.localizedIssuerMetadata(userLocale)
 
                             val documentIdentifier = document.toDocumentIdentifier()
 

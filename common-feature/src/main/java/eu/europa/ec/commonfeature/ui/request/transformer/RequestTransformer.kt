@@ -16,7 +16,6 @@
 
 package eu.europa.ec.commonfeature.ui.request.transformer
 
-import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.ExpandedUiItem
@@ -27,6 +26,7 @@ import eu.europa.ec.commonfeature.util.generateUniqueFieldId
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
+import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
@@ -78,6 +78,7 @@ object RequestTransformer {
         resourceProvider: ResourceProvider,
         requestDocuments: List<RequestedDocument>,
     ): Result<List<DocumentPayloadDomain>> = runCatching {
+        val userLocale = resourceProvider.getLocale()
         val resultList: MutableList<DocumentPayloadDomain> = mutableListOf()
 
         requestDocuments.forEach { requestDocument ->
@@ -95,15 +96,18 @@ object RequestTransformer {
                     documentIdentifier = storageDocument.toDocumentIdentifier()
                 ).contains(docItem.elementIdentifier)
 
-                val documentClaim = storageDocument.data.claims.firstOrNull {
+                val documentClaim = storageDocument.data.claims.find {
                     it.identifier == docItem.elementIdentifier
                 }
 
-                val readableName: String = storageDocument.metadata?.claims
-                    ?.firstOrNull { it.name.name == docItem.elementIdentifier }
+                val display = storageDocument.metadata?.claims
+                    ?.find { it.name.name == docItem.elementIdentifier }
                     ?.display
-                    ?.firstOrNull { resourceProvider.getLocale().compareLocaleLanguage(it.locale) }
-                    ?.name ?: docItem.elementIdentifier
+
+                val readableName: String = display.getLocalizedClaimName(
+                    userLocale = userLocale,
+                    fallback = docItem.elementIdentifier
+                )
 
                 val (value, isAvailable) = try {
                     val values = StringBuilder()

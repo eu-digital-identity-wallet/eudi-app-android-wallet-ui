@@ -16,13 +16,13 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
-import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.toListItemData
 import eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsDocumentItem
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -71,13 +71,14 @@ class DocumentIssuanceSuccessInteractorImpl(
             val issuerIsTrusted = false
             var issuerLogo: URI? = null
 
+            val userLocale = resourceProvider.getLocale()
+
             documentIds.forEach { documentId ->
                 try {
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-                    val localizedIssuerMetadata =
-                        document.localizedIssuerMetadata(resourceProvider.getLocale())
+                    val localizedIssuerMetadata = document.localizedIssuerMetadata(userLocale)
 
                     localizedIssuerMetadata?.name?.let { safeIssuerName ->
                         issuerName = safeIssuerName
@@ -89,11 +90,13 @@ class DocumentIssuanceSuccessInteractorImpl(
 
                     val detailsDocumentItems = document.data.claims
                         .map { claim ->
+                            val displayKey: String = claim.metadata?.display.getLocalizedClaimName(
+                                userLocale = userLocale,
+                                fallback = claim.identifier
+                            )
+
                             transformToDocumentDetailsDocumentItem(
-                                displayKey = claim.metadata?.display?.firstOrNull {
-                                    resourceProvider.getLocale()
-                                        .compareLocaleLanguage(it.locale)
-                                }?.name,
+                                displayKey = displayKey,
                                 key = claim.identifier,
                                 item = claim.value ?: "",
                                 resourceProvider = resourceProvider,
