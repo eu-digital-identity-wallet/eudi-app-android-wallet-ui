@@ -59,9 +59,13 @@ object MockResourceProviderForStringCalls {
      */
     fun mockGetGenderValueCall(resourceProvider: ResourceProvider) {
         whenever(resourceProvider.getString(R.string.request_gender_male))
-            .thenReturn("male")
+            .thenReturn("Male")
         whenever(resourceProvider.getString(R.string.request_gender_female))
-            .thenReturn("female")
+            .thenReturn("Female")
+        whenever(resourceProvider.getString(R.string.request_gender_not_known))
+            .thenReturn("Not known")
+        whenever(resourceProvider.getString(R.string.request_gender_not_applicable))
+            .thenReturn("Not applicable")
     }
 
     /**

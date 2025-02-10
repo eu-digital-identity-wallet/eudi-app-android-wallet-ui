@@ -87,12 +87,20 @@ private fun keyIsGender(key: String): Boolean {
 
 private fun getGenderValue(value: String, resourceProvider: ResourceProvider): String =
     when (value) {
+        "0" -> {
+            resourceProvider.getString(R.string.request_gender_not_known)
+        }
+
         "1" -> {
             resourceProvider.getString(R.string.request_gender_male)
         }
 
         "2" -> {
             resourceProvider.getString(R.string.request_gender_female)
+        }
+
+        "9" -> {
+            resourceProvider.getString(R.string.request_gender_not_applicable)
         }
 
         else -> {

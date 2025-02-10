@@ -166,8 +166,10 @@
     <string name="request_sticky_button_text">Share</string>
     <string name="request_bottom_sheet_warning_title">Warning</string>
     <string name="request_bottom_sheet_warning_subtitle">Choosing not to share certain data may result in failure to issue the requested document.</string>
-    <string name="request_gender_male">male</string>
-    <string name="request_gender_female">female</string>
+    <string name="request_gender_male">Male</string>
+    <string name="request_gender_female">Female</string>
+    <string name="request_gender_not_known">Not known</string>
+    <string name="request_gender_not_applicable">Not applicable</string>
     <string name="request_element_identifier_not_available">Not available</string>
 
     <!-- Loading Screen -->

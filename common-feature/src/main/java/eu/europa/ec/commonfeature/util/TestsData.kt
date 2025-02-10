@@ -289,7 +289,7 @@ object TestsData {
             ),
             DocumentItem(
                 elementIdentifier = "gender",
-                value = "male",
+                value = "Male",
                 readableName = "gender",
                 docId = mockedPidId
             ),
@@ -426,7 +426,7 @@ object TestsData {
             ),
             DocumentItem(
                 elementIdentifier = "sex",
-                value = "male",
+                value = "Male",
                 readableName = "sex",
                 docId = mockedMdlId
             )
