@@ -16,6 +16,7 @@
 
 package eu.europa.ec.businesslogic.validator
 
+import eu.europa.ec.businesslogic.extension.filterByQuery
 import eu.europa.ec.businesslogic.extension.sortByOrder
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterableList
@@ -62,6 +63,7 @@ interface FilterValidator {
         filters: Filters,
         filterableList: FilterableList,
     )
+
     fun updateLists(filterableList: FilterableList, filters: Filters)
     fun applyFilters()
     fun applySearch(query: String)
@@ -122,28 +124,22 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
     override fun onFilterStateChange(): Flow<FilterValidatorPartialState> = filterResultFlow
 
     private fun updateFilterInGroup(group: FilterGroup, filterId: String): FilterGroup {
-        val defaultFilter = group.filters.find { it.isDefault }
-        val isClickedFilterDefault = defaultFilter?.id == filterId
-        val updatedFilters = group.filters.map { filter ->
-            when {
-                isClickedFilterDefault -> filter.copy(selected = filter.isDefault)
-                filter.id == filterId -> filter.copy(selected = !filter.selected)
-                else -> filter.copy(selected = false)
+        return when (group) {
+            is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+                group.copy(filters = group.filters.map { filter ->
+                    if (filter.id == filterId) {
+                        filter.copy(selected = !filter.selected)
+                    } else {
+                        filter
+                    }
+                })
             }
-        }
-        val noFilterSelected = updatedFilters.none { it.selected }
-        return when {
-            defaultFilter != null && noFilterSelected -> group.copy(filters = updatedFilters.map { filter ->
-                filter.copy(selected = filter.isDefault)
-            })
 
-            !isClickedFilterDefault && updatedFilters.any { it.id == filterId && it.selected } -> group.copy(
-                filters = updatedFilters.map { filter ->
-                    if (filter.isDefault) filter.copy(selected = false) else filter
-                }
-            )
-
-            else -> group.copy(filters = updatedFilters)
+            is FilterGroup.SingleSelectionFilterGroup -> {
+                group.copy(filters = group.filters.map { filter ->
+                    filter.copy(selected = filter.id == filterId)
+                })
+            }
         }
     }
 
@@ -205,48 +201,71 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
 
     override fun applyFilters() {
         scope.launch {
-            if (!snapshotFilters.isEmpty) {
+            if (snapshotFilters.isNotEmpty) {
                 appliedFilters = snapshotFilters.copy()
                 snapshotFilters = Filters.emptyFilters()
                 hasMoreThanDefaultFilterApplied = true
             }
 
-            val newList = appliedFilters
-                .filterGroups
-                .flatMap { it.filters }
-                .filter { it.selected }
-                .fold(initialList) { currentList, filter ->
-                    filter.filterableAction.applyFilter(appliedFilters.sortOrder, currentList, filter)
-                }.let {
-                    it.copy(items = it.items.filter { item ->
-                        item.attributes.searchText.contains(
-                            searchQuery,
-                            ignoreCase = true
+            val filteredList = appliedFilters.filterGroups
+                .fold(initialList) { currentList, group ->
+                    when (group) {
+                        is FilterGroup.MultipleSelectionFilterGroup<*> -> applyMultipleSelectionFilter(
+                            currentList,
+                            group
                         )
-                    })
-                }
 
-            if (newList.items.isEmpty()) {
-                emissionMutableFlow.emit(
-                    FilterValidatorPartialState.FilterListResult.FilterListEmptyResult(
-                        hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied,
-                        updatedFilters = appliedFilters
-                    )
+                        is FilterGroup.SingleSelectionFilterGroup -> applySingleSelectionFilter(
+                            currentList,
+                            group
+                        )
+                    }
+                }.filterByQuery(searchQuery)
+
+            val resultState = if (filteredList.items.isEmpty()) {
+                FilterValidatorPartialState.FilterListResult.FilterListEmptyResult(
+                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied,
+                    updatedFilters = appliedFilters
                 )
             } else {
-                emissionMutableFlow.emit(
-                    FilterValidatorPartialState.FilterListResult.FilterApplyResult(
-                        filteredList = newList,
-                        updatedFilters = appliedFilters,
-                        hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
-                    )
+                FilterValidatorPartialState.FilterListResult.FilterApplyResult(
+                    filteredList = filteredList,
+                    updatedFilters = appliedFilters,
+                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
                 )
             }
+
+            emissionMutableFlow.emit(resultState)
         }
     }
 
     override fun applySearch(query: String) {
         searchQuery = query
         applyFilters()
+    }
+
+    private fun applyMultipleSelectionFilter(
+        currentList: FilterableList,
+        group: FilterGroup.MultipleSelectionFilterGroup<*>,
+    ): FilterableList {
+        return if (group.filters.none { it.selected }) {
+            FilterableList(emptyList())
+        } else {
+            group.filterableAction.applyFilter(currentList, group)
+        }
+    }
+
+    private fun applySingleSelectionFilter(
+        currentList: FilterableList,
+        group: FilterGroup.SingleSelectionFilterGroup,
+    ): FilterableList {
+        return group.filters.filter { it.selected }
+            .fold(currentList) { innerCurrentList, filter ->
+                filter.filterableAction?.applyFilter(
+                    appliedFilters.sortOrder,
+                    innerCurrentList,
+                    filter
+                ) ?: FilterableList(emptyList())
+            }
     }
 }

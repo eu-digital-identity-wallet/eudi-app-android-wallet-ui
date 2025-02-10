@@ -16,24 +16,10 @@
 
 package eu.europa.ec.businesslogic.extension
 
-import java.time.Instant
-import java.time.temporal.ChronoUnit
+import eu.europa.ec.businesslogic.validator.model.FilterableList
 
-fun Instant.isWithinNextDays(days: Long): Boolean {
-    val now = Instant.now()
-    val future = now.plus(days, ChronoUnit.DAYS)
-    return this.isAfter(now) && !this.isAfter(future)
-}
-
-fun Instant.isBeyondNextDays(days: Long): Boolean {
-    val now = Instant.now()
-    return this.isAfter(now.plus(days, ChronoUnit.DAYS))
-}
-
-fun Instant.isExpired(): Boolean {
-    return this.isBefore(Instant.now())
-}
-
-fun Instant.isValid(): Boolean {
-    return this.isAfter(Instant.now())
+fun FilterableList.filterByQuery(searchQuery: String): FilterableList {
+    return copy(items = items.filter { item ->
+        item.attributes.searchText.contains(searchQuery, ignoreCase = true)
+    })
 }

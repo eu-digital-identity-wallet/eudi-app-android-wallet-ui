@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.isBeyondNextDays
 import eu.europa.ec.businesslogic.extension.isExpired
+import eu.europa.ec.businesslogic.extension.isValid
 import eu.europa.ec.businesslogic.extension.isWithinNextDays
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.formatInstant
@@ -26,6 +27,7 @@ import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterItem
+import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
@@ -519,12 +521,14 @@ class DocumentsInteractorImpl(
         return filters.copy(filterGroups = filters.filterGroups.map { filterGroup ->
             when (filterGroup.id) {
                 FilterIds.FILTER_BY_ISSUER_GROUP_ID -> {
+                    filterGroup as FilterGroup.MultipleSelectionFilterGroup<DocumentsFilterableAttributes>
                     filterGroup.copy(
                         filters = addIssuerFilter(documents)
                     )
                 }
 
                 FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID -> {
+                    filterGroup as FilterGroup.MultipleSelectionFilterGroup<DocumentsFilterableAttributes>
                     filterGroup.copy(
                         filters = addDocumentCategoryFilter(documents)
                     )
@@ -540,10 +544,18 @@ class DocumentsInteractorImpl(
     override fun createFilters(): Filters = Filters(
         filterGroups = listOf(
             // Filter by expiry period
-            FilterGroup(
+            FilterGroup.SingleSelectionFilterGroup(
                 id = FilterIds.FILTER_BY_PERIOD_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period),
                 filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_PERIOD_DEFAULT,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
+                        selected = true,
+                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
+                            true // Get everything
+                        }
+                    ),
                     FilterItem(
                         id = FilterIds.FILTER_BY_PERIOD_NEXT_7,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_1),
@@ -579,7 +591,7 @@ class DocumentsInteractorImpl(
                 )
             ),
             // Sort
-            FilterGroup(
+            FilterGroup.SingleSelectionFilterGroup(
                 id = FilterIds.FILTER_SORT_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
                 filters = listOf(
@@ -587,7 +599,6 @@ class DocumentsInteractorImpl(
                         id = FilterIds.FILTER_SORT_DEFAULT,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
-                        isDefault = true,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
                             attributes.name
                         }
@@ -611,38 +622,46 @@ class DocumentsInteractorImpl(
                 )
             ),
             // Filter by Issuer
-            FilterGroup(
+            FilterGroup.MultipleSelectionFilterGroup(
                 id = FilterIds.FILTER_BY_ISSUER_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer),
-                filters = emptyList()
+                filters = emptyList(),
+                filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
+                    attributes.issuer == filter.name
+                }
             ),
-            FilterGroup(
+            // Filter by category
+            FilterGroup.MultipleSelectionFilterGroup(
                 id = FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_category),
-                filters = emptyList()
+                filters = emptyList(),
+                filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
+                    attributes.category.id.toString() == filter.id
+                }
             ),
             // Filter by State
-            FilterGroup(
+            FilterGroup.MultipleSelectionFilterGroup(
                 id = FilterIds.FILTER_BY_STATE_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state),
                 filters = listOf(
                     FilterItem(
                         id = FilterIds.FILTER_BY_STATE_VALID,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid),
-                        selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
-                            attributes.expiryDate?.isExpired() == false
-                        }
+                        selected = true
                     ),
                     FilterItem(
                         id = FilterIds.FILTER_BY_STATE_EXPIRED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
-                        selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
-                            attributes.expiryDate?.isExpired() == true
-                        }
+                        selected = true
                     )
-                )
+                ),
+                filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
+                    when (filter.id) {
+                        FilterIds.FILTER_BY_STATE_VALID -> attributes.expiryDate?.isExpired() == true
+                        FilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isValid() == true
+                        else -> true
+                    }
+                }
             )
         ),
         sortOrder = SortOrder.ASCENDING
@@ -656,25 +675,9 @@ class DocumentsInteractorImpl(
                     FilterItem(
                         id = category.id.toString(),
                         name = resourceProvider.getString(category.stringResId),
-                        selected = false,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                            attributes.category.id.toString() == filter.id
-                        }
+                        selected = true
                     )
                 }
-            }.toMutableList().apply {
-                add(
-                    0,
-                    FilterItem(
-                        id = FilterIds.FILTER_BY_ALL,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_all),
-                        selected = true,
-                        isDefault = true,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
-                            true // Get all
-                        }
-                    )
-                )
             }
     }
 
@@ -686,28 +689,12 @@ class DocumentsInteractorImpl(
                         FilterItem(
                             id = issuer,
                             name = issuer,
-                            selected = false,
-                            filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, filter ->
-                                attributes.issuer == filter.name
-                            }
+                            selected = true
                         )
                     } else {
                         null
                     }
                 }
-            }.toMutableList().apply {
-                add(
-                    0,
-                    FilterItem(
-                        id = FilterIds.FILTER_BY_ALL,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_all),
-                        selected = true,
-                        isDefault = true,
-                        filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
-                            true // Get all
-                        }
-                    )
-                )
             }
     }
 

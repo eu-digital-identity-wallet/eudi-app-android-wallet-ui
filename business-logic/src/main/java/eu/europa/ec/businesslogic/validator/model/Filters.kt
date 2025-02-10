@@ -24,6 +24,8 @@ data class Filters(
 ) {
     val isEmpty: Boolean
         get() = filterGroups.isEmpty()
+    val isNotEmpty: Boolean
+        get() = filterGroups.isNotEmpty()
 
     companion object {
         fun emptyFilters(): Filters {
@@ -32,23 +34,67 @@ data class Filters(
     }
 }
 
-data class FilterGroup(
-    val id: String,
-    val name: String,
-    val filters: List<FilterItem>,
-)
+sealed class FilterGroup {
+    abstract val id: String
+    abstract val name: String
+    abstract val filters: List<FilterItem>
+
+    data class SingleSelectionFilterGroup(
+        override val id: String,
+        override val name: String,
+        override val filters: List<FilterItem>,
+    ) : FilterGroup()
+
+    data class MultipleSelectionFilterGroup<T: FilterableAttributes>(
+        override val id: String,
+        override val name: String,
+        override val filters: List<FilterItem>,
+        val filterableAction: FilterMultipleAction<T>
+    ) : FilterGroup()
+}
 
 data class FilterItem(
     val id: String,
     val name: String,
     val selected: Boolean,
-    val isDefault: Boolean = false,
-    val filterableAction: FilterAction,
+    val filterableAction: FilterAction = DefaultFilterAction,
 )
+
+data object DefaultFilterAction : FilterAction() {
+    override fun applyFilter(
+        sortOrder: SortOrder,
+        filterableItems: FilterableList,
+        filter: FilterItem,
+    ): FilterableList {
+        return filterableItems
+    }
+}
 
 enum class SortOrder {
     ASCENDING,
     DESCENDING
+}
+
+@Suppress("UNCHECKED_CAST")
+data class FilterMultipleAction<T : FilterableAttributes>(val predicate: (T, FilterItem) -> Boolean) {
+    fun applyFilter(
+        filterableItems: FilterableList,
+        filterGroup: FilterGroup,
+    ): FilterableList {
+        val selectedFilters = filterGroup.filters.filter { it.selected }
+        return if (selectedFilters.isEmpty()) {
+            filterableItems
+        } else {
+            val matchingItems = mutableSetOf<FilterableItem>()
+            selectedFilters.forEach { filter ->
+                filterableItems.items.filter { item ->
+                    predicate(item.attributes as T, filter)
+                }.forEach { matchingItems.add(it) }
+            }
+            filterableItems.copy(items = matchingItems.toList())
+        }
+    }
+
 }
 
 sealed class FilterAction {
@@ -92,8 +138,7 @@ sealed class FilterAction {
                 selector(
                     it.attributes as T
                 )
-            }
-                .toMutableList())
+            }.toMutableList())
         }
     }
 }
