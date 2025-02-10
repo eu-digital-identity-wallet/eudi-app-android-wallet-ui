@@ -543,6 +543,37 @@ class DocumentsInteractorImpl(
 
     override fun createFilters(): Filters = Filters(
         filterGroups = listOf(
+            // Sort
+            FilterGroup.SingleSelectionFilterGroup(
+                id = FilterIds.FILTER_SORT_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
+                filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_DEFAULT,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
+                        selected = true,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
+                            attributes.name
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_DATE_ISSUED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
+                        selected = false,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
+                            attributes.issuedDate
+                        }
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_SORT_EXPIRY_DATE,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
+                        selected = false,
+                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
+                            attributes.expiryDate
+                        }
+                    )
+                )
+            ),
             // Filter by expiry period
             FilterGroup.SingleSelectionFilterGroup(
                 id = FilterIds.FILTER_BY_PERIOD_GROUP_ID,
@@ -590,37 +621,6 @@ class DocumentsInteractorImpl(
                     )
                 )
             ),
-            // Sort
-            FilterGroup.SingleSelectionFilterGroup(
-                id = FilterIds.FILTER_SORT_GROUP_ID,
-                name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
-                filters = listOf(
-                    FilterItem(
-                        id = FilterIds.FILTER_SORT_DEFAULT,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
-                        selected = true,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
-                            attributes.name
-                        }
-                    ),
-                    FilterItem(
-                        id = FilterIds.FILTER_SORT_DATE_ISSUED,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
-                        selected = false,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
-                            attributes.issuedDate
-                        }
-                    ),
-                    FilterItem(
-                        id = FilterIds.FILTER_SORT_EXPIRY_DATE,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
-                        selected = false,
-                        filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
-                            attributes.expiryDate
-                        }
-                    )
-                )
-            ),
             // Filter by Issuer
             FilterGroup.MultipleSelectionFilterGroup(
                 id = FilterIds.FILTER_BY_ISSUER_GROUP_ID,
@@ -657,8 +657,12 @@ class DocumentsInteractorImpl(
                 ),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
-                        FilterIds.FILTER_BY_STATE_VALID -> attributes.expiryDate?.isExpired() == true
-                        FilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isValid() == true
+                        FilterIds.FILTER_BY_STATE_VALID -> {
+                            attributes.expiryDate?.isValid() == true
+                                    || attributes.expiryDate == null
+                        }
+
+                        FilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isExpired() == true
                         else -> true
                     }
                 }
