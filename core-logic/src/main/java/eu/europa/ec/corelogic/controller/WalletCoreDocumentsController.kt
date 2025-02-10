@@ -43,6 +43,7 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
@@ -170,7 +171,8 @@ interface WalletCoreDocumentsController {
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet
+    private val eudiWallet: EudiWallet,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : WalletCoreDocumentsController {
 
     private val genericErrorMessage
@@ -190,7 +192,7 @@ class WalletCoreDocumentsControllerImpl(
         eudiWallet.getDocuments().filterIsInstance<IssuedDocument>()
 
     override suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatcher) {
             runCatching {
                 val metadata = openId4VciManager.getIssuerMetadata().getOrThrow()
 
