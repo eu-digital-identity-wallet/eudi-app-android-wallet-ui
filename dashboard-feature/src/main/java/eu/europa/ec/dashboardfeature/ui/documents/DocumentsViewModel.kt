@@ -18,7 +18,6 @@ package eu.europa.ec.dashboardfeature.ui.documents
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.model.FilterableList
-import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
@@ -70,14 +69,12 @@ data class State(
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
     val searchText: String = "",
     val allowUserInteraction: Boolean = true,
-    val isInitialDocumentLoading: Boolean = true,
+    val isFromOnPause: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 
     val filtersUi: List<ExpandableListItemData> = emptyList(),
     val sortOrder: DualSelectorButtonData,
     val isFilteringActive: Boolean,
-
-    val filters: Filters,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -174,8 +171,7 @@ class DocumentsViewModel(
                 second = resourceProvider.getString(R.string.documents_screen_filters_descending),
                 selectedButton = DualSelectorButton.FIRST,
             ),
-            isFilteringActive = false,
-            filters = interactor.createFilters()
+            isFilteringActive = false
         )
     }
 
@@ -193,7 +189,8 @@ class DocumentsViewModel(
             }
 
             is Event.OnPause -> {
-                retryDeferredDocsJob?.cancel()
+                stopDeferredIssuing()
+                setState { copy(isFromOnPause = true) }
             }
 
             is Event.TryIssuingDeferredDocuments -> {
@@ -211,7 +208,7 @@ class DocumentsViewModel(
             }
 
             is Event.FiltersPressed -> {
-                setEvent(Event.OnPause)
+                stopDeferredIssuing()
                 showBottomSheet(sheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()))
             }
 
@@ -357,20 +354,13 @@ class DocumentsViewModel(
                                     deferredFailedDocIds
                                 )
 
-                            val updatedFilters = interactor.addDynamicFilters(
-                                documents = documentsWithFailed,
-                                filters = viewState.value.filters
-                            )
-
-                            if (viewState.value.isInitialDocumentLoading) {
+                            if (viewState.value.isFromOnPause) {
                                 interactor.initializeFilters(
-                                    filterableList = documentsWithFailed,
-                                    filters = updatedFilters
+                                    filterableList = documentsWithFailed
                                 )
                             } else {
                                 interactor.updateLists(
-                                    filterableList = documentsWithFailed,
-                                    filters = updatedFilters
+                                    filterableList = documentsWithFailed
                                 )
                             }
 
@@ -380,10 +370,9 @@ class DocumentsViewModel(
                                 copy(
                                     isLoading = false,
                                     error = null,
-                                    filters = updatedFilters,
                                     deferredFailedDocIds = deferredFailedDocIds,
                                     allowUserInteraction = response.shouldAllowUserInteraction,
-                                    isInitialDocumentLoading = false
+                                    isFromOnPause = false
                                 )
                             }
                             setEffect { Effect.DocumentsFetched(deferredDocs) }
@@ -426,7 +415,7 @@ class DocumentsViewModel(
             )
         }
 
-        retryDeferredDocsJob?.cancel()
+        stopDeferredIssuing()
         retryDeferredDocsJob = viewModelScope.launch {
             if (deferredDocs.isEmpty()) {
                 return@launch
@@ -669,5 +658,9 @@ class DocumentsViewModel(
         }
         setState { copy(shouldRevertFilterChanges = true) }
         interactor.updateSortOrder(sortOrder)
+    }
+
+    private fun stopDeferredIssuing(){
+        retryDeferredDocsJob?.cancel()
     }
 }

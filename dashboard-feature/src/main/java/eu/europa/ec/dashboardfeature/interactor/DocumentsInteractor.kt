@@ -60,6 +60,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.CoroutineDispatcher
@@ -147,18 +148,21 @@ interface DocumentsInteractor {
     fun onFilterStateChange(): Flow<DocumentInteractorFilterPartialState>
     fun initializeFilters(
         filterableList: FilterableList,
-        filters: Filters,
     )
 
-    fun updateLists(filterableList: FilterableList, filters: Filters)
+    fun updateLists(filterableList: FilterableList)
     fun applyFilters()
     fun applySearch(query: String)
     fun resetFilters()
     fun revertFilters()
     fun updateFilter(filterGroupId: String, filterId: String)
     fun updateSortOrder(sortOrder: SortOrder)
-    fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters
-    fun createFilters(): Filters
+    fun addDynamicFilters(
+        documents: FilterableList,
+        filters: Filters = Filters.emptyFilters(),
+    ): Filters
+
+    val filters: Filters
 }
 
 class DocumentsInteractorImpl(
@@ -219,12 +223,25 @@ class DocumentsInteractorImpl(
                         ListItemData(
                             itemId = filterItem.id,
                             mainContentData = ListItemMainContentData.Text(filterItem.name),
-                            trailingContentData = ListItemTrailingContentData.RadioButton(
-                                radioButtonData = RadioButtonData(
-                                    isSelected = filterItem.selected,
-                                    enabled = true
-                                )
-                            ),
+                            trailingContentData = when (filterGroup) {
+                                is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+                                    ListItemTrailingContentData.Checkbox(
+                                        checkboxData = CheckboxData(
+                                            isChecked = filterItem.selected,
+                                            enabled = true
+                                        )
+                                    )
+                                }
+
+                                is FilterGroup.SingleSelectionFilterGroup -> {
+                                    ListItemTrailingContentData.RadioButton(
+                                        radioButtonData = RadioButtonData(
+                                            isSelected = filterItem.selected,
+                                            enabled = true
+                                        )
+                                    )
+                                }
+                            },
                         )
                     }
                 )
@@ -258,13 +275,13 @@ class DocumentsInteractorImpl(
 
     override fun initializeFilters(
         filterableList: FilterableList,
-        filters: Filters,
-    ) {
-        filterValidator.initializeFilters(filters, filterableList)
-    }
+    ) = filterValidator.initializeValidator(
+        addDynamicFilters(filterableList, filters),
+        filterableList
+    )
 
-    override fun updateLists(filterableList: FilterableList, filters: Filters) =
-        filterValidator.updateLists(filterableList, filters)
+    override fun updateLists(filterableList: FilterableList) =
+        filterValidator.updateLists(filters.sortOrder, filterableList)
 
     override fun applySearch(query: String) = filterValidator.applySearch(query)
 
@@ -521,14 +538,14 @@ class DocumentsInteractorImpl(
         return filters.copy(filterGroups = filters.filterGroups.map { filterGroup ->
             when (filterGroup.id) {
                 FilterIds.FILTER_BY_ISSUER_GROUP_ID -> {
-                    filterGroup as FilterGroup.MultipleSelectionFilterGroup<DocumentsFilterableAttributes>
+                    filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
                     filterGroup.copy(
                         filters = addIssuerFilter(documents)
                     )
                 }
 
                 FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID -> {
-                    filterGroup as FilterGroup.MultipleSelectionFilterGroup<DocumentsFilterableAttributes>
+                    filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
                     filterGroup.copy(
                         filters = addDocumentCategoryFilter(documents)
                     )
@@ -541,7 +558,7 @@ class DocumentsInteractorImpl(
         })
     }
 
-    override fun createFilters(): Filters = Filters(
+    override val filters: Filters = Filters(
         filterGroups = listOf(
             // Sort
             FilterGroup.SingleSelectionFilterGroup(

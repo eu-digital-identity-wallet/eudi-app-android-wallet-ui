@@ -17,7 +17,9 @@
 package eu.europa.ec.dashboardfeature.ui.documents
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -44,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -70,6 +73,7 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_XXX_LARGE
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -383,33 +387,39 @@ private fun DocumentsSheetContent(
                         mutableStateOf(state.filtersUi.map { false }.toMutableStateList())
                     }
 
-                    Column(
-                        modifier = Modifier.verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
-                    ) {
-                        DualSelectorButtons(state.sortOrder) {
-                            onEventSent(Event.OnSortingOrderChanged(it))
-                        }
-                        state.filtersUi.forEachIndexed { index, filter ->
-                            if (filter.expanded.isNotEmpty()) {
-                                WrapExpandableListItem(
-                                    data = filter,
-                                    isExpanded = expandStateList[index],
-                                    onExpandedChange = {
-                                        expandStateList[index] = !expandStateList[index]
-                                    },
-                                    onItemClick = {
-                                        val id = it.itemId
-                                        val groupId = filter.collapsed.itemId
-                                        onEventSent(Event.OnFilterSelectionChanged(id, groupId))
-                                    }
-                                )
+                    Box {
+                        Column(
+                            modifier = Modifier
+                                .verticalScroll(rememberScrollState())
+                                .padding(bottom = SPACING_EXTRA_LARGE.dp * 2),
+                            verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
+                        ) {
+                            DualSelectorButtons(state.sortOrder) {
+                                onEventSent(Event.OnSortingOrderChanged(it))
+                            }
+                            state.filtersUi.forEachIndexed { index, filter ->
+                                if (filter.expanded.isNotEmpty()) {
+                                    WrapExpandableListItem(
+                                        data = filter,
+                                        isExpanded = expandStateList[index],
+                                        onExpandedChange = {
+                                            expandStateList[index] = !expandStateList[index]
+                                        },
+                                        onItemClick = {
+                                            val id = it.itemId
+                                            val groupId = filter.collapsed.itemId
+                                            onEventSent(Event.OnFilterSelectionChanged(id, groupId))
+                                        }
+                                    )
+                                }
                             }
                         }
-
-                        VSpacer.Large()
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter)
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(top = SPACING_MEDIUM.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             WrapButton(

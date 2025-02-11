@@ -16,10 +16,23 @@
 
 package eu.europa.ec.businesslogic.extension
 
+import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
+import eu.europa.ec.businesslogic.validator.model.SortOrder
 
 fun FilterableList.filterByQuery(searchQuery: String): FilterableList {
     return copy(items = items.filter { item ->
         item.attributes.searchText.contains(searchQuery, ignoreCase = true)
     })
+}
+
+fun FilterableList.sortByOrder(
+    sortOrder: SortOrder,
+    selector: (FilterableItem) -> String
+): FilterableList {
+    val sortedItems = when (sortOrder) {
+        SortOrder.ASCENDING -> this.items.sortedBy { selector(it) }
+        SortOrder.DESCENDING -> this.items.sortedByDescending { selector(it) }
+    }
+    return this.copy(items = sortedItems)
 }

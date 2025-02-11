@@ -19,6 +19,7 @@ package eu.europa.ec.businesslogic.validator
 import eu.europa.ec.businesslogic.extension.filterByQuery
 import eu.europa.ec.businesslogic.extension.sortByOrder
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
+import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
@@ -59,12 +60,12 @@ sealed interface FilterValidatorPartialState {
 
 interface FilterValidator {
     fun onFilterStateChange(): Flow<FilterValidatorPartialState>
-    fun initializeFilters(
+    fun initializeValidator(
         filters: Filters,
         filterableList: FilterableList,
     )
 
-    fun updateLists(filterableList: FilterableList, filters: Filters)
+    fun updateLists(sortOrder: SortOrder, filterableList: FilterableList)
     fun applyFilters()
     fun applySearch(query: String)
     fun resetFilters()
@@ -100,25 +101,34 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
 
     private var hasMoreThanDefaultFilterApplied: Boolean = false
 
-    override fun initializeFilters(
+    override fun initializeValidator(
         filters: Filters,
         filterableList: FilterableList,
     ) {
         this.initialFilters = filters
-        this.appliedFilters = filters
-        // We want to sort by name (this is the default)
-        // in order to prevent the random order
-        this.initialList = filterableList.copy(
-            items = filterableList.items
-                .sortByOrder(filters.sortOrder) {
-                    it.attributes.searchText.lowercase()
-                }
-        )
+        val mergedFilterGroups = mutableListOf<FilterGroup>()
+        filters.filterGroups.forEach { newFilterGroup ->
+            // Find the corresponding group in appliedFilters
+            val existingFilterGroup = appliedFilters.filterGroups.find { it.id == newFilterGroup.id }
+
+            if (existingFilterGroup != null) {
+                val mergedFilters = mergeFilters(newFilterGroup, existingFilterGroup)
+                mergedFilterGroups.add(mergedFilters)
+            } else {
+                mergedFilterGroups.add(newFilterGroup)
+            }
+        }
+
+        appliedFilters = filters.copy(filterGroups = mergedFilterGroups)
+        this.initialList = filterableList.sortByOrder(filters.sortOrder) {
+            it.attributes.searchText.lowercase()
+        }
     }
 
-    override fun updateLists(filterableList: FilterableList, filters: Filters) {
-        this.initialList = filterableList
-        this.initialFilters = filters
+    override fun updateLists(sortOrder: SortOrder, filterableList: FilterableList) {
+        this.initialList = filterableList.sortByOrder(sortOrder) {
+            it.attributes.searchText.lowercase()
+        }
     }
 
     override fun onFilterStateChange(): Flow<FilterValidatorPartialState> = filterResultFlow
@@ -261,11 +271,38 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
     ): FilterableList {
         return group.filters.filter { it.selected }
             .fold(currentList) { innerCurrentList, filter ->
-                filter.filterableAction?.applyFilter(
+                filter.filterableAction.applyFilter(
                     appliedFilters.sortOrder,
                     innerCurrentList,
                     filter
-                ) ?: FilterableList(emptyList())
+                )
             }
+    }
+
+    /** Create a merged FilterGroup with updated filters **/
+    private fun mergeFilters(newFilterGroup: FilterGroup, existingFilterGroup: FilterGroup): FilterGroup {
+        val newFilters = newFilterGroup.filters
+        val existingFilters = existingFilterGroup.filters
+        val mergedFilters = mutableListOf<FilterItem>()
+
+        newFilters.forEach { newFilter ->
+            val existingFilter = existingFilters.find { it.id == newFilter.id }
+            if (existingFilter != null) {
+                // Filter exists in both, copy selection state
+                mergedFilters.add(newFilter.copy(selected = existingFilter.selected))
+            } else {
+                // Filter is new, add it directly
+                mergedFilters.add(newFilter)
+            }
+        }
+
+        return when (newFilterGroup) {
+            is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+                newFilterGroup.copy(filters = mergedFilters)
+            }
+            is FilterGroup.SingleSelectionFilterGroup -> {
+                newFilterGroup.copy(filters = mergedFilters)
+            }
+        }
     }
 }
