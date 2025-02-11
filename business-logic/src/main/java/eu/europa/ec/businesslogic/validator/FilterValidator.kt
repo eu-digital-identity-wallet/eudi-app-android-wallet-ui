@@ -122,13 +122,13 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
 
         appliedFilters = filters.copy(filterGroups = mergedFilterGroups)
         this.initialList = filterableList.sortByOrder(filters.sortOrder) {
-            it.attributes.sortingKey.lowercase()
+            it.attributes.sortingKey
         }
     }
 
     override fun updateLists(sortOrder: SortOrder, filterableList: FilterableList) {
         this.initialList = filterableList.sortByOrder(sortOrder) {
-            it.attributes.sortingKey.lowercase()
+            it.attributes.sortingKey
         }
     }
 
