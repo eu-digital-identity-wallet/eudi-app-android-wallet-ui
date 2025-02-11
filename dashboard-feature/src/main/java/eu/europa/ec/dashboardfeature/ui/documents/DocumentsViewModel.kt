@@ -662,7 +662,7 @@ class DocumentsViewModel(
         interactor.updateSortOrder(sortOrder)
     }
 
-    private fun stopDeferredIssuing(){
+    private fun stopDeferredIssuing() {
         retryDeferredDocsJob?.cancel()
     }
 }

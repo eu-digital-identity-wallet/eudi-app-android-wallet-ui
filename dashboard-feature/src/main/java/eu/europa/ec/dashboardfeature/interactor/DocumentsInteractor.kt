@@ -200,7 +200,8 @@ class DocumentsInteractorImpl(
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
-                    ), expanded = filterGroup.filters.map { filterItem ->
+                    ),
+                    expanded = filterGroup.filters.map { filterItem ->
                         ListItemData(
                             itemId = filterItem.id,
                             mainContentData = ListItemMainContentData.Text(filterItem.name),
@@ -538,27 +539,29 @@ class DocumentsInteractorImpl(
         }
 
     override fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters {
-        return filters.copy(filterGroups = filters.filterGroups.map { filterGroup ->
-            when (filterGroup.id) {
-                FilterIds.FILTER_BY_ISSUER_GROUP_ID -> {
-                    filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
-                    filterGroup.copy(
-                        filters = addIssuerFilter(documents)
-                    )
-                }
+        return filters.copy(
+            filterGroups = filters.filterGroups.map { filterGroup ->
+                when (filterGroup.id) {
+                    FilterIds.FILTER_BY_ISSUER_GROUP_ID -> {
+                        filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
+                        filterGroup.copy(
+                            filters = addIssuerFilter(documents)
+                        )
+                    }
 
-                FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID -> {
-                    filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
-                    filterGroup.copy(
-                        filters = addDocumentCategoryFilter(documents)
-                    )
-                }
+                    FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID -> {
+                        filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
+                        filterGroup.copy(
+                            filters = addDocumentCategoryFilter(documents)
+                        )
+                    }
 
-                else -> {
-                    filterGroup
+                    else -> {
+                        filterGroup
+                    }
                 }
             }
-        })
+        )
     }
 
     override fun getFilters(): Filters = Filters(
@@ -691,9 +694,9 @@ class DocumentsInteractorImpl(
         sortOrder = SortOrder.ASCENDING
     )
 
-    // TODO Deleting documents doesnt update UI
     private fun addDocumentCategoryFilter(documents: FilterableList): List<FilterItem> {
-        return documents.items.distinctBy { (it.attributes as DocumentsFilterableAttributes).category }
+        return documents.items
+            .distinctBy { (it.attributes as DocumentsFilterableAttributes).category }
             .map { filterableItem ->
                 with(filterableItem.attributes as DocumentsFilterableAttributes) {
                     FilterItem(
@@ -706,7 +709,8 @@ class DocumentsInteractorImpl(
     }
 
     private fun addIssuerFilter(documents: FilterableList): List<FilterItem> {
-        return documents.items.distinctBy { (it.attributes as DocumentsFilterableAttributes).issuer }
+        return documents.items
+            .distinctBy { (it.attributes as DocumentsFilterableAttributes).issuer }
             .mapNotNull { filterableItem ->
                 with(filterableItem.attributes as DocumentsFilterableAttributes) {
                     if (issuer != null) {

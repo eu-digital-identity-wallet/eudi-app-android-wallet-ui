@@ -27,4 +27,4 @@ data class DocumentUi(
     val uiData: ListItemData,
     val documentIdentifier: DocumentIdentifier,
     val documentCategory: DocumentCategory,
-): FilterableItemPayload
+) : FilterableItemPayload

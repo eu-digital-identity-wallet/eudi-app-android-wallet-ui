@@ -22,7 +22,7 @@ data class FilterableItem(val payload: FilterableItemPayload, val attributes: Fi
 
 interface FilterableItemPayload
 
-interface FilterableAttributes{
+interface FilterableAttributes {
     val sortingKey: String
     val searchTags: List<String>
 }

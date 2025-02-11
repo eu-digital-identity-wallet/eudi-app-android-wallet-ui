@@ -137,19 +137,23 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
     private fun updateFilterInGroup(group: FilterGroup, filterId: String): FilterGroup {
         return when (group) {
             is FilterGroup.MultipleSelectionFilterGroup<*> -> {
-                group.copy(filters = group.filters.map { filter ->
-                    if (filter.id == filterId) {
-                        filter.copy(selected = !filter.selected)
-                    } else {
-                        filter
+                group.copy(
+                    filters = group.filters.map { filter ->
+                        if (filter.id == filterId) {
+                            filter.copy(selected = !filter.selected)
+                        } else {
+                            filter
+                        }
                     }
-                })
+                )
             }
 
             is FilterGroup.SingleSelectionFilterGroup -> {
-                group.copy(filters = group.filters.map { filter ->
-                    filter.copy(selected = filter.id == filterId)
-                })
+                group.copy(
+                    filters = group.filters.map { filter ->
+                        filter.copy(selected = filter.id == filterId)
+                    }
+                )
             }
         }
     }

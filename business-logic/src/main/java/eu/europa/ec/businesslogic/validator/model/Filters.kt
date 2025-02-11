@@ -45,7 +45,7 @@ sealed class FilterGroup {
         override val filters: List<FilterItem>,
     ) : FilterGroup()
 
-    data class MultipleSelectionFilterGroup<T: FilterableAttributes>(
+    data class MultipleSelectionFilterGroup<T : FilterableAttributes>(
         override val id: String,
         override val name: String,
         override val filters: List<FilterItem>,
@@ -112,12 +112,14 @@ sealed class FilterAction {
             filterableItems: FilterableList,
             filter: FilterItem,
         ): FilterableList {
-            return filterableItems.copy(items = filterableItems.items.filter {
-                predicate(
-                    it.attributes as T,
-                    filter
-                )
-            })
+            return filterableItems.copy(
+                items = filterableItems.items.filter {
+                    predicate(
+                        it.attributes as T,
+                        filter
+                    )
+                }
+            )
         }
 
     }
