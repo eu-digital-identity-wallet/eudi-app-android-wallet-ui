@@ -109,7 +109,8 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
         val mergedFilterGroups = mutableListOf<FilterGroup>()
         filters.filterGroups.forEach { newFilterGroup ->
             // Find the corresponding group in appliedFilters
-            val existingFilterGroup = appliedFilters.filterGroups.find { it.id == newFilterGroup.id }
+            val existingFilterGroup =
+                appliedFilters.filterGroups.find { it.id == newFilterGroup.id }
 
             if (existingFilterGroup != null) {
                 val mergedFilters = mergeFilters(newFilterGroup, existingFilterGroup)
@@ -121,13 +122,13 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
 
         appliedFilters = filters.copy(filterGroups = mergedFilterGroups)
         this.initialList = filterableList.sortByOrder(filters.sortOrder) {
-            it.attributes.searchText.lowercase()
+            it.attributes.sortingKey.lowercase()
         }
     }
 
     override fun updateLists(sortOrder: SortOrder, filterableList: FilterableList) {
         this.initialList = filterableList.sortByOrder(sortOrder) {
-            it.attributes.searchText.lowercase()
+            it.attributes.sortingKey.lowercase()
         }
     }
 
@@ -280,7 +281,10 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
     }
 
     /** Create a merged FilterGroup with updated filters **/
-    private fun mergeFilters(newFilterGroup: FilterGroup, existingFilterGroup: FilterGroup): FilterGroup {
+    private fun mergeFilters(
+        newFilterGroup: FilterGroup,
+        existingFilterGroup: FilterGroup
+    ): FilterGroup {
         val newFilters = newFilterGroup.filters
         val existingFilters = existingFilterGroup.filters
         val mergedFilters = mutableListOf<FilterItem>()
@@ -300,6 +304,7 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
             is FilterGroup.MultipleSelectionFilterGroup<*> -> {
                 newFilterGroup.copy(filters = mergedFilters)
             }
+
             is FilterGroup.SingleSelectionFilterGroup -> {
                 newFilterGroup.copy(filters = mergedFilters)
             }

@@ -292,11 +292,20 @@ class DocumentsInteractorImpl(
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(userLocale)
 
+                            val issuerName = localizedIssuerMetadata?.name
+
                             val documentIdentifier = document.toDocumentIdentifier()
 
                             val documentCategory = documentIdentifier.toDocumentCategory(
                                 allCategories = documentCategories
                             )
+
+                            val documentSearchTags = buildList {
+                                add(document.name)
+                                if (!issuerName.isNullOrBlank()) {
+                                    add(issuerName)
+                                }
+                            }
 
                             val documentHasExpired =
                                 documentHasExpired(documentExpirationDate = document.validUntil)
@@ -321,7 +330,7 @@ class DocumentsInteractorImpl(
                                     uiData = ListItemData(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentData.Text(text = document.name),
-                                        overlineText = localizedIssuerMetadata?.name,
+                                        overlineText = issuerName,
                                         supportingText = supportingText,
                                         leadingContentData = ListItemLeadingContentData.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
@@ -335,11 +344,12 @@ class DocumentsInteractorImpl(
                                     documentCategory = documentCategory,
                                 ),
                                 attributes = DocumentsFilterableAttributes(
+                                    sortingKey = document.name,
+                                    searchTags = documentSearchTags,
                                     issuedDate = document.issuedAt,
                                     expiryDate = document.validUntil,
-                                    issuer = localizedIssuerMetadata?.name,
+                                    issuer = issuerName,
                                     name = document.name,
-                                    searchText = document.name,
                                     category = documentCategory
                                 )
                             )
@@ -349,11 +359,20 @@ class DocumentsInteractorImpl(
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(userLocale)
 
+                            val issuerName = localizedIssuerMetadata?.name
+
                             val documentIdentifier = document.toDocumentIdentifier()
 
                             val documentCategory = documentIdentifier.toDocumentCategory(
                                 allCategories = documentCategories
                             )
+
+                            val documentSearchTags = buildList {
+                                add(document.name)
+                                if (!issuerName.isNullOrBlank()) {
+                                    add(issuerName)
+                                }
+                            }
 
                             FilterableItem(
                                 payload = DocumentUi(
@@ -361,7 +380,7 @@ class DocumentsInteractorImpl(
                                     uiData = ListItemData(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentData.Text(text = document.name),
-                                        overlineText = localizedIssuerMetadata?.name,
+                                        overlineText = issuerName,
                                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
                                         leadingContentData = ListItemLeadingContentData.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
@@ -376,11 +395,12 @@ class DocumentsInteractorImpl(
                                     documentCategory = documentCategory
                                 ),
                                 attributes = DocumentsFilterableAttributes(
+                                    sortingKey = document.name,
+                                    searchTags = documentSearchTags,
                                     issuedDate = null,
                                     expiryDate = null,
-                                    issuer = localizedIssuerMetadata?.name,
+                                    issuer = issuerName,
                                     name = document.name,
-                                    searchText = document.name,
                                     category = documentCategory
                                 )
                             )

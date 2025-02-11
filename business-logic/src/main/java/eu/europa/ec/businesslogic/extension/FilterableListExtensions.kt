@@ -21,9 +21,16 @@ import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 
 fun FilterableList.filterByQuery(searchQuery: String): FilterableList {
-    return copy(items = items.filter { item ->
-        item.attributes.searchText.contains(searchQuery, ignoreCase = true)
-    })
+    return copy(
+        items = items.filter { item ->
+            item.attributes.searchTags.any { searchTag ->
+                searchTag.contains(
+                    other = searchQuery,
+                    ignoreCase = true
+                )
+            }
+        }
+    )
 }
 
 fun FilterableList.sortByOrder(
