@@ -162,7 +162,7 @@ interface DocumentsInteractor {
         filters: Filters = Filters.emptyFilters(),
     ): Filters
 
-    val filters: Filters
+    fun getFilters(): Filters
 }
 
 class DocumentsInteractorImpl(
@@ -276,12 +276,12 @@ class DocumentsInteractorImpl(
     override fun initializeFilters(
         filterableList: FilterableList,
     ) = filterValidator.initializeValidator(
-        addDynamicFilters(filterableList, filters),
+        addDynamicFilters(filterableList, getFilters()),
         filterableList
     )
 
     override fun updateLists(filterableList: FilterableList) =
-        filterValidator.updateLists(filters.sortOrder, filterableList)
+        filterValidator.updateLists(getFilters().sortOrder, filterableList)
 
     override fun applySearch(query: String) = filterValidator.applySearch(query)
 
@@ -558,7 +558,7 @@ class DocumentsInteractorImpl(
         })
     }
 
-    override val filters: Filters = Filters(
+    override fun getFilters(): Filters = Filters(
         filterGroups = listOf(
             // Sort
             FilterGroup.SingleSelectionFilterGroup(
