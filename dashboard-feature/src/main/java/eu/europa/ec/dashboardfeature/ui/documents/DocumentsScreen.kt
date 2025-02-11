@@ -55,7 +55,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -418,6 +417,7 @@ private fun DocumentsSheetContent(
                     Box {
                         Column(
                             modifier = Modifier
+                                .fillMaxWidth()
                                 .verticalScroll(rememberScrollState())
                                 .padding(bottom = SPACING_EXTRA_LARGE.dp * 2),
                             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
@@ -447,8 +447,8 @@ private fun DocumentsSheetContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.BottomCenter)
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(top = SPACING_MEDIUM.dp),
+                                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                                .padding(top = SPACING_LARGE.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             WrapButton(
@@ -628,7 +628,6 @@ private fun DocumentsScreenPreview() {
                         selectedButton = DualSelectorButton.FIRST,
                     ),
                     documentsUi = documentsList.groupBy { it.documentCategory }.toList(),
-                    filters = Filters.emptyFilters(),
                 ),
                 effectFlow = Channel<Effect>().receiveAsFlow(),
                 onEventSend = {},
