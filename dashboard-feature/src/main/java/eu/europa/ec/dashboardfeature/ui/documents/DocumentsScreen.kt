@@ -255,6 +255,7 @@ private fun Content(
                 placeholder = searchItem.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.FiltersPressed) },
+                onClearClick = { onEventSend(Event.OnSearchQueryChanged("")) },
                 isFilteringActive = state.isFilteringActive,
                 text = state.searchText
             )
