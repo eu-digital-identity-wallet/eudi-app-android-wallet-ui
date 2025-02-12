@@ -36,7 +36,7 @@ fun FilterableList.filterByQuery(searchQuery: String): FilterableList {
 
 internal fun FilterableList.applySort(filters: Filters): FilterableList {
     return filters.filterGroups.flatMap { it.filters }
-        .first { it.filterableAction is FilterAction.Sort<*, *> && it.selected }.filterableAction.applyFilter(
+        .firstOrNull { it.filterableAction is FilterAction.Sort<*, *> && it.selected }?.filterableAction?.applyFilter(
             filters.sortOrder, this, FilterItem.emptyFilter()
-        )
+        ) ?: FilterableList(emptyList())
 }
