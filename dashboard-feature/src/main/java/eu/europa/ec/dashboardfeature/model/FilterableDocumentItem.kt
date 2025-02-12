@@ -21,7 +21,6 @@ import eu.europa.ec.corelogic.model.DocumentCategory
 import java.time.Instant
 
 data class DocumentsFilterableAttributes(
-    override val sortingKey: String,
     override val searchTags: List<String>,
     val name: String,
     val expiryDate: Instant?,

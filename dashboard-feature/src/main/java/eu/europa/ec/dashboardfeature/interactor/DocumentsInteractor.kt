@@ -345,7 +345,6 @@ class DocumentsInteractorImpl(
                                     documentCategory = documentCategory,
                                 ),
                                 attributes = DocumentsFilterableAttributes(
-                                    sortingKey = document.name.lowercase(),
                                     searchTags = documentSearchTags,
                                     issuedDate = document.issuedAt,
                                     expiryDate = document.validUntil,
@@ -396,7 +395,6 @@ class DocumentsInteractorImpl(
                                     documentCategory = documentCategory
                                 ),
                                 attributes = DocumentsFilterableAttributes(
-                                    sortingKey = document.name.lowercase(),
                                     searchTags = documentSearchTags,
                                     issuedDate = null,
                                     expiryDate = null,
@@ -576,7 +574,7 @@ class DocumentsInteractorImpl(
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
-                            attributes.sortingKey
+                            attributes.name.lowercase()
                         }
                     ),
                     FilterItem(
