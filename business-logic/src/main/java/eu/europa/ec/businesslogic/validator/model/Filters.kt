@@ -49,7 +49,7 @@ sealed class FilterGroup {
         override val id: String,
         override val name: String,
         override val filters: List<FilterItem>,
-        val filterableAction: FilterMultipleAction<T>
+        val filterableAction: FilterMultipleAction<T>,
     ) : FilterGroup()
 }
 
@@ -58,7 +58,17 @@ data class FilterItem(
     val name: String,
     val selected: Boolean,
     val filterableAction: FilterAction = DefaultFilterAction,
-)
+) {
+    companion object {
+        fun emptyFilter(): FilterItem {
+            return FilterItem(
+                id = "",
+                name = "",
+                selected = false
+            )
+        }
+    }
+}
 
 data object DefaultFilterAction : FilterAction() {
     override fun applyFilter(

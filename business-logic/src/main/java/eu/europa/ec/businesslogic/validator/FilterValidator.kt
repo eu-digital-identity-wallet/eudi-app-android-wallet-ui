@@ -16,8 +16,9 @@
 
 package eu.europa.ec.businesslogic.validator
 
+import eu.europa.ec.businesslogic.extension.applySort
 import eu.europa.ec.businesslogic.extension.filterByQuery
-import eu.europa.ec.businesslogic.extension.sortByOrder
+import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
@@ -121,15 +122,11 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
         }
 
         appliedFilters = filters.copy(filterGroups = mergedFilterGroups)
-        this.initialList = filterableList.sortByOrder(filters.sortOrder) {
-            it.attributes.sortingKey
-        }
+        this.initialList = filterableList
     }
 
     override fun updateLists(sortOrder: SortOrder, filterableList: FilterableList) {
-        this.initialList = filterableList.sortByOrder(sortOrder) {
-            it.attributes.sortingKey
-        }
+        this.initialList = filterableList
     }
 
     override fun onFilterStateChange(): Flow<FilterValidatorPartialState> = filterResultFlow
@@ -235,7 +232,9 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
                             group
                         )
                     }
-                }.filterByQuery(searchQuery)
+                }
+                .filterByQuery(searchQuery)
+                .applySort(appliedFilters) // Apply sort after fold in order to avoid random order
 
             val resultState = if (filteredList.items.isEmpty()) {
                 FilterValidatorPartialState.FilterListResult.FilterListEmptyResult(
@@ -274,20 +273,21 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
         currentList: FilterableList,
         group: FilterGroup.SingleSelectionFilterGroup,
     ): FilterableList {
-        return group.filters.filter { it.selected }
-            .fold(currentList) { innerCurrentList, filter ->
-                filter.filterableAction.applyFilter(
-                    appliedFilters.sortOrder,
-                    innerCurrentList,
-                    filter
-                )
-            }
+        val selectedFilter = group.filters.firstOrNull { it.selected }
+        // Skip sorting because fold will mess the order anyway
+        if (selectedFilter?.filterableAction is FilterAction.Sort<*, *>) return currentList
+        return selectedFilter?.filterableAction?.applyFilter(
+            appliedFilters.sortOrder,
+            currentList,
+            selectedFilter
+        )
+            ?: currentList
     }
 
     /** Create a merged FilterGroup with updated filters **/
     private fun mergeFilters(
         newFilterGroup: FilterGroup,
-        existingFilterGroup: FilterGroup
+        existingFilterGroup: FilterGroup,
     ): FilterGroup {
         val newFilters = newFilterGroup.filters
         val existingFilters = existingFilterGroup.filters
