@@ -675,7 +675,7 @@ class DocumentsInteractorImpl(
                     FilterItem(
                         id = FilterIds.FILTER_BY_STATE_EXPIRED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
-                        selected = true
+                        selected = false
                     )
                 ),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
