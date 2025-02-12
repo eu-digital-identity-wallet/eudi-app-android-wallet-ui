@@ -52,6 +52,7 @@ import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.extension.openBleSettings
 import eu.europa.ec.uilogic.extension.openIntentChooser
+import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -172,5 +173,6 @@ private fun handleNavigationEffect(
 
         is Effect.Navigation.OnAppSettings -> context.openAppSettings()
         is Effect.Navigation.OnSystemSettings -> context.openBleSettings()
+        is Effect.Navigation.OpenUrlExternally -> context.openUrl(uri = navigationEffect.url)
     }
 }

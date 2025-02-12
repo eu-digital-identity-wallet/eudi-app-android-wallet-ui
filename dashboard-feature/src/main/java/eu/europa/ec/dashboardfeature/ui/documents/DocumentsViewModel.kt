@@ -17,20 +17,21 @@
 package eu.europa.ec.dashboardfeature.ui.documents
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.validator.model.FilterableList
+import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.FormatType
-import eu.europa.ec.dashboardfeature.extensions.getEmptyUIifEmptyList
-import eu.europa.ec.dashboardfeature.extensions.search
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
+import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
-import eu.europa.ec.dashboardfeature.model.DocumentDetailsItemUi
-import eu.europa.ec.dashboardfeature.model.FilterableDocuments
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -64,27 +65,21 @@ data class State(
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
 
-    val documents: List<DocumentDetailsItemUi> = emptyList(),
+    val documentsUi: List<Pair<DocumentCategory, List<DocumentUi>>> = emptyList(),
+    val showNoResultsFound: Boolean = false,
     val deferredFailedDocIds: List<DocumentId> = emptyList(),
+    val searchText: String = "",
     val allowUserInteraction: Boolean = true,
-    val isInitialDocumentLoading: Boolean = true,
+    val isFromOnPause: Boolean = true,
+    val shouldRevertFilterChanges: Boolean = true,
 
-    var filters: List<ExpandableListItemData> = emptyList(),
-    var initialFilters: List<ExpandableListItemData> = emptyList(),
-    val appliedFilters: List<ExpandableListItemData> = emptyList(),
-    var snapshotFilters: List<ExpandableListItemData> = emptyList(),
+    val filtersUi: List<ExpandableListItemData> = emptyList(),
+    val sortOrder: DualSelectorButtonData,
     val isFilteringActive: Boolean,
-    val sortingOrderButtonDataApplied: DualSelectorButtonData,
-    val sortingOrderButtonDataSnapshot: DualSelectorButtonData? = null,
-    val sortingOrderButtonDataPrevious: DualSelectorButtonData? = null,
-
-    var allDocuments: FilterableDocuments? = null,
-    var filteredDocuments: FilterableDocuments? = null,
-
-    val queryText: String = "",
 ) : ViewState
 
 sealed class Event : ViewEvent {
+    data object Init : Event()
     data object GetDocuments : Event()
     data object OnPause : Event()
     data class TryIssuingDeferredDocuments(val deferredDocs: Map<DocumentId, FormatType>) : Event()
@@ -162,7 +157,7 @@ sealed class DocumentsBottomSheetContent {
 
 @KoinViewModel
 class DocumentsViewModel(
-    val interactor: DocumentsInteractor,
+    private val interactor: DocumentsInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
 ) : MviViewModel<Event, State, Effect>() {
@@ -172,7 +167,7 @@ class DocumentsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortingOrderButtonDataApplied = DualSelectorButtonData(
+            sortOrder = DualSelectorButtonData(
                 first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
                 second = resourceProvider.getString(R.string.documents_screen_filters_descending),
                 selectedButton = DualSelectorButton.FIRST,
@@ -183,6 +178,10 @@ class DocumentsViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
+            is Event.Init -> {
+                filterStateChanged()
+            }
+
             is Event.GetDocuments -> {
                 getDocuments(
                     event = event,
@@ -191,7 +190,8 @@ class DocumentsViewModel(
             }
 
             is Event.OnPause -> {
-                retryDeferredDocsJob?.cancel()
+                stopDeferredIssuing()
+                setState { copy(isFromOnPause = true) }
             }
 
             is Event.TryIssuingDeferredDocuments -> {
@@ -209,7 +209,7 @@ class DocumentsViewModel(
             }
 
             is Event.FiltersPressed -> {
-                setEvent(Event.OnPause)
+                stopDeferredIssuing()
                 showBottomSheet(sheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()))
             }
 
@@ -230,56 +230,16 @@ class DocumentsViewModel(
             }
 
             is Event.OnSortingOrderChanged -> {
-                val selection = viewState.value.sortingOrderButtonDataApplied.copy(
-                    selectedButton = event.sortingOrder
-                )
-                setState {
-                    copy(
-                        sortingOrderButtonDataSnapshot = selection,
-                        sortingOrderButtonDataApplied = selection,
-                        sortingOrderButtonDataPrevious = viewState.value.sortingOrderButtonDataApplied,
-                    )
-                }
+                sortOrderChanged(event.sortingOrder)
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
-                    if (!event.isOpen) {
-                        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters) {
-                            // Check if selection should be applied or discarded
-                            val appliedSorting =
-                                if (viewState.value.sortingOrderButtonDataSnapshot == null) {
-                                    // Applying filtering
-                                    viewState.value.sortingOrderButtonDataSnapshot
-                                        ?: viewState.value.sortingOrderButtonDataApplied
-                                } else {
-                                    // Closing the bottom sheet without apply action
-                                    viewState.value.sortingOrderButtonDataPrevious
-                                        ?: viewState.value.sortingOrderButtonDataApplied
-                                }
-
-                            setState {
-                                copy(
-                                    snapshotFilters = emptyList(),
-                                    isBottomSheetOpen = false,
-                                    filters = viewState.value.appliedFilters,
-                                    sortingOrderButtonDataApplied = appliedSorting,
-                                    sortingOrderButtonDataSnapshot = null,
-                                    sortingOrderButtonDataPrevious = appliedSorting,
-                                )
-                            }
-                            setEffect { Effect.ResumeOnApplyFilter }
-                        }
-                    } else {
-                        setState {
-                            copy(isBottomSheetOpen = true)
-                        }
-                    }
-                } else {
-                    setState {
-                        copy(isBottomSheetOpen = event.isOpen)
-                    }
+                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+                    && !event.isOpen
+                ) {
+                    setEffect { Effect.ResumeOnApplyFilter }
                 }
+                revertFilters(event.isOpen)
             }
 
             is Event.BottomSheet.Close -> {
@@ -320,22 +280,47 @@ class DocumentsViewModel(
         }
     }
 
+    private fun filterStateChanged() {
+        viewModelScope.launch {
+            interactor.onFilterStateChange().collect { result ->
+                when (result) {
+                    is DocumentInteractorFilterPartialState.FilterApplyResult -> {
+                        setState {
+                            copy(
+                                isFilteringActive = result.hasMoreThanDefaultFilterApplied,
+                                documentsUi = result.documents,
+                                showNoResultsFound = result.documents.isEmpty(),
+                                filtersUi = result.filters,
+                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                            )
+                        }
+                    }
+
+                    is DocumentInteractorFilterPartialState.FilterUpdateResult -> {
+                        setState {
+                            copy(
+                                filtersUi = result.filters,
+                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun getDocuments(
         event: Event,
         deferredFailedDocIds: List<DocumentId>,
     ) {
         setState {
             copy(
-                isLoading = documents.isEmpty(),
+                isLoading = documentsUi.isEmpty(),
                 error = null
             )
         }
         viewModelScope.launch {
-            interactor.getDocuments(
-                viewState.value.sortingOrderButtonDataApplied.selectedButton,
-                viewState.value.filters,
-                viewState.value.queryText
-            )
+            interactor.getDocuments()
                 .collect { response ->
                     when (response) {
                         is DocumentInteractorGetDocumentsPartialState.Failure -> {
@@ -356,48 +341,40 @@ class DocumentsViewModel(
 
                         is DocumentInteractorGetDocumentsPartialState.Success -> {
                             val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
-                            response.allDocuments.documents.filter { document ->
-                                document.itemUi.documentIssuanceState == DocumentUiIssuanceState.Pending
-                            }.forEach { documentUi ->
-                                deferredDocs[documentUi.itemUi.uiData.itemId] =
-                                    documentUi.itemUi.documentIdentifier.formatType
+                            response.allDocuments.items.filter { document ->
+                                with(document.payload as DocumentUi) {
+                                    documentIssuanceState == DocumentUiIssuanceState.Pending
+                                }
+                            }.forEach { documentItem ->
+                                with(documentItem.payload as DocumentUi) {
+                                    deferredDocs[uiData.itemId] =
+                                        documentIdentifier.formatType
+                                }
                             }
-
-                            val filteredDocumentsWithFailed =
-                                response.filterableDocuments.generateFailedDeferredDocs(
-                                    deferredFailedDocIds
-                                )
-                            val allDocumentsWithFailed =
+                            val documentsWithFailed =
                                 response.allDocuments.generateFailedDeferredDocs(
                                     deferredFailedDocIds
                                 )
-                            val filters =
-                                filteredDocumentsWithFailed.let {
-                                    if (shouldApplyFilters()) {
-                                        interactor.applyFilters(
-                                            it,
-                                            viewState.value.filters
-                                        ).filters
-                                    } else {
-                                        interactor.getFilters(allDocumentsWithFailed).filters
-                                    }
-                                }
-                            val initialFilters =
-                                interactor.getFilters(allDocumentsWithFailed).filters
+
+                            if (viewState.value.isFromOnPause) {
+                                interactor.initializeFilters(
+                                    filterableList = documentsWithFailed
+                                )
+                            } else {
+                                interactor.updateLists(
+                                    filterableList = documentsWithFailed
+                                )
+                            }
+
+                            interactor.applyFilters()
 
                             setState {
                                 copy(
                                     isLoading = false,
                                     error = null,
-                                    documents = filteredDocumentsWithFailed.search(viewState.value.queryText)
-                                        .getEmptyUIifEmptyList(resourceProvider).documents.map { it.itemUi },
-                                    filteredDocuments = filteredDocumentsWithFailed,
-                                    allDocuments = allDocumentsWithFailed,
-                                    filters = filters,
-                                    initialFilters = initialFilters,
                                     deferredFailedDocIds = deferredFailedDocIds,
                                     allowUserInteraction = response.shouldAllowUserInteraction,
-                                    isInitialDocumentLoading = false
+                                    isFromOnPause = false
                                 )
                             }
                             setEffect { Effect.DocumentsFetched(deferredDocs) }
@@ -407,24 +384,25 @@ class DocumentsViewModel(
         }
     }
 
-    private fun FilterableDocuments.generateFailedDeferredDocs(deferredFailedDocIds: List<DocumentId>): FilterableDocuments {
-        return copy(documents = documents.map { documentUi ->
-            if (documentUi.itemUi.uiData.itemId in deferredFailedDocIds) {
-                documentUi.copy(
-                    itemUi = documentUi.itemUi.copy(
-                        documentIssuanceState = DocumentUiIssuanceState.Failed,
-                        uiData = documentUi.itemUi.uiData.copy(
-                            supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = AppIcons.ErrorFilled,
-                                tint = ThemeColors.error
-                            )
+    private fun FilterableList.generateFailedDeferredDocs(deferredFailedDocIds: List<DocumentId>): FilterableList {
+        return copy(items = items.map { filterableItem ->
+            val data = filterableItem.payload as DocumentUi
+            val failedUiItem = if (data.uiData.itemId in deferredFailedDocIds) {
+                data.copy(
+                    documentIssuanceState = DocumentUiIssuanceState.Failed,
+                    uiData = data.uiData.copy(
+                        supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.ErrorFilled,
+                            tint = ThemeColors.error
                         )
                     )
                 )
             } else {
-                documentUi
+                data
             }
+
+            filterableItem.copy(payload = failedUiItem)
         })
     }
 
@@ -439,7 +417,7 @@ class DocumentsViewModel(
             )
         }
 
-        retryDeferredDocsJob?.cancel()
+        stopDeferredIssuing()
         retryDeferredDocsJob = viewModelScope.launch {
             if (deferredDocs.isEmpty()) {
                 return@launch
@@ -489,12 +467,6 @@ class DocumentsViewModel(
                     }
                 }
             }
-        }
-    }
-
-    private fun shouldApplyFilters(): Boolean {
-        return with(viewState.value) {
-            isFilteringActive && !isInitialDocumentLoading
         }
     }
 
@@ -568,90 +540,6 @@ class DocumentsViewModel(
         }
     }
 
-    private fun applySearch(queryText: String) {
-        val searchResult =
-            viewState.value.filteredDocuments?.let { documents ->
-                interactor.searchDocuments(
-                    query = queryText,
-                    documents = documents,
-                    appliedFilters = viewState.value.filters
-                )
-            }
-        setState {
-            copy(
-                documents = searchResult?.documents?.documents?.map { it.itemUi }
-                    ?: emptyList(),
-                filters = searchResult?.filters ?: emptyList(),
-                queryText = queryText
-            )
-        }
-    }
-
-    private fun updateFilter(filterId: String, groupId: String) {
-        val updatedFilters =
-            interactor.updateFilters(
-                filterId,
-                groupId,
-                viewState.value.filters
-            )
-
-        setState {
-            copy(
-                snapshotFilters = updatedFilters.filters,
-                filters = updatedFilters.filters
-            )
-        }
-    }
-
-    private fun applySelectedFilters() {
-        val filtersToApply = viewState.value.snapshotFilters.ifEmpty {
-            viewState.value.filters
-        }
-        val applied =
-            viewState.value.allDocuments?.let {
-                interactor.applyFilters(
-                    it,
-                    filtersToApply
-                )
-            }
-        val appliedFilterDocuments = applied?.documents
-        val appliedFilters = applied?.filters ?: emptyList()
-        setState {
-            copy(
-                documents = appliedFilterDocuments?.search(queryText)?.documents?.map { it.itemUi }
-                    ?: emptyList(),
-                filteredDocuments = appliedFilterDocuments,
-                appliedFilters = appliedFilters,
-                sortingOrderButtonDataSnapshot = null,
-                filters = appliedFilters,
-                isFilteringActive = true
-            )
-        }
-        hideBottomSheet()
-    }
-
-    private fun resetFilters() {
-        val applied = viewState.value.allDocuments?.let { documents ->
-            interactor.resetFilters(
-                documents,
-                viewState.value.initialFilters
-            )
-        }
-        val appliedFilterDocuments = viewState.value.allDocuments
-        val appliedFilters = applied?.filters ?: emptyList()
-        setState {
-            copy(
-                filters = appliedFilters,
-                filteredDocuments = appliedFilterDocuments,
-                sortingOrderButtonDataSnapshot = null,
-                sortingOrderButtonDataApplied = sortingOrderButtonDataApplied.copy(selectedButton = DualSelectorButton.FIRST),
-                appliedFilters = appliedFilters,
-                isFilteringActive = false
-            )
-        }
-        hideBottomSheet()
-    }
-
     private fun goToDocumentDetails(docId: DocumentId) {
         setEffect {
             Effect.Navigation.SwitchScreen(
@@ -717,5 +605,64 @@ class DocumentsViewModel(
         setEffect {
             Effect.CloseBottomSheet
         }
+    }
+
+    private fun applySearch(queryText: String) {
+        interactor.applySearch(queryText)
+        setState {
+            copy(searchText = queryText)
+        }
+    }
+
+    private fun updateFilter(filterId: String, groupId: String) {
+        setState { copy(shouldRevertFilterChanges = true) }
+        interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
+    }
+
+    private fun applySelectedFilters() {
+        interactor.applyFilters()
+        setState {
+            copy(
+                shouldRevertFilterChanges = false
+            )
+        }
+        hideBottomSheet()
+    }
+
+    private fun resetFilters() {
+        interactor.resetFilters()
+        setState {
+            copy(
+                isFilteringActive = false,
+            )
+        }
+        hideBottomSheet()
+    }
+
+    private fun revertFilters(isOpening: Boolean) {
+        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+            && !isOpening
+            && viewState.value.shouldRevertFilterChanges
+        ) {
+            interactor.revertFilters()
+            setState { copy(shouldRevertFilterChanges = true) }
+        }
+
+        setState {
+            copy(isBottomSheetOpen = isOpening)
+        }
+    }
+
+    private fun sortOrderChanged(orderButton: DualSelectorButton) {
+        val sortOrder = when (orderButton) {
+            DualSelectorButton.FIRST -> SortOrder.ASCENDING
+            DualSelectorButton.SECOND -> SortOrder.DESCENDING
+        }
+        setState { copy(shouldRevertFilterChanges = true) }
+        interactor.updateSortOrder(sortOrder)
+    }
+
+    private fun stopDeferredIssuing() {
+        retryDeferredDocsJob?.cancel()
     }
 }

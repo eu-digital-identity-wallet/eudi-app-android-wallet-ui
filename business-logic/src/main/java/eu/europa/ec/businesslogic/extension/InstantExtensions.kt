@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.extensions
+package eu.europa.ec.businesslogic.extension
 
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -32,4 +32,8 @@ fun Instant.isBeyondNextDays(days: Long): Boolean {
 
 fun Instant.isExpired(): Boolean {
     return this.isBefore(Instant.now())
+}
+
+fun Instant.isValid(): Boolean {
+    return this.isAfter(Instant.now())
 }

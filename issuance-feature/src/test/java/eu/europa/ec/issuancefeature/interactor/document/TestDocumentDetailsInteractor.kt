@@ -22,6 +22,7 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
 import eu.europa.ec.commonfeature.util.TestsData.mockedDocumentHasExpired
+import eu.europa.ec.commonfeature.util.TestsData.mockedFormattedExpirationDate
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -35,6 +36,7 @@ import eu.europa.ec.storagelogic.model.Bookmark
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemCall
 import eu.europa.ec.testfeature.createMockedNamespaceData
 import eu.europa.ec.testfeature.mockedBookmarkId
+import eu.europa.ec.testfeature.mockedDefaultLocale
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
@@ -60,7 +62,6 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
-import java.util.Locale
 
 class TestDocumentDetailsInteractor {
 
@@ -192,9 +193,7 @@ class TestDocumentDetailsInteractor {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
-                        documentDetailsDomain = mockedBasicMdlDomain.copy(
-                            documentImage = "SE"
-                        ),
+                        documentDetailsDomain = mockedBasicMdlDomain,
                         documentIsBookmarked = false,
                         issuerName = null,
                         issuerLogo = null
@@ -277,10 +276,8 @@ class TestDocumentDetailsInteractor {
                             docName = mockedDocUiNamePid,
                             docId = mockedPidId,
                             documentIdentifier = DocumentIdentifier.MdocPid,
-                            documentExpirationDateFormatted = "",
+                            documentExpirationDateFormatted = mockedFormattedExpirationDate,
                             documentHasExpired = mockedDocumentHasExpired,
-                            documentImage = "",
-                            userFullName = "",
                             detailsItems = listOf(
                                 DocumentItem(
                                     elementIdentifier = "no_data_item",
@@ -754,9 +751,5 @@ class TestDocumentDetailsInteractor {
         whenever(bookmarkStorageController.retrieve(anyString()))
             .thenReturn(response)
     }
-    //endregion
-
-    //region mocked locale data
-    private val mockedDefaultLocale = Locale.getDefault()
     //endregion
 }

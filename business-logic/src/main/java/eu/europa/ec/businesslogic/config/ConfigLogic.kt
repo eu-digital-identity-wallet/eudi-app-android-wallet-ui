@@ -45,6 +45,19 @@ interface ConfigLogic {
      * RQES Config.
      */
     val rqesConfig: EudiRQESUiConfig
+
+    /**
+     * The URL to the changelog for this specific version of the application.
+     *
+     * This property provides a link where users can find detailed information about
+     * the changes, new features, bug fixes, and other updates included in this release.
+     *
+     * **Availability:**
+     * - This URL is only provided for the **DEMO** app flavor [AppFlavor.DEMO].
+     * - For the **DEV** app flavor [AppFlavor.DEV], this property will always be `null`, as no public
+     *   changelog is maintained for development builds.
+     */
+    val changelogUrl: String?
 }
 
 enum class AppFlavor {

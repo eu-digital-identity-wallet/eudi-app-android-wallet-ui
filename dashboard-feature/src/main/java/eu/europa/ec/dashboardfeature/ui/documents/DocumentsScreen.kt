@@ -17,7 +17,9 @@
 package eu.europa.ec.dashboardfeature.ui.documents
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,11 +27,9 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -55,18 +56,29 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.corelogic.model.DocumentCategory
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DualSelectorButton
+import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
+import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_XX_LARGE
+import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -85,9 +97,11 @@ import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
@@ -177,30 +191,34 @@ private fun TopBar(
     onEventSend: (Event) -> Unit,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
-    Row(
+    Box(
         modifier = Modifier
-            .height(SIZE_XX_LARGE.dp)
-            .fillMaxSize()
-            .padding(SPACING_MEDIUM.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+            .fillMaxWidth()
+            .padding(
+                horizontal = SPACING_SMALL.dp,
+                vertical = SPACING_MEDIUM.dp
+            )
     ) {
         WrapIconButton(
-            modifier = Modifier.offset(x = -SPACING_SMALL.dp),
+            modifier = Modifier.align(Alignment.CenterStart),
             iconData = AppIcons.Menu,
-            shape = null
+            customTint = MaterialTheme.colorScheme.onSurface,
         ) {
             onDashboardEventSent(ShowSideMenuEvent)
         }
 
         Text(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.align(Alignment.Center),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.headlineMedium,
             text = stringResource(R.string.documents_screen_title)
         )
+
         WrapIconButton(
-            iconData = AppIcons.Add
+            modifier = Modifier.align(Alignment.CenterEnd),
+            iconData = AppIcons.Add,
+            customTint = MaterialTheme.colorScheme.onSurfaceVariant,
         ) {
             onEventSend(Event.AddDocumentPressed)
         }
@@ -230,7 +248,6 @@ private fun Content(
                 )
             ),
         contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         item {
             val searchItem =
@@ -239,39 +256,30 @@ private fun Content(
                 placeholder = searchItem.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.FiltersPressed) },
+                onClearClick = { onEventSend(Event.OnSearchQueryChanged("")) },
                 isFilteringActive = state.isFilteringActive,
-                text = state.queryText
+                text = state.searchText
             )
+            VSpacer.Large()
         }
-        items(state.documents) { documentItem ->
-            WrapListItem(
-                item = documentItem.uiData,
-                onItemClick = if (documentItem.uiData.itemId.isBlank()) {
-                    null
-                } else {
-                    if (documentItem.documentIssuanceState == DocumentUiIssuanceState.Pending
-                        || documentItem.documentIssuanceState == DocumentUiIssuanceState.Failed
-                    ) {
-                        {
-                            onEventSend(
-                                Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
-                                    documentId = documentItem.uiData.itemId
-                                )
-                            )
-                        }
-                    } else {
-                        {
-                            onEventSend(Event.GoToDocumentDetails(documentItem.uiData.itemId))
-                        }
-                    }
-                },
-                supportingTextColor = when (documentItem.documentIssuanceState) {
-                    DocumentUiIssuanceState.Issued -> null
-                    DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
-                    DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
-                    DocumentUiIssuanceState.Expired -> MaterialTheme.colorScheme.error
+
+        if (state.showNoResultsFound) {
+            item {
+                NoResults(modifier = Modifier.fillMaxWidth())
+            }
+        } else {
+            itemsIndexed(items = state.documentsUi) { index, (documentCategory, documents) ->
+                DocumentCategory(
+                    modifier = Modifier.fillMaxWidth(),
+                    category = documentCategory,
+                    documents = documents,
+                    onEventSend = onEventSend
+                )
+
+                if (index != state.documentsUi.lastIndex) {
+                    VSpacer.ExtraLarge()
                 }
-            )
+            }
         }
     }
 
@@ -287,6 +295,10 @@ private fun Content(
         lifecycleEvent = Lifecycle.Event.ON_PAUSE
     ) {
         onEventSend(Event.OnPause)
+    }
+
+    OneTimeLaunchedEffect {
+        onEventSend(Event.Init)
     }
 
     LaunchedEffect(Unit) {
@@ -321,6 +333,67 @@ private fun Content(
 }
 
 @Composable
+private fun DocumentCategory(
+    modifier: Modifier = Modifier,
+    category: DocumentCategory,
+    documents: List<DocumentUi>,
+    onEventSend: (Event) -> Unit,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        SectionTitle(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(category.stringResId)
+        )
+
+        documents.forEach { documentItem: DocumentUi ->
+            WrapListItem(
+                modifier = Modifier.fillMaxWidth(),
+                item = documentItem.uiData,
+                onItemClick = {
+                    val onItemClickEvent = if (
+                        documentItem.documentIssuanceState == DocumentUiIssuanceState.Pending
+                        || documentItem.documentIssuanceState == DocumentUiIssuanceState.Failed
+                    ) {
+                        Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected(
+                            documentId = documentItem.uiData.itemId
+                        )
+                    } else {
+                        Event.GoToDocumentDetails(documentItem.uiData.itemId)
+                    }
+                    onEventSend(onItemClickEvent)
+                },
+                supportingTextColor = when (documentItem.documentIssuanceState) {
+                    DocumentUiIssuanceState.Issued -> null
+                    DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
+                    DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
+                    DocumentUiIssuanceState.Expired -> MaterialTheme.colorScheme.error
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun NoResults(
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        WrapListItem(
+            item = ListItemData(
+                itemId = stringResource(R.string.documents_screen_search_no_results_id),
+                mainContentData = ListItemMainContentData.Text(text = stringResource(R.string.documents_screen_search_no_results)),
+            ),
+            onItemClick = null,
+            modifier = Modifier.fillMaxWidth(),
+            mainContentVerticalPadding = SPACING_MEDIUM.dp,
+        )
+    }
+}
+
+@Composable
 private fun DocumentsSheetContent(
     sheetContent: DocumentsBottomSheetContent,
     state: State,
@@ -337,36 +410,44 @@ private fun DocumentsSheetContent(
                 },
                 bodyContent = {
                     val expandStateList by remember {
-                        mutableStateOf(state.filters.map { false }.toMutableStateList())
+                        mutableStateOf(state.filtersUi.map { false }.toMutableStateList())
                     }
 
-                    Column(
-                        modifier = Modifier.verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
-                    ) {
-                        DualSelectorButtons(state.sortingOrderButtonDataApplied) {
-                            onEventSent(Event.OnSortingOrderChanged(it))
-                        }
-                        state.filters.forEachIndexed { index, filter ->
-                            if (filter.expanded.isNotEmpty()) {
-                                WrapExpandableListItem(
-                                    data = filter,
-                                    isExpanded = expandStateList[index],
-                                    onExpandedChange = {
-                                        expandStateList[index] = !expandStateList[index]
-                                    },
-                                    onItemClick = {
-                                        val id = it.itemId
-                                        val groupId = filter.collapsed.itemId
-                                        onEventSent(Event.OnFilterSelectionChanged(id, groupId))
-                                    }
-                                )
+                    Box {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                                .padding(bottom = SPACING_EXTRA_LARGE.dp * 2),
+                            verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
+                        ) {
+                            DualSelectorButtons(state.sortOrder) {
+                                onEventSent(Event.OnSortingOrderChanged(it))
+                            }
+                            state.filtersUi.forEachIndexed { index, filter ->
+                                if (filter.expanded.isNotEmpty()) {
+                                    WrapExpandableListItem(
+                                        data = filter,
+                                        isExpanded = expandStateList[index],
+                                        onExpandedChange = {
+                                            expandStateList[index] = !expandStateList[index]
+                                        },
+                                        onItemClick = {
+                                            val id = it.itemId
+                                            val groupId = filter.collapsed.itemId
+                                            onEventSent(Event.OnFilterSelectionChanged(id, groupId))
+                                        },
+                                        expandedAddDivider = false,
+                                    )
+                                }
                             }
                         }
-
-                        VSpacer.Large()
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter)
+                                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                                .padding(top = SPACING_LARGE.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             WrapButton(
@@ -455,6 +536,104 @@ private fun DocumentsSheetContent(
                 ),
                 options = sheetContent.options,
                 onEventSent = onEventSent,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@ThemeModePreviews
+@Composable
+private fun DocumentsScreenPreview() {
+    PreviewTheme {
+        val scope = rememberCoroutineScope()
+        val bottomSheetState = rememberModalBottomSheetState(
+            skipPartiallyExpanded = true
+        )
+        ContentScreen(
+            isLoading = false,
+            navigatableAction = ScreenNavigateAction.NONE,
+            onBack = { },
+            topBar = {
+                TopBar(
+                    onEventSend = { },
+                    onDashboardEventSent = {}
+                )
+            },
+        ) { paddingValues ->
+            val issuerName = "Issuer name"
+            val validUntil = "Valid Until"
+            val documentsList = listOf(
+                DocumentUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "id1",
+                        mainContentData = ListItemMainContentData.Text(text = "Document 1"),
+                        overlineText = issuerName,
+                        supportingText = validUntil,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.MdocPid,
+                    documentCategory = DocumentCategory.Government
+                ),
+                DocumentUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "id2",
+                        mainContentData = ListItemMainContentData.Text(text = "Document 2"),
+                        overlineText = issuerName,
+                        supportingText = validUntil,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.MdocPid,
+                    documentCategory = DocumentCategory.Government
+                ),
+                DocumentUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "id3",
+                        mainContentData = ListItemMainContentData.Text(text = "Document 3"),
+                        overlineText = issuerName,
+                        supportingText = validUntil,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.OTHER(formatType = ""),
+                    documentCategory = DocumentCategory.Finance
+                ),
+                DocumentUi(
+                    documentIssuanceState = DocumentUiIssuanceState.Issued,
+                    uiData = ListItemData(
+                        itemId = "id4",
+                        mainContentData = ListItemMainContentData.Text(text = "Document 4"),
+                        overlineText = issuerName,
+                        supportingText = validUntil,
+                        leadingContentData = null,
+                        trailingContentData = null
+                    ),
+                    documentIdentifier = DocumentIdentifier.OTHER(formatType = ""),
+                    documentCategory = DocumentCategory.Other
+                ),
+            )
+            Content(
+                state = State(
+                    isLoading = false,
+                    isFilteringActive = false,
+                    sortOrder = DualSelectorButtonData(
+                        first = "first",
+                        second = "second",
+                        selectedButton = DualSelectorButton.FIRST,
+                    ),
+                    documentsUi = documentsList.groupBy { it.documentCategory }.toList(),
+                ),
+                effectFlow = Channel<Effect>().receiveAsFlow(),
+                onEventSend = {},
+                onNavigationRequested = {},
+                paddingValues = paddingValues,
+                coroutineScope = scope,
+                modalBottomSheetState = bottomSheetState,
             )
         }
     }

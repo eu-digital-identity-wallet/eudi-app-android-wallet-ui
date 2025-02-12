@@ -19,9 +19,11 @@ package eu.europa.ec.corelogic.controller
 import com.android.identity.securearea.KeyUnlockData
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
-import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
 import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.ScopedDocument
@@ -43,6 +45,7 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
@@ -166,11 +169,15 @@ interface WalletCoreDocumentsController {
     fun resumeOpenId4VciWithAuthorization(uri: String)
 
     suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState
+
+    fun getAllDocumentCategories(): DocumentCategories
 }
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet
+    private val eudiWallet: EudiWallet,
+    private val walletCoreConfig: WalletCoreConfig,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : WalletCoreDocumentsController {
 
     private val genericErrorMessage
@@ -190,18 +197,17 @@ class WalletCoreDocumentsControllerImpl(
         eudiWallet.getDocuments().filterIsInstance<IssuedDocument>()
 
     override suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatcher) {
             runCatching {
                 val metadata = openId4VciManager.getIssuerMetadata().getOrThrow()
 
                 val documents =
                     metadata.credentialConfigurationsSupported.map { (id, config) ->
 
-                        val name: String = config.display
-                            .firstOrNull { locale.compareLocaleLanguage(it.locale) }
-                            ?.name
-                            ?: config.display.firstOrNull()?.name
-                            ?: id.value
+                        val name: String = config.display.getLocalizedDisplayName(
+                            userLocale = locale,
+                            fallback = id.value
+                        )
 
                         val isPid: Boolean = when (config) {
                             is MsoMdocCredential -> config.docType.toDocumentIdentifier() == DocumentIdentifier.MdocPid
@@ -498,6 +504,10 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun resumeOpenId4VciWithAuthorization(uri: String) {
         openId4VciManager.resumeWithAuthorization(uri)
+    }
+
+    override fun getAllDocumentCategories(): DocumentCategories {
+        return walletCoreConfig.documentCategories
     }
 
     private fun issueDocumentWithOpenId4VCI(configId: String): Flow<IssueDocumentsPartialState> =

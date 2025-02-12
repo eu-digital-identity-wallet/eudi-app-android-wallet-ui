@@ -115,6 +115,7 @@ class DocumentOfferInteractorImpl(
 
     override fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferInteractorPartialState> =
         flow {
+            val userLocale = resourceProvider.getLocale()
             walletCoreDocumentsController.resolveDocumentOffer(
                 offerUri = offerUri
             ).map { response ->
@@ -127,12 +128,8 @@ class DocumentOfferInteractorImpl(
                         val offerHasNoDocuments = response.offer.offeredDocuments.isEmpty()
                         if (offerHasNoDocuments) {
                             ResolveDocumentOfferInteractorPartialState.NoDocument(
-                                issuerName = response.offer.getIssuerName(
-                                    resourceProvider.getLocale()
-                                ),
-                                issuerLogo = response.offer.getIssuerLogo(
-                                    resourceProvider.getLocale()
-                                ),
+                                issuerName = response.offer.getIssuerName(userLocale),
+                                issuerLogo = response.offer.getIssuerLogo(userLocale),
                             )
                         } else {
 
@@ -171,13 +168,11 @@ class DocumentOfferInteractorImpl(
                                 ResolveDocumentOfferInteractorPartialState.Success(
                                     documents = response.offer.offeredDocuments.map { offeredDocument ->
                                         DocumentOfferItemUi(
-                                            title = offeredDocument.getName(
-                                                resourceProvider.getLocale()
-                                            ).orEmpty(),
+                                            title = offeredDocument.getName(userLocale).orEmpty(),
                                         )
                                     },
-                                    issuerName = response.offer.getIssuerName(resourceProvider.getLocale()),
-                                    issuerLogo = response.offer.getIssuerLogo(resourceProvider.getLocale()),
+                                    issuerName = response.offer.getIssuerName(userLocale),
+                                    issuerLogo = response.offer.getIssuerLogo(userLocale),
                                     txCodeLength = response.offer.txCodeSpec?.length
                                 )
                             } else {

@@ -28,18 +28,14 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
-import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
@@ -50,21 +46,21 @@ fun FiltersSearchBar(
     placeholder: String,
     onValueChange: (String) -> Unit,
     onFilterClick: () -> Unit,
+    onClearClick: () -> Unit,
     isFilteringActive: Boolean = false,
 ) {
-    var value by remember { mutableStateOf(text) }
+    val focusManager = LocalFocusManager.current
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = SPACING_MEDIUM.dp, bottom = SPACING_MEDIUM.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         OutlinedTextField(
             modifier = Modifier.weight(1f),
-            value = value,
+            value = text,
             maxLines = 1,
+            singleLine = true,
             onValueChange = {
-                value = it
                 onValueChange(it)
             },
             placeholder = { Text(placeholder) },
@@ -74,6 +70,17 @@ fun FiltersSearchBar(
                     customTint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
+            trailingIcon = if (text.isNotEmpty()) {
+                {
+                    WrapIconButton(
+                        iconData = AppIcons.Close,
+                        onClick = {
+                            onClearClick()
+                            focusManager.clearFocus()
+                        }
+                    )
+                }
+            } else null,
             shape = MaterialTheme.shapes.extraLarge,
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -110,7 +117,8 @@ private fun FiltersSearchBarPreview() {
             placeholder = "Search documents",
             onValueChange = { },
             onFilterClick = {},
-            true
+            onClearClick = {},
+            isFilteringActive = true,
         )
     }
 }

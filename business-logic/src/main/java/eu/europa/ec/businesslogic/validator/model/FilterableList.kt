@@ -14,24 +14,14 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.model
+package eu.europa.ec.businesslogic.validator.model
 
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.uilogic.component.ListItemData
+data class FilterableList(val items: List<FilterableItem>)
 
-enum class DocumentUiIssuanceState {
-    Issued, Pending, Failed, Expired
+data class FilterableItem(val payload: FilterableItemPayload, val attributes: FilterableAttributes)
+
+interface FilterableItemPayload
+
+interface FilterableAttributes {
+    val searchTags: List<String>
 }
-
-data class DocumentUi(
-    val documentIssuanceState: DocumentUiIssuanceState,
-    val documentName: String,
-    val documentIdentifier: DocumentIdentifier,
-    val documentExpirationDateFormatted: String,
-    val documentHasExpired: Boolean,
-    val documentImage: String,
-    val documentDetails: List<ListItemData>,
-    val userFullName: String? = null,
-    val documentId: DocumentId,
-)

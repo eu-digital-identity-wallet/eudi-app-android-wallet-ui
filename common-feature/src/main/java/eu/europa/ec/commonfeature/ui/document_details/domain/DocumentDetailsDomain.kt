@@ -33,7 +33,5 @@ data class DocumentDetailsDomain(
     val documentIdentifier: DocumentIdentifier,
     val documentExpirationDateFormatted: String,
     val documentHasExpired: Boolean,
-    val documentImage: String,
-    val userFullName: String?,
     val detailsItems: List<DocumentItem>
 )

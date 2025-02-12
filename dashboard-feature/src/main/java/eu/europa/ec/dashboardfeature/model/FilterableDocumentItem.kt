@@ -16,21 +16,15 @@
 
 package eu.europa.ec.dashboardfeature.model
 
-import eu.europa.ec.uilogic.component.DualSelectorButton
+import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
+import eu.europa.ec.corelogic.model.DocumentCategory
 import java.time.Instant
 
-data class FilterableAttributes(
-    val issuedDate: Instant?,
+data class DocumentsFilterableAttributes(
+    override val searchTags: List<String>,
+    val name: String,
     val expiryDate: Instant?,
+    val issuedDate: Instant?,
     val issuer: String?,
-)
-
-data class FilterableDocumentItem(
-    val itemUi: DocumentDetailsItemUi,
-    val filterableAttributes: FilterableAttributes,
-)
-
-data class FilterableDocuments(
-    val documents: List<FilterableDocumentItem>,
-    val sortingOrder: DualSelectorButton = DualSelectorButton.FIRST,
-)
+    val category: DocumentCategory,
+) : FilterableAttributes

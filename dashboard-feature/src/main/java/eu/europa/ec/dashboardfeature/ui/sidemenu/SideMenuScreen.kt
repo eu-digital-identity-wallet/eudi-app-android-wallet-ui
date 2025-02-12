@@ -153,7 +153,7 @@ private fun SideMenuContentPreview() {
                     SideMenuItemUi(
                         type = SideMenuItemType.CHANGE_PIN,
                         data = ListItemData(
-                            itemId = "changePinId",
+                            itemId = stringResource(R.string.dashboard_side_menu_change_pin_id),
                             mainContentData = ListItemMainContentData.Text(
                                 text = stringResource(R.string.dashboard_side_menu_change_pin)
                             ),
@@ -168,7 +168,7 @@ private fun SideMenuContentPreview() {
                     SideMenuItemUi(
                         type = SideMenuItemType.CHANGE_PIN,
                         data = ListItemData(
-                            itemId = "changePinId",
+                            itemId = stringResource(R.string.dashboard_side_menu_change_pin_id),
                             mainContentData = ListItemMainContentData.Text(
                                 text = stringResource(R.string.dashboard_side_menu_change_pin)
                             ),
@@ -183,7 +183,7 @@ private fun SideMenuContentPreview() {
                     SideMenuItemUi(
                         type = SideMenuItemType.CHANGE_PIN,
                         data = ListItemData(
-                            itemId = "changePinId",
+                            itemId = stringResource(R.string.dashboard_side_menu_change_pin_id),
                             mainContentData = ListItemMainContentData.Text(
                                 text = stringResource(R.string.dashboard_side_menu_change_pin)
                             ),
@@ -196,7 +196,8 @@ private fun SideMenuContentPreview() {
                         )
                     ),
                 ),
-                appVersion = "1.0.0"
+                appVersion = "1.0.0",
+                changelogUrl = null,
             ),
             onEventSent = {},
             paddingValues = PaddingValues(SPACING_MEDIUM.dp)

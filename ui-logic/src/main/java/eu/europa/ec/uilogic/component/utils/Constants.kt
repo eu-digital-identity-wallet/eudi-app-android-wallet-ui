@@ -43,8 +43,11 @@ const val SPACING_MEDIUM = 16
 /** Value 24 */
 const val SPACING_LARGE = 24
 
+/** Value 32 */
+const val SPACING_EXTRA_LARGE = 32
+
 /** Value 48 */
-const val SPACING_EXTRA_LARGE = 48
+const val SPACING_XX_LARGE = 48
 
 /** Value 1.0 */
 const val ALPHA_ENABLED = 1.0f
@@ -76,11 +79,14 @@ const val SIZE_MEDIUM = 16
 /** Size 24 */
 const val SIZE_LARGE = 24
 
+/** Size 32 */
+const val SIZE_EXTRA_LARGE = 32
+
 /** Size 48 */
-const val SIZE_EXTRA_LARGE = 48
+const val SIZE_XX_LARGE = 48
 
 /** Size 62 */
-const val SIZE_XX_LARGE = 62
+const val SIZE_XXX_LARGE = 62
 
 /** Size 97 */
 const val DEFAULT_ACTION_CARD_HEIGHT = 97

@@ -36,6 +36,7 @@ import eu.europa.ec.businesslogic.extension.decodeFromPemBase64String
 import eu.europa.ec.businesslogic.extension.encodeToPemBase64String
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -69,7 +70,8 @@ interface BiometricAuthenticationController {
 class BiometricAuthenticationControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val cryptoController: CryptoController,
-    private val biometryStorageController: BiometryStorageController
+    private val biometryStorageController: BiometryStorageController,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : BiometricAuthenticationController {
 
     override fun deviceSupportsBiometrics(listener: (BiometricsAvailability) -> Unit) {
@@ -190,7 +192,7 @@ class BiometricAuthenticationControllerImpl(
     }
 
     private suspend fun retrieveCrypto(): Pair<BiometricAuthentication?, Cipher?> =
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
             val biometricData = biometryStorageController.getBiometricAuthentication()
             val cipher = cryptoController.getBiometricCipher(
                 encrypt = biometricData == null,
@@ -203,7 +205,7 @@ class BiometricAuthenticationControllerImpl(
         context: Context,
         result: AuthenticationResult?,
         biometricAuthentication: BiometricAuthentication?
-    ): BiometricsAuthenticate = withContext(Dispatchers.IO) {
+    ): BiometricsAuthenticate = withContext(dispatcher) {
         result?.cryptoObject?.cipher?.let {
             if (biometricAuthentication == null) {
                 val randomString = cryptoController.generateCodeVerifier()

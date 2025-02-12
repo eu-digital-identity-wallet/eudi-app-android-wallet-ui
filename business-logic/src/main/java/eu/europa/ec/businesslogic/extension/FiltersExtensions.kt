@@ -14,14 +14,16 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.businesslogic.extension
 
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.businesslogic.validator.model.SortOrder
 
-data class DocumentDetailsItemUi(
-    val documentIssuanceState: DocumentUiIssuanceState,
-    val uiData: ListItemData,
-    val documentIdentifier: DocumentIdentifier,
-)
+internal fun <T, R : Comparable<R>> List<T>.sortByOrder(
+    sortOrder: SortOrder,
+    selector: (T) -> R?,
+): List<T> {
+    return when (sortOrder) {
+        SortOrder.ASCENDING -> sortedBy(selector)
+        SortOrder.DESCENDING -> sortedByDescending(selector)
+    }
+}

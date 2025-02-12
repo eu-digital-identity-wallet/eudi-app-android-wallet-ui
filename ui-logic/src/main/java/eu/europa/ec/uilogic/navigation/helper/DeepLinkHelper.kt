@@ -20,9 +20,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
+import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi

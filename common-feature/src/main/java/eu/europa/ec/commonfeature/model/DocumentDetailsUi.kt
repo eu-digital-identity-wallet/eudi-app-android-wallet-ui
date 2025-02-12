@@ -14,17 +14,22 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.extension
+package eu.europa.ec.commonfeature.model
 
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flowOn
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.uilogic.component.ListItemData
 
-fun <T> Flow<T>.safeAsync(
-    dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    with: (Throwable) -> (T)
-): Flow<T> {
-    return this.flowOn(dispatcher).catch { emit(with(it)) }
+enum class DocumentUiIssuanceState {
+    Issued, Pending, Failed, Expired
 }
+
+data class DocumentDetailsUi(
+    val documentId: DocumentId,
+    val documentName: String,
+    val documentIdentifier: DocumentIdentifier,
+    val documentIssuanceState: DocumentUiIssuanceState,
+    val documentExpirationDateFormatted: String,
+    val documentHasExpired: Boolean,
+    val documentDetails: List<ListItemData>,
+)

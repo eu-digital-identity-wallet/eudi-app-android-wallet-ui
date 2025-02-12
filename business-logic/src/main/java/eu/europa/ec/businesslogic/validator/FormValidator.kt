@@ -21,6 +21,7 @@ import android.util.Patterns
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.util.safeLet
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -30,11 +31,12 @@ interface FormValidator {
 }
 
 class FormValidatorImpl(
-    private val logController: LogController
+    private val logController: LogController,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : FormValidator {
 
     override suspend fun validateForm(form: Form): FormValidationResult =
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
             for (input in form.inputs) {
                 val (rules, value) = input
                 for (rule in rules) {
@@ -47,7 +49,7 @@ class FormValidatorImpl(
         }
 
     override suspend fun validateForms(forms: List<Form>): FormsValidationResult =
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
             val errorMessages = mutableListOf<String>()
             var allValid = true
             for (form in forms) {

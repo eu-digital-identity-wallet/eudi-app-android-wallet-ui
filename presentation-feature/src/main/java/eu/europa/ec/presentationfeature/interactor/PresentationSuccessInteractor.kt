@@ -16,7 +16,6 @@
 
 package eu.europa.ec.presentationfeature.interactor
 
-import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
 import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.toListItemData
@@ -25,6 +24,7 @@ import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemU
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -78,6 +78,8 @@ class PresentationSuccessInteractorImpl(
 
             val isVerified = walletCorePresentationController.verifierIsTrusted == true
 
+            val userLocale = resourceProvider.getLocale()
+
             walletCorePresentationController.disclosedDocuments?.forEach { disclosedDocument ->
                 try {
                     val documentId = disclosedDocument.documentId
@@ -91,11 +93,13 @@ class PresentationSuccessInteractorImpl(
                             }
                         }
                         .map { claim ->
+                            val displayKey: String = claim.metadata?.display.getLocalizedClaimName(
+                                userLocale = userLocale,
+                                fallback = claim.identifier
+                            )
+
                             transformToDocumentDetailsDocumentItem(
-                                displayKey = claim.metadata?.display?.firstOrNull {
-                                    resourceProvider.getLocale()
-                                        .compareLocaleLanguage(it.locale)
-                                }?.name,
+                                displayKey = displayKey,
                                 key = claim.identifier,
                                 item = claim.value ?: "",
                                 resourceProvider = resourceProvider,

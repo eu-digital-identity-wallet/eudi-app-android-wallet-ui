@@ -16,21 +16,17 @@
 
 package eu.europa.ec.commonfeature.ui.document_details.transformer
 
-import eu.europa.ec.businesslogic.extension.compareLocaleLanguage
-import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
-import eu.europa.ec.businesslogic.util.toDateFormatted
-import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.businesslogic.util.formatInstant
+import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
-import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.util.documentHasExpired
-import eu.europa.ec.commonfeature.util.extractFullNameFromDocumentOrEmpty
-import eu.europa.ec.commonfeature.util.extractValueFromDocumentOrEmpty
 import eu.europa.ec.commonfeature.util.generateUniqueFieldId
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
+import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -44,13 +40,17 @@ object DocumentDetailsTransformer {
         document: IssuedDocument,
         resourceProvider: ResourceProvider
     ): Result<DocumentDetailsDomain> = runCatching {
+        val userLocale = resourceProvider.getLocale()
 
         val detailsDocumentItems = document.data.claims
             .map { claim ->
+                val displayKey: String = claim.metadata?.display.getLocalizedClaimName(
+                    userLocale = userLocale,
+                    fallback = claim.identifier
+                )
+
                 transformToDocumentDetailsDocumentItem(
-                    displayKey = claim.metadata?.display?.firstOrNull {
-                        resourceProvider.getLocale().compareLocaleLanguage(it.locale)
-                    }?.name,
+                    displayKey = displayKey,
                     key = claim.identifier,
                     item = claim.value ?: "",
                     resourceProvider = resourceProvider,
@@ -58,41 +58,27 @@ object DocumentDetailsTransformer {
                 )
             }
 
-        val documentImage = extractValueFromDocumentOrEmpty(
-            document = document,
-            key = DocumentJsonKeys.PORTRAIT
-        )
-
-        val documentExpirationDate = extractValueFromDocumentOrEmpty(
-            document = document,
-            key = DocumentJsonKeys.EXPIRY_DATE
-        )
-
-        val docHasExpired = documentHasExpired(documentExpirationDate)
+        val docHasExpired = documentHasExpired(document.validUntil)
 
         return@runCatching DocumentDetailsDomain(
             docName = document.name,
             docId = document.id,
             documentIdentifier = document.toDocumentIdentifier(),
-            documentExpirationDateFormatted = documentExpirationDate.toDateFormatted().orEmpty(),
+            documentExpirationDateFormatted = document.validUntil.formatInstant(),
             documentHasExpired = docHasExpired,
-            documentImage = documentImage,
-            userFullName = extractFullNameFromDocumentOrEmpty(document),
             detailsItems = detailsDocumentItems
         )
     }
 
-    fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentUi {
+    fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentDetailsUi {
         val documentDetailsListItemData = this.detailsItems.toListItemData()
-        return DocumentUi(
+        return DocumentDetailsUi(
             documentId = this.docId,
             documentName = this.docName,
             documentIdentifier = this.documentIdentifier,
             documentExpirationDateFormatted = this.documentExpirationDateFormatted,
             documentHasExpired = this.documentHasExpired,
-            documentImage = this.documentImage,
             documentDetails = documentDetailsListItemData,
-            userFullName = this.userFullName,
             documentIssuanceState = DocumentUiIssuanceState.Issued,
         )
     }
@@ -139,14 +125,14 @@ object DocumentDetailsTransformer {
 
 fun transformToDocumentDetailsDocumentItem(
     key: String,
-    displayKey: String?,
+    displayKey: String,
     item: Any,
     resourceProvider: ResourceProvider,
     documentId: String
 ): DocumentItem {
 
     val values = StringBuilder()
-    val localizedKey = displayKey.ifEmptyOrNull(default = key)
+    val localizedKey = displayKey.ifEmpty { key }
 
     parseKeyValueUi(
         item = item,

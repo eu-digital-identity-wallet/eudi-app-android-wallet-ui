@@ -19,7 +19,6 @@ package eu.europa.ec.commonfeature.util
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
-import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
@@ -88,12 +87,20 @@ private fun keyIsGender(key: String): Boolean {
 
 private fun getGenderValue(value: String, resourceProvider: ResourceProvider): String =
     when (value) {
+        "0" -> {
+            resourceProvider.getString(R.string.request_gender_not_known)
+        }
+
         "1" -> {
             resourceProvider.getString(R.string.request_gender_male)
         }
 
         "2" -> {
             resourceProvider.getString(R.string.request_gender_female)
+        }
+
+        "9" -> {
+            resourceProvider.getString(R.string.request_gender_not_applicable)
         }
 
         else -> {
@@ -183,17 +190,6 @@ fun parseKeyValueUi(
             )
         }
     }
-}
-
-fun documentHasExpired(
-    documentExpirationDate: String,
-    currentDate: LocalDate = LocalDate.now(),
-): Boolean {
-    val localDateOfDocumentExpirationDate = documentExpirationDate.toLocalDate()
-
-    return localDateOfDocumentExpirationDate?.let {
-        currentDate.isAfter(it)
-    } == true
 }
 
 fun documentHasExpired(

@@ -71,3 +71,30 @@ private fun createDocumentIdentifier(
         else -> DocumentIdentifier.OTHER(formatType = formatType)
     }
 }
+
+
+/**
+ * Converts a [DocumentIdentifier] to a [DocumentCategory] based on a provided set of [DocumentCategories].
+ *
+ * This function searches through the provided `allCategories` to find a category that contains
+ * a [DocumentIdentifier] with a matching [FormatType]. If a matching category is found, it's returned.
+ * Otherwise, [DocumentCategory.Other] is returned, indicating that the document identifier doesn't belong to
+ * any of the specified categories.
+ *
+ * @param allCategories The set of document categories to search within. Each category is associated with a list of [DocumentIdentifier]s.
+ * @return The corresponding [DocumentCategory] if a match is found, or [DocumentCategory.Other] if no match is found.
+ *
+ * @see DocumentIdentifier
+ * @see DocumentCategory
+ * @see DocumentCategories
+ * @see FormatType
+ *
+ */
+fun DocumentIdentifier.toDocumentCategory(allCategories: DocumentCategories): DocumentCategory {
+    return allCategories.value.entries.find { (_, identifiersInCategory) ->
+        val formatTypesInCategory: List<FormatType> = identifiersInCategory
+            .map { it.formatType }
+
+        this.formatType in formatTypesInCategory
+    }?.key ?: DocumentCategory.Other
+}

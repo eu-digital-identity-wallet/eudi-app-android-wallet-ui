@@ -61,6 +61,7 @@ import eu.europa.ec.issuancefeature.ui.document.offer.model.DocumentOfferItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.testfeature.mockedDefaultLocale
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
@@ -134,7 +135,7 @@ class TestDocumentOfferInteractor {
         biometricCrypto = BiometricCrypto(cryptoObject = null)
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
-        whenever(resourceProvider.getLocale()).thenReturn(locale)
+        whenever(resourceProvider.getLocale()).thenReturn(mockedDefaultLocale)
     }
 
     @After
@@ -170,7 +171,7 @@ class TestDocumentOfferInteractor {
             // When
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.NoDocument(
-                    issuerName = mockedOffer.getIssuerName(locale),
+                    issuerName = mockedOffer.getIssuerName(mockedDefaultLocale),
                     issuerLogo = null,
                 )
                 // Then
@@ -315,7 +316,7 @@ class TestDocumentOfferInteractor {
             interactor.resolveDocumentOffer(mockedUriPath1).runFlowTest {
                 val expectedList = listOf(
                     DocumentOfferItemUi(
-                        title = mockedOfferedDocumentDocType,
+                        title = mockedOfferedDocumentName,
                     )
                 )
                 val expectedResult = ResolveDocumentOfferInteractorPartialState.Success(
@@ -1097,7 +1098,7 @@ class TestDocumentOfferInteractor {
             display = listOf(
                 Display(
                     name = issuerName,
-                    locale = locale.language
+                    locale = mockedDefaultLocale.language
                 )
             )
         )
@@ -1109,7 +1110,7 @@ class TestDocumentOfferInteractor {
         display: List<eu.europa.ec.eudi.openid4vci.Display> = listOf(
             eu.europa.ec.eudi.openid4vci.Display(
                 name = name,
-                locale = locale
+                locale = mockedDefaultLocale
             )
         )
     ): Offer.OfferedDocument {
@@ -1140,8 +1141,6 @@ class TestDocumentOfferInteractor {
     )
 
     private val mockHttpUrl = "https://issuer.eudiw.dev"
-
-    private val locale: Locale = Locale("en")
 
     private val mockedTripleObject by lazy {
         Triple(

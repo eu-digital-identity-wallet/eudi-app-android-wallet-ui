@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Intent
 import android.net.Uri
+import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
@@ -56,7 +57,8 @@ data class State(
     val sideMenuOptions: List<SideMenuItemUi>,
     val sideMenuAnimation: SideMenuAnimation = SideMenuAnimation.SLIDE,
     val menuAnimationDuration: Int = 1500,
-    val appVersion: String = ""
+    val appVersion: String = "",
+    val changelogUrl: String?,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -85,6 +87,7 @@ sealed class Effect : ViewSideEffect {
 
         data object OnAppSettings : Navigation()
         data object OnSystemSettings : Navigation()
+        data class OpenUrlExternally(val url: Uri) : Navigation()
     }
 
     data class ShareLogFile(val intent: Intent, val chooserTitle: String) : Effect()
@@ -101,10 +104,12 @@ class DashboardViewModel(
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
+        val changelogUrl = dashboardInteractor.getChangelogUrl()
         return State(
             sideMenuTitle = resourceProvider.getString(R.string.dashboard_side_menu_title),
-            sideMenuOptions = getSideMenuOptions(),
-            appVersion = dashboardInteractor.getAppVersion()
+            sideMenuOptions = getSideMenuOptions(changelogUrl = changelogUrl),
+            appVersion = dashboardInteractor.getAppVersion(),
+            changelogUrl = changelogUrl,
         )
     }
 
@@ -172,16 +177,27 @@ class DashboardViewModel(
                     }
                 }
             }
+
+            SideMenuItemType.CHANGELOG -> {
+                val changelogUrl = viewState.value.changelogUrl
+                if (changelogUrl != null) {
+                    setEffect {
+                        Effect.Navigation.OpenUrlExternally(
+                            url = changelogUrl.toUri()
+                        )
+                    }
+                }
+            }
         }
     }
 
-    private fun getSideMenuOptions(): List<SideMenuItemUi> {
+    private fun getSideMenuOptions(changelogUrl: String?): List<SideMenuItemUi> {
         return buildList {
             add(
                 SideMenuItemUi(
                     type = SideMenuItemType.CHANGE_PIN,
                     data = ListItemData(
-                        itemId = "changePinId",
+                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_change_pin_id),
                         mainContentData = ListItemMainContentData.Text(
                             text = resourceProvider.getString(R.string.dashboard_side_menu_change_pin)
                         ),
@@ -192,13 +208,13 @@ class DashboardViewModel(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     )
-                ),
+                )
             )
             add(
                 SideMenuItemUi(
                     type = SideMenuItemType.RETRIEVE_LOGS,
                     data = ListItemData(
-                        itemId = "retrieveLogsId",
+                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs_id),
                         mainContentData = ListItemMainContentData.Text(
                             text = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs)
                         ),
@@ -211,6 +227,25 @@ class DashboardViewModel(
                     )
                 )
             )
+            if (changelogUrl != null) {
+                add(
+                    SideMenuItemUi(
+                        type = SideMenuItemType.CHANGELOG,
+                        data = ListItemData(
+                            itemId = resourceProvider.getString(R.string.dashboard_side_menu_changelog_id),
+                            mainContentData = ListItemMainContentData.Text(
+                                text = resourceProvider.getString(R.string.dashboard_side_menu_changelog)
+                            ),
+                            leadingContentData = ListItemLeadingContentData.Icon(
+                                iconData = AppIcons.OpenInBrowser
+                            ),
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = AppIcons.KeyboardArrowRight
+                            )
+                        )
+                    )
+                )
+            }
         }
     }
 

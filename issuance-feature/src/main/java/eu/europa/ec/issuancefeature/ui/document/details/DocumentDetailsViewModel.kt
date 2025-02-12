@@ -17,7 +17,7 @@
 package eu.europa.ec.issuancefeature.ui.document.details
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.model.DocumentUi
+import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
@@ -45,7 +45,7 @@ data class State(
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
 
-    val document: DocumentUi? = null,
+    val documentDetailsUi: DocumentDetailsUi? = null,
     val title: String? = null,
     val issuerName: String? = null,
     val issuerLogo: URI? = null,
@@ -204,7 +204,7 @@ class DocumentDetailsViewModel(
     private fun getDocumentDetails(event: Event) {
         setState {
             copy(
-                isLoading = document == null,
+                isLoading = documentDetailsUi == null,
                 error = null
             )
         }
@@ -215,14 +215,14 @@ class DocumentDetailsViewModel(
             ).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
-                        val documentUi =
+                        val documentDetailsUi =
                             response.documentDetailsDomain.transformToDocumentDetailsUi()
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                document = documentUi,
-                                title = documentUi.documentName,
+                                documentDetailsUi = documentDetailsUi,
+                                title = documentDetailsUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
                                 issuerName = response.issuerName,
                                 issuerLogo = response.issuerLogo

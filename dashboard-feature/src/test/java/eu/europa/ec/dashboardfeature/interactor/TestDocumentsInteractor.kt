@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingPidUi
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
@@ -23,7 +24,6 @@ import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.FormatType
-import eu.europa.ec.dashboardfeature.controllers.FiltersController
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -60,7 +60,7 @@ class TestDocumentsInteractor {
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     @Mock
-    private lateinit var filtersController: FiltersController
+    private lateinit var filterValidator: FilterValidator
 
     private lateinit var interactor: DocumentsInteractor
 
@@ -76,7 +76,7 @@ class TestDocumentsInteractor {
         interactor = DocumentsInteractorImpl(
             resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
-            filtersController = filtersController,
+            filterValidator = filterValidator,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)

@@ -27,6 +27,9 @@ class ConfigLogicImpl : ConfigLogic {
 
     override val rqesConfig: EudiRQESUiConfig
         get() = RQESConfigImpl()
+
+    override val changelogUrl: String?
+        get() = null
 }
 
 private class DevEnvironmentConfig : EnvironmentConfig() {
