@@ -157,7 +157,7 @@ sealed class DocumentsBottomSheetContent {
 
 @KoinViewModel
 class DocumentsViewModel(
-    val interactor: DocumentsInteractor,
+    private val interactor: DocumentsInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
 ) : MviViewModel<Event, State, Effect>() {
