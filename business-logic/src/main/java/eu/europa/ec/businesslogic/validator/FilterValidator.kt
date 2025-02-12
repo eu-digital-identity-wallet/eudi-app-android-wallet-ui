@@ -121,7 +121,10 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
             }
         }
 
-        appliedFilters = filters.copy(filterGroups = mergedFilterGroups)
+        appliedFilters = filters.copy(
+            sortOrder = appliedFilters.sortOrder,
+            filterGroups = mergedFilterGroups
+        )
         this.initialList = filterableList
     }
 
