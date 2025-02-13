@@ -28,7 +28,7 @@ You can configure the *EudiWalletConfig* per flavor. You can find both implement
 
 ```Kotlin
     private companion object {
-        const val VCI_ISSUER_URL = "https://issuer.eudiw.dev/oidc"
+        const val VCI_ISSUER_URL = "https://issuer.eudiw.dev"
         const val VCI_CLIENT_ID = "wallet-demo"
         const val AUTHENTICATION_REQUIRED = false
     }
@@ -47,9 +47,9 @@ interface WalletCoreConfig {
 Same as the Verifier and Issuing APIs you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
 
 ```Kotlin
-_config = EudiWalletConfig.Builder(context)
-            .trustedReaderCertificates(R.raw.eudi_pid_issuer_ut)
-            .build()
+_config = EudiWalletConfig {
+   configureReaderTrustStore(context, R.raw.eudi_pid_issuer_ut)
+}
 ```
 
 The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
