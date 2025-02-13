@@ -99,9 +99,6 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
             replay = 1
         )
 
-
-    private var hasMoreThanDefaultFilterApplied: Boolean = false
-
     override fun initializeValidator(
         filters: Filters,
         filterableList: FilterableList,
@@ -186,7 +183,6 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
         // Remove if any selected filter
         snapshotFilters = Filters.emptyFilters()
         // Apply the default
-        hasMoreThanDefaultFilterApplied = false
         applyFilters()
     }
 
@@ -219,8 +215,12 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
             if (snapshotFilters.isNotEmpty) {
                 appliedFilters = snapshotFilters.copy()
                 snapshotFilters = Filters.emptyFilters()
-                hasMoreThanDefaultFilterApplied = true
             }
+
+            val hasMoreThanDefaultFilterApplied = appliedFilters.filterGroups
+                .flatMap { it.filters }
+                .filter { it.isDefault }
+                .any { !it.selected }
 
             val filteredList = appliedFilters.filterGroups
                 .fold(initialList) { currentList, group ->
