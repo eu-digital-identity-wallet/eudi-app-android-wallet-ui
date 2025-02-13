@@ -24,10 +24,8 @@ import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -75,7 +73,10 @@ interface FilterValidator {
     fun updateSortOrder(sortOrder: SortOrder)
 }
 
-class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : FilterValidator {
+class FilterValidatorImpl(
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO),
+    sharingStarted: SharingStarted = SharingStarted.WhileSubscribed(5000L),
+) : FilterValidator {
 
     // Filters
     private var appliedFilters: Filters = Filters.emptyFilters()
@@ -89,13 +90,12 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
     private lateinit var initialList: FilterableList
 
     // Flow
-    private val scope = CoroutineScope(Job() + dispatcher)
     private val emissionMutableFlow = MutableSharedFlow<FilterValidatorPartialState>()
     private val filterResultFlow: SharedFlow<FilterValidatorPartialState> = emissionMutableFlow
         .debounce(200L)
         .shareIn(
             scope,
-            SharingStarted.WhileSubscribed(5000L),
+            sharingStarted,
             replay = 1
         )
 
