@@ -573,6 +573,7 @@ class DocumentsInteractorImpl(
                         id = FilterIds.FILTER_SORT_DEFAULT,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
+                        isDefault = true,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
                             attributes.name.lowercase()
                         }
@@ -604,6 +605,7 @@ class DocumentsInteractorImpl(
                         id = FilterIds.FILTER_BY_PERIOD_DEFAULT,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
+                        isDefault = true,
                         filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
                             true // Get everything
                         }
@@ -668,7 +670,8 @@ class DocumentsInteractorImpl(
                     FilterItem(
                         id = FilterIds.FILTER_BY_STATE_VALID,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid),
-                        selected = true
+                        selected = true,
+                        isDefault = true,
                     ),
                     FilterItem(
                         id = FilterIds.FILTER_BY_STATE_EXPIRED,
@@ -700,7 +703,8 @@ class DocumentsInteractorImpl(
                     FilterItem(
                         id = category.id.toString(),
                         name = resourceProvider.getString(category.stringResId),
-                        selected = true
+                        selected = true,
+                        isDefault = true
                     )
                 }
             }
@@ -715,7 +719,8 @@ class DocumentsInteractorImpl(
                         FilterItem(
                             id = issuer,
                             name = issuer,
-                            selected = true
+                            selected = true,
+                            isDefault = true,
                         )
                     } else {
                         null
