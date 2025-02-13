@@ -97,7 +97,7 @@ Proximity
 
 ### Minimum device requirements
 
-- API level 26.
+- API level 28.
 
 ### Prerequisites
 
@@ -110,57 +110,56 @@ You will also need to download the Android Verifier app. More information can be
 1. Launch the application
 2. You will be presented with a welcome screen where you will be asked to create a PIN for future logins.
 
-### Issuance flow (Scoped)
+### Issuance flow (Scoped - Wallet initiated)
 
-1. Open the "Add document" screen or if it's the first time you open the app, you will be redirected there after you enter or set up your PIN.
-2. Pick "National ID".
-3. From the web view that appears select the "FormEU" option and tap submit.
-4. Fill in the form. Any data will do.
-5. You will be shown a success screen. Tap next.
-6. Your "National ID" is displayed. Tap "Continue".
-7. You are now on the "Dashboard" screen.
+1. Go to the "Dashboard" screen -> "Documents" tab and tap on the "+" icon (top-right of the screen) and select the "From list" option, or if it's the first time you open the app, you will be redirected there after you enter or set up your PIN.
+2. Pick "PID".
+3. From the web view that appears select the "Country Selection" option, then "FormEU" and tap submit.
+4. Fill in the form. Any data will do, but it is recommended to select a birth-date that is >18 years old, as it is required for some functionality of the app(e.g. RQES).
+5. You will be shown a success screen. Tap "Close".
+6. You are now on the "Dashboard" screen, and depending on if it was your first Document added on the Wallet, you will be either on the "Home" tab (if it was), or on the "Documents" tab. The flow is complete.
 
-### Issuance flow (Credential Offer)
+### Issuance flow (Credential Offer - Issuer initiated)
 
-1. Open the "Add document" screen or if it's the first time you open the app, you will be redirected there after you enter or set up your PIN.
-2. Tap "SCAN QR".
-3. Scan The QR Code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer_choice)
-4. Review the documents contained in the credential offer and tap "Issue".
-5. You will be shown a success screen. Tap "Continue".
-6. You are now on the "Dashboard" screen.
+1. Go to the "Dashboard" screen -> "Documents" tab and tap on the "+" icon (top-right of the screen) and select the "Scan QR" option.
+2. Scan The QR Code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer_choice)
+3. Review the documents contained in the credential offer and tap "Add".
+4. From the web view that appears select the "Country Selection" option, then "FormEU" and tap submit.
+5. Fill in the form. Any data will do, but it is recommended to select a birth-date that is >18 years old, as it is required for some functionality of the app(e.g. RQES).
+6. You will be shown a success screen. Tap "Close".
+7. You are back on the "Documents" tab (of the "Dashboard" screen). The flow is complete.
 
-While on the "Dashboard" screen you can tap "Add doc" and issue a new document, e.g. "Driving License".
-
-If you want to re-issue a document, you must delete it first by tapping on it in the "Dashboard" screen and tapping the delete icon in the "Document details" view.
+If you want to delete a document, you can do so by tapping on it in the "Documents" tab (of the "Dashboard" screen) and tapping the "Delete document" button in the "Document details" screen.
 
 ### Presentation (Online authentication/Same device) flow.
 
 1. Go to the browser application on your device and enter "https://verifier.eudiw.dev"
-2. Select scenario "PID Authentication"
-3. Expand the Person Identification Data (PID) card and select "attributes by" -> "Specific attributes" and "format" -> the format of your choice.
-4. Press next and then "Select Attributes"
-5. Pick the fields you want to share (e.g. "Family Name" and "Given Name")
-6. Review your presentation request and then click next.
-7. When asked to open the wallet app tap "Open".
-8. You will be returned to the app's "Request" screen. Tap "Share."
+2. Expand the Person Identification Data (PID) card and select "attributes by" -> "Specific attributes" and "format" -> the format of your choice.
+3. Press next and then "Select Attributes"
+4. Pick the fields you want to request from the Wallet (e.g. "Family Name" and "Given Name")
+5. Review your presentation request, click next and then tap on the "Open with your Wallet" button.
+6. When asked to open the wallet app tap "Open".
+7. You will be returned to the app's "Request" screen. Here you can select/deselect to share with the Verifier any of the attributes they request. You must have selected at least one attribute in order to proceed.
+8. Tap "Share."
 9. Enter the PIN you added in the initial steps.
-10. On success tap "Continue".
+10. On success tap "Close".
 11. A browser will open showing that the Verifier has accepted your request.
-12. Return to the app. You are back on the "Dashboard" screen, and the flow is complete.
+12. Return to the app. The flow is complete.
 
 ### Proximity flow
 
-1. The user logs in successfully to the EUDI Wallet app and views the dashboard.
-2. The user clicks the 'SHOW QR/TAP' button to display the QR code.
-3. The Relying Party scans the presented QR code.
-4. EUDI Wallet User can view the requested data set from the relying party.
-
-    1. The distinction between mandatory and optional data elements is depicted.
-    2. The requestor (i.e. relying party) of the data is depicted.
-    3. EUDI Wallet User may select additional optional attributes to be shared.
-5. EUDI Wallet User selects the option to share the attributes.
-6. EUDI Wallet authenticates to share data (quick PIN).
-7. User authorization is accepted - a corresponding message is displayed to the  EUDI Wallet User.
+1. Log in to the EUDI Wallet app.
+2. You are now on the "Home" tab (of the "Dashboard" screen).
+3. Tap on the 'Authenticate' button of the first informative card and a modal with 2 options is presented.
+4. Select the "In person" option.
+5. You will be requested to have your Bluetooth enabled (if it is not already enabled), and to allow permission to the app to use it (if you have not already done it).
+6. The Verifier scans the presented QR code.
+7. The app's "Request" screen will be loaded. Here you can select/deselect to share with the Verifier any of the attributes they request. You must have selected at least one attribute in order to proceed.
+8. Tap "Share."
+9. Enter the PIN you added in the initial steps.
+10. On success tap "Close".
+11. The Verifier will receive the data you chose to share with.
+12. You are back on the "Home" tab (of the "Dashboard" screen). The flow is complete.
 
 ## How to build - Quick start guide
 
