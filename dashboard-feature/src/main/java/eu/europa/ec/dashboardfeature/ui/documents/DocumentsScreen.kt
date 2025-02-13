@@ -40,13 +40,17 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -78,7 +82,6 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
@@ -413,12 +416,14 @@ private fun DocumentsSheetContent(
                         mutableStateOf(state.filtersUi.map { false }.toMutableStateList())
                     }
 
+                    var buttonsRowHeight by remember { mutableIntStateOf(0) }
+
                     Box {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .verticalScroll(rememberScrollState())
-                                .padding(bottom = SPACING_EXTRA_LARGE.dp * 2),
+                                .padding(bottom = with(LocalDensity.current) { buttonsRowHeight.toDp() }),
                             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                         ) {
                             DualSelectorButtons(state.sortOrder) {
@@ -447,23 +452,32 @@ private fun DocumentsSheetContent(
                                 .fillMaxWidth()
                                 .align(Alignment.BottomCenter)
                                 .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                                .onGloballyPositioned { coordinates ->
+                                    buttonsRowHeight = coordinates.size.height
+                                }
                                 .padding(top = SPACING_LARGE.dp),
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             WrapButton(
                                 modifier = Modifier.weight(1f),
-                                buttonConfig = ButtonConfig(type = ButtonType.SECONDARY, onClick = {
-                                    onEventSent(Event.OnFiltersReset)
-                                })
+                                buttonConfig = ButtonConfig(
+                                    type = ButtonType.SECONDARY,
+                                    onClick = {
+                                        onEventSent(Event.OnFiltersReset)
+                                    }
+                                )
                             ) {
                                 Text(text = stringResource(R.string.documents_screen_filters_reset))
                             }
                             HSpacer.Small()
                             WrapButton(
                                 modifier = Modifier.weight(1f),
-                                buttonConfig = ButtonConfig(type = ButtonType.PRIMARY, onClick = {
-                                    onEventSent(Event.OnFiltersApply)
-                                })
+                                buttonConfig = ButtonConfig(
+                                    type = ButtonType.PRIMARY,
+                                    onClick = {
+                                        onEventSent(Event.OnFiltersApply)
+                                    }
+                                )
                             ) {
                                 Text(text = stringResource(R.string.documents_screen_filters_apply))
                             }

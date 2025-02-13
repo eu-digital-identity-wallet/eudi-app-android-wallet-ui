@@ -32,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -121,6 +122,12 @@ fun RoundedBorderText(
     text: String,
     isSelected: Boolean,
 ) {
+    val contentColor = if (isSelected) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -130,13 +137,14 @@ fun RoundedBorderText(
             WrapIcon(
                 modifier = Modifier.padding(end = SPACING_SMALL.dp),
                 iconData = AppIcons.Check,
-                customTint = MaterialTheme.colorScheme.onSurface
+                customTint = contentColor
             )
         }
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurface
+            textAlign = TextAlign.Center,
+            color = contentColor
         )
     }
 }
