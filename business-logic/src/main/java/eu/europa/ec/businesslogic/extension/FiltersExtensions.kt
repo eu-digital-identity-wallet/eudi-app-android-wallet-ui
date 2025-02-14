@@ -23,7 +23,7 @@ internal fun <T, R : Comparable<R>> List<T>.sortByOrder(
     selector: (T) -> R?,
 ): List<T> {
     return when (sortOrder) {
-        SortOrder.ASCENDING -> sortedBy(selector)
-        SortOrder.DESCENDING -> sortedByDescending(selector)
+        is SortOrder.Ascending -> sortedBy(selector)
+        is SortOrder.Descending -> sortedByDescending(selector)
     }
 }
