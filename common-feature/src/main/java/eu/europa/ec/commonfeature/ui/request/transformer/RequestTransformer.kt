@@ -51,7 +51,9 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
 
         DocumentIdentifier.MdocPid, DocumentIdentifier.SdJwtPid -> listOf(
             "issuance_date",
+            "iat",
             "expiry_date",
+            "exp",
             "issuing_authority",
             "document_number",
             "administrative_number",
