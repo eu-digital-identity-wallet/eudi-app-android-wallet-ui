@@ -76,7 +76,7 @@ sealed class DocumentInteractorFilterPartialState {
         val documents: List<Pair<DocumentCategory, List<DocumentUi>>>,
         val filters: List<ExpandableListItemData>,
         val sortOrder: DualSelectorButton,
-        val hasMoreThanDefaultFilterApplied: Boolean,
+        val allDefaultFiltersAreSelected: Boolean,
     ) : DocumentInteractorFilterPartialState()
 
     data class FilterUpdateResult(
@@ -230,8 +230,8 @@ class DocumentsInteractorImpl(
             }
 
             val sortOrderUi = when (result.updatedFilters.sortOrder) {
-                SortOrder.ASCENDING -> DualSelectorButton.FIRST
-                SortOrder.DESCENDING -> DualSelectorButton.SECOND
+                is SortOrder.Ascending -> DualSelectorButton.FIRST
+                is SortOrder.Descending -> DualSelectorButton.SECOND
             }
 
             when (result) {
@@ -240,7 +240,7 @@ class DocumentsInteractorImpl(
                         documents = documentsUi,
                         filters = filtersUi,
                         sortOrder = sortOrderUi,
-                        hasMoreThanDefaultFilterApplied = result.hasMoreThanDefaultFilters
+                        allDefaultFiltersAreSelected = result.allDefaultFiltersAreSelected
                     )
                 }
 
@@ -261,7 +261,7 @@ class DocumentsInteractorImpl(
     )
 
     override fun updateLists(filterableList: FilterableList) =
-        filterValidator.updateLists(getFilters().sortOrder, filterableList)
+        filterValidator.updateLists(filterableList)
 
     override fun applySearch(query: String) = filterValidator.applySearch(query)
 
@@ -558,7 +558,8 @@ class DocumentsInteractorImpl(
                         filterGroup
                     }
                 }
-            }
+            },
+            sortOrder = filters.sortOrder
         )
     }
 
@@ -676,7 +677,8 @@ class DocumentsInteractorImpl(
                     FilterItem(
                         id = FilterIds.FILTER_BY_STATE_EXPIRED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
-                        selected = false
+                        selected = false,
+                        isDefault = false,
                     )
                 ),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
@@ -692,7 +694,7 @@ class DocumentsInteractorImpl(
                 }
             )
         ),
-        sortOrder = SortOrder.ASCENDING
+        sortOrder = SortOrder.Ascending(isDefault = true)
     )
 
     private fun addDocumentCategoryFilter(documents: FilterableList): List<FilterItem> {

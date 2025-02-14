@@ -29,7 +29,7 @@ data class Filters(
 
     companion object {
         fun emptyFilters(): Filters {
-            return Filters(filterGroups = emptyList(), SortOrder.ASCENDING)
+            return Filters(filterGroups = emptyList(), SortOrder.Ascending(isDefault = true))
         }
     }
 }
@@ -81,9 +81,11 @@ data object DefaultFilterAction : FilterAction() {
     }
 }
 
-enum class SortOrder {
-    ASCENDING,
-    DESCENDING
+sealed class SortOrder {
+    abstract val isDefault: Boolean
+
+    data class Ascending(override val isDefault: Boolean = false) : SortOrder()
+    data class Descending(override val isDefault: Boolean = false) : SortOrder()
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -110,7 +112,7 @@ data class FilterMultipleAction<T : FilterableAttributes>(val predicate: (T, Fil
 
 sealed class FilterAction {
     abstract fun applyFilter(
-        sortOrder: SortOrder = SortOrder.ASCENDING,
+        sortOrder: SortOrder = SortOrder.Ascending(isDefault = true),
         filterableItems: FilterableList,
         filter: FilterItem,
     ): FilterableList
