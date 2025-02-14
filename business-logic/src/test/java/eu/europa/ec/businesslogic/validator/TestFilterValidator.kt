@@ -1,13 +1,20 @@
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorImpl
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
-import eu.europa.ec.businesslogic.validator.sampleFilterableList
-import eu.europa.ec.businesslogic.validator.sampleFilters
+import eu.europa.ec.businesslogic.validator.filterItemsMultiple
+import eu.europa.ec.businesslogic.validator.filterItemsSingle
+import eu.europa.ec.businesslogic.validator.filterableList
+import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelection
+import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionAllSelected
+import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionNoSelection
+import eu.europa.ec.businesslogic.validator.filtersWithSingleSelection
+import eu.europa.ec.businesslogic.validator.model.FilterableList
+import eu.europa.ec.businesslogic.validator.model.SortOrder
+import eu.europa.ec.businesslogic.validator.multipleSelectionGroup
+import eu.europa.ec.businesslogic.validator.singleSelectionGroup
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,6 +22,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.junit.Rule
 import org.junit.Test
+import kotlin.test.assertEquals
 
 @ExperimentalCoroutinesApi
 class TestFilterValidator {
@@ -30,121 +38,230 @@ class TestFilterValidator {
         sharingStarted = SharingStarted.Eagerly
     )
 
-    // Case 1:
-    // 1. filterValidator.updateFilter emits:
-    // FilterValidatorPartialState.FilterUpdateResult with updated filters.
-    //
-    // Case 1 Expected Result:
-    // FilterUpdateResult state should be emitted with non-empty filters.
-
     @Test
-    fun `Given Case 1, When updateFilter is called, Then Case 1 Expected Result is returned`() =
+    fun `Given initial filters, When initializeValidator is called with applyFilters, Then FilterUpdateResult is emitted`() =
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
-                // Given: A filter group and filter ID to update
-                val filterGroupId = "group1"
-                val filterId = "filter1"
+                // Given
+                val expectedFilters = filtersWithSingleSelection
 
-                // When: Update filter is triggered
-                filterValidator.initializeValidator(sampleFilters, sampleFilterableList)
-                filterValidator.updateFilter(filterGroupId, filterId)
-
-                // Then: FilterUpdateResult is emitted with updated filters
-                val emittedState = awaitItem()
-                assertTrue(emittedState is FilterValidatorPartialState.FilterUpdateResult)
-                assertFalse(emittedState.updatedFilters.isEmpty)
-            }
-        }
-
-    // Case 2:
-    // 1. filterValidator.applyFilters emits:
-    // FilterValidatorPartialState.FilterListResult.FilterListEmptyResult when no items match.
-    //
-    // Case 2 Expected Result:
-    // FilterListEmptyResult state should be emitted with hasMoreThanDefaultFilters = false.
-
-    @Test
-    fun `Given Case 2, When applyFilters is called, Then Case 2 Expected Result is returned`() =
-        coroutineRule.runTest {
-            filterValidator.onFilterStateChange().runFlowTest {
-                // Given: No items match filters
+                // When
+                filterValidator.initializeValidator(expectedFilters, filterableList)
                 filterValidator.applyFilters()
 
-                // When: Filters are applied
-
-                // Then: Empty result state is emitted
-                val emittedState = awaitItem()
-                assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterListEmptyResult)
-                emittedState as FilterValidatorPartialState.FilterListResult.FilterListEmptyResult
-                assertFalse(emittedState.hasMoreThanDefaultFilters)
-            }
-        }
-
-    // Case 3:
-    // 1. filterValidator.applyFilters emits:
-    // FilterValidatorPartialState.FilterListResult.FilterApplyResult when items match.
-    //
-    // Case 3 Expected Result:
-    // FilterApplyResult state should be emitted with a non-empty list.
-
-    @Test
-    fun `Given Case 3, When applyFilters is called, Then Case 3 Expected Result is returned`() =
-        coroutineRule.runTest {
-            filterValidator.onFilterStateChange().runFlowTest {
-                // Given: A list with items matching filters
-                filterValidator.initializeValidator(sampleFilters, sampleFilterableList)
-
-                // When: Filters are applied
-                filterValidator.applyFilters()
-
-                // Then: A valid filtered list is emitted
+                // Then
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
-                assertFalse(emittedState.updatedFilters.isEmpty)
-                assertTrue((emittedState as FilterValidatorPartialState.FilterListResult.FilterApplyResult).filteredList.items.isNotEmpty())
+                assertEquals(emittedState.updatedFilters, expectedFilters)
             }
         }
 
-    // Case 4:
-    // 1. filterValidator.resetFilters emits:
-    // FilterValidatorPartialState.FilterListResult.FilterListEmptyResult with default filters.
-    //
-    // Case 4 Expected Result:
-    // Filters should be reset and FilterListEmptyResult should be emitted.
-
     @Test
-    fun `Given Case 4, When resetFilters is called, Then Case 4 Expected Result is returned`() =
+    fun `Given a selected filter to initialize, When updateList is called with applyFilters, Then FilterUpdateResult is emitted with correct result`() =
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
-                // Given: Filters have been modified
-                filterValidator.resetFilters()
+                // Given
+                filterValidator.initializeValidator(filtersWithSingleSelection, filterableList)
 
-                // Then: Default filters are restored
+                // When
+                filterValidator.updateLists(SortOrder.ASCENDING, FilterableList(emptyList()))
+                filterValidator.applyFilters()
+
+                // Then
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterListEmptyResult)
-                emittedState as FilterValidatorPartialState.FilterListResult.FilterListEmptyResult
-                assertFalse(emittedState.hasMoreThanDefaultFilters)
+                assertEquals(emittedState.updatedFilters, filtersWithSingleSelection)
             }
         }
 
-    // Case 5:
-    // 1. filterValidator.revertFilters emits:
-    // FilterValidatorPartialState.FilterUpdateResult with previous applied filters.
-    //
-    // Case 5 Expected Result:
-    // Filters should be reverted and previous state should be emitted.
-
     @Test
-    fun `Given Case 5, When revertFilters is called, Then Case 5 Expected Result is returned`() =
+    fun `Given a selected filter, When updateFilters is called, Then FilterUpdateResult is emitted with correct result`() =
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
-                // Given: Filters were previously applied
-                filterValidator.revertFilters()
+                // Given
+                filterValidator.initializeValidator(filtersWithSingleSelection, filterableList)
 
-                // Then: Previous filters are restored
+                // When
+                filterValidator.updateFilter(singleSelectionGroup.id, filterItemsSingle[2].id)
+
+                // Then
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterUpdateResult)
-                assertEquals(sampleFilters, emittedState.updatedFilters)
+                val updatedFilters = emittedState.updatedFilters.filterGroups.first()
+                assertTrue(updatedFilters.filters.first { it.id == filterItemsSingle[2].id }.selected)
+            }
+        }
+
+    @Test
+    fun `Given filters with zero selections, When applyFilters is called, Then FilterApplyResult is emitted`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                filterValidator.initializeValidator(
+                    filtersWithMultipleSelectionNoSelection,
+                    filterableList
+                )
+
+                // When
+                filterValidator.applyFilters()
+
+                // Then
+                val emittedState = awaitItem()
+                assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterListEmptyResult)
+            }
+        }
+
+    @Test
+    fun `Given modified filters, When resetFilters is called, Then filters reset to default state`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
+                filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[2].id)
+
+                // When
+
+                val emittedStates = mutableListOf<FilterValidatorPartialState>()
+                var latestState: FilterValidatorPartialState? = null
+                val times = 3
+
+                // Then
+                repeat(times) { iteration ->
+                    val emittedState = awaitItem()
+                    emittedStates.add(emittedState)
+                    latestState = emittedState
+                    when(iteration) {
+                        0 -> {
+                            filterValidator.applyFilters()
+                        }
+                        1 -> {
+                            filterValidator.resetFilters()
+                        }
+                    }
+                }
+                // Confirm we get emission from latest resetFilter execution
+                assertEquals(times, emittedStates.size)
+                assertTrue(latestState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
+                assertEquals(latestState?.updatedFilters, filtersWithMultipleSelection)
+            }
+        }
+
+    @Test
+    fun `Given modified snapshot filters, When revertFilter is called, Then filters reset to previous state`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
+                filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[2].id)
+
+                // When
+
+                val emittedStates = mutableListOf<FilterValidatorPartialState>()
+                var latestState: FilterValidatorPartialState? = null
+                val times = 2
+
+                // Then
+                repeat(times) {
+                    val emittedState = awaitItem()
+                    emittedStates.add(emittedState)
+                    latestState = emittedState
+                    filterValidator.revertFilters()
+                }
+                // Confirm we get emission from latest resetFilter execution
+                assertEquals(times, emittedStates.size)
+                assertTrue(latestState is FilterValidatorPartialState.FilterUpdateResult)
+                assertEquals(
+                    latestState?.updatedFilters?.filterGroups,
+                    filtersWithMultipleSelection.filterGroups)
+            }
+        }
+
+    @Test
+    fun `Given a different sort order, When updateSortOrder is called, Then FilterUpdateResult is emitted`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
+
+                // When
+                filterValidator.updateSortOrder(SortOrder.DESCENDING)
+
+                // Then
+                val emittedState = awaitItem()
+                assertTrue(emittedState is FilterValidatorPartialState.FilterUpdateResult)
+                assertTrue(emittedState.updatedFilters.sortOrder == SortOrder.DESCENDING)
+            }
+        }
+
+    @Test
+    fun `Given a modified filter, When applySearch is called, Then FilterUpdateResult is emitted respecting both filter and search`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
+
+
+
+                // When
+                val emittedStates = mutableListOf<FilterValidatorPartialState>()
+                var latestState: FilterValidatorPartialState? = null
+                val times = 4
+
+                // Then
+                repeat(times) { iteration ->
+                    val emittedState = awaitItem()
+                    emittedStates.add(emittedState)
+                    latestState = emittedState
+                    when(iteration) {
+                        0 -> {
+                            filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[3].id)
+                        }
+                        1 -> {
+                            filterValidator.applyFilters()
+                        }
+                        2 -> {
+                            filterValidator.applySearch("searchTag")
+                        }
+                    }
+                }
+
+                // Then
+                val emittedState = awaitItem()
+                assertEquals(times, emittedStates.size)
+            }
+        }
+
+    @Test
+    fun `Given a search query, When applySearch is called, Then FilterApplyResult is emitted`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                filterValidator.initializeValidator(filtersWithMultipleSelectionAllSelected, filterableList)
+
+                // When
+                filterValidator.applySearch("searchTag")
+
+                // Then
+                val emittedState = awaitItem()
+                assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
+                emittedState as FilterValidatorPartialState.FilterListResult.FilterApplyResult
+                assertEquals(emittedState.filteredList.items.size, 2)
+            }
+        }
+
+    @Test
+    fun `Given an invalid search query, When applySearch is called, Then FilterListEmptyResult is emitted`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                filterValidator.initializeValidator(filtersWithMultipleSelectionAllSelected, filterableList)
+
+                // When
+                filterValidator.applySearch("invalid_search")
+
+                // Then
+                val emittedState = awaitItem()
+                assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterListEmptyResult)
             }
         }
 }
