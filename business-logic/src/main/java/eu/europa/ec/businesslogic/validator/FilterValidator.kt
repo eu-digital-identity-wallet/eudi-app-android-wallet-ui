@@ -119,6 +119,7 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
         }
 
         appliedFilters = filters.copy(
+            sortOrder = if (appliedFilters.isEmpty) filters.sortOrder else appliedFilters.sortOrder,
             filterGroups = mergedFilterGroups
         )
         this.initialList = filterableList
