@@ -574,7 +574,6 @@ class DocumentsInteractorImpl(
                         id = FilterIds.FILTER_SORT_DEFAULT,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
-                        defaultSelected = true,
                         isDefault = true,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, String> { attributes ->
                             attributes.name.lowercase()
@@ -607,7 +606,6 @@ class DocumentsInteractorImpl(
                         id = FilterIds.FILTER_BY_PERIOD_DEFAULT,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
-                        defaultSelected = true,
                         isDefault = true,
                         filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { _, _ ->
                             true // Get everything
@@ -674,15 +672,13 @@ class DocumentsInteractorImpl(
                         id = FilterIds.FILTER_BY_STATE_VALID,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid),
                         selected = true,
-                        defaultSelected = true,
                         isDefault = true,
                     ),
                     FilterItem(
                         id = FilterIds.FILTER_BY_STATE_EXPIRED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
                         selected = false,
-                        defaultSelected = false,
-                        isDefault = true
+                        isDefault = false,
                     )
                 ),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
@@ -710,7 +706,6 @@ class DocumentsInteractorImpl(
                         id = category.id.toString(),
                         name = resourceProvider.getString(category.stringResId),
                         selected = true,
-                        defaultSelected = true,
                         isDefault = true
                     )
                 }
@@ -727,7 +722,6 @@ class DocumentsInteractorImpl(
                             id = issuer,
                             name = issuer,
                             selected = true,
-                            defaultSelected = true,
                             isDefault = true,
                         )
                     } else {

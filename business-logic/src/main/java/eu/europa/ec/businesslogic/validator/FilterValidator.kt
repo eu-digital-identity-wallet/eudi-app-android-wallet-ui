@@ -216,10 +216,25 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
                 snapshotFilters = Filters.emptyFilters()
             }
 
-            val allDefaultAreSelected = appliedFilters.filterGroups
-                .flatMap { it.filters }
-                .filter { it.isDefault }
-                .all { it.selected == it.defaultSelected } && appliedFilters.sortOrder.isDefault
+            // Flatten all filters from all filter groups into a single list
+            val allFilters = appliedFilters.filterGroups.flatMap { it.filters }
+
+            // Check if all selected filters are default filters
+            val allSelectedAreDefault = allFilters
+                .filter { it.selected }
+                .all { it.isDefault }
+
+            // Check if all unselected filters are NOT default filters
+            val allUnselectedAreNotDefault = allFilters
+                .filter { !it.selected }
+                .all { !it.isDefault }
+
+            // Check if the sort order is the default one
+            val isDefaultSortOrder = appliedFilters.sortOrder.isDefault
+
+            // Combine the conditions to determine if exactly the default filters and sort order are applied
+            val allDefaultAreSelected =
+                allSelectedAreDefault && allUnselectedAreNotDefault && isDefaultSortOrder
 
             val filteredList = appliedFilters.filterGroups
                 .fold(initialList) { currentList, group ->
