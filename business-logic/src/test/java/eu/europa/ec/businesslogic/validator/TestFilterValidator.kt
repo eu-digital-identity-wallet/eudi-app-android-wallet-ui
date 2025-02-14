@@ -130,10 +130,11 @@ class TestFilterValidator {
                     val emittedState = awaitItem()
                     emittedStates.add(emittedState)
                     latestState = emittedState
-                    when(iteration) {
+                    when (iteration) {
                         0 -> {
                             filterValidator.applyFilters()
                         }
+
                         1 -> {
                             filterValidator.resetFilters()
                         }
@@ -172,7 +173,8 @@ class TestFilterValidator {
                 assertTrue(latestState is FilterValidatorPartialState.FilterUpdateResult)
                 assertEquals(
                     latestState?.updatedFilters?.filterGroups,
-                    filtersWithMultipleSelection.filterGroups)
+                    filtersWithMultipleSelection.filterGroups
+                )
             }
         }
 
@@ -199,8 +201,8 @@ class TestFilterValidator {
             filterValidator.onFilterStateChange().runFlowTest {
                 // Given
                 filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
-
-
+                filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[3].id)
+                filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[4].id)
 
                 // When
                 val emittedStates = mutableListOf<FilterValidatorPartialState>()
@@ -212,22 +214,24 @@ class TestFilterValidator {
                     val emittedState = awaitItem()
                     emittedStates.add(emittedState)
                     latestState = emittedState
-                    when(iteration) {
-                        0 -> {
-                            filterValidator.updateFilter(multipleSelectionGroup.id, filterItemsMultiple[3].id)
-                        }
-                        1 -> {
+                    when (iteration) {
+                        0, 1 -> {
                             filterValidator.applyFilters()
                         }
+
                         2 -> {
-                            filterValidator.applySearch("searchTag")
+                            filterValidator.applySearch("search text")
                         }
                     }
                 }
 
                 // Then
-                val emittedState = awaitItem()
                 assertEquals(times, emittedStates.size)
+                assertTrue(latestState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
+                assertEquals(
+                    (latestState as FilterValidatorPartialState.FilterListResult.FilterApplyResult).filteredList.items.size,
+                    1
+                )
             }
         }
 
@@ -236,16 +240,19 @@ class TestFilterValidator {
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
                 // Given
-                filterValidator.initializeValidator(filtersWithMultipleSelectionAllSelected, filterableList)
+                filterValidator.initializeValidator(
+                    filtersWithMultipleSelectionAllSelected,
+                    filterableList
+                )
 
                 // When
-                filterValidator.applySearch("searchTag")
+                filterValidator.applySearch("secondary text")
 
                 // Then
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
                 emittedState as FilterValidatorPartialState.FilterListResult.FilterApplyResult
-                assertEquals(emittedState.filteredList.items.size, 2)
+                assertEquals(emittedState.filteredList.items.size, 1)
             }
         }
 
@@ -254,7 +261,10 @@ class TestFilterValidator {
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
                 // Given
-                filterValidator.initializeValidator(filtersWithMultipleSelectionAllSelected, filterableList)
+                filterValidator.initializeValidator(
+                    filtersWithMultipleSelectionAllSelected,
+                    filterableList
+                )
 
                 // When
                 filterValidator.applySearch("invalid_search")

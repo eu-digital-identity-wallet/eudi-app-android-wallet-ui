@@ -59,7 +59,7 @@ val filterItemsMultiple = listOf(
     FilterItem(id = "2", name = "mDL", selected = true),
     FilterItem(id = "3", name = "Age Verification", selected = true),
     FilterItem(id = "4", name = "Search Test", selected = false),
-    FilterItem(id = "4", name = "NO OP", selected = false),
+    FilterItem(id = "5", name = "NO OP", selected = false),
 )
 
 val filterItemsMultipleNoSelections = listOf(
@@ -67,7 +67,7 @@ val filterItemsMultipleNoSelections = listOf(
     FilterItem(id = "2", name = "mDL", selected = false),
     FilterItem(id = "3", name = "Age Verification", selected = false),
     FilterItem(id = "4", name = "Search Test", selected = false),
-    FilterItem(id = "4", name = "NO OP", selected = false)
+    FilterItem(id = "5", name = "NO OP", selected = false)
 )
 
 val filterItemsMultipleAllSelected = listOf(
@@ -75,7 +75,7 @@ val filterItemsMultipleAllSelected = listOf(
     FilterItem(id = "2", name = "mDL", selected = true),
     FilterItem(id = "3", name = "Age Verification", selected = true),
     FilterItem(id = "4", name = "Search Test", selected = true),
-    FilterItem(id = "4", name = "NO OP", selected = true)
+    FilterItem(id = "5", name = "NO OP", selected = true)
 )
 
 val singleSelectionGroup = FilterGroup.SingleSelectionFilterGroup(
@@ -159,11 +159,11 @@ val filterableList = FilterableList(
         ),
         FilterableItem(
             payload = TestPayload("Item 6"),
-            attributes = TestAttributes(searchTags = listOf("searchTag"), name = "Search Test")
+            attributes = TestAttributes(searchTags = listOf("search text", "secondary text"), name = "Search Test")
         ),
         FilterableItem(
             payload = TestPayload("Item 7"),
-            attributes = TestAttributes(searchTags = listOf("searchTag"), name = "NO OP")
+            attributes = TestAttributes(searchTags = listOf("no op"), name = "NO OP")
         )
     )
 )
