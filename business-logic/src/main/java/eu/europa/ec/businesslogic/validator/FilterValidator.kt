@@ -40,16 +40,16 @@ sealed interface FilterValidatorPartialState {
     val updatedFilters: Filters
 
     sealed interface FilterListResult : FilterValidatorPartialState {
-        val hasMoreThanDefaultFilters: Boolean
+        val allDefaultFiltersAreSelected: Boolean
 
         data class FilterListEmptyResult(
             override val updatedFilters: Filters,
-            override val hasMoreThanDefaultFilters: Boolean,
+            override val allDefaultFiltersAreSelected: Boolean,
         ) : FilterListResult
 
         data class FilterApplyResult(
             val filteredList: FilterableList,
-            override val hasMoreThanDefaultFilters: Boolean,
+            override val allDefaultFiltersAreSelected: Boolean,
             override val updatedFilters: Filters,
         ) : FilterListResult
     }
@@ -66,7 +66,7 @@ interface FilterValidator {
         filterableList: FilterableList,
     )
 
-    fun updateLists(sortOrder: SortOrder, filterableList: FilterableList)
+    fun updateLists(filterableList: FilterableList)
     fun applyFilters()
     fun applySearch(query: String)
     fun resetFilters()
@@ -119,13 +119,12 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
         }
 
         appliedFilters = filters.copy(
-            sortOrder = appliedFilters.sortOrder,
             filterGroups = mergedFilterGroups
         )
         this.initialList = filterableList
     }
 
-    override fun updateLists(sortOrder: SortOrder, filterableList: FilterableList) {
+    override fun updateLists(filterableList: FilterableList) {
         this.initialList = filterableList
     }
 
@@ -217,10 +216,10 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
                 snapshotFilters = Filters.emptyFilters()
             }
 
-            val hasMoreThanDefaultFilterApplied = appliedFilters.filterGroups
+            val allDefaultAreSelected = appliedFilters.filterGroups
                 .flatMap { it.filters }
                 .filter { it.isDefault }
-                .any { !it.selected }
+                .all { it.selected == it.defaultSelected } && appliedFilters.sortOrder.isDefault
 
             val filteredList = appliedFilters.filterGroups
                 .fold(initialList) { currentList, group ->
@@ -241,14 +240,14 @@ class FilterValidatorImpl(dispatcher: CoroutineDispatcher = Dispatchers.IO) : Fi
 
             val resultState = if (filteredList.items.isEmpty()) {
                 FilterValidatorPartialState.FilterListResult.FilterListEmptyResult(
-                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied,
+                    allDefaultFiltersAreSelected = allDefaultAreSelected,
                     updatedFilters = appliedFilters
                 )
             } else {
                 FilterValidatorPartialState.FilterListResult.FilterApplyResult(
                     filteredList = filteredList,
                     updatedFilters = appliedFilters,
-                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
+                    allDefaultFiltersAreSelected = allDefaultAreSelected
                 )
             }
 
