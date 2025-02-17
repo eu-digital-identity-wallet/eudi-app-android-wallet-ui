@@ -12,8 +12,15 @@ import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionSize4
 import eu.europa.ec.businesslogic.validator.filtersWithSingleSelection
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import eu.europa.ec.businesslogic.validator.multipleSelectionGroup
-import eu.europa.ec.businesslogic.validator.singleSelectionGroup
+import eu.europa.ec.businesslogic.validator.util.filterItemsMultiple
+import eu.europa.ec.businesslogic.validator.util.filterItemsSingle
+import eu.europa.ec.businesslogic.validator.util.filterableList
+import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelection
+import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelectionAllSelected
+import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelectionNoSelection
+import eu.europa.ec.businesslogic.validator.util.filtersWithSingleSelection
+import eu.europa.ec.businesslogic.validator.util.multipleSelectionGroup
+import eu.europa.ec.businesslogic.validator.util.singleSelectionGroup
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule

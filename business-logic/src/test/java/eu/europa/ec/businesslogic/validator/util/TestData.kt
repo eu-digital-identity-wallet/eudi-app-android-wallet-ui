@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.validator
+package eu.europa.ec.businesslogic.validator.util
 
 import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
@@ -26,8 +26,6 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-
-val emptyFilters = Filters.emptyFilters()
 
 val filterItemsSingle = listOf(
     FilterItem(
