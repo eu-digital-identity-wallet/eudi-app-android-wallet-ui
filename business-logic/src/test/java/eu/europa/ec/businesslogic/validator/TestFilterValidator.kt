@@ -7,6 +7,8 @@ import eu.europa.ec.businesslogic.validator.filterableList
 import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelection
 import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionAllSelected
 import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionNoSelection
+import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionSize3
+import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionSize4
 import eu.europa.ec.businesslogic.validator.filtersWithSingleSelection
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.SortOrder
@@ -53,6 +55,52 @@ class TestFilterValidator {
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
                 assertEquals(emittedState.updatedFilters, expectedFilters)
+            }
+        }
+
+    @Test
+    fun `Given initial filters, When initializeValidator is called twice with same appliedFilters, Then FilterUpdateResult is emitted with merged correct`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val expectedFilters = filtersWithSingleSelection
+
+                // When
+                filterValidator.initializeValidator(expectedFilters, filterableList)
+                filterValidator.initializeValidator(expectedFilters, filterableList)
+                filterValidator.applyFilters()
+
+                // Then
+                val emittedState = awaitItem()
+                assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
+                assertEquals(emittedState.updatedFilters, expectedFilters)
+            }
+        }
+
+    @Test
+    fun `Given initial filters, When initializeValidator is called twice with different applyFilters, Then FilterUpdateResult is emitted with merged correct`() =
+        coroutineRule.runTest {
+            filterValidator.onFilterStateChange().runFlowTest {
+                // Given
+                val initialFilters = filtersWithMultipleSelectionSize3
+                val updatedFilters = filtersWithMultipleSelectionSize4
+
+                // When
+                filterValidator.initializeValidator(initialFilters, filterableList)
+                filterValidator.initializeValidator(updatedFilters, filterableList)
+                filterValidator.applyFilters()
+
+                // Then
+                val emittedState = awaitItem()
+                assertTrue(emittedState is FilterValidatorPartialState.FilterListResult.FilterApplyResult)
+                assertEquals(
+                    emittedState.updatedFilters.filterGroups.first().filters.size,
+                    updatedFilters.filterGroups.first().filters.size
+                )
+                assertEquals(
+                    emittedState.updatedFilters.filterGroups.first().filters.first().selected,
+                    initialFilters.filterGroups.first().filters.first().selected
+                )
             }
         }
 

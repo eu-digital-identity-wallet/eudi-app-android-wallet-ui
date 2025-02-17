@@ -54,6 +54,19 @@ val filterItemsSingle = listOf(
     )
 )
 
+val filterItemsMultipleSize3 = listOf(
+    FilterItem(id = "1", name = "PID", selected = false),
+    FilterItem(id = "2", name = "mDL", selected = true),
+    FilterItem(id = "3", name = "Age Verification", selected = true),
+)
+
+val filterItemsMultipleSize4 = listOf(
+    FilterItem(id = "1", name = "PID", selected = true),
+    FilterItem(id = "2", name = "mDL", selected = true),
+    FilterItem(id = "3", name = "Age Verification", selected = true),
+    FilterItem(id = "4", name = "New Filter", selected = true),
+)
+
 val filterItemsMultiple = listOf(
     FilterItem(id = "1", name = "PID", selected = false),
     FilterItem(id = "2", name = "mDL", selected = true),
@@ -82,6 +95,24 @@ val singleSelectionGroup = FilterGroup.SingleSelectionFilterGroup(
     id = "single_filter",
     name = "Document Selection",
     filters = filterItemsSingle,
+)
+
+val multipleSelectionGroupSize3 = FilterGroup.MultipleSelectionFilterGroup(
+    id = "multi_filter",
+    name = "Multi Document Selection",
+    filters = filterItemsMultipleSize3,
+    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterItem ->
+        filterItem.name == attributes.name
+    }
+)
+
+val multipleSelectionGroupSize4 = FilterGroup.MultipleSelectionFilterGroup(
+    id = "multi_filter",
+    name = "Multi Document Selection",
+    filters = filterItemsMultipleSize4,
+    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterItem ->
+        filterItem.name == attributes.name
+    }
 )
 
 val multipleSelectionGroup = FilterGroup.MultipleSelectionFilterGroup(
@@ -114,6 +145,16 @@ val multipleSelectionGroupAllSelected = FilterGroup.MultipleSelectionFilterGroup
 val filtersWithSingleSelection = Filters(
     filterGroups = listOf(singleSelectionGroup),
     sortOrder = SortOrder.Ascending(isDefault = true)
+)
+
+val filtersWithMultipleSelectionSize3 = Filters(
+    filterGroups = listOf(multipleSelectionGroupSize3),
+    sortOrder = SortOrder.Descending()
+)
+
+val filtersWithMultipleSelectionSize4 = Filters(
+    filterGroups = listOf(multipleSelectionGroupSize4),
+    sortOrder = SortOrder.Descending()
 )
 
 val filtersWithMultipleSelection = Filters(
