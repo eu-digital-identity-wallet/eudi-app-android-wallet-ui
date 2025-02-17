@@ -38,16 +38,16 @@ sealed interface FilterValidatorPartialState {
     val updatedFilters: Filters
 
     sealed interface FilterListResult : FilterValidatorPartialState {
-        val hasMoreThanDefaultFilters: Boolean
+        val allDefaultFiltersAreSelected: Boolean
 
         data class FilterListEmptyResult(
             override val updatedFilters: Filters,
-            override val hasMoreThanDefaultFilters: Boolean,
+            override val allDefaultFiltersAreSelected: Boolean,
         ) : FilterListResult
 
         data class FilterApplyResult(
             val filteredList: FilterableList,
-            override val hasMoreThanDefaultFilters: Boolean,
+            override val allDefaultFiltersAreSelected: Boolean,
             override val updatedFilters: Filters,
         ) : FilterListResult
     }
@@ -64,7 +64,7 @@ interface FilterValidator {
         filterableList: FilterableList,
     )
 
-    fun updateLists(sortOrder: SortOrder, filterableList: FilterableList)
+    fun updateLists(filterableList: FilterableList)
     fun applyFilters()
     fun applySearch(query: String)
     fun resetFilters()
@@ -99,9 +99,6 @@ class FilterValidatorImpl(
             replay = 1
         )
 
-
-    private var hasMoreThanDefaultFilterApplied: Boolean = false
-
     override fun initializeValidator(
         filters: Filters,
         filterableList: FilterableList,
@@ -122,13 +119,13 @@ class FilterValidatorImpl(
         }
 
         appliedFilters = filters.copy(
-            sortOrder = appliedFilters.sortOrder,
+            sortOrder = if (appliedFilters.isEmpty) filters.sortOrder else appliedFilters.sortOrder,
             filterGroups = mergedFilterGroups
         )
         this.initialList = filterableList
     }
 
-    override fun updateLists(sortOrder: SortOrder, filterableList: FilterableList) {
+    override fun updateLists(filterableList: FilterableList) {
         this.initialList = filterableList
     }
 
@@ -186,7 +183,6 @@ class FilterValidatorImpl(
         // Remove if any selected filter
         snapshotFilters = Filters.emptyFilters()
         // Apply the default
-        hasMoreThanDefaultFilterApplied = false
         applyFilters()
     }
 
@@ -219,8 +215,27 @@ class FilterValidatorImpl(
             if (snapshotFilters.isNotEmpty) {
                 appliedFilters = snapshotFilters.copy()
                 snapshotFilters = Filters.emptyFilters()
-                hasMoreThanDefaultFilterApplied = true
             }
+
+            // Flatten all filters from all filter groups into a single list
+            val allFilters = appliedFilters.filterGroups.flatMap { it.filters }
+
+            // Check if all selected filters are default filters
+            val allSelectedAreDefault = allFilters
+                .filter { it.selected }
+                .all { it.isDefault }
+
+            // Check if all unselected filters are NOT default filters
+            val allUnselectedAreNotDefault = allFilters
+                .filter { !it.selected }
+                .all { !it.isDefault }
+
+            // Check if the sort order is the default one
+            val isDefaultSortOrder = appliedFilters.sortOrder.isDefault
+
+            // Combine the conditions to determine if exactly the default filters and sort order are applied
+            val allDefaultAreSelected =
+                allSelectedAreDefault && allUnselectedAreNotDefault && isDefaultSortOrder
 
             val filteredList = appliedFilters.filterGroups
                 .fold(initialList) { currentList, group ->
@@ -241,14 +256,14 @@ class FilterValidatorImpl(
 
             val resultState = if (filteredList.items.isEmpty()) {
                 FilterValidatorPartialState.FilterListResult.FilterListEmptyResult(
-                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied,
+                    allDefaultFiltersAreSelected = allDefaultAreSelected,
                     updatedFilters = appliedFilters
                 )
             } else {
                 FilterValidatorPartialState.FilterListResult.FilterApplyResult(
                     filteredList = filteredList,
                     updatedFilters = appliedFilters,
-                    hasMoreThanDefaultFilters = hasMoreThanDefaultFilterApplied
+                    allDefaultFiltersAreSelected = allDefaultAreSelected
                 )
             }
 

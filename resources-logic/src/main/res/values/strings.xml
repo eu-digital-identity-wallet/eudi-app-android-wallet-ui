@@ -41,7 +41,6 @@
     <string name="generic_bottom_sheet_delete_subtitle">This document will be permanently deleted from your wallet and may affect access to services.</string>
     <string name="generic_bottom_sheet_delete_primary_button_text">Delete</string>
     <string name="generic_bottom_sheet_delete_secondary_button_text">Cancel</string>
-    <string name="generic_search_bar_placeholder_text">Search documents</string>
 
     <!-- Content Description -->
     <string name="content_description_image_or_placeholder_icon">Image or placeholder icon</string>
@@ -227,7 +226,7 @@
 
     <!-- Documents Screen -->
     <string name="documents_screen_title">Documents</string>
-    <string name="documents_screen_search_label">Search documents</string>
+    <string name="documents_screen_search_label">Search Documents</string>
     <string name="documents_screen_search_no_results">No documents match your search. Try changing your search query or filters.</string>
     <string name="documents_screen_search_no_results_id">noResultsId</string>
     <string name="documents_screen_add_document_title">Add document</string>
@@ -242,13 +241,13 @@
     <string name="documents_screen_filters_sort_default">Default</string>
     <string name="documents_screen_filters_sort_date_issued">Date Issued</string>
     <string name="documents_screen_filters_sort_expiry_date">Expiry Date</string>
-    <string name="documents_screen_filters_filter_by_issuer">Filter by issuer</string>
-    <string name="documents_screen_filters_filter_by_category">Filter by category</string>
+    <string name="documents_screen_filters_filter_by_issuer">Filter by Issuer</string>
+    <string name="documents_screen_filters_filter_by_category">Filter by Category</string>
     <string name="documents_screen_filters_filter_by_all">All</string>
-    <string name="documents_screen_filters_filter_by_state">Filter by state</string>
+    <string name="documents_screen_filters_filter_by_state">Filter by State</string>
     <string name="documents_screen_filters_filter_by_state_valid">Valid</string>
     <string name="documents_screen_filters_filter_by_state_expired">Expired</string>
-    <string name="documents_screen_filters_filter_by_expiry_period">Filter by expiry period</string>
+    <string name="documents_screen_filters_filter_by_expiry_period">Filter by Expiry Period</string>
     <string name="documents_screen_filters_filter_by_expiry_period_1">Next 7 days</string>
     <string name="documents_screen_filters_filter_by_expiry_period_2">Next 30 days</string>
     <string name="documents_screen_filters_filter_by_expiry_period_3">Beyond 30 days</string>

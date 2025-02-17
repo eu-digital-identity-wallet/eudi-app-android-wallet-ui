@@ -287,7 +287,7 @@ class DocumentsViewModel(
                     is DocumentInteractorFilterPartialState.FilterApplyResult -> {
                         setState {
                             copy(
-                                isFilteringActive = result.hasMoreThanDefaultFilterApplied,
+                                isFilteringActive = !result.allDefaultFiltersAreSelected,
                                 documentsUi = result.documents,
                                 showNoResultsFound = result.documents.isEmpty(),
                                 filtersUi = result.filters,
@@ -631,11 +631,6 @@ class DocumentsViewModel(
 
     private fun resetFilters() {
         interactor.resetFilters()
-        setState {
-            copy(
-                isFilteringActive = false,
-            )
-        }
         hideBottomSheet()
     }
 
@@ -655,8 +650,8 @@ class DocumentsViewModel(
 
     private fun sortOrderChanged(orderButton: DualSelectorButton) {
         val sortOrder = when (orderButton) {
-            DualSelectorButton.FIRST -> SortOrder.ASCENDING
-            DualSelectorButton.SECOND -> SortOrder.DESCENDING
+            DualSelectorButton.FIRST -> SortOrder.Ascending(isDefault = true)
+            DualSelectorButton.SECOND -> SortOrder.Descending()
         }
         setState { copy(shouldRevertFilterChanges = true) }
         interactor.updateSortOrder(sortOrder)
