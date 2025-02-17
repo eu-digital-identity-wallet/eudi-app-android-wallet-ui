@@ -64,7 +64,7 @@ class TestFilterValidator {
                 filterValidator.initializeValidator(filtersWithSingleSelection, filterableList)
 
                 // When
-                filterValidator.updateLists(SortOrder.ASCENDING, FilterableList(emptyList()))
+                filterValidator.updateLists(FilterableList(emptyList()))
                 filterValidator.applyFilters()
 
                 // Then
@@ -183,15 +183,15 @@ class TestFilterValidator {
         coroutineRule.runTest {
             filterValidator.onFilterStateChange().runFlowTest {
                 // Given
-                filterValidator.initializeValidator(filtersWithMultipleSelection, filterableList)
+                filterValidator.initializeValidator(filtersWithSingleSelection, filterableList)
 
                 // When
-                filterValidator.updateSortOrder(SortOrder.DESCENDING)
+                filterValidator.updateSortOrder(SortOrder.Descending())
 
                 // Then
                 val emittedState = awaitItem()
                 assertTrue(emittedState is FilterValidatorPartialState.FilterUpdateResult)
-                assertTrue(emittedState.updatedFilters.sortOrder == SortOrder.DESCENDING)
+                assertTrue(emittedState.updatedFilters.sortOrder == SortOrder.Descending())
             }
         }
 

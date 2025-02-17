@@ -17,13 +17,25 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.validator.FilterValidator
+import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
+import eu.europa.ec.businesslogic.validator.model.FilterGroup
+import eu.europa.ec.businesslogic.validator.model.FilterItem
+import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
+import eu.europa.ec.businesslogic.validator.model.FilterableItem
+import eu.europa.ec.businesslogic.validator.model.FilterableList
+import eu.europa.ec.businesslogic.validator.model.Filters
+import eu.europa.ec.businesslogic.validator.model.SortOrder
+import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
 import eu.europa.ec.commonfeature.util.TestsData.mockedPendingPidUi
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DocumentCategory
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -36,6 +48,8 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.After
@@ -47,6 +61,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import kotlin.test.assertTrue
 
 class TestDocumentsInteractor {
 
@@ -450,6 +465,81 @@ class TestDocumentsInteractor {
             }
         }
 
+    // Case 7:
+    // Empty state was returned when onFilterStateChange is collected.
+
+    // Case 7 Expected Result:
+    // DocumentInteractorFilterPartialState.FilterApplyResult state with empty documents.
+    @Test
+    fun `Given Case 7, When onFilterStateChange is called, Then Case 7 Expected Result is returned`() =
+        coroutineRule.runTest {
+            mockOnFilterChangedEvent(
+                FilterValidatorPartialState.FilterListResult.FilterListEmptyResult(
+                    updatedFilters = Filters.emptyFilters(), allDefaultFiltersAreSelected = false
+                )
+            )
+
+            interactor.onFilterStateChange().runFlowTest {
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
+                assertTrue(state.documents.isEmpty())
+            }
+        }
+
+    // Case 8:
+    // Valid state with documents was returned when onFilterStateChange is collected.
+
+    // Case 8 Expected Result:
+    // DocumentInteractorFilterPartialState.FilterApplyResult state with correct data.
+    @Test
+    fun `Given Case 8, When onFilterStateChange is called, Then Case 8 Expected Result is returned`() =
+        coroutineRule.runTest {
+            mockOnFilterChangedEvent(
+                FilterValidatorPartialState.FilterListResult.FilterApplyResult(
+                    filteredList = FilterableList(items = listOf(mockFilterableItem)),
+                    allDefaultFiltersAreSelected = false,
+                    updatedFilters = Filters.emptyFilters()
+                )
+            )
+
+            interactor.onFilterStateChange().runFlowTest {
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
+                assertEquals(state.documents.first().second.first().documentCategory.id, 1)
+                assertEquals(
+                    (state.documents.first().second.first().uiData.mainContentData as ListItemMainContentData.Text).text,
+                    "test"
+                )
+            }
+        }
+
+    // Case 9:
+    // Updated filters state was returned when onFilterStateChange is collected.
+
+    // Case 9 Expected Result:
+    // DocumentInteractorFilterPartialState.FilterUpdateResult state with updated ui filters.
+    @Test
+    fun `Given Case 9, When onFilterStateChange is called, Then Case 9 Expected Result is returned`() =
+        coroutineRule.runTest {
+            mockOnFilterChangedEvent(
+                FilterValidatorPartialState.FilterUpdateResult(updatedFilters = mockFilters)
+            )
+
+            interactor.onFilterStateChange().runFlowTest {
+                val state = awaitItem()
+                assertTrue(state is DocumentInteractorFilterPartialState.FilterUpdateResult)
+                assertEquals(state.filters.size, mockFilters.filterGroups.size)
+                assertEquals(
+                    (state.filters.first().collapsed.mainContentData as ListItemMainContentData.Text).text,
+                    mockFilters.filterGroups.first().name
+                )
+                assertEquals(
+                    state.filters.first().expanded.size,
+                    mockFilters.filterGroups.first().filters.size
+                )
+            }
+        }
+
     //endregion
 
     //region Mock Calls of the Dependencies
@@ -460,10 +550,57 @@ class TestDocumentsInteractor {
 
     private fun mockIssueDeferredDocumentCall(
         docId: DocumentId,
-        response: IssueDeferredDocumentPartialState
+        response: IssueDeferredDocumentPartialState,
     ) {
         whenever(walletCoreDocumentsController.issueDeferredDocument(docId))
             .thenReturn(response.toFlow())
     }
+
+    private fun mockOnFilterChangedEvent(response: FilterValidatorPartialState) {
+        whenever(filterValidator.onFilterStateChange())
+            .thenReturn(response.toFlow())
+    }
+    //endregion
+
+    //region Mock domain models
+    private val mockFilterableItem = FilterableItem(payload = DocumentUi(
+        documentIssuanceState = DocumentUiIssuanceState.Pending,
+        uiData = ListItemData(
+            itemId = "sumo",
+            mainContentData = ListItemMainContentData.Text("test"),
+            overlineText = null,
+            supportingText = null,
+            leadingContentData = null,
+            trailingContentData = null
+        ),
+        documentIdentifier = DocumentIdentifier.MdocPid,
+        documentCategory = DocumentCategory.Government,
+    ), attributes = object : FilterableAttributes {
+        override val searchTags: List<String>
+            get() = listOf("docName", "issuerName")
+    })
+
+    private val mockFilters = Filters(
+        filterGroups = listOf(
+            FilterGroup.SingleSelectionFilterGroup(
+                id = "group",
+                name = "Group",
+                filters = listOf(
+                    FilterItem(
+                        id = "f1",
+                        name = "Filter1",
+                        selected = true,
+                        isDefault = true
+                    ),
+                    FilterItem(
+                        id = "f2",
+                        name = "Filter 2",
+                        selected = false,
+                        isDefault = false
+                    )
+                )
+            )
+        ), sortOrder = SortOrder.Ascending()
+    )
     //endregion
 }

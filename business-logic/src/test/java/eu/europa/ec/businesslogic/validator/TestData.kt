@@ -113,22 +113,22 @@ val multipleSelectionGroupAllSelected = FilterGroup.MultipleSelectionFilterGroup
 
 val filtersWithSingleSelection = Filters(
     filterGroups = listOf(singleSelectionGroup),
-    sortOrder = SortOrder.ASCENDING
+    sortOrder = SortOrder.Ascending(isDefault = true)
 )
 
 val filtersWithMultipleSelection = Filters(
     filterGroups = listOf(multipleSelectionGroup),
-    sortOrder = SortOrder.DESCENDING
+    sortOrder = SortOrder.Descending()
 )
 
 val filtersWithMultipleSelectionNoSelection = Filters(
     filterGroups = listOf(multipleSelectionGroupNoSelection),
-    sortOrder = SortOrder.DESCENDING
+    sortOrder = SortOrder.Descending()
 )
 
 val filtersWithMultipleSelectionAllSelected = Filters(
     filterGroups = listOf(multipleSelectionGroupAllSelected),
-    sortOrder = SortOrder.ASCENDING
+    sortOrder = SortOrder.Ascending(isDefault = true)
 )
 
 
@@ -159,7 +159,10 @@ val filterableList = FilterableList(
         ),
         FilterableItem(
             payload = TestPayload("Item 6"),
-            attributes = TestAttributes(searchTags = listOf("search text", "secondary text"), name = "Search Test")
+            attributes = TestAttributes(
+                searchTags = listOf("search text", "secondary text"),
+                name = "Search Test"
+            )
         ),
         FilterableItem(
             payload = TestPayload("Item 7"),
