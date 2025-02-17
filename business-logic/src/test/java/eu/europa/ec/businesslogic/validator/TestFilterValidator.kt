@@ -1,15 +1,6 @@
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorImpl
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
-import eu.europa.ec.businesslogic.validator.filterItemsMultiple
-import eu.europa.ec.businesslogic.validator.filterItemsSingle
-import eu.europa.ec.businesslogic.validator.filterableList
-import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelection
-import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionAllSelected
-import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionNoSelection
-import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionSize3
-import eu.europa.ec.businesslogic.validator.filtersWithMultipleSelectionSize4
-import eu.europa.ec.businesslogic.validator.filtersWithSingleSelection
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.businesslogic.validator.util.filterItemsMultiple
@@ -18,6 +9,8 @@ import eu.europa.ec.businesslogic.validator.util.filterableList
 import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelection
 import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelectionAllSelected
 import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelectionNoSelection
+import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelectionSize3
+import eu.europa.ec.businesslogic.validator.util.filtersWithMultipleSelectionSize4
 import eu.europa.ec.businesslogic.validator.util.filtersWithSingleSelection
 import eu.europa.ec.businesslogic.validator.util.multipleSelectionGroup
 import eu.europa.ec.businesslogic.validator.util.singleSelectionGroup
