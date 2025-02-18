@@ -18,6 +18,7 @@ package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import coil.ImageLoader
@@ -31,6 +32,7 @@ fun WrapAsyncImage(
     source: String,
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
+    contentScale: ContentScale = ContentScale.Fit,
     placeholder: IconData? = null,
     error: IconData? = null,
     fallback: IconData? = null,
@@ -49,6 +51,7 @@ fun WrapAsyncImage(
             .build(),
         imageLoader = imageLoader,
         contentDescription = contentDescription,
+        contentScale = contentScale,
         error = error?.resourceId?.let { painterResource(it) },
         fallback = fallback?.resourceId?.let { painterResource(it) },
         placeholder = placeholder?.resourceId?.let { painterResource(it) }
