@@ -22,6 +22,7 @@ import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetail
 import eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsDocumentItem
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
+import eu.europa.ec.commonfeature.ui.request.transformer.toPath
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
@@ -89,7 +90,7 @@ class PresentationSuccessInteractorImpl(
                     val detailsDocumentItems = document.data.claims
                         .filter { claim ->
                             disclosedDocument.disclosedItems.any { disclosedItem ->
-                                claim.identifier == disclosedItem.elementIdentifier
+                                claim.identifier == disclosedItem.toPath().last() //TODO check this
                             }
                         }
                         .map { claim ->

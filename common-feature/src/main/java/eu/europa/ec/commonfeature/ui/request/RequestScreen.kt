@@ -348,6 +348,7 @@ private fun ContentPreview() {
                                             readableName = "readableName",
                                             isRequired = true,
                                             isAvailable = true,
+                                            path = listOf(),
                                         )
                                     )
                                 ),
@@ -384,6 +385,7 @@ private fun ContentPreview() {
                                             readableName = "readableName",
                                             isRequired = true,
                                             isAvailable = true,
+                                            path = listOf(),
                                         )
                                     )
                                 ),
@@ -410,6 +412,7 @@ private fun ContentPreview() {
                                             readableName = "readableName",
                                             isRequired = true,
                                             isAvailable = true,
+                                            path = listOf(),
                                         )
                                     )
                                 ),
@@ -436,6 +439,7 @@ private fun ContentPreview() {
                                             readableName = "readableName",
                                             isRequired = true,
                                             isAvailable = true,
+                                            path = listOf(),
                                         )
                                     )
                                 ),

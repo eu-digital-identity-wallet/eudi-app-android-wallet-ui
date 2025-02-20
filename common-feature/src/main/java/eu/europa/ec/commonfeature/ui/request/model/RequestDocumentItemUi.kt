@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
+import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.NameSpace
@@ -46,7 +47,9 @@ data class DocumentPayloadDomain(
 data class RequestDocumentClaim(
     val elementIdentifier: ElementIdentifier,
     val value: String,
+    val newValue: DomainClaim? = null,
     val readableName: String,
     val isRequired: Boolean,
     val isAvailable: Boolean,
+    val path: List<String>,
 )

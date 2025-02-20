@@ -20,11 +20,17 @@ import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
+import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim
+import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim.ClaimArray
+import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim.ClaimPrimitive
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
+import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -108,13 +114,78 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
+fun parseKeyValueUi2(
+    coreClaim: DocumentClaim,
+    readableName: String,
+    groupIdentifierKey: String,
+    keyIdentifier: String = "",
+    resourceProvider: ResourceProvider,
+): DomainClaim {
+    return when (coreClaim) {
+        is MsoMdocClaim -> {
+            val value = buildString {
+                parseKeyValueUi(
+                    item = coreClaim.value!!,
+                    groupIdentifier = readableName,
+                    groupIdentifierKey = groupIdentifierKey,
+                    keyIdentifier = keyIdentifier,
+                    resourceProvider = resourceProvider,
+                    allItems = this
+                )
+            }
+
+            ClaimPrimitive(
+                key = groupIdentifierKey,
+                value = value,
+                displayTitle = readableName
+            )
+        }
+
+        is SdJwtVcClaim -> {
+            return if (coreClaim.children.isEmpty()) {
+
+                val value = buildString {
+                    parseKeyValueUi(
+                        item = coreClaim.value!!,
+                        groupIdentifier = readableName,
+                        groupIdentifierKey = groupIdentifierKey, //or coreClaim.identifier
+                        keyIdentifier = keyIdentifier,
+                        resourceProvider = resourceProvider,
+                        allItems = this
+                    )
+                }
+
+                ClaimPrimitive(
+                    key = groupIdentifierKey, //or coreClaim.identifier
+                    value = value,
+                    displayTitle = readableName
+                )
+            } else {
+                val result = coreClaim.children.map {
+                    parseKeyValueUi2(
+                        coreClaim = it,
+                        readableName = readableName,
+                        groupIdentifierKey = coreClaim.identifier,
+                        resourceProvider = resourceProvider
+                    )
+                }
+
+                ClaimArray(
+                    items = result
+                )
+            }
+        }
+    }
+}
+
 fun parseKeyValueUi(
     item: Any,
     groupIdentifier: String,
     groupIdentifierKey: String,
     keyIdentifier: String = "",
     resourceProvider: ResourceProvider,
-    allItems: StringBuilder
+    allItems: StringBuilder,
+    //children: List<SdJwtVcClaim> = emptyList()
 ) {
     when (item) {
 
