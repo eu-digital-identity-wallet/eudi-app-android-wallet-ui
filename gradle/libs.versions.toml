@@ -55,6 +55,9 @@ ktor = "3.0.1"
 slf4j = "2.0.7"
 gson = "2.11.0"
 googlePhoneNumber = "8.13.40"
+waltidCrypto = "0.11.0"
+waltidDid = "0.11.0"
+waltidServiceCommons = "0.11.0"
 zxing = "3.5.3"
 eudiWalletCore = "0.14.0"
 cborTree = "0.01.02"
@@ -149,6 +152,9 @@ slf4j = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 google-phonenumber = { group = "com.googlecode.libphonenumber", name = "libphonenumber", version.ref = "googlePhoneNumber" }
+waltid-crypto = { module = "id.walt.crypto:waltid-crypto", version.ref = "waltidCrypto" }
+waltid-did = { module = "id.walt.did:waltid-did", version.ref = "waltidDid" }
+waltid-service-commons = { module = "id.walt:waltid-service-commons", version.ref = "waltidServiceCommons" }
 zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 eudi-wallet-core = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-wallet-core", version.ref = "eudiWalletCore" }
 cbor-tree = { group = "com.google.iot.cbor", name = "cbor", version.ref = "cborTree" }
