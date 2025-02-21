@@ -59,7 +59,7 @@ import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -74,13 +74,13 @@ import java.time.Instant
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
         val documents: List<Pair<DocumentCategory, List<DocumentUi>>>,
-        val filters: List<ExpandableListItemData>,
+        val filters: List<ExpandableListItem.SingleListItemData>,
         val sortOrder: DualSelectorButton,
         val allDefaultFiltersAreSelected: Boolean,
     ) : DocumentInteractorFilterPartialState()
 
     data class FilterUpdateResult(
-        val filters: List<ExpandableListItemData>,
+        val filters: List<ExpandableListItem.SingleListItemData>,
         val sortOrder: DualSelectorButton,
     ) : DocumentInteractorFilterPartialState()
 }
@@ -193,7 +193,7 @@ class DocumentsInteractorImpl(
             }.toList().sortedBy { it.first.order }
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
-                ExpandableListItemData(
+                ExpandableListItem.SingleListItemData(
                     collapsed = ListItemData(
                         itemId = filterGroup.id,
                         mainContentData = ListItemMainContentData.Text(filterGroup.name),

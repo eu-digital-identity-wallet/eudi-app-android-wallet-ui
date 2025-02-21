@@ -40,7 +40,7 @@ import java.time.ZoneId
 
 fun extractValueFromDocumentOrEmpty(
     document: IssuedDocument,
-    key: String
+    key: String,
 ): String {
     return document.data.claims
         .firstOrNull { it.identifier == key }
@@ -171,7 +171,7 @@ fun parseKeyValueUi2(
                 }
 
                 ClaimArray(
-                    items = result
+                    items = result, key = coreClaim.identifier, displayTitle = readableName
                 )
             }
         }
@@ -266,7 +266,7 @@ fun parseKeyValueUi(
 fun documentHasExpired(
     documentExpirationDate: Instant,
     currentDate: LocalDate = LocalDate.now(),
-    zoneId: ZoneId = ZoneId.systemDefault()
+    zoneId: ZoneId = ZoneId.systemDefault(),
 ): Boolean {
     return runCatching {
         // Convert Instant to LocalDate using the provided ZoneId

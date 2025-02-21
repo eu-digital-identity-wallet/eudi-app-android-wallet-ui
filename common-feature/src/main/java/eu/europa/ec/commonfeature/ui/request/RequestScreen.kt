@@ -65,7 +65,7 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
@@ -254,7 +254,7 @@ private fun DisplayRequestItems(
             ) {
                 items.forEach { requestItem ->
                     WrapExpandableListItem(
-                        data = ExpandableListItemData(
+                        data = ExpandableListItem.SingleListItemData(
                             collapsed = requestItem.collapsedUiItem.uiItem,
                             expanded = requestItem.expandedUiItems.map { it.uiItem }
                         ),

@@ -81,12 +81,19 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
     }
 
 sealed class DomainClaim {
-    data class ClaimArray(val items: List<DomainClaim>) : DomainClaim()
+    abstract val key: String
+    abstract val displayTitle: String
+
+    data class ClaimArray(
+        override val key: String,
+        override val displayTitle: String,
+        val items: List<DomainClaim>,
+    ) : DomainClaim()
 
     data class ClaimPrimitive(
-        val key: String,
+        override val key: String,
+        override val displayTitle: String,
         val value: String,
-        val displayTitle: String,
     ) : DomainClaim()
 }
 

@@ -34,14 +34,23 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
-data class ExpandableListItemData(
-    val collapsed: ListItemData,
-    val expanded: List<ListItemData>,
-)
+sealed class ExpandableListItem {
+    abstract val collapsed: ListItemData
+
+    data class SingleListItemData(
+        override val collapsed: ListItemData,
+        val expanded: List<ListItemData>,
+    ) : ExpandableListItem()
+
+    data class NestedListItemData(
+        override val collapsed: ListItemData,
+        val expanded: List<ExpandableListItem>,
+    ) : ExpandableListItem()
+}
 
 @Composable
 fun WrapExpandableListItem(
-    data: ExpandableListItemData,
+    data: ExpandableListItem,
     onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
@@ -71,19 +80,21 @@ fun WrapExpandableListItem(
             )
         },
         cardExpandedContent = {
-            WrapListItems(
-                items = data.expanded,
-                onItemClick = onItemClick,
-                hideSensitiveContent = hideSensitiveContent,
-                mainContentVerticalPadding = expandedMainContentVerticalPadding,
-                clickableAreas = expandedClickableAreas,
-                addDivider = expandedAddDivider,
-                shape = RoundedCornerShape(
-                    bottomStart = SIZE_SMALL.dp,
-                    bottomEnd = SIZE_SMALL.dp,
-                ),
-                colors = colors,
-            )
+            if (data is ExpandableListItem.SingleListItemData) {
+                WrapListItems(
+                    items = data.expanded,
+                    onItemClick = onItemClick,
+                    hideSensitiveContent = hideSensitiveContent,
+                    mainContentVerticalPadding = expandedMainContentVerticalPadding,
+                    clickableAreas = expandedClickableAreas,
+                    addDivider = expandedAddDivider,
+                    shape = RoundedCornerShape(
+                        bottomStart = SIZE_SMALL.dp,
+                        bottomEnd = SIZE_SMALL.dp,
+                    ),
+                    colors = colors,
+                )
+            }
         },
         isExpanded = isExpanded,
         throttleClicks = throttleClicks,
@@ -95,7 +106,7 @@ fun WrapExpandableListItem(
 @Composable
 private fun WrapExpandableListItemPreview() {
     PreviewTheme {
-        val data = ExpandableListItemData(
+        val data = ExpandableListItem.SingleListItemData(
             collapsed = ListItemData(
                 itemId = "0",
                 mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
