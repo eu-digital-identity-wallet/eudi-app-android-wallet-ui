@@ -55,6 +55,11 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import android.util.Log
+import id.walt.crypto.keys.KeyType
+import id.walt.did.dids.DidService
+import id.walt.did.dids.registrar.dids.DidWebCreateOptions
+
 
 enum class IssuanceMethod {
     OPENID4VCI
@@ -251,6 +256,13 @@ class WalletCoreDocumentsControllerImpl(
             }
 
     override fun getDocumentById(documentId: DocumentId): Document? {
+        Log.d("WHERE", "getDoc by ID")
+        val options = DidWebCreateOptions(
+            domain = "example.com",
+            path = "/path/to/did.json",
+            keyType = KeyType.Ed25519
+        )
+        Log.d("WHERE", options.toString())
         return eudiWallet.getDocumentById(documentId = documentId)
     }
 
