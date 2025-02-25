@@ -84,7 +84,9 @@ fun FiltersSearchBar(
             shape = MaterialTheme.shapes.extraLarge,
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = MaterialTheme.colorScheme.surfaceContainer,
-                focusedBorderColor = MaterialTheme.colorScheme.surfaceContainer
+                focusedBorderColor = MaterialTheme.colorScheme.surfaceContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest
             )
         )
 

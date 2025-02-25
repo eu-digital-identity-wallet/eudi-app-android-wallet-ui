@@ -47,6 +47,11 @@ sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
     data object SignDocument :
         Screen(name = "SIGN_DOCUMENT")
+
+    data object TransactionDetails :
+        Screen(
+            name = "TRANSACTION_DETAILS", parameters = "?transactionConfig={transactionConfig}"
+        )
 }
 
 sealed class PresentationScreens {

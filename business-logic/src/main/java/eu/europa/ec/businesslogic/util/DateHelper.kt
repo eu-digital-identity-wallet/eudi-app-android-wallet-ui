@@ -18,10 +18,14 @@ package eu.europa.ec.businesslogic.util
 
 import java.text.DateFormat
 import java.text.SimpleDateFormat
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAdjusters
 import java.util.Date
 import java.util.Locale
 
@@ -83,3 +87,53 @@ fun Instant.formatInstant(
         .withZone(zoneId)
     return formatter.format(this)
 }
+
+fun LocalDateTime.isWithinLastHour(): Boolean {
+    return ChronoUnit.MINUTES.between(this, LocalDateTime.now()) < 60
+}
+
+fun LocalDateTime.minutesToNow(): Long {
+    return ChronoUnit.MINUTES.between(this, LocalDateTime.now())
+}
+
+fun LocalDateTime.isToday(): Boolean {
+    return this.toLocalDate() == LocalDateTime.now().toLocalDate()
+}
+
+fun LocalDateTime.isWithinThisWeek(): Boolean {
+    val startOfWeek = LocalDateTime.now().toLocalDate()
+        .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    val endOfWeek = startOfWeek.plusDays(6)
+
+    return this.toLocalDate().isAfter(startOfWeek.minusDays(1)) &&
+            this.toLocalDate().isBefore(endOfWeek.plusDays(1))
+}
+
+fun LocalDateTime.startOfDay(): LocalDateTime =
+    this.withHour(0).withMinute(0).withSecond(0)
+
+fun LocalDateTime.endOfDay(): LocalDateTime =
+    this.withHour(23).withMinute(59).withSecond(59)
+
+fun LocalDateTime.startOfWeek(): LocalDateTime =
+    this.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)).startOfDay()
+
+fun LocalDateTime.endOfWeek(): LocalDateTime =
+    this.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY)).endOfDay()
+
+fun LocalDateTime.startOfMonth(): LocalDateTime =
+    this.with(TemporalAdjusters.firstDayOfMonth()).startOfDay()
+
+fun LocalDateTime.endOfMonth(): LocalDateTime =
+    this.with(TemporalAdjusters.lastDayOfMonth()).endOfDay()
+
+const val FULL_DATETIME_PATTERN = "d MMMM yyyy h:mm a"
+const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
+const val SHORT_DATETIME_PATTERN = "d MMM yyyy"
+const val MONTH_YEAR_PATTERN = "MMMM yyyy"
+
+val fullDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(FULL_DATETIME_PATTERN)
+val hoursMinutesFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern(HOURS_MINUTES_DATETIME_PATTERN)
+val shortDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(SHORT_DATETIME_PATTERN)
+val monthYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(MONTH_YEAR_PATTERN)

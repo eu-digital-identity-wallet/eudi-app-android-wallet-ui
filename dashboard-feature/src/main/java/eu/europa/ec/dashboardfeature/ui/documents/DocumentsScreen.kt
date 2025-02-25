@@ -73,6 +73,7 @@ import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -583,7 +584,7 @@ private fun DocumentsScreenPreview() {
                     uiData = ListItemData(
                         itemId = "id1",
                         mainContentData = ListItemMainContentData.Text(text = "Document 1"),
-                        overlineText = issuerName,
+                        overlineTextData = ListItemOverlineTextData(issuerName),
                         supportingText = validUntil,
                         leadingContentData = null,
                         trailingContentData = null
@@ -596,7 +597,7 @@ private fun DocumentsScreenPreview() {
                     uiData = ListItemData(
                         itemId = "id2",
                         mainContentData = ListItemMainContentData.Text(text = "Document 2"),
-                        overlineText = issuerName,
+                        overlineTextData = ListItemOverlineTextData(issuerName),
                         supportingText = validUntil,
                         leadingContentData = null,
                         trailingContentData = null
@@ -609,7 +610,7 @@ private fun DocumentsScreenPreview() {
                     uiData = ListItemData(
                         itemId = "id3",
                         mainContentData = ListItemMainContentData.Text(text = "Document 3"),
-                        overlineText = issuerName,
+                        overlineTextData = ListItemOverlineTextData(issuerName),
                         supportingText = validUntil,
                         leadingContentData = null,
                         trailingContentData = null
@@ -622,7 +623,7 @@ private fun DocumentsScreenPreview() {
                     uiData = ListItemData(
                         itemId = "id4",
                         mainContentData = ListItemMainContentData.Text(text = "Document 4"),
-                        overlineText = issuerName,
+                        overlineTextData = ListItemOverlineTextData(issuerName),
                         supportingText = validUntil,
                         leadingContentData = null,
                         trailingContentData = null

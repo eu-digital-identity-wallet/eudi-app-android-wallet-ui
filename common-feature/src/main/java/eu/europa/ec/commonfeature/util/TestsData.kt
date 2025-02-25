@@ -32,6 +32,7 @@ import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -202,42 +203,42 @@ object TestsData {
         documentDetails = listOf(
             ListItemData(
                 itemId = "",
-                overlineText = "birth_city",
+                overlineTextData = ListItemOverlineTextData("birth_city"),
                 mainContentData = ListItemMainContentData.Text("KATRINEHOLM")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "gender",
+                overlineTextData = ListItemOverlineTextData("gender"),
                 mainContentData = ListItemMainContentData.Text("male")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "age_over_18",
+                overlineTextData = ListItemOverlineTextData("age_over_18"),
                 mainContentData = ListItemMainContentData.Text("yes")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "age_birth_year",
+                overlineTextData = ListItemOverlineTextData("age_birth_year"),
                 mainContentData = ListItemMainContentData.Text("1985")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "expiry_date",
+                overlineTextData = ListItemOverlineTextData("expiry_date"),
                 mainContentData = ListItemMainContentData.Text("30 Mar 2050")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "given_name",
+                overlineTextData = ListItemOverlineTextData("given_name"),
                 mainContentData = ListItemMainContentData.Text("JAN")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "family_name",
+                overlineTextData = ListItemOverlineTextData("family_name"),
                 mainContentData = ListItemMainContentData.Text("ANDERSSON")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "age_over_65",
+                overlineTextData = ListItemOverlineTextData("age_over_65"),
                 mainContentData = ListItemMainContentData.Text("no")
             )
         ),
@@ -320,7 +321,7 @@ object TestsData {
         documentDetails = listOf(
             ListItemData(
                 itemId = "",
-                overlineText = "driving_privileges",
+                overlineTextData = ListItemOverlineTextData("driving_privileges"),
                 mainContentData = ListItemMainContentData.Text(
                     text = arrayOf(
                         "issue_date: 1 Jul 2010\n" +
@@ -334,37 +335,37 @@ object TestsData {
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "expiry_date",
+                overlineTextData = ListItemOverlineTextData("expiry_date"),
                 mainContentData = ListItemMainContentData.Text("30 Mar 2050")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "sex",
+                overlineTextData = ListItemOverlineTextData("sex"),
                 mainContentData = ListItemMainContentData.Text("male")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "birth_place",
+                overlineTextData = ListItemOverlineTextData("birth_place"),
                 mainContentData = ListItemMainContentData.Text("SWEDEN")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "portrait",
+                overlineTextData = ListItemOverlineTextData("portrait"),
                 mainContentData = ListItemMainContentData.Image("SE")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "given_name",
+                overlineTextData = ListItemOverlineTextData("given_name"),
                 mainContentData = ListItemMainContentData.Text("JAN")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "family_name",
+                overlineTextData = ListItemOverlineTextData("family_name"),
                 mainContentData = ListItemMainContentData.Text("ANDERSSON")
             ),
             ListItemData(
                 itemId = "",
-                overlineText = "signature_usual_mark",
+                overlineTextData = ListItemOverlineTextData("signature_usual_mark"),
                 mainContentData = ListItemMainContentData.Image("SE")
             )
         ),

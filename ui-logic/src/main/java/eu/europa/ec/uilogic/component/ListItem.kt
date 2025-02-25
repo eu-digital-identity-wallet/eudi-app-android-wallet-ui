@@ -43,6 +43,12 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
+import eu.europa.ec.uilogic.component.ListItemMainContentData.Actionable
+import eu.europa.ec.uilogic.component.ListItemMainContentData.Image
+import eu.europa.ec.uilogic.component.ListItemMainContentData.Text
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Checkbox
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Icon
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData.RadioButton
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
@@ -70,8 +76,9 @@ import eu.europa.ec.uilogic.component.wrap.WrapRadioButton
  * @param mainContentData The primary content displayed in the list item. This is typically text
  * but could be other UI elements. See [ListItemMainContentData] for details on how to structure
  * the main content.
- * @param overlineText Optional text displayed above the `mainContentData`, providing context
- * or a brief heading for the item.
+ * @param overlineTextData Optional text displayed above the `mainContentData`, providing context
+ * or a brief heading for the item. See [ListItemOverlineTextData] for details on how to structure
+ * the overline text.
  * @param supportingText Optional text displayed below the `mainContentData`, offering
  * additional details or description to supplement the main content.
  * @param leadingContentData Optional data for content displayed at the beginning of the list item.
@@ -84,10 +91,21 @@ import eu.europa.ec.uilogic.component.wrap.WrapRadioButton
 data class ListItemData(
     val itemId: String,
     val mainContentData: ListItemMainContentData,
-    val overlineText: String? = null,
+    val overlineTextData: ListItemOverlineTextData? = null,
     val supportingText: String? = null,
     val leadingContentData: ListItemLeadingContentData? = null,
     val trailingContentData: ListItemTrailingContentData? = null,
+)
+
+/**
+ * Represents the overline text data for an item in a list.
+ * This sealed class provides different types of content that can be displayed:
+ * - [text]: Simple text content.
+ * - [textColor]: The color to be applied.
+ */
+data class ListItemOverlineTextData(
+    val text: String,
+    val textColor: Color? = null,
 )
 
 /**
@@ -300,9 +318,9 @@ fun ListItem(
                 horizontalAlignment = Alignment.Start
             ) {
                 // Overline Text
-                overlineText?.let { safeOverlineText ->
+                overlineTextData?.let { safeOverlineTextData ->
                     Text(
-                        text = safeOverlineText,
+                        text = safeOverlineTextData.text,
                         style = if (hideSensitiveContent && !supportsBlur) mainTextStyle else overlineTextStyle,
                     )
                 }
@@ -413,7 +431,7 @@ private fun ListItemPreview() {
                 item = ListItemData(
                     itemId = "2",
                     mainContentData = ListItemMainContentData.Text(text = "Item with Overline and Supporting Text"),
-                    overlineText = "Overline Text",
+                    overlineTextData = ListItemOverlineTextData("Overline Text"),
                     supportingText = "Supporting Text"
                 ),
                 modifier = modifier,
@@ -480,7 +498,7 @@ private fun ListItemPreview() {
                 item = ListItemData(
                     itemId = "6",
                     mainContentData = ListItemMainContentData.Text(text = "Full Item Example"),
-                    overlineText = "Overline Text",
+                    overlineTextData = ListItemOverlineTextData("Overline Text"),
                     supportingText = "Supporting Text",
                     leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Add),
                     trailingContentData = ListItemTrailingContentData.Icon(

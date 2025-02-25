@@ -405,4 +405,10 @@ object AppIcons {
         contentDescriptionId = R.string.content_description_open_in_browser_icon,
         imageVector = null
     )
+
+    val Export: IconData = IconData(
+        resourceId = R.drawable.ic_export,
+        contentDescriptionId = R.string.content_description_export_icon,
+        imageVector = null
+    )
 }

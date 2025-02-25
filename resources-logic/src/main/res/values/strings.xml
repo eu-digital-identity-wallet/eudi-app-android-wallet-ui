@@ -107,6 +107,7 @@
     <string name="content_description_change_pin_icon">Change PIN</string>
     <string name="content_description_check_icon">Check</string>
     <string name="content_description_open_in_browser_icon">Open in browser</string>
+    <string name="content_description_export_icon">Export</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
@@ -257,6 +258,12 @@
 
     <!-- Transactions Screen -->
     <string name="transactions_screen_title">Transactions</string>
+    <string name="transactions_screen_search_label">Search Transactions</string>
+    <string name="transactions_screen_search_no_results_id">noTransactionsId</string>
+    <string name="transactions_screen_search_no_results">No transactions match your search. Try changing your search query or filters.</string>
+    <string name="transactions_screen_minutes_ago_message">%1$s minutes ago</string>
+    <string name="transaction_status_completed">Completed</string>
+    <string name="transaction_status_failed">Failed</string>
 
     <!-- Document Sign -->
     <string name="document_sign_title">Sign Document</string>
@@ -349,4 +356,8 @@
     <string name="document_category_retail">RETAIL</string>
     <string name="document_category_other">OTHER</string>
 
+    <!-- Transaction Categories -->
+    <string name="transaction_category_today">TODAY</string>">
+    <string name="transaction_category_this_week">THIS WEEK</string>">
+    <string name="transaction_category_month_year">MONTH</string>">
 </resources>

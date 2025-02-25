@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +34,7 @@ import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
@@ -48,6 +50,7 @@ fun WrapListItem(
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     mainContentTextStyle: TextStyle? = null,
+    overlineTextStyle: TextStyle? = null,
     supportingTextColor: Color? = null,
     clickableAreas: List<ClickableArea>? = null,
     colors: CardColors? = null,
@@ -64,6 +67,9 @@ fun WrapListItem(
             hideSensitiveContent = hideSensitiveContent,
             mainContentVerticalPadding = mainContentVerticalPadding,
             mainContentTextStyle = mainContentTextStyle,
+            overlineTextStyle = overlineTextStyle ?: MaterialTheme.typography.labelMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
             supportingTextColor = supportingTextColor,
             clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
         )
@@ -92,7 +98,7 @@ private fun WrapListItemPreview(
                 item = ListItemData(
                     itemId = "2",
                     mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
-                    overlineText = "",
+                    overlineTextData = ListItemOverlineTextData(""),
                     supportingText = "",
                 ),
                 onItemClick = {},
@@ -102,7 +108,7 @@ private fun WrapListItemPreview(
                 item = ListItemData(
                     itemId = "3",
                     mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
-                    overlineText = "Overline text $text",
+                    overlineTextData = ListItemOverlineTextData("Overline text $text"),
                     supportingText = "Supporting text $text",
                     leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
                     trailingContentData = ListItemTrailingContentData.Icon(

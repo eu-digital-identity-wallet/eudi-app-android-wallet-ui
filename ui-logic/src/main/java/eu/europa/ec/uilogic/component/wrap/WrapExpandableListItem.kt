@@ -28,6 +28,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -107,17 +108,17 @@ private fun WrapExpandableListItemPreview() {
             expanded = listOf(
                 ListItemData(
                     itemId = "1",
-                    overlineText = "Family name",
+                    overlineTextData = ListItemOverlineTextData("Family name"),
                     mainContentData = ListItemMainContentData.Text(text = "Doe"),
                 ),
                 ListItemData(
                     itemId = "2",
-                    overlineText = "Given name",
+                    overlineTextData = ListItemOverlineTextData("Given name"),
                     mainContentData = ListItemMainContentData.Text(text = "John"),
                 ),
                 ListItemData(
                     itemId = "3",
-                    overlineText = "Date of birth",
+                    overlineTextData = ListItemOverlineTextData("Date of birth"),
                     mainContentData = ListItemMainContentData.Text(text = "21 Oct 2023"),
                 ),
             )

@@ -58,7 +58,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
 @Composable
-fun DashboardScreen(
+internal fun DashboardScreen(
     hostNavController: NavController,
     viewModel: DashboardViewModel,
     documentsViewModel: DocumentsViewModel,
@@ -100,7 +100,10 @@ fun DashboardScreen(
             composable(BottomNavigationItem.Transactions.route) {
                 TransactionsScreen(
                     hostNavController,
-                    transactionsViewModel
+                    transactionsViewModel,
+                    onDashboardEventSent = { event ->
+                        viewModel.setEvent(event)
+                    }
                 )
             }
         }
