@@ -49,7 +49,6 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.SectionTitle
@@ -354,7 +353,7 @@ private fun ContentPreview() {
                                 ),
                                 uiItem = ListItemData(
                                     itemId = "00",
-                                    overlineTextData = ListItemOverlineTextData("Family name"),
+                                    overlineText = "Family name",
                                     mainContentData = ListItemMainContentData.Text(text = "Doe"),
                                 )
                             ),
@@ -390,7 +389,7 @@ private fun ContentPreview() {
                                 ),
                                 uiItem = ListItemData(
                                     itemId = "10",
-                                    overlineTextData = ListItemOverlineTextData("Family name"),
+                                    overlineText = "Family name",
                                     mainContentData = ListItemMainContentData.Text(text = "Doe"),
                                     trailingContentData = ListItemTrailingContentData.Checkbox(
                                         checkboxData = CheckboxData(
@@ -416,7 +415,7 @@ private fun ContentPreview() {
                                 ),
                                 uiItem = ListItemData(
                                     itemId = "11",
-                                    overlineTextData = ListItemOverlineTextData("Given name"),
+                                    overlineText = "Given name",
                                     mainContentData = ListItemMainContentData.Text(text = "John"),
                                     trailingContentData = ListItemTrailingContentData.Checkbox(
                                         checkboxData = CheckboxData(
@@ -442,7 +441,7 @@ private fun ContentPreview() {
                                 ),
                                 uiItem = ListItemData(
                                     itemId = "12",
-                                    overlineTextData = ListItemOverlineTextData("Age in years"),
+                                    overlineText = "Age in years",
                                     mainContentData = ListItemMainContentData.Text(text = "18"),
                                     trailingContentData = ListItemTrailingContentData.Checkbox(
                                         checkboxData = CheckboxData(

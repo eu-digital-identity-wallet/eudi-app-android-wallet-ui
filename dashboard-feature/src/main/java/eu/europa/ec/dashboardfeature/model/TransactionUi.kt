@@ -20,10 +20,20 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.uilogic.component.ListItemData
 
-internal class TransactionUi(
+class TransactionUi(
     val uiData: ListItemData,
+    val uiStatus: TransactionUiStatus,
     val transactionCategory: TransactionCategory,
 ) : FilterableItemPayload
+
+enum class TransactionUiStatus {
+    Completed, Failed
+}
+
+internal fun String.toTransactionUiStatus(successStatusString: String): TransactionUiStatus = when {
+    equals(successStatusString, ignoreCase = true) -> TransactionUiStatus.Completed
+    else -> TransactionUiStatus.Failed
+}
 
 // TODO should be replaced with actual transaction data
 data class Transaction(

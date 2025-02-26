@@ -29,13 +29,12 @@ import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.model.Transaction
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.dashboardfeature.model.TransactionsFilterableAttributes
+import eu.europa.ec.dashboardfeature.model.toTransactionUiStatus
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -165,18 +164,15 @@ class TransactionsInteractorImpl(
                         uiData = ListItemData(
                             itemId = transaction.id,
                             mainContentData = ListItemMainContentData.Text(text = transaction.name),
-                            overlineTextData = ListItemOverlineTextData(
-                                transaction.status,
-                                ThemeColors.success.takeIf {
-                                    transaction.status.equals(
-                                        resourceProvider.getString(R.string.transaction_status_completed),
-                                        ignoreCase = true
-                                    )
-                                } ?: ThemeColors.error
-                            ),
+                            overlineText = transaction.status,
                             supportingText = transaction.creationDate.toFormattedDisplayableDate(),
                             trailingContentData = ListItemTrailingContentData.Icon(
                                 iconData = AppIcons.KeyboardArrowRight
+                            )
+                        ),
+                        uiStatus = transaction.status.toTransactionUiStatus(
+                            successStatusString = resourceProvider.getString(
+                                R.string.transaction_status_completed
                             )
                         ),
                         transactionCategory = getTransactionCategory(dateTime)
@@ -207,7 +203,7 @@ class TransactionsInteractorImpl(
         val transactionCategory = when {
             dateTime.isToday() -> TransactionCategory.Today
             dateTime.isWithinThisWeek() -> TransactionCategory.ThisWeek
-            else -> TransactionCategory.MonthCategory(dateTime)
+            else -> TransactionCategory.Month(dateTime)
         }
         return transactionCategory
     }

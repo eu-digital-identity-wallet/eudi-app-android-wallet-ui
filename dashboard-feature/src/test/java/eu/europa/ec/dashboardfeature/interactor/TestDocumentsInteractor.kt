@@ -568,7 +568,7 @@ class TestDocumentsInteractor {
         uiData = ListItemData(
             itemId = "sumo",
             mainContentData = ListItemMainContentData.Text("test"),
-            overlineTextData = null,
+            overlineText = null,
             supportingText = null,
             leadingContentData = null,
             trailingContentData = null

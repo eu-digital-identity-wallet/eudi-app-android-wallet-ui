@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import java.time.LocalDateTime
 
-internal data class State(
+data class State(
     val isLoading: Boolean,
     val error: ContentErrorConfig? = null,
 
@@ -72,7 +72,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-internal class TransactionsViewModel(
+class TransactionsViewModel(
     private val interactor: TransactionsInteractor,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
@@ -175,9 +175,9 @@ internal class TransactionsViewModel(
             when (val category = transactionUi.transactionCategory) {
                 is TransactionCategory.Today -> category
                 is TransactionCategory.ThisWeek -> category
-                is TransactionCategory.MonthCategory -> {
+                is TransactionCategory.Month -> {
                     val dateTime = category.dateRange?.start
-                    TransactionCategory.MonthCategory(dateTime ?: LocalDateTime.now())
+                    TransactionCategory.Month(dateTime ?: LocalDateTime.now())
                 }
 
                 else -> category

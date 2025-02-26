@@ -54,7 +54,6 @@ import eu.europa.ec.uilogic.component.IssuerDetailsCardData
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -415,23 +414,23 @@ private fun DocumentDetailsScreenPreview() {
                     ListItemData(
                         itemId = "1",
                         mainContentData = ListItemMainContentData.Text(text = ""),
-                        overlineTextData = ListItemOverlineTextData("A reproduction of the mDL holder’s portrait."),
+                        overlineText = "A reproduction of the mDL holder’s portrait.",
                         leadingContentData = ListItemLeadingContentData.UserImage(userBase64Image = ""),
                     ),
                     ListItemData(
                         itemId = "2",
                         mainContentData = ListItemMainContentData.Text(text = "GR"),
-                        overlineTextData = ListItemOverlineTextData("Alpha-2 country code, as defined in ISO 3166-1 of the issuing authority’s country or territory."),
+                        overlineText = "Alpha-2 country code, as defined in ISO 3166-1 of the issuing authority’s country or territory.",
                     ),
                     ListItemData(
                         itemId = "3",
                         mainContentData = ListItemMainContentData.Text(text = "12345678900"),
-                        overlineTextData = ListItemOverlineTextData("An audit control number assigned by the issuing authority."),
+                        overlineText = "An audit control number assigned by the issuing authority.",
                     ),
                     ListItemData(
                         itemId = "4",
                         mainContentData = ListItemMainContentData.Text(text = "31 Dec 2040"),
-                        overlineTextData = ListItemOverlineTextData("Date when mDL expires."),
+                        overlineText = "Date when mDL expires.",
                     ),
                 ),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,

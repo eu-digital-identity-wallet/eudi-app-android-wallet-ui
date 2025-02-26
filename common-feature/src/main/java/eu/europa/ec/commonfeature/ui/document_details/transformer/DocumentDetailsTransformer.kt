@@ -33,7 +33,6 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 
 object DocumentDetailsTransformer {
 
@@ -117,7 +116,7 @@ object DocumentDetailsTransformer {
                 ListItemData(
                     itemId = itemId,
                     mainContentData = mainContent,
-                    overlineTextData = ListItemOverlineTextData(it.readableName),
+                    overlineText = it.readableName,
                     leadingContentData = leadingContent
                 )
             }

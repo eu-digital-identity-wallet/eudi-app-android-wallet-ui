@@ -43,7 +43,6 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 
@@ -190,7 +189,7 @@ object RequestTransformer {
                     uiItem = ListItemData(
                         itemId = expandedItemId,
                         mainContentData = mainContent,
-                        overlineTextData = ListItemOverlineTextData(docClaimDomain.readableName),
+                        overlineText = docClaimDomain.readableName,
                         leadingContentData = leadingContent,
                         trailingContentData = ListItemTrailingContentData.Checkbox(
                             checkboxData = CheckboxData(

@@ -57,7 +57,6 @@ import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
@@ -332,9 +331,7 @@ class DocumentsInteractorImpl(
                                     uiData = ListItemData(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentData.Text(text = document.name),
-                                        overlineTextData = issuerName?.let {
-                                            ListItemOverlineTextData(it)
-                                        },
+                                        overlineText = issuerName,
                                         supportingText = supportingText,
                                         leadingContentData = ListItemLeadingContentData.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
@@ -383,9 +380,7 @@ class DocumentsInteractorImpl(
                                     uiData = ListItemData(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentData.Text(text = document.name),
-                                        overlineTextData = issuerName?.let {
-                                            ListItemOverlineTextData(it)
-                                        },
+                                        overlineText = issuerName,
                                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
                                         leadingContentData = ListItemLeadingContentData.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),

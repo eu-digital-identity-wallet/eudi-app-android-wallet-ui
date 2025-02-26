@@ -16,10 +16,12 @@
 
 package eu.europa.ec.dashboardfeature.ui.transactions
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,12 +29,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -42,8 +47,10 @@ import androidx.navigation.NavController
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.model.TransactionUi
+import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -52,18 +59,18 @@ import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
-import eu.europa.ec.uilogic.component.wrap.WrapListItems
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
 typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Show
 
 @Composable
-internal fun TransactionsScreen(
+fun TransactionsScreen(
     navHostController: NavController,
     viewModel: TransactionsViewModel,
     onDashboardEventSent: (DashboardEvent) -> Unit,
@@ -170,14 +177,65 @@ private fun TransactionCategory(
             text = category.displayName ?: stringResource(category.stringResId)
         )
 
-        WrapListItems(
-            items = transactions.map { it.uiData },
-            onItemClick = { item ->
-                onEventSend(
-                    Event.TransactionItemPressed(itemId = item.itemId)
-                )
-            }
+        CategoryItems(
+            transactions = transactions,
+            onEventSend = onEventSend
         )
+    }
+}
+
+@Composable
+private fun CategoryItems(
+    transactions: List<TransactionUi>,
+    onEventSend: (Event) -> Unit,
+) {
+    Column {
+        transactions.forEachIndexed { index, transactionUi ->
+            val itemModifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = if (index == 0) SPACING_SMALL.dp else 0.dp,
+                    bottom = if (index == transactions.lastIndex) SPACING_SMALL.dp else 0.dp,
+                )
+            val cardShape = when {
+                transactions.size == 1 -> RoundedCornerShape(SIZE_SMALL.dp)
+
+                index == 0 -> RoundedCornerShape(
+                    topStart = SIZE_SMALL.dp,
+                    topEnd = SIZE_SMALL.dp
+                )
+
+                index == transactions.lastIndex -> RoundedCornerShape(
+                    bottomStart = SIZE_SMALL.dp,
+                    bottomEnd = SIZE_SMALL.dp
+                )
+
+                else -> RectangleShape
+            }
+
+            WrapListItem(
+                modifier = itemModifier,
+                item = transactionUi.uiData,
+                onItemClick = { item ->
+                    onEventSend(
+                        Event.TransactionItemPressed(itemId = item.itemId)
+                    )
+                },
+                overlineTextStyle = MaterialTheme.typography.labelMedium.copy(
+                    when (transactionUi.uiStatus) {
+                        TransactionUiStatus.Completed -> MaterialTheme.colorScheme.success
+                        TransactionUiStatus.Failed -> MaterialTheme.colorScheme.error
+                    }
+                ),
+                shape = cardShape
+            )
+
+            if (index < transactions.lastIndex) {
+                Row(modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceContainer)) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = SPACING_MEDIUM.dp))
+                }
+            }
+        }
     }
 }
 

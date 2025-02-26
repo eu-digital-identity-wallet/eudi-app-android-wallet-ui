@@ -48,7 +48,7 @@ sealed class TransactionCategory(
         dateRange = LocalDateTime.now().startOfWeek()..LocalDateTime.now().endOfWeek()
     )
 
-    class MonthCategory(dateTime: LocalDateTime) : TransactionCategory(
+    class Month(dateTime: LocalDateTime) : TransactionCategory(
         stringResId = R.string.transaction_category_month_year,
         id = generateMonthId(dateTime),
         order = calculateMonthOrder(dateTime),
@@ -57,7 +57,7 @@ sealed class TransactionCategory(
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (other !is MonthCategory) return false
+            if (other !is Month) return false
 
             val thisStart = this.dateRange?.start
             val otherStart = other.dateRange?.start

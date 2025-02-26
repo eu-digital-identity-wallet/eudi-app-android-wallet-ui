@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
@@ -34,7 +35,6 @@ import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
@@ -54,11 +54,13 @@ fun WrapListItem(
     supportingTextColor: Color? = null,
     clickableAreas: List<ClickableArea>? = null,
     colors: CardColors? = null,
+    shape: Shape? = null,
 ) {
     WrapCard(
         modifier = Modifier.fillMaxWidth(),
         throttleClicks = throttleClicks,
         colors = colors,
+        shape = shape,
     ) {
         ListItem(
             modifier = modifier,
@@ -98,7 +100,7 @@ private fun WrapListItemPreview(
                 item = ListItemData(
                     itemId = "2",
                     mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
-                    overlineTextData = ListItemOverlineTextData(""),
+                    overlineText = "",
                     supportingText = "",
                 ),
                 onItemClick = {},
@@ -108,7 +110,7 @@ private fun WrapListItemPreview(
                 item = ListItemData(
                     itemId = "3",
                     mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
-                    overlineTextData = ListItemOverlineTextData("Overline text $text"),
+                    overlineText = "Overline text $text",
                     supportingText = "Supporting text $text",
                     leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
                     trailingContentData = ListItemTrailingContentData.Icon(

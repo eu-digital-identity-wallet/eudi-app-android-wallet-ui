@@ -91,21 +91,10 @@ import eu.europa.ec.uilogic.component.wrap.WrapRadioButton
 data class ListItemData(
     val itemId: String,
     val mainContentData: ListItemMainContentData,
-    val overlineTextData: ListItemOverlineTextData? = null,
+    val overlineText: String? = null,
     val supportingText: String? = null,
     val leadingContentData: ListItemLeadingContentData? = null,
     val trailingContentData: ListItemTrailingContentData? = null,
-)
-
-/**
- * Represents the overline text data for an item in a list.
- * This sealed class provides different types of content that can be displayed:
- * - [text]: Simple text content.
- * - [textColor]: The color to be applied.
- */
-data class ListItemOverlineTextData(
-    val text: String,
-    val textColor: Color? = null,
 )
 
 /**
@@ -318,9 +307,9 @@ fun ListItem(
                 horizontalAlignment = Alignment.Start
             ) {
                 // Overline Text
-                overlineTextData?.let { safeOverlineTextData ->
+                overlineText?.let { safeOverlineText ->
                     Text(
-                        text = safeOverlineTextData.text,
+                        text = safeOverlineText,
                         style = if (hideSensitiveContent && !supportsBlur) mainTextStyle else overlineTextStyle,
                     )
                 }
@@ -431,7 +420,7 @@ private fun ListItemPreview() {
                 item = ListItemData(
                     itemId = "2",
                     mainContentData = ListItemMainContentData.Text(text = "Item with Overline and Supporting Text"),
-                    overlineTextData = ListItemOverlineTextData("Overline Text"),
+                    overlineText = "Overline Text",
                     supportingText = "Supporting Text"
                 ),
                 modifier = modifier,
@@ -498,7 +487,7 @@ private fun ListItemPreview() {
                 item = ListItemData(
                     itemId = "6",
                     mainContentData = ListItemMainContentData.Text(text = "Full Item Example"),
-                    overlineTextData = ListItemOverlineTextData("Overline Text"),
+                    overlineText = "Overline Text",
                     supportingText = "Supporting Text",
                     leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Add),
                     trailingContentData = ListItemTrailingContentData.Icon(

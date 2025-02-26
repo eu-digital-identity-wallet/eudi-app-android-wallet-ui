@@ -34,7 +34,6 @@ import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemOverlineTextData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
@@ -68,8 +67,7 @@ fun WrapListItems(
                     bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
                 )
                 val overlineTextStyle = MaterialTheme.typography.labelMedium.copy(
-                    color = item.overlineTextData?.textColor
-                        ?: MaterialTheme.colorScheme.onSurfaceVariant
+                    MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 ListItem(
@@ -104,13 +102,13 @@ private fun WrapListItemsPreview(
             ListItemData(
                 itemId = "2",
                 mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
-                overlineTextData = ListItemOverlineTextData(""),
+                overlineText = "",
                 supportingText = "",
             ),
             ListItemData(
                 itemId = "3",
                 mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
-                overlineTextData = ListItemOverlineTextData("Overline text $text"),
+                overlineText = "Overline text $text",
                 supportingText = "Supporting text $text",
                 leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
                 trailingContentData = ListItemTrailingContentData.Icon(
@@ -120,7 +118,7 @@ private fun WrapListItemsPreview(
             ListItemData(
                 itemId = "4",
                 mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
-                overlineTextData = ListItemOverlineTextData("Overline text $text"),
+                overlineText = "Overline text $text",
                 supportingText = "Supporting text $text",
                 leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
                 trailingContentData = ListItemTrailingContentData.Checkbox(
