@@ -38,22 +38,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
-import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
-import eu.europa.ec.commonfeature.ui.request.model.ExpandedUiItem
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentClaim
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentHeader
-import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -64,21 +55,16 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.TextConfig
-import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -253,22 +239,22 @@ private fun DisplayRequestItems(
                 verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
             ) {
                 items.forEach { requestItem ->
-                    WrapExpandableListItem(
-                        data = ExpandableListItem.SingleListItemData(
-                            collapsed = requestItem.collapsedUiItem.uiItem,
-                            expanded = requestItem.expandedUiItems.map { it.uiItem }
-                        ),
-                        onItemClick = { item ->
-                            onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        hideSensitiveContent = false,
-                        isExpanded = requestItem.collapsedUiItem.isExpanded,
-                        onExpandedChange = {
-                            onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
-                        },
-                        throttleClicks = false,
-                    )
+//                    WrapExpandableListItem(
+//                        data = ExpandableListItem.SingleListItemData(
+//                            collapsed = requestItem.collapsedUiItem.uiItem,
+//                            expanded = requestItem.expandedUiItems.map { it.uiItem }
+//                        ),
+//                        onItemClick = { item ->
+//                            onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
+//                        },
+//                        modifier = Modifier.fillMaxWidth(),
+//                        hideSensitiveContent = false,
+//                        isExpanded = requestItem.collapsedUiItem.isExpanded,
+//                        onExpandedChange = {
+//                            onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
+//                        },
+//                        throttleClicks = false,
+//                    )
                 }
             }
 
@@ -305,169 +291,181 @@ private fun SheetContent(
         }
     }
 }
-
-@OptIn(ExperimentalMaterial3Api::class)
-@ThemeModePreviews
-@Composable
-private fun ContentPreview() {
-    PreviewTheme {
-        Content(
-            state = State(
-                headerConfig = ContentHeaderConfig(
-                    description = stringResource(R.string.request_header_description),
-                    mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyData(
-                        isVerified = true,
-                        name = stringResource(R.string.request_relying_party_default_name),
-                        description = stringResource(R.string.request_relying_party_description)
-                    )
-                ),
-                items = listOf(
-                    RequestDocumentItemUi(
-                        collapsedUiItem = CollapsedUiItem(
-                            isExpanded = false,
-                            uiItem = ListItemData(
-                                itemId = "000",
-                                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
-                                supportingText = stringResource(R.string.request_collapsed_supporting_text),
-                                trailingContentData = ListItemTrailingContentData.Icon(
-                                    iconData = AppIcons.KeyboardArrowDown
-                                ),
-                            )
-                        ),
-                        expandedUiItems = listOf(
-                            ExpandedUiItem(
-                                domainPayload = DocumentPayloadDomain(
-                                    docName = "docName",
-                                    docId = "docId",
-                                    docNamespace = "docNamespace",
-                                    docClaimsDomain = listOf(
-                                        RequestDocumentClaim(
-                                            elementIdentifier = "elementIdentifier",
-                                            value = "value",
-                                            readableName = "readableName",
-                                            isRequired = true,
-                                            isAvailable = true,
-                                            path = listOf(),
-                                        )
-                                    )
-                                ),
-                                uiItem = ListItemData(
-                                    itemId = "00",
-                                    overlineText = "Family name",
-                                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
-                                )
-                            ),
-                        )
-                    ),
-                    RequestDocumentItemUi(
-                        collapsedUiItem = CollapsedUiItem(
-                            isExpanded = true,
-                            uiItem = ListItemData(
-                                itemId = "111",
-                                mainContentData = ListItemMainContentData.Text(text = "mDL"),
-                                supportingText = stringResource(R.string.request_collapsed_supporting_text),
-                                trailingContentData = ListItemTrailingContentData.Icon(
-                                    iconData = AppIcons.KeyboardArrowUp
-                                ),
-                            )
-                        ),
-                        expandedUiItems = listOf(
-                            ExpandedUiItem(
-                                domainPayload = DocumentPayloadDomain(
-                                    docName = "docName",
-                                    docId = "docId",
-                                    docNamespace = "docNamespace",
-                                    docClaimsDomain = listOf(
-                                        RequestDocumentClaim(
-                                            elementIdentifier = "elementIdentifier",
-                                            value = "value",
-                                            readableName = "readableName",
-                                            isRequired = true,
-                                            isAvailable = true,
-                                            path = listOf(),
-                                        )
-                                    )
-                                ),
-                                uiItem = ListItemData(
-                                    itemId = "10",
-                                    overlineText = "Family name",
-                                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
-                                    trailingContentData = ListItemTrailingContentData.Checkbox(
-                                        checkboxData = CheckboxData(
-                                            isChecked = false
-                                        )
-                                    )
-                                ),
-                            ),
-                            ExpandedUiItem(
-                                domainPayload = DocumentPayloadDomain(
-                                    docName = "docName",
-                                    docId = "docId",
-                                    docNamespace = "docNamespace",
-                                    docClaimsDomain = listOf(
-                                        RequestDocumentClaim(
-                                            elementIdentifier = "elementIdentifier",
-                                            value = "value",
-                                            readableName = "readableName",
-                                            isRequired = true,
-                                            isAvailable = true,
-                                            path = listOf(),
-                                        )
-                                    )
-                                ),
-                                uiItem = ListItemData(
-                                    itemId = "11",
-                                    overlineText = "Given name",
-                                    mainContentData = ListItemMainContentData.Text(text = "John"),
-                                    trailingContentData = ListItemTrailingContentData.Checkbox(
-                                        checkboxData = CheckboxData(
-                                            isChecked = true
-                                        )
-                                    )
-                                ),
-                            ),
-                            ExpandedUiItem(
-                                domainPayload = DocumentPayloadDomain(
-                                    docName = "docName",
-                                    docId = "docId",
-                                    docNamespace = "docNamespace",
-                                    docClaimsDomain = listOf(
-                                        RequestDocumentClaim(
-                                            elementIdentifier = "elementIdentifier",
-                                            value = "value",
-                                            readableName = "readableName",
-                                            isRequired = true,
-                                            isAvailable = true,
-                                            path = listOf(),
-                                        )
-                                    )
-                                ),
-                                uiItem = ListItemData(
-                                    itemId = "12",
-                                    overlineText = "Age in years",
-                                    mainContentData = ListItemMainContentData.Text(text = "18"),
-                                    trailingContentData = ListItemTrailingContentData.Checkbox(
-                                        checkboxData = CheckboxData(
-                                            isChecked = true,
-                                            enabled = false,
-                                        )
-                                    )
-                                ),
-                            ),
-                        )
-                    ),
-                )
-            ),
-            effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {},
-            onNavigationRequested = {},
-            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
-            coroutineScope = rememberCoroutineScope(),
-            modalBottomSheetState = rememberModalBottomSheetState()
-        )
-    }
-}
+//
+//@OptIn(ExperimentalMaterial3Api::class)
+//@ThemeModePreviews
+//@Composable
+//private fun ContentPreview() {
+//    PreviewTheme {
+//        Content(
+//            state = State(
+//                headerConfig = ContentHeaderConfig(
+//                    description = stringResource(R.string.request_header_description),
+//                    mainText = stringResource(R.string.request_header_main_text),
+//                    relyingPartyData = RelyingPartyData(
+//                        isVerified = true,
+//                        name = stringResource(R.string.request_relying_party_default_name),
+//                        description = stringResource(R.string.request_relying_party_description)
+//                    )
+//                ),
+//                items = listOf(
+//                    RequestDocumentItemUi(
+//                        collapsedUiItem = CollapsedUiItem(
+//                            isExpanded = false,
+//                            uiItem = ListItemData(
+//                                itemId = "000",
+//                                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+//                                supportingText = stringResource(R.string.request_collapsed_supporting_text),
+//                                trailingContentData = ListItemTrailingContentData.Icon(
+//                                    iconData = AppIcons.KeyboardArrowDown
+//                                ),
+//                            )
+//                        ),
+//                        expandedUiItems = listOf(
+//                            DocumentUiItem(
+//                                domainPayload = DocumentPayloadDomain(
+//                                    docName = "docName",
+//                                    docId = "docId",
+//                                    docNamespace = "docNamespace",
+//                                    docClaimsDomain = listOf(
+//                                        RequestDocumentClaim(
+//                                            value = DomainClaim.Claim.Primitive(
+//                                                key = "key",
+//                                                displayTitle = "title",
+//                                                value = "value",
+//                                                path = listOf()
+//                                            ),
+//                                            isRequired = true,
+//                                            isAvailable = true,
+//                                            path = listOf(),
+//                                        )
+//                                    )
+//                                ),
+//                                uiItem = ListItemData(
+//                                    itemId = "00",
+//                                    overlineText = "Family name",
+//                                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
+//                                )
+//                            ),
+//                        )
+//                    ),
+//                    RequestDocumentItemUi(
+//                        collapsedUiItem = CollapsedUiItem(
+//                            isExpanded = true,
+//                            uiItem = ListItemData(
+//                                itemId = "111",
+//                                mainContentData = ListItemMainContentData.Text(text = "mDL"),
+//                                supportingText = stringResource(R.string.request_collapsed_supporting_text),
+//                                trailingContentData = ListItemTrailingContentData.Icon(
+//                                    iconData = AppIcons.KeyboardArrowUp
+//                                ),
+//                            )
+//                        ),
+//                        expandedUiItems = listOf(
+//                            DocumentUiItem(
+//                                domainPayload = DocumentPayloadDomain(
+//                                    docName = "docName",
+//                                    docId = "docId",
+//                                    docNamespace = "docNamespace",
+//                                    docClaimsDomain = listOf(
+//                                        RequestDocumentClaim(
+//                                            value = DomainClaim.Claim.Primitive(
+//                                                key = "key",
+//                                                displayTitle = "title",
+//                                                value = "value",
+//                                                path = listOf()
+//                                            ),
+//                                            isRequired = true,
+//                                            isAvailable = true,
+//                                            path = listOf(),
+//                                        )
+//                                    )
+//                                ),
+//                                uiItem = ListItemData(
+//                                    itemId = "10",
+//                                    overlineText = "Family name",
+//                                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
+//                                    trailingContentData = ListItemTrailingContentData.Checkbox(
+//                                        checkboxData = CheckboxData(
+//                                            isChecked = false
+//                                        )
+//                                    )
+//                                ),
+//                            ),
+//                            DocumentUiItem(
+//                                domainPayload = DocumentPayloadDomain(
+//                                    docName = "docName",
+//                                    docId = "docId",
+//                                    docNamespace = "docNamespace",
+//                                    docClaimsDomain = listOf(
+//                                        RequestDocumentClaim(
+//                                            value = DomainClaim.Claim.Primitive(
+//                                                key = "key",
+//                                                displayTitle = "title",
+//                                                value = "value",
+//                                                path = listOf()
+//                                            ),
+//                                            isRequired = true,
+//                                            isAvailable = true,
+//                                            path = listOf(),
+//                                        )
+//                                    )
+//                                ),
+//                                uiItem = ListItemData(
+//                                    itemId = "11",
+//                                    overlineText = "Given name",
+//                                    mainContentData = ListItemMainContentData.Text(text = "John"),
+//                                    trailingContentData = ListItemTrailingContentData.Checkbox(
+//                                        checkboxData = CheckboxData(
+//                                            isChecked = true
+//                                        )
+//                                    )
+//                                ),
+//                            ),
+//                            DocumentUiItem(
+//                                domainPayload = DocumentPayloadDomain(
+//                                    docName = "docName",
+//                                    docId = "docId",
+//                                    docNamespace = "docNamespace",
+//                                    docClaimsDomain = listOf(
+//                                        RequestDocumentClaim(
+//                                            value = DomainClaim.Claim.Primitive(
+//                                                key = "key",
+//                                                displayTitle = "title",
+//                                                value = "value",
+//                                                path = listOf()
+//                                            ),
+//                                            isRequired = true,
+//                                            isAvailable = true,
+//                                            path = listOf(),
+//                                        )
+//                                    )
+//                                ),
+//                                uiItem = ListItemData(
+//                                    itemId = "12",
+//                                    overlineText = "Age in years",
+//                                    mainContentData = ListItemMainContentData.Text(text = "18"),
+//                                    trailingContentData = ListItemTrailingContentData.Checkbox(
+//                                        checkboxData = CheckboxData(
+//                                            isChecked = true,
+//                                            enabled = false,
+//                                        )
+//                                    )
+//                                ),
+//                            ),
+//                        )
+//                    ),
+//                )
+//            ),
+//            effectFlow = Channel<Effect>().receiveAsFlow(),
+//            onEventSend = {},
+//            onNavigationRequested = {},
+//            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
+//            coroutineScope = rememberCoroutineScope(),
+//            modalBottomSheetState = rememberModalBottomSheetState()
+//        )
+//    }
+//}
 
 @ThemeModePreviews
 @Composable

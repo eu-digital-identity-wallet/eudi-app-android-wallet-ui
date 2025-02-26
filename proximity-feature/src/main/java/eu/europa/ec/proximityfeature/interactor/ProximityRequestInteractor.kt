@@ -85,8 +85,7 @@ class ProximityRequestInteractorImpl(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
                             requestDocuments = transformToUiItems(
-                                documentsDomain = requestDataUi.getOrThrow(),
-                                resourceProvider = resourceProvider,
+                                documentsDomain = requestDataUi.getOrThrow()
                             )
                         )
                     }

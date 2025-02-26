@@ -37,14 +37,14 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 sealed class ExpandableListItem {
     abstract val collapsed: ListItemData
 
-    data class SingleListItemData(
-        override val collapsed: ListItemData,
-        val expanded: List<ListItemData>,
+    data class SingleListItemData( // Leaf
+        override val collapsed: ListItemData
     ) : ExpandableListItem()
 
-    data class NestedListItemData(
+    data class NestedListItemData( // Group
         override val collapsed: ListItemData,
         val expanded: List<ExpandableListItem>,
+        val isExpanded: Boolean
     ) : ExpandableListItem()
 }
 
@@ -80,7 +80,7 @@ fun WrapExpandableListItem(
             )
         },
         cardExpandedContent = {
-            if (data is ExpandableListItem.SingleListItemData) {
+            if (data is ExpandableListItem.NestedListItemData) {
                 WrapListItems(
                     items = data.expanded,
                     onItemClick = onItemClick,
@@ -106,7 +106,7 @@ fun WrapExpandableListItem(
 @Composable
 private fun WrapExpandableListItemPreview() {
     PreviewTheme {
-        val data = ExpandableListItem.SingleListItemData(
+        val data = ExpandableListItem.NestedListItemData(
             collapsed = ListItemData(
                 itemId = "0",
                 mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
@@ -115,21 +115,21 @@ private fun WrapExpandableListItemPreview() {
                     iconData = AppIcons.KeyboardArrowDown
                 ),
             ),
+            isExpanded = true,
             expanded = listOf(
-                ListItemData(
-                    itemId = "1",
-                    overlineText = "Family name",
-                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                ExpandableListItem.SingleListItemData(
+                    ListItemData(
+                        itemId = "1",
+                        overlineText = "Family name",
+                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                    )
                 ),
-                ListItemData(
-                    itemId = "2",
-                    overlineText = "Given name",
-                    mainContentData = ListItemMainContentData.Text(text = "John"),
-                ),
-                ListItemData(
-                    itemId = "3",
-                    overlineText = "Date of birth",
-                    mainContentData = ListItemMainContentData.Text(text = "21 Oct 2023"),
+                ExpandableListItem.SingleListItemData(
+                    ListItemData(
+                        itemId = "1",
+                        overlineText = "Given Name",
+                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                    )
                 ),
             )
         )

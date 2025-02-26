@@ -20,7 +20,6 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.toListItemData
 import eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsDocumentItem
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
-import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
@@ -28,10 +27,6 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import kotlinx.coroutines.flow.Flow
@@ -106,17 +101,17 @@ class DocumentIssuanceSuccessInteractorImpl(
                         .toListItemData()
 
                     val documentUi = DocumentSuccessItemUi(
-                        collapsedUiItem = CollapsedUiItem(
-                            uiItem = ListItemData(
-                                itemId = documentId,
-                                mainContentData = ListItemMainContentData.Text(text = document.name),
-                                supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
-                                trailingContentData = ListItemTrailingContentData.Icon(
-                                    iconData = AppIcons.KeyboardArrowDown
-                                )
-                            ),
-                            isExpanded = false
-                        ),
+//                        collapsedUiItem = CollapsedUiItem(
+//                            uiItem = ListItemData(
+//                                itemId = documentId,
+//                                mainContentData = ListItemMainContentData.Text(text = document.name),
+//                                supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
+//                                trailingContentData = ListItemTrailingContentData.Icon(
+//                                    iconData = AppIcons.KeyboardArrowDown
+//                                )
+//                            ),
+//                            isExpanded = false
+//                        ),
                         expandedUiItems = detailsDocumentItems
                     )
 

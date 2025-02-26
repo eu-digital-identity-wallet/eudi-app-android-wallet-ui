@@ -20,8 +20,6 @@ import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.uilogic.component.AppIconAndTextData
-import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -94,39 +92,39 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun expandOrCollapseSuccessDocumentItem(id: String) {
-        val currentItems = viewState.value.items
-        val updatedItems = currentItems.map { item ->
-            if (item.collapsedUiItem.uiItem.itemId == id) {
-
-                val newIsExpanded = !item.collapsedUiItem.isExpanded
-
-                // Change the Icon based on the new isExpanded state
-                val newIconData = if (newIsExpanded) {
-                    AppIcons.KeyboardArrowUp
-                } else {
-                    AppIcons.KeyboardArrowDown
-                }
-
-                item.copy(
-                    collapsedUiItem = item.collapsedUiItem.copy(
-                        isExpanded = newIsExpanded,
-                        uiItem = item.collapsedUiItem.uiItem.copy(
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = newIconData
-                            )
-                        )
-                    )
-                )
-            } else {
-                item
-            }
-        }
-
-        setState {
-            copy(
-                items = updatedItems
-            )
-        }
+//        val currentItems = viewState.value.items
+//        val updatedItems = currentItems.map { item ->
+//            if (item.collapsedUiItem.uiItem.itemId == id) {
+//
+//                val newIsExpanded = !item.collapsedUiItem.isExpanded
+//
+//                // Change the Icon based on the new isExpanded state
+//                val newIconData = if (newIsExpanded) {
+//                    AppIcons.KeyboardArrowUp
+//                } else {
+//                    AppIcons.KeyboardArrowDown
+//                }
+//
+//                item.copy(
+//                    collapsedUiItem = item.collapsedUiItem.copy(
+//                        isExpanded = newIsExpanded,
+//                        uiItem = item.collapsedUiItem.uiItem.copy(
+//                            trailingContentData = ListItemTrailingContentData.Icon(
+//                                iconData = newIconData
+//                            )
+//                        )
+//                    )
+//                )
+//            } else {
+//                item
+//            }
+//        }
+//
+//        setState {
+//            copy(
+//                items = updatedItems
+//            )
+//        }
     }
 
     private fun doNavigation(navigation: ConfigNavigation) {

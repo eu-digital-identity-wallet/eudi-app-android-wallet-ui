@@ -84,8 +84,7 @@ class PresentationRequestInteractorImpl(
                             verifierName = response.verifierName,
                             verifierIsTrusted = response.verifierIsTrusted,
                             requestDocuments = RequestTransformer.transformToUiItems(
-                                documentsDomain = requestDataUi.getOrThrow(),
-                                resourceProvider = resourceProvider,
+                                documentsDomain = requestDataUi.getOrThrow()
                             )
                         )
                     }

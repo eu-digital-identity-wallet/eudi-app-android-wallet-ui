@@ -136,7 +136,7 @@ fun transformToDocumentDetailsDocumentItem(
 
     parseKeyValueUi(
         item = item,
-        groupIdentifier = localizedKey,
+//        groupIdentifier = localizedKey,
         groupIdentifierKey = key,
         resourceProvider = resourceProvider,
         allItems = values

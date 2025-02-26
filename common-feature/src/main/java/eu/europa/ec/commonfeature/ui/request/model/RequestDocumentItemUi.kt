@@ -18,38 +18,34 @@ package eu.europa.ec.commonfeature.ui.request.model
 
 import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim
 import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.NameSpace
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+
+//data class RequestDocumentItemUi(
+//    val collapsedUiItem: CollapsedUiItem,
+//    val expandedUiItems: List<ExpandedUiItem>
+//)
+//
+//data class CollapsedUiItem(
+//    val isExpanded: Boolean,
+//    val uiItem: ListItemData,
+//)
 
 data class RequestDocumentItemUi(
-    val collapsedUiItem: CollapsedUiItem,
-    val expandedUiItems: List<ExpandedUiItem>
-)
-
-data class CollapsedUiItem(
-    val isExpanded: Boolean,
-    val uiItem: ListItemData,
-)
-
-data class ExpandedUiItem(
     val domainPayload: DocumentPayloadDomain,
-    val uiItem: ListItemData,
+    val uiItem: List<ExpandableListItem>,
 )
 
 data class DocumentPayloadDomain(
     val docName: String,
     val docId: DocumentId,
     val docNamespace: NameSpace?,
-    val docClaimsDomain: List<RequestDocumentClaim>,
+    val docClaimsDomain: List<DomainClaim>,
 )
 
-data class RequestDocumentClaim(
-    val elementIdentifier: ElementIdentifier,
-    val value: String,
-    val newValue: DomainClaim? = null,
-    val readableName: String,
-    val isRequired: Boolean,
-    val isAvailable: Boolean,
-    val path: List<String>,
-)
+//data class RequestDocumentClaim(
+//    val value: DomainClaim,
+//    val isRequired: Boolean,
+//    val isAvailable: Boolean,
+//    val path: List<String>,
+//)

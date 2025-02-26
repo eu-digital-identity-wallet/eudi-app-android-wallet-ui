@@ -16,10 +16,10 @@
 
 package eu.europa.ec.commonfeature.ui.document_success.model
 
-import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
+//import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.uilogic.component.ListItemData
 
 data class DocumentSuccessItemUi(
-    val collapsedUiItem: CollapsedUiItem,
+//    val collapsedUiItem: CollapsedUiItem,
     val expandedUiItems: List<ListItemData>,
 )

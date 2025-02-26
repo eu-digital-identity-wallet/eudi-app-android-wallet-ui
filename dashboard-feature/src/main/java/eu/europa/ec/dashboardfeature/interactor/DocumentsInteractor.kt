@@ -58,9 +58,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
-import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -201,31 +199,31 @@ class DocumentsInteractorImpl(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     ),
-                    expanded = filterGroup.filters.map { filterItem ->
-                        ListItemData(
-                            itemId = filterItem.id,
-                            mainContentData = ListItemMainContentData.Text(filterItem.name),
-                            trailingContentData = when (filterGroup) {
-                                is FilterGroup.MultipleSelectionFilterGroup<*> -> {
-                                    ListItemTrailingContentData.Checkbox(
-                                        checkboxData = CheckboxData(
-                                            isChecked = filterItem.selected,
-                                            enabled = true
-                                        )
-                                    )
-                                }
-
-                                is FilterGroup.SingleSelectionFilterGroup -> {
-                                    ListItemTrailingContentData.RadioButton(
-                                        radioButtonData = RadioButtonData(
-                                            isSelected = filterItem.selected,
-                                            enabled = true
-                                        )
-                                    )
-                                }
-                            },
-                        )
-                    }
+//                    expanded = filterGroup.filters.map { filterItem ->
+//                        ListItemData(
+//                            itemId = filterItem.id,
+//                            mainContentData = ListItemMainContentData.Text(filterItem.name),
+//                            trailingContentData = when (filterGroup) {
+//                                is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+//                                    ListItemTrailingContentData.Checkbox(
+//                                        checkboxData = CheckboxData(
+//                                            isChecked = filterItem.selected,
+//                                            enabled = true
+//                                        )
+//                                    )
+//                                }
+//
+//                                is FilterGroup.SingleSelectionFilterGroup -> {
+//                                    ListItemTrailingContentData.RadioButton(
+//                                        radioButtonData = RadioButtonData(
+//                                            isSelected = filterItem.selected,
+//                                            enabled = true
+//                                        )
+//                                    )
+//                                }
+//                            },
+//                        )
+//                    }
                 )
             }
 

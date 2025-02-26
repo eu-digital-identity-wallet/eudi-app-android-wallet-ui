@@ -16,17 +16,12 @@
 
 package eu.europa.ec.commonfeature.ui.request.transformer
 
-import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
-import eu.europa.ec.commonfeature.ui.request.model.ExpandedUiItem
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentClaim
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.docNamespace
-import eu.europa.ec.commonfeature.util.generateUniqueFieldId
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
-import eu.europa.ec.commonfeature.util.parseKeyValueUi
-import eu.europa.ec.commonfeature.util.parseKeyValueUi2
+import eu.europa.ec.commonfeature.util.parseClaimsToDomain
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
@@ -36,6 +31,7 @@ import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
@@ -52,6 +48,7 @@ import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
     when (documentIdentifier) {
@@ -81,19 +78,30 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
     }
 
 sealed class DomainClaim {
-    abstract val key: String
-    abstract val displayTitle: String
 
-    data class ClaimArray(
-        override val key: String,
-        override val displayTitle: String,
-        val items: List<DomainClaim>,
-    ) : DomainClaim()
+    sealed class Claim : DomainClaim() {
+        abstract val key: ElementIdentifier
+        abstract val displayTitle: String
+        abstract val path: List<String>
 
-    data class ClaimPrimitive(
-        override val key: String,
-        override val displayTitle: String,
-        val value: String,
+        data class Group(
+            override val key: ElementIdentifier,
+            override val displayTitle: String,
+            override val path: List<String>,
+            val items: List<DomainClaim>,
+        ) : Claim()
+
+        data class Primitive(
+            override val key: ElementIdentifier,
+            override val displayTitle: String,
+            override val path: List<String>,
+            val isRequired: Boolean,
+            val value: String,
+        ) : Claim()
+    }
+
+    data class NotAvailableClaim(
+        val displayTitle: String,
     ) : DomainClaim()
 }
 
@@ -114,67 +122,45 @@ object RequestTransformer {
             val docId: DocumentId = storageDocument.id
             val docNamespace: NameSpace? = storageDocument.docNamespace
 
-            val requestDocumentClaims: MutableList<RequestDocumentClaim> = mutableListOf()
+            val requestDocumentClaims: MutableList<DomainClaim> = mutableListOf()
 
             requestDocument.requestedItems.keys.forEach { docItem ->
 
                 val documentClaim = storageDocument.findClaimFromDocItem(docItem)
-                val identifier = documentClaim?.identifier ?: return@forEach
+                val identifier = documentClaim?.identifier
 
                 val isRequired = getMandatoryFields(
                     documentIdentifier = storageDocument.toDocumentIdentifier()
                 ).contains(identifier)
 
-//                val documentClaim = storageDocument.data.claims.find {
-//                    it.identifier == docItem.elementIdentifier
-//                }
-
-
                 val display = storageDocument.metadata?.claims
                     ?.find { it.name.name == identifier }
                     ?.display
 
-
-                /*val elementIdentifier = documentClaim.metadata?.display?.firstOrNull {
-                    resourceProvider.getLocale().compareLocaleLanguage(it.locale)
-                }?.name ?: identifier*/
-
-                val readableName: String = display.getLocalizedClaimName(
-                    userLocale = userLocale,
-                    fallback = identifier
-                )
-
-                val (value, isAvailable) = try {
-                    val values = StringBuilder()
-                    val result = parseKeyValueUi2(
-                        coreClaim = documentClaim,
-                        readableName = readableName,
-                        groupIdentifierKey = identifier,
-                        resourceProvider = resourceProvider
+                val readableName: (String) -> String = { identifier ->
+                    display.getLocalizedClaimName(
+                        userLocale = userLocale,
+                        fallback = identifier
                     )
-                    println(result)
-                    parseKeyValueUi(
-                        item = documentClaim.value!!,
-                        groupIdentifier = readableName,
-                        groupIdentifierKey = identifier,
-                        resourceProvider = resourceProvider,
-                        allItems = values
-                    )
-                    values.toString() to true
-                } catch (_: Exception) {
-                    resourceProvider.getString(R.string.request_element_identifier_not_available) to false
                 }
 
-                requestDocumentClaims.add(
-                    RequestDocumentClaim(
-                        elementIdentifier = identifier,
-                        value = value,
+                val value = try {
+                    docItem.toPath()
+                    parseClaimsToDomain(
+                        coreClaim = documentClaim!!,
                         readableName = readableName,
-                        isRequired = isRequired,
-                        isAvailable = isAvailable,
-                        path = docItem.toPath()
+                        groupIdentifierKey = identifier!!,
+                        resourceProvider = resourceProvider,
+                        path = docItem.toPath(),
+                        isRequired = isRequired
                     )
-                )
+                } catch (_: Exception) {
+                    DomainClaim.NotAvailableClaim(
+                        displayTitle = resourceProvider.getString(R.string.request_element_identifier_not_available)
+                    )
+                }
+
+                requestDocumentClaims.add(value)
             }
 
             resultList.add(
@@ -182,7 +168,7 @@ object RequestTransformer {
                     docName = docName,
                     docId = docId,
                     docNamespace = docNamespace,
-                    docClaimsDomain = requestDocumentClaims.sortedBy { it.readableName.lowercase() },
+                    docClaimsDomain = requestDocumentClaims.sortedBy { (it as? DomainClaim.Claim)?.displayTitle?.lowercase() },
                 )
             )
         }
@@ -192,87 +178,109 @@ object RequestTransformer {
 
     fun transformToUiItems(
         documentsDomain: List<DocumentPayloadDomain>,
-        resourceProvider: ResourceProvider,
     ): List<RequestDocumentItemUi> {
-        return documentsDomain.map { docPayloadDomain ->
+        return documentsDomain.map {
+            RequestDocumentItemUi(
+                it,
+                it.toExpandableListItem()
+            )
+        }
+    }
 
-            val collapsedItemId = docPayloadDomain.docId
+    fun DocumentPayloadDomain.toExpandableListItem(): List<ExpandableListItem> {
+        return this.docClaimsDomain.map { claim ->
+            claim.toExpandableListItem(docId)
+        }
+    }
 
-            val expandedItems = docPayloadDomain.docClaimsDomain.map { docClaimDomain ->
-                val expandedItemId = generateUniqueFieldId(
-                    elementIdentifier = docClaimDomain.elementIdentifier,
-                    documentId = docPayloadDomain.docId,
+    fun DomainClaim.toExpandableListItem(docId: String): ExpandableListItem {
+        return when (this) {
+            is DomainClaim.Claim.Group -> {
+                ExpandableListItem.NestedListItemData(
+                    collapsed = ListItemData(
+                        itemId = path.toString(),
+                        mainContentData = ListItemMainContentData.Text(text = displayTitle),
+                        trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowRight)
+                    ),
+                    expanded = items.map { it.toExpandableListItem(docId) },
+                    isExpanded = false
                 )
+            }
 
+            is DomainClaim.Claim.Primitive -> {
                 val leadingContent =
-                    if (keyIsPortrait(key = docClaimDomain.elementIdentifier) && docClaimDomain.isAvailable) {
-                        ListItemLeadingContentData.UserImage(userBase64Image = docClaimDomain.value)
+                    if (keyIsPortrait(key = key)) {
+                        ListItemLeadingContentData.UserImage(userBase64Image = value)
                     } else {
                         null
                     }
 
                 val mainContent = when {
-                    keyIsPortrait(key = docClaimDomain.elementIdentifier) && docClaimDomain.isAvailable -> {
+                    keyIsPortrait(key = key) -> {
                         ListItemMainContentData.Text(text = "")
                     }
 
-                    keyIsSignature(key = docClaimDomain.elementIdentifier) && docClaimDomain.isAvailable -> {
-                        ListItemMainContentData.Image(base64Image = docClaimDomain.value)
+                    keyIsSignature(key = key) -> {
+                        ListItemMainContentData.Image(base64Image = value)
                     }
 
                     else -> {
-                        ListItemMainContentData.Text(text = docClaimDomain.value)
+                        ListItemMainContentData.Text(text = value)
                     }
                 }
 
-                ExpandedUiItem(
-                    domainPayload = docPayloadDomain,
-                    uiItem = ListItemData(
-                        itemId = expandedItemId,
+                ExpandableListItem.SingleListItemData(
+                    collapsed = ListItemData(
+                        itemId = key,
                         mainContentData = mainContent,
-                        overlineText = docClaimDomain.readableName,
+                        overlineText = displayTitle,
                         leadingContentData = leadingContent,
                         trailingContentData = ListItemTrailingContentData.Checkbox(
-                            checkboxData = CheckboxData(
-                                isChecked = docClaimDomain.isAvailable,
-                                enabled = docClaimDomain.isAvailable && !docClaimDomain.isRequired,
-                                onCheckedChange = null,
+                            CheckboxData(
+                                isChecked = true,
+                                enabled = isRequired
                             )
                         )
                     )
                 )
             }
 
-            RequestDocumentItemUi(
-                collapsedUiItem = CollapsedUiItem(
-                    uiItem = ListItemData(
-                        itemId = collapsedItemId,
-                        mainContentData = ListItemMainContentData.Text(text = docPayloadDomain.docName),
-                        supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = AppIcons.KeyboardArrowDown
+            is DomainClaim.NotAvailableClaim -> {
+                ExpandableListItem.SingleListItemData(
+                    collapsed = ListItemData(
+                        itemId = "", // TODO revisit
+                        mainContentData = ListItemMainContentData.Text(text = displayTitle),
+                        trailingContentData = ListItemTrailingContentData.Checkbox(
+                            CheckboxData(
+                                isChecked = false,
+                                enabled = false
+                            )
                         )
-                    ),
-                    isExpanded = false
-                ),
-                expandedUiItems = expandedItems
-            )
+                    )
+                )
+            }
         }
     }
 
+
     fun createDisclosedDocuments(items: List<RequestDocumentItemUi>): DisclosedDocuments {
         // Collect all selected expanded items from the list
-        val selectedItems = items.flatMap { requestItem ->
-            requestItem.expandedUiItems.filter { uiPayload ->
-                // Filter only the items the user has selected
-                uiPayload.uiItem.trailingContentData is ListItemTrailingContentData.Checkbox &&
-                        (uiPayload.uiItem.trailingContentData as ListItemTrailingContentData.Checkbox)
-                            .checkboxData.isChecked
-            }
-        }
+        fun ExpandableListItem.collectSingles(): List<ExpandableListItem.SingleListItemData> =
+            when (this) {
+                is ExpandableListItem.SingleListItemData -> {
+                    val isSelected =
+                        collapsed.trailingContentData is ListItemTrailingContentData.Checkbox &&
+                                (collapsed.trailingContentData as ListItemTrailingContentData.Checkbox)
+                                    .checkboxData.isChecked
+                    if (isSelected) listOf(this) else emptyList()
+                }
 
-        // Group the selected items by their domain payload (document-level grouping)
-        val groupedByDocument = selectedItems.groupBy { it.domainPayload }
+                is ExpandableListItem.NestedListItemData -> expanded.flatMap { it.collectSingles() }
+            }
+
+        val groupedByDocument = items.map {
+            it.domainPayload to it.uiItem.flatMap { uiItem -> uiItem.collectSingles() }
+        }
 
         // Convert to the format required by DisclosedDocuments
         val disclosedDocuments =
@@ -280,37 +288,14 @@ object RequestTransformer {
 
                 val disclosedItems = selectedItemsForDocument.map { selectedItem ->
 
-                    val value = when (val mainContentData = selectedItem.uiItem.mainContentData) {
-                        is ListItemMainContentData.Image -> mainContentData.base64Image
-
-                        is ListItemMainContentData.Text -> {
-                            (selectedItem.uiItem.leadingContentData as? ListItemLeadingContentData.UserImage)?.userBase64Image
-                                ?: mainContentData.text
-                        }
-
-                        is ListItemMainContentData.Actionable<*> -> {
-                            (selectedItem.uiItem.leadingContentData as? ListItemLeadingContentData.UserImage)?.userBase64Image
-                                ?: mainContentData.text
-                        }
-                    }
-
-                    //TODO needs rework?
-                    val elementIdentifier = documentPayload.docClaimsDomain
-                        .find { it.value == value }
-                        ?.elementIdentifier ?: ""
-
-                    val path: List<String> = documentPayload.docClaimsDomain
-                        .find { it.value == value } //TODO is this correct?
-                        ?.path ?: listOf()
-
                     when (documentPayload.docNamespace) {
                         null -> SdJwtVcItem(
-                            path
+                            selectedItem.collapsed.itemId.split(",")
                         )
 
                         else -> MsoMdocItem(
                             namespace = documentPayload.docNamespace,
-                            elementIdentifier = elementIdentifier
+                            elementIdentifier = selectedItem.collapsed.itemId
                         )
                     }
                 }
@@ -350,13 +335,8 @@ fun IssuedDocument.findClaimFromPath(path: List<String>): DocumentClaim? {
         }
 
         is SdJwtVcFormat -> {
-            var claim: SdJwtVcClaim? = null
-            for (claimId in path) {
-                claim = claim?.children?.firstOrNull { it.identifier == claimId }
-                    ?: data.claims.filterIsInstance<SdJwtVcClaim>()
-                        .firstOrNull { it.identifier == claimId }
-            }
-            claim
+            data.claims.filterIsInstance<SdJwtVcClaim>()
+                .firstOrNull { it.identifier == path.first() }
         }
     }
 }

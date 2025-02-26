@@ -21,8 +21,6 @@ import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim
-import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim.ClaimArray
-import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim.ClaimPrimitive
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -114,19 +112,20 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
-fun parseKeyValueUi2(
+fun parseClaimsToDomain(
     coreClaim: DocumentClaim,
-    readableName: String,
+    readableName: (String) -> String,
     groupIdentifierKey: String,
     keyIdentifier: String = "",
     resourceProvider: ResourceProvider,
+    path: List<String>,
+    isRequired: Boolean,
 ): DomainClaim {
     return when (coreClaim) {
         is MsoMdocClaim -> {
             val value = buildString {
                 parseKeyValueUi(
                     item = coreClaim.value!!,
-                    groupIdentifier = readableName,
                     groupIdentifierKey = groupIdentifierKey,
                     keyIdentifier = keyIdentifier,
                     resourceProvider = resourceProvider,
@@ -134,10 +133,12 @@ fun parseKeyValueUi2(
                 )
             }
 
-            ClaimPrimitive(
+            DomainClaim.Claim.Primitive(
                 key = groupIdentifierKey,
                 value = value,
-                displayTitle = readableName
+                displayTitle = readableName(groupIdentifierKey),
+                path = path,
+                isRequired = isRequired
             )
         }
 
@@ -147,31 +148,37 @@ fun parseKeyValueUi2(
                 val value = buildString {
                     parseKeyValueUi(
                         item = coreClaim.value!!,
-                        groupIdentifier = readableName,
-                        groupIdentifierKey = groupIdentifierKey, //or coreClaim.identifier
+                        groupIdentifierKey = coreClaim.identifier,
                         keyIdentifier = keyIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = this
                     )
                 }
 
-                ClaimPrimitive(
-                    key = groupIdentifierKey, //or coreClaim.identifier
+                DomainClaim.Claim.Primitive(
+                    key = coreClaim.identifier,
                     value = value,
-                    displayTitle = readableName
+                    displayTitle = readableName(coreClaim.identifier),
+                    path = path,
+                    isRequired = isRequired
                 )
             } else {
                 val result = coreClaim.children.map {
-                    parseKeyValueUi2(
+                    parseClaimsToDomain(
                         coreClaim = it,
                         readableName = readableName,
                         groupIdentifierKey = coreClaim.identifier,
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        path = path,
+                        isRequired = isRequired
                     )
                 }
 
-                ClaimArray(
-                    items = result, key = coreClaim.identifier, displayTitle = readableName
+                DomainClaim.Claim.Group(
+                    items = result,
+                    key = coreClaim.identifier,
+                    displayTitle = readableName(coreClaim.identifier),
+                    path = path
                 )
             }
         }
@@ -180,12 +187,10 @@ fun parseKeyValueUi2(
 
 fun parseKeyValueUi(
     item: Any,
-    groupIdentifier: String,
     groupIdentifierKey: String,
     keyIdentifier: String = "",
     resourceProvider: ResourceProvider,
     allItems: StringBuilder,
-    //children: List<SdJwtVcClaim> = emptyList()
 ) {
     when (item) {
 
@@ -194,7 +199,6 @@ fun parseKeyValueUi(
                 safeLet(key as? String, value) { key, value ->
                     parseKeyValueUi(
                         item = value,
-                        groupIdentifier = groupIdentifier,
                         groupIdentifierKey = groupIdentifierKey,
                         keyIdentifier = key,
                         resourceProvider = resourceProvider,
@@ -209,7 +213,6 @@ fun parseKeyValueUi(
                 value?.let {
                     parseKeyValueUi(
                         item = it,
-                        groupIdentifier = groupIdentifier,
                         groupIdentifierKey = groupIdentifierKey,
                         resourceProvider = resourceProvider,
                         allItems = allItems

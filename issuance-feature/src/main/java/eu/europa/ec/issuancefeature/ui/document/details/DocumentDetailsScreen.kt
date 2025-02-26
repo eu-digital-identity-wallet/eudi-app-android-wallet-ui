@@ -69,6 +69,7 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
@@ -364,7 +365,7 @@ private fun DocumentDetails(
 
         WrapListItems(
             modifier = Modifier.fillMaxWidth(),
-            items = documentDetailsUi.documentDetails,
+            items = documentDetailsUi.documentDetails.map { ExpandableListItem.SingleListItemData(it) },
             hideSensitiveContent = hideSensitiveContent,
             onItemClick = null,
         )
