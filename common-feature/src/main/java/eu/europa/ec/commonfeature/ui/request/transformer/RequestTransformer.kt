@@ -49,6 +49,7 @@ import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.PATH_SEPARATOR
 
 private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
     when (documentIdentifier) {
@@ -78,10 +79,10 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
     }
 
 sealed class DomainClaim {
+    abstract val key: ElementIdentifier
+    abstract val displayTitle: String
 
     sealed class Claim : DomainClaim() {
-        abstract val key: ElementIdentifier
-        abstract val displayTitle: String
         abstract val path: List<String>
 
         data class Group(
@@ -101,7 +102,8 @@ sealed class DomainClaim {
     }
 
     data class NotAvailableClaim(
-        val displayTitle: String,
+        override val key: ElementIdentifier,
+        override val displayTitle: String,
     ) : DomainClaim()
 }
 
@@ -144,21 +146,14 @@ object RequestTransformer {
                     )
                 }
 
-                val value = try {
-                    docItem.toPath()
-                    parseClaimsToDomain(
-                        coreClaim = documentClaim!!,
-                        readableName = readableName,
-                        groupIdentifierKey = identifier!!,
-                        resourceProvider = resourceProvider,
-                        path = docItem.toPath(),
-                        isRequired = isRequired
-                    )
-                } catch (_: Exception) {
-                    DomainClaim.NotAvailableClaim(
-                        displayTitle = resourceProvider.getString(R.string.request_element_identifier_not_available)
-                    )
-                }
+                val value = parseClaimsToDomain(
+                    coreClaim = documentClaim,
+                    readableName = readableName,
+                    groupIdentifierKey = identifier,
+                    resourceProvider = resourceProvider,
+                    path = docItem.toPath(),
+                    isRequired = isRequired
+                )
 
                 requestDocumentClaims.add(value)
             }
@@ -168,7 +163,7 @@ object RequestTransformer {
                     docName = docName,
                     docId = docId,
                     docNamespace = docNamespace,
-                    docClaimsDomain = requestDocumentClaims.sortedBy { (it as? DomainClaim.Claim)?.displayTitle?.lowercase() },
+                    docClaimsDomain = requestDocumentClaims.sortedBy { (it as? DomainClaim.Claim)?.displayTitle?.lowercase() }, //TODO
                 )
             )
         }
@@ -178,11 +173,22 @@ object RequestTransformer {
 
     fun transformToUiItems(
         documentsDomain: List<DocumentPayloadDomain>,
+        resourceProvider: ResourceProvider,
     ): List<RequestDocumentItemUi> {
         return documentsDomain.map {
             RequestDocumentItemUi(
-                it,
-                it.toExpandableListItem()
+                domainPayload = it,
+                headerUi = ExpandableListItem.SingleListItemData(
+                    collapsed = ListItemData(
+                        itemId = it.docId,
+                        mainContentData = ListItemMainContentData.Text(text = it.docName),
+                        supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowDown
+                        )
+                    )
+                ),
+                claimsUi = it.toExpandableListItem()
             )
         }
     }
@@ -198,12 +204,12 @@ object RequestTransformer {
             is DomainClaim.Claim.Group -> {
                 ExpandableListItem.NestedListItemData(
                     collapsed = ListItemData(
-                        itemId = path.toString(),
+                        itemId = path.joinToString(separator = PATH_SEPARATOR),
                         mainContentData = ListItemMainContentData.Text(text = displayTitle),
-                        trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowRight)
+                        trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowDown)
                     ),
                     expanded = items.map { it.toExpandableListItem(docId) },
-                    isExpanded = false
+                    isExpanded = true //TODO make it false by default
                 )
             }
 
@@ -231,7 +237,7 @@ object RequestTransformer {
 
                 ExpandableListItem.SingleListItemData(
                     collapsed = ListItemData(
-                        itemId = key,
+                        itemId = path.joinToString(separator = PATH_SEPARATOR),
                         mainContentData = mainContent,
                         overlineText = displayTitle,
                         leadingContentData = leadingContent,
@@ -250,6 +256,7 @@ object RequestTransformer {
                     collapsed = ListItemData(
                         itemId = "", // TODO revisit
                         mainContentData = ListItemMainContentData.Text(text = displayTitle),
+                        overlineText = key,
                         trailingContentData = ListItemTrailingContentData.Checkbox(
                             CheckboxData(
                                 isChecked = false,
@@ -279,7 +286,7 @@ object RequestTransformer {
             }
 
         val groupedByDocument = items.map {
-            it.domainPayload to it.uiItem.flatMap { uiItem -> uiItem.collectSingles() }
+            it.domainPayload to it.claimsUi.flatMap { uiItem -> uiItem.collectSingles() }
         }
 
         // Convert to the format required by DisclosedDocuments
@@ -290,7 +297,7 @@ object RequestTransformer {
 
                     when (documentPayload.docNamespace) {
                         null -> SdJwtVcItem(
-                            selectedItem.collapsed.itemId.split(",")
+                            selectedItem.collapsed.itemId.split(PATH_SEPARATOR) //or just have/carry the DocItem in the class and use it here as is
                         )
 
                         else -> MsoMdocItem(

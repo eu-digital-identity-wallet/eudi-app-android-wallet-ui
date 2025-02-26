@@ -16,7 +16,6 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -31,14 +30,15 @@ import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+
+const val PATH_SEPARATOR = ","
 
 sealed class ExpandableListItem {
     abstract val collapsed: ListItemData
 
     data class SingleListItemData( // Leaf
-        override val collapsed: ListItemData
+        override val collapsed: ListItemData //add DocItem
     ) : ExpandableListItem()
 
     data class NestedListItemData( // Group
@@ -50,11 +50,12 @@ sealed class ExpandableListItem {
 
 @Composable
 fun WrapExpandableListItem(
-    data: ExpandableListItem,
+    header: ListItemData,
+    data: List<ExpandableListItem>,
     onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
-    isExpanded: Boolean,
+    //isExpanded: Boolean,
     onExpandedChange: () -> Unit,
     throttleClicks: Boolean = true,
     collapsedMainContentVerticalPadding: Dp = SPACING_MEDIUM.dp,
@@ -68,7 +69,7 @@ fun WrapExpandableListItem(
         modifier = modifier,
         cardCollapsedContent = {
             WrapListItem(
-                item = data.collapsed,
+                item = header,
                 onItemClick = {
                     onExpandedChange()
                 },
@@ -80,23 +81,47 @@ fun WrapExpandableListItem(
             )
         },
         cardExpandedContent = {
-            if (data is ExpandableListItem.NestedListItemData) {
-                WrapListItems(
-                    items = data.expanded,
-                    onItemClick = onItemClick,
-                    hideSensitiveContent = hideSensitiveContent,
-                    mainContentVerticalPadding = expandedMainContentVerticalPadding,
-                    clickableAreas = expandedClickableAreas,
-                    addDivider = expandedAddDivider,
-                    shape = RoundedCornerShape(
-                        bottomStart = SIZE_SMALL.dp,
-                        bottomEnd = SIZE_SMALL.dp,
-                    ),
-                    colors = colors,
-                )
+            data.forEach {
+                when (it) {
+                    is ExpandableListItem.SingleListItemData -> {
+                        WrapListItem(
+                            item = it.collapsed,
+                            onItemClick = { item ->
+                                onItemClick?.invoke(item)//TODO
+                            },
+                            throttleClicks = throttleClicks,
+                            hideSensitiveContent = hideSensitiveContent,
+                            mainContentVerticalPadding = expandedMainContentVerticalPadding,
+                            clickableAreas = expandedClickableAreas,
+                            colors = colors,
+                        )
+                    }
+
+                    is ExpandableListItem.NestedListItemData -> {
+                        WrapExpandableListItem(
+                            header = it.collapsed,
+                            data = it.expanded,
+                            onItemClick = {
+                                onItemClick?.invoke(it)//TODO
+                            },
+                            onExpandedChange = {
+                                onExpandedChange() //TODO
+                            },
+                            modifier = modifier,
+                            hideSensitiveContent = hideSensitiveContent,
+                            collapsedMainContentVerticalPadding = collapsedMainContentVerticalPadding,
+                            collapsedClickableAreas = collapsedClickableAreas,
+                            expandedMainContentVerticalPadding = expandedMainContentVerticalPadding,
+                            expandedClickableAreas = expandedClickableAreas,
+                            expandedAddDivider = expandedAddDivider,
+                            colors = colors,
+                        )
+                    }
+                }
             }
         },
-        isExpanded = isExpanded,
+        //isExpanded = if (data is ExpandableListItem.NestedListItemData) data.isExpanded else false, //TODO is this ok?
+        isExpanded = true, //TODO is this ok?
         throttleClicks = throttleClicks,
         colors = colors,
     )
@@ -134,11 +159,11 @@ private fun WrapExpandableListItemPreview() {
             )
         )
 
-        WrapExpandableListItem(
+        /*WrapExpandableListItem(
             data = data,
-            isExpanded = true,
+            //isExpanded = true,
             onExpandedChange = {},
             onItemClick = {},
-        )
+        )*/
     }
 }

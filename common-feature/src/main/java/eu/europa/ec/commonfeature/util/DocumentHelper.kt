@@ -113,42 +113,21 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
     }
 
 fun parseClaimsToDomain(
-    coreClaim: DocumentClaim,
+    coreClaim: DocumentClaim?,
     readableName: (String) -> String,
-    groupIdentifierKey: String,
+    groupIdentifierKey: String?,
     keyIdentifier: String = "",
     resourceProvider: ResourceProvider,
     path: List<String>,
     isRequired: Boolean,
 ): DomainClaim {
-    return when (coreClaim) {
-        is MsoMdocClaim -> {
-            val value = buildString {
-                parseKeyValueUi(
-                    item = coreClaim.value!!,
-                    groupIdentifierKey = groupIdentifierKey,
-                    keyIdentifier = keyIdentifier,
-                    resourceProvider = resourceProvider,
-                    allItems = this
-                )
-            }
-
-            DomainClaim.Claim.Primitive(
-                key = groupIdentifierKey,
-                value = value,
-                displayTitle = readableName(groupIdentifierKey),
-                path = path,
-                isRequired = isRequired
-            )
-        }
-
-        is SdJwtVcClaim -> {
-            return if (coreClaim.children.isEmpty()) {
-
+    return try {
+        when (coreClaim!!) {
+            is MsoMdocClaim -> {
                 val value = buildString {
                     parseKeyValueUi(
-                        item = coreClaim.value!!,
-                        groupIdentifierKey = coreClaim.identifier,
+                        item = coreClaim.value!!, //TODO
+                        groupIdentifierKey = groupIdentifierKey!!,
                         keyIdentifier = keyIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = this
@@ -156,32 +135,60 @@ fun parseClaimsToDomain(
                 }
 
                 DomainClaim.Claim.Primitive(
-                    key = coreClaim.identifier,
+                    key = groupIdentifierKey!!,
                     value = value,
-                    displayTitle = readableName(coreClaim.identifier),
+                    displayTitle = readableName(groupIdentifierKey),
                     path = path,
                     isRequired = isRequired
                 )
-            } else {
-                val result = coreClaim.children.map {
-                    parseClaimsToDomain(
-                        coreClaim = it,
-                        readableName = readableName,
-                        groupIdentifierKey = coreClaim.identifier,
-                        resourceProvider = resourceProvider,
+            }
+
+            is SdJwtVcClaim -> {
+                return if (coreClaim.children.isEmpty()) {
+
+                    val value = buildString {
+                        parseKeyValueUi(
+                            item = coreClaim.value!!,
+                            groupIdentifierKey = coreClaim.identifier,
+                            keyIdentifier = keyIdentifier,
+                            resourceProvider = resourceProvider,
+                            allItems = this
+                        )
+                    }
+
+                    DomainClaim.Claim.Primitive(
+                        key = coreClaim.identifier,
+                        value = value,
+                        displayTitle = readableName(coreClaim.identifier),
                         path = path,
                         isRequired = isRequired
                     )
-                }
+                } else {
+                    val result = coreClaim.children.map {
+                        parseClaimsToDomain(
+                            coreClaim = it,
+                            readableName = readableName,
+                            groupIdentifierKey = coreClaim.identifier,
+                            resourceProvider = resourceProvider,
+                            path = path,
+                            isRequired = isRequired
+                        )
+                    }
 
-                DomainClaim.Claim.Group(
-                    items = result,
-                    key = coreClaim.identifier,
-                    displayTitle = readableName(coreClaim.identifier),
-                    path = path
-                )
+                    DomainClaim.Claim.Group(
+                        items = result,
+                        key = coreClaim.identifier,
+                        displayTitle = readableName(coreClaim.identifier),
+                        path = path
+                    )
+                }
             }
         }
+    } catch (_: Exception) {
+        DomainClaim.NotAvailableClaim(
+            key = readableName(groupIdentifierKey ?: path.firstOrNull().toString()), //TODO
+            displayTitle = resourceProvider.getString(R.string.request_element_identifier_not_available)
+        )
     }
 }
 

@@ -59,6 +59,7 @@ import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.TextConfig
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import kotlinx.coroutines.CoroutineScope
@@ -189,7 +190,7 @@ private fun Content(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = SPACING_SMALL.dp),
-            items = state.items,
+            requestDocuments = state.items,
             noData = state.noItems,
             onEventSend = onEventSend,
         )
@@ -221,7 +222,7 @@ private fun Content(
 @Composable
 private fun DisplayRequestItems(
     modifier: Modifier,
-    items: List<RequestDocumentItemUi>,
+    requestDocuments: List<RequestDocumentItemUi>,
     noData: Boolean,
     onEventSend: (Event) -> Unit,
 ) {
@@ -238,27 +239,40 @@ private fun DisplayRequestItems(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
             ) {
-                items.forEach { requestItem ->
-//                    WrapExpandableListItem(
-//                        data = ExpandableListItem.SingleListItemData(
-//                            collapsed = requestItem.collapsedUiItem.uiItem,
-//                            expanded = requestItem.expandedUiItems.map { it.uiItem }
-//                        ),
-//                        onItemClick = { item ->
-//                            onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
-//                        },
-//                        modifier = Modifier.fillMaxWidth(),
-//                        hideSensitiveContent = false,
-//                        isExpanded = requestItem.collapsedUiItem.isExpanded,
-//                        onExpandedChange = {
-//                            onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
-//                        },
-//                        throttleClicks = false,
-//                    )
+                requestDocuments.forEach { requestItem ->
+                    WrapExpandableListItem(
+                        header = requestItem.headerUi.collapsed,
+                        data = requestItem.claimsUi,
+                        onItemClick = { item ->
+                            //onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
+                            println("onItemClick ${item.itemId}")
+                        },
+                        onExpandedChange = {
+                            println("onExpandedChange ${requestItem.claimsUi}")
+                            //onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
+                        }
+                    )
+                    /*requestItem.uiItem.forEach { expandableListItem ->
+                        WrapExpandableListItem(
+                            data = expandableListItem,
+                            onItemClick = { item ->
+                                //onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
+                                println("onItemClick ${item.itemId}")
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            hideSensitiveContent = false,
+                            //isExpanded = requestItem.collapsedUiItem.isExpanded,
+                            onExpandedChange = {
+                                println("onExpandedChange ${requestItem.uiItem}")
+                                //onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
+                            },
+                            throttleClicks = false,
+                        )
+                    }*/
                 }
             }
 
-            if (items.isNotEmpty()) {
+            if (requestDocuments.isNotEmpty()) {
                 SectionTitle(
                     modifier = Modifier
                         .fillMaxWidth()
