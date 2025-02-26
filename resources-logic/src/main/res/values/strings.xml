@@ -262,6 +262,8 @@
     <string name="transactions_screen_search_no_results_id">noTransactionsId</string>
     <string name="transactions_screen_search_no_results">No transactions match your search. Try changing your search query or filters.</string>
     <string name="transactions_screen_minutes_ago_message">%1$s minutes ago</string>
+    <string name="transactions_screen_filters_ascending">Ascending</string>
+    <string name="transactions_screen_filters_descending">Descending</string>
     <string name="transaction_status_completed">Completed</string>
     <string name="transaction_status_failed">Failed</string>
 

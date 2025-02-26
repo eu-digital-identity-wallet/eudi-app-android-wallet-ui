@@ -75,8 +75,10 @@ fun provideDocumentsInteractor(
 @Factory
 fun provideTransactionInteractor(
     resourceProvider: ResourceProvider,
+    filterValidator: FilterValidator,
 ): TransactionsInteractor = TransactionsInteractorImpl(
     resourceProvider,
+    filterValidator
 )
 
 @Factory

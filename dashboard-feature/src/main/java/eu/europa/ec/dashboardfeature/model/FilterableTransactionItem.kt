@@ -20,5 +20,5 @@ import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
 
 internal data class TransactionsFilterableAttributes(
     override val searchTags: List<String>,
-    val name: String,
+    val transactionStatus: TransactionUiStatus
 ) : FilterableAttributes

@@ -23,22 +23,48 @@ import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
 import eu.europa.ec.businesslogic.util.minutesToNow
 import eu.europa.ec.businesslogic.util.shortDateTimeFormatter
+import eu.europa.ec.businesslogic.validator.FilterValidator
+import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
+import eu.europa.ec.businesslogic.validator.model.FilterGroup
+import eu.europa.ec.businesslogic.validator.model.FilterItem
+import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
+import eu.europa.ec.businesslogic.validator.model.Filters
+import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.model.TransactionCategory
+import eu.europa.ec.dashboardfeature.model.FilterIds
 import eu.europa.ec.dashboardfeature.model.Transaction
 import eu.europa.ec.dashboardfeature.model.TransactionUi
+import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
 import eu.europa.ec.dashboardfeature.model.TransactionsFilterableAttributes
 import eu.europa.ec.dashboardfeature.model.toTransactionUiStatus
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
+
+sealed class TransactionInteractorFilterPartialState {
+    data class FilterApplyResult(
+        val transactions: List<Pair<TransactionCategory, List<TransactionUi>>>,
+        val filters: List<ExpandableListItemData>,
+        val sortOrder: DualSelectorButton,
+        val allDefaultFiltersAreSelected: Boolean,
+    ) : TransactionInteractorFilterPartialState()
+
+    data class FilterUpdateResult(
+        val filters: List<ExpandableListItemData>,
+        val sortOrder: DualSelectorButton,
+    ) : TransactionInteractorFilterPartialState()
+}
 
 sealed class TransactionInteractorGetTransactionsPartialState {
     data class Success(
@@ -49,22 +75,34 @@ sealed class TransactionInteractorGetTransactionsPartialState {
     data class Failure(val error: String) : TransactionInteractorGetTransactionsPartialState()
 }
 
-sealed class TransactionInteractorDateCategoryPartialState {
-    data class WithinLastHour(val minutes: Long) : TransactionInteractorDateCategoryPartialState()
-    data class Today(val time: String) : TransactionInteractorDateCategoryPartialState()
-    data class WithinMonth(val date: String) : TransactionInteractorDateCategoryPartialState()
+sealed class TransactionInteractorDateTimeCategoryPartialState {
+    data class WithinLastHour(val minutes: Long) :
+        TransactionInteractorDateTimeCategoryPartialState()
+
+    data class Today(val time: String) : TransactionInteractorDateTimeCategoryPartialState()
+    data class WithinMonth(val date: String) : TransactionInteractorDateTimeCategoryPartialState()
 }
 
 interface TransactionsInteractor {
-    fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState>
-
     fun getTestTransactions(): List<Transaction>
 
+    fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState>
     fun getTransactionCategory(dateTime: LocalDateTime): TransactionCategory
+
+    fun initializeFilters(
+        filterableList: FilterableList,
+    )
+
+    fun applySearch(query: String)
+    fun applyFilters()
+    fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters
+    fun getFilters(): Filters
+    fun onFilterStateChange(): Flow<TransactionInteractorFilterPartialState>
 }
 
 class TransactionsInteractorImpl(
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    private val filterValidator: FilterValidator,
 ) : TransactionsInteractor {
     override fun getTestTransactions(): List<Transaction> {
         val now = LocalDateTime.now()
@@ -152,6 +190,57 @@ class TransactionsInteractorImpl(
         return transactions
     }
 
+    override fun initializeFilters(
+        filterableList: FilterableList,
+    ) = filterValidator.initializeValidator(
+        addDynamicFilters(filterableList, getFilters()),
+        filterableList
+    )
+
+    override fun onFilterStateChange(): Flow<TransactionInteractorFilterPartialState> =
+        filterValidator.onFilterStateChange().map { result ->
+            val transactionsUi = when (result) {
+                is FilterValidatorPartialState.FilterListResult.FilterApplyResult -> {
+                    result.filteredList.items.mapNotNull { filterableItem ->
+                        filterableItem.payload as? TransactionUi
+                    }
+                }
+
+                is FilterValidatorPartialState.FilterListResult.FilterListEmptyResult -> {
+                    emptyList()
+                }
+
+                else -> {
+                    emptyList()
+                }
+            }.groupBy {
+                it.transactionCategory
+            }.toList().sortedBy { it.first.order }
+
+            val sortOrderUi = when (result.updatedFilters.sortOrder) {
+                is SortOrder.Ascending -> DualSelectorButton.FIRST
+                is SortOrder.Descending -> DualSelectorButton.SECOND
+            }
+
+            when (result) {
+                is FilterValidatorPartialState.FilterListResult -> {
+                    TransactionInteractorFilterPartialState.FilterApplyResult(
+                        transactions = transactionsUi,
+                        filters = listOf(),
+                        sortOrder = sortOrderUi,
+                        allDefaultFiltersAreSelected = result.allDefaultFiltersAreSelected
+                    )
+                }
+
+                is FilterValidatorPartialState.FilterUpdateResult -> {
+                    TransactionInteractorFilterPartialState.FilterUpdateResult(
+                        filters = listOf(),
+                        sortOrder = sortOrderUi
+                    )
+                }
+            }
+        }
+
 
     override fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState> = flow {
         runCatching {
@@ -171,15 +260,19 @@ class TransactionsInteractorImpl(
                             )
                         ),
                         uiStatus = transaction.status.toTransactionUiStatus(
-                            successStatusString = resourceProvider.getString(
+                            completedStatusString = resourceProvider.getString(
                                 R.string.transaction_status_completed
                             )
                         ),
-                        transactionCategory = getTransactionCategory(dateTime)
+                        transactionCategory = getTransactionCategory(dateTime = dateTime)
                     ),
                     attributes = TransactionsFilterableAttributes(
-                        searchTags = listOf(transaction.name),
-                        name = transaction.name
+                        searchTags = buildList {
+                            add(transaction.name)
+                        },
+                        transactionStatus = transaction.status.toTransactionUiStatus(
+                            completedStatusString = resourceProvider.getString(R.string.transaction_status_completed)
+                        )
                     )
                 )
             }
@@ -203,24 +296,71 @@ class TransactionsInteractorImpl(
         val transactionCategory = when {
             dateTime.isToday() -> TransactionCategory.Today
             dateTime.isWithinThisWeek() -> TransactionCategory.ThisWeek
-            else -> TransactionCategory.Month(dateTime)
+            else -> TransactionCategory.Month(dateTime = dateTime)
         }
         return transactionCategory
     }
 
-    private fun LocalDateTime.toDateTimeState(): TransactionInteractorDateCategoryPartialState =
+    override fun applySearch(query: String) = filterValidator.applySearch(query)
+
+    override fun applyFilters() = filterValidator.applyFilters()
+
+    override fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters {
+        return filters.copy(
+            filterGroups = filters.filterGroups,
+            sortOrder = filters.sortOrder
+        )
+    }
+
+    override fun getFilters(): Filters = Filters(
+        filterGroups = listOf(
+            // Filter by Status
+            FilterGroup.MultipleSelectionFilterGroup(
+                id = FilterIds.FILTER_BY_STATUS_GROUP_ID,
+                name = "Filter by Transaction Status",
+                filters = listOf(
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_STATUS_COMPLETE,
+                        name = resourceProvider.getString(R.string.transaction_status_completed),
+                        selected = true,
+                        isDefault = false,
+                    ),
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_STATUS_FAILED,
+                        name = resourceProvider.getString(R.string.transaction_status_failed),
+                        selected = true,
+                        isDefault = false,
+                    )
+                ),
+                filterableAction = FilterMultipleAction<TransactionsFilterableAttributes> { attributes, filter ->
+                    when (filter.id) {
+                        FilterIds.FILTER_BY_STATUS_COMPLETE -> {
+                            attributes.transactionStatus == TransactionUiStatus.Completed
+                        }
+
+                        FilterIds.FILTER_BY_STATUS_FAILED -> attributes.transactionStatus == TransactionUiStatus.Failed
+
+                        else -> true
+                    }
+                }
+            )
+        ),
+        sortOrder = SortOrder.Ascending(isDefault = true)
+    )
+
+    private fun LocalDateTime.toDateTimeState(): TransactionInteractorDateTimeCategoryPartialState =
         when {
-            isWithinLastHour() -> TransactionInteractorDateCategoryPartialState.WithinLastHour(
+            isWithinLastHour() -> TransactionInteractorDateTimeCategoryPartialState.WithinLastHour(
                 minutes = minutesToNow()
             )
 
-            isToday() -> TransactionInteractorDateCategoryPartialState.Today(
+            isToday() -> TransactionInteractorDateTimeCategoryPartialState.Today(
                 time = format(
                     hoursMinutesFormatter
                 )
             )
 
-            else -> TransactionInteractorDateCategoryPartialState.WithinMonth(
+            else -> TransactionInteractorDateTimeCategoryPartialState.WithinMonth(
                 date = format(
                     shortDateTimeFormatter
                 )
@@ -232,13 +372,13 @@ class TransactionsInteractorImpl(
             val parsedDate = LocalDateTime.parse(this, fullDateTimeFormatter)
 
             when (val dateTimeState = parsedDate.toDateTimeState()) {
-                is TransactionInteractorDateCategoryPartialState.WithinLastHour -> resourceProvider.getString(
+                is TransactionInteractorDateTimeCategoryPartialState.WithinLastHour -> resourceProvider.getString(
                     R.string.transactions_screen_minutes_ago_message,
                     dateTimeState.minutes
                 )
 
-                is TransactionInteractorDateCategoryPartialState.Today -> dateTimeState.time
-                is TransactionInteractorDateCategoryPartialState.WithinMonth -> dateTimeState.date
+                is TransactionInteractorDateTimeCategoryPartialState.Today -> dateTimeState.time
+                is TransactionInteractorDateTimeCategoryPartialState.WithinMonth -> dateTimeState.date
             }
         }.getOrDefault(this)
     }

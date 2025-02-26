@@ -18,10 +18,14 @@ package eu.europa.ec.dashboardfeature.ui.transactions
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.corelogic.model.TransactionCategory
+import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorGetTransactionsPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
 import eu.europa.ec.dashboardfeature.model.TransactionUi
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.DualSelectorButton
+import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -43,7 +47,8 @@ data class State(
     val showNoResultsFound: Boolean = false,
     val isBottomSheetOpen: Boolean = false,
 
-    val transactionsUi: List<Pair<TransactionCategory, List<TransactionUi>>> = emptyList()
+    val transactionsUi: List<Pair<TransactionCategory, List<TransactionUi>>> = emptyList(),
+    val sortOrder: DualSelectorButtonData
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -74,17 +79,24 @@ sealed class Effect : ViewSideEffect {
 @KoinViewModel
 class TransactionsViewModel(
     private val interactor: TransactionsInteractor,
+    private val resourceProvider: ResourceProvider
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
         return State(
             isLoading = false,
-            isFilteringActive = false
+            isFilteringActive = false,
+            sortOrder = DualSelectorButtonData(
+                first = resourceProvider.getString(R.string.transactions_screen_filters_ascending),
+                second = resourceProvider.getString(R.string.transactions_screen_filters_descending),
+                selectedButton = DualSelectorButton.FIRST,
+            ),
         )
     }
 
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
+                collectSearchAndFilterStateChanges()
                 getTransactions()
             }
 
@@ -125,6 +137,7 @@ class TransactionsViewModel(
     }
 
     private fun applySearch(queryText: String) {
+        interactor.applySearch(queryText)
         setState {
             copy(searchText = queryText)
         }
@@ -139,6 +152,9 @@ class TransactionsViewModel(
                             response.allTransactions.items.map { filterableTransactionItem ->
                                 filterableTransactionItem.payload as TransactionUi
                             }.groupByCategory()
+
+                        interactor.initializeFilters(filterableList = response.allTransactions)
+                        interactor.applyFilters()
 
                         setState {
                             copy(
@@ -165,6 +181,26 @@ class TransactionsViewModel(
                             )
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun collectSearchAndFilterStateChanges() {
+        viewModelScope.launch {
+            interactor.onFilterStateChange().collect { result ->
+                when (result) {
+                    is TransactionInteractorFilterPartialState.FilterApplyResult -> {
+                        setState {
+                            copy(
+                                isFilteringActive = !result.allDefaultFiltersAreSelected,
+                                transactionsUi = result.transactions,
+                                showNoResultsFound = result.transactions.isEmpty(),
+                            )
+                        }
+                    }
+
+                    is TransactionInteractorFilterPartialState.FilterUpdateResult -> {}
                 }
             }
         }
