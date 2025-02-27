@@ -26,6 +26,9 @@ import eu.europa.ec.businesslogic.util.shortDateTimeFormatter
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.corelogic.model.TransactionCategory
+import eu.europa.ec.dashboardfeature.model.AttestationPresentationTransaction
+import eu.europa.ec.dashboardfeature.model.DocumentSigningTransaction
+import eu.europa.ec.dashboardfeature.model.OtherTransaction
 import eu.europa.ec.dashboardfeature.model.Transaction
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.dashboardfeature.model.TransactionsFilterableAttributes
@@ -57,10 +60,9 @@ sealed class TransactionInteractorDateCategoryPartialState {
 
 interface TransactionsInteractor {
     fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState>
-
     fun getTestTransactions(): List<Transaction>
-
     fun getTransactionCategory(dateTime: LocalDateTime): TransactionCategory
+    fun getTransactionType(transaction: Transaction): String?
 }
 
 class TransactionsInteractorImpl(
@@ -70,80 +72,95 @@ class TransactionsInteractorImpl(
         val now = LocalDateTime.now()
         val someMinutesAgo = now.minusMinutes(20)
         val transactions = listOf(
-            Transaction(
+            DocumentSigningTransaction(
                 id = "recent",
                 name = "Document Signing",
                 status = "Completed",
                 creationDate = someMinutesAgo.format(fullDateTimeFormatter)
             ),
-            Transaction(
+            DocumentSigningTransaction(
                 id = "t000",
                 name = "Document Signing",
                 status = "Completed",
-                creationDate = "24 February 2025 09:20 AM"
+                creationDate = now.minusDays(1).format(fullDateTimeFormatter)
             ),
-            Transaction(
-                id = "t000",
-                name = "Document Signing",
-                status = "Completed",
-                creationDate = "23 February 2025 9:20 AM"
-            ),
-            Transaction(
+            DocumentSigningTransaction(
                 id = "t001",
                 name = "Document Signing",
                 status = "Completed",
                 creationDate = "20 February 2025 9:20 AM"
             ),
-            Transaction(
+            AttestationPresentationTransaction(
                 id = "t002",
                 name = "PID Presentation",
                 status = "Failed",
-                creationDate = "19 February 2025 5:40 PM"
+                creationDate = "19 February 2025 5:40 PM",
+                issuerName = "Test issuer",
+                relyingPartyName = "Test relying party",
+                attestationType = "Issuance (test)"
             ),
-            Transaction(
+            AttestationPresentationTransaction(
                 id = "t003",
                 name = "Identity Verification",
                 status = "Completed",
-                creationDate = "17 February 2025 11:55 AM"
+                creationDate = "17 February 2025 11:55 AM",
+                issuerName = "Test issuer",
+                relyingPartyName = "Test relying party",
+                attestationType = "Issuance (test)"
             ),
-            Transaction(
+            DocumentSigningTransaction(
                 id = "t004",
                 name = "Document Signing",
                 status = "Completed",
                 creationDate = "10 February 2025 1:15 PM"
             ),
-            Transaction(
+            AttestationPresentationTransaction(
                 id = "t005",
                 name = "Data Sharing Request",
                 status = "Failed",
-                creationDate = "20 January 2025 4:30 PM"
+                creationDate = "20 January 2025 4:30 PM",
+                issuerName = "Another Test issuer",
+                relyingPartyName = "Test relying party",
+                attestationType = "Data Sharing Request (test)"
             ),
-            Transaction(
+            DocumentSigningTransaction(
                 id = "t006",
                 name = "Document Signing",
                 status = "Completed",
                 creationDate = "20 December 2024 10:05 AM"
             ),
-            Transaction(
+            AttestationPresentationTransaction(
                 id = "t007",
                 name = "PID Presentation",
                 status = "Completed",
-                creationDate = "1 March 2024 2:20 PM"
+                creationDate = "1 March 2024 2:20 PM",
+                issuerName = "Test issuer",
+                relyingPartyName = "Test relying party",
+                attestationType = "Presentation (test)"
             ),
-            Transaction(
+            DocumentSigningTransaction(
                 id = "t008",
                 name = "Document Signing",
                 status = "Failed",
                 creationDate = "22 February 2024 9:45 AM"
             ),
-            Transaction(
+            AttestationPresentationTransaction(
                 id = "t009",
                 name = "Identity Verification",
                 status = "Completed",
-                creationDate = "17 February 2024 11:30 AM"
+                creationDate = "17 February 2024 11:30 AM",
+                issuerName = "Test issuer",
+                relyingPartyName = "Test relying party",
+                attestationType = "Verification (test)"
             ),
-            Transaction(
+            OtherTransaction(
                 id = "t010",
+                name = "Other Presentation",
+                status = "Completed",
+                creationDate = "30 September 2010 12:59 PM"
+            ),
+            DocumentSigningTransaction(
+                id = "t011",
                 name = "Old Document",
                 status = "Completed",
                 creationDate = "15 May 1999 10:30 AM"
@@ -152,12 +169,17 @@ class TransactionsInteractorImpl(
         return transactions
     }
 
-
     override fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState> = flow {
         runCatching {
             val transactions = getTestTransactions()
             val filterableItems = transactions.map { transaction ->
                 val dateTime = LocalDateTime.parse(transaction.creationDate, fullDateTimeFormatter)
+                val trailingContentData = getTransactionType(transaction)?.let {
+                    ListItemTrailingContentData.TextWithIcon(
+                        text = it,
+                        iconData = AppIcons.KeyboardArrowRight
+                    )
+                } ?: ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowRight)
 
                 FilterableItem(
                     payload = TransactionUi(
@@ -166,9 +188,7 @@ class TransactionsInteractorImpl(
                             mainContentData = ListItemMainContentData.Text(text = transaction.name),
                             overlineText = transaction.status,
                             supportingText = transaction.creationDate.toFormattedDisplayableDate(),
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = AppIcons.KeyboardArrowRight
-                            )
+                            trailingContentData = trailingContentData
                         ),
                         uiStatus = transaction.status.toTransactionUiStatus(
                             successStatusString = resourceProvider.getString(
@@ -206,6 +226,15 @@ class TransactionsInteractorImpl(
             else -> TransactionCategory.Month(dateTime)
         }
         return transactionCategory
+    }
+
+    override fun getTransactionType(transaction: Transaction): String? {
+        val type = when (transaction) {
+            is AttestationPresentationTransaction -> transaction.attestationType
+            is DocumentSigningTransaction -> "Document Signing"
+            is OtherTransaction -> null
+        }
+        return type
     }
 
     private fun LocalDateTime.toDateTimeState(): TransactionInteractorDateCategoryPartialState =
