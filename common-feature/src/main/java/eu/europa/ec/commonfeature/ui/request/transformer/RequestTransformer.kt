@@ -22,7 +22,6 @@ import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseClaimsToDomain
-import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
@@ -128,7 +127,8 @@ object RequestTransformer {
 
             requestDocument.requestedItems.keys.forEach { docItem ->
 
-                val documentClaim = storageDocument.findClaimFromDocItem(docItem)
+                val documentClaim =
+                    storageDocument.findClaimFromDocItem(docItem) //TODO find a better way to retrieve identifier
                 val identifier = documentClaim?.identifier
 
                 val isRequired = getMandatoryFields(
@@ -139,16 +139,16 @@ object RequestTransformer {
                     ?.find { it.name.name == identifier }
                     ?.display
 
-                val readableName: (String) -> String = { identifier ->
+                /*val readableName: (String) -> String = { identifier ->
                     display.getLocalizedClaimName(
                         userLocale = userLocale,
                         fallback = identifier
                     )
-                }
+                }*/
 
                 val value = parseClaimsToDomain(
                     coreClaim = documentClaim,
-                    readableName = readableName,
+                    metadata = storageDocument.metadata,
                     groupIdentifierKey = identifier,
                     resourceProvider = resourceProvider,
                     path = docItem.toPath(),
@@ -342,8 +342,16 @@ fun IssuedDocument.findClaimFromPath(path: List<String>): DocumentClaim? {
         }
 
         is SdJwtVcFormat -> {
-            data.claims.filterIsInstance<SdJwtVcClaim>()
-                .firstOrNull { it.identifier == path.first() }
+            /* data.claims.filterIsInstance<SdJwtVcClaim>()
+                 .firstOrNull { it.identifier == path.first() }*/
+
+            var claim: SdJwtVcClaim? = null
+            for (claimId in path) {
+                claim = claim?.children?.firstOrNull { it.identifier == claimId }
+                    ?: data.claims.filterIsInstance<SdJwtVcClaim>()
+                        .firstOrNull { it.identifier == claimId }
+            }
+            claim
         }
     }
 }

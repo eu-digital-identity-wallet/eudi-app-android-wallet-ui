@@ -21,6 +21,7 @@ import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim
+import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -30,11 +31,13 @@ import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
+import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.Locale
 
 fun extractValueFromDocumentOrEmpty(
     document: IssuedDocument,
@@ -112,15 +115,29 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
+fun getReadableNameFromIdentifier(
+    metadata: DocumentMetaData?,
+    userLocale: Locale,
+    identifier: String
+): String {
+    return metadata?.claims
+        ?.find { it.name.name == identifier }
+        ?.display.getLocalizedClaimName(
+            userLocale = userLocale,
+            fallback = identifier
+        )
+}
+
 fun parseClaimsToDomain(
     coreClaim: DocumentClaim?,
-    readableName: (String) -> String,
+    metadata: DocumentMetaData?,
     groupIdentifierKey: String?,
     keyIdentifier: String = "",
     resourceProvider: ResourceProvider,
     path: List<String>,
     isRequired: Boolean,
 ): DomainClaim {
+    val userLocale = resourceProvider.getLocale()
     return try {
         when (coreClaim!!) {
             is MsoMdocClaim -> {
@@ -137,7 +154,11 @@ fun parseClaimsToDomain(
                 DomainClaim.Claim.Primitive(
                     key = groupIdentifierKey!!,
                     value = value,
-                    displayTitle = readableName(groupIdentifierKey),
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = userLocale,
+                        identifier = groupIdentifierKey
+                    ),
                     path = path,
                     isRequired = isRequired
                 )
@@ -159,26 +180,34 @@ fun parseClaimsToDomain(
                     DomainClaim.Claim.Primitive(
                         key = coreClaim.identifier,
                         value = value,
-                        displayTitle = readableName(coreClaim.identifier),
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = userLocale,
+                            identifier = coreClaim.identifier
+                        ),
                         path = path,
                         isRequired = isRequired
                     )
                 } else {
-                    val result = coreClaim.children.map {
+                    val result = coreClaim.children.map { childClaim ->
                         parseClaimsToDomain(
-                            coreClaim = it,
-                            readableName = readableName,
+                            coreClaim = childClaim,
                             groupIdentifierKey = coreClaim.identifier,
                             resourceProvider = resourceProvider,
                             path = path,
-                            isRequired = isRequired
+                            isRequired = isRequired,
+                            metadata = metadata
                         )
                     }
 
                     DomainClaim.Claim.Group(
                         items = result,
                         key = coreClaim.identifier,
-                        displayTitle = readableName(coreClaim.identifier),
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = userLocale,
+                            identifier = coreClaim.identifier
+                        ),
                         path = path
                     )
                 }
@@ -186,7 +215,14 @@ fun parseClaimsToDomain(
         }
     } catch (_: Exception) {
         DomainClaim.NotAvailableClaim(
-            key = readableName(groupIdentifierKey ?: path.firstOrNull().toString()), //TODO
+            /*key = getReadableNameFromIdentifier(
+                groupIdentifierKey ?: path.getOrNull(1).toString()
+            ), //TODO*/
+            key = getReadableNameFromIdentifier(
+                metadata,
+                userLocale,
+                keyIdentifier
+            ),
             displayTitle = resourceProvider.getString(R.string.request_element_identifier_not_available)
         )
     }
