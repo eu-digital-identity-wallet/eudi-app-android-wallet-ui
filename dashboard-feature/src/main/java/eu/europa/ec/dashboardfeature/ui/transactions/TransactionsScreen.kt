@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.transactions
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,15 +30,30 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -52,23 +68,39 @@ import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.HSpacer
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapButton
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
+import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.extension.finish
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
 typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Show
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionsScreen(
     navHostController: NavController,
@@ -76,6 +108,14 @@ fun TransactionsScreen(
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    val isBottomSheetOpen = state.isBottomSheetOpen
+    val scope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -94,20 +134,50 @@ fun TransactionsScreen(
         ) { paddingValues ->
             Content(
                 state = state,
-                onEventSend = {
-                    viewModel.setEvent(it)
+                effectFlow = viewModel.effect,
+                onEventSend = { viewModel.setEvent(it) },
+                onNavigationRequested = { navigationEffect ->
+                    handleNavigationEffect(navigationEffect, navHostController, context)
                 },
                 paddingValues = paddingValues,
+                coroutineScope = scope,
+                modalBottomSheetState = bottomSheetState,
             )
+
+            if (isBottomSheetOpen) {
+                WrapModalBottomSheet(
+                    onDismissRequest = {
+                        viewModel.setEvent(
+                            Event.BottomSheet.UpdateBottomSheetState(
+                                isOpen = false
+                            )
+                        )
+                    },
+                    sheetState = bottomSheetState
+                ) {
+                    TransactionsSheetContent(
+                        sheetContent = state.sheetContent,
+                        state = state,
+                        onEventSent = {
+                            viewModel.setEvent(it)
+                        }
+                    )
+                }
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
     state: State,
+    effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
+    onNavigationRequested: (navigationEffect: Effect.Navigation) -> Unit,
     paddingValues: PaddingValues,
+    coroutineScope: CoroutineScope,
+    modalBottomSheetState: SheetState,
 ) {
     LazyColumn(
         modifier = Modifier
@@ -158,6 +228,49 @@ private fun Content(
 
     OneTimeLaunchedEffect {
         onEventSend(Event.Init)
+    }
+
+    LaunchedEffect(Unit) {
+        effectFlow.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation -> onNavigationRequested(effect)
+
+                is Effect.CloseBottomSheet -> {
+                    coroutineScope.launch {
+                        modalBottomSheetState.hide()
+                    }.invokeOnCompletion {
+                        if (!modalBottomSheetState.isVisible) {
+                            onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                        }
+                    }
+                }
+
+                is Effect.ShowBottomSheet -> {
+                    onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+                }
+
+                is Effect.ResumeOnApplyFilter -> {
+                    // TODO check if needed
+                }
+            }
+        }.collect()
+    }
+}
+
+private fun handleNavigationEffect(
+    navigationEffect: Effect.Navigation,
+    navController: NavController,
+    context: Context,
+) {
+    when (navigationEffect) {
+        is Effect.Navigation.Pop -> context.finish()
+        is Effect.Navigation.SwitchScreen -> {
+            navController.navigate(navigationEffect.screenRoute) {
+                popUpTo(navigationEffect.popUpToScreenRoute) {
+                    inclusive = navigationEffect.inclusive
+                }
+            }
+        }
     }
 }
 
@@ -291,6 +404,101 @@ private fun TopBar(
             customTint = MaterialTheme.colorScheme.onSurface,
         ) {
             // transactions exporting action
+        }
+    }
+}
+
+@Composable
+private fun TransactionsSheetContent(
+    sheetContent: TransactionsBottomSheetContent,
+    state: State,
+    onEventSent: (event: Event) -> Unit,
+) {
+    when (sheetContent) {
+        is TransactionsBottomSheetContent.Filters -> {
+            GenericBottomSheet(
+                titleContent = {
+                    Text(
+                        text = stringResource(R.string.documents_screen_filters_title),
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                },
+                bodyContent = {
+                    val expandStateList by remember {
+                        mutableStateOf(state.filtersUi.map { false }.toMutableStateList())
+                    }
+
+                    var buttonsRowHeight by remember { mutableIntStateOf(0) }
+
+                    Box {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(rememberScrollState())
+                                .padding(bottom = with(LocalDensity.current) { buttonsRowHeight.toDp() }),
+                            verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
+                        ) {
+                            DualSelectorButtons(state.sortOrder) {
+                                onEventSent(
+                                    Event.OnSortingOrderChanged(it)
+                                )
+                            }
+                            state.filtersUi.forEachIndexed { index, filter ->
+                                if (filter.expanded.isNotEmpty()) {
+                                    WrapExpandableListItem(
+                                        data = filter,
+                                        isExpanded = expandStateList[index],
+                                        onExpandedChange = {
+                                            expandStateList[index] = !expandStateList[index]
+                                        },
+                                        onItemClick = {
+                                            val id = it.itemId
+                                            val groupId = filter.collapsed.itemId
+                                            onEventSent(Event.OnFilterSelectionChanged(id, groupId))
+                                        },
+                                        expandedAddDivider = false,
+                                    )
+                                }
+                            }
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.BottomCenter)
+                                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                                .onGloballyPositioned { coordinates ->
+                                    buttonsRowHeight = coordinates.size.height
+                                }
+                                .padding(top = SPACING_LARGE.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            WrapButton(
+                                modifier = Modifier.weight(1f),
+                                buttonConfig = ButtonConfig(
+                                    type = ButtonType.SECONDARY,
+                                    onClick = {
+                                        onEventSent(Event.OnFiltersReset)
+                                    }
+                                )
+                            ) {
+                                Text(text = stringResource(R.string.documents_screen_filters_reset))
+                            }
+                            HSpacer.Small()
+                            WrapButton(
+                                modifier = Modifier.weight(1f),
+                                buttonConfig = ButtonConfig(
+                                    type = ButtonType.PRIMARY,
+                                    onClick = {
+                                        onEventSent(Event.OnFiltersApply)
+                                    }
+                                )
+                            ) {
+                                Text(text = stringResource(R.string.documents_screen_filters_apply))
+                            }
+                        }
+                    }
+                }
+            )
         }
     }
 }

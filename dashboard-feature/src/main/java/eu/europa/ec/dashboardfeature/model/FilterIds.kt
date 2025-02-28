@@ -32,6 +32,11 @@ object FilterIds {
     const val FILTER_SORT_DEFAULT = "sort_default"
     const val FILTER_SORT_DATE_ISSUED = "sort_date_issued"
     const val FILTER_SORT_EXPIRY_DATE = "sort_expiry_date"
+}
+
+object TransactionFilterIds {
+    const val FILTER_SORT_GROUP_ID = "sort_group_id"
+    const val FILTER_SORT_DATE_CREATED = "sort_transaction_date_created"
 
     const val FILTER_BY_STATUS_GROUP_ID = "status_group_id"
     const val FILTER_BY_STATUS_COMPLETE = "status_complete"

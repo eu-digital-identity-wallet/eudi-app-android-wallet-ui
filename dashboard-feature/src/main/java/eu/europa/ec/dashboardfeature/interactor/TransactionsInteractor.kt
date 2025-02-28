@@ -16,15 +16,17 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.util.dayMonthYearFormatter
 import eu.europa.ec.businesslogic.util.fullDateTimeFormatter
 import eu.europa.ec.businesslogic.util.hoursMinutesFormatter
 import eu.europa.ec.businesslogic.util.isToday
 import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
 import eu.europa.ec.businesslogic.util.minutesToNow
-import eu.europa.ec.businesslogic.util.shortDateTimeFormatter
+import eu.europa.ec.businesslogic.util.toInstantOrNull
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
+import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
@@ -33,8 +35,8 @@ import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.model.TransactionCategory
-import eu.europa.ec.dashboardfeature.model.FilterIds
 import eu.europa.ec.dashboardfeature.model.Transaction
+import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
 import eu.europa.ec.dashboardfeature.model.TransactionsFilterableAttributes
@@ -46,10 +48,13 @@ import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import java.time.Instant
 import java.time.LocalDateTime
 
 sealed class TransactionInteractorFilterPartialState {
@@ -95,15 +100,25 @@ interface TransactionsInteractor {
 
     fun applySearch(query: String)
     fun applyFilters()
+    fun updateFilter(filterGroupId: String, filterId: String)
     fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters
     fun getFilters(): Filters
+    fun resetFilters()
     fun onFilterStateChange(): Flow<TransactionInteractorFilterPartialState>
+    fun updateSortOrder(sortOrder: SortOrder)
+    fun revertFilters()
+    fun updateLists(filterableList: FilterableList)
 }
 
 class TransactionsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val filterValidator: FilterValidator,
 ) : TransactionsInteractor {
+
+    override fun revertFilters() = filterValidator.revertFilters()
+    override fun updateLists(filterableList: FilterableList) =
+        filterValidator.updateLists(filterableList)
+
     override fun getTestTransactions(): List<Transaction> {
         val now = LocalDateTime.now()
         val someMinutesAgo = now.minusMinutes(20)
@@ -118,70 +133,70 @@ class TransactionsInteractorImpl(
                 id = "t000",
                 name = "Document Signing",
                 status = "Completed",
-                creationDate = "24 February 2025 09:20 AM"
-            ),
-            Transaction(
-                id = "t000",
-                name = "Document Signing",
-                status = "Completed",
-                creationDate = "23 February 2025 9:20 AM"
+                creationDate = "25 February 2025 09:20 AM"
             ),
             Transaction(
                 id = "t001",
-                name = "Document Signing",
+                name = "Another Document Signing",
                 status = "Completed",
-                creationDate = "20 February 2025 9:20 AM"
+                creationDate = "23 February 2025 09:20 AM"
             ),
             Transaction(
                 id = "t002",
-                name = "PID Presentation",
-                status = "Failed",
-                creationDate = "19 February 2025 5:40 PM"
+                name = "Document Signing",
+                status = "Completed",
+                creationDate = "20 February 2025 09:20 AM"
             ),
             Transaction(
                 id = "t003",
+                name = "PID Presentation",
+                status = "Failed",
+                creationDate = "19 February 2025 05:40 PM"
+            ),
+            Transaction(
+                id = "t004",
                 name = "Identity Verification",
                 status = "Completed",
                 creationDate = "17 February 2025 11:55 AM"
             ),
             Transaction(
-                id = "t004",
+                id = "t005",
                 name = "Document Signing",
                 status = "Completed",
-                creationDate = "10 February 2025 1:15 PM"
-            ),
-            Transaction(
-                id = "t005",
-                name = "Data Sharing Request",
-                status = "Failed",
-                creationDate = "20 January 2025 4:30 PM"
+                creationDate = "10 February 2025 01:15 PM"
             ),
             Transaction(
                 id = "t006",
+                name = "Data Sharing Request",
+                status = "Failed",
+                creationDate = "20 January 2025 04:30 PM"
+            ),
+            Transaction(
+                id = "t007",
                 name = "Document Signing",
                 status = "Completed",
                 creationDate = "20 December 2024 10:05 AM"
             ),
             Transaction(
-                id = "t007",
+                id = "t008",
                 name = "PID Presentation",
                 status = "Completed",
-                creationDate = "1 March 2024 2:20 PM"
-            ),
-            Transaction(
-                id = "t008",
-                name = "Document Signing",
-                status = "Failed",
-                creationDate = "22 February 2024 9:45 AM"
+                creationDate = "01 March 2024 02:20 PM"
             ),
             Transaction(
                 id = "t009",
+                name = "Document Signing",
+                status = "Failed",
+                creationDate = "22 February 2024 09:45 AM"
+            ),
+            Transaction(
+                id = "t010",
                 name = "Identity Verification",
                 status = "Completed",
                 creationDate = "17 February 2024 11:30 AM"
             ),
             Transaction(
-                id = "t010",
+                id = "t011",
                 name = "Old Document",
                 status = "Completed",
                 creationDate = "15 May 1999 10:30 AM"
@@ -215,18 +230,58 @@ class TransactionsInteractorImpl(
                 }
             }.groupBy {
                 it.transactionCategory
-            }.toList().sortedBy { it.first.order }
+            }.toList()
+                .sortByOrder(sortOrder = result.updatedFilters.sortOrder) { groupPair ->
+                    groupPair.first.order
+                }
+
+            val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
+                ExpandableListItemData(
+                    collapsed = ListItemData(
+                        itemId = filterGroup.id,
+                        mainContentData = ListItemMainContentData.Text(filterGroup.name),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        )
+                    ),
+                    expanded = filterGroup.filters.map { filterItem ->
+                        ListItemData(
+                            itemId = filterItem.id,
+                            mainContentData = ListItemMainContentData.Text(filterItem.name),
+                            trailingContentData = when (filterGroup) {
+                                is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+                                    ListItemTrailingContentData.Checkbox(
+                                        checkboxData = CheckboxData(
+                                            isChecked = filterItem.selected,
+                                            enabled = true
+                                        )
+                                    )
+                                }
+
+                                is FilterGroup.SingleSelectionFilterGroup -> {
+                                    ListItemTrailingContentData.RadioButton(
+                                        radioButtonData = RadioButtonData(
+                                            isSelected = filterItem.selected,
+                                            enabled = true
+                                        )
+                                    )
+                                }
+                            },
+                        )
+                    }
+                )
+            }
 
             val sortOrderUi = when (result.updatedFilters.sortOrder) {
-                is SortOrder.Ascending -> DualSelectorButton.FIRST
-                is SortOrder.Descending -> DualSelectorButton.SECOND
+                is SortOrder.Descending -> DualSelectorButton.FIRST
+                is SortOrder.Ascending -> DualSelectorButton.SECOND
             }
 
             when (result) {
                 is FilterValidatorPartialState.FilterListResult -> {
                     TransactionInteractorFilterPartialState.FilterApplyResult(
                         transactions = transactionsUi,
-                        filters = listOf(),
+                        filters = filtersUi,
                         sortOrder = sortOrderUi,
                         allDefaultFiltersAreSelected = result.allDefaultFiltersAreSelected
                     )
@@ -234,13 +289,12 @@ class TransactionsInteractorImpl(
 
                 is FilterValidatorPartialState.FilterUpdateResult -> {
                     TransactionInteractorFilterPartialState.FilterUpdateResult(
-                        filters = listOf(),
+                        filters = filtersUi,
                         sortOrder = sortOrderUi
                     )
                 }
             }
         }
-
 
     override fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState> = flow {
         runCatching {
@@ -272,7 +326,8 @@ class TransactionsInteractorImpl(
                         },
                         transactionStatus = transaction.status.toTransactionUiStatus(
                             completedStatusString = resourceProvider.getString(R.string.transaction_status_completed)
-                        )
+                        ),
+                        creationDate = transaction.creationDate.toInstantOrNull()
                     )
                 )
             }
@@ -314,19 +369,35 @@ class TransactionsInteractorImpl(
 
     override fun getFilters(): Filters = Filters(
         filterGroups = listOf(
+            // Sort
+            FilterGroup.SingleSelectionFilterGroup(
+                id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
+                name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
+                filters = listOf(
+                    FilterItem(
+                        id = TransactionFilterIds.FILTER_SORT_DATE_CREATED,
+                        name = "Transaction Date",
+                        selected = true,
+                        filterableAction = FilterAction.Sort<TransactionsFilterableAttributes, Instant> { attributes ->
+                            attributes.creationDate ?: Instant.MIN
+                        }
+                    ),
+                )
+            ),
+
             // Filter by Status
             FilterGroup.MultipleSelectionFilterGroup(
-                id = FilterIds.FILTER_BY_STATUS_GROUP_ID,
+                id = TransactionFilterIds.FILTER_BY_STATUS_GROUP_ID,
                 name = "Filter by Transaction Status",
                 filters = listOf(
                     FilterItem(
-                        id = FilterIds.FILTER_BY_STATUS_COMPLETE,
+                        id = TransactionFilterIds.FILTER_BY_STATUS_COMPLETE,
                         name = resourceProvider.getString(R.string.transaction_status_completed),
                         selected = true,
                         isDefault = false,
                     ),
                     FilterItem(
-                        id = FilterIds.FILTER_BY_STATUS_FAILED,
+                        id = TransactionFilterIds.FILTER_BY_STATUS_FAILED,
                         name = resourceProvider.getString(R.string.transaction_status_failed),
                         selected = true,
                         isDefault = false,
@@ -334,19 +405,27 @@ class TransactionsInteractorImpl(
                 ),
                 filterableAction = FilterMultipleAction<TransactionsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
-                        FilterIds.FILTER_BY_STATUS_COMPLETE -> {
+                        TransactionFilterIds.FILTER_BY_STATUS_COMPLETE -> {
                             attributes.transactionStatus == TransactionUiStatus.Completed
                         }
 
-                        FilterIds.FILTER_BY_STATUS_FAILED -> attributes.transactionStatus == TransactionUiStatus.Failed
+                        TransactionFilterIds.FILTER_BY_STATUS_FAILED -> attributes.transactionStatus == TransactionUiStatus.Failed
 
                         else -> true
                     }
                 }
             )
         ),
-        sortOrder = SortOrder.Ascending(isDefault = true)
+        sortOrder = SortOrder.Descending(isDefault = true)
     )
+
+    override fun resetFilters() = filterValidator.resetFilters()
+
+    override fun updateFilter(filterGroupId: String, filterId: String) =
+        filterValidator.updateFilter(filterGroupId, filterId)
+
+    override fun updateSortOrder(sortOrder: SortOrder) =
+        filterValidator.updateSortOrder(sortOrder)
 
     private fun LocalDateTime.toDateTimeState(): TransactionInteractorDateTimeCategoryPartialState =
         when {
@@ -362,7 +441,7 @@ class TransactionsInteractorImpl(
 
             else -> TransactionInteractorDateTimeCategoryPartialState.WithinMonth(
                 date = format(
-                    shortDateTimeFormatter
+                    dayMonthYearFormatter
                 )
             )
         }
@@ -381,5 +460,15 @@ class TransactionsInteractorImpl(
                 is TransactionInteractorDateTimeCategoryPartialState.WithinMonth -> dateTimeState.date
             }
         }.getOrDefault(this)
+    }
+
+    private fun <T> List<T>.sortByOrder(
+        sortOrder: SortOrder,
+        selector: (T) -> Int
+    ): List<T> {
+        return when (sortOrder) {
+            is SortOrder.Ascending -> this.sortedBy(selector)
+            is SortOrder.Descending -> this.sortedByDescending(selector)
+        }
     }
 }

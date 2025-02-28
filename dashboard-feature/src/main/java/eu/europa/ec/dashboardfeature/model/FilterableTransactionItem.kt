@@ -17,8 +17,10 @@
 package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
+import java.time.Instant
 
 internal data class TransactionsFilterableAttributes(
     override val searchTags: List<String>,
-    val transactionStatus: TransactionUiStatus
+    val transactionStatus: TransactionUiStatus,
+    val creationDate: Instant?,
 ) : FilterableAttributes

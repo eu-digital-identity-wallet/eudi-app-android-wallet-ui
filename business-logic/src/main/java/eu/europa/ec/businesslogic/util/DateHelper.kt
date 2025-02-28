@@ -127,13 +127,24 @@ fun LocalDateTime.startOfMonth(): LocalDateTime =
 fun LocalDateTime.endOfMonth(): LocalDateTime =
     this.with(TemporalAdjusters.lastDayOfMonth()).endOfDay()
 
-const val FULL_DATETIME_PATTERN = "d MMMM yyyy h:mm a"
-const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
-const val SHORT_DATETIME_PATTERN = "d MMM yyyy"
-const val MONTH_YEAR_PATTERN = "MMMM yyyy"
+fun String.toInstantOrNull(
+    pattern: String = FULL_DATETIME_PATTERN,
+    locale: Locale = Locale.getDefault()
+): Instant? = runCatching {
+    val formatter = DateTimeFormatter.ofPattern(pattern, locale)
+    LocalDateTime.parse(this, formatter)
+        .atZone(ZoneId.systemDefault())
+        .toInstant()
+}.getOrNull()
+
+private const val FULL_DATETIME_PATTERN = "d MMMM yyyy hh:mm a"
+private const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
+private const val DAY_MONTH_YEAR_DATETIME_PATTERN = "d MMM yyyy"
+private const val MONTH_YEAR_DATETIME_PATTERN = "MMMM yyyy"
 
 val fullDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(FULL_DATETIME_PATTERN)
 val hoursMinutesFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern(HOURS_MINUTES_DATETIME_PATTERN)
-val shortDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(SHORT_DATETIME_PATTERN)
-val monthYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(MONTH_YEAR_PATTERN)
+val dayMonthYearFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern(DAY_MONTH_YEAR_DATETIME_PATTERN)
+val monthYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(MONTH_YEAR_DATETIME_PATTERN)

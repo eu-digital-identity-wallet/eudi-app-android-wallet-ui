@@ -37,14 +37,14 @@ sealed class TransactionCategory(
     data object Today : TransactionCategory(
         stringResId = R.string.transaction_category_today,
         id = 1,
-        order = Int.MIN_VALUE,
+        order = Int.MAX_VALUE,
         dateRange = LocalDateTime.now().startOfDay()..LocalDateTime.now().endOfDay()
     )
 
     data object ThisWeek : TransactionCategory(
         stringResId = R.string.transaction_category_this_week,
         id = 2,
-        order = Int.MIN_VALUE + 1,
+        order = Int.MAX_VALUE - 1,
         dateRange = LocalDateTime.now().startOfWeek()..LocalDateTime.now().endOfWeek()
     )
 
@@ -78,5 +78,5 @@ private fun generateMonthId(dateTime: LocalDateTime): Int =
     dateTime.year * 100 + dateTime.monthValue
 
 private fun calculateMonthOrder(dateTime: LocalDateTime): Int {
-    return -(dateTime.year * 100 + dateTime.monthValue)
+    return dateTime.year * 100 + dateTime.monthValue
 }

@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.transactions
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorGetTransactionsPartialState
@@ -27,6 +28,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -46,8 +48,13 @@ data class State(
     val isFilteringActive: Boolean,
     val showNoResultsFound: Boolean = false,
     val isBottomSheetOpen: Boolean = false,
+    val sheetContent: TransactionsBottomSheetContent = TransactionsBottomSheetContent.Filters(
+        filters = emptyList()
+    ),
 
     val transactionsUi: List<Pair<TransactionCategory, List<TransactionUi>>> = emptyList(),
+    val filtersUi: List<ExpandableListItemData> = emptyList(),
+    val shouldRevertFilterChanges: Boolean = true,
     val sortOrder: DualSelectorButtonData
 ) : ViewState
 
@@ -63,6 +70,11 @@ sealed class Event : ViewEvent {
     data object FiltersPressed : Event()
 
     data class TransactionItemPressed(val itemId: String) : Event()
+
+    sealed class BottomSheet : Event() {
+        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
+        data object Close : BottomSheet()
+    }
 }
 
 sealed class Effect : ViewSideEffect {
@@ -74,6 +86,14 @@ sealed class Effect : ViewSideEffect {
             val inclusive: Boolean = false,
         ) : Navigation()
     }
+
+    data object ShowBottomSheet : Effect()
+    data object CloseBottomSheet : Effect()
+    data object ResumeOnApplyFilter : Effect()
+}
+
+sealed class TransactionsBottomSheetContent {
+    data class Filters(val filters: List<ExpandableListItemData>) : TransactionsBottomSheetContent()
 }
 
 @KoinViewModel
@@ -84,12 +104,12 @@ class TransactionsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = false,
-            isFilteringActive = false,
             sortOrder = DualSelectorButtonData(
-                first = resourceProvider.getString(R.string.transactions_screen_filters_ascending),
-                second = resourceProvider.getString(R.string.transactions_screen_filters_descending),
+                first = resourceProvider.getString(R.string.transactions_screen_filters_descending),
+                second = resourceProvider.getString(R.string.transactions_screen_filters_ascending),
                 selectedButton = DualSelectorButton.FIRST,
             ),
+            isFilteringActive = false,
         )
     }
 
@@ -100,20 +120,100 @@ class TransactionsViewModel(
                 getTransactions()
             }
 
-            is Event.FiltersPressed -> {}
-            is Event.OnFilterSelectionChanged -> {}
-            is Event.OnFiltersApply -> {}
-            is Event.OnFiltersReset -> {}
+            is Event.FiltersPressed -> {
+                showBottomSheet(
+                    sheetContent = TransactionsBottomSheetContent.Filters(
+                        filters = viewState.value.filtersUi
+                    )
+                )
+            }
+
+            is Event.OnFilterSelectionChanged -> {
+                updateFilter(event.filterId, event.groupId)
+            }
+
+            is Event.OnFiltersApply -> {
+                applySelectedFilters()
+            }
+
+            is Event.OnFiltersReset -> {
+                resetFilters()
+            }
+
             is Event.OnSearchQueryChanged -> {
                 applySearch(event.query)
             }
 
-            is Event.OnSortingOrderChanged -> {}
+            is Event.OnSortingOrderChanged -> {
+                sortOrderChanged(event.sortingOrder)
+            }
+
             is Event.TransactionItemPressed -> {
                 onTransactionItemClicked(itemId = event.itemId)
             }
 
+            is Event.BottomSheet.UpdateBottomSheetState -> {
+                if (viewState.value.sheetContent is TransactionsBottomSheetContent.Filters
+                    && !event.isOpen
+                ) {
+                    setEffect { Effect.ResumeOnApplyFilter }
+                }
+                revertFilters(event.isOpen)
+            }
+
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
+            is Event.BottomSheet.Close -> {
+                hideBottomSheet()
+            }
+        }
+    }
+
+    private fun applySelectedFilters() {
+        interactor.applyFilters()
+        setState {
+            copy(
+                shouldRevertFilterChanges = false
+            )
+        }
+        hideBottomSheet()
+    }
+
+    private fun updateFilter(filterId: String, groupId: String) {
+        setState { copy(shouldRevertFilterChanges = true) }
+        interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
+    }
+
+    private fun revertFilters(isOpening: Boolean) {
+        if (viewState.value.sheetContent is TransactionsBottomSheetContent.Filters
+            && !isOpening
+            && viewState.value.shouldRevertFilterChanges
+        ) {
+            interactor.revertFilters()
+            setState { copy(shouldRevertFilterChanges = true) }
+        }
+
+        setState {
+            copy(isBottomSheetOpen = isOpening)
+        }
+    }
+
+    private fun resetFilters() {
+        interactor.resetFilters()
+        hideBottomSheet()
+    }
+
+    private fun showBottomSheet(sheetContent: TransactionsBottomSheetContent) {
+        setState {
+            copy(sheetContent = sheetContent)
+        }
+        setEffect {
+            Effect.ShowBottomSheet
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet
         }
     }
 
@@ -148,10 +248,14 @@ class TransactionsViewModel(
             interactor.getTransactions().collect { response ->
                 when (response) {
                     is TransactionInteractorGetTransactionsPartialState.Success -> {
+                        val sortOrder = SortOrder.Descending()
+                            .takeIf { viewState.value.sortOrder.selectedButton == DualSelectorButton.FIRST }
+                            ?: SortOrder.Ascending()
+
                         val groupedItems =
                             response.allTransactions.items.map { filterableTransactionItem ->
                                 filterableTransactionItem.payload as TransactionUi
-                            }.groupByCategory()
+                            }.groupByCategory(sortOrder)
 
                         interactor.initializeFilters(filterableList = response.allTransactions)
                         interactor.applyFilters()
@@ -196,18 +300,29 @@ class TransactionsViewModel(
                                 isFilteringActive = !result.allDefaultFiltersAreSelected,
                                 transactionsUi = result.transactions,
                                 showNoResultsFound = result.transactions.isEmpty(),
+                                filtersUi = result.filters,
+                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
                             )
                         }
                     }
 
-                    is TransactionInteractorFilterPartialState.FilterUpdateResult -> {}
+                    is TransactionInteractorFilterPartialState.FilterUpdateResult -> {
+                        setState {
+                            copy(
+                                filtersUi = result.filters,
+                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun List<TransactionUi>.groupByCategory(): List<Pair<TransactionCategory, List<TransactionUi>>> {
-        return groupBy { transactionUi ->
+    private fun List<TransactionUi>.groupByCategory(
+        sortOrder: SortOrder
+    ): List<Pair<TransactionCategory, List<TransactionUi>>> {
+        val groupedTransactions = groupBy { transactionUi ->
             when (val category = transactionUi.transactionCategory) {
                 is TransactionCategory.Today -> category
                 is TransactionCategory.ThisWeek -> category
@@ -218,6 +333,37 @@ class TransactionsViewModel(
 
                 else -> category
             }
-        }.toList().sortedBy { (category, _) -> category.order }
+        }.toList()
+
+        return groupedTransactions
+            .map { (category, transactions) ->
+                // Sort transactions within each category
+                category to when (sortOrder) {
+                    is SortOrder.Descending -> transactions.sortedByDescending { it.uiData.supportingText }
+                    is SortOrder.Ascending -> transactions.sortedBy { it.uiData.supportingText }
+
+                }
+            }.sortByOrder(sortOrder = sortOrder) { (category, _) ->
+                category.order
+            }
+    }
+
+    private fun sortOrderChanged(orderButton: DualSelectorButton) {
+        val sortOrder = when (orderButton) {
+            DualSelectorButton.FIRST -> SortOrder.Descending(isDefault = true)
+            DualSelectorButton.SECOND -> SortOrder.Ascending()
+        }
+        setState { copy(shouldRevertFilterChanges = true) }
+        interactor.updateSortOrder(sortOrder)
+    }
+
+    private fun <T> List<T>.sortByOrder(
+        sortOrder: SortOrder,
+        selector: (T) -> Int
+    ): List<T> {
+        return when (sortOrder) {
+            is SortOrder.Ascending -> this.sortedBy(selector)
+            is SortOrder.Descending -> this.sortedByDescending(selector)
+        }
     }
 }
