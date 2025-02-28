@@ -19,9 +19,10 @@ package eu.europa.ec.commonfeature.ui.request.transformer
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.docNamespace
+import eu.europa.ec.commonfeature.util.getReadableNameFromIdentifier
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
-import eu.europa.ec.commonfeature.util.parseClaimsToDomain
+import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
@@ -29,15 +30,14 @@ import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
-import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
+import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -80,10 +80,9 @@ private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<Str
 sealed class DomainClaim {
     abstract val key: ElementIdentifier
     abstract val displayTitle: String
+    abstract val path: List<String>
 
     sealed class Claim : DomainClaim() {
-        abstract val path: List<String>
-
         data class Group(
             override val key: ElementIdentifier,
             override val displayTitle: String,
@@ -95,85 +94,169 @@ sealed class DomainClaim {
             override val key: ElementIdentifier,
             override val displayTitle: String,
             override val path: List<String>,
-            val isRequired: Boolean,
             val value: String,
+            val isRequired: Boolean,
         ) : Claim()
     }
 
     data class NotAvailableClaim(
         override val key: ElementIdentifier,
         override val displayTitle: String,
+        override val path: List<String>,
+        val value: String,
     ) : DomainClaim()
+}
+
+fun IssuedDocument.findSdJwtVcClaimFromPath(
+    paths: List<List<String>>,
+    metadata: DocumentMetaData?,
+    resourceProvider: ResourceProvider,
+    documentIdentifier: DocumentIdentifier
+): List<DomainClaim> {
+    if (paths.isEmpty()) return emptyList()
+
+    val groupedClaims = mutableMapOf<String, MutableList<DomainClaim>>()
+
+    paths.forEach { path ->
+        if (path.isEmpty()) return@forEach
+
+        var currentClaim: SdJwtVcClaim? = data.claims
+            .filterIsInstance<SdJwtVcClaim>()
+            .firstOrNull { it.identifier == path.first() }
+
+        if (currentClaim == null) {
+            groupedClaims.getOrPut(path.first()) { mutableListOf() }.add(
+                DomainClaim.NotAvailableClaim(
+                    key = path.last(),
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = resourceProvider.getLocale(),
+                        identifier = path.last()
+                    ),
+                    path = path,
+                    value = resourceProvider.getString(R.string.request_element_identifier_not_available)
+                )
+            )
+            return@forEach
+        }
+
+        val collectedClaims = mutableListOf<SdJwtVcClaim>()
+        var parentClaim: SdJwtVcClaim? = currentClaim
+
+        for (nextId in path.drop(1)) {
+            val nextClaim = parentClaim?.children?.firstOrNull { it.identifier == nextId }
+            if (nextClaim == null) {
+                groupedClaims.getOrPut(path.first()) { mutableListOf() }.add(
+                    DomainClaim.NotAvailableClaim(
+                        key = nextId,
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = resourceProvider.getLocale(),
+                            identifier = path.last()
+                        ),
+                        path = path,
+                        value = resourceProvider.getString(R.string.request_element_identifier_not_available)
+                    )
+                )
+                return@forEach
+            }
+            collectedClaims.add(parentClaim)
+            parentClaim = nextClaim
+        }
+
+        val formattedValue = buildString {
+            parseKeyValueUi(
+                item = parentClaim?.value ?: "",
+                groupIdentifierKey = parentClaim?.identifier ?: "",
+                resourceProvider = resourceProvider,
+                allItems = this
+            )
+        }
+
+        val isRequired = getMandatoryFields(
+            documentIdentifier = documentIdentifier
+        ).contains(parentClaim!!.identifier)
+
+        val primitiveClaim = DomainClaim.Claim.Primitive(
+            key = parentClaim.identifier,
+            displayTitle = getReadableNameFromIdentifier(
+                metadata = metadata,
+                userLocale = resourceProvider.getLocale(),
+                identifier = parentClaim.identifier
+            ),
+            path = path,
+            isRequired = isRequired,
+            value = formattedValue
+        )
+
+        val groupKey = collectedClaims.firstOrNull()?.identifier ?: path.first()
+        groupedClaims.getOrPut(groupKey) { mutableListOf() }.add(primitiveClaim)
+    }
+
+    return groupedClaims.map { (key, claims) ->
+        val parentClaim =
+            data.claims.filterIsInstance<SdJwtVcClaim>().firstOrNull { it.identifier == key }
+
+        if (claims.size > 1 || parentClaim?.children?.isNotEmpty() == true) {
+            DomainClaim.Claim.Group(
+                key = key,
+                displayTitle = getReadableNameFromIdentifier(
+                    metadata = metadata,
+                    userLocale = resourceProvider.getLocale(),
+                    identifier = key
+                ),
+                path = listOf(key),
+                items = claims
+            )
+        } else {
+            claims.first()
+        }
+    }
 }
 
 object RequestTransformer {
 
     fun transformToDomainItems(
-        storageDocuments: List<IssuedDocument> = emptyList(),
+        storageDocuments: List<IssuedDocument>,
         resourceProvider: ResourceProvider,
         requestDocuments: List<RequestedDocument>,
     ): Result<List<DocumentPayloadDomain>> = runCatching {
-        val userLocale = resourceProvider.getLocale()
-        val resultList: MutableList<DocumentPayloadDomain> = mutableListOf()
+        val resultList = mutableListOf<DocumentPayloadDomain>()
 
         requestDocuments.forEach { requestDocument ->
-            val storageDocument = storageDocuments.first { it.id == requestDocument.documentId }
+            val storageDocument =
+                storageDocuments.first { it.id == requestDocument.documentId }
 
-            val docName: String = storageDocument.name
-            val docId: DocumentId = storageDocument.id
-            val docNamespace: NameSpace? = storageDocument.docNamespace
+            val requestDocumentClaims = mutableListOf<DomainClaim>()
 
-            val requestDocumentClaims: MutableList<DomainClaim> = mutableListOf()
+            val sdJwtVcPaths = requestDocument.requestedItems.keys
+                .filterIsInstance<SdJwtVcItem>()
+                .map { it.path }
 
-            requestDocument.requestedItems.keys.forEach { docItem ->
-
-                val documentClaim = storageDocument.findClaimFromDocItem(docItem)
-                //val identifier = documentClaim?.identifier //TODO find a better way to retrieve identifier
-                val identifier: String? = when (docItem) {
-                    is MsoMdocItem -> docItem.elementIdentifier
-                    is SdJwtVcItem -> docItem.path.lastOrNull()
-                    else -> null
-                }
-
-                val isRequired = getMandatoryFields(
-                    documentIdentifier = storageDocument.toDocumentIdentifier()
-                ).contains(identifier)
-
-                val display = storageDocument.metadata?.claims
-                    ?.find { it.name.name == identifier }
-                    ?.display
-
-                /*val readableName: (String) -> String = { identifier ->
-                    display.getLocalizedClaimName(
-                        userLocale = userLocale,
-                        fallback = identifier
+            if (sdJwtVcPaths.isNotEmpty()) {
+                requestDocumentClaims.addAll(
+                    storageDocument.findSdJwtVcClaimFromPath(
+                        paths = sdJwtVcPaths,
+                        metadata = storageDocument.metadata,
+                        resourceProvider = resourceProvider,
+                        documentIdentifier = storageDocument.toDocumentIdentifier(),
                     )
-                }*/
-
-                val value = parseClaimsToDomain(
-                    coreClaim = documentClaim,
-                    metadata = storageDocument.metadata,
-                    groupIdentifierKey = identifier,
-                    resourceProvider = resourceProvider,
-                    path = docItem.toPath(),
-                    isRequired = isRequired
                 )
-
-                requestDocumentClaims.add(value)
             }
 
             resultList.add(
                 DocumentPayloadDomain(
-                    docName = docName,
-                    docId = docId,
-                    docNamespace = docNamespace,
-                    docClaimsDomain = requestDocumentClaims.sortedBy { (it as? DomainClaim.Claim)?.displayTitle?.lowercase() }, //TODO
+                    docName = storageDocument.name,
+                    docId = storageDocument.id,
+                    docNamespace = storageDocument.docNamespace,
+                    docClaimsDomain = requestDocumentClaims.sortedBy { (it as? DomainClaim.Claim)?.displayTitle?.lowercase() }, //TOD
                 )
             )
         }
 
-        return@runCatching resultList
+        resultList
     }
+
 
     fun transformToUiItems(
         documentsDomain: List<DocumentPayloadDomain>,
@@ -259,8 +342,8 @@ object RequestTransformer {
                 ExpandableListItem.SingleListItemData(
                     collapsed = ListItemData(
                         itemId = "", // TODO revisit
-                        mainContentData = ListItemMainContentData.Text(text = displayTitle),
-                        overlineText = key,
+                        mainContentData = ListItemMainContentData.Text(text = value),
+                        overlineText = displayTitle,
                         trailingContentData = ListItemTrailingContentData.Checkbox(
                             checkboxData = CheckboxData(
                                 isChecked = false, //TODO should this, business-wise be true/Primitive.required

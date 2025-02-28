@@ -219,12 +219,14 @@ fun parseClaimsToDomain(
             /*key = getReadableNameFromIdentifier(
                 groupIdentifierKey ?: path.getOrNull(1).toString()
             ), //TODO*/
-            key = getReadableNameFromIdentifier(
+            key = groupIdentifierKey ?: keyIdentifier,
+            displayTitle = getReadableNameFromIdentifier(
                 metadata = metadata,
                 userLocale = userLocale,
                 identifier = groupIdentifierKey ?: keyIdentifier
             ),
-            displayTitle = resourceProvider.getString(R.string.request_element_identifier_not_available)
+            path = path,
+            value = resourceProvider.getString(R.string.request_element_identifier_not_available)
         )
     }
 }
