@@ -127,9 +127,13 @@ object RequestTransformer {
 
             requestDocument.requestedItems.keys.forEach { docItem ->
 
-                val documentClaim =
-                    storageDocument.findClaimFromDocItem(docItem) //TODO find a better way to retrieve identifier
-                val identifier = documentClaim?.identifier
+                val documentClaim = storageDocument.findClaimFromDocItem(docItem)
+                //val identifier = documentClaim?.identifier //TODO find a better way to retrieve identifier
+                val identifier: String? = when (docItem) {
+                    is MsoMdocItem -> docItem.elementIdentifier
+                    is SdJwtVcItem -> docItem.path.lastOrNull()
+                    else -> null
+                }
 
                 val isRequired = getMandatoryFields(
                     documentIdentifier = storageDocument.toDocumentIdentifier()
@@ -242,9 +246,9 @@ object RequestTransformer {
                         overlineText = displayTitle,
                         leadingContentData = leadingContent,
                         trailingContentData = ListItemTrailingContentData.Checkbox(
-                            CheckboxData(
+                            checkboxData = CheckboxData(
                                 isChecked = true,
-                                enabled = isRequired
+                                enabled = !isRequired
                             )
                         )
                     )
@@ -258,8 +262,8 @@ object RequestTransformer {
                         mainContentData = ListItemMainContentData.Text(text = displayTitle),
                         overlineText = key,
                         trailingContentData = ListItemTrailingContentData.Checkbox(
-                            CheckboxData(
-                                isChecked = false,
+                            checkboxData = CheckboxData(
+                                isChecked = false, //TODO should this, business-wise be true/Primitive.required
                                 enabled = false
                             )
                         )
@@ -347,9 +351,13 @@ fun IssuedDocument.findClaimFromPath(path: List<String>): DocumentClaim? {
 
             var claim: SdJwtVcClaim? = null
             for (claimId in path) {
-                claim = claim?.children?.firstOrNull { it.identifier == claimId }
+                claim = claim?.children?.firstOrNull {
+                    it.identifier == claimId
+                }
                     ?: data.claims.filterIsInstance<SdJwtVcClaim>()
-                        .firstOrNull { it.identifier == claimId }
+                        .firstOrNull {
+                            it.identifier == claimId
+                        }
             }
             claim
         }

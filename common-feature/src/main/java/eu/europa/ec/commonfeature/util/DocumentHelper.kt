@@ -165,6 +165,7 @@ fun parseClaimsToDomain(
             }
 
             is SdJwtVcClaim -> {
+                //if leaf
                 return if (coreClaim.children.isEmpty()) {
 
                     val value = buildString {
@@ -188,7 +189,7 @@ fun parseClaimsToDomain(
                         path = path,
                         isRequired = isRequired
                     )
-                } else {
+                } else { //has children
                     val result = coreClaim.children.map { childClaim ->
                         parseClaimsToDomain(
                             coreClaim = childClaim,
@@ -219,9 +220,9 @@ fun parseClaimsToDomain(
                 groupIdentifierKey ?: path.getOrNull(1).toString()
             ), //TODO*/
             key = getReadableNameFromIdentifier(
-                metadata,
-                userLocale,
-                keyIdentifier
+                metadata = metadata,
+                userLocale = userLocale,
+                identifier = groupIdentifierKey ?: keyIdentifier
             ),
             displayTitle = resourceProvider.getString(R.string.request_element_identifier_not_available)
         )
