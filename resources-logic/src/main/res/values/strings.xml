@@ -264,6 +264,7 @@
     <string name="transactions_screen_minutes_ago_message">%1$s minutes ago</string>
     <string name="transactions_screen_filters_ascending">Ascending</string>
     <string name="transactions_screen_filters_descending">Descending</string>
+    <string name="transactions_screen_filters_title">Filter and sort</string>
     <string name="transaction_status_completed">Completed</string>
     <string name="transaction_status_failed">Failed</string>
 

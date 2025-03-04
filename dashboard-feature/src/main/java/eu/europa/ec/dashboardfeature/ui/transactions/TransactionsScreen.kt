@@ -62,6 +62,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.model.SearchItem
+import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
@@ -86,9 +87,11 @@ import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
+import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import kotlinx.coroutines.CoroutineScope
@@ -419,7 +422,7 @@ private fun TransactionsSheetContent(
             GenericBottomSheet(
                 titleContent = {
                     Text(
-                        text = stringResource(R.string.documents_screen_filters_title),
+                        text = stringResource(R.string.transactions_screen_filters_title),
                         style = MaterialTheme.typography.headlineSmall
                     )
                 },
@@ -438,26 +441,64 @@ private fun TransactionsSheetContent(
                                 .padding(bottom = with(LocalDensity.current) { buttonsRowHeight.toDp() }),
                             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                         ) {
-                            DualSelectorButtons(state.sortOrder) {
-                                onEventSent(
-                                    Event.OnSortingOrderChanged(it)
-                                )
-                            }
                             state.filtersUi.forEachIndexed { index, filter ->
-                                if (filter.expanded.isNotEmpty()) {
-                                    WrapExpandableListItem(
-                                        data = filter,
-                                        isExpanded = expandStateList[index],
-                                        onExpandedChange = {
-                                            expandStateList[index] = !expandStateList[index]
-                                        },
-                                        onItemClick = {
-                                            val id = it.itemId
-                                            val groupId = filter.collapsed.itemId
-                                            onEventSent(Event.OnFilterSelectionChanged(id, groupId))
-                                        },
-                                        expandedAddDivider = false,
-                                    )
+                                when {
+                                    filter.collapsed.itemId == TransactionFilterIds.FILTER_SORT_GROUP_ID -> {
+                                        WrapExpandableCard(
+                                            isExpanded = expandStateList[index],
+                                            cardCollapsedContent = {
+                                                WrapListItem(
+                                                    mainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                                    item = filter.collapsed,
+                                                    onItemClick = {
+                                                        expandStateList[index] =
+                                                            !expandStateList[index]
+                                                    }
+                                                )
+                                            },
+                                            cardExpandedContent = {
+                                                Row(modifier = Modifier.padding(vertical = SPACING_MEDIUM.dp)) {
+                                                    DualSelectorButtons(state.sortOrder) {
+                                                        onEventSent(Event.OnSortingOrderChanged(it))
+                                                    }
+                                                }
+                                                WrapListItems(
+                                                    items = filter.expanded,
+                                                    onItemClick = {
+                                                        val id = it.itemId
+                                                        val groupId = filter.collapsed.itemId
+                                                        onEventSent(
+                                                            Event.OnFilterSelectionChanged(
+                                                                id,
+                                                                groupId
+                                                            )
+                                                        )
+                                                    },
+                                                )
+                                            }
+                                        )
+                                    }
+
+                                    filter.expanded.isNotEmpty() -> {
+                                        WrapExpandableListItem(
+                                            data = filter,
+                                            isExpanded = expandStateList[index],
+                                            onExpandedChange = {
+                                                expandStateList[index] = !expandStateList[index]
+                                            },
+                                            onItemClick = {
+                                                val id = it.itemId
+                                                val groupId = filter.collapsed.itemId
+                                                onEventSent(
+                                                    Event.OnFilterSelectionChanged(
+                                                        id,
+                                                        groupId
+                                                    )
+                                                )
+                                            },
+                                            expandedAddDivider = false,
+                                        )
+                                    }
                                 }
                             }
                         }
