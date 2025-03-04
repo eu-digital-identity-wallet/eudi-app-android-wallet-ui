@@ -24,7 +24,6 @@ import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
@@ -228,19 +227,22 @@ object RequestTransformer {
                 storageDocuments.first { it.id == requestDocument.documentId }
 
             val requestDocumentClaims = mutableListOf<DomainClaim>()
-
             val sdJwtVcPaths = requestDocument.requestedItems.keys
                 .filterIsInstance<SdJwtVcItem>()
                 .map { it.path }
 
+            val domains = buildDomainTree(sdJwtVcPaths, storageDocument.data.claims)
+            println(domains)
+
             if (sdJwtVcPaths.isNotEmpty()) {
                 requestDocumentClaims.addAll(
-                    storageDocument.findSdJwtVcClaimFromPath(
-                        paths = sdJwtVcPaths,
-                        metadata = storageDocument.metadata,
-                        resourceProvider = resourceProvider,
-                        documentIdentifier = storageDocument.toDocumentIdentifier(),
-                    )
+                    domains
+//                    storageDocument.findSdJwtVcClaimFromPath(
+//                        paths = sdJwtVcPaths,
+//                        metadata = storageDocument.metadata,
+//                        resourceProvider = resourceProvider,
+//                        documentIdentifier = storageDocument.toDocumentIdentifier(),
+//                    )
                 )
             }
 
@@ -445,4 +447,69 @@ fun IssuedDocument.findClaimFromPath(path: List<String>): DocumentClaim? {
             claim
         }
     }
+}
+
+fun insertPath(
+    tree: List<DomainClaim>,
+    path: List<String>,
+    disclosurePath: List<String>,
+    claims: List<DocumentClaim>
+): List<DomainClaim> {
+    if (path.isEmpty()) return tree
+
+    val key = path.first()
+    val existingNode = tree.find { it.key == key }
+
+    var currentClaim: SdJwtVcClaim? = claims.filterIsInstance<SdJwtVcClaim>()
+        .firstOrNull {
+            it.identifier == key
+        }
+
+    println(currentClaim)
+
+    return if (path.size == 1) {
+        // Leaf node (Primitive)
+        if (existingNode == null) {
+            if (currentClaim == null) {
+                tree + DomainClaim.NotAvailableClaim(
+                    key = key,
+                    displayTitle = "Not available",
+                    path = disclosurePath,
+                    value = "not available"
+                )
+            } else {
+                tree + DomainClaim.Claim.Primitive(
+                    key = currentClaim.identifier,
+                    displayTitle = "${currentClaim.identifier} TITLE",
+                    path = disclosurePath,
+                    isRequired = true,
+                    value = "${currentClaim.identifier} FORMATTEd"
+                )
+            }
+        } else {
+            tree // Already exists, return unchanged
+        }
+    } else {
+        // Group node (Intermediate)
+        val castClaims = (claims.first { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
+        val updatedNode = if (existingNode is DomainClaim.Claim.Group) {
+            // Update existing group by inserting the next path segment into its items
+            existingNode.copy(items = insertPath(existingNode.items, path.drop(1), disclosurePath, castClaims))
+        } else {
+            // Create a new group and insert the next path segment
+            DomainClaim.Claim.Group(
+                key = key,
+                displayTitle = key,
+                path = path.take(path.size - 1),
+                items = insertPath(emptyList(), path.drop(1), disclosurePath, castClaims)
+            )
+        }
+
+        tree.filter { it.key != key } + updatedNode // Replace or add the updated node
+    }
+}
+
+// Function to build the tree from a list of paths
+fun buildDomainTree(data: List<List<String>>, claims: List<DocumentClaim>): List<DomainClaim> {
+    return data.fold(emptyList()) { acc, path -> insertPath(acc, path, path, claims) }
 }
