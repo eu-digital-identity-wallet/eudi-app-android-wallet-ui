@@ -560,7 +560,7 @@ fun insertPath(
     } else {
         // Group node (Intermediate)
         val childClaims =
-            (claims.first { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
+            (claims.find { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
         val updatedNode = if (existingNode is DomainClaim.Claim.Group) {
             // Update existing group by inserting the next path segment into its items
             existingNode.copy(
