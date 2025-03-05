@@ -23,7 +23,6 @@ import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.getReadableNameFromIdentifier
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
-import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
@@ -108,113 +107,6 @@ sealed class DomainClaim {
     ) : DomainClaim()
 }
 
-fun IssuedDocument.findSdJwtVcClaimFromPath(
-    paths: List<List<String>>,
-    metadata: DocumentMetaData?,
-    resourceProvider: ResourceProvider,
-    documentIdentifier: DocumentIdentifier
-): List<DomainClaim> {
-    if (paths.isEmpty()) return emptyList()
-
-    val groupedClaims = mutableMapOf<String, MutableList<DomainClaim>>()
-
-    paths.forEach { path ->
-        if (path.isEmpty()) return@forEach
-
-        var currentClaim: SdJwtVcClaim? = data.claims
-            .filterIsInstance<SdJwtVcClaim>()
-            .firstOrNull { it.identifier == path.first() }
-
-        if (currentClaim == null) {
-            groupedClaims.getOrPut(path.first()) { mutableListOf() }.add(
-                DomainClaim.NotAvailableClaim(
-                    key = path.last(),
-                    displayTitle = getReadableNameFromIdentifier(
-                        metadata = metadata,
-                        userLocale = resourceProvider.getLocale(),
-                        identifier = path.last()
-                    ),
-                    path = path,
-                    value = resourceProvider.getString(R.string.request_element_identifier_not_available)
-                )
-            )
-            return@forEach
-        }
-
-        val collectedClaims = mutableListOf<SdJwtVcClaim>()
-        var parentClaim: SdJwtVcClaim? = currentClaim
-
-        for (nextId in path.drop(1)) {
-            val nextClaim = parentClaim?.children?.firstOrNull { it.identifier == nextId }
-            if (nextClaim == null) {
-                groupedClaims.getOrPut(path.first()) { mutableListOf() }.add(
-                    DomainClaim.NotAvailableClaim(
-                        key = nextId,
-                        displayTitle = getReadableNameFromIdentifier(
-                            metadata = metadata,
-                            userLocale = resourceProvider.getLocale(),
-                            identifier = path.last()
-                        ),
-                        path = path,
-                        value = resourceProvider.getString(R.string.request_element_identifier_not_available)
-                    )
-                )
-                return@forEach
-            }
-            collectedClaims.add(parentClaim)
-            parentClaim = nextClaim
-        }
-
-        val formattedValue = buildString {
-            parseKeyValueUi(
-                item = parentClaim?.value ?: "",
-                groupIdentifierKey = parentClaim?.identifier ?: "",
-                resourceProvider = resourceProvider,
-                allItems = this
-            )
-        }
-
-        val isRequired = getMandatoryFields(
-            documentIdentifier = documentIdentifier
-        ).contains(parentClaim!!.identifier)
-
-        val primitiveClaim = DomainClaim.Claim.Primitive(
-            key = parentClaim.identifier,
-            displayTitle = getReadableNameFromIdentifier(
-                metadata = metadata,
-                userLocale = resourceProvider.getLocale(),
-                identifier = parentClaim.identifier
-            ),
-            path = path,
-            isRequired = isRequired,
-            value = formattedValue
-        )
-
-        val groupKey = collectedClaims.firstOrNull()?.identifier ?: path.first()
-        groupedClaims.getOrPut(groupKey) { mutableListOf() }.add(primitiveClaim)
-    }
-
-    return groupedClaims.map { (key, claims) ->
-        val parentClaim =
-            data.claims.filterIsInstance<SdJwtVcClaim>().firstOrNull { it.identifier == key }
-
-        if (claims.size > 1 || parentClaim?.children?.isNotEmpty() == true) {
-            DomainClaim.Claim.Group(
-                key = key,
-                displayTitle = getReadableNameFromIdentifier(
-                    metadata = metadata,
-                    userLocale = resourceProvider.getLocale(),
-                    identifier = key
-                ),
-                path = listOf(key),
-                items = claims
-            )
-        } else {
-            claims.first()
-        }
-    }
-}
-
 object RequestTransformer {
 
     fun transformToDomainItems(
@@ -229,10 +121,13 @@ object RequestTransformer {
                 storageDocuments.first { it.id == requestDocument.documentId }
 
             val requestDocumentClaims = mutableListOf<DomainClaim>()
-            val requestedDocItems = requestDocument.requestedItems.keys.toList()
+            val requestedItemsPaths = requestDocument.requestedItems.keys
+                .map {
+                    it.toPath()
+                }
 
             val domains = buildDomainTree(
-                docItems = requestedDocItems,
+                paths = requestedItemsPaths,
                 claims = storageDocument.data.claims,
                 metadata = storageDocument.metadata,
                 resourceProvider = resourceProvider,
@@ -240,7 +135,7 @@ object RequestTransformer {
             )
             println(domains)
 
-            if (requestedDocItems.isNotEmpty()) {
+            if (requestedItemsPaths.isNotEmpty()) {
                 requestDocumentClaims.addAll(
                     domains
 //                    storageDocument.findSdJwtVcClaimFromPath(
@@ -299,7 +194,7 @@ object RequestTransformer {
             is DomainClaim.Claim.Group -> {
                 ExpandableListItem.NestedListItemData(
                     collapsed = ListItemData(
-                        itemId = (listOf(docId + path)).joinToString(separator = PATH_SEPARATOR), // TODO find a better way to create/extract the itemId
+                        itemId = (listOf(docId) + path).joinToString(separator = PATH_SEPARATOR), // TODO find a better way to create/extract the itemId
                         mainContentData = ListItemMainContentData.Text(text = displayTitle),
                         trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowDown)
                     ),
@@ -332,7 +227,7 @@ object RequestTransformer {
 
                 ExpandableListItem.SingleListItemData(
                     collapsed = ListItemData(
-                        itemId = (listOf(docId + path)).joinToString(separator = PATH_SEPARATOR),// TODO find a better way to create/extract the itemId
+                        itemId = (listOf(docId) + path).joinToString(separator = PATH_SEPARATOR),// TODO find a better way to create/extract the itemId
                         mainContentData = mainContent,
                         overlineText = displayTitle,
                         leadingContentData = leadingContent,
@@ -405,6 +300,9 @@ object RequestTransformer {
                         else -> MsoMdocItem(
                             namespace = documentPayload.docNamespace,
                             elementIdentifier = selectedItem.collapsed.itemId
+                                .split(PATH_SEPARATOR) //or just have/carry the DocItem in the class and use it here as is
+                                .drop(1)
+                                .first() //TODO
                         )
                     }
                 }
@@ -487,7 +385,7 @@ fun insertPath(
 
     val isRequired = getMandatoryFields(
         documentIdentifier = documentIdentifier
-    ).contains(currentClaim?.identifier)
+    ).contains(currentClaim?.identifier) //TODO change this, it should be its path, e.g. "address.formatted"
 
     println(currentClaim)
 
@@ -615,17 +513,17 @@ fun insertPath(
 
 // Function to build the tree from a list of paths
 fun buildDomainTree(
-    docItems: List<DocItem>,
+    paths: List<List<String>>,
     claims: List<DocumentClaim>,
     metadata: DocumentMetaData?,
     resourceProvider: ResourceProvider,
     documentIdentifier: DocumentIdentifier,
 ): List<DomainClaim> {
-    return docItems.fold(emptyList()) { acc, docItem ->
+    return paths.fold(emptyList()) { acc, path ->
         insertPath(
             tree = acc,
-            path = docItem.toPath(),
-            disclosurePath = docItem.toPath(),
+            path = path,
+            disclosurePath = path,
             claims = claims,
             metadata = metadata,
             resourceProvider = resourceProvider,
