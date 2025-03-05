@@ -18,6 +18,7 @@ package eu.europa.ec.commonfeature.ui.request.transformer
 
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.commonfeature.util.createKeyValue
 import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.getReadableNameFromIdentifier
 import eu.europa.ec.commonfeature.util.keyIsPortrait
@@ -298,7 +299,7 @@ object RequestTransformer {
             is DomainClaim.Claim.Group -> {
                 ExpandableListItem.NestedListItemData(
                     collapsed = ListItemData(
-                        itemId = path.joinToString(separator = PATH_SEPARATOR),
+                        itemId = (listOf(docId + path)).joinToString(separator = PATH_SEPARATOR), // TODO find a better way to create/extract the itemId
                         mainContentData = ListItemMainContentData.Text(text = displayTitle),
                         trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowDown)
                     ),
@@ -331,7 +332,7 @@ object RequestTransformer {
 
                 ExpandableListItem.SingleListItemData(
                     collapsed = ListItemData(
-                        itemId = path.joinToString(separator = PATH_SEPARATOR),
+                        itemId = (listOf(docId + path)).joinToString(separator = PATH_SEPARATOR),// TODO find a better way to create/extract the itemId
                         mainContentData = mainContent,
                         overlineText = displayTitle,
                         leadingContentData = leadingContent,
@@ -348,7 +349,7 @@ object RequestTransformer {
             is DomainClaim.NotAvailableClaim -> {
                 ExpandableListItem.SingleListItemData(
                     collapsed = ListItemData(
-                        itemId = "", // TODO revisit
+                        itemId = "-1", // TODO revisit
                         mainContentData = ListItemMainContentData.Text(text = value),
                         overlineText = displayTitle,
                         trailingContentData = ListItemTrailingContentData.Checkbox(
@@ -380,7 +381,12 @@ object RequestTransformer {
             }
 
         val groupedByDocument = items.map {
-            it.domainPayload to it.claimsUi.flatMap { uiItem -> uiItem.collectSingles() }
+            it.domainPayload to it.claimsUi.flatMap { uiItem ->
+                uiItem.collectSingles()
+                    .distinctBy {
+                        it.collapsed.itemId // Distinct by item ID to prevent duplicate sending of the same group
+                    }
+            }
         }
 
         // Convert to the format required by DisclosedDocuments
@@ -391,7 +397,9 @@ object RequestTransformer {
 
                     when (documentPayload.docNamespace) {
                         null -> SdJwtVcItem(
-                            selectedItem.collapsed.itemId.split(PATH_SEPARATOR) //or just have/carry the DocItem in the class and use it here as is
+                            selectedItem.collapsed.itemId
+                                .split(PATH_SEPARATOR) //or just have/carry the DocItem in the class and use it here as is
+                                .drop(1)
                         )
 
                         else -> MsoMdocItem(
@@ -417,7 +425,7 @@ fun IssuedDocument.findClaimFromDocItem(docItem: DocItem) =
 
 fun DocItem.toPath(): List<String> {
     return when (this) {
-        is MsoMdocItem -> return listOf(this.namespace, this.elementIdentifier)
+        is MsoMdocItem -> return listOf(this.elementIdentifier)
         is SdJwtVcItem -> return this.path
         else -> emptyList()
     }
@@ -462,17 +470,13 @@ fun insertPath(
     metadata: DocumentMetaData?,
     resourceProvider: ResourceProvider,
     documentIdentifier: DocumentIdentifier,
-    isSdJwtVc: Boolean,
+    //isSdJwtVc: Boolean,
 ): List<DomainClaim> {
     if (path.isEmpty()) return tree
 
     val userLocale = resourceProvider.getLocale()
 
-    val key = if (isSdJwtVc) {
-        path.first()
-    } else {
-        path.last()
-    }
+    val key = path.first()
 
     val existingNode = tree.find { it.key == key }
 
@@ -502,27 +506,53 @@ fun insertPath(
                     value = resourceProvider.getString(R.string.request_element_identifier_not_available)
                 )
             } else {
-                val formattedValue = buildString {
-                    parseKeyValueUi(
+                val formattedValue = buildList {
+                    createKeyValue(
                         item = currentClaim.value!!,
-                        groupIdentifierKey = currentClaim.identifier,
+                        groupKey = currentClaim.identifier,
                         //keyIdentifier = keyIdentifier,
                         resourceProvider = resourceProvider,
                         allItems = this
                     )
                 }
 
-                tree + DomainClaim.Claim.Primitive(
-                    key = currentClaim.identifier,
-                    displayTitle = getReadableNameFromIdentifier(
-                        metadata = metadata,
-                        userLocale = userLocale,
-                        identifier = currentClaim.identifier
-                    ),
-                    path = disclosurePath,
-                    isRequired = isRequired,
-                    value = formattedValue //TODO
-                )
+                val newEntry = if (formattedValue.size == 1) {
+                    DomainClaim.Claim.Primitive(
+                        key = currentClaim.identifier,
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = userLocale,
+                            identifier = currentClaim.identifier
+                        ),
+                        path = disclosurePath,
+                        isRequired = isRequired,
+                        value = formattedValue.first().second //TODO
+                    )
+                } else {
+                    DomainClaim.Claim.Group(
+                        key = currentClaim.identifier,
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = userLocale,
+                            identifier = currentClaim.identifier
+                        ),
+                        path = disclosurePath,
+                        items = formattedValue.map {
+                            DomainClaim.Claim.Primitive(
+                                key = it.first,
+                                displayTitle = getReadableNameFromIdentifier(
+                                    metadata = metadata,
+                                    userLocale = userLocale,
+                                    identifier = it.first
+                                ),
+                                path = disclosurePath,
+                                isRequired = isRequired,
+                                value = it.second //TODO
+                            )
+                        }
+                    )
+                }
+                tree + newEntry
             }
         } else {
             tree // Already exists, return unchanged
@@ -542,7 +572,6 @@ fun insertPath(
                     metadata = metadata,
                     resourceProvider = resourceProvider,
                     documentIdentifier = documentIdentifier,
-                    isSdJwtVc = isSdJwtVc,
                 )
             )
         } else {
@@ -575,7 +604,6 @@ fun insertPath(
                         metadata = metadata,
                         resourceProvider = resourceProvider,
                         documentIdentifier = documentIdentifier,
-                        isSdJwtVc = isSdJwtVc,
                     )
                 )
             }
@@ -602,7 +630,6 @@ fun buildDomainTree(
             metadata = metadata,
             resourceProvider = resourceProvider,
             documentIdentifier = documentIdentifier,
-            isSdJwtVc = docItem is SdJwtVcItem, //TODO
         )
     }
 }

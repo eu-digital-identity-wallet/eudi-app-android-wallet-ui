@@ -312,6 +312,87 @@ fun parseKeyValueUi(
     }
 }
 
+fun createKeyValue(
+    item: Any,
+    groupKey: String,
+    childKey: String = "",
+    resourceProvider: ResourceProvider,
+    allItems: MutableList<Pair<String, String>>,
+) {
+    when (item) {
+
+        is Map<*, *> -> {
+            item.forEach { (key, value) ->
+                safeLet(key as? String, value) { key, value ->
+                    createKeyValue(
+                        item = value,
+                        groupKey = groupKey,
+                        childKey = key,
+                        resourceProvider = resourceProvider,
+                        allItems = allItems
+                    )
+                }
+            }
+        }
+
+        is Collection<*> -> {
+            item.forEach { value ->
+                value?.let {
+                    createKeyValue(
+                        item = it,
+                        groupKey = groupKey,
+                        resourceProvider = resourceProvider,
+                        allItems = allItems
+                    )
+                }
+            }
+        }
+
+        is Boolean -> {
+            allItems.add(
+                childKey
+                        to resourceProvider.getString(
+                    if (item) {
+                        R.string.document_details_boolean_item_true_readable_value
+                    } else {
+                        R.string.document_details_boolean_item_false_readable_value
+                    }
+                )
+            )
+        }
+
+        else -> {
+            val date: String? = (item as? String)?.toDateFormatted()
+            allItems.add(
+                childKey to
+                        when {
+
+                            keyIsGender(groupKey) -> {
+                                getGenderValue(item.toString(), resourceProvider)
+                            }
+
+                            keyIsUserPseudonym(groupKey) -> {
+                                item.toString().decodeFromBase64()
+                            }
+
+                            date != null && childKey.isEmpty() -> {
+                                date
+                            }
+
+                            else -> {
+                                val jsonString = item.toString()
+                                if (childKey.isEmpty()) {
+                                    jsonString
+                                } else {
+                                    jsonString.toDateFormatted() ?: jsonString
+                                }
+                            }
+                        }
+            )
+        }
+    }
+}
+
 fun documentHasExpired(
     documentExpirationDate: Instant,
     currentDate: LocalDate = LocalDate.now(),
