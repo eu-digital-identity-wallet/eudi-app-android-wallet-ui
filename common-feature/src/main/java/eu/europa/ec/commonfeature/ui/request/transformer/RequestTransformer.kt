@@ -24,6 +24,7 @@ import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.commonfeature.util.parseKeyValueUi
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
@@ -227,14 +228,18 @@ object RequestTransformer {
                 storageDocuments.first { it.id == requestDocument.documentId }
 
             val requestDocumentClaims = mutableListOf<DomainClaim>()
-            val sdJwtVcPaths = requestDocument.requestedItems.keys
-                .filterIsInstance<SdJwtVcItem>()
-                .map { it.path }
+            val requestedDocItems = requestDocument.requestedItems.keys.toList()
 
-            val domains = buildDomainTree(sdJwtVcPaths, storageDocument.data.claims)
+            val domains = buildDomainTree(
+                docItems = requestedDocItems,
+                claims = storageDocument.data.claims,
+                metadata = storageDocument.metadata,
+                resourceProvider = resourceProvider,
+                documentIdentifier = storageDocument.toDocumentIdentifier(),
+            )
             println(domains)
 
-            if (sdJwtVcPaths.isNotEmpty()) {
+            if (requestedDocItems.isNotEmpty()) {
                 requestDocumentClaims.addAll(
                     domains
 //                    storageDocument.findSdJwtVcClaimFromPath(
@@ -453,17 +458,32 @@ fun insertPath(
     tree: List<DomainClaim>,
     path: List<String>,
     disclosurePath: List<String>,
-    claims: List<DocumentClaim>
+    claims: List<DocumentClaim>,
+    metadata: DocumentMetaData?,
+    resourceProvider: ResourceProvider,
+    documentIdentifier: DocumentIdentifier,
+    isSdJwtVc: Boolean,
 ): List<DomainClaim> {
     if (path.isEmpty()) return tree
 
-    val key = path.first()
+    val userLocale = resourceProvider.getLocale()
+
+    val key = if (isSdJwtVc) {
+        path.first()
+    } else {
+        path.last()
+    }
+
     val existingNode = tree.find { it.key == key }
 
-    var currentClaim: SdJwtVcClaim? = claims.filterIsInstance<SdJwtVcClaim>()
+    val currentClaim: DocumentClaim? = claims
         .firstOrNull {
             it.identifier == key
         }
+
+    val isRequired = getMandatoryFields(
+        documentIdentifier = documentIdentifier
+    ).contains(currentClaim?.identifier)
 
     println(currentClaim)
 
@@ -473,17 +493,35 @@ fun insertPath(
             if (currentClaim == null) {
                 tree + DomainClaim.NotAvailableClaim(
                     key = key,
-                    displayTitle = "Not available",
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = userLocale,
+                        identifier = key
+                    ),
                     path = disclosurePath,
-                    value = "not available"
+                    value = resourceProvider.getString(R.string.request_element_identifier_not_available)
                 )
             } else {
+                val formattedValue = buildString {
+                    parseKeyValueUi(
+                        item = currentClaim.value!!,
+                        groupIdentifierKey = currentClaim.identifier,
+                        //keyIdentifier = keyIdentifier,
+                        resourceProvider = resourceProvider,
+                        allItems = this
+                    )
+                }
+
                 tree + DomainClaim.Claim.Primitive(
                     key = currentClaim.identifier,
-                    displayTitle = "${currentClaim.identifier} TITLE",
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = userLocale,
+                        identifier = currentClaim.identifier
+                    ),
                     path = disclosurePath,
-                    isRequired = true,
-                    value = "${currentClaim.identifier} FORMATTEd"
+                    isRequired = isRequired,
+                    value = formattedValue //TODO
                 )
             }
         } else {
@@ -491,18 +529,56 @@ fun insertPath(
         }
     } else {
         // Group node (Intermediate)
-        val castClaims = (claims.first { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
+        val childClaims =
+            (claims.first { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
         val updatedNode = if (existingNode is DomainClaim.Claim.Group) {
             // Update existing group by inserting the next path segment into its items
-            existingNode.copy(items = insertPath(existingNode.items, path.drop(1), disclosurePath, castClaims))
-        } else {
-            // Create a new group and insert the next path segment
-            DomainClaim.Claim.Group(
-                key = key,
-                displayTitle = key,
-                path = path.take(path.size - 1),
-                items = insertPath(emptyList(), path.drop(1), disclosurePath, castClaims)
+            existingNode.copy(
+                items = insertPath(
+                    tree = existingNode.items,
+                    path = path.drop(1),
+                    disclosurePath = disclosurePath,
+                    claims = childClaims,
+                    metadata = metadata,
+                    resourceProvider = resourceProvider,
+                    documentIdentifier = documentIdentifier,
+                    isSdJwtVc = isSdJwtVc,
+                )
             )
+        } else {
+            if (currentClaim == null) { //TODO is this necessary?
+                DomainClaim.NotAvailableClaim(
+                    key = key,
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = userLocale,
+                        identifier = key
+                    ),
+                    path = disclosurePath,
+                    value = resourceProvider.getString(R.string.request_element_identifier_not_available)
+                )
+            } else {
+                // Create a new group and insert the next path segment
+                DomainClaim.Claim.Group(
+                    key = currentClaim.identifier,
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = userLocale,
+                        identifier = currentClaim.identifier
+                    ),
+                    path = path.take(path.size - 1),
+                    items = insertPath(
+                        tree = emptyList(),
+                        path = path.drop(1),
+                        disclosurePath = disclosurePath,
+                        claims = childClaims,
+                        metadata = metadata,
+                        resourceProvider = resourceProvider,
+                        documentIdentifier = documentIdentifier,
+                        isSdJwtVc = isSdJwtVc,
+                    )
+                )
+            }
         }
 
         tree.filter { it.key != key } + updatedNode // Replace or add the updated node
@@ -510,6 +586,23 @@ fun insertPath(
 }
 
 // Function to build the tree from a list of paths
-fun buildDomainTree(data: List<List<String>>, claims: List<DocumentClaim>): List<DomainClaim> {
-    return data.fold(emptyList()) { acc, path -> insertPath(acc, path, path, claims) }
+fun buildDomainTree(
+    docItems: List<DocItem>,
+    claims: List<DocumentClaim>,
+    metadata: DocumentMetaData?,
+    resourceProvider: ResourceProvider,
+    documentIdentifier: DocumentIdentifier,
+): List<DomainClaim> {
+    return docItems.fold(emptyList()) { acc, docItem ->
+        insertPath(
+            tree = acc,
+            path = docItem.toPath(),
+            disclosurePath = docItem.toPath(),
+            claims = claims,
+            metadata = metadata,
+            resourceProvider = resourceProvider,
+            documentIdentifier = documentIdentifier,
+            isSdJwtVc = docItem is SdJwtVcItem, //TODO
+        )
+    }
 }
