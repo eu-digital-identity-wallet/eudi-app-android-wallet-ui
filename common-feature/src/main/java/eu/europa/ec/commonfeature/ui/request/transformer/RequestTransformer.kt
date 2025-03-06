@@ -475,38 +475,25 @@ fun insertPath(
                 )
             )
         } else {
-            if (currentClaim == null) { //TODO is this necessary?
-                DomainClaim.NotAvailableClaim(
-                    key = key,
-                    displayTitle = getReadableNameFromIdentifier(
-                        metadata = metadata,
-                        userLocale = userLocale,
-                        identifier = key
-                    ),
-                    path = disclosurePath,
-                    value = resourceProvider.getString(R.string.request_element_identifier_not_available)
+            // Create a new group and insert the next path segment
+            DomainClaim.Claim.Group(
+                key = currentClaim?.identifier ?: key,
+                displayTitle = getReadableNameFromIdentifier(
+                    metadata = metadata,
+                    userLocale = userLocale,
+                    identifier = currentClaim?.identifier ?: key
+                ),
+                path = path.take(path.size - 1),
+                items = insertPath(
+                    tree = emptyList(),
+                    path = path.drop(1),
+                    disclosurePath = disclosurePath,
+                    claims = childClaims,
+                    metadata = metadata,
+                    resourceProvider = resourceProvider,
+                    documentIdentifier = documentIdentifier,
                 )
-            } else {
-                // Create a new group and insert the next path segment
-                DomainClaim.Claim.Group(
-                    key = currentClaim.identifier,
-                    displayTitle = getReadableNameFromIdentifier(
-                        metadata = metadata,
-                        userLocale = userLocale,
-                        identifier = currentClaim.identifier
-                    ),
-                    path = path.take(path.size - 1),
-                    items = insertPath(
-                        tree = emptyList(),
-                        path = path.drop(1),
-                        disclosurePath = disclosurePath,
-                        claims = childClaims,
-                        metadata = metadata,
-                        resourceProvider = resourceProvider,
-                        documentIdentifier = documentIdentifier,
-                    )
-                )
-            }
+            )
         }
 
         tree.filter { it.key != key } + updatedNode // Replace or add the updated node
