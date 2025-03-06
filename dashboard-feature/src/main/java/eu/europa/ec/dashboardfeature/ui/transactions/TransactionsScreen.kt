@@ -18,6 +18,9 @@ package eu.europa.ec.dashboardfeature.ui.transactions
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,11 +36,20 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,6 +63,8 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -60,12 +74,14 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.businesslogic.util.convertMillisToDate
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
 import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
+import eu.europa.ec.eudi.rqesui.domain.util.safeLet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
@@ -99,6 +115,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
 typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Show
@@ -114,6 +133,9 @@ fun TransactionsScreen(
     val context = LocalContext.current
 
     val isBottomSheetOpen = state.isBottomSheetOpen
+    val isDatePickerDialogVisible = state.isDatePickerDialogVisible
+    val datePickerDialogConfig = state.datePickerDialogConfig
+
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -128,9 +150,6 @@ fun TransactionsScreen(
             navigatableAction = ScreenNavigateAction.NONE,
             topBar = {
                 TopBar(
-                    onEventSend = { event ->
-                        viewModel.setEvent(event)
-                    },
                     onDashboardEventSent = onDashboardEventSent
                 )
             }
@@ -166,6 +185,41 @@ fun TransactionsScreen(
                         }
                     )
                 }
+            }
+
+            if (isDatePickerDialogVisible) {
+                FiltersDatePickerDialog(
+                    onDateSelected = { millis ->
+                        safeLet(
+                            datePickerDialogConfig.type,
+                            millis,
+                        ) { dateSelectionType, safeMillis ->
+                            when (dateSelectionType) {
+                                DatePickerDialogType.SelectStartDate -> {
+                                    viewModel.setEvent(
+                                        Event.OnStartDateSelected(
+                                            selectedDateMillis = safeMillis
+                                        )
+                                    )
+                                }
+
+                                DatePickerDialogType.SelectEndDate -> {
+                                    viewModel.setEvent(
+                                        Event.OnEndDateSelected(
+                                            selectedDateMillis = safeMillis
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    onDismiss = {
+                        viewModel.setEvent(
+                            Event.DatePickerDialog.UpdateDialogState(isVisible = false)
+                        )
+                    },
+                    datePickerDialogConfig = datePickerDialogConfig
+                )
             }
         }
     }
@@ -254,6 +308,10 @@ private fun Content(
 
                 is Effect.ResumeOnApplyFilter -> {
                     // TODO check if needed
+                }
+
+                is Effect.ShowDatePickerDialog -> {
+                    onEventSend(Event.DatePickerDialog.UpdateDialogState(isVisible = true))
                 }
             }
         }.collect()
@@ -374,7 +432,6 @@ private fun NoResults(
 
 @Composable
 private fun TopBar(
-    onEventSend: (Event) -> Unit,
     onDashboardEventSent: (DashboardEvent) -> Unit,
 ) {
     Box(
@@ -400,14 +457,6 @@ private fun TopBar(
             style = MaterialTheme.typography.headlineMedium,
             text = stringResource(R.string.transactions_screen_title)
         )
-
-        WrapIconButton(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            iconData = AppIcons.Export,
-            customTint = MaterialTheme.colorScheme.onSurface,
-        ) {
-            // transactions exporting action
-        }
     }
 }
 
@@ -445,7 +494,6 @@ private fun TransactionsSheetContent(
                                 when {
                                     filter.collapsed.itemId == TransactionFilterIds.FILTER_SORT_GROUP_ID -> {
                                         WrapExpandableCard(
-                                            isExpanded = expandStateList[index],
                                             cardCollapsedContent = {
                                                 WrapListItem(
                                                     mainContentVerticalPadding = SPACING_MEDIUM.dp,
@@ -459,7 +507,9 @@ private fun TransactionsSheetContent(
                                             cardExpandedContent = {
                                                 Row(modifier = Modifier.padding(vertical = SPACING_MEDIUM.dp)) {
                                                     DualSelectorButtons(state.sortOrder) {
-                                                        onEventSent(Event.OnSortingOrderChanged(it))
+                                                        onEventSent(
+                                                            Event.OnSortingOrderChanged(it)
+                                                        )
                                                     }
                                                 }
                                                 WrapListItems(
@@ -475,8 +525,28 @@ private fun TransactionsSheetContent(
                                                         )
                                                     },
                                                 )
-                                            }
+                                            },
+                                            isExpanded = expandStateList[index],
                                         )
+                                    }
+
+                                    filter.collapsed.itemId == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID -> {
+
+                                        filter.expanded.forEach { _ ->
+                                            FiltersDatePickerField(
+                                                dialogType = DatePickerDialogType.SelectStartDate,
+                                                selectDateLabel = stringResource(R.string.transactions_screen_filters_start_date),
+                                                selectedDate = state.filterDateRangeSelectionData.startDate,
+                                                onEventSent = onEventSent
+                                            )
+
+                                            FiltersDatePickerField(
+                                                dialogType = DatePickerDialogType.SelectEndDate,
+                                                selectDateLabel = stringResource(R.string.transactions_screen_filters_end_date), //  (listItemData.mainContentData as ListItemMainContentData.Text).text,
+                                                selectedDate = state.filterDateRangeSelectionData.endDate,
+                                                onEventSent = onEventSent
+                                            )
+                                        }
                                     }
 
                                     filter.expanded.isNotEmpty() -> {
@@ -491,7 +561,7 @@ private fun TransactionsSheetContent(
                                                 val groupId = filter.collapsed.itemId
                                                 onEventSent(
                                                     Event.OnFilterSelectionChanged(
-                                                        id,
+                                                        filterId = id,
                                                         groupId
                                                     )
                                                 )
@@ -544,6 +614,83 @@ private fun TransactionsSheetContent(
     }
 }
 
+@Composable
+fun FiltersDatePickerField(
+    modifier: Modifier = Modifier,
+    dialogType: DatePickerDialogType,
+    selectDateLabel: String,
+    selectedDate: Long?,
+    onEventSent: (event: Event) -> Unit
+) {
+    OutlinedTextField(
+        readOnly = true,
+        value = selectedDate?.let { dateValue ->
+            convertMillisToDate(dateValue).takeIf { dateValue > Long.MIN_VALUE && dateValue < Long.MAX_VALUE }
+                ?: ""
+        } ?: "",
+        onValueChange = {},
+        label = { Text(selectDateLabel) },
+        placeholder = { Text("DD/MM/YYYY") },
+        trailingIcon = {
+            Icon(Icons.Default.DateRange, contentDescription = "Select date")
+        },
+
+        modifier = modifier
+            .fillMaxWidth()
+            .pointerInput(selectedDate) {
+                awaitEachGesture {
+                    awaitFirstDown(pass = PointerEventPass.Initial)
+                    val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                    if (upEvent != null) {
+                        onEventSent(
+                            Event.ShowDatePicker(datePickerType = dialogType)
+                        )
+                    }
+                }
+            }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FiltersDatePickerDialog(
+    datePickerDialogConfig: DatePickerDialogConfig,
+    onDateSelected: (Long?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val customSelectableDates = object : SelectableDates {
+        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+            val date = Instant.ofEpochMilli(utcTimeMillis)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate()
+
+            val min = datePickerDialogConfig.lowerLimit ?: LocalDate.MIN
+            val max = datePickerDialogConfig.upperLimit ?: LocalDate.MAX
+            return !date.isBefore(min) && !date.isAfter(max)
+        }
+    }
+
+    val datePickerState = rememberDatePickerState(selectableDates = customSelectableDates)
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onDateSelected(datePickerState.selectedDateMillis)
+                onDismiss()
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
 @ThemeModePreviews
 @Composable
 private fun TransactionsScreenPreview() {
@@ -553,7 +700,6 @@ private fun TransactionsScreenPreview() {
         onBack = { },
         topBar = {
             TopBar(
-                onEventSend = { },
                 onDashboardEventSent = {}
             )
         },

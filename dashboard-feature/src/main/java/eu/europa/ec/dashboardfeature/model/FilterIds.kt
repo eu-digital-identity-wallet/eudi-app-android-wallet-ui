@@ -41,4 +41,7 @@ object TransactionFilterIds {
     const val FILTER_BY_STATUS_GROUP_ID = "status_group_id"
     const val FILTER_BY_STATUS_COMPLETE = "status_complete"
     const val FILTER_BY_STATUS_FAILED = "status_failed"
+
+    const val FILTER_BY_TRANSACTION_DATE_GROUP_ID = "transaction_date_group_id"
+    const val FILTER_BY_TRANSACTION_DATE_RANGE = "by_transaction_date_range"
 }

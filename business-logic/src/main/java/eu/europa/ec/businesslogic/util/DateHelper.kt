@@ -79,6 +79,11 @@ fun String.toLocalDate(
     return result
 }
 
+fun Long.toLocalDate(): LocalDate {
+    val instant = Instant.ofEpochMilli(this)
+    return instant.atZone(ZoneId.systemDefault()).toLocalDate()
+}
+
 fun Instant.formatInstant(
     zoneId: ZoneId = ZoneId.systemDefault(),
     locale: Locale = Locale.ENGLISH
@@ -137,9 +142,26 @@ fun String.toInstantOrNull(
         .toInstant()
 }.getOrNull()
 
-private const val FULL_DATETIME_PATTERN = "d MMMM yyyy hh:mm a"
+fun Instant.plusOneDay(): Instant {
+    return if (this == Instant.MAX) {
+        this
+    } else {
+        this.atZone(ZoneId.systemDefault())
+            .toLocalDate()
+            .plusDays(1)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+    }
+}
+
+fun convertMillisToDate(millis: Long): String {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    return formatter.format(Date(millis))
+}
+
+private const val FULL_DATETIME_PATTERN = "dd MMMM yyyy hh:mm a"
 private const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
-private const val DAY_MONTH_YEAR_DATETIME_PATTERN = "d MMM yyyy"
+private const val DAY_MONTH_YEAR_DATETIME_PATTERN = "dd MMM yyyy"
 private const val MONTH_YEAR_DATETIME_PATTERN = "MMMM yyyy"
 
 val fullDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(FULL_DATETIME_PATTERN)

@@ -17,11 +17,13 @@
 package eu.europa.ec.dashboardfeature.ui.transactions
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorGetTransactionsPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
+import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -38,6 +40,8 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class State(
@@ -55,7 +59,11 @@ data class State(
     val transactionsUi: List<Pair<TransactionCategory, List<TransactionUi>>> = emptyList(),
     val filtersUi: List<ExpandableListItemData> = emptyList(),
     val shouldRevertFilterChanges: Boolean = true,
-    val sortOrder: DualSelectorButtonData
+    val sortOrder: DualSelectorButtonData,
+
+    val isDatePickerDialogVisible: Boolean = false,
+    val filterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
+    val datePickerDialogConfig: DatePickerDialogConfig = DatePickerDialogConfig(type = DatePickerDialogType.SelectStartDate)
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -75,6 +83,14 @@ sealed class Event : ViewEvent {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
         data object Close : BottomSheet()
     }
+
+    sealed class DatePickerDialog : Event() {
+        data class UpdateDialogState(val isVisible: Boolean) : DatePickerDialog()
+    }
+
+    data class ShowDatePicker(val datePickerType: DatePickerDialogType) : Event()
+    data class OnStartDateSelected(val selectedDateMillis: Long) : Event()
+    data class OnEndDateSelected(val selectedDateMillis: Long) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -89,8 +105,24 @@ sealed class Effect : ViewSideEffect {
 
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
+    data object ShowDatePickerDialog : Effect()
     data object ResumeOnApplyFilter : Effect()
 }
+
+enum class DatePickerDialogType {
+    SelectStartDate, SelectEndDate
+}
+
+data class DatePickerDialogConfig(
+    val type: DatePickerDialogType,
+    val lowerLimit: LocalDate? = LocalDate.MIN,
+    val upperLimit: LocalDate? = LocalDate.MAX
+)
+
+data class FilterDateRangeSelectionData(
+    val startDate: Long? = null,
+    val endDate: Long? = null
+)
 
 sealed class TransactionsBottomSheetContent {
     data class Filters(val filters: List<ExpandableListItemData>) : TransactionsBottomSheetContent()
@@ -165,6 +197,74 @@ class TransactionsViewModel(
             is Event.BottomSheet.Close -> {
                 hideBottomSheet()
             }
+
+            is Event.ShowDatePicker -> {
+                val givenStartDate = viewState.value.filterDateRangeSelectionData.startDate
+                val minStartDate = givenStartDate?.toLocalDate() ?: LocalDate.MIN
+
+                val givenEndDate = viewState.value.filterDateRangeSelectionData.endDate
+                val maxEndDate = givenEndDate?.toLocalDate() ?: LocalDate.MAX
+
+                val datePickerDialogConfig = when (event.datePickerType) {
+                    DatePickerDialogType.SelectStartDate -> DatePickerDialogConfig(
+                        type = DatePickerDialogType.SelectStartDate,
+                        upperLimit = maxEndDate
+                    )
+
+                    DatePickerDialogType.SelectEndDate -> {
+                        DatePickerDialogConfig(
+                            type = DatePickerDialogType.SelectEndDate,
+                            lowerLimit = minStartDate
+                        )
+                    }
+                }
+                showDatePickerDialog(datePickerDialogConfig = datePickerDialogConfig)
+            }
+
+            is Event.OnStartDateSelected -> {
+                val datePickerSelectionData = viewState.value.filterDateRangeSelectionData.copy(
+                    startDate = event.selectedDateMillis,
+                )
+                setState {
+                    copy(
+                        filterDateRangeSelectionData = datePickerSelectionData
+                    )
+                }
+
+                viewState.value.filterDateRangeSelectionData.let {
+                    updateDateRangeFilter(
+                        filterId = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
+                        groupId = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
+                        lowerLimit = it.startDate ?: Long.MIN_VALUE,
+                        upperLimit = it.endDate ?: Long.MAX_VALUE,
+                    )
+                }
+            }
+
+            is Event.OnEndDateSelected -> {
+                val datePickerSelectionData = viewState.value.filterDateRangeSelectionData.copy(
+                    endDate = event.selectedDateMillis
+                )
+                setState {
+                    copy(
+                        filterDateRangeSelectionData = datePickerSelectionData
+                    )
+                }
+                viewState.value.filterDateRangeSelectionData.let {
+                    updateDateRangeFilter(
+                        filterId = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
+                        groupId = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
+                        lowerLimit = it.startDate ?: Long.MIN_VALUE,
+                        upperLimit = it.endDate ?: Long.MAX_VALUE,
+                    )
+                }
+            }
+
+            is Event.DatePickerDialog.UpdateDialogState -> {
+                setState {
+                    copy(isDatePickerDialogVisible = event.isVisible)
+                }
+            }
         }
     }
 
@@ -183,6 +283,23 @@ class TransactionsViewModel(
         interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
     }
 
+
+    private fun updateDateRangeFilter(
+        filterId: String,
+        groupId: String,
+        lowerLimit: Long,
+        upperLimit: Long
+    ) {
+        setState { copy(shouldRevertFilterChanges = true) }
+
+        interactor.updateDateFilterById(
+            filterGroupId = groupId,
+            filterId = filterId,
+            lowerLimitDate = Instant.ofEpochMilli(lowerLimit),
+            upperLimitDate = Instant.ofEpochMilli(upperLimit)
+        )
+    }
+
     private fun revertFilters(isOpening: Boolean) {
         if (viewState.value.sheetContent is TransactionsBottomSheetContent.Filters
             && !isOpening
@@ -198,8 +315,20 @@ class TransactionsViewModel(
     }
 
     private fun resetFilters() {
+        setState {
+            copy(filterDateRangeSelectionData = FilterDateRangeSelectionData())
+        }
         interactor.resetFilters()
         hideBottomSheet()
+    }
+
+    private fun showDatePickerDialog(datePickerDialogConfig: DatePickerDialogConfig) {
+        setState {
+            copy(datePickerDialogConfig = datePickerDialogConfig)
+        }
+        setEffect {
+            Effect.ShowDatePickerDialog
+        }
     }
 
     private fun showBottomSheet(sheetContent: TransactionsBottomSheetContent) {

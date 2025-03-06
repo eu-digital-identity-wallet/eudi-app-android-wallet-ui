@@ -23,12 +23,13 @@ import eu.europa.ec.businesslogic.util.isToday
 import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
 import eu.europa.ec.businesslogic.util.minutesToNow
+import eu.europa.ec.businesslogic.util.plusOneDay
 import eu.europa.ec.businesslogic.util.toInstantOrNull
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterAction
+import eu.europa.ec.businesslogic.validator.model.FilterElement
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
-import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
@@ -56,6 +57,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDateTime
+
+typealias FilterItem = FilterElement.FilterItem
 
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
@@ -101,7 +104,14 @@ interface TransactionsInteractor {
     fun applySearch(query: String)
     fun applyFilters()
     fun updateFilter(filterGroupId: String, filterId: String)
-    fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters
+    fun updateDateFilterById(
+        filterGroupId: String,
+        filterId: String,
+        lowerLimitDate: Instant,
+        upperLimitDate: Instant
+    )
+
+    fun addDynamicFilters(transactions: FilterableList, filters: Filters): Filters
     fun getFilters(): Filters
     fun resetFilters()
     fun onFilterStateChange(): Flow<TransactionInteractorFilterPartialState>
@@ -360,7 +370,7 @@ class TransactionsInteractorImpl(
 
     override fun applyFilters() = filterValidator.applyFilters()
 
-    override fun addDynamicFilters(documents: FilterableList, filters: Filters): Filters {
+    override fun addDynamicFilters(transactions: FilterableList, filters: Filters): Filters {
         return filters.copy(
             filterGroups = filters.filterGroups,
             sortOrder = filters.sortOrder
@@ -368,6 +378,7 @@ class TransactionsInteractorImpl(
     }
 
     override fun getFilters(): Filters = Filters(
+        sortOrder = SortOrder.Descending(isDefault = true),
         filterGroups = listOf(
             // Sort
             FilterGroup.SingleSelectionFilterGroup(
@@ -414,15 +425,55 @@ class TransactionsInteractorImpl(
                         else -> true
                     }
                 }
+            ),
+
+            // Filter by Transaction date
+            FilterGroup.SingleSelectionFilterGroup(
+                id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
+                name = "Transaction Date Range filter group",
+                filters = listOf(
+                    FilterElement.DateTimeRangeFilterItem(
+                        id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
+                        name = "Transaction Date Range filter",
+                        selected = true,
+                        isDefault = false,
+                        startDateTime = Instant.MIN,
+                        endDateTime = Instant.MAX,
+                        filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
+                            val creationDate = attributes.creationDate
+                            if (filter is FilterElement.DateTimeRangeFilterItem && creationDate != null) {
+                                creationDate.isAfter(
+                                    filter.startDateTime
+                                ) && creationDate.isBefore(
+                                    filter.endDateTime.plusOneDay()
+                                )
+                                // to not filter out same day
+                            } else true
+                        }
+                    ),
+                ),
             )
-        ),
-        sortOrder = SortOrder.Descending(isDefault = true)
+        )
     )
 
     override fun resetFilters() = filterValidator.resetFilters()
 
     override fun updateFilter(filterGroupId: String, filterId: String) =
         filterValidator.updateFilter(filterGroupId, filterId)
+
+    override fun updateDateFilterById(
+        filterGroupId: String,
+        filterId: String,
+        lowerLimit: Instant,
+        upperLimit: Instant
+    ) {
+        filterValidator.updateDateFilter(
+            filterGroupId,
+            filterId,
+            lowerLimit,
+            upperLimit
+        )
+    }
 
     override fun updateSortOrder(sortOrder: SortOrder) =
         filterValidator.updateSortOrder(sortOrder)

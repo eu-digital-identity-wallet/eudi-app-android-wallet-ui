@@ -19,8 +19,9 @@ package eu.europa.ec.businesslogic.validator
 import eu.europa.ec.businesslogic.extension.applySort
 import eu.europa.ec.businesslogic.extension.filterByQuery
 import eu.europa.ec.businesslogic.validator.model.FilterAction
+import eu.europa.ec.businesslogic.validator.model.FilterElement
+import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
-import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
@@ -33,6 +34,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import java.time.Instant
 
 sealed interface FilterValidatorPartialState {
     val updatedFilters: Filters
@@ -70,6 +72,13 @@ interface FilterValidator {
     fun resetFilters()
     fun revertFilters()
     fun updateFilter(filterGroupId: String, filterId: String)
+    fun updateDateFilter(
+        filterGroupId: String,
+        filterId: String,
+        lowerLimit: Instant,
+        upperLimit: Instant
+    )
+
     fun updateSortOrder(sortOrder: SortOrder)
 }
 
@@ -136,7 +145,7 @@ class FilterValidatorImpl(
             is FilterGroup.MultipleSelectionFilterGroup<*> -> {
                 group.copy(
                     filters = group.filters.map { filter ->
-                        if (filter.id == filterId) {
+                        if (filter.id == filterId && filter is FilterItem) {
                             filter.copy(selected = !filter.selected)
                         } else {
                             filter
@@ -148,7 +157,52 @@ class FilterValidatorImpl(
             is FilterGroup.SingleSelectionFilterGroup -> {
                 group.copy(
                     filters = group.filters.map { filter ->
-                        filter.copy(selected = filter.id == filterId)
+                        when (filter) {
+                            is FilterItem -> {
+                                filter.copy(selected = filter.id == filterId)
+                            }
+
+                            is FilterElement.DateTimeRangeFilterItem -> {
+                                filter.copy(selected = filter.id == filterId)
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
+
+    private fun updateFilterInGroup(
+        group: FilterGroup,
+        filterId: String,
+        lowerLimit: Instant,
+        upperLimit: Instant,
+    ): FilterGroup {
+        return when (group) {
+            is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+                group.copy(
+                    filters = group.filters.map { filter ->
+                        if (filter.id == filterId && filter is FilterItem) {
+                            filter.copy(selected = !filter.selected)
+                        } else {
+                            filter
+                        }
+                    }
+                )
+            }
+
+            is FilterGroup.SingleSelectionFilterGroup -> {
+                group.copy(
+                    filters = group.filters.map { filter ->
+                        when (filter) {
+                            is FilterItem -> {
+                                filter.copy(selected = filter.id == filterId)
+                            }
+
+                            is FilterElement.DateTimeRangeFilterItem -> {
+                                filter.copy(startDateTime = lowerLimit, endDateTime = upperLimit)
+                            }
+                        }
                     }
                 )
             }
@@ -161,6 +215,35 @@ class FilterValidatorImpl(
             val updatedFilterGroups = filtersToUpdate.filterGroups.map { group ->
                 if (group.id == filterGroupId) {
                     updateFilterInGroup(group, filterId)
+                } else {
+                    group
+                }
+            }
+
+            val updatedFilters = filtersToUpdate.copy(filterGroups = updatedFilterGroups)
+            snapshotFilters = updatedFilters
+
+            emissionMutableFlow.emit(
+                FilterValidatorPartialState.FilterUpdateResult(
+                    updatedFilters = snapshotFilters
+                )
+            )
+        }
+    }
+
+    override fun updateDateFilter(
+        filterGroupId: String,
+        filterId: String,
+        lowerLimit: Instant,
+        upperLimit: Instant
+    ) {
+        scope.launch {
+            val filtersToUpdate = if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
+            val updatedFilterGroups = filtersToUpdate.filterGroups.map { group ->
+                if (group.id == filterGroupId) {
+
+                    updateFilterInGroup(group, filterId, lowerLimit, upperLimit) //, endDate )
+
                 } else {
                     group
                 }
@@ -309,11 +392,11 @@ class FilterValidatorImpl(
     ): FilterGroup {
         val newFilters = newFilterGroup.filters
         val existingFilters = existingFilterGroup.filters
-        val mergedFilters = mutableListOf<FilterItem>()
+        val mergedFilters = mutableListOf<FilterElement>()
 
         newFilters.forEach { newFilter ->
             val existingFilter = existingFilters.find { it.id == newFilter.id }
-            if (existingFilter != null) {
+            if (existingFilter != null && newFilter is FilterItem) {
                 // Filter exists in both, copy selection state
                 mergedFilters.add(newFilter.copy(selected = existingFilter.selected))
             } else {
@@ -328,7 +411,9 @@ class FilterValidatorImpl(
             }
 
             is FilterGroup.SingleSelectionFilterGroup -> {
-                newFilterGroup.copy(filters = mergedFilters)
+                val mappedFilters: List<FilterItem> =
+                    mergedFilters.filterIsInstance<FilterItem>()
+                newFilterGroup.copy(filters = mappedFilters)
             }
         }
     }
