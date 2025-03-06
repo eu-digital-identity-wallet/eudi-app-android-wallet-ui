@@ -20,7 +20,6 @@ import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem.SingleListItemData
 
 //data class RequestDocumentItemUi(
 //    val collapsedUiItem: CollapsedUiItem,
@@ -34,8 +33,8 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItem.SingleListItemData
 
 data class RequestDocumentItemUi(
     val domainPayload: DocumentPayloadDomain,
-    val headerUi: SingleListItemData,
-    val claimsUi: List<ExpandableListItem>,
+    val headerUi: ExpandableListItem.NestedListItemData,
+    //val claimsUi: List<ExpandableListItem>,
 )
 
 data class DocumentPayloadDomain(

@@ -84,9 +84,9 @@ sealed class DomainClaim {
 
     sealed class Claim : DomainClaim() {
         data class Group(
-            override val key: ElementIdentifier,
+            override val key: ElementIdentifier, //TODO do we need it?
             override val displayTitle: String,
-            override val path: List<String>,
+            override val path: List<String>, //TODO do we need it?
             val items: List<DomainClaim>,
         ) : Claim()
 
@@ -168,7 +168,7 @@ object RequestTransformer {
         return documentsDomain.map {
             RequestDocumentItemUi(
                 domainPayload = it,
-                headerUi = ExpandableListItem.SingleListItemData(
+                headerUi = ExpandableListItem.NestedListItemData(
                     collapsed = ListItemData(
                         itemId = it.docId,
                         mainContentData = ListItemMainContentData.Text(text = it.docName),
@@ -176,9 +176,11 @@ object RequestTransformer {
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowDown
                         )
-                    )
+                    ),
+                    expanded = it.toExpandableListItem(),
+                    isExpanded = false,
                 ),
-                claimsUi = it.toExpandableListItem()
+                //claimsUi = it.toExpandableListItem()
             )
         }
     }
@@ -199,7 +201,7 @@ object RequestTransformer {
                         trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowDown)
                     ),
                     expanded = items.map { it.toExpandableListItem(docId) },
-                    isExpanded = true //TODO make it false by default
+                    isExpanded = false
                 )
             }
 
@@ -276,7 +278,7 @@ object RequestTransformer {
             }
 
         val groupedByDocument = items.map {
-            it.domainPayload to it.claimsUi.flatMap { uiItem ->
+            it.domainPayload to it.headerUi.expanded.flatMap { uiItem ->
                 uiItem.collectSingles()
                     .distinctBy {
                         it.collapsed.itemId // Distinct by item ID to prevent duplicate sending of the same group

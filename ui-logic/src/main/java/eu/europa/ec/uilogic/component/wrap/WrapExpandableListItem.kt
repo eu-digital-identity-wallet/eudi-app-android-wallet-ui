@@ -55,8 +55,8 @@ fun WrapExpandableListItem(
     onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
-    //isExpanded: Boolean,
-    onExpandedChange: () -> Unit,
+    isExpanded: Boolean,
+    onExpandedChange: ((item: ListItemData) -> Unit)?,
     throttleClicks: Boolean = true,
     collapsedMainContentVerticalPadding: Dp = SPACING_MEDIUM.dp,
     collapsedClickableAreas: List<ClickableArea>? = null,
@@ -70,9 +70,7 @@ fun WrapExpandableListItem(
         cardCollapsedContent = {
             WrapListItem(
                 item = header,
-                onItemClick = {
-                    onExpandedChange()
-                },
+                onItemClick = onExpandedChange,
                 throttleClicks = throttleClicks,
                 hideSensitiveContent = false,
                 mainContentVerticalPadding = collapsedMainContentVerticalPadding,
@@ -86,9 +84,7 @@ fun WrapExpandableListItem(
                     is ExpandableListItem.SingleListItemData -> {
                         WrapListItem(
                             item = it.collapsed,
-                            onItemClick = { item ->
-                                onItemClick?.invoke(item)//TODO
-                            },
+                            onItemClick = onItemClick,
                             throttleClicks = throttleClicks,
                             hideSensitiveContent = hideSensitiveContent,
                             mainContentVerticalPadding = expandedMainContentVerticalPadding,
@@ -101,27 +97,24 @@ fun WrapExpandableListItem(
                         WrapExpandableListItem(
                             header = it.collapsed,
                             data = it.expanded,
-                            onItemClick = {
-                                onItemClick?.invoke(it)//TODO
-                            },
-                            onExpandedChange = {
-                                onExpandedChange() //TODO
-                            },
+                            onItemClick = onItemClick,
+                            onExpandedChange = onExpandedChange,
                             modifier = modifier,
                             hideSensitiveContent = hideSensitiveContent,
+                            isExpanded = it.isExpanded,
                             collapsedMainContentVerticalPadding = collapsedMainContentVerticalPadding,
                             collapsedClickableAreas = collapsedClickableAreas,
                             expandedMainContentVerticalPadding = expandedMainContentVerticalPadding,
                             expandedClickableAreas = expandedClickableAreas,
                             expandedAddDivider = expandedAddDivider,
-                            colors = colors,
+                            colors = colors
                         )
                     }
                 }
             }
         },
         //isExpanded = if (data is ExpandableListItem.NestedListItemData) data.isExpanded else false, //TODO is this ok?
-        isExpanded = true, //TODO is this ok?
+        isExpanded = isExpanded,
         throttleClicks = throttleClicks,
         colors = colors,
     )

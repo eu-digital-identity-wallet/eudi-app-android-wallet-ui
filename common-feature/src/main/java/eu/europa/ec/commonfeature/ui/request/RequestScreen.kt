@@ -242,15 +242,16 @@ private fun DisplayRequestItems(
                 requestDocuments.forEach { requestItem ->
                     WrapExpandableListItem(
                         header = requestItem.headerUi.collapsed,
-                        data = requestItem.claimsUi,
+                        data = requestItem.headerUi.expanded,
                         onItemClick = { item ->
                             //onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
                             println("onItemClick ${item.itemId}")
                         },
-                        onExpandedChange = {
-                            println("onExpandedChange ${requestItem.claimsUi}")
-                            //onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
-                        }
+                        onExpandedChange = { expandedItem ->
+                            println("onExpandedChange ${expandedItem.itemId}")
+                            onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = expandedItem.itemId))
+                        },
+                        isExpanded = requestItem.headerUi.isExpanded
                     )
                     /*requestItem.uiItem.forEach { expandableListItem ->
                         WrapExpandableListItem(
