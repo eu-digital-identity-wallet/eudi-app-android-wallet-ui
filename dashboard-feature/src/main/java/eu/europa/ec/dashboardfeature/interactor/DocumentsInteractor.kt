@@ -192,7 +192,7 @@ class DocumentsInteractorImpl(
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
                 ExpandableListItem.SingleListItemData(
-                    collapsed = ListItemData(
+                    header = ListItemData(
                         itemId = filterGroup.id,
                         mainContentData = ListItemMainContentData.Text(filterGroup.name),
                         trailingContentData = ListItemTrailingContentData.Icon(

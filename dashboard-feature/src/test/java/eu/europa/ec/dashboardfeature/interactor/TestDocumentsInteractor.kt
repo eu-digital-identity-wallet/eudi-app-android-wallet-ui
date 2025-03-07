@@ -530,7 +530,7 @@ class TestDocumentsInteractor {
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterUpdateResult)
                 assertEquals(state.filters.size, mockFilters.filterGroups.size)
                 assertEquals(
-                    (state.filters.first().collapsed.mainContentData as ListItemMainContentData.Text).text,
+                    (state.filters.first().header.mainContentData as ListItemMainContentData.Text).text,
                     mockFilters.filterGroups.first().name
                 )
                 assertEquals(

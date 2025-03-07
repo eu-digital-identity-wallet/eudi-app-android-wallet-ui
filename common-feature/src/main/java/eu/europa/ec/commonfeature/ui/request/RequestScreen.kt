@@ -242,8 +242,8 @@ private fun DisplayRequestItems(
                 requestDocuments.forEach { requestDocument ->
                     WrapExpandableListItem(
                         modifier = Modifier.fillMaxWidth(),
-                        header = requestDocument.headerUi.collapsed,
-                        data = requestDocument.headerUi.expanded,
+                        header = requestDocument.headerUi.header,
+                        data = requestDocument.headerUi.nestedItems,
                         onItemClick = { item ->
                             onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
                             println("onItemClick ${item.itemId}") //TODO remove later

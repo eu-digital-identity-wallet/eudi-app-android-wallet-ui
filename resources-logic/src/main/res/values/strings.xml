@@ -170,6 +170,7 @@
     <string name="request_gender_not_known">Not known</string>
     <string name="request_gender_not_applicable">Not applicable</string>
     <string name="request_element_identifier_not_available">Not available</string>
+    <string name="request_element_identifier_not_available_id">notAvailableId</string>
 
     <!-- Loading Screen -->
     <string name="loading_header_description">Please wait…</string>

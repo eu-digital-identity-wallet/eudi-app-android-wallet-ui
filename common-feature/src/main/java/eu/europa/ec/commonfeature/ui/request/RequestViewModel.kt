@@ -190,9 +190,9 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         val currentItems = viewState.value.items
 
         val updatedItems = currentItems.map { requestDocument ->
-            val newHeader = if (requestDocument.headerUi.collapsed.itemId == id) {
+            val newHeader = if (requestDocument.headerUi.header.itemId == id) {
                 val newIsExpanded = !requestDocument.headerUi.isExpanded
-                val newCollapsed = requestDocument.headerUi.collapsed.copy(
+                val newCollapsed = requestDocument.headerUi.header.copy(
                     trailingContentData = ListItemTrailingContentData.Icon(
                         iconData = if (newIsExpanded) {
                             AppIcons.KeyboardArrowUp
@@ -203,7 +203,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                 )
 
                 requestDocument.headerUi.copy(
-                    collapsed = newCollapsed,
+                    header = newCollapsed,
                     isExpanded = newIsExpanded
                 )
             } else {
@@ -212,7 +212,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
             requestDocument.copy(
                 headerUi = newHeader.copy(
-                    expanded = newHeader.expanded.changeNestedItems(id),
+                    nestedItems = newHeader.nestedItems.changeNestedItems(id),
                 )
             )
         }
@@ -225,9 +225,9 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         return this.map { nestedItem ->
             when (nestedItem) {
                 is ExpandableListItem.NestedListItemData -> {
-                    if (nestedItem.collapsed.itemId == id) {
+                    if (nestedItem.header.itemId == id) {
                         val newIsExpanded = !nestedItem.isExpanded
-                        val newCollapsed = nestedItem.collapsed.copy(
+                        val newCollapsed = nestedItem.header.copy(
                             trailingContentData = ListItemTrailingContentData.Icon(
                                 iconData = if (newIsExpanded) {
                                     AppIcons.KeyboardArrowUp
@@ -238,12 +238,12 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
                         )
 
                         nestedItem.copy(
-                            collapsed = newCollapsed,
+                            header = newCollapsed,
                             isExpanded = newIsExpanded
                         )
                     } else {
                         nestedItem.copy(
-                            expanded = nestedItem.expanded.changeNestedItems(id)
+                            nestedItems = nestedItem.nestedItems.changeNestedItems(id)
                         )
                     }
                 }
@@ -261,7 +261,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         val updatedItems: List<RequestDocumentItemUi> = currentItems.map { requestDocument ->
             requestDocument.copy(
                 headerUi = requestDocument.headerUi.copy(
-                    expanded = requestDocument.headerUi.expanded.map {
+                    nestedItems = requestDocument.headerUi.nestedItems.map {
                         it.changeSingleItem(id)
                     }
                 )
@@ -283,18 +283,18 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         return when (this) {
             is ExpandableListItem.NestedListItemData -> {
                 this.copy(
-                    expanded = expanded.map {
+                    nestedItems = nestedItems.map {
                         it.changeSingleItem(id)
                     }
                 )
             }
 
             is ExpandableListItem.SingleListItemData -> {
-                if (this.collapsed.itemId == id && this.collapsed.trailingContentData is ListItemTrailingContentData.Checkbox) {
+                if (this.header.itemId == id && this.header.trailingContentData is ListItemTrailingContentData.Checkbox) {
                     val currentItem =
-                        this.collapsed.trailingContentData as ListItemTrailingContentData.Checkbox
+                        this.header.trailingContentData as ListItemTrailingContentData.Checkbox
                     this.copy(
-                        collapsed = this.collapsed.copy(
+                        header = this.header.copy(
                             trailingContentData = ListItemTrailingContentData.Checkbox(
                                 checkboxData = currentItem.checkboxData.copy(
                                     isChecked = !currentItem.checkboxData.isChecked
@@ -333,7 +333,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         requestDocuments: List<RequestDocumentItemUi>
     ): Boolean {
         val hasAtLeastOneFieldSelected: Boolean = requestDocuments.any { requestDocument ->
-            requestDocument.headerUi.expanded.hasAnySingleSelected()
+            requestDocument.headerUi.nestedItems.hasAnySingleSelected()
         }
         return hasAtLeastOneFieldSelected
     }
@@ -342,11 +342,11 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         return this.any { expandableItem ->
             when (expandableItem) {
                 is ExpandableListItem.NestedListItemData -> {
-                    expandableItem.expanded.hasAnySingleSelected()
+                    expandableItem.nestedItems.hasAnySingleSelected()
                 }
 
                 is ExpandableListItem.SingleListItemData -> {
-                    val trailingContentData = expandableItem.collapsed.trailingContentData
+                    val trailingContentData = expandableItem.header.trailingContentData
                     trailingContentData is ListItemTrailingContentData.Checkbox && trailingContentData.checkboxData.isChecked
                 }
             }

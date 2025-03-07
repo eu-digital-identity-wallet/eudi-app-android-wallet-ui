@@ -68,7 +68,7 @@ fun WrapListItems(
 
                 ListItem(
                     modifier = itemModifier,
-                    item = item.collapsed,
+                    item = item.header,
                     onItemClick = onItemClick,
                     hideSensitiveContent = hideSensitiveContent,
                     mainContentVerticalPadding = mainContentVerticalPadding,

@@ -16,37 +16,38 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
-import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim
+import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.eudi.wallet.document.NameSpace
+import eu.europa.ec.eudi.wallet.document.format.DocumentFormat
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
-//data class RequestDocumentItemUi(
-//    val collapsedUiItem: CollapsedUiItem,
-//    val expandedUiItems: List<ExpandedUiItem>
-//)
-//
-//data class CollapsedUiItem(
-//    val isExpanded: Boolean,
-//    val uiItem: ListItemData,
-//)
+sealed class DomainDocumentFormat {
+    data object SdJwtVc : DomainDocumentFormat()
+    data class MsoMdoc(val namespace: String) :
+        DomainDocumentFormat()
+
+    companion object {
+        fun getFormat(format: DocumentFormat, namespace: String?): DomainDocumentFormat {
+            return when (format) {
+                is SdJwtVcFormat -> SdJwtVc
+                is MsoMdocFormat -> MsoMdoc(
+                    namespace = namespace.toString()
+                )
+            }
+        }
+    }
+}
 
 data class RequestDocumentItemUi(
     val domainPayload: DocumentPayloadDomain,
     val headerUi: ExpandableListItem.NestedListItemData,
-    //val claimsUi: List<ExpandableListItem>,
 )
 
 data class DocumentPayloadDomain(
     val docName: String,
     val docId: DocumentId,
-    val docNamespace: NameSpace?,
+    val domainDocFormat: DomainDocumentFormat,
     val docClaimsDomain: List<DomainClaim>,
 )
-
-//data class RequestDocumentClaim(
-//    val value: DomainClaim,
-//    val isRequired: Boolean,
-//    val isAvailable: Boolean,
-//    val path: List<String>,
-//)

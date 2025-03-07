@@ -33,19 +33,17 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
-const val PATH_SEPARATOR = ","
-
 sealed class ExpandableListItem {
-    abstract val collapsed: ListItemData
+    abstract val header: ListItemData
 
-    data class SingleListItemData( // Leaf
-        override val collapsed: ListItemData //add DocItem
+    data class SingleListItemData(
+        override val header: ListItemData,
     ) : ExpandableListItem()
 
-    data class NestedListItemData( // Group
-        override val collapsed: ListItemData,
-        val expanded: List<ExpandableListItem>,
-        val isExpanded: Boolean
+    data class NestedListItemData(
+        override val header: ListItemData,
+        val nestedItems: List<ExpandableListItem>,
+        val isExpanded: Boolean,
     ) : ExpandableListItem()
 }
 
@@ -84,12 +82,12 @@ fun WrapExpandableListItem(
             )
         },
         cardExpandedContent = {
-            data.forEach {
-                when (it) {
+            data.forEach { listItem ->
+                when (listItem) {
                     is ExpandableListItem.SingleListItemData -> {
                         WrapListItem(
                             modifier = Modifier.fillMaxWidth(),
-                            item = it.collapsed,
+                            item = listItem.header,
                             onItemClick = onItemClick,
                             throttleClicks = throttleClicks,
                             hideSensitiveContent = hideSensitiveContent,
@@ -102,13 +100,13 @@ fun WrapExpandableListItem(
                     is ExpandableListItem.NestedListItemData -> {
                         WrapExpandableListItem(
                             modifier = Modifier.fillMaxWidth(),
-                            header = it.collapsed,
-                            data = it.expanded,
+                            header = listItem.header,
+                            data = listItem.nestedItems,
                             onItemClick = onItemClick,
                             onExpandedChange = onExpandedChange,
                             throttleClicks = throttleClicks,
                             hideSensitiveContent = hideSensitiveContent,
-                            isExpanded = it.isExpanded,
+                            isExpanded = listItem.isExpanded,
                             collapsedMainContentVerticalPadding = collapsedMainContentVerticalPadding,
                             collapsedClickableAreas = collapsedClickableAreas,
                             expandedMainContentVerticalPadding = expandedMainContentVerticalPadding,
@@ -128,7 +126,7 @@ fun WrapExpandableListItem(
 private fun WrapExpandableListItemPreview() {
     PreviewTheme {
         val data = ExpandableListItem.NestedListItemData(
-            collapsed = ListItemData(
+            header = ListItemData(
                 itemId = "0",
                 mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
@@ -137,7 +135,7 @@ private fun WrapExpandableListItemPreview() {
                 ),
             ),
             isExpanded = true,
-            expanded = listOf(
+            nestedItems = listOf(
                 ExpandableListItem.SingleListItemData(
                     ListItemData(
                         itemId = "1",
@@ -155,11 +153,12 @@ private fun WrapExpandableListItemPreview() {
             )
         )
 
-        /*WrapExpandableListItem(
-            data = data,
-            //isExpanded = true,
+        WrapExpandableListItem(
+            header = data.header,
+            data = listOf(data),
+            isExpanded = true,
             onExpandedChange = {},
             onItemClick = {},
-        )*/
+        )
     }
 }

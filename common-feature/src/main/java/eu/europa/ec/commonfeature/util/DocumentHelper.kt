@@ -20,14 +20,15 @@ import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
-import eu.europa.ec.commonfeature.ui.request.transformer.DomainClaim
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
+import eu.europa.ec.corelogic.model.ClaimPath
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
-import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
@@ -48,31 +49,6 @@ fun extractValueFromDocumentOrEmpty(
         ?.value
         ?.toString()
         ?: ""
-}
-
-fun extractFullNameFromDocumentOrEmpty(document: IssuedDocument): String {
-    val firstName = extractValueFromDocumentOrEmpty(
-        document = document,
-        key = DocumentJsonKeys.FIRST_NAME
-    )
-    val lastName = extractValueFromDocumentOrEmpty(
-        document = document,
-        key = DocumentJsonKeys.LAST_NAME
-    )
-    return if (firstName.isNotBlank() && lastName.isNotBlank()) {
-        "$firstName $lastName"
-    } else if (firstName.isNotBlank()) {
-        firstName
-    } else if (lastName.isNotBlank()) {
-        lastName
-    } else {
-        ""
-    }
-}
-
-fun keyIsBase64(key: String): Boolean {
-    val listOfBase64Keys = DocumentJsonKeys.BASE64_IMAGE_KEYS
-    return listOfBase64Keys.contains(key)
 }
 
 fun keyIsPortrait(key: String): Boolean {
@@ -115,10 +91,37 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
+private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
+    when (documentIdentifier) {
+
+        DocumentIdentifier.MdocPid, DocumentIdentifier.SdJwtPid -> listOf(
+            "issuance_date",
+            "iat",
+            "expiry_date",
+            "exp",
+            "issuing_authority",
+            "document_number",
+            "administrative_number",
+            "issuing_country",
+            "issuing_jurisdiction",
+            "portrait",
+            "portrait_capture_date"
+        )
+
+        DocumentIdentifier.MdocPseudonym -> listOf(
+            "issuance_date",
+            "expiry_date",
+            "issuing_country",
+            "issuing_authority",
+        )
+
+        else -> emptyList()
+    }
+
 fun getReadableNameFromIdentifier(
     metadata: DocumentMetaData?,
     userLocale: Locale,
-    identifier: String
+    identifier: String,
 ): String {
     return metadata?.claims
         ?.find { it.name.name == identifier }
@@ -126,109 +129,6 @@ fun getReadableNameFromIdentifier(
             userLocale = userLocale,
             fallback = identifier
         )
-}
-
-fun parseClaimsToDomain(
-    coreClaim: DocumentClaim?,
-    metadata: DocumentMetaData?,
-    groupIdentifierKey: String?,
-    keyIdentifier: String = "",
-    resourceProvider: ResourceProvider,
-    path: List<String>,
-    isRequired: Boolean,
-): DomainClaim {
-    val userLocale = resourceProvider.getLocale()
-    return try {
-        when (coreClaim!!) {
-            is MsoMdocClaim -> {
-                val value = buildString {
-                    parseKeyValueUi(
-                        item = coreClaim.value!!, //TODO
-                        groupIdentifierKey = groupIdentifierKey!!,
-                        keyIdentifier = keyIdentifier,
-                        resourceProvider = resourceProvider,
-                        allItems = this
-                    )
-                }
-
-                DomainClaim.Claim.Primitive(
-                    key = groupIdentifierKey!!,
-                    value = value,
-                    displayTitle = getReadableNameFromIdentifier(
-                        metadata = metadata,
-                        userLocale = userLocale,
-                        identifier = groupIdentifierKey
-                    ),
-                    path = path,
-                    isRequired = isRequired
-                )
-            }
-
-            is SdJwtVcClaim -> {
-                //if leaf
-                return if (coreClaim.children.isEmpty()) {
-
-                    val value = buildString {
-                        parseKeyValueUi(
-                            item = coreClaim.value!!,
-                            groupIdentifierKey = coreClaim.identifier,
-                            keyIdentifier = keyIdentifier,
-                            resourceProvider = resourceProvider,
-                            allItems = this
-                        )
-                    }
-
-                    DomainClaim.Claim.Primitive(
-                        key = coreClaim.identifier,
-                        value = value,
-                        displayTitle = getReadableNameFromIdentifier(
-                            metadata = metadata,
-                            userLocale = userLocale,
-                            identifier = coreClaim.identifier
-                        ),
-                        path = path,
-                        isRequired = isRequired
-                    )
-                } else { //has children
-                    val result = coreClaim.children.map { childClaim ->
-                        parseClaimsToDomain(
-                            coreClaim = childClaim,
-                            groupIdentifierKey = coreClaim.identifier,
-                            resourceProvider = resourceProvider,
-                            path = path,
-                            isRequired = isRequired,
-                            metadata = metadata
-                        )
-                    }
-
-                    DomainClaim.Claim.Group(
-                        items = result,
-                        key = coreClaim.identifier,
-                        displayTitle = getReadableNameFromIdentifier(
-                            metadata = metadata,
-                            userLocale = userLocale,
-                            identifier = coreClaim.identifier
-                        ),
-                        path = path
-                    )
-                }
-            }
-        }
-    } catch (_: Exception) {
-        DomainClaim.NotAvailableClaim(
-            /*key = getReadableNameFromIdentifier(
-                groupIdentifierKey ?: path.getOrNull(1).toString()
-            ), //TODO*/
-            key = groupIdentifierKey ?: keyIdentifier,
-            displayTitle = getReadableNameFromIdentifier(
-                metadata = metadata,
-                userLocale = userLocale,
-                identifier = groupIdentifierKey ?: keyIdentifier
-            ),
-            path = path,
-            value = resourceProvider.getString(R.string.request_element_identifier_not_available)
-        )
-    }
 }
 
 fun parseKeyValueUi(
@@ -423,3 +323,160 @@ fun generateUniqueFieldId(
     documentId: DocumentId,
 ): String =
     elementIdentifier + documentId
+
+private fun insertPath(
+    tree: List<DomainClaim>,
+    path: ClaimPath,
+    disclosurePath: ClaimPath,
+    claims: List<DocumentClaim>,
+    metadata: DocumentMetaData?,
+    resourceProvider: ResourceProvider,
+    documentIdentifier: DocumentIdentifier,
+): List<DomainClaim> {
+    if (path.value.isEmpty()) return tree
+
+    val userLocale = resourceProvider.getLocale()
+
+    val key = path.value.first()
+
+    val existingNode = tree.find { it.key == key }
+
+    val currentClaim: DocumentClaim? = claims
+        .firstOrNull {
+            it.identifier == key
+        }
+
+    val isRequired = getMandatoryFields(
+        documentIdentifier = documentIdentifier
+    ).contains(currentClaim?.identifier) //TODO change this, it should be its path, e.g. "address.formatted"
+
+    println(currentClaim)
+
+    return if (path.value.size == 1) {
+        // Leaf node (Primitive)
+        if (existingNode == null) {
+            if (currentClaim == null) {
+                tree + DomainClaim.NotAvailableClaim(
+                    key = key,
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = userLocale,
+                        identifier = key
+                    ),
+                    path = disclosurePath,
+                    value = resourceProvider.getString(R.string.request_element_identifier_not_available)
+                )
+            } else {
+                val formattedValue = buildList {
+                    createKeyValue(
+                        item = currentClaim.value!!,
+                        groupKey = currentClaim.identifier,
+                        resourceProvider = resourceProvider,
+                        allItems = this
+                    )
+                }
+
+                val newEntry = if (formattedValue.size == 1) {
+                    DomainClaim.Claim.Primitive(
+                        key = currentClaim.identifier,
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = userLocale,
+                            identifier = currentClaim.identifier
+                        ),
+                        path = disclosurePath,
+                        isRequired = isRequired,
+                        value = formattedValue.first().second //TODO
+                    )
+                } else {
+                    DomainClaim.Claim.Group(
+                        key = currentClaim.identifier,
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = userLocale,
+                            identifier = currentClaim.identifier
+                        ),
+                        path = disclosurePath,
+                        items = formattedValue.map {
+                            DomainClaim.Claim.Primitive(
+                                key = it.first,
+                                displayTitle = getReadableNameFromIdentifier(
+                                    metadata = metadata,
+                                    userLocale = userLocale,
+                                    identifier = it.first
+                                ),
+                                path = disclosurePath,
+                                isRequired = isRequired,
+                                value = it.second //TODO
+                            )
+                        }
+                    )
+                }
+                tree + newEntry
+            }
+        } else {
+            tree // Already exists, return unchanged
+        }
+    } else {
+        // Group node (Intermediate)
+        val childClaims =
+            (claims.find { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
+        val updatedNode = if (existingNode is DomainClaim.Claim.Group) {
+            // Update existing group by inserting the next path segment into its items
+            existingNode.copy(
+                items = insertPath(
+                    tree = existingNode.items,
+                    path = ClaimPath(path.value.drop(1)),
+                    disclosurePath = disclosurePath,
+                    claims = childClaims,
+                    metadata = metadata,
+                    resourceProvider = resourceProvider,
+                    documentIdentifier = documentIdentifier,
+                )
+            )
+        } else {
+            // Create a new group and insert the next path segment
+            DomainClaim.Claim.Group(
+                key = currentClaim?.identifier ?: key,
+                displayTitle = getReadableNameFromIdentifier(
+                    metadata = metadata,
+                    userLocale = userLocale,
+                    identifier = currentClaim?.identifier ?: key
+                ),
+                path = ClaimPath(path.value.take(path.value.size - 1)),
+                items = insertPath(
+                    tree = emptyList(),
+                    path = ClaimPath(path.value.drop(1)),
+                    disclosurePath = disclosurePath,
+                    claims = childClaims,
+                    metadata = metadata,
+                    resourceProvider = resourceProvider,
+                    documentIdentifier = documentIdentifier,
+                )
+            )
+        }
+
+        tree.filter { it.key != key } + updatedNode // Replace or add the updated node
+    }
+}
+
+// Function to build the tree from a list of paths
+fun transformPathsToDomainClaims(
+    paths: List<ClaimPath>,
+    claims: List<DocumentClaim>,
+    metadata: DocumentMetaData?,
+    resourceProvider: ResourceProvider,
+    documentIdentifier: DocumentIdentifier,
+): List<DomainClaim> {
+    return paths.fold(emptyList()) { acc, path ->
+        insertPath(
+            tree = acc,
+            path = path,
+            disclosurePath = path,
+            claims = claims,
+            metadata = metadata,
+            resourceProvider = resourceProvider,
+            documentIdentifier = documentIdentifier,
+        )
+    }
+}
