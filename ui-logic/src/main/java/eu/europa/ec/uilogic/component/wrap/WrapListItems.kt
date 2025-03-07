@@ -42,9 +42,9 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @Composable
 fun WrapListItems(
+    modifier: Modifier = Modifier,
     items: List<ExpandableListItem>,
     onItemClick: ((item: ListItemData) -> Unit)?,
-    modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     clickableAreas: List<ClickableArea>? = null,
@@ -67,9 +67,9 @@ fun WrapListItems(
                 )
 
                 ListItem(
+                    modifier = itemModifier,
                     item = item.collapsed,
                     onItemClick = onItemClick,
-                    modifier = itemModifier,
                     hideSensitiveContent = hideSensitiveContent,
                     mainContentVerticalPadding = mainContentVerticalPadding,
                     clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),

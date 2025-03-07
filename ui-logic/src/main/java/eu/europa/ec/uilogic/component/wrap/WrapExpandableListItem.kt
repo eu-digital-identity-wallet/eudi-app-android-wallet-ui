@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CardColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -50,25 +51,29 @@ sealed class ExpandableListItem {
 
 @Composable
 fun WrapExpandableListItem(
+    modifier: Modifier = Modifier,
     header: ListItemData,
     data: List<ExpandableListItem>,
     onItemClick: ((item: ListItemData) -> Unit)?,
-    modifier: Modifier = Modifier,
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
     onExpandedChange: ((item: ListItemData) -> Unit)?,
     throttleClicks: Boolean = true,
     collapsedMainContentVerticalPadding: Dp = SPACING_MEDIUM.dp,
     collapsedClickableAreas: List<ClickableArea>? = null,
-    expandedMainContentVerticalPadding: Dp = 12.dp,
+    expandedMainContentVerticalPadding: Dp = SPACING_MEDIUM.dp,
     expandedClickableAreas: List<ClickableArea>? = null,
     expandedAddDivider: Boolean = true,
     colors: CardColors? = null,
 ) {
     WrapExpandableCard(
         modifier = modifier,
+        isExpanded = isExpanded,
+        throttleClicks = throttleClicks,
+        colors = colors,
         cardCollapsedContent = {
             WrapListItem(
+                modifier = Modifier.fillMaxWidth(),
                 item = header,
                 onItemClick = onExpandedChange,
                 throttleClicks = throttleClicks,
@@ -83,6 +88,7 @@ fun WrapExpandableListItem(
                 when (it) {
                     is ExpandableListItem.SingleListItemData -> {
                         WrapListItem(
+                            modifier = Modifier.fillMaxWidth(),
                             item = it.collapsed,
                             onItemClick = onItemClick,
                             throttleClicks = throttleClicks,
@@ -95,11 +101,12 @@ fun WrapExpandableListItem(
 
                     is ExpandableListItem.NestedListItemData -> {
                         WrapExpandableListItem(
+                            modifier = Modifier.fillMaxWidth(),
                             header = it.collapsed,
                             data = it.expanded,
                             onItemClick = onItemClick,
                             onExpandedChange = onExpandedChange,
-                            modifier = modifier,
+                            throttleClicks = throttleClicks,
                             hideSensitiveContent = hideSensitiveContent,
                             isExpanded = it.isExpanded,
                             collapsedMainContentVerticalPadding = collapsedMainContentVerticalPadding,
@@ -112,11 +119,7 @@ fun WrapExpandableListItem(
                     }
                 }
             }
-        },
-        //isExpanded = if (data is ExpandableListItem.NestedListItemData) data.isExpanded else false, //TODO is this ok?
-        isExpanded = isExpanded,
-        throttleClicks = throttleClicks,
-        colors = colors,
+        }
     )
 }
 

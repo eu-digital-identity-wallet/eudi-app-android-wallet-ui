@@ -239,10 +239,11 @@ private fun DisplayRequestItems(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
             ) {
-                requestDocuments.forEach { requestItem ->
+                requestDocuments.forEach { requestDocument ->
                     WrapExpandableListItem(
-                        header = requestItem.headerUi.collapsed,
-                        data = requestItem.headerUi.expanded,
+                        modifier = Modifier.fillMaxWidth(),
+                        header = requestDocument.headerUi.collapsed,
+                        data = requestDocument.headerUi.expanded,
                         onItemClick = { item ->
                             //onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
                             println("onItemClick ${item.itemId}")
@@ -251,25 +252,10 @@ private fun DisplayRequestItems(
                             println("onExpandedChange ${expandedItem.itemId}")
                             onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = expandedItem.itemId))
                         },
-                        isExpanded = requestItem.headerUi.isExpanded
+                        isExpanded = requestDocument.headerUi.isExpanded,
+                        throttleClicks = false,
+                        hideSensitiveContent = false,
                     )
-                    /*requestItem.uiItem.forEach { expandableListItem ->
-                        WrapExpandableListItem(
-                            data = expandableListItem,
-                            onItemClick = { item ->
-                                //onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
-                                println("onItemClick ${item.itemId}")
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            hideSensitiveContent = false,
-                            //isExpanded = requestItem.collapsedUiItem.isExpanded,
-                            onExpandedChange = {
-                                println("onExpandedChange ${requestItem.uiItem}")
-                                //onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
-                            },
-                            throttleClicks = false,
-                        )
-                    }*/
                 }
             }
 
