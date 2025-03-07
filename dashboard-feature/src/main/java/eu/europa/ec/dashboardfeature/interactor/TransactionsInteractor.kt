@@ -383,23 +383,14 @@ class TransactionsInteractorImpl(
             // Sort
             FilterGroup.SingleSelectionFilterGroup(
                 id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
-                name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
-                filters = listOf(
-                    FilterItem(
-                        id = TransactionFilterIds.FILTER_SORT_DATE_CREATED,
-                        name = "Transaction Date",
-                        selected = true,
-                        filterableAction = FilterAction.Sort<TransactionsFilterableAttributes, Instant> { attributes ->
-                            attributes.creationDate ?: Instant.MIN
-                        }
-                    ),
-                )
+                name = resourceProvider.getString(R.string.transactions_screen_filters_sort_by),
+                filters = listOf()
             ),
 
             // Filter by Status
             FilterGroup.MultipleSelectionFilterGroup(
                 id = TransactionFilterIds.FILTER_BY_STATUS_GROUP_ID,
-                name = "Filter by Transaction Status",
+                name = resourceProvider.getString(R.string.transactions_screen_filter_by_status),
                 filters = listOf(
                     FilterItem(
                         id = TransactionFilterIds.FILTER_BY_STATUS_COMPLETE,
@@ -430,11 +421,11 @@ class TransactionsInteractorImpl(
             // Filter by Transaction date
             FilterGroup.SingleSelectionFilterGroup(
                 id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
-                name = "Transaction Date Range filter group",
+                name = resourceProvider.getString(R.string.transactions_screen_filter_by_date_period),
                 filters = listOf(
                     FilterElement.DateTimeRangeFilterItem(
                         id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
-                        name = "Transaction Date Range filter",
+                        name = resourceProvider.getString(R.string.transactions_screen_filter_by_date_period),
                         selected = true,
                         isDefault = false,
                         startDateTime = Instant.MIN,
@@ -445,9 +436,9 @@ class TransactionsInteractorImpl(
                                 creationDate.isAfter(
                                     filter.startDateTime
                                 ) && creationDate.isBefore(
+                                    // plus one day to the end date limit to not filter out same day item
                                     filter.endDateTime.plusOneDay()
                                 )
-                                // to not filter out same day
                             } else true
                         }
                     ),
@@ -464,14 +455,14 @@ class TransactionsInteractorImpl(
     override fun updateDateFilterById(
         filterGroupId: String,
         filterId: String,
-        lowerLimit: Instant,
-        upperLimit: Instant
+        lowerLimitDate: Instant,
+        upperLimitDate: Instant
     ) {
         filterValidator.updateDateFilter(
             filterGroupId,
             filterId,
-            lowerLimit,
-            upperLimit
+            lowerLimitDate,
+            upperLimitDate
         )
     }
 

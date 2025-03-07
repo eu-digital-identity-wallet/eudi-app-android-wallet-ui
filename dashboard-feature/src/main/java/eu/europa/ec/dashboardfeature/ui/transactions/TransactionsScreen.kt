@@ -107,7 +107,6 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
-import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import kotlinx.coroutines.CoroutineScope
@@ -505,33 +504,19 @@ private fun TransactionsSheetContent(
                                                 )
                                             },
                                             cardExpandedContent = {
-                                                Row(modifier = Modifier.padding(vertical = SPACING_MEDIUM.dp)) {
+                                                Row(modifier = Modifier.padding(top = SPACING_MEDIUM.dp)) {
                                                     DualSelectorButtons(state.sortOrder) {
                                                         onEventSent(
                                                             Event.OnSortingOrderChanged(it)
                                                         )
                                                     }
                                                 }
-                                                WrapListItems(
-                                                    items = filter.expanded,
-                                                    onItemClick = {
-                                                        val id = it.itemId
-                                                        val groupId = filter.collapsed.itemId
-                                                        onEventSent(
-                                                            Event.OnFilterSelectionChanged(
-                                                                id,
-                                                                groupId
-                                                            )
-                                                        )
-                                                    },
-                                                )
                                             },
                                             isExpanded = expandStateList[index],
                                         )
                                     }
 
                                     filter.collapsed.itemId == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID -> {
-
                                         filter.expanded.forEach { _ ->
                                             FiltersDatePickerField(
                                                 dialogType = DatePickerDialogType.SelectStartDate,
@@ -542,7 +527,7 @@ private fun TransactionsSheetContent(
 
                                             FiltersDatePickerField(
                                                 dialogType = DatePickerDialogType.SelectEndDate,
-                                                selectDateLabel = stringResource(R.string.transactions_screen_filters_end_date), //  (listItemData.mainContentData as ListItemMainContentData.Text).text,
+                                                selectDateLabel = stringResource(R.string.transactions_screen_filters_end_date),
                                                 selectedDate = state.filterDateRangeSelectionData.endDate,
                                                 onEventSent = onEventSent
                                             )
@@ -630,7 +615,7 @@ fun FiltersDatePickerField(
         } ?: "",
         onValueChange = {},
         label = { Text(selectDateLabel) },
-        placeholder = { Text("DD/MM/YYYY") },
+        placeholder = { Text("dd/mm/yyyy") },
         trailingIcon = {
             Icon(Icons.Default.DateRange, contentDescription = "Select date")
         },

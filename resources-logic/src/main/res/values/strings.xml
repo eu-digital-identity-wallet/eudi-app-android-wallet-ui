@@ -265,10 +265,13 @@
     <string name="transactions_screen_filters_ascending">Ascending</string>
     <string name="transactions_screen_filters_descending">Descending</string>
     <string name="transactions_screen_filters_title">Filter and sort</string>
+    <string name="transactions_screen_filters_sort_by">Sort by</string>
     <string name="transaction_status_completed">Completed</string>
     <string name="transaction_status_failed">Failed</string>
     <string name="transactions_screen_filters_start_date">Start date</string>
     <string name="transactions_screen_filters_end_date">End date</string>
+    <string name="transactions_screen_filter_by_status">Filter by Status</string>
+    <string name="transactions_screen_filter_by_date_period">Filter by Transaction Date Period</string>
 
     <!-- Document Sign -->
     <string name="document_sign_title">Sign Document</string>

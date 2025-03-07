@@ -241,9 +241,7 @@ class FilterValidatorImpl(
             val filtersToUpdate = if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters
             val updatedFilterGroups = filtersToUpdate.filterGroups.map { group ->
                 if (group.id == filterGroupId) {
-
-                    updateFilterInGroup(group, filterId, lowerLimit, upperLimit) //, endDate )
-
+                    updateFilterInGroup(group, filterId, lowerLimit, upperLimit)
                 } else {
                     group
                 }
