@@ -155,14 +155,23 @@ fun Instant.plusOneDay(): Instant {
 }
 
 fun convertMillisToDate(millis: Long): String {
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val formatter = SimpleDateFormat(DAY_MONTH_YEAR_TEXT_FIELD_PATTERN, Locale.getDefault())
     return formatter.format(Date(millis))
+}
+
+fun Long?.toDisplayedDate(): String {
+    return this?.let { dateValue ->
+        convertMillisToDate(dateValue).takeIf {
+            dateValue > Long.MIN_VALUE && dateValue < Long.MAX_VALUE
+        }
+    }.orEmpty()
 }
 
 private const val FULL_DATETIME_PATTERN = "dd MMMM yyyy hh:mm a"
 private const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
 private const val DAY_MONTH_YEAR_DATETIME_PATTERN = "dd MMM yyyy"
 private const val MONTH_YEAR_DATETIME_PATTERN = "MMMM yyyy"
+private const val DAY_MONTH_YEAR_TEXT_FIELD_PATTERN = "dd/MM/yyyy"
 
 val fullDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(FULL_DATETIME_PATTERN)
 val hoursMinutesFormatter: DateTimeFormatter =

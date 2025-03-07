@@ -36,15 +36,13 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
@@ -74,7 +72,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.businesslogic.util.convertMillisToDate
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
@@ -85,6 +82,7 @@ import eu.europa.ec.eudi.rqesui.domain.util.safeLet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -101,10 +99,12 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
@@ -178,7 +178,9 @@ fun TransactionsScreen(
                 ) {
                     TransactionsSheetContent(
                         sheetContent = state.sheetContent,
-                        state = state,
+                        filtersUi = state.filtersUi,
+                        filterDateRangeSelectionData = state.filterDateRangeSelectionData,
+                        sortOrder = state.sortOrder,
                         onEventSent = {
                             viewModel.setEvent(it)
                         }
@@ -420,7 +422,9 @@ private fun NoResults(
         WrapListItem(
             item = ListItemData(
                 itemId = stringResource(R.string.transactions_screen_search_no_results_id),
-                mainContentData = ListItemMainContentData.Text(text = stringResource(R.string.transactions_screen_search_no_results)),
+                mainContentData = ListItemMainContentData.Text(
+                    text = stringResource(R.string.transactions_screen_search_no_results)
+                ),
             ),
             onItemClick = null,
             modifier = Modifier.fillMaxWidth(),
@@ -462,7 +466,9 @@ private fun TopBar(
 @Composable
 private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
-    state: State,
+    filtersUi: List<ExpandableListItemData>,
+    filterDateRangeSelectionData: FilterDateRangeSelectionData,
+    sortOrder: DualSelectorButtonData,
     onEventSent: (event: Event) -> Unit,
 ) {
     when (sheetContent) {
@@ -476,7 +482,7 @@ private fun TransactionsSheetContent(
                 },
                 bodyContent = {
                     val expandStateList by remember {
-                        mutableStateOf(state.filtersUi.map { false }.toMutableStateList())
+                        mutableStateOf(filtersUi.map { false }.toMutableStateList())
                     }
 
                     var buttonsRowHeight by remember { mutableIntStateOf(0) }
@@ -489,7 +495,7 @@ private fun TransactionsSheetContent(
                                 .padding(bottom = with(LocalDensity.current) { buttonsRowHeight.toDp() }),
                             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
                         ) {
-                            state.filtersUi.forEachIndexed { index, filter ->
+                            filtersUi.forEachIndexed { index, filter ->
                                 when {
                                     filter.collapsed.itemId == TransactionFilterIds.FILTER_SORT_GROUP_ID -> {
                                         WrapExpandableCard(
@@ -505,7 +511,7 @@ private fun TransactionsSheetContent(
                                             },
                                             cardExpandedContent = {
                                                 Row(modifier = Modifier.padding(top = SPACING_MEDIUM.dp)) {
-                                                    DualSelectorButtons(state.sortOrder) {
+                                                    DualSelectorButtons(sortOrder) {
                                                         onEventSent(
                                                             Event.OnSortingOrderChanged(it)
                                                         )
@@ -517,21 +523,42 @@ private fun TransactionsSheetContent(
                                     }
 
                                     filter.collapsed.itemId == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID -> {
-                                        filter.expanded.forEach { _ ->
-                                            FiltersDatePickerField(
-                                                dialogType = DatePickerDialogType.SelectStartDate,
-                                                selectDateLabel = stringResource(R.string.transactions_screen_filters_start_date),
-                                                selectedDate = state.filterDateRangeSelectionData.startDate,
-                                                onEventSent = onEventSent
-                                            )
+                                        WrapExpandableCard(
+                                            cardCollapsedContent = {
+                                                WrapListItem(
+                                                    mainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                                    item = filter.collapsed,
+                                                    onItemClick = {
+                                                        expandStateList[index] =
+                                                            !expandStateList[index]
+                                                    }
+                                                )
+                                            },
+                                            cardExpandedContent = {
+                                                Column(
+                                                    modifier = Modifier.padding(
+                                                        start = SPACING_MEDIUM.dp,
+                                                        end = SPACING_MEDIUM.dp,
+                                                        bottom = SPACING_MEDIUM.dp
+                                                    )
+                                                ) {
+                                                    FiltersDatePickerField(
+                                                        dialogType = DatePickerDialogType.SelectStartDate,
+                                                        selectDateLabel = stringResource(R.string.transactions_screen_filters_date_from),
+                                                        displayedSelectedDate = filterDateRangeSelectionData.displayedStartDate,
+                                                        onEventSent = onEventSent
+                                                    )
 
-                                            FiltersDatePickerField(
-                                                dialogType = DatePickerDialogType.SelectEndDate,
-                                                selectDateLabel = stringResource(R.string.transactions_screen_filters_end_date),
-                                                selectedDate = state.filterDateRangeSelectionData.endDate,
-                                                onEventSent = onEventSent
-                                            )
-                                        }
+                                                    FiltersDatePickerField(
+                                                        dialogType = DatePickerDialogType.SelectEndDate,
+                                                        selectDateLabel = stringResource(R.string.transactions_screen_filters_date_to),
+                                                        displayedSelectedDate = filterDateRangeSelectionData.displayedEndDate,
+                                                        onEventSent = onEventSent
+                                                    )
+                                                }
+                                            },
+                                            isExpanded = expandStateList[index],
+                                        )
                                     }
 
                                     filter.expanded.isNotEmpty() -> {
@@ -604,25 +631,23 @@ fun FiltersDatePickerField(
     modifier: Modifier = Modifier,
     dialogType: DatePickerDialogType,
     selectDateLabel: String,
-    selectedDate: Long?,
+    displayedSelectedDate: String,
     onEventSent: (event: Event) -> Unit
 ) {
     OutlinedTextField(
         readOnly = true,
-        value = selectedDate?.let { dateValue ->
-            convertMillisToDate(dateValue).takeIf { dateValue > Long.MIN_VALUE && dateValue < Long.MAX_VALUE }
-                ?: ""
-        } ?: "",
+        value = displayedSelectedDate,
         onValueChange = {},
         label = { Text(selectDateLabel) },
-        placeholder = { Text("dd/mm/yyyy") },
-        trailingIcon = {
-            Icon(Icons.Default.DateRange, contentDescription = "Select date")
-        },
-
+        placeholder = { Text(stringResource(R.string.transactions_screen_text_field_date_pattern)) },
+        trailingIcon = { WrapIcon(AppIcons.DateRange) },
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ),
         modifier = modifier
             .fillMaxWidth()
-            .pointerInput(selectedDate) {
+            .pointerInput(displayedSelectedDate) {
                 awaitEachGesture {
                     awaitFirstDown(pass = PointerEventPass.Initial)
                     val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
@@ -663,12 +688,12 @@ fun FiltersDatePickerDialog(
                 onDateSelected(datePickerState.selectedDateMillis)
                 onDismiss()
             }) {
-                Text("OK")
+                Text(stringResource(R.string.generic_ok))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.generic_cancel))
             }
         }
     ) {

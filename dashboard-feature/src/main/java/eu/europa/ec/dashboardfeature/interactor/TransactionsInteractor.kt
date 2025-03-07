@@ -380,11 +380,38 @@ class TransactionsInteractorImpl(
     override fun getFilters(): Filters = Filters(
         sortOrder = SortOrder.Descending(isDefault = true),
         filterGroups = listOf(
-            // Sort
+            // Sort, descending/ascending buttons will be displayed within this group, identified by group id
             FilterGroup.SingleSelectionFilterGroup(
                 id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
                 name = resourceProvider.getString(R.string.transactions_screen_filters_sort_by),
                 filters = listOf()
+            ),
+
+            // Filter by Transaction date
+            FilterGroup.SingleSelectionFilterGroup(
+                id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
+                name = resourceProvider.getString(R.string.transactions_screen_filter_by_date_period),
+                filters = listOf(
+                    FilterElement.DateTimeRangeFilterItem(
+                        id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
+                        name = resourceProvider.getString(R.string.transactions_screen_filter_by_date_period),
+                        selected = true,
+                        isDefault = false,
+                        startDateTime = Instant.MIN,
+                        endDateTime = Instant.MAX,
+                        filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
+                            val creationDate = attributes.creationDate
+                            if (filter is FilterElement.DateTimeRangeFilterItem && creationDate != null) {
+                                creationDate.isAfter(
+                                    filter.startDateTime
+                                ) && creationDate.isBefore(
+                                    // plus one day to the end date limit to not filter out same day item
+                                    filter.endDateTime.plusOneDay()
+                                )
+                            } else true
+                        }
+                    ),
+                ),
             ),
 
             // Filter by Status
@@ -416,33 +443,6 @@ class TransactionsInteractorImpl(
                         else -> true
                     }
                 }
-            ),
-
-            // Filter by Transaction date
-            FilterGroup.SingleSelectionFilterGroup(
-                id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
-                name = resourceProvider.getString(R.string.transactions_screen_filter_by_date_period),
-                filters = listOf(
-                    FilterElement.DateTimeRangeFilterItem(
-                        id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
-                        name = resourceProvider.getString(R.string.transactions_screen_filter_by_date_period),
-                        selected = true,
-                        isDefault = false,
-                        startDateTime = Instant.MIN,
-                        endDateTime = Instant.MAX,
-                        filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
-                            val creationDate = attributes.creationDate
-                            if (filter is FilterElement.DateTimeRangeFilterItem && creationDate != null) {
-                                creationDate.isAfter(
-                                    filter.startDateTime
-                                ) && creationDate.isBefore(
-                                    // plus one day to the end date limit to not filter out same day item
-                                    filter.endDateTime.plusOneDay()
-                                )
-                            } else true
-                        }
-                    ),
-                ),
             )
         )
     )

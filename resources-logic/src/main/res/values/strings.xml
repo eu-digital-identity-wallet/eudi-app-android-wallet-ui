@@ -107,7 +107,7 @@
     <string name="content_description_change_pin_icon">Change PIN</string>
     <string name="content_description_check_icon">Check</string>
     <string name="content_description_open_in_browser_icon">Open in browser</string>
-    <string name="content_description_export_icon">Export</string>
+    <string name="content_description_date_range_icon">Select filter date range</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
@@ -268,10 +268,11 @@
     <string name="transactions_screen_filters_sort_by">Sort by</string>
     <string name="transaction_status_completed">Completed</string>
     <string name="transaction_status_failed">Failed</string>
-    <string name="transactions_screen_filters_start_date">Start date</string>
-    <string name="transactions_screen_filters_end_date">End date</string>
+    <string name="transactions_screen_filters_date_from">Date from</string>
+    <string name="transactions_screen_filters_date_to">Date to</string>
     <string name="transactions_screen_filter_by_status">Filter by Status</string>
     <string name="transactions_screen_filter_by_date_period">Filter by Transaction Date Period</string>
+    <string name="transactions_screen_text_field_date_pattern">dd/mm/yyyy</string>
 
     <!-- Document Sign -->
     <string name="document_sign_title">Sign Document</string>

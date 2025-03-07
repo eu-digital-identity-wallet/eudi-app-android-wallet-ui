@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.transactions
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.util.toDisplayedDate
 import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.model.TransactionCategory
@@ -61,9 +62,11 @@ data class State(
     val shouldRevertFilterChanges: Boolean = true,
     val sortOrder: DualSelectorButtonData,
 
-    val isDatePickerDialogVisible: Boolean = false,
     val filterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
-    val datePickerDialogConfig: DatePickerDialogConfig = DatePickerDialogConfig(type = DatePickerDialogType.SelectStartDate)
+    val isDatePickerDialogVisible: Boolean = false,
+    val datePickerDialogConfig: DatePickerDialogConfig = DatePickerDialogConfig(
+        type = DatePickerDialogType.SelectStartDate
+    )
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -109,6 +112,10 @@ sealed class Effect : ViewSideEffect {
     data object ResumeOnApplyFilter : Effect()
 }
 
+sealed class TransactionsBottomSheetContent {
+    data class Filters(val filters: List<ExpandableListItemData>) : TransactionsBottomSheetContent()
+}
+
 enum class DatePickerDialogType {
     SelectStartDate, SelectEndDate
 }
@@ -122,10 +129,12 @@ data class DatePickerDialogConfig(
 data class FilterDateRangeSelectionData(
     val startDate: Long? = null,
     val endDate: Long? = null
-)
+) {
+    val displayedStartDate: String
+        get() = startDate?.toDisplayedDate().orEmpty()
 
-sealed class TransactionsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItemData>) : TransactionsBottomSheetContent()
+    val displayedEndDate: String
+        get() = endDate?.toDisplayedDate().orEmpty()
 }
 
 @KoinViewModel
