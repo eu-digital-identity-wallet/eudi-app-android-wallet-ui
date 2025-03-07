@@ -100,7 +100,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         allowShare: Boolean? = null
     ) {
         val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
-            list = updatedItems
+            requestDocuments = updatedItems
         )
 
         setState {
@@ -256,45 +256,58 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun updateUserIdentificationItem(id: String) {
-//        val currentItems = viewState.value.items
-//
-//        // Iterate over the items and modify the matching expanded item
-//        val updatedList: List<RequestDocumentItemUi> = currentItems.map { item ->
-//            val updatedExpandedItems = item.expandedUiItems.map { expandedItem ->
-//                if (expandedItem.uiItem.itemId == id
-//                    && expandedItem.uiItem.trailingContentData is ListItemTrailingContentData.Checkbox
-//                ) {
-//                    val checkboxData =
-//                        (expandedItem.uiItem.trailingContentData as ListItemTrailingContentData.Checkbox).checkboxData
-//
-//                    expandedItem.copy(
-//                        uiItem = expandedItem.uiItem.copy(
-//                            trailingContentData = ListItemTrailingContentData.Checkbox(
-//                                checkboxData = checkboxData.copy(
-//                                    isChecked = !checkboxData.isChecked
-//                                )
-//                            )
-//                        )
-//                    )
-//                } else {
-//                    expandedItem
-//                }
-//            }
-//
-//            // Return the updated item with its expanded items updated
-//            item.copy(
-//                expandedUiItems = updatedExpandedItems
-//            )
-//        }
-//
-//        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
-//            list = updatedList
-//        )
-//
-//        updateData(
-//            updatedItems = updatedList,
-//            allowShare = hasAtLeastOneFieldSelected
-//        )
+        val currentItems = viewState.value.items
+
+        val updatedItems: List<RequestDocumentItemUi> = currentItems.map { requestDocument ->
+            requestDocument.copy(
+                headerUi = requestDocument.headerUi.copy(
+                    expanded = requestDocument.headerUi.expanded.map {
+                        it.changeSingleItem(id)
+                    }
+                )
+            )
+        }
+
+        val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
+            requestDocuments = updatedItems
+        )
+
+        updateData(
+            updatedItems = updatedItems,
+            allowShare = hasAtLeastOneFieldSelected
+        )
+    }
+
+    //TODO should this be in other place? i.e. should it be used elsewhere?
+    private fun ExpandableListItem.changeSingleItem(id: String): ExpandableListItem {
+        return when (this) {
+            is ExpandableListItem.NestedListItemData -> {
+                this.copy(
+                    expanded = expanded.map {
+                        it.changeSingleItem(id)
+                    }
+                )
+            }
+
+            is ExpandableListItem.SingleListItemData -> {
+                if (this.collapsed.itemId == id && this.collapsed.trailingContentData is ListItemTrailingContentData.Checkbox) {
+                    val currentItem =
+                        this.collapsed.trailingContentData as ListItemTrailingContentData.Checkbox
+                    this.copy(
+                        collapsed = this.collapsed.copy(
+                            trailingContentData = ListItemTrailingContentData.Checkbox(
+                                checkboxData = currentItem.checkboxData.copy(
+                                    isChecked = !currentItem.checkboxData.isChecked
+                                )
+                            )
+                        )
+                    )
+                } else {
+                    this
+                }
+            }
+        }
+
     }
 
     private fun showBottomSheet(sheetContent: RequestBottomSheetContent) {
@@ -317,17 +330,27 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun hasAtLeastOneFieldSelected(
-        list: List<RequestDocumentItemUi>
+        requestDocuments: List<RequestDocumentItemUi>
     ): Boolean {
-//        val hasAtLeastOneFieldSelected: Boolean = list.any { item ->
-//            item.expandedUiItems.any { expandedUiItem ->
-//                val trailingContentData = expandedUiItem.uiItem.trailingContentData
-//                trailingContentData is ListItemTrailingContentData.Checkbox && trailingContentData.checkboxData.isChecked
-//            }
-//        }
-//
-//        return hasAtLeastOneFieldSelected
-        return true
+        val hasAtLeastOneFieldSelected: Boolean = requestDocuments.any { requestDocument ->
+            requestDocument.headerUi.expanded.hasAnySingleSelected()
+        }
+        return hasAtLeastOneFieldSelected
+    }
+
+    private fun List<ExpandableListItem>.hasAnySingleSelected(): Boolean {
+        return this.any { expandableItem ->
+            when (expandableItem) {
+                is ExpandableListItem.NestedListItemData -> {
+                    expandableItem.expanded.hasAnySingleSelected()
+                }
+
+                is ExpandableListItem.SingleListItemData -> {
+                    val trailingContentData = expandableItem.collapsed.trailingContentData
+                    trailingContentData is ListItemTrailingContentData.Checkbox && trailingContentData.checkboxData.isChecked
+                }
+            }
+        }
     }
 
     override fun onCleared() {
