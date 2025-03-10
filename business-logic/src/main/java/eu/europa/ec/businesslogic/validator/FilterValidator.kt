@@ -169,6 +169,12 @@ class FilterValidatorImpl(
                     }
                 )
             }
+
+            is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
+                group.copy(
+                    filters = toggleFilterSelection(group.filters, filterId)
+                )
+            }
         }
     }
 
@@ -204,6 +210,12 @@ class FilterValidatorImpl(
                             }
                         }
                     }
+                )
+            }
+
+            is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
+                group.copy(
+                    filters = toggleFilterSelection(group.filters, filterId)
                 )
             }
         }
@@ -330,6 +342,11 @@ class FilterValidatorImpl(
                             currentList,
                             group
                         )
+
+                        is FilterGroup.ReversibleSingleSelectionFilterGroup -> applyReversibleSingleSelectionFilter(
+                            currentList,
+                            group
+                        )
                     }
                 }
                 .filterByQuery(searchQuery)
@@ -357,6 +374,19 @@ class FilterValidatorImpl(
         applyFilters()
     }
 
+    private fun toggleFilterSelection(
+        filters: List<FilterElement>,
+        filterId: String
+    ): List<FilterElement> {
+        return filters.map { filter ->
+            if (filter.id == filterId && filter is FilterItem) {
+                filter.copy(selected = !filter.selected)
+            } else {
+                filter
+            }
+        }
+    }
+
     private fun applyMultipleSelectionFilter(
         currentList: FilterableList,
         group: FilterGroup.MultipleSelectionFilterGroup<*>,
@@ -379,8 +409,20 @@ class FilterValidatorImpl(
             appliedFilters.sortOrder,
             currentList,
             selectedFilter
-        )
-            ?: currentList
+        ) ?: currentList
+    }
+
+    private fun applyReversibleSingleSelectionFilter(
+        currentList: FilterableList,
+        group: FilterGroup.ReversibleSingleSelectionFilterGroup,
+    ): FilterableList {
+        val selectedFilter = group.filters.firstOrNull { it.selected }
+        if (selectedFilter?.filterableAction is FilterAction.Sort<*, *>) return currentList
+        return selectedFilter?.filterableAction?.applyFilter(
+            appliedFilters.sortOrder,
+            currentList,
+            selectedFilter
+        ) ?: currentList
     }
 
     /** Create a merged FilterGroup with updated filters **/
@@ -409,10 +451,19 @@ class FilterValidatorImpl(
             }
 
             is FilterGroup.SingleSelectionFilterGroup -> {
-                val mappedFilters: List<FilterItem> =
+                val filterItems: List<FilterItem> =
                     mergedFilters.filterIsInstance<FilterItem>()
-                newFilterGroup.copy(filters = mappedFilters)
+                newFilterGroup.copy(filters = filterItems)
+            }
+
+            is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
+                val filterItems = filterByInstanceType(mergedFilters)
+                newFilterGroup.copy(filters = filterItems)
             }
         }
+    }
+
+    private fun filterByInstanceType(list: List<FilterElement>): List<FilterItem> {
+        return list.filterIsInstance<FilterItem>()
     }
 }

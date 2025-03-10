@@ -205,7 +205,8 @@ class DocumentsInteractorImpl(
                             itemId = filterItem.id,
                             mainContentData = ListItemMainContentData.Text(filterItem.name),
                             trailingContentData = when (filterGroup) {
-                                is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+                                is FilterGroup.MultipleSelectionFilterGroup<*>,
+                                is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
                                     ListItemTrailingContentData.Checkbox(
                                         checkboxData = CheckboxData(
                                             isChecked = filterItem.selected,

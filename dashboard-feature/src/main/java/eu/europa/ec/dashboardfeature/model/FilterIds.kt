@@ -36,7 +36,6 @@ object FilterIds {
 
 object TransactionFilterIds {
     const val FILTER_SORT_GROUP_ID = "sort_group_id"
-    const val FILTER_SORT_DATE_CREATED = "sort_transaction_date_created"
 
     const val FILTER_BY_STATUS_GROUP_ID = "status_group_id"
     const val FILTER_BY_STATUS_COMPLETE = "status_complete"
@@ -44,4 +43,13 @@ object TransactionFilterIds {
 
     const val FILTER_BY_TRANSACTION_DATE_GROUP_ID = "transaction_date_group_id"
     const val FILTER_BY_TRANSACTION_DATE_RANGE = "by_transaction_date_range"
+
+    const val FILTER_BY_RELYING_PARTY_GROUP_ID = "relying_party_group_id"
+    const val FILTER_BY_RELYING_PARTY_WITHOUT_NAME = "transaction_without_relying_party_item_id"
+
+    const val FILTER_BY_ATTESTATION_GROUP_ID = "attestation_group_id"
+    const val FILTER_BY_ATTESTATION_WITHOUT_NAME = "transaction_without_attestation_name_item_id"
+
+    const val FILTER_BY_DOCUMENT_SIGNING_GROUP_ID = "document_signing_group_id"
+    const val FILTER_BY_DOCUMENT_SIGNED = "is_docuemnt_signed"
 }

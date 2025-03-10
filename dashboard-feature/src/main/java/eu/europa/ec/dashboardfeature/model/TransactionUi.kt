@@ -30,10 +30,11 @@ enum class TransactionUiStatus {
     Completed, Failed
 }
 
-internal fun String.toTransactionUiStatus(successStatusString: String): TransactionUiStatus = when {
-    equals(successStatusString, ignoreCase = true) -> TransactionUiStatus.Completed
-    else -> TransactionUiStatus.Failed
-}
+internal fun String.toTransactionUiStatus(completedStatusString: String): TransactionUiStatus =
+    when {
+        equals(completedStatusString, ignoreCase = true) -> TransactionUiStatus.Completed
+        else -> TransactionUiStatus.Failed
+    }
 
 // TODO should be replaced with actual transaction data
 sealed interface Transaction {

@@ -23,4 +23,7 @@ internal data class TransactionsFilterableAttributes(
     override val searchTags: List<String>,
     val transactionStatus: TransactionUiStatus,
     val creationDate: Instant?,
+    val relyingParty: String?,
+    val attestationName: String?,
+    val documentName: String?,
 ) : FilterableAttributes

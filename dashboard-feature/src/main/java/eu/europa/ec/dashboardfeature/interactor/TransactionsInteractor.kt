@@ -144,28 +144,34 @@ class TransactionsInteractorImpl(
                 creationDate = someMinutesAgo.format(fullDateTimeFormatter)
             ),
             DocumentSigningTransaction(
-                id = "t000",
+                id = "t001",
                 name = "Document Signing",
                 status = "Completed",
                 creationDate = now.minusDays(1).format(fullDateTimeFormatter)
             ),
             DocumentSigningTransaction(
-                id = "t001",
+                id = "t002",
                 name = "Another Document Signing",
                 status = "Completed",
                 creationDate = "23 February 2025 09:20 AM"
             ),
-            AttestationPresentationTransaction(
-                id = "t002",
-                name = "PID Presentation",
-                status = "Failed",
-                creationDate = "19 February 2025 5:40 PM",
-                issuerName = "Test issuer",
-                relyingPartyName = "Test relying party",
-                attestationType = "Issuance (test)"
+            DocumentSigningTransaction(
+                id = "t003",
+                name = "Document Signing",
+                status = "Completed",
+                creationDate = "20 February 2025 09:20 AM"
             ),
             AttestationPresentationTransaction(
-                id = "t003",
+                id = "t004",
+                name = "PID Presentation",
+                status = "Failed",
+                creationDate = "19 February 2025 05:40 PM",
+                issuerName = "Test issuer",
+                relyingPartyName = "Test relying party",
+                attestationType = "Presentation (test)"
+            ),
+            AttestationPresentationTransaction(
+                id = "t005",
                 name = "Identity Verification",
                 status = "Completed",
                 creationDate = "17 February 2025 11:55 AM",
@@ -174,43 +180,43 @@ class TransactionsInteractorImpl(
                 attestationType = "Issuance (test)"
             ),
             DocumentSigningTransaction(
-                id = "t004",
+                id = "t006",
                 name = "Document Signing",
                 status = "Completed",
-                creationDate = "10 February 2025 1:15 PM"
+                creationDate = "10 February 2025 01:15 PM"
             ),
             AttestationPresentationTransaction(
-                id = "t005",
+                id = "t007",
                 name = "Data Sharing Request",
                 status = "Failed",
-                creationDate = "20 January 2025 4:30 PM",
-                issuerName = "Another Test issuer",
-                relyingPartyName = "Test relying party",
-                attestationType = "Data Sharing Request (test)"
+                creationDate = "20 January 2025 04:30 PM",
+                issuerName = "Test issuer",
+                relyingPartyName = "Test relying party, other",
+                attestationType = "Request (test)"
             ),
             DocumentSigningTransaction(
-                id = "t006",
+                id = "t008",
                 name = "Document Signing",
                 status = "Completed",
                 creationDate = "20 December 2024 10:05 AM"
             ),
             AttestationPresentationTransaction(
-                id = "t007",
+                id = "t009",
                 name = "PID Presentation",
                 status = "Completed",
-                creationDate = "1 March 2024 2:20 PM",
+                creationDate = "01 March 2024 02:20 PM",
                 issuerName = "Test issuer",
                 relyingPartyName = "Test relying party",
                 attestationType = "Presentation (test)"
             ),
             DocumentSigningTransaction(
-                id = "t008",
+                id = "t010",
                 name = "Document Signing",
                 status = "Failed",
-                creationDate = "22 February 2024 9:45 AM"
+                creationDate = "22 February 2024 09:45 AM"
             ),
             AttestationPresentationTransaction(
-                id = "t009",
+                id = "t011",
                 name = "Identity Verification",
                 status = "Completed",
                 creationDate = "17 February 2024 11:30 AM",
@@ -218,14 +224,8 @@ class TransactionsInteractorImpl(
                 relyingPartyName = "Test relying party",
                 attestationType = "Verification (test)"
             ),
-            OtherTransaction(
-                id = "t010",
-                name = "Other Presentation",
-                status = "Completed",
-                creationDate = "30 September 2010 12:59 PM"
-            ),
             DocumentSigningTransaction(
-                id = "t011",
+                id = "t012",
                 name = "Old Document",
                 status = "Completed",
                 creationDate = "15 May 1999 10:30 AM"
@@ -295,6 +295,13 @@ class TransactionsInteractorImpl(
                                         )
                                     )
                                 }
+
+                                is FilterGroup.ReversibleSingleSelectionFilterGroup -> ListItemTrailingContentData.Checkbox(
+                                    checkboxData = CheckboxData(
+                                        isChecked = filterItem.selected,
+                                        enabled = true
+                                    )
+                                )
                             },
                         )
                     }
@@ -360,7 +367,10 @@ class TransactionsInteractorImpl(
                         transactionStatus = transaction.status.toTransactionUiStatus(
                             completedStatusString = resourceProvider.getString(R.string.transaction_status_completed)
                         ),
-                        creationDate = transaction.creationDate.toInstantOrNull()
+                        creationDate = transaction.creationDate.toInstantOrNull(),
+                        relyingParty = (transaction as? AttestationPresentationTransaction)?.relyingPartyName,
+                        attestationName = (transaction as? AttestationPresentationTransaction)?.name,
+                        documentName = (transaction as? DocumentSigningTransaction)?.name,
                     )
                 )
             }
@@ -395,7 +405,27 @@ class TransactionsInteractorImpl(
 
     override fun addDynamicFilters(transactions: FilterableList, filters: Filters): Filters {
         return filters.copy(
-            filterGroups = filters.filterGroups,
+            filterGroups = filters.filterGroups.map { filterGroup ->
+                when (filterGroup.id) {
+                    TransactionFilterIds.FILTER_BY_RELYING_PARTY_GROUP_ID -> {
+                        filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
+                        filterGroup.copy(
+                            filters = addRelyingPartyFilter(transactions)
+                        )
+                    }
+
+                    TransactionFilterIds.FILTER_BY_ATTESTATION_GROUP_ID -> {
+                        filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
+                        filterGroup.copy(
+                            filters = addAttestationFilter(transactions)
+                        )
+                    }
+
+                    else -> {
+                        filterGroup
+                    }
+                }
+            },
             sortOrder = filters.sortOrder
         )
     }
@@ -424,14 +454,18 @@ class TransactionsInteractorImpl(
                         endDateTime = Instant.MAX,
                         filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
                             val creationDate = attributes.creationDate
-                            if (filter is FilterElement.DateTimeRangeFilterItem && creationDate != null) {
-                                creationDate.isAfter(
-                                    filter.startDateTime
-                                ) && creationDate.isBefore(
-                                    // plus one day to the end date limit to not filter out same day item
-                                    filter.endDateTime.plusOneDay()
-                                )
-                            } else true
+                            when {
+                                filter is FilterElement.DateTimeRangeFilterItem && creationDate != null -> {
+                                    creationDate.isAfter(
+                                        filter.startDateTime
+                                    ) && creationDate.isBefore(
+                                        // plus one day to the end date limit to not filter out same day item
+                                        filter.endDateTime.plusOneDay()
+                                    )
+                                }
+
+                                else -> true
+                            }
                         }
                     ),
                 ),
@@ -466,6 +500,69 @@ class TransactionsInteractorImpl(
                         else -> true
                     }
                 }
+            ),
+
+            // Filter by Relying Party
+            FilterGroup.MultipleSelectionFilterGroup(
+                id = TransactionFilterIds.FILTER_BY_RELYING_PARTY_GROUP_ID,
+                name = resourceProvider.getString(R.string.transactions_screen_filters_filter_by_relying_party),
+                filters = emptyList(),
+                filterableAction = FilterMultipleAction<TransactionsFilterableAttributes> { attributes, filter ->
+                    // Check if the "no relying party" filter is selected
+                    if (filter.id == TransactionFilterIds.FILTER_BY_RELYING_PARTY_WITHOUT_NAME && filter.selected) {
+                        // Return true only for transactions with no relying party
+                        return@FilterMultipleAction attributes.relyingParty == null
+                    }
+
+                    // Check if the transaction has a relying party and matches the filter name
+                    if (attributes.relyingParty != null) {
+                        return@FilterMultipleAction attributes.relyingParty == filter.name
+                    }
+
+                    // Default case: return false if no conditions are met
+                    return@FilterMultipleAction false
+                }
+            ),
+
+            // Filter by Attestation
+            FilterGroup.MultipleSelectionFilterGroup(
+                id = TransactionFilterIds.FILTER_BY_ATTESTATION_GROUP_ID,
+                name = resourceProvider.getString(R.string.transactions_screen_filters_filter_by_attestation),
+                filters = emptyList(),
+                filterableAction = FilterMultipleAction<TransactionsFilterableAttributes> { attributes, filter ->
+                    if (filter.id == TransactionFilterIds.FILTER_BY_ATTESTATION_WITHOUT_NAME && filter.selected) {
+                        // Return true only for transactions with no relying party
+                        return@FilterMultipleAction attributes.attestationName == null
+                    }
+
+                    // Check if the transaction has a relying party and matches the filter name
+                    if (attributes.attestationName != null) {
+                        return@FilterMultipleAction attributes.attestationName == filter.name
+                    }
+
+                    return@FilterMultipleAction false
+                }),
+
+            // Filter by Document Signing
+            FilterGroup.ReversibleSingleSelectionFilterGroup(
+                id = TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNING_GROUP_ID,
+                name = "Filter by Document Signing",
+                filters = listOf(FilterItem(
+                    id = TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNED,
+                    name = "Signed Documents",
+                    selected = false,
+                    isDefault = false,
+
+                    filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
+                        when (filter.id) {
+                            TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNED -> {
+                                attributes.documentName != null
+                            }
+
+                            else -> true
+                        }
+                    }
+                )),
             )
         )
     )
@@ -544,5 +641,53 @@ class TransactionsInteractorImpl(
             is SortOrder.Ascending -> this.sortedBy(selector)
             is SortOrder.Descending -> this.sortedByDescending(selector)
         }
+    }
+
+    private fun addRelyingPartyFilter(transactions: FilterableList): List<FilterItem> {
+        return transactions.items
+            .distinctBy { (it.attributes as TransactionsFilterableAttributes).relyingParty }
+            .map { filterableItem ->
+                with(filterableItem.attributes as TransactionsFilterableAttributes) {
+                    if (relyingParty != null) {
+                        FilterItem(
+                            id = relyingParty,
+                            name = relyingParty,
+                            selected = true,
+                            isDefault = true,
+                        )
+                    } else {
+                        FilterItem(
+                            id = TransactionFilterIds.FILTER_BY_RELYING_PARTY_WITHOUT_NAME,
+                            name = "Transactions without relying party",
+                            selected = true,
+                            isDefault = false,
+                        )
+                    }
+                }
+            }
+    }
+
+    private fun addAttestationFilter(transactions: FilterableList): List<FilterItem> {
+        return transactions.items
+            .distinctBy { (it.attributes as TransactionsFilterableAttributes).attestationName }
+            .mapIndexed { index, filterableItem ->
+                with(filterableItem.attributes as TransactionsFilterableAttributes) {
+                    if (attestationName != null) {
+                        FilterItem(
+                            id = "${attestationName}_$index",
+                            name = attestationName,
+                            selected = true,
+                            isDefault = false,
+                        )
+                    } else {
+                        FilterItem(
+                            id = TransactionFilterIds.FILTER_BY_ATTESTATION_WITHOUT_NAME,
+                            name = "Transactions without attestation name",
+                            selected = true,
+                            isDefault = false,
+                        )
+                    }
+                }
+            }
     }
 }

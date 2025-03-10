@@ -264,7 +264,7 @@
     <string name="transactions_screen_minutes_ago_message">%1$s minutes ago</string>
     <string name="transactions_screen_filters_ascending">Ascending</string>
     <string name="transactions_screen_filters_descending">Descending</string>
-    <string name="transactions_screen_filters_title">Filter and sort</string>
+    <string name="transactions_screen_filters_title">Filter</string>
     <string name="transactions_screen_filters_sort_by">Sort by</string>
     <string name="transaction_status_completed">Completed</string>
     <string name="transaction_status_failed">Failed</string>
@@ -272,6 +272,9 @@
     <string name="transactions_screen_filters_date_to">Date to</string>
     <string name="transactions_screen_filter_by_status">Filter by Status</string>
     <string name="transactions_screen_filter_by_date_period">Filter by Transaction Date Period</string>
+    <string name="transactions_screen_filters_filter_by_relying_party">Filter by Relying Party</string>
+    <string name="transactions_screen_filters_filter_by_attestation">Filter by Attestation</string>
+    <string name="transactions_screen_filters_filter_by_document_signing">Filter by Document Signing</string>
     <string name="transactions_screen_text_field_date_pattern">dd/mm/yyyy</string>
 
     <!-- Document Sign -->
