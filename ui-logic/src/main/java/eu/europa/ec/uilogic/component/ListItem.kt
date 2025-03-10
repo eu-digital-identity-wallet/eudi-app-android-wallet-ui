@@ -54,15 +54,18 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.ICON_SIZE_40
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
+import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapRadioButton
+import eu.europa.ec.uilogic.component.wrap.WrapText
 
 /**
  * Represents the data displayed within a single item in a list.
@@ -162,6 +165,8 @@ sealed class ListItemTrailingContentData {
     data class Icon(val iconData: IconData, val tint: Color? = null) : ListItemTrailingContentData()
     data class Checkbox(val checkboxData: CheckboxData) : ListItemTrailingContentData()
     data class RadioButton(val radioButtonData: RadioButtonData) : ListItemTrailingContentData()
+    data class TextWithIcon(val text: String, val iconData: IconData, val tint: Color? = null) :
+        ListItemTrailingContentData()
 }
 
 /**
@@ -249,7 +254,7 @@ fun ListItem(
             else null
 
         is ListItemTrailingContentData.Icon -> onItemClick
-
+        is ListItemTrailingContentData.TextWithIcon -> onItemClick
         null -> onItemClick
     }
 
@@ -389,6 +394,30 @@ fun ListItem(
                         ),
                         modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
                     )
+
+                    is ListItemTrailingContentData.TextWithIcon ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            WrapText(
+                                text = safeTrailingContentData.text,
+                                textConfig = TextConfig(
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            )
+
+                            WrapIconButton(
+                                modifier = Modifier
+                                    .padding(start = SIZE_SMALL.dp)
+                                    .size(DEFAULT_ICON_SIZE.dp),
+                                iconData = safeTrailingContentData.iconData,
+                                customTint = safeTrailingContentData.tint
+                                    ?: MaterialTheme.colorScheme.primary,
+                                onClick = if (clickableAreas.contains(TRAILING_CONTENT)) {
+                                    { onItemClick?.invoke(item) }
+                                } else null,
+                                throttleClicks = false,
+                            )
+                        }
                 }
             }
         }
