@@ -18,18 +18,24 @@ package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.toListItemData
-import eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsDocumentItem
+import eu.europa.ec.commonfeature.extensions.toExpandableListItems
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.commonfeature.ui.request.transformer.toClaimPath
+import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.corelogic.extension.getLocalizedClaimName
+import eu.europa.ec.corelogic.extension.toClaimPaths
+import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.net.URI
@@ -74,49 +80,57 @@ class PresentationSuccessInteractorImpl(
 
             val isVerified = walletCorePresentationController.verifierIsTrusted == true
 
-            val userLocale = resourceProvider.getLocale()
-
             walletCorePresentationController.disclosedDocuments?.forEach { disclosedDocument ->
                 try {
                     val documentId = disclosedDocument.documentId
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-                    val detailsDocumentItems = document.data.claims
+                    val selectedClaims = document.data.claims
                         .filter { claim ->
                             disclosedDocument.disclosedItems.any { disclosedItem ->
-                                claim.identifier == disclosedItem.toClaimPath().value.last() //TODO check this
+                                val disclosedItemPath = disclosedItem.toClaimPath()
+
+                                claim.toClaimPaths().any {
+                                    it == disclosedItemPath
+                                }
                             }
                         }
-                        .map { claim ->
-                            val displayKey: String = claim.metadata?.display.getLocalizedClaimName(
-                                userLocale = userLocale,
-                                fallback = claim.identifier
-                            )
 
-                            transformToDocumentDetailsDocumentItem(
-                                displayKey = displayKey,
-                                key = claim.identifier,
-                                item = claim.value ?: "",
-                                resourceProvider = resourceProvider,
-                                documentId = documentId
+                    val selectedClaimPaths = selectedClaims.flatMap { selectedClaim ->
+                        selectedClaim.toClaimPaths()
+                    }
+
+                    val selectedDomainClaims = transformPathsToDomainClaims(
+                        paths = selectedClaimPaths,
+                        claims = selectedClaims,
+                        metadata = document.metadata,
+                        resourceProvider = resourceProvider,
+                        documentIdentifier = document.toDocumentIdentifier()
+                    )
+
+                    val selectedClaimsUi = selectedDomainClaims.map { selectedDomainClaim ->
+                        selectedDomainClaim.toExpandableListItems(
+                            docId = documentId,
+                            notAvailableId = resourceProvider.getString(R.string.request_element_identifier_not_available_id)
+                        )
+                    }
+
+                    val selectedDocumentUi = ExpandableListItem.NestedListItemData(
+                        header = ListItemData(
+                            itemId = documentId,
+                            mainContentData = ListItemMainContentData.Text(text = document.name),
+                            supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = AppIcons.KeyboardArrowDown
                             )
-                        }
-                        .toListItemData()
+                        ),
+                        nestedItems = selectedClaimsUi,
+                        isExpanded = false,
+                    )
 
                     val documentUi = DocumentSuccessItemUi(
-//                        collapsedUiItem = CollapsedUiItem(
-//                            uiItem = ListItemData(
-//                                itemId = documentId,
-//                                mainContentData = ListItemMainContentData.Text(text = document.name),
-//                                supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
-//                                trailingContentData = ListItemTrailingContentData.Icon(
-//                                    iconData = AppIcons.KeyboardArrowDown
-//                                )
-//                            ),
-//                            isExpanded = false
-//                        ),
-                        expandedUiItems = detailsDocumentItems
+                        headerUi = selectedDocumentUi
                     )
 
                     documentsUi.add(documentUi)

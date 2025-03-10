@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +47,7 @@ import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.extension.cacheDeepLink
 import kotlinx.coroutines.flow.Flow
@@ -61,6 +64,7 @@ fun DocumentSuccessScreen(
 
     ContentScreen(
         isLoading = false,
+        onBack = { navController.popBackStack() },//TODO remove later
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 stickyBottomModifier = Modifier
@@ -152,23 +156,21 @@ private fun Content(
             verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
         ) {
             state.items.forEach { successItem ->
-//                WrapExpandableListItem(
-//                    data = ExpandableListItem.SingleListItemData(
-//                        collapsed = successItem.collapsedUiItem.uiItem,
-//                        expanded = successItem.expandedUiItems.map { it }
-//                    ),
-//                    onItemClick = null,
-//                    modifier = Modifier.fillMaxWidth(),
-//                    hideSensitiveContent = false,
-//                    isExpanded = successItem.collapsedUiItem.isExpanded,
-//                    onExpandedChange = {
-//                        onEventSend(Event.ExpandOrCollapseSuccessDocumentItem(itemId = successItem.collapsedUiItem.uiItem.itemId))
-//                    },
-//                    throttleClicks = false,
-//                    colors = CardDefaults.cardColors(
-//                        containerColor = MaterialTheme.colorScheme.tertiary,
-//                    )
-//                )
+                WrapExpandableListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    header = successItem.headerUi.header,
+                    data = successItem.headerUi.nestedItems,
+                    onItemClick = null,
+                    onExpandedChange = { expandedItem ->
+                        onEventSend(Event.ExpandOrCollapseSuccessDocumentItem(itemId = expandedItem.itemId))
+                    },
+                    isExpanded = successItem.headerUi.isExpanded,
+                    throttleClicks = false,
+                    hideSensitiveContent = false,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                    )
+                )
             }
         }
     }

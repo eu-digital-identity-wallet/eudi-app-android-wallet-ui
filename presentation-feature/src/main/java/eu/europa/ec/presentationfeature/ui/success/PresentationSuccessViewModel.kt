@@ -18,7 +18,6 @@ package eu.europa.ec.presentationfeature.ui.success
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessViewModel
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.presentationfeature.interactor.PresentationSuccessInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationSuccessInteractorGetUiItemsPartialState
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -75,7 +74,8 @@ class PresentationSuccessViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        interactor.stopPresentation()
-        getOrCreatePresentationScope().close()
+        //TODO undo later
+        //interactor.stopPresentation()
+        //getOrCreatePresentationScope().close()
     }
 }

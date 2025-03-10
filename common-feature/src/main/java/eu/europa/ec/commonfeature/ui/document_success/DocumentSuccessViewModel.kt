@@ -20,7 +20,10 @@ import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.uilogic.component.AppIconAndTextData
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -92,39 +95,76 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun expandOrCollapseSuccessDocumentItem(id: String) {
-//        val currentItems = viewState.value.items
-//        val updatedItems = currentItems.map { item ->
-//            if (item.collapsedUiItem.uiItem.itemId == id) {
-//
-//                val newIsExpanded = !item.collapsedUiItem.isExpanded
-//
-//                // Change the Icon based on the new isExpanded state
-//                val newIconData = if (newIsExpanded) {
-//                    AppIcons.KeyboardArrowUp
-//                } else {
-//                    AppIcons.KeyboardArrowDown
-//                }
-//
-//                item.copy(
-//                    collapsedUiItem = item.collapsedUiItem.copy(
-//                        isExpanded = newIsExpanded,
-//                        uiItem = item.collapsedUiItem.uiItem.copy(
-//                            trailingContentData = ListItemTrailingContentData.Icon(
-//                                iconData = newIconData
-//                            )
-//                        )
-//                    )
-//                )
-//            } else {
-//                item
-//            }
-//        }
-//
-//        setState {
-//            copy(
-//                items = updatedItems
-//            )
-//        }
+        val currentItems = viewState.value.items
+
+        val updatedItems = currentItems.map { successDocument ->
+            val newHeader = if (successDocument.headerUi.header.itemId == id) {
+                val newIsExpanded = !successDocument.headerUi.isExpanded
+                val newCollapsed = successDocument.headerUi.header.copy(
+                    trailingContentData = ListItemTrailingContentData.Icon(
+                        iconData = if (newIsExpanded) {
+                            AppIcons.KeyboardArrowUp
+                        } else {
+                            AppIcons.KeyboardArrowDown
+                        }
+                    )
+                )
+
+                successDocument.headerUi.copy(
+                    header = newCollapsed,
+                    isExpanded = newIsExpanded
+                )
+            } else {
+                successDocument.headerUi
+            }
+
+            successDocument.copy(
+                headerUi = newHeader.copy(
+                    nestedItems = newHeader.nestedItems.changeNestedItems(id),
+                )
+            )
+        }
+
+        setState {
+            copy(
+                items = updatedItems
+            )
+        }
+    }
+
+    //TODO should this be in other place? i.e. should it be used elsewhere?
+    private fun List<ExpandableListItem>.changeNestedItems(id: String): List<ExpandableListItem> {
+        return this.map { nestedItem ->
+            when (nestedItem) {
+                is ExpandableListItem.NestedListItemData -> {
+                    if (nestedItem.header.itemId == id) {
+                        val newIsExpanded = !nestedItem.isExpanded
+                        val newCollapsed = nestedItem.header.copy(
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = if (newIsExpanded) {
+                                    AppIcons.KeyboardArrowUp
+                                } else {
+                                    AppIcons.KeyboardArrowDown
+                                }
+                            )
+                        )
+
+                        nestedItem.copy(
+                            header = newCollapsed,
+                            isExpanded = newIsExpanded
+                        )
+                    } else {
+                        nestedItem.copy(
+                            nestedItems = nestedItem.nestedItems.changeNestedItems(id)
+                        )
+                    }
+                }
+
+                is ExpandableListItem.SingleListItemData -> {
+                    nestedItem
+                }
+            }
+        }
     }
 
     private fun doNavigation(navigation: ConfigNavigation) {

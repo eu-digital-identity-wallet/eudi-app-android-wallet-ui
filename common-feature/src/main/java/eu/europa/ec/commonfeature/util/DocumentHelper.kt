@@ -350,8 +350,6 @@ private fun insertPath(
         documentIdentifier = documentIdentifier
     ).contains(currentClaim?.identifier) //TODO change this, it should be its path, e.g. "address.formatted"
 
-    println(currentClaim)
-
     return if (path.value.size == 1) {
         // Leaf node (Primitive)
         if (existingNode == null) {

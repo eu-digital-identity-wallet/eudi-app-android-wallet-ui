@@ -112,7 +112,7 @@ class DocumentIssuanceSuccessInteractorImpl(
 //                            ),
 //                            isExpanded = false
 //                        ),
-                        expandedUiItems = detailsDocumentItems
+                        //expandedUiItems = detailsDocumentItems
                     )
 
                     documentsUi.add(documentUi)

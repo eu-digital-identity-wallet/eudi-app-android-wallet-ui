@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request.transformer
 
-import eu.europa.ec.commonfeature.extensions.toExpandableListItems
+import eu.europa.ec.commonfeature.extensions.toSelectiveExpandableListItems
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
@@ -81,7 +81,7 @@ object RequestTransformer {
                         format = storageDocument.format,
                         namespace = storageDocument.docNamespace
                     ),
-                    docClaimsDomain = requestDocumentClaims.sortedBy { (it as? DomainClaim.Claim)?.displayTitle?.lowercase() }, //TOD
+                    docClaimsDomain = requestDocumentClaims/*.sortedBy { (it as? DomainClaim.Claim)?.displayTitle?.lowercase() }*/, //TOD
                 )
             )
         }
@@ -106,7 +106,7 @@ object RequestTransformer {
                             iconData = AppIcons.KeyboardArrowDown
                         )
                     ),
-                    nestedItems = it.toExpandableListItems(resourceProvider.getString(R.string.request_element_identifier_not_available_id)),
+                    nestedItems = it.toSelectiveExpandableListItems(resourceProvider.getString(R.string.request_element_identifier_not_available_id)),
                     isExpanded = false,
                 ),
             )

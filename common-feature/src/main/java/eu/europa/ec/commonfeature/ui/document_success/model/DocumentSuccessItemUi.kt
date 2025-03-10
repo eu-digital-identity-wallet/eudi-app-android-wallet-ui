@@ -16,10 +16,18 @@
 
 package eu.europa.ec.commonfeature.ui.document_success.model
 
-//import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 data class DocumentSuccessItemUi(
-//    val collapsedUiItem: CollapsedUiItem,
-    val expandedUiItems: List<ListItemData>,
+    val headerUi: ExpandableListItem.NestedListItemData = ExpandableListItem.NestedListItemData(
+        //TODO remove default value later
+        header = ListItemData(
+            itemId = "tempId",
+            mainContentData = ListItemMainContentData.Text(text = "tempText"),
+        ),
+        nestedItems = emptyList(),
+        isExpanded = false,
+    ),
 )
