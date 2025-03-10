@@ -40,7 +40,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "eu.europa.ec.euidi"
+        applicationId = "eu.europa.ec.av"
         versionCode = 1
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -64,7 +64,7 @@ android {
         }
     }
 
-    namespace = "eu.europa.ec.euidi"
+    namespace = "eu.europa.ec.av"
 }
 
 dependencies {

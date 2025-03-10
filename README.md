@@ -1,7 +1,8 @@
-# EUDI Android Wallet reference application
+# Age Verification (AV) Android Wallet application
 
 :heavy_exclamation_mark: **Important!** Before you proceed, please read
 the [EUDI Wallet Reference Implementation project description](https://github.com/eu-digital-identity-wallet/.github/blob/main/profile/reference-implementation.md)
+
 
 ----
 
@@ -19,18 +20,17 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 
 ## Overview
 
-The EUDI Wallet Reference Implementation is built based on the [Architecture Reference Framework](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework/blob/main/docs/architecture-and-reference-framework-main.md) and aims to showcase a robust and interoperable platform for digital identification, authentication, and electronic signatures based on common standards across the European Union.
+The Age Verification (AV) Android Wallet project is an Android app forked from [EUDI Android Wallet reference application](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui) , which is built based on the [Architecture Reference Framework](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework/blob/main/docs/architecture-and-reference-framework-main.md) 
+and aims to showcase a robust and interoperable platform for digital identification, authentication, and electronic signatures based on common standards across the European Union.
 The EUDI Wallet Reference Implementation is based on a modular architecture composed of business-agnostic, reusable components that will evolve in incremental steps and can be re-used across multiple projects.
 
-The EUDI Wallet Reference Implementation is the application that allows users to:
+The AV Android Wallet is the application that allows users to:
 
-1. To obtain, store, and present PID and mDL.
+1. To obtain, store, and present age verification scopes.
 2. Verify presentations.
-3. Share data on proximity scenarios.
+3. Share age data on proximity scenarios.
 4. Support remote QES and more use cases with the modules included.
 
-The EUDIW project provides, through this repository, an Android app. Please refer to the repositories listed in the following sections for more detailed information on how to get started, contribute, and engage with the EUDI Wallet Reference Implementation.
- 
 # 💡 Specifications Employed
 
 The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to facilitate remote presentation, proximity, and issuing test/demo functionality following the specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework), including:
@@ -99,11 +99,6 @@ Proximity
 
 - API level 28.
 
-### Prerequisites
-
-You can download the application [here](https://install.appcenter.ms/orgs/eu-digital-identity-wallet/apps/eudi-reference-android/distribution_groups/eudi%20wallet%20(demo)%20public)
-
-You will also need to download the Android Verifier app. More information can be found [here](wiki/verifier_proximity.md)
 
 ### App launch
 
@@ -150,7 +145,7 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 
 ### Proximity flow
 
-1. Log in to the EUDI Wallet app.
+1. Log in to the AV Wallet app.
 2. You will be on the "Home" tab of the "Dashboard" screen.
 3. Tap the "Authenticate" button on the first informative card. A modal with two options will appear.
 4. Select "In person".
