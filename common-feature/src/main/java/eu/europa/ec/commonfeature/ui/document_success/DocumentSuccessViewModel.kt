@@ -18,7 +18,6 @@ package eu.europa.ec.commonfeature.ui.document_success
 
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
-import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
@@ -37,7 +36,7 @@ data class State(
     val isLoading: Boolean = false,
     val headerConfig: ContentHeaderConfig,
 
-    val items: List<DocumentSuccessItemUi> = emptyList(),
+    val items: List<ExpandableListItem.NestedListItemData> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -51,19 +50,19 @@ sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data class SwitchScreen(
             val screenRoute: String,
-            val popUpRoute: String?
+            val popUpRoute: String?,
         ) : Navigation()
 
         data class PopBackStackUpTo(
             val screenRoute: String,
-            val inclusive: Boolean
+            val inclusive: Boolean,
         ) : Navigation()
 
         data object Pop : Navigation()
 
         data class DeepLink(
             val link: Uri,
-            val routeToPop: String?
+            val routeToPop: String?,
         ) : Navigation()
     }
 }
@@ -98,9 +97,9 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
         val currentItems = viewState.value.items
 
         val updatedItems = currentItems.map { successDocument ->
-            val newHeader = if (successDocument.headerUi.header.itemId == id) {
-                val newIsExpanded = !successDocument.headerUi.isExpanded
-                val newCollapsed = successDocument.headerUi.header.copy(
+            val newHeader = if (successDocument.header.itemId == id) {
+                val newIsExpanded = !successDocument.isExpanded
+                val newCollapsed = successDocument.header.copy(
                     trailingContentData = ListItemTrailingContentData.Icon(
                         iconData = if (newIsExpanded) {
                             AppIcons.KeyboardArrowUp
@@ -110,19 +109,15 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
                     )
                 )
 
-                successDocument.headerUi.copy(
+                successDocument.copy(
                     header = newCollapsed,
                     isExpanded = newIsExpanded
                 )
             } else {
-                successDocument.headerUi
+                successDocument
             }
 
-            successDocument.copy(
-                headerUi = newHeader.copy(
-                    nestedItems = newHeader.nestedItems.changeNestedItems(id),
-                )
-            )
+            successDocument.copy(nestedItems = newHeader.nestedItems.changeNestedItems(id))
         }
 
         setState {

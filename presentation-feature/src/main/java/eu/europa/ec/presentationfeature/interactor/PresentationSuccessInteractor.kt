@@ -19,7 +19,6 @@ package eu.europa.ec.presentationfeature.interactor
 import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.extensions.toExpandableListItems
-import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.commonfeature.ui.request.transformer.toClaimPath
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -42,7 +41,7 @@ import java.net.URI
 
 sealed class PresentationSuccessInteractorGetUiItemsPartialState {
     data class Success(
-        val documentsUi: List<DocumentSuccessItemUi>,
+        val documentsUi: List<ExpandableListItem.NestedListItemData>,
         val headerConfig: ContentHeaderConfig,
     ) : PresentationSuccessInteractorGetUiItemsPartialState()
 
@@ -74,7 +73,7 @@ class PresentationSuccessInteractorImpl(
     override fun getUiItems(): Flow<PresentationSuccessInteractorGetUiItemsPartialState> {
         return flow {
 
-            val documentsUi = mutableListOf<DocumentSuccessItemUi>()
+            val documentsUi = mutableListOf<ExpandableListItem.NestedListItemData>()
 
             val verifierName = walletCorePresentationController.verifierName
 
@@ -129,11 +128,7 @@ class PresentationSuccessInteractorImpl(
                         isExpanded = false,
                     )
 
-                    val documentUi = DocumentSuccessItemUi(
-                        headerUi = selectedDocumentUi
-                    )
-
-                    documentsUi.add(documentUi)
+                    documentsUi.add(selectedDocumentUi)
                 } catch (_: Exception) {
                 }
             }

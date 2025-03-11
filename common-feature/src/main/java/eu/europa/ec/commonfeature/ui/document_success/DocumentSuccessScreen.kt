@@ -158,13 +158,13 @@ private fun Content(
             state.items.forEach { successItem ->
                 WrapExpandableListItem(
                     modifier = Modifier.fillMaxWidth(),
-                    header = successItem.headerUi.header,
-                    data = successItem.headerUi.nestedItems,
+                    header = successItem.header,
+                    data = successItem.nestedItems,
                     onItemClick = null,
                     onExpandedChange = { expandedItem ->
                         onEventSend(Event.ExpandOrCollapseSuccessDocumentItem(itemId = expandedItem.itemId))
                     },
-                    isExpanded = successItem.headerUi.isExpanded,
+                    isExpanded = successItem.isExpanded,
                     throttleClicks = false,
                     hideSensitiveContent = false,
                     colors = CardDefaults.cardColors(
