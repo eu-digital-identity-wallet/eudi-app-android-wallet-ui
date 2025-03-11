@@ -23,6 +23,7 @@ import androidx.compose.material3.CardColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
@@ -50,11 +51,13 @@ fun WrapListItem(
     mainContentTextStyle: TextStyle? = null,
     supportingTextColor: Color? = null,
     clickableAreas: List<ClickableArea>? = null,
+    shape: Shape? = null,
     colors: CardColors? = null,
 ) {
     WrapCard(
         modifier = modifier,
         throttleClicks = throttleClicks,
+        shape = shape,
         colors = colors,
     ) {
         ListItem(

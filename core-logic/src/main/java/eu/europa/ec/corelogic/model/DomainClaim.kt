@@ -18,28 +18,6 @@ package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 
-data class ClaimPath(val value: List<String>) {
-    companion object {
-        const val PATH_SEPARATOR = ","
-
-        fun toElementIdentifier(itemId: String): String {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(1)
-                .first()
-        }
-
-        fun toSdJwtVcPath(itemId: String): List<String> {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(1)
-        }
-    }
-
-    fun toId(docId: String): String =
-        (listOf(docId) + value).joinToString(separator = PATH_SEPARATOR)
-}
-
 sealed class DomainClaim {
     abstract val key: ElementIdentifier
     abstract val displayTitle: String

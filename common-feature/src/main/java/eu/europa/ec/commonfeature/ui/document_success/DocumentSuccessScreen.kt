@@ -167,6 +167,8 @@ private fun Content(
                     isExpanded = successItem.isExpanded,
                     throttleClicks = false,
                     hideSensitiveContent = false,
+                    collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                    expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.tertiary,
                     )

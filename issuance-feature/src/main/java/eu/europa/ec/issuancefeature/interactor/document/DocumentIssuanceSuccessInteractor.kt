@@ -88,12 +88,12 @@ class DocumentIssuanceSuccessInteractorImpl(
                         issuerLogo = safeIssuerLogo
                     }
 
-                    val claimPaths = document.data.claims.flatMap { claim ->
+                    val claimsPaths = document.data.claims.flatMap { claim ->
                         claim.toClaimPaths()
                     }
 
                     val domainClaims = transformPathsToDomainClaims(
-                        paths = claimPaths,
+                        paths = claimsPaths,
                         claims = document.data.claims,
                         metadata = document.metadata,
                         resourceProvider = resourceProvider,
@@ -103,7 +103,7 @@ class DocumentIssuanceSuccessInteractorImpl(
                     val claimsUi = domainClaims.map { selectedDomainClaim ->
                         selectedDomainClaim.toExpandableListItems(
                             docId = documentId,
-                            notAvailableId = resourceProvider.getString(R.string.request_element_identifier_not_available_id)
+                            notAvailableId = resourceProvider.getString(R.string.document_success_element_identifier_not_available_id)
                         )
                     }
 

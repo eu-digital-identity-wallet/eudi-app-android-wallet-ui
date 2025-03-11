@@ -27,8 +27,11 @@ import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteracto
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorStoreBookmarkPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -61,6 +64,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
+    data class ClaimClicked(val itemId: String) : Event()
     data object PrimaryButtonPressed : Event()
     data object SecondaryButtonPressed : Event()
 
@@ -135,6 +139,8 @@ class DocumentDetailsViewModel(
                 setState { copy(error = null) }
                 setEffect { Effect.Navigation.Pop }
             }
+
+            is Event.ClaimClicked -> onClaimClicked(event.itemId)
 
             is Event.PrimaryButtonPressed -> {
                 // TODO: will redirect to transactions screen
@@ -215,8 +221,9 @@ class DocumentDetailsViewModel(
             ).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
-                        val documentDetailsUi =
-                            response.documentDetailsDomain.transformToDocumentDetailsUi()
+                        val documentDetailsUi = response.documentDetailsDomain
+                            .transformToDocumentDetailsUi(resourceProvider)
+
                         setState {
                             copy(
                                 isLoading = false,
@@ -243,6 +250,45 @@ class DocumentDetailsViewModel(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun onClaimClicked(itemId: String) {
+        val currentItem = viewState.value.documentDetailsUi
+        if (currentItem != null) {
+            val updatedDocumentClaims = currentItem.documentClaims.map { documentClaim ->
+                if (documentClaim is ExpandableListItem.NestedListItemData
+                    && documentClaim.header.itemId == itemId
+                ) {
+                    val newGroupClaimIsExpanded = !documentClaim.isExpanded
+                    val newGroupClaimHeader = documentClaim.header.copy(
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = if (newGroupClaimIsExpanded) {
+                                AppIcons.KeyboardArrowUp
+                            } else {
+                                AppIcons.KeyboardArrowDown
+                            }
+                        )
+                    )
+
+                    //TODO updated its nested children recursively, like in request
+
+                    documentClaim.copy(
+                        header = newGroupClaimHeader,
+                        isExpanded = newGroupClaimIsExpanded
+                    )
+                } else {
+                    documentClaim
+                }
+            }
+
+            setState {
+                copy(
+                    documentDetailsUi = currentItem.copy(
+                        documentClaims = updatedDocumentClaims
+                    )
+                )
             }
         }
     }

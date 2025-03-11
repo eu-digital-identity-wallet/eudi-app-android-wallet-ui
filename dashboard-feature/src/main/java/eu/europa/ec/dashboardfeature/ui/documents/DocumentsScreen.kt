@@ -443,7 +443,9 @@ private fun DocumentsSheetContent(
                                             val groupId = filter.header.itemId
                                             onEventSent(Event.OnFilterSelectionChanged(id, groupId))
                                         },
-                                        expandedAddDivider = false,
+                                        addDivider = false,
+                                        collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                        expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                                     )
                                 }
                             }

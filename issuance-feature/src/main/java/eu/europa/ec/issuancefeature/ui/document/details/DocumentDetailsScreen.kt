@@ -218,6 +218,7 @@ private fun Content(
                     .verticalScroll(rememberScrollState()),
             ) {
                 DocumentDetails(
+                    onEventSend = onEventSend,
                     sectionTitle = state.documentDetailsSectionTitle,
                     documentDetailsUi = safeDocumentDetailsUi,
                     hideSensitiveContent = state.hideSensitiveContent,
@@ -350,6 +351,7 @@ private fun IssuerDetails(
 
 @Composable
 private fun DocumentDetails(
+    onEventSend: (Event) -> Unit,
     sectionTitle: String,
     documentDetailsUi: DocumentDetailsUi,
     hideSensitiveContent: Boolean,
@@ -365,9 +367,12 @@ private fun DocumentDetails(
 
         WrapListItems(
             modifier = Modifier.fillMaxWidth(),
-            items = documentDetailsUi.documentDetails.map { ExpandableListItem.SingleListItemData(it) },
+            items = documentDetailsUi.documentClaims,
             hideSensitiveContent = hideSensitiveContent,
-            onItemClick = null,
+            onItemClick = { item ->
+                onEventSend(Event.ClaimClicked(itemId = item.header.itemId))
+            },
+            throttleClicks = false,
         )
     }
 }
@@ -411,28 +416,38 @@ private fun DocumentDetailsScreenPreview() {
                 documentIdentifier = DocumentIdentifier.OTHER(formatType = "org.iso.18013.5.1.mDL"),
                 documentExpirationDateFormatted = "10 Feb 2025",
                 documentHasExpired = false,
-                documentDetails = listOf(
-                    ListItemData(
-                        itemId = "1",
-                        mainContentData = ListItemMainContentData.Text(text = ""),
-                        overlineText = "A reproduction of the mDL holder’s portrait.",
-                        leadingContentData = ListItemLeadingContentData.UserImage(userBase64Image = ""),
+                documentClaims = listOf(
+                    ExpandableListItem.SingleListItemData(
+                        header = ListItemData(
+                            itemId = "1",
+                            mainContentData = ListItemMainContentData.Text(text = ""),
+                            overlineText = "A reproduction of the mDL holder’s portrait.",
+                            leadingContentData = ListItemLeadingContentData.UserImage(
+                                userBase64Image = ""
+                            ),
+                        )
                     ),
-                    ListItemData(
-                        itemId = "2",
-                        mainContentData = ListItemMainContentData.Text(text = "GR"),
-                        overlineText = "Alpha-2 country code, as defined in ISO 3166-1 of the issuing authority’s country or territory.",
+                    ExpandableListItem.SingleListItemData(
+                        header = ListItemData(
+                            itemId = "2",
+                            mainContentData = ListItemMainContentData.Text(text = "GR"),
+                            overlineText = "Alpha-2 country code, as defined in ISO 3166-1 of the issuing authority’s country or territory.",
+                        )
                     ),
-                    ListItemData(
-                        itemId = "3",
-                        mainContentData = ListItemMainContentData.Text(text = "12345678900"),
-                        overlineText = "An audit control number assigned by the issuing authority.",
+                    ExpandableListItem.SingleListItemData(
+                        header = ListItemData(
+                            itemId = "3",
+                            mainContentData = ListItemMainContentData.Text(text = "12345678900"),
+                            overlineText = "An audit control number assigned by the issuing authority.",
+                        )
                     ),
-                    ListItemData(
-                        itemId = "4",
-                        mainContentData = ListItemMainContentData.Text(text = "31 Dec 2040"),
-                        overlineText = "Date when mDL expires.",
-                    ),
+                    ExpandableListItem.SingleListItemData(
+                        header = ListItemData(
+                            itemId = "4",
+                            mainContentData = ListItemMainContentData.Text(text = "31 Dec 2040"),
+                            overlineText = "Date when mDL expires.",
+                        )
+                    )
                 ),
                 documentIssuanceState = DocumentUiIssuanceState.Issued,
             ),

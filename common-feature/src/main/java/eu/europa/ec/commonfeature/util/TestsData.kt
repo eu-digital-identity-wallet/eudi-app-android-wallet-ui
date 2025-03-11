@@ -21,7 +21,6 @@ import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
-import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.ScopedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.ReaderAuth
@@ -183,7 +182,7 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.MdocPid,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        documentDetails = emptyList(),
+        documentClaims = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
 
@@ -199,7 +198,7 @@ object TestsData {
     )
 
     val mockedBasicPidUi = mockedFullPidUi.copy(
-        documentDetails = listOf(
+        documentClaims = emptyList()/*listOf( //TODO
             ListItemData(
                 itemId = "",
                 overlineText = "birth_city",
@@ -240,7 +239,7 @@ object TestsData {
                 overlineText = "age_over_65",
                 mainContentData = ListItemMainContentData.Text("no")
             )
-        ),
+        ),*/
     )
 
     val mockedBasicPidDomain = DocumentDetailsDomain(
@@ -249,7 +248,7 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.MdocPid,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        detailsItems = listOf(
+        documentClaims = emptyList()/*listOf(
             DocumentItem(
                 elementIdentifier = "family_name",
                 value = "ANDERSSON",
@@ -299,7 +298,7 @@ object TestsData {
                 readableName = "expiry_date",
                 docId = mockedPidId
             )
-        )
+        )*/
     )
 
     val mockedFullMdlUi = DocumentDetailsUi(
@@ -308,7 +307,7 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        documentDetails = emptyList(),
+        documentClaims = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
 
@@ -317,7 +316,7 @@ object TestsData {
     )
 
     val mockedBasicMdlUi = mockedFullMdlUi.copy(
-        documentDetails = listOf(
+        documentClaims = emptyList()/*listOf(
             ListItemData(
                 itemId = "",
                 overlineText = "driving_privileges",
@@ -367,7 +366,7 @@ object TestsData {
                 overlineText = "signature_usual_mark",
                 mainContentData = ListItemMainContentData.Image("SE")
             )
-        ),
+        )*/,
     )
 
     val mockedBasicMdlDomain = DocumentDetailsDomain(
@@ -376,7 +375,7 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        detailsItems = listOf(
+        documentClaims = emptyList() /*listOf(
             DocumentItem(
                 elementIdentifier = "family_name",
                 value = "ANDERSSON",
@@ -430,7 +429,7 @@ object TestsData {
                 readableName = "sex",
                 docId = mockedMdlId
             )
-        )
+        )*/
     )
 
     val mockedMdlUiWithNoUserNameAndNoUserImage: DocumentDetailsUi = mockedFullMdlUi

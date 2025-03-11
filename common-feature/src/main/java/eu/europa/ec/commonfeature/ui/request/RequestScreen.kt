@@ -255,6 +255,8 @@ private fun DisplayRequestItems(
                         isExpanded = requestDocument.headerUi.isExpanded,
                         throttleClicks = false,
                         hideSensitiveContent = false,
+                        collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                        expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                     )
                 }
             }

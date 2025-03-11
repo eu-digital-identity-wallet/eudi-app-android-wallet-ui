@@ -17,9 +17,14 @@
 package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -31,6 +36,7 @@ import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 sealed class ExpandableListItem {
@@ -57,17 +63,19 @@ fun WrapExpandableListItem(
     isExpanded: Boolean,
     onExpandedChange: ((item: ListItemData) -> Unit)?,
     throttleClicks: Boolean = true,
-    collapsedMainContentVerticalPadding: Dp = SPACING_MEDIUM.dp,
+    collapsedMainContentVerticalPadding: Dp? = null,
     collapsedClickableAreas: List<ClickableArea>? = null,
-    expandedMainContentVerticalPadding: Dp = SPACING_MEDIUM.dp,
+    expandedMainContentVerticalPadding: Dp? = null,
     expandedClickableAreas: List<ClickableArea>? = null,
-    expandedAddDivider: Boolean = true,
+    addDivider: Boolean = true,
+    shape: Shape? = null,
     colors: CardColors? = null,
 ) {
     WrapExpandableCard(
         modifier = modifier,
         isExpanded = isExpanded,
         throttleClicks = throttleClicks,
+        shape = shape,
         colors = colors,
         cardCollapsedContent = {
             WrapListItem(
@@ -75,14 +83,20 @@ fun WrapExpandableListItem(
                 item = header,
                 onItemClick = onExpandedChange,
                 throttleClicks = throttleClicks,
-                hideSensitiveContent = false,
+                hideSensitiveContent = hideSensitiveContent,
                 mainContentVerticalPadding = collapsedMainContentVerticalPadding,
                 clickableAreas = collapsedClickableAreas,
+                shape = RoundedCornerShape(
+                    topStart = SIZE_SMALL.dp,
+                    topEnd = SIZE_SMALL.dp,
+                    bottomStart = 0.dp,
+                    bottomEnd = 0.dp
+                ),
                 colors = colors,
             )
         },
         cardExpandedContent = {
-            data.forEach { listItem ->
+            data.forEachIndexed { index, listItem ->
                 when (listItem) {
                     is ExpandableListItem.SingleListItemData -> {
                         WrapListItem(
@@ -93,6 +107,7 @@ fun WrapExpandableListItem(
                             hideSensitiveContent = hideSensitiveContent,
                             mainContentVerticalPadding = expandedMainContentVerticalPadding,
                             clickableAreas = expandedClickableAreas,
+                            shape = RectangleShape,
                             colors = colors,
                         )
                     }
@@ -111,10 +126,14 @@ fun WrapExpandableListItem(
                             collapsedClickableAreas = collapsedClickableAreas,
                             expandedMainContentVerticalPadding = expandedMainContentVerticalPadding,
                             expandedClickableAreas = expandedClickableAreas,
-                            expandedAddDivider = expandedAddDivider,
+                            shape = RectangleShape,
                             colors = colors
                         )
                     }
+                }
+
+                if (addDivider && index < data.lastIndex) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = SPACING_MEDIUM.dp))
                 }
             }
         }
