@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -61,12 +62,14 @@ data class ButtonConfig(
 fun WrapButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
+    buttonColors: ButtonColors = ButtonDefaults.buttonColors(),
     content: @Composable RowScope.() -> Unit,
 ) {
     when (buttonConfig.type) {
         ButtonType.PRIMARY -> WrapPrimaryButton(
             modifier = modifier,
             buttonConfig = buttonConfig,
+            buttonColors = buttonColors,
             content = content,
         )
 
@@ -82,6 +85,7 @@ fun WrapButton(
 private fun WrapPrimaryButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
+    buttonColors: ButtonColors = ButtonDefaults.buttonColors(),
     content: @Composable RowScope.() -> Unit,
 ) {
     val colors = if (buttonConfig.isWarning) {
@@ -91,7 +95,7 @@ private fun WrapPrimaryButton(
     } else if (buttonConfig.isWithoutContainerBackground) {
         ButtonDefaults.filledTonalButtonColors(containerColor = Color.Transparent)
     } else {
-        ButtonDefaults.buttonColors()
+        buttonColors
     }
 
     Button(

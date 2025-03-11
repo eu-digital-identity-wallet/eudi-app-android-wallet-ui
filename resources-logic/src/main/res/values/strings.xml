@@ -317,6 +317,9 @@
     <string name="document_details_bottom_sheet_badge_subtitle">A Relying Party is considered trusted when it meets
         predefined criteria for security, data protection, compliance, and responsible data handling.</string>
 
+    <!-- Transaction Details -->
+    <string name="transaction_details_screen_card_date_label">Date</string>
+
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Present document in person</string>
     <string name="proximity_qr_subtitle">Show this QR code to a Relying Party to present a digital document.</string>
