@@ -117,7 +117,7 @@ class DocumentIssuanceSuccessInteractorImpl(
                             )
                         ),
                         nestedItems = claimsUi,
-                        isExpanded = true,
+                        isExpanded = false,
                     )
 
                     documentsUi.add(documentUi)

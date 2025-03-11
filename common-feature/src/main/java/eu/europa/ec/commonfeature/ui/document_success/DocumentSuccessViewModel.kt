@@ -117,7 +117,11 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
                 successDocument
             }
 
-            successDocument.copy(nestedItems = newHeader.nestedItems.changeNestedItems(id))
+            successDocument.copy(
+                header = newHeader.header,
+                isExpanded = newHeader.isExpanded,
+                nestedItems = newHeader.nestedItems.changeNestedItems(id)
+            )
         }
 
         setState {
