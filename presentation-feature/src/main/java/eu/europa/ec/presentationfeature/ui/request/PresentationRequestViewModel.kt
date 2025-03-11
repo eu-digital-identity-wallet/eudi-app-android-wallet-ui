@@ -18,6 +18,9 @@ package eu.europa.ec.presentationfeature.ui.request
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
+import eu.europa.ec.commonfeature.config.BiometricMode
+import eu.europa.ec.commonfeature.config.BiometricUiConfig
+import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
@@ -29,7 +32,12 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
@@ -55,8 +63,7 @@ class PresentationRequestViewModel(
     }
 
     override fun getNextScreen(): String {
-        return PresentationScreens.PresentationSuccess.screenRoute//TODO remove later
-        /*return generateComposableNavigationLink(
+        return generateComposableNavigationLink(
             screen = CommonScreens.Biometric,
             arguments = generateComposableArguments(
                 mapOf(
@@ -83,7 +90,7 @@ class PresentationRequestViewModel(
                     ).orEmpty()
                 )
             )
-        )*/
+        )
     }
 
     override fun doWork() {
