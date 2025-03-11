@@ -73,7 +73,7 @@ data class State(
     val isFromOnPause: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 
-    val filtersUi: List<ExpandableListItem.SingleListItemData> = emptyList(),
+    val filtersUi: List<ExpandableListItem.NestedListItemData> = emptyList(),
     val sortOrder: DualSelectorButtonData,
     val isFilteringActive: Boolean,
 ) : ViewState

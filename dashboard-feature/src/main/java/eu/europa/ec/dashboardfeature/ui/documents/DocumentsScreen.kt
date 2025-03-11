@@ -94,6 +94,7 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
@@ -429,21 +430,22 @@ private fun DocumentsSheetContent(
                                 onEventSent(Event.OnSortingOrderChanged(it))
                             }
                             state.filtersUi.forEachIndexed { index, filter ->
-//                                if (filter.expanded.isNotEmpty()) {
-//                                    WrapExpandableListItem(
-//                                        data = filter,
-//                                        isExpanded = expandStateList[index],
-//                                        onExpandedChange = {
-//                                            expandStateList[index] = !expandStateList[index]
-//                                        },
-//                                        onItemClick = {
-//                                            val id = it.itemId
-//                                            val groupId = filter.collapsed.itemId
-//                                            onEventSent(Event.OnFilterSelectionChanged(id, groupId))
-//                                        },
-//                                        expandedAddDivider = false,
-//                                    )
-//                                }
+                                if (filter.nestedItems.isNotEmpty()) {
+                                    WrapExpandableListItem(
+                                        header = filter.header,
+                                        data = filter.nestedItems,
+                                        isExpanded = expandStateList[index],
+                                        onExpandedChange = {
+                                            expandStateList[index] = !expandStateList[index]
+                                        },
+                                        onItemClick = {
+                                            val id = it.itemId
+                                            val groupId = filter.header.itemId
+                                            onEventSent(Event.OnFilterSelectionChanged(id, groupId))
+                                        },
+                                        expandedAddDivider = false,
+                                    )
+                                }
                             }
                         }
                         Row(
