@@ -433,10 +433,12 @@ class TransactionsViewModel(
             interactor.onFilterStateChange().collect { result ->
                 when (result) {
                     is TransactionInteractorFilterPartialState.FilterApplyResult -> {
+                        val transactionsUiWithCategoryItemsSorted =
+                            result.transactions.sortCategoryItems(result.sortOrder)
                         setState {
                             copy(
                                 isFilteringActive = !result.allDefaultFiltersAreSelected,
-                                transactionsUi = result.transactions,
+                                transactionsUi = transactionsUiWithCategoryItemsSorted,
                                 showNoResultsFound = result.transactions.isEmpty(),
                                 filtersUi = result.filters,
                                 sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
@@ -502,6 +504,18 @@ class TransactionsViewModel(
         return when (sortOrder) {
             is SortOrder.Ascending -> this.sortedBy(selector)
             is SortOrder.Descending -> this.sortedByDescending(selector)
+        }
+    }
+
+    private fun List<Pair<TransactionCategory, List<TransactionUi>>>.sortCategoryItems(
+        sortOrder: DualSelectorButton
+    ): List<Pair<TransactionCategory, List<TransactionUi>>> {
+        return this.map { (category, transactionList) ->
+            val sortedTransactions = when (sortOrder) {
+                DualSelectorButton.FIRST -> transactionList.sortedByDescending { it.uiData.supportingText }
+                DualSelectorButton.SECOND -> transactionList.sortedBy { it.uiData.supportingText }
+            }
+            category to sortedTransactions
         }
     }
 }
