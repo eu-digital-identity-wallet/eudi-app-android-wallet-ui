@@ -441,7 +441,7 @@ private fun insertPath(
                     userLocale = userLocale,
                     identifier = currentClaim?.identifier ?: key
                 ),
-                path = ClaimPath(path.value.take(path.value.size - 1)),
+                path = ClaimPath(disclosurePath.value.take((disclosurePath.value.size - path.value.size) + 1)),
                 items = insertPath(
                     tree = emptyList(),
                     path = ClaimPath(path.value.drop(1)),

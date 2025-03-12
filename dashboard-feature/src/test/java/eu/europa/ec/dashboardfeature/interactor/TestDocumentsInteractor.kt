@@ -534,7 +534,7 @@ class TestDocumentsInteractor {
                     mockFilters.filterGroups.first().name
                 )
                 assertEquals(
-                    state.filters.first().expanded.size,
+                    state.filters.first().nestedItems.size,
                     mockFilters.filterGroups.first().filters.size
                 )
             }

@@ -370,7 +370,7 @@ private fun DocumentDetails(
             items = documentDetailsUi.documentClaims,
             hideSensitiveContent = hideSensitiveContent,
             onItemClick = { item ->
-                onEventSend(Event.ClaimClicked(itemId = item.header.itemId))
+                onEventSend(Event.ClaimClicked(itemId = item.itemId))
             },
             throttleClicks = false,
         )

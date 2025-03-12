@@ -18,7 +18,6 @@ package eu.europa.ec.uilogic.component.wrap
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -36,7 +35,6 @@ import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 sealed class ExpandableListItem {
@@ -83,15 +81,10 @@ fun WrapExpandableListItem(
                 item = header,
                 onItemClick = onExpandedChange,
                 throttleClicks = throttleClicks,
-                hideSensitiveContent = hideSensitiveContent,
+                hideSensitiveContent = false,
                 mainContentVerticalPadding = collapsedMainContentVerticalPadding,
                 clickableAreas = collapsedClickableAreas,
-                shape = RoundedCornerShape(
-                    topStart = SIZE_SMALL.dp,
-                    topEnd = SIZE_SMALL.dp,
-                    bottomStart = 0.dp,
-                    bottomEnd = 0.dp
-                ),
+                shape = RectangleShape,
                 colors = colors,
             )
         },

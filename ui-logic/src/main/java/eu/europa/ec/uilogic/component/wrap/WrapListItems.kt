@@ -44,7 +44,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 fun WrapListItems(
     modifier: Modifier = Modifier,
     items: List<ExpandableListItem>,
-    onItemClick: ((item: ExpandableListItem) -> Unit)?,
+    onItemClick: ((item: ListItemData) -> Unit)?,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     clickableAreas: List<ClickableArea>? = null,
@@ -73,9 +73,7 @@ fun WrapListItems(
                         header = item.header,
                         data = item.nestedItems,
                         onItemClick = null,
-                        onExpandedChange = {
-                            onItemClick?.invoke(item)
-                        },
+                        onExpandedChange = onItemClick,
                         isExpanded = item.isExpanded,
                         throttleClicks = throttleClicks,
                         hideSensitiveContent = hideSensitiveContent,

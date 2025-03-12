@@ -257,31 +257,7 @@ class DocumentDetailsViewModel(
     private fun onClaimClicked(itemId: String) {
         val currentItem = viewState.value.documentDetailsUi
         if (currentItem != null) {
-            val updatedDocumentClaims = currentItem.documentClaims.map { documentClaim ->
-                if (documentClaim is ExpandableListItem.NestedListItemData
-                    && documentClaim.header.itemId == itemId
-                ) {
-                    val newGroupClaimIsExpanded = !documentClaim.isExpanded
-                    val newGroupClaimHeader = documentClaim.header.copy(
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = if (newGroupClaimIsExpanded) {
-                                AppIcons.KeyboardArrowUp
-                            } else {
-                                AppIcons.KeyboardArrowDown
-                            }
-                        )
-                    )
-
-                    //TODO updated its nested children recursively, like in request
-
-                    documentClaim.copy(
-                        header = newGroupClaimHeader,
-                        isExpanded = newGroupClaimIsExpanded
-                    )
-                } else {
-                    documentClaim
-                }
-            }
+            val updatedDocumentClaims = currentItem.documentClaims.changeNestedItems(itemId)
 
             setState {
                 copy(
@@ -289,6 +265,41 @@ class DocumentDetailsViewModel(
                         documentClaims = updatedDocumentClaims
                     )
                 )
+            }
+        }
+    }
+
+    //TODO should this be in other place? i.e. should it be used elsewhere?
+    private fun List<ExpandableListItem>.changeNestedItems(id: String): List<ExpandableListItem> {
+        return this.map { nestedItem ->
+            when (nestedItem) {
+                is ExpandableListItem.NestedListItemData -> {
+                    if (nestedItem.header.itemId == id) {
+                        val newIsExpanded = !nestedItem.isExpanded
+                        val newCollapsed = nestedItem.header.copy(
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = if (newIsExpanded) {
+                                    AppIcons.KeyboardArrowUp
+                                } else {
+                                    AppIcons.KeyboardArrowDown
+                                }
+                            )
+                        )
+
+                        nestedItem.copy(
+                            header = newCollapsed,
+                            isExpanded = newIsExpanded
+                        )
+                    } else {
+                        nestedItem.copy(
+                            nestedItems = nestedItem.nestedItems.changeNestedItems(id)
+                        )
+                    }
+                }
+
+                is ExpandableListItem.SingleListItemData -> {
+                    nestedItem
+                }
             }
         }
     }
