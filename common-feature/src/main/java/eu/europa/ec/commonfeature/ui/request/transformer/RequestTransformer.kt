@@ -81,7 +81,7 @@ object RequestTransformer {
                         format = storageDocument.format,
                         namespace = storageDocument.docNamespace
                     ),
-                    docClaimsDomain = requestDocumentClaims/*.sortedBy { (it as? DomainClaim.Claim)?.displayTitle?.lowercase() }*/, //TODO
+                    docClaimsDomain = requestDocumentClaims
                 )
             )
         }

@@ -64,7 +64,6 @@ fun DocumentSuccessScreen(
 
     ContentScreen(
         isLoading = false,
-        onBack = { navController.popBackStack() },//TODO remove later
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 stickyBottomModifier = Modifier
