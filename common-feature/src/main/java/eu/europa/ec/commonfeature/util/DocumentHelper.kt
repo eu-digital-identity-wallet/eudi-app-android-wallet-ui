@@ -423,7 +423,7 @@ private fun insertPath(
             // Update existing group by inserting the next path segment into its items
             existingNode.copy(
                 items = insertPath(
-                    tree = existingNode.items,
+                    tree = existingNode.items.sortedBy { it.displayTitle },
                     path = ClaimPath(path.value.drop(1)),
                     disclosurePath = disclosurePath,
                     claims = childClaims,
@@ -466,7 +466,7 @@ fun transformPathsToDomainClaims(
     resourceProvider: ResourceProvider,
     documentIdentifier: DocumentIdentifier,
 ): List<DomainClaim> {
-    return paths.fold(emptyList()) { acc, path ->
+    return paths.fold<ClaimPath, List<DomainClaim>>(emptyList()) { acc, path ->
         insertPath(
             tree = acc,
             path = path,
@@ -476,5 +476,5 @@ fun transformPathsToDomainClaims(
             resourceProvider = resourceProvider,
             documentIdentifier = documentIdentifier,
         )
-    }
+    }.sortedBy { it.displayTitle }
 }
