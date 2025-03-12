@@ -24,8 +24,6 @@ import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.DomainClaim
-import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
@@ -91,33 +89,6 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
-private fun getMandatoryFields(documentIdentifier: DocumentIdentifier): List<String> =
-    when (documentIdentifier) {
-
-        DocumentIdentifier.MdocPid, DocumentIdentifier.SdJwtPid -> listOf(
-            "issuance_date",
-            "iat",
-            "expiry_date",
-            "exp",
-            "issuing_authority",
-            "document_number",
-            "administrative_number",
-            "issuing_country",
-            "issuing_jurisdiction",
-            "portrait",
-            "portrait_capture_date"
-        )
-
-        DocumentIdentifier.MdocPseudonym -> listOf(
-            "issuance_date",
-            "expiry_date",
-            "issuing_country",
-            "issuing_authority",
-        )
-
-        else -> emptyList()
-    }
-
 fun getReadableNameFromIdentifier(
     metadata: DocumentMetaData?,
     userLocale: Locale,
@@ -129,87 +100,6 @@ fun getReadableNameFromIdentifier(
             userLocale = userLocale,
             fallback = identifier
         )
-}
-
-fun parseKeyValueUi(
-    item: Any,
-    groupIdentifierKey: String,
-    keyIdentifier: String = "",
-    resourceProvider: ResourceProvider,
-    allItems: StringBuilder,
-) {
-    when (item) {
-
-        is Map<*, *> -> {
-            item.forEach { (key, value) ->
-                safeLet(key as? String, value) { key, value ->
-                    parseKeyValueUi(
-                        item = value,
-                        groupIdentifierKey = groupIdentifierKey,
-                        keyIdentifier = key,
-                        resourceProvider = resourceProvider,
-                        allItems = allItems
-                    )
-                }
-            }
-        }
-
-        is Collection<*> -> {
-            item.forEach { value ->
-                value?.let {
-                    parseKeyValueUi(
-                        item = it,
-                        groupIdentifierKey = groupIdentifierKey,
-                        resourceProvider = resourceProvider,
-                        allItems = allItems
-                    )
-                }
-            }
-        }
-
-        is Boolean -> {
-            allItems.append(
-                resourceProvider.getString(
-                    if (item) {
-                        R.string.document_details_boolean_item_true_readable_value
-                    } else {
-                        R.string.document_details_boolean_item_false_readable_value
-                    }
-                )
-            )
-        }
-
-        else -> {
-            val date: String? = (item as? String)?.toDateFormatted()
-            allItems.append(
-                when {
-
-                    keyIsGender(groupIdentifierKey) -> {
-                        getGenderValue(item.toString(), resourceProvider)
-                    }
-
-                    keyIsUserPseudonym(groupIdentifierKey) -> {
-                        item.toString().decodeFromBase64()
-                    }
-
-                    date != null && keyIdentifier.isEmpty() -> {
-                        date
-                    }
-
-                    else -> {
-                        val jsonString = item.toString()
-                        if (keyIdentifier.isEmpty()) {
-                            jsonString
-                        } else {
-                            val lineChange = if (allItems.isNotEmpty()) "\n" else ""
-                            val value = jsonString.toDateFormatted() ?: jsonString
-                            "$lineChange$keyIdentifier: $value"
-                        }
-                    }
-                }
-            )
-        }
-    }
 }
 
 fun createKeyValue(
@@ -318,12 +208,6 @@ val IssuedDocument.docNamespace: NameSpace?
         is SdJwtVcData -> null
     }
 
-fun generateUniqueFieldId(
-    elementIdentifier: ElementIdentifier,
-    documentId: DocumentId,
-): String =
-    elementIdentifier + documentId
-
 private fun insertPath(
     tree: List<DomainClaim>,
     path: ClaimPath,
@@ -346,9 +230,7 @@ private fun insertPath(
             it.identifier == key
         }
 
-    val isRequired = getMandatoryFields(
-        documentIdentifier = documentIdentifier
-    ).contains(currentClaim?.identifier) //TODO change this, it should be its path, e.g. "address.formatted"
+    val isRequired = false
 
     return if (path.value.size == 1) {
         // Leaf node (Primitive)
