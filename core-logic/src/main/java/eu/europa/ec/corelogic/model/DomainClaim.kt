@@ -23,20 +23,19 @@ sealed class DomainClaim {
     abstract val displayTitle: String
     abstract val path: ClaimPath
 
-    sealed class Claim : DomainClaim() {
-        data class Group(
-            override val key: ElementIdentifier,
-            override val displayTitle: String,
-            override val path: ClaimPath,
-            val items: List<DomainClaim>,
-        ) : Claim()
+    data class Group(
+        override val key: ElementIdentifier,
+        override val displayTitle: String,
+        override val path: ClaimPath,
+        val items: List<DomainClaim>,
+    ) : DomainClaim()
 
-        data class Primitive(
-            override val key: ElementIdentifier,
-            override val displayTitle: String,
-            override val path: ClaimPath,
-            val value: String,
-            val isRequired: Boolean,
-        ) : Claim()
-    }
+    data class Primitive(
+        override val key: ElementIdentifier,
+        override val displayTitle: String,
+        override val path: ClaimPath,
+        val value: String,
+        val isRequired: Boolean,
+    ) : DomainClaim()
+
 }

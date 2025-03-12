@@ -21,7 +21,7 @@ fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListI
 
 fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListItem {
     return when (this) {
-        is DomainClaim.Claim.Group -> {
+        is DomainClaim.Group -> {
             ExpandableListItem.NestedListItemData(
                 header = ListItemData(
                     itemId = path.toId(docId),
@@ -35,7 +35,7 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
             )
         }
 
-        is DomainClaim.Claim.Primitive -> {
+        is DomainClaim.Primitive -> {
             ExpandableListItem.SingleListItemData(
                 header = ListItemData(
                     itemId = path.toId(docId),
@@ -56,7 +56,7 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
 
 fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItem {
     return when (this) {
-        is DomainClaim.Claim.Group -> {
+        is DomainClaim.Group -> {
             ExpandableListItem.NestedListItemData(
                 header = ListItemData(
                     itemId = path.toId(docId),
@@ -68,7 +68,7 @@ fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItem {
             )
         }
 
-        is DomainClaim.Claim.Primitive -> {
+        is DomainClaim.Primitive -> {
             ExpandableListItem.SingleListItemData(
                 header = ListItemData(
                     itemId = path.toId(docId),

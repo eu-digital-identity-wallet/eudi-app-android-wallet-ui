@@ -280,7 +280,7 @@ class TestDocumentDetailsInteractor {
                             documentExpirationDateFormatted = mockedFormattedExpirationDate,
                             documentHasExpired = mockedDocumentHasExpired,
                             documentClaims = listOf(
-                                DomainClaim.Claim.Primitive(
+                                DomainClaim.Primitive(
                                     key = "no_data_item",
                                     value = "0",
                                     displayTitle = "no_data_item",

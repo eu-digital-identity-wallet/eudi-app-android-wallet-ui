@@ -243,7 +243,7 @@ private fun insertPath(
             }
 
             val newEntry = if (formattedValue.size == 1) {
-                DomainClaim.Claim.Primitive(
+                DomainClaim.Primitive(
                     key = currentClaim.identifier,
                     displayTitle = getReadableNameFromIdentifier(
                         metadata = metadata,
@@ -255,7 +255,7 @@ private fun insertPath(
                     value = formattedValue.first().second //TODO
                 )
             } else {
-                DomainClaim.Claim.Group(
+                DomainClaim.Group(
                     key = currentClaim.identifier,
                     displayTitle = getReadableNameFromIdentifier(
                         metadata = metadata,
@@ -264,7 +264,7 @@ private fun insertPath(
                     ),
                     path = disclosurePath,
                     items = formattedValue.map {
-                        DomainClaim.Claim.Primitive(
+                        DomainClaim.Primitive(
                             key = it.first,
                             displayTitle = getReadableNameFromIdentifier(
                                 metadata = metadata,
@@ -286,7 +286,7 @@ private fun insertPath(
         // Group node (Intermediate)
         val childClaims =
             (claims.find { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
-        val updatedNode = if (existingNode is DomainClaim.Claim.Group) {
+        val updatedNode = if (existingNode is DomainClaim.Group) {
             // Update existing group by inserting the next path segment into its items
             existingNode.copy(
                 items = insertPath(
@@ -300,7 +300,7 @@ private fun insertPath(
             )
         } else {
             // Create a new group and insert the next path segment
-            DomainClaim.Claim.Group(
+            DomainClaim.Group(
                 key = currentClaim?.identifier ?: key,
                 displayTitle = getReadableNameFromIdentifier(
                     metadata = metadata,
