@@ -110,20 +110,22 @@ class PresentationSuccessInteractorImpl(
                         selectedDomainClaim.toExpandableListItems(docId = documentId)
                     }
 
-                    val selectedDocumentUi = ExpandableListItem.NestedListItemData(
-                        header = ListItemData(
-                            itemId = documentId,
-                            mainContentData = ListItemMainContentData.Text(text = document.name),
-                            supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = AppIcons.KeyboardArrowDown
-                            )
-                        ),
-                        nestedItems = selectedClaimsUi,
-                        isExpanded = false,
-                    )
+                    if (selectedClaimsUi.isNotEmpty()) {
+                        val selectedDocumentUi = ExpandableListItem.NestedListItemData(
+                            header = ListItemData(
+                                itemId = documentId,
+                                mainContentData = ListItemMainContentData.Text(text = document.name),
+                                supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
+                                trailingContentData = ListItemTrailingContentData.Icon(
+                                    iconData = AppIcons.KeyboardArrowDown
+                                )
+                            ),
+                            nestedItems = selectedClaimsUi,
+                            isExpanded = false,
+                        )
 
-                    documentsUi.add(selectedDocumentUi)
+                        documentsUi.add(selectedDocumentUi)
+                    }
                 } catch (_: Exception) {
                 }
             }
