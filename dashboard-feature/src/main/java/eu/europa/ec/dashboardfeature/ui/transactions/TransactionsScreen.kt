@@ -123,7 +123,7 @@ typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.S
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionsScreen(
+internal fun TransactionsScreen(
     navHostController: NavController,
     viewModel: TransactionsViewModel,
     onDashboardEventSent: (DashboardEvent) -> Unit,
@@ -179,7 +179,7 @@ fun TransactionsScreen(
                     TransactionsSheetContent(
                         sheetContent = state.sheetContent,
                         filtersUi = state.filtersUi,
-                        filterDateRangeSelectionData = state.filterDateRangeSelectionData,
+                        snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionData,
                         sortOrder = state.sortOrder,
                         onEventSent = {
                             viewModel.setEvent(it)
@@ -467,7 +467,7 @@ private fun TopBar(
 private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
     filtersUi: List<ExpandableListItemData>,
-    filterDateRangeSelectionData: FilterDateRangeSelectionData,
+    snapshotFilterDateRangeData: FilterDateRangeSelectionData,
     sortOrder: DualSelectorButtonData,
     onEventSent: (event: Event) -> Unit,
 ) {
@@ -545,14 +545,14 @@ private fun TransactionsSheetContent(
                                                     FiltersDatePickerField(
                                                         dialogType = DatePickerDialogType.SelectStartDate,
                                                         selectDateLabel = stringResource(R.string.transactions_screen_filters_date_from),
-                                                        displayedSelectedDate = filterDateRangeSelectionData.displayedStartDate,
+                                                        displayedSelectedDate = snapshotFilterDateRangeData.displayedStartDate,
                                                         onEventSent = onEventSent
                                                     )
 
                                                     FiltersDatePickerField(
                                                         dialogType = DatePickerDialogType.SelectEndDate,
                                                         selectDateLabel = stringResource(R.string.transactions_screen_filters_date_to),
-                                                        displayedSelectedDate = filterDateRangeSelectionData.displayedEndDate,
+                                                        displayedSelectedDate = snapshotFilterDateRangeData.displayedEndDate,
                                                         onEventSent = onEventSent
                                                     )
                                                 }

@@ -45,7 +45,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class State(
+internal data class State(
     val isLoading: Boolean,
     val error: ContentErrorConfig? = null,
 
@@ -61,12 +61,14 @@ data class State(
     val filtersUi: List<ExpandableListItemData> = emptyList(),
     val shouldRevertFilterChanges: Boolean = true,
     val sortOrder: DualSelectorButtonData,
-
-    val filterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
     val isDatePickerDialogVisible: Boolean = false,
     val datePickerDialogConfig: DatePickerDialogConfig = DatePickerDialogConfig(
         type = DatePickerDialogType.SelectStartDate
-    )
+    ),
+    // persisted selected date range applied for filtering
+    val filterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
+    // temporary date range data while filter bottom sheet is open to collect date picker dialog selections
+    val snapshotFilterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -126,7 +128,7 @@ data class DatePickerDialogConfig(
     val upperLimit: LocalDate? = LocalDate.MAX
 )
 
-data class FilterDateRangeSelectionData(
+internal data class FilterDateRangeSelectionData(
     val startDate: Long? = null,
     val endDate: Long? = null
 ) {
@@ -138,7 +140,7 @@ data class FilterDateRangeSelectionData(
 }
 
 @KoinViewModel
-class TransactionsViewModel(
+internal class TransactionsViewModel(
     private val interactor: TransactionsInteractor,
     private val resourceProvider: ResourceProvider
 ) : MviViewModel<Event, State, Effect>() {
@@ -208,11 +210,12 @@ class TransactionsViewModel(
             }
 
             is Event.ShowDatePicker -> {
-                val givenStartDate = viewState.value.filterDateRangeSelectionData.startDate
-                val minStartDate = givenStartDate?.toLocalDate() ?: LocalDate.MIN
+                val appliedStartDate =
+                    viewState.value.snapshotFilterDateRangeSelectionData.startDate
+                val minStartDate = appliedStartDate?.toLocalDate() ?: LocalDate.MIN
 
-                val givenEndDate = viewState.value.filterDateRangeSelectionData.endDate
-                val maxEndDate = givenEndDate?.toLocalDate() ?: LocalDate.MAX
+                val appliedEndDate = viewState.value.snapshotFilterDateRangeSelectionData.endDate
+                val maxEndDate = appliedEndDate?.toLocalDate() ?: LocalDate.MAX
 
                 val datePickerDialogConfig = when (event.datePickerType) {
                     DatePickerDialogType.SelectStartDate -> DatePickerDialogConfig(
@@ -231,42 +234,36 @@ class TransactionsViewModel(
             }
 
             is Event.OnStartDateSelected -> {
-                val datePickerSelectionData = viewState.value.filterDateRangeSelectionData.copy(
-                    startDate = event.selectedDateMillis,
-                )
+                val datePickerSelectionData =
+                    viewState.value.snapshotFilterDateRangeSelectionData.copy(
+                        startDate = event.selectedDateMillis,
+                    )
                 setState {
                     copy(
-                        filterDateRangeSelectionData = datePickerSelectionData
+                        snapshotFilterDateRangeSelectionData = datePickerSelectionData
                     )
                 }
 
-                viewState.value.filterDateRangeSelectionData.let {
-                    updateDateRangeFilter(
-                        filterId = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
-                        groupId = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
-                        lowerLimit = it.startDate ?: Long.MIN_VALUE,
-                        upperLimit = it.endDate ?: Long.MAX_VALUE,
-                    )
-                }
+                updateDateRangeFilter(
+                    lowerLimit = datePickerSelectionData.startDate ?: Long.MIN_VALUE,
+                    upperLimit = datePickerSelectionData.endDate ?: Long.MAX_VALUE,
+                )
             }
 
             is Event.OnEndDateSelected -> {
-                val datePickerSelectionData = viewState.value.filterDateRangeSelectionData.copy(
-                    endDate = event.selectedDateMillis
-                )
+                val datePickerSelectionData =
+                    viewState.value.snapshotFilterDateRangeSelectionData.copy(
+                        endDate = event.selectedDateMillis,
+                    )
                 setState {
                     copy(
-                        filterDateRangeSelectionData = datePickerSelectionData
+                        snapshotFilterDateRangeSelectionData = datePickerSelectionData
                     )
                 }
-                viewState.value.filterDateRangeSelectionData.let {
-                    updateDateRangeFilter(
-                        filterId = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
-                        groupId = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
-                        lowerLimit = it.startDate ?: Long.MIN_VALUE,
-                        upperLimit = it.endDate ?: Long.MAX_VALUE,
-                    )
-                }
+                updateDateRangeFilter(
+                    lowerLimit = datePickerSelectionData.startDate ?: Long.MIN_VALUE,
+                    upperLimit = datePickerSelectionData.endDate ?: Long.MAX_VALUE,
+                )
             }
 
             is Event.DatePickerDialog.UpdateDialogState -> {
@@ -281,7 +278,13 @@ class TransactionsViewModel(
         interactor.applyFilters()
         setState {
             copy(
-                shouldRevertFilterChanges = false
+                shouldRevertFilterChanges = false,
+                filterDateRangeSelectionData = filterDateRangeSelectionData.copy(
+                    startDate = snapshotFilterDateRangeSelectionData.startDate,
+                    endDate = snapshotFilterDateRangeSelectionData.endDate
+                ),
+                snapshotFilterDateRangeSelectionData = FilterDateRangeSelectionData()
+                // reset snapshot to default date range (with null long values)
             )
         }
         hideBottomSheet()
@@ -292,10 +295,9 @@ class TransactionsViewModel(
         interactor.updateFilter(filterGroupId = groupId, filterId = filterId)
     }
 
-
     private fun updateDateRangeFilter(
-        filterId: String,
-        groupId: String,
+        groupId: String = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
+        filterId: String = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
         lowerLimit: Long,
         upperLimit: Long
     ) {
@@ -315,7 +317,12 @@ class TransactionsViewModel(
             && viewState.value.shouldRevertFilterChanges
         ) {
             interactor.revertFilters()
-            setState { copy(shouldRevertFilterChanges = true) }
+            setState {
+                copy(
+                    shouldRevertFilterChanges = true,
+                    snapshotFilterDateRangeSelectionData = FilterDateRangeSelectionData()
+                )
+            }
         }
 
         setState {
@@ -325,13 +332,17 @@ class TransactionsViewModel(
 
     private fun resetFilters() {
         setState {
-            copy(filterDateRangeSelectionData = FilterDateRangeSelectionData())
+            copy(
+                filterDateRangeSelectionData = FilterDateRangeSelectionData()
+            )
         }
         interactor.resetFilters()
         hideBottomSheet()
     }
 
-    private fun showDatePickerDialog(datePickerDialogConfig: DatePickerDialogConfig) {
+    private fun showDatePickerDialog(
+        datePickerDialogConfig: DatePickerDialogConfig
+    ) {
         setState {
             copy(datePickerDialogConfig = datePickerDialogConfig)
         }
@@ -342,7 +353,10 @@ class TransactionsViewModel(
 
     private fun showBottomSheet(sheetContent: TransactionsBottomSheetContent) {
         setState {
-            copy(sheetContent = sheetContent)
+            copy(
+                sheetContent = sheetContent,
+                snapshotFilterDateRangeSelectionData = filterDateRangeSelectionData
+            )
         }
         setEffect {
             Effect.ShowBottomSheet
