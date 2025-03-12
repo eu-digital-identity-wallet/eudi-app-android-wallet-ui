@@ -22,7 +22,6 @@ import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.model.ClaimPath
-import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
@@ -215,7 +214,6 @@ private fun insertPath(
     claims: List<DocumentClaim>,
     metadata: DocumentMetaData?,
     resourceProvider: ResourceProvider,
-    documentIdentifier: DocumentIdentifier,
 ): List<DomainClaim> {
     if (path.value.isEmpty()) return tree
 
@@ -226,7 +224,7 @@ private fun insertPath(
     val existingNode = tree.find { it.key == key }
 
     val currentClaim: DocumentClaim? = claims
-        .firstOrNull {
+        .find {
             it.identifier == key
         }
 
@@ -234,68 +232,55 @@ private fun insertPath(
 
     return if (path.value.size == 1) {
         // Leaf node (Primitive)
-        if (existingNode == null) {
-            if (currentClaim == null) {
-                tree + DomainClaim.NotAvailableClaim(
-                    key = key,
+        if (existingNode == null && currentClaim != null) {
+            val formattedValue = buildList {
+                createKeyValue(
+                    item = currentClaim.value!!,
+                    groupKey = currentClaim.identifier,
+                    resourceProvider = resourceProvider,
+                    allItems = this
+                )
+            }
+
+            val newEntry = if (formattedValue.size == 1) {
+                DomainClaim.Claim.Primitive(
+                    key = currentClaim.identifier,
                     displayTitle = getReadableNameFromIdentifier(
                         metadata = metadata,
                         userLocale = userLocale,
-                        identifier = key
+                        identifier = currentClaim.identifier
                     ),
                     path = disclosurePath,
-                    value = resourceProvider.getString(R.string.request_element_identifier_not_available)
+                    isRequired = isRequired,
+                    value = formattedValue.first().second //TODO
                 )
             } else {
-                val formattedValue = buildList {
-                    createKeyValue(
-                        item = currentClaim.value!!,
-                        groupKey = currentClaim.identifier,
-                        resourceProvider = resourceProvider,
-                        allItems = this
-                    )
-                }
-
-                val newEntry = if (formattedValue.size == 1) {
-                    DomainClaim.Claim.Primitive(
-                        key = currentClaim.identifier,
-                        displayTitle = getReadableNameFromIdentifier(
-                            metadata = metadata,
-                            userLocale = userLocale,
-                            identifier = currentClaim.identifier
-                        ),
-                        path = disclosurePath,
-                        isRequired = isRequired,
-                        value = formattedValue.first().second //TODO
-                    )
-                } else {
-                    DomainClaim.Claim.Group(
-                        key = currentClaim.identifier,
-                        displayTitle = getReadableNameFromIdentifier(
-                            metadata = metadata,
-                            userLocale = userLocale,
-                            identifier = currentClaim.identifier
-                        ),
-                        path = disclosurePath,
-                        items = formattedValue.map {
-                            DomainClaim.Claim.Primitive(
-                                key = it.first,
-                                displayTitle = getReadableNameFromIdentifier(
-                                    metadata = metadata,
-                                    userLocale = userLocale,
-                                    identifier = it.first
-                                ),
-                                path = disclosurePath,
-                                isRequired = isRequired,
-                                value = it.second //TODO
-                            )
-                        }
-                    )
-                }
-                tree + newEntry
+                DomainClaim.Claim.Group(
+                    key = currentClaim.identifier,
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = userLocale,
+                        identifier = currentClaim.identifier
+                    ),
+                    path = disclosurePath,
+                    items = formattedValue.map {
+                        DomainClaim.Claim.Primitive(
+                            key = it.first,
+                            displayTitle = getReadableNameFromIdentifier(
+                                metadata = metadata,
+                                userLocale = userLocale,
+                                identifier = it.first
+                            ),
+                            path = disclosurePath,
+                            isRequired = isRequired,
+                            value = it.second //TODO
+                        )
+                    }
+                )
             }
+            tree + newEntry
         } else {
-            tree // Already exists, return unchanged
+            tree // Already exists or not available, return unchanged
         }
     } else {
         // Group node (Intermediate)
@@ -311,7 +296,6 @@ private fun insertPath(
                     claims = childClaims,
                     metadata = metadata,
                     resourceProvider = resourceProvider,
-                    documentIdentifier = documentIdentifier,
                 )
             )
         } else {
@@ -331,7 +315,6 @@ private fun insertPath(
                     claims = childClaims,
                     metadata = metadata,
                     resourceProvider = resourceProvider,
-                    documentIdentifier = documentIdentifier,
                 )
             )
         }
@@ -346,7 +329,6 @@ fun transformPathsToDomainClaims(
     claims: List<DocumentClaim>,
     metadata: DocumentMetaData?,
     resourceProvider: ResourceProvider,
-    documentIdentifier: DocumentIdentifier,
 ): List<DomainClaim> {
     return paths.fold<ClaimPath, List<DomainClaim>>(emptyList()) { acc, path ->
         insertPath(
@@ -356,7 +338,6 @@ fun transformPathsToDomainClaims(
             claims = claims,
             metadata = metadata,
             resourceProvider = resourceProvider,
-            documentIdentifier = documentIdentifier,
         )
     }.sortedBy { it.displayTitle.lowercase() }
 }

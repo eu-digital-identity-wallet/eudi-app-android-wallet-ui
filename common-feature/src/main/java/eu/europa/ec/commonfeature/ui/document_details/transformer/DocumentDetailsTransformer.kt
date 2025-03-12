@@ -26,7 +26,6 @@ import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 object DocumentDetailsTransformer {
@@ -44,7 +43,6 @@ object DocumentDetailsTransformer {
             claims = document.data.claims,
             metadata = document.metadata,
             resourceProvider = resourceProvider,
-            documentIdentifier = document.toDocumentIdentifier()
         )
 
         val docHasExpired = documentHasExpired(document.validUntil)
@@ -59,12 +57,9 @@ object DocumentDetailsTransformer {
         )
     }
 
-    fun DocumentDetailsDomain.transformToDocumentDetailsUi(resourceProvider: ResourceProvider): DocumentDetailsUi {
+    fun DocumentDetailsDomain.transformToDocumentDetailsUi(): DocumentDetailsUi {
         val documentDetailsUi = this.documentClaims.map { domainClaim ->
-            domainClaim.toExpandableListItems(
-                docId = this.docId,
-                notAvailableId = resourceProvider.getString(R.string.document_details_element_identifier_not_available_id)
-            )
+            domainClaim.toExpandableListItems(docId = this.docId)
         }
         return DocumentDetailsUi(
             documentId = this.docId,

@@ -22,7 +22,6 @@ import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.extension.toClaimPaths
-import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -97,14 +96,10 @@ class DocumentIssuanceSuccessInteractorImpl(
                         claims = document.data.claims,
                         metadata = document.metadata,
                         resourceProvider = resourceProvider,
-                        documentIdentifier = document.toDocumentIdentifier()
                     )
 
                     val claimsUi = domainClaims.map { selectedDomainClaim ->
-                        selectedDomainClaim.toExpandableListItems(
-                            docId = documentId,
-                            notAvailableId = resourceProvider.getString(R.string.document_success_element_identifier_not_available_id)
-                        )
+                        selectedDomainClaim.toExpandableListItems(docId = documentId)
                     }
 
                     val documentUi = ExpandableListItem.NestedListItemData(

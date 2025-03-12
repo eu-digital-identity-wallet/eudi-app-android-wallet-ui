@@ -39,11 +39,4 @@ sealed class DomainClaim {
             val isRequired: Boolean,
         ) : Claim()
     }
-
-    data class NotAvailableClaim(
-        override val key: ElementIdentifier,
-        override val displayTitle: String,
-        override val path: ClaimPath,
-        val value: String,
-    ) : DomainClaim()
 }

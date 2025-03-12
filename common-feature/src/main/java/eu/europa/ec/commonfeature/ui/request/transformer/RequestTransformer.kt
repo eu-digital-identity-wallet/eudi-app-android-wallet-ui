@@ -24,7 +24,6 @@ import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.DomainClaim
-import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
@@ -64,7 +63,6 @@ object RequestTransformer {
                 claims = storageDocument.data.claims,
                 metadata = storageDocument.metadata,
                 resourceProvider = resourceProvider,
-                documentIdentifier = storageDocument.toDocumentIdentifier(),
             )
 
             if (requestedItemsPaths.isNotEmpty()) {
@@ -106,7 +104,7 @@ object RequestTransformer {
                             iconData = AppIcons.KeyboardArrowDown
                         )
                     ),
-                    nestedItems = it.toSelectiveExpandableListItems(resourceProvider.getString(R.string.request_element_identifier_not_available_id)),
+                    nestedItems = it.toSelectiveExpandableListItems(),
                     isExpanded = false,
                 ),
             )

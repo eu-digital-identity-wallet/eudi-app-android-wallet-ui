@@ -220,7 +220,7 @@ class DocumentDetailsViewModel(
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
                         val documentDetailsUi = response.documentDetailsDomain
-                            .transformToDocumentDetailsUi(resourceProvider)
+                            .transformToDocumentDetailsUi()
 
                         setState {
                             copy(

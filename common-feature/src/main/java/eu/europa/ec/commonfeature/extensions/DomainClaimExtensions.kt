@@ -13,16 +13,13 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
-fun DocumentPayloadDomain.toSelectiveExpandableListItems(notAvailableId: String): List<ExpandableListItem> {
+fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListItem> {
     return this.docClaimsDomain.map { claim ->
-        claim.toSelectiveExpandableListItems(docId, notAvailableId)
+        claim.toSelectiveExpandableListItems(docId)
     }
 }
 
-fun DomainClaim.toSelectiveExpandableListItems(
-    docId: String,
-    notAvailableId: String
-): ExpandableListItem {
+fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListItem {
     return when (this) {
         is DomainClaim.Claim.Group -> {
             ExpandableListItem.NestedListItemData(
@@ -32,10 +29,7 @@ fun DomainClaim.toSelectiveExpandableListItems(
                     trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowDown)
                 ),
                 nestedItems = items.map {
-                    it.toSelectiveExpandableListItems(
-                        docId,
-                        notAvailableId
-                    )
+                    it.toSelectiveExpandableListItems(docId)
                 },
                 isExpanded = false
             )
@@ -57,26 +51,10 @@ fun DomainClaim.toSelectiveExpandableListItems(
                 )
             )
         }
-
-        is DomainClaim.NotAvailableClaim -> {
-            ExpandableListItem.SingleListItemData(
-                header = ListItemData(
-                    itemId = notAvailableId,
-                    mainContentData = ListItemMainContentData.Text(text = value),
-                    overlineText = displayTitle,
-                    trailingContentData = ListItemTrailingContentData.Checkbox(
-                        checkboxData = CheckboxData(
-                            isChecked = false,
-                            enabled = false
-                        )
-                    )
-                )
-            )
-        }
     }
 }
 
-fun DomainClaim.toExpandableListItems(docId: String, notAvailableId: String): ExpandableListItem {
+fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItem {
     return when (this) {
         is DomainClaim.Claim.Group -> {
             ExpandableListItem.NestedListItemData(
@@ -85,7 +63,7 @@ fun DomainClaim.toExpandableListItems(docId: String, notAvailableId: String): Ex
                     mainContentData = ListItemMainContentData.Text(text = displayTitle),
                     trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowDown)
                 ),
-                nestedItems = items.map { it.toExpandableListItems(docId, notAvailableId) },
+                nestedItems = items.map { it.toExpandableListItems(docId = docId) },
                 isExpanded = false
             )
         }
@@ -97,16 +75,6 @@ fun DomainClaim.toExpandableListItems(docId: String, notAvailableId: String): Ex
                     mainContentData = calculateMainContent(key, value),
                     overlineText = displayTitle,
                     leadingContentData = calculateLeadingContent(key, value),
-                )
-            )
-        }
-
-        is DomainClaim.NotAvailableClaim -> {
-            ExpandableListItem.SingleListItemData(
-                header = ListItemData(
-                    itemId = notAvailableId,
-                    mainContentData = ListItemMainContentData.Text(text = value),
-                    overlineText = displayTitle,
                 )
             )
         }

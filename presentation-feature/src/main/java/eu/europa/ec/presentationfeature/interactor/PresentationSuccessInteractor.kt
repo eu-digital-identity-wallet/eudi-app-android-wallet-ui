@@ -24,7 +24,6 @@ import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.extension.toClaimPaths
-import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -105,14 +104,10 @@ class PresentationSuccessInteractorImpl(
                         claims = selectedClaims,
                         metadata = document.metadata,
                         resourceProvider = resourceProvider,
-                        documentIdentifier = document.toDocumentIdentifier()
                     )
 
                     val selectedClaimsUi = selectedDomainClaims.map { selectedDomainClaim ->
-                        selectedDomainClaim.toExpandableListItems(
-                            docId = documentId,
-                            notAvailableId = resourceProvider.getString(R.string.request_element_identifier_not_available_id)
-                        )
+                        selectedDomainClaim.toExpandableListItems(docId = documentId)
                     }
 
                     val selectedDocumentUi = ExpandableListItem.NestedListItemData(
