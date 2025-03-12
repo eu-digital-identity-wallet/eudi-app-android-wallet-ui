@@ -24,6 +24,7 @@ import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.extension.changeNestedItems
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -218,41 +219,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         }
 
         updateData(updatedItems, viewState.value.allowShare)
-    }
-
-    //TODO should this be in other place? i.e. should it be used elsewhere?
-    private fun List<ExpandableListItem>.changeNestedItems(id: String): List<ExpandableListItem> {
-        return this.map { nestedItem ->
-            when (nestedItem) {
-                is ExpandableListItem.NestedListItemData -> {
-                    if (nestedItem.header.itemId == id) {
-                        val newIsExpanded = !nestedItem.isExpanded
-                        val newCollapsed = nestedItem.header.copy(
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = if (newIsExpanded) {
-                                    AppIcons.KeyboardArrowUp
-                                } else {
-                                    AppIcons.KeyboardArrowDown
-                                }
-                            )
-                        )
-
-                        nestedItem.copy(
-                            header = newCollapsed,
-                            isExpanded = newIsExpanded
-                        )
-                    } else {
-                        nestedItem.copy(
-                            nestedItems = nestedItem.nestedItems.changeNestedItems(id)
-                        )
-                    }
-                }
-
-                is ExpandableListItem.SingleListItemData -> {
-                    nestedItem
-                }
-            }
-        }
     }
 
     private fun updateUserIdentificationItem(id: String) {
