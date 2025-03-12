@@ -21,6 +21,7 @@ import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
+import eu.europa.ec.corelogic.extension.removeEmptyGroups
 import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -339,5 +340,6 @@ fun transformPathsToDomainClaims(
             metadata = metadata,
             resourceProvider = resourceProvider,
         )
-    }.sortedBy { it.displayTitle.lowercase() }
+    }.removeEmptyGroups()
+        .sortedBy { it.displayTitle.lowercase() }
 }

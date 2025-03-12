@@ -37,5 +37,4 @@ sealed class DomainClaim {
         val value: String,
         val isRequired: Boolean,
     ) : DomainClaim()
-
 }
