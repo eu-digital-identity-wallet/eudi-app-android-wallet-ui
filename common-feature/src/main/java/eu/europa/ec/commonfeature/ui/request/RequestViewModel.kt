@@ -24,7 +24,8 @@ import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.config.NavigationType
-import eu.europa.ec.uilogic.extension.changeNestedItems
+import eu.europa.ec.uilogic.extension.toggleCheckboxState
+import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -213,7 +214,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
             requestDocument.copy(
                 headerUi = newHeader.copy(
-                    nestedItems = newHeader.nestedItems.changeNestedItems(id),
+                    nestedItems = newHeader.nestedItems.toggleExpansionState(id),
                 )
             )
         }
@@ -228,7 +229,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             requestDocument.copy(
                 headerUi = requestDocument.headerUi.copy(
                     nestedItems = requestDocument.headerUi.nestedItems.map {
-                        it.changeSingleItem(id)
+                        it.toggleCheckboxState(id)
                     }
                 )
             )
@@ -242,38 +243,6 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             updatedItems = updatedItems,
             allowShare = hasAtLeastOneFieldSelected
         )
-    }
-
-    //TODO should this be in other place? i.e. should it be used elsewhere?
-    private fun ExpandableListItem.changeSingleItem(id: String): ExpandableListItem {
-        return when (this) {
-            is ExpandableListItem.NestedListItemData -> {
-                this.copy(
-                    nestedItems = nestedItems.map {
-                        it.changeSingleItem(id)
-                    }
-                )
-            }
-
-            is ExpandableListItem.SingleListItemData -> {
-                if (this.header.itemId == id && this.header.trailingContentData is ListItemTrailingContentData.Checkbox) {
-                    val currentItem =
-                        this.header.trailingContentData as ListItemTrailingContentData.Checkbox
-                    this.copy(
-                        header = this.header.copy(
-                            trailingContentData = ListItemTrailingContentData.Checkbox(
-                                checkboxData = currentItem.checkboxData.copy(
-                                    isChecked = !currentItem.checkboxData.isChecked
-                                )
-                            )
-                        )
-                    )
-                } else {
-                    this
-                }
-            }
-        }
-
     }
 
     private fun showBottomSheet(sheetContent: RequestBottomSheetContent) {

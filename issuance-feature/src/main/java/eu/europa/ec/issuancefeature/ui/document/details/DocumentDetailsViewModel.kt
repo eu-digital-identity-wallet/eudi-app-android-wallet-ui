@@ -29,7 +29,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
-import eu.europa.ec.uilogic.extension.changeNestedItems
+import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -255,7 +255,7 @@ class DocumentDetailsViewModel(
     private fun onClaimClicked(itemId: String) {
         val currentItem = viewState.value.documentDetailsUi
         if (currentItem != null) {
-            val updatedDocumentClaims = currentItem.documentClaims.changeNestedItems(itemId)
+            val updatedDocumentClaims = currentItem.documentClaims.toggleExpansionState(itemId)
 
             setState {
                 copy(

@@ -25,7 +25,7 @@ import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
-import eu.europa.ec.uilogic.extension.changeNestedItems
+import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -121,7 +121,7 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
             successDocument.copy(
                 header = newHeader.header,
                 isExpanded = newHeader.isExpanded,
-                nestedItems = newHeader.nestedItems.changeNestedItems(id)
+                nestedItems = newHeader.nestedItems.toggleExpansionState(id)
             )
         }
 

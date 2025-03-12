@@ -21,6 +21,50 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 /**
+ * Recursively traverses an [ExpandableListItem] and toggles the `isChecked` state of a checkbox if the item with the given [id] is found.
+ *
+ * If the current item is a [ExpandableListItem.NestedListItemData], it recursively calls this method on its `nestedItems`.
+ *
+ * If the current item is a [ExpandableListItem.SingleListItemData] and its header's `itemId` matches the provided [id],
+ * and if the `trailingContentData` is a [ListItemTrailingContentData.Checkbox], then the `isChecked` property of the checkbox data is toggled.
+ *
+ * If the [id] is not found or if it is found in a `SingleListItemData` that does not have a checkbox as trailing content, the original item is returned.
+ *
+ * @param id The ID of the item whose checkbox's `isChecked` state should be toggled.
+ * @return A new [ExpandableListItem] with the specified item's checkbox state toggled, or the original item if the [id] is not found or if the element is not a checkbox.
+ */
+fun ExpandableListItem.toggleCheckboxState(id: String): ExpandableListItem {
+    return when (this) {
+        is ExpandableListItem.NestedListItemData -> {
+            this.copy(
+                nestedItems = nestedItems.map {
+                    it.toggleCheckboxState(id)
+                }
+            )
+        }
+
+        is ExpandableListItem.SingleListItemData -> {
+            if (this.header.itemId == id && this.header.trailingContentData is ListItemTrailingContentData.Checkbox) {
+                val currentItem =
+                    this.header.trailingContentData as ListItemTrailingContentData.Checkbox
+
+                this.copy(
+                    header = this.header.copy(
+                        trailingContentData = currentItem.copy(
+                            checkboxData = currentItem.checkboxData.copy(
+                                isChecked = !currentItem.checkboxData.isChecked
+                            )
+                        )
+                    )
+                )
+            } else {
+                this
+            }
+        }
+    }
+}
+
+/**
  * Recursively traverses a list of [ExpandableListItem] and toggles the expanded state of the item with the given [id].
  *
  * If an [ExpandableListItem.NestedListItemData] has a header with a matching [id], its `isExpanded` property is toggled,
@@ -33,14 +77,17 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
  * @return A new list of [ExpandableListItem] with the specified item's expanded state toggled, and the arrow updated.
  *  Returns a new list, where the elements where not modified remain untouched.
  */
-fun List<ExpandableListItem>.changeNestedItems(id: String): List<ExpandableListItem> {
+fun List<ExpandableListItem>.toggleExpansionState(id: String): List<ExpandableListItem> {
     return this.map { nestedItem ->
         when (nestedItem) {
             is ExpandableListItem.NestedListItemData -> {
-                if (nestedItem.header.itemId == id) {
+                if (nestedItem.header.itemId == id && nestedItem.header.trailingContentData is ListItemTrailingContentData.Icon) {
+                    val currentTrailingContent =
+                        nestedItem.header.trailingContentData as ListItemTrailingContentData.Icon
+
                     val newIsExpanded = !nestedItem.isExpanded
                     val newCollapsed = nestedItem.header.copy(
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        trailingContentData = currentTrailingContent.copy(
                             iconData = if (newIsExpanded) {
                                 AppIcons.KeyboardArrowUp
                             } else {
@@ -55,7 +102,7 @@ fun List<ExpandableListItem>.changeNestedItems(id: String): List<ExpandableListI
                     )
                 } else {
                     nestedItem.copy(
-                        nestedItems = nestedItem.nestedItems.changeNestedItems(id)
+                        nestedItems = nestedItem.nestedItems.toggleExpansionState(id)
                     )
                 }
             }
