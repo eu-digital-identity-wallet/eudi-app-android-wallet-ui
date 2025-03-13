@@ -23,7 +23,6 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.model.ClaimPath
-import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
@@ -52,36 +51,31 @@ object RequestTransformer {
             val storageDocument =
                 storageDocuments.first { it.id == requestDocument.documentId }
 
-            val requestDocumentClaims = mutableListOf<DomainClaim>()
             val requestedItemsPaths = requestDocument.requestedItems.keys
                 .map {
                     it.toClaimPath()
                 }
 
-            val domains = transformPathsToDomainClaims(
+            val domainClaims = transformPathsToDomainClaims(
                 paths = requestedItemsPaths,
                 claims = storageDocument.data.claims,
                 metadata = storageDocument.metadata,
                 resourceProvider = resourceProvider,
             )
 
-            if (requestedItemsPaths.isNotEmpty()) {
-                requestDocumentClaims.addAll(
-                    domains
+            if (domainClaims.isNotEmpty()) {
+                resultList.add(
+                    DocumentPayloadDomain(
+                        docName = storageDocument.name,
+                        docId = storageDocument.id,
+                        domainDocFormat = DomainDocumentFormat.getFormat(
+                            format = storageDocument.format,
+                            namespace = storageDocument.docNamespace
+                        ),
+                        docClaimsDomain = domainClaims
+                    )
                 )
             }
-
-            resultList.add(
-                DocumentPayloadDomain(
-                    docName = storageDocument.name,
-                    docId = storageDocument.id,
-                    domainDocFormat = DomainDocumentFormat.getFormat(
-                        format = storageDocument.format,
-                        namespace = storageDocument.docNamespace
-                    ),
-                    docClaimsDomain = requestDocumentClaims
-                )
-            )
         }
 
         resultList

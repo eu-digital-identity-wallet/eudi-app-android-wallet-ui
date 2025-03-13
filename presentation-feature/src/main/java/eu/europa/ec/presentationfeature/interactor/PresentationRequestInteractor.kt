@@ -74,20 +74,27 @@ class PresentationRequestInteractorImpl(
                             verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
-                        val requestDataUi = RequestTransformer.transformToDomainItems(
+                        val documentsDomain = RequestTransformer.transformToDomainItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
                             resourceProvider = resourceProvider
-                        )
+                        ).getOrThrow()
 
-                        PresentationRequestInteractorPartialState.Success(
-                            verifierName = response.verifierName,
-                            verifierIsTrusted = response.verifierIsTrusted,
-                            requestDocuments = RequestTransformer.transformToUiItems(
-                                documentsDomain = requestDataUi.getOrThrow(),
-                                resourceProvider = resourceProvider,
+                        if (documentsDomain.isNotEmpty()) {
+                            PresentationRequestInteractorPartialState.Success(
+                                verifierName = response.verifierName,
+                                verifierIsTrusted = response.verifierIsTrusted,
+                                requestDocuments = RequestTransformer.transformToUiItems(
+                                    documentsDomain = documentsDomain,
+                                    resourceProvider = resourceProvider,
+                                )
                             )
-                        )
+                        } else {
+                            PresentationRequestInteractorPartialState.NoData(
+                                verifierName = response.verifierName,
+                                verifierIsTrusted = response.verifierIsTrusted,
+                            )
+                        }
                     }
                 }
 
