@@ -356,6 +356,111 @@ This section describes configuring the application to interact with services uti
     }
     ```
 
+### Method 2: Global SSL Trust Configuration
+
+> ⚠️ **NOTE**: If you encounter SSL handshake errors with Method 1, this alternative approach applies SSL trust settings globally.
+
+1. Create a new utility class `SslDevUtility.kt` in the `src/main/java/eu/europa/ec/corelogic/util` package:
+
+    ```Kotlin
+    package eu.europa.ec.corelogic.util
+
+    import android.annotation.SuppressLint
+    import android.util.Log
+    import java.security.SecureRandom
+    import javax.net.ssl.HostnameVerifier
+    import javax.net.ssl.HttpsURLConnection
+    import javax.net.ssl.SSLContext
+    import javax.net.ssl.TrustManager
+    import javax.net.ssl.X509TrustManager
+
+    /**
+     * Utility for configuring SSL trust settings in development environments.
+     * WARNING: Do not use in production as it disables certificate validation.
+     */
+    object SslDevUtility {
+        private const val TAG = "SslDevUtility"
+        private var isInitialized = false
+
+        /**
+         * Configures the JVM to trust all SSL certificates.
+         * This should only be used in development/testing environments.
+         */
+        @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
+        fun trustAllCertificates() {
+            if (isInitialized) {
+                Log.d(TAG, "SSL trust already initialized")
+                return
+            }
+
+            try {
+                val trustAllCerts = arrayOf<TrustManager>(
+                    object : X509TrustManager {
+                        override fun checkClientTrusted(
+                            chain: Array<java.security.cert.X509Certificate>,
+                            authType: String
+                        ) {
+                            Log.d(TAG, "checkClientTrusted called for: $authType")
+                        }
+
+                        override fun checkServerTrusted(
+                            chain: Array<java.security.cert.X509Certificate>,
+                            authType: String
+                        ) {
+                            Log.d(TAG, "checkServerTrusted called for: $authType")
+                        }
+
+                        override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
+                            return arrayOf()
+                        }
+                    }
+                )
+
+                // Create and initialize SSL context
+                val sslContext = SSLContext.getInstance("TLS")
+                sslContext.init(null, trustAllCerts, SecureRandom())
+                
+                // Set as default SSL socket factory
+                HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+                
+                // Set default hostname verifier to accept all hostnames
+                HttpsURLConnection.setDefaultHostnameVerifier { _, _ -> true }
+                
+                isInitialized = true
+                Log.d(TAG, "SSL trust configuration initialized successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set up SSL trust configuration", e)
+            }
+        }
+    }
+    ```
+
+2. Update the `provideEudiWallet` function in `LogicCoreModule.kt` to use this utility in debug builds only:
+
+    ```Kotlin
+    @Single
+    fun provideEudiWallet(
+        context: Context,
+        walletCoreConfig: WalletCoreConfig,
+        walletCoreLogController: WalletCoreLogController
+    ): EudiWallet {
+        // Only enable SSL trust bypass in DEBUG builds
+        if (BuildConfig.DEBUG) {
+            SslDevUtility.trustAllCertificates()
+        }
+
+        return EudiWallet(context, walletCoreConfig.config) {
+            withLogger(walletCoreLogController)
+        }
+    }
+    ```
+This approach offers:
+- Works with all HTTP connections in the app, not just those created by Ktor
+- Only enabled in debug builds, ensuring it never affects production
+- Applies the trust settings at the JVM level
+
+You may choose either method based on your specific requirements
+
 ## Theme configuration
 
 The application allows the configuration of:
