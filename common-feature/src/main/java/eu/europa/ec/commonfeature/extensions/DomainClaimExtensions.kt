@@ -40,7 +40,7 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
                 header = ListItemData(
                     itemId = path.toId(docId),
                     mainContentData = calculateMainContent(key, value),
-                    overlineText = displayTitle,
+                    overlineText = calculateOverlineText(displayTitle),
                     leadingContentData = calculateLeadingContent(key, value),
                     trailingContentData = ListItemTrailingContentData.Checkbox(
                         checkboxData = CheckboxData(
@@ -73,7 +73,7 @@ fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItem {
                 header = ListItemData(
                     itemId = path.toId(docId),
                     mainContentData = calculateMainContent(key, value),
-                    overlineText = displayTitle,
+                    overlineText = calculateOverlineText(displayTitle),
                     leadingContentData = calculateLeadingContent(key, value),
                 )
             )
@@ -107,6 +107,12 @@ private fun calculateLeadingContent(
     return if (keyIsPortrait(key = key)) {
         ListItemLeadingContentData.UserImage(userBase64Image = value)
     } else {
+        null
+    }
+}
+
+private fun calculateOverlineText(displayTitle: String): String? {
+    return displayTitle.ifBlank {
         null
     }
 }
