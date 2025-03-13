@@ -449,9 +449,11 @@ internal class TransactionsViewModel(
                     is TransactionInteractorFilterPartialState.FilterApplyResult -> {
                         val transactionsUiWithCategoryItemsSorted =
                             result.transactions.sortCategoryItems(result.sortOrder)
+                        val isDefaultFilterDateRangeSelected =
+                            with(viewState.value.filterDateRangeSelectionData) { startDate == null && endDate == null }
                         setState {
                             copy(
-                                isFilteringActive = !result.allDefaultFiltersAreSelected,
+                                isFilteringActive = !result.allDefaultFiltersAreSelected || !isDefaultFilterDateRangeSelected,
                                 transactionsUi = transactionsUiWithCategoryItemsSorted,
                                 showNoResultsFound = result.transactions.isEmpty(),
                                 filtersUi = result.filters,

@@ -449,7 +449,7 @@ class TransactionsInteractorImpl(
                         id = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
                         name = resourceProvider.getString(R.string.transactions_screen_filter_by_date_period),
                         selected = true,
-                        isDefault = false,
+                        isDefault = true,
                         startDateTime = Instant.MIN,
                         endDateTime = Instant.MAX,
                         filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
@@ -480,13 +480,13 @@ class TransactionsInteractorImpl(
                         id = TransactionFilterIds.FILTER_BY_STATUS_COMPLETE,
                         name = resourceProvider.getString(R.string.transaction_status_completed),
                         selected = true,
-                        isDefault = false,
+                        isDefault = true,
                     ),
                     FilterItem(
                         id = TransactionFilterIds.FILTER_BY_STATUS_FAILED,
                         name = resourceProvider.getString(R.string.transaction_status_failed),
                         selected = true,
-                        isDefault = false,
+                        isDefault = true,
                     )
                 ),
                 filterableAction = FilterMultipleAction<TransactionsFilterableAttributes> { attributes, filter ->
@@ -547,22 +547,23 @@ class TransactionsInteractorImpl(
             FilterGroup.ReversibleSingleSelectionFilterGroup(
                 id = TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNING_GROUP_ID,
                 name = "Filter by Document Signing",
-                filters = listOf(FilterItem(
-                    id = TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNED,
-                    name = "Signed Documents",
-                    selected = false,
-                    isDefault = false,
+                filters = listOf(
+                    FilterItem(
+                        id = TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNED,
+                        name = "Signed Documents",
+                        selected = false,
+                        isDefault = false,
 
-                    filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
-                        when (filter.id) {
-                            TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNED -> {
-                                attributes.documentName != null
+                        filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
+                            when (filter.id) {
+                                TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNED -> {
+                                    attributes.documentName != null
+                                }
+
+                                else -> true
                             }
-
-                            else -> true
                         }
-                    }
-                )),
+                    )),
             )
         )
     )
@@ -660,7 +661,7 @@ class TransactionsInteractorImpl(
                             id = TransactionFilterIds.FILTER_BY_RELYING_PARTY_WITHOUT_NAME,
                             name = "Transactions without relying party",
                             selected = true,
-                            isDefault = false,
+                            isDefault = true,
                         )
                     }
                 }
@@ -677,14 +678,14 @@ class TransactionsInteractorImpl(
                             id = "${attestationName}_$index",
                             name = attestationName,
                             selected = true,
-                            isDefault = false,
+                            isDefault = true,
                         )
                     } else {
                         FilterItem(
                             id = TransactionFilterIds.FILTER_BY_ATTESTATION_WITHOUT_NAME,
                             name = "Transactions without attestation name",
                             selected = true,
-                            isDefault = false,
+                            isDefault = true,
                         )
                     }
                 }
