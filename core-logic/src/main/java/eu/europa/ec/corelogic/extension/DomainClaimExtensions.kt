@@ -46,3 +46,27 @@ fun List<DomainClaim>.removeEmptyGroups(): List<DomainClaim> {
         }
     }
 }
+
+/**
+ * Recursively sorts a list of [DomainClaim] based on the provided [selector].
+ *
+ * This function sorts the list of [DomainClaim] by applying the [selector] to each element.
+ * For [DomainClaim.Group] elements, it recursively sorts the `items` within the group
+ * before sorting the list at the current level. [DomainClaim.Primitive] elements are left unchanged.
+ *
+ * @param selector A function that extracts a [Comparable] value from a [DomainClaim] for sorting purposes.
+ * @return A new list of [DomainClaim] sorted recursively according to the [selector].
+ */
+fun <T : Comparable<T>> List<DomainClaim>.sortRecursivelyBy(
+    selector: (DomainClaim) -> T
+): List<DomainClaim> {
+    return this.map { claim ->
+        when (claim) {
+            is DomainClaim.Group -> claim.copy(
+                items = claim.items.sortRecursivelyBy(selector) // Recursively sort children
+            )
+
+            is DomainClaim.Primitive -> claim // Primitives stay unchanged
+        }
+    }.sortedBy(selector) // Apply sorting at the current level
+}

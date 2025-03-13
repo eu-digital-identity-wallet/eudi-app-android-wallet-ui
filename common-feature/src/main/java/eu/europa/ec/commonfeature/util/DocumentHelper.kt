@@ -23,6 +23,7 @@ import eu.europa.ec.commonfeature.model.ClaimFormatter
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.extension.removeEmptyGroups
+import eu.europa.ec.corelogic.extension.sortRecursivelyBy
 import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -288,7 +289,7 @@ private fun insertPath(
             // Update existing group by inserting the next path segment into its items
             existingNode.copy(
                 items = insertPath(
-                    tree = existingNode.items.sortedBy { it.displayTitle.lowercase() },
+                    tree = existingNode.items,
                     path = ClaimPath(path.value.drop(1)),
                     disclosurePath = disclosurePath,
                     claims = childClaims,
@@ -328,7 +329,7 @@ fun transformPathsToDomainClaims(
     metadata: DocumentMetaData?,
     resourceProvider: ResourceProvider,
 ): List<DomainClaim> {
-    return paths.fold<ClaimPath, List<DomainClaim>>(emptyList()) { acc, path ->
+    return paths.fold<ClaimPath, List<DomainClaim>>(initial = emptyList()) { acc, path ->
         insertPath(
             tree = acc,
             path = path,
@@ -338,5 +339,7 @@ fun transformPathsToDomainClaims(
             resourceProvider = resourceProvider,
         )
     }.removeEmptyGroups()
-        .sortedBy { it.displayTitle.lowercase() }
+        .sortRecursivelyBy {
+            it.displayTitle.lowercase()
+        }
 }
