@@ -19,6 +19,7 @@ package eu.europa.ec.commonfeature.util
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
+import eu.europa.ec.commonfeature.model.ClaimFormatter
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.extension.removeEmptyGroups
@@ -107,7 +108,7 @@ fun createKeyValue(
     groupKey: String,
     childKey: String = "",
     resourceProvider: ResourceProvider,
-    allItems: MutableList<Pair<String, String>>,
+    allItems: ClaimFormatter,
 ) {
     when (item) {
 
@@ -140,8 +141,8 @@ fun createKeyValue(
 
         is Boolean -> {
             allItems.add(
-                childKey
-                        to resourceProvider.getString(
+                key = childKey,
+                value = resourceProvider.getString(
                     if (item) {
                         R.string.document_details_boolean_item_true_readable_value
                     } else {
@@ -154,30 +155,30 @@ fun createKeyValue(
         else -> {
             val date: String? = (item as? String)?.toDateFormatted()
             allItems.add(
-                childKey to
-                        when {
+                key = childKey,
+                value = when {
 
-                            keyIsGender(groupKey) -> {
-                                getGenderValue(item.toString(), resourceProvider)
-                            }
+                    keyIsGender(groupKey) -> {
+                        getGenderValue(item.toString(), resourceProvider)
+                    }
 
-                            keyIsUserPseudonym(groupKey) -> {
-                                item.toString().decodeFromBase64()
-                            }
+                    keyIsUserPseudonym(groupKey) -> {
+                        item.toString().decodeFromBase64()
+                    }
 
-                            date != null && childKey.isEmpty() -> {
-                                date
-                            }
+                    date != null && childKey.isEmpty() -> {
+                        date
+                    }
 
-                            else -> {
-                                val jsonString = item.toString()
-                                if (childKey.isEmpty()) {
-                                    jsonString
-                                } else {
-                                    jsonString.toDateFormatted() ?: jsonString
-                                }
-                            }
+                    else -> {
+                        val jsonString = item.toString()
+                        if (childKey.isEmpty()) {
+                            jsonString
+                        } else {
+                            jsonString.toDateFormatted() ?: jsonString
                         }
+                    }
+                }
             )
         }
     }
@@ -224,24 +225,20 @@ private fun insertPath(
 
     val existingNode = tree.find { it.key == key }
 
-    val currentClaim: DocumentClaim? = claims
-        .find {
-            it.identifier == key
-        }
-
+    val currentClaim: DocumentClaim? = claims.find { it.identifier == key }
     val isRequired = false
 
     return if (path.value.size == 1) {
         // Leaf node (Primitive)
         if (existingNode == null && currentClaim != null) {
-            val formattedValue = buildList {
-                createKeyValue(
-                    item = currentClaim.value!!,
-                    groupKey = currentClaim.identifier,
-                    resourceProvider = resourceProvider,
-                    allItems = this
-                )
-            }
+            val claimFormatter = ClaimFormatter(items = mutableListOf())
+            createKeyValue(
+                item = currentClaim.value!!,
+                groupKey = currentClaim.identifier,
+                resourceProvider = resourceProvider,
+                allItems = claimFormatter,
+            )
+            val formattedValue = claimFormatter.toList()
 
             val newEntry = if (formattedValue.size == 1) {
                 DomainClaim.Primitive(
@@ -253,7 +250,7 @@ private fun insertPath(
                     ),
                     path = disclosurePath,
                     isRequired = isRequired,
-                    value = formattedValue.first().second //TODO
+                    value = formattedValue.first().value
                 )
             } else {
                 DomainClaim.Group(
@@ -266,15 +263,15 @@ private fun insertPath(
                     path = disclosurePath,
                     items = formattedValue.map {
                         DomainClaim.Primitive(
-                            key = it.first,
+                            key = it.key,
                             displayTitle = getReadableNameFromIdentifier(
                                 metadata = metadata,
                                 userLocale = userLocale,
-                                identifier = it.first
+                                identifier = it.key
                             ),
                             path = disclosurePath,
                             isRequired = isRequired,
-                            value = it.second //TODO
+                            value = it.value
                         )
                     }
                 )
