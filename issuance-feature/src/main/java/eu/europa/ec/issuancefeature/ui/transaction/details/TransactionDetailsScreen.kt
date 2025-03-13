@@ -34,6 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,29 +45,40 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.model.TransactionDetailsDataSharedHolder
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
+import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapCard
+import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.component.wrap.WrapText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
 @Composable
-fun TransactionDetailsScreen(
+internal fun TransactionDetailsScreen(
     navController: NavController,
     viewModel: TransactionDetailsViewModel,
 ) {
@@ -79,6 +93,7 @@ fun TransactionDetailsScreen(
         ) { paddingValues ->
         Content(
             state = state,
+            onEventSend = { viewModel.setEvent(it) },
             effectFlow = viewModel.effect,
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController)
@@ -95,6 +110,7 @@ fun TransactionDetailsScreen(
 @Composable
 private fun Content(
     state: State,
+    onEventSend: (Event) -> Unit,
     effectFlow: Flow<Effect>,
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues,
@@ -119,9 +135,30 @@ private fun Content(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
         ) {
             TransactionDetailsCard(
                 item = state.transactionDetailsCardData,
+            )
+
+            if (state.transactionDetailsUi?.transactionDetailsDataSharedList?.isNotEmpty() == true) {
+                DataSharedDetails(
+                    sectionTitle = state.detailsDataSharedSection,
+                    dataSharedList = state.transactionDetailsUi.transactionDetailsDataSharedList,
+                    onEventSend = onEventSend
+                )
+            }
+
+            if (state.transactionDetailsUi?.transactionDetailsDataSigned?.isNotEmpty() == true) {
+                DataSignedDetails(
+                    sectionTitle = state.detailsDataSignedSection,
+                    dataSignedList = state.transactionDetailsUi.transactionDetailsDataSigned,
+                    onEventSend = onEventSend
+                )
+            }
+
+            ButtonsSection(
+                onEventSend = onEventSend
             )
         }
     }
@@ -154,12 +191,12 @@ private fun handleNavigationEffect(
 }
 
 data class TransactionDetailsCardData(
+    val transactionItemLabel: String,
     val transactionType: String,
-    val transactionItem: String,
     val relyingPartyName: String,
     val transactionDate: String,
     val status: String,
-    val isVerified: Boolean = true
+    val isVerified: Boolean = false
 )
 
 @Composable
@@ -194,7 +231,7 @@ private fun TransactionDetailsCard(
                     horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
                 ) {
                     Text(
-                        text = item.transactionItem,
+                        text = item.transactionItemLabel,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Normal
@@ -231,6 +268,7 @@ private fun TransactionDetailsCard(
                 modifier = Modifier,
                 buttonConfig = ButtonConfig(
                     type = ButtonType.PRIMARY,
+                    shape = RoundedCornerShape(SIZE_SMALL.dp),
                     onClick = {}
                 ),
                 buttonColors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.success)
@@ -238,6 +276,7 @@ private fun TransactionDetailsCard(
                 Text(
                     text = item.status,
                     style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.surfaceContainerLowest
                 )
             }
@@ -246,18 +285,165 @@ private fun TransactionDetailsCard(
 }
 
 @Composable
-@ThemeModePreviews
-fun PreviewTransactionDetailsCard() {
-    val transactionDetailsCardData = TransactionDetailsCardData(
-        transactionType = "e-Signature",
-        transactionItem = "File_signed.pdf",
-        relyingPartyName = "SecureSign Inc.",
-        transactionDate = "21 January 2025",
-        status = "Completed",
-        isVerified = true
-    )
+private fun DataSharedDetails(
+    sectionTitle: String,
+    onEventSend: (Event) -> Unit,
+    dataSharedList: List<TransactionDetailsDataSharedHolder>
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        SectionTitle(
+            modifier = Modifier.fillMaxWidth(),
+            text = sectionTitle,
+        )
 
-    TransactionDetailsCard(
-        item = transactionDetailsCardData,
-    )
+        dataSharedList.forEach { sharedAttestation ->
+            var expandCollapseState by remember { mutableStateOf(false) }
+            WrapExpandableListItem(
+                data = ExpandableListItemData(
+                    collapsed = ListItemData(
+                        itemId = "0",
+                        mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+                        supportingText = "View details",
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowUp.takeIf { expandCollapseState }
+                                ?: AppIcons.KeyboardArrowDown
+                        )
+                    ),
+                    expanded = sharedAttestation.transactionDetailsDataShared
+                ),
+                onItemClick = { _ -> },
+                modifier = Modifier.fillMaxWidth(),
+                isExpanded = expandCollapseState,
+                onExpandedChange = {
+                    expandCollapseState = !expandCollapseState
+                    onEventSend(
+                        Event.ExpandOrCollapseTransactionDataSharedItem(itemId = "id")
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun DataSignedDetails(
+    sectionTitle: String,
+    onEventSend: (Event) -> Unit,
+    dataSignedList: List<ListItemData>
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        SectionTitle(
+            modifier = Modifier.fillMaxWidth(),
+            text = sectionTitle,
+        )
+        var expandCollapseState by remember { mutableStateOf(false) }
+        WrapExpandableListItem(
+            data = ExpandableListItemData(
+                collapsed = ListItemData(
+                    itemId = "0",
+                    mainContentData = ListItemMainContentData.Text(text = "Signature details"),
+                    supportingText = "View details",
+                    trailingContentData = ListItemTrailingContentData.Icon(
+                        iconData = AppIcons.KeyboardArrowUp.takeIf { expandCollapseState }
+                            ?: AppIcons.KeyboardArrowDown
+                    )
+                ),
+                expanded = dataSignedList
+            ),
+            onItemClick = { item -> },
+            modifier = Modifier.fillMaxWidth(),
+            isExpanded = expandCollapseState,
+            onExpandedChange = {
+                expandCollapseState = !expandCollapseState
+                onEventSend(
+                    Event.ExpandOrCollapseTransactionDataSharedItem(itemId = "id")
+                )
+            }
+        )
+    }
+}
+
+@Composable
+private fun ButtonsSection(onEventSend: (Event) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                bottom = SPACING_MEDIUM.dp
+            ),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)) {
+            WrapText(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.transaction_details_request_deletion_message),
+                textConfig = TextConfig(
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+            )
+            WrapButton(
+                modifier = Modifier.fillMaxWidth(),
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.SECONDARY,
+                    onClick = { onEventSend(Event.PrimaryButtonPressed) },
+                    isWarning = true,
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.transaction_details_request_deletion_button),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)) {
+            WrapText(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.transaction_details_report_transaction_message),
+                textConfig = TextConfig(
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+            )
+            WrapButton(
+                modifier = Modifier.fillMaxWidth(),
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.SECONDARY,
+                    onClick = { onEventSend(Event.SecondaryButtonPressed) },
+                    isWarning = false,
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.transaction_details_report_transaction_button),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    }
+}
+
+@Composable
+@ThemeModePreviews
+private fun PreviewTransactionDetailsCard() {
+    PreviewTheme {
+        val transactionDetailsCardData = TransactionDetailsCardData(
+            transactionType = "e-Signature/data sharing",
+            transactionItemLabel = "File_signed.pdf or \nAttestation label",
+            relyingPartyName = "SecureSign Inc.",
+            transactionDate = "21 January 2025",
+            status = "Completed",
+            isVerified = true
+        )
+
+        TransactionDetailsCard(
+            item = transactionDetailsCardData,
+        )
+    }
 }

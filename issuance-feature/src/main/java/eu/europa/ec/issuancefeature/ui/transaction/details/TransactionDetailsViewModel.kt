@@ -17,8 +17,11 @@
 package eu.europa.ec.issuancefeature.ui.transaction.details
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.model.TransactionDetailsUi
+import eu.europa.ec.commonfeature.ui.transaction_details.transformer.transformToTransactionDetailsUi
 import eu.europa.ec.issuancefeature.interactor.document.TransactionDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.document.TransactionDetailsInteractorPartialState
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -30,9 +33,12 @@ import org.koin.android.annotation.KoinViewModel
 
 data class State(
     val isLoading: Boolean = false,
-    val error: ContentErrorConfig? = null,
     val title: String? = null,
+    val error: ContentErrorConfig? = null,
+    val detailsDataSharedSection: String,
+    val detailsDataSignedSection: String,
     val transactionDetailsCardData: TransactionDetailsCardData,
+    val transactionDetailsUi: TransactionDetailsUi? = null,
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -41,6 +47,9 @@ sealed class Event : ViewEvent {
     data object PrimaryButtonPressed : Event()
     data object SecondaryButtonPressed : Event()
     data object DismissError : Event()
+
+    data class ExpandOrCollapseTransactionDataSharedItem(val itemId: String) : Event()
+    data object ExpandOrCollapseTransactionDataSignedItem : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -55,15 +64,17 @@ sealed class Effect : ViewSideEffect {
 }
 
 @KoinViewModel
-class TransactionDetailsViewModel(
+internal class TransactionDetailsViewModel(
     private val transactionDetailsInteractor: TransactionDetailsInteractor,
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        title = "Transaction Information",
+        title = resourceProvider.getString(R.string.transaction_details_screen_title),
+        detailsDataSharedSection = resourceProvider.getString(R.string.transaction_details_data_shared),
+        detailsDataSignedSection = resourceProvider.getString(R.string.transaction_details_data_signed),
         transactionDetailsCardData = TransactionDetailsCardData(
             transactionType = "e-Signature",
-            transactionItem = "File_signed.pdf",
+            transactionItemLabel = "File_signed.pdf",
             relyingPartyName = "Central issuer",
             transactionDate = "16 February 2024",
             status = "Completed",
@@ -83,8 +94,10 @@ class TransactionDetailsViewModel(
                 setEffect { Effect.Navigation.Pop }
             }
 
-            is Event.PrimaryButtonPressed -> TODO()
-            is Event.SecondaryButtonPressed -> TODO()
+            is Event.PrimaryButtonPressed -> {}
+            is Event.SecondaryButtonPressed -> {}
+            is Event.ExpandOrCollapseTransactionDataSharedItem -> {}
+            is Event.ExpandOrCollapseTransactionDataSignedItem -> {}
         }
     }
 
@@ -104,11 +117,14 @@ class TransactionDetailsViewModel(
                     is TransactionDetailsInteractorPartialState.Success -> {
                         val detailsUiTitle =
                             response.detailsTitle
+                        val transactionDetailsUi =
+                            response.transactionDetailsDomain.transformToTransactionDetailsUi()
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
                                 title = detailsUiTitle,
+                                transactionDetailsUi = transactionDetailsUi
                             )
                         }
                     }

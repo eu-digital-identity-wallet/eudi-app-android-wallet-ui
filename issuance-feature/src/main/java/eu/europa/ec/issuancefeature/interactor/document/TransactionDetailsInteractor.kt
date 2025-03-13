@@ -16,13 +16,17 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
+import eu.europa.ec.commonfeature.ui.transaction_details.domain.TransactionClaimItem
+import eu.europa.ec.commonfeature.ui.transaction_details.domain.TransactionDetailsDomain
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 sealed class TransactionDetailsInteractorPartialState {
     data class Success(
-        val detailsTitle: String
+        val detailsTitle: String,
+        val transactionDetailsDomain: TransactionDetailsDomain,
     ) : TransactionDetailsInteractorPartialState()
 
     data class Failure(val error: String) : TransactionDetailsInteractorPartialState()
@@ -40,7 +44,35 @@ class TransactionDetailsInteractorImpl(
     override fun getTransactionDetails(transactionId: String): Flow<TransactionDetailsInteractorPartialState> {
         return flowOf(
             TransactionDetailsInteractorPartialState.Success(
-                detailsTitle = "Transaction information"
+                detailsTitle = resourceProvider.getString(R.string.transaction_details_screen_title),
+                transactionDetailsDomain = TransactionDetailsDomain(
+                    transactionName = "A transaction name",
+                    transactionId = "randomId",
+                    sharedDataClaimItems = listOf(
+                        TransactionClaimItem(
+                            transactionId = "0",
+                            value = "John",
+                            readableName = "given_name"
+                        ),
+                        TransactionClaimItem(
+                            transactionId = "1",
+                            value = "Doe",
+                            readableName = "family_name"
+                        ),
+                    ),
+                    signedDataClaimItems = listOf(
+                        TransactionClaimItem(
+                            transactionId = "0",
+                            value = "John",
+                            readableName = "given_name"
+                        ),
+                        TransactionClaimItem(
+                            transactionId = "1",
+                            value = "Doe",
+                            readableName = "family_name"
+                        )
+                    )
+                )
             )
         )
     }
