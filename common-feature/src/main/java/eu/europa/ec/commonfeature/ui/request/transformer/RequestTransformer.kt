@@ -136,8 +136,8 @@ object RequestTransformer {
         }
 
         // Convert to the format required by DisclosedDocuments
-        val disclosedDocuments =
-            groupedByDocument.map { (documentPayload, selectedItemsForDocument) ->
+        val disclosedDocuments: List<DisclosedDocument> =
+            groupedByDocument.mapNotNull { (documentPayload, selectedItemsForDocument) ->
 
                 val disclosedItems = selectedItemsForDocument.map { selectedItem ->
 
@@ -155,11 +155,15 @@ object RequestTransformer {
                     }
                 }
 
-                DisclosedDocument(
-                    documentId = documentPayload.docId,
-                    disclosedItems = disclosedItems,
-                    keyUnlockData = null
-                )
+                return@mapNotNull if (disclosedItems.isNotEmpty()) {
+                    DisclosedDocument(
+                        documentId = documentPayload.docId,
+                        disclosedItems = disclosedItems,
+                        keyUnlockData = null
+                    )
+                } else {
+                    null
+                }
             }
 
         return DisclosedDocuments(disclosedDocuments)
