@@ -510,7 +510,7 @@ private fun TransactionsSheetContent(
                                                 )
                                             },
                                             cardExpandedContent = {
-                                                Row(modifier = Modifier.padding(top = SPACING_MEDIUM.dp)) {
+                                                Row(modifier = Modifier.padding(all = SPACING_MEDIUM.dp)) {
                                                     DualSelectorButtons(sortOrder) {
                                                         onEventSent(
                                                             Event.OnSortingOrderChanged(it)

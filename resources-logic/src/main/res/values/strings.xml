@@ -262,20 +262,26 @@
     <string name="transactions_screen_search_no_results_id">noTransactionsId</string>
     <string name="transactions_screen_search_no_results">No transactions match your search. Try changing your search query or filters.</string>
     <string name="transactions_screen_minutes_ago_message">%1$s minutes ago</string>
-    <string name="transactions_screen_filters_ascending">Ascending</string>
-    <string name="transactions_screen_filters_descending">Descending</string>
+    <string name="transactions_document_signing_type_label">s-Signature</string>
+    <string name="transactions_screen_text_field_date_pattern">dd/mm/yyyy</string>
+    <string name="transactions_filter_item_signed_documents">Signed Documents</string>
+
+    <!-- Transactions Screen, Filter labels-->
     <string name="transactions_screen_filters_title">Filter</string>
     <string name="transactions_screen_filters_sort_by">Sort by</string>
-    <string name="transaction_status_completed">Completed</string>
-    <string name="transaction_status_failed">Failed</string>
-    <string name="transactions_screen_filters_date_from">Date from</string>
-    <string name="transactions_screen_filters_date_to">Date to</string>
-    <string name="transactions_screen_filter_by_status">Filter by Status</string>
     <string name="transactions_screen_filter_by_date_period">Filter by Transaction Date Period</string>
+    <string name="transactions_screen_filter_by_status">Filter by Status</string>
     <string name="transactions_screen_filters_filter_by_relying_party">Filter by Relying Party</string>
     <string name="transactions_screen_filters_filter_by_attestation">Filter by Attestation</string>
     <string name="transactions_screen_filters_filter_by_document_signing">Filter by Document Signing</string>
-    <string name="transactions_screen_text_field_date_pattern">dd/mm/yyyy</string>
+    <string name="transactions_screen_filters_ascending">Ascending</string>
+    <string name="transactions_screen_filters_descending">Descending</string>
+    <string name="transactions_screen_filters_date_from">Date from</string>
+    <string name="transactions_screen_filters_date_to">Date to</string>
+    <string name="transactions_filter_item_status_completed">Completed</string>
+    <string name="transactions_filter_item_status_failed">Failed</string>
+    <string name="transactions_filter_item_no_relying_party_transactions">Transactions without relying party</string>
+    <string name="transactions_filter_item_no_attestation_name_transactions">Transactions without attestation name</string>
 
     <!-- Document Sign -->
     <string name="document_sign_title">Sign Document</string>

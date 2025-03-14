@@ -355,7 +355,7 @@ class TransactionsInteractorImpl(
                         ),
                         uiStatus = transaction.status.toTransactionUiStatus(
                             completedStatusString = resourceProvider.getString(
-                                R.string.transaction_status_completed
+                                R.string.transactions_filter_item_status_completed
                             )
                         ),
                         transactionCategory = getTransactionCategory(dateTime = dateTime)
@@ -365,7 +365,7 @@ class TransactionsInteractorImpl(
                             add(transaction.name)
                         },
                         transactionStatus = transaction.status.toTransactionUiStatus(
-                            completedStatusString = resourceProvider.getString(R.string.transaction_status_completed)
+                            completedStatusString = resourceProvider.getString(R.string.transactions_filter_item_status_completed)
                         ),
                         creationDate = transaction.creationDate.toInstantOrNull(),
                         relyingParty = (transaction as? AttestationPresentationTransaction)?.relyingPartyName,
@@ -453,19 +453,10 @@ class TransactionsInteractorImpl(
                         startDateTime = Instant.MIN,
                         endDateTime = Instant.MAX,
                         filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
-                            val creationDate = attributes.creationDate
-                            when {
-                                filter is FilterElement.DateTimeRangeFilterItem && creationDate != null -> {
-                                    creationDate.isAfter(
-                                        filter.startDateTime
-                                    ) && creationDate.isBefore(
-                                        // plus one day to the end date limit to not filter out same day item
-                                        filter.endDateTime.plusOneDay()
-                                    )
-                                }
-
-                                else -> true
-                            }
+                            return@Filter isDateAttributeWithinFilterRange(
+                                filter = filter,
+                                attributes = attributes
+                            )
                         }
                     ),
                 ),
@@ -478,13 +469,13 @@ class TransactionsInteractorImpl(
                 filters = listOf(
                     FilterItem(
                         id = TransactionFilterIds.FILTER_BY_STATUS_COMPLETE,
-                        name = resourceProvider.getString(R.string.transaction_status_completed),
+                        name = resourceProvider.getString(R.string.transactions_filter_item_status_completed),
                         selected = true,
                         isDefault = true,
                     ),
                     FilterItem(
                         id = TransactionFilterIds.FILTER_BY_STATUS_FAILED,
-                        name = resourceProvider.getString(R.string.transaction_status_failed),
+                        name = resourceProvider.getString(R.string.transactions_filter_item_status_failed),
                         selected = true,
                         isDefault = true,
                     )
@@ -546,14 +537,13 @@ class TransactionsInteractorImpl(
             // Filter by Document Signing
             FilterGroup.ReversibleSingleSelectionFilterGroup(
                 id = TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNING_GROUP_ID,
-                name = "Filter by Document Signing",
+                name = resourceProvider.getString(R.string.transactions_screen_filters_filter_by_document_signing),
                 filters = listOf(
                     FilterItem(
                         id = TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNED,
-                        name = "Signed Documents",
+                        name = resourceProvider.getString(R.string.transactions_filter_item_signed_documents),
                         selected = false,
                         isDefault = false,
-
                         filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
                             when (filter.id) {
                                 TransactionFilterIds.FILTER_BY_DOCUMENT_SIGNED -> {
@@ -563,7 +553,8 @@ class TransactionsInteractorImpl(
                                 else -> true
                             }
                         }
-                    )),
+                    )
+                )
             )
         )
     )
@@ -593,7 +584,7 @@ class TransactionsInteractorImpl(
     override fun getTransactionType(transaction: Transaction): String? {
         val type = when (transaction) {
             is AttestationPresentationTransaction -> transaction.attestationType
-            is DocumentSigningTransaction -> "Document Signing"
+            is DocumentSigningTransaction -> resourceProvider.getString(R.string.transactions_document_signing_type_label)
             is OtherTransaction -> null
         }
         return type
@@ -659,7 +650,7 @@ class TransactionsInteractorImpl(
                     } else {
                         FilterItem(
                             id = TransactionFilterIds.FILTER_BY_RELYING_PARTY_WITHOUT_NAME,
-                            name = "Transactions without relying party",
+                            name = resourceProvider.getString(R.string.transactions_filter_item_no_relying_party_transactions),
                             selected = true,
                             isDefault = true,
                         )
@@ -683,12 +674,31 @@ class TransactionsInteractorImpl(
                     } else {
                         FilterItem(
                             id = TransactionFilterIds.FILTER_BY_ATTESTATION_WITHOUT_NAME,
-                            name = "Transactions without attestation name",
+                            name = resourceProvider.getString(R.string.transactions_filter_item_no_attestation_name_transactions),
                             selected = true,
                             isDefault = true,
                         )
                     }
                 }
             }
+    }
+
+    private fun isDateAttributeWithinFilterRange(
+        filter: FilterElement,
+        attributes: TransactionsFilterableAttributes
+    ): Boolean {
+        val creationDate = attributes.creationDate
+        return when {
+            filter is FilterElement.DateTimeRangeFilterItem && creationDate != null -> {
+                creationDate.isAfter(
+                    filter.startDateTime
+                ) && creationDate.isBefore(
+                    // plus one day to the end date limit to not filter out same day item
+                    filter.endDateTime.plusOneDay()
+                )
+            }
+
+            else -> true
+        }
     }
 }
