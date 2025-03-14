@@ -346,74 +346,6 @@ object TestsData {
 
     val mockedBasicMdlUi = mockedFullMdlUi.copy(
         documentClaims = listOf(
-            ExpandableListItem.NestedListItemData(
-                header = ListItemData(
-                    itemId = "",
-                    mainContentData = ListItemMainContentData.Text(
-                        text = "driving_privileges"
-                    ),
-                    trailingContentData = ListItemTrailingContentData.Icon(
-                        iconData = AppIcons.KeyboardArrowDown
-                    )
-                ),
-                nestedItems = listOf(
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
-                            itemId = "",
-                            overlineText = "issue_date",
-                            mainContentData = ListItemMainContentData.Text(
-                                text = "1 Jul 2010"
-                            )
-                        )
-                    ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
-                            itemId = "",
-                            overlineText = "expiry_date",
-                            mainContentData = ListItemMainContentData.Text(
-                                text = "30 Mar 2050"
-                            )
-                        )
-                    ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
-                            itemId = "",
-                            overlineText = "vehicle_category_code",
-                            mainContentData = ListItemMainContentData.Text(
-                                text = "A"
-                            )
-                        )
-                    ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
-                            itemId = "",
-                            overlineText = "issue_date",
-                            mainContentData = ListItemMainContentData.Text(
-                                text = "19 May 2008"
-                            )
-                        )
-                    ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
-                            itemId = "",
-                            overlineText = "expiry_date",
-                            mainContentData = ListItemMainContentData.Text(
-                                text = "30 Mar 2050"
-                            )
-                        )
-                    ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
-                            itemId = "",
-                            overlineText = "vehicle_category_code",
-                            mainContentData = ListItemMainContentData.Text(
-                                text = "B"
-                            )
-                        )
-                    ),
-                ),
-                isExpanded = false
-            ),
             ExpandableListItem.SingleListItemData(
                 header = ListItemData(
                     itemId = "",
@@ -508,7 +440,7 @@ object TestsData {
                 path = ClaimPath(value = listOf("portrait")),
                 isRequired = mockedClaimIsRequired
             ),
-            DomainClaim.Group(
+            /*DomainClaim.Group(
                 key = "driving_privileges",
                 displayTitle = "driving_privileges",
                 path = ClaimPath(value = listOf("driving_privileges")),
@@ -556,7 +488,7 @@ object TestsData {
                         isRequired = mockedClaimIsRequired
                     )
                 )
-            ),
+            ),*/
             DomainClaim.Primitive(
                 key = "signature_usual_mark",
                 value = "SE",
