@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.TransactionDetailsDataSharedHolder
+import eu.europa.ec.commonfeature.model.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
@@ -75,6 +76,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.onEach
 
 @Composable
@@ -356,7 +358,7 @@ private fun DataSignedDetails(
                 ),
                 expanded = dataSignedList
             ),
-            onItemClick = { item -> },
+            onItemClick = { _ -> },
             modifier = Modifier.fillMaxWidth(),
             isExpanded = expandCollapseState,
             onExpandedChange = {
@@ -435,7 +437,7 @@ private fun PreviewTransactionDetailsCard() {
     PreviewTheme {
         val transactionDetailsCardData = TransactionDetailsCardData(
             transactionType = "e-Signature/data sharing",
-            transactionItemLabel = "File_signed.pdf or \nAttestation label",
+            transactionItemLabel = "File_signed.pdf or\nAttestation label",
             relyingPartyName = "SecureSign Inc.",
             transactionDate = "21 January 2025",
             status = "Completed",
@@ -443,7 +445,56 @@ private fun PreviewTransactionDetailsCard() {
         )
 
         TransactionDetailsCard(
-            item = transactionDetailsCardData,
+            item = transactionDetailsCardData
+        )
+    }
+}
+
+@Composable
+@ThemeModePreviews
+private fun ContentPreview() {
+    val items = listOf(
+        ListItemData(
+            itemId = "1",
+            overlineText = "Family name",
+            mainContentData = ListItemMainContentData.Text(text = "Doe"),
+        ),
+        ListItemData(
+            itemId = "2",
+            overlineText = "Given name",
+            mainContentData = ListItemMainContentData.Text(text = "John"),
+        )
+    )
+    val mockedDataSharedList = listOf(
+        TransactionDetailsDataSharedHolder(transactionDetailsDataShared = items),
+        TransactionDetailsDataSharedHolder(transactionDetailsDataShared = items),
+    )
+    val state = State(
+        transactionDetailsCardData = TransactionDetailsCardData(
+            transactionItemLabel = "File_signed.pdf",
+            transactionType = "SecureSign Inc.",
+            transactionDate = "21 January 2025",
+            relyingPartyName = "Verisign",
+            status = "Completed",
+            isVerified = true
+        ),
+        transactionDetailsUi = TransactionDetailsUi(
+            transactionId = "id",
+            transactionName = "Transaction",
+            transactionDetailsDataSharedList = mockedDataSharedList,
+            transactionDetailsDataSigned = items
+        ),
+        detailsDataSharedSection = stringResource(R.string.transaction_details_data_shared),
+        detailsDataSignedSection = stringResource(R.string.transaction_details_data_signed),
+    )
+
+    PreviewTheme {
+        Content(
+            state = state,
+            onEventSend = {},
+            effectFlow = emptyFlow(),
+            onNavigationRequested = {},
+            paddingValues = PaddingValues(SPACING_MEDIUM.dp)
         )
     }
 }
