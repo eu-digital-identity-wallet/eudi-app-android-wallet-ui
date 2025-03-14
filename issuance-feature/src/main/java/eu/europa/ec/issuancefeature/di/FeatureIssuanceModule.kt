@@ -26,8 +26,8 @@ import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessI
 import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractorImpl
-import eu.europa.ec.issuancefeature.interactor.document.TransactionDetailsInteractor
-import eu.europa.ec.issuancefeature.interactor.document.TransactionDetailsInteractorImpl
+import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractor
+import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.uilogic.serializer.UiSerializer

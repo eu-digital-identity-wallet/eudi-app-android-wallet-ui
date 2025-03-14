@@ -19,8 +19,8 @@ package eu.europa.ec.issuancefeature.ui.transaction.details
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.model.TransactionDetailsUi
 import eu.europa.ec.commonfeature.ui.transaction_details.transformer.transformToTransactionDetailsUi
-import eu.europa.ec.issuancefeature.interactor.document.TransactionDetailsInteractor
-import eu.europa.ec.issuancefeature.interactor.document.TransactionDetailsInteractorPartialState
+import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractor
+import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractorPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
