@@ -440,55 +440,6 @@ object TestsData {
                 path = ClaimPath(value = listOf("portrait")),
                 isRequired = mockedClaimIsRequired
             ),
-            /*DomainClaim.Group(
-                key = "driving_privileges",
-                displayTitle = "driving_privileges",
-                path = ClaimPath(value = listOf("driving_privileges")),
-                items = listOf(
-                    DomainClaim.Primitive(
-                        key = "issue_date",
-                        value = "1 Jul 2010",
-                        displayTitle = "issue_date",
-                        path = ClaimPath(value = listOf("driving_privileges")),
-                        isRequired = mockedClaimIsRequired
-                    ),
-                    DomainClaim.Primitive(
-                        key = "expiry_date",
-                        value = "30 Mar 2050",
-                        displayTitle = "expiry_date",
-                        path = ClaimPath(value = listOf("driving_privileges")),
-                        isRequired = mockedClaimIsRequired
-                    ),
-                    DomainClaim.Primitive(
-                        key = "vehicle_category_code",
-                        value = "A",
-                        displayTitle = "vehicle_category_code",
-                        path = ClaimPath(value = listOf("driving_privileges")),
-                        isRequired = mockedClaimIsRequired
-                    ),
-                    DomainClaim.Primitive(
-                        key = "issue_date",
-                        value = "19 May 2008",
-                        displayTitle = "issue_date",
-                        path = ClaimPath(value = listOf("driving_privileges")),
-                        isRequired = mockedClaimIsRequired
-                    ),
-                    DomainClaim.Primitive(
-                        key = "expiry_date",
-                        value = "30 Mar 2050",
-                        displayTitle = "expiry_date",
-                        path = ClaimPath(value = listOf("driving_privileges")),
-                        isRequired = mockedClaimIsRequired
-                    ),
-                    DomainClaim.Primitive(
-                        key = "vehicle_category_code",
-                        value = "B",
-                        displayTitle = "vehicle_category_code",
-                        path = ClaimPath(value = listOf("driving_privileges")),
-                        isRequired = mockedClaimIsRequired
-                    )
-                )
-            ),*/
             DomainClaim.Primitive(
                 key = "signature_usual_mark",
                 value = "SE",
