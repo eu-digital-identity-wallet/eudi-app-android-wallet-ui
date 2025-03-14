@@ -29,6 +29,7 @@ import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterAction
 import eu.europa.ec.businesslogic.validator.model.FilterElement
+import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
@@ -36,10 +37,10 @@ import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.model.TransactionCategory
-import eu.europa.ec.dashboardfeature.model.AttestationPresentationTransaction
-import eu.europa.ec.dashboardfeature.model.DocumentSigningTransaction
-import eu.europa.ec.dashboardfeature.model.OtherTransaction
 import eu.europa.ec.dashboardfeature.model.Transaction
+import eu.europa.ec.dashboardfeature.model.Transaction.AttestationPresentationTransaction
+import eu.europa.ec.dashboardfeature.model.Transaction.DocumentSigningTransaction
+import eu.europa.ec.dashboardfeature.model.Transaction.OtherTransaction
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
@@ -60,8 +61,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDateTime
-
-typealias FilterItem = FilterElement.FilterItem
 
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(

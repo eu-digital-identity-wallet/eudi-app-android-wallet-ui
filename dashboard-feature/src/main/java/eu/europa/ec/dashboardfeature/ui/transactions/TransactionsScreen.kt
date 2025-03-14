@@ -296,7 +296,6 @@ private fun Content(
                 is Effect.CloseBottomSheet -> {
                     coroutineScope.launch {
                         modalBottomSheetState.hide()
-                    }.invokeOnCompletion {
                         if (!modalBottomSheetState.isVisible) {
                             onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
                         }

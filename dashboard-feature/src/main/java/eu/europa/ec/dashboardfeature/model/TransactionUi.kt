@@ -42,28 +42,29 @@ sealed interface Transaction {
     val name: String
     val status: String
     val creationDate: String
+
+    data class DocumentSigningTransaction(
+        override val id: String,
+        override val name: String,
+        override val status: String,
+        override val creationDate: String
+    ) : Transaction
+
+    data class AttestationPresentationTransaction(
+        override val id: String,
+        override val name: String,
+        override val status: String,
+        override val creationDate: String,
+        val issuerName: String,
+        val relyingPartyName: String,
+        val attestationType: String
+    ) : Transaction
+
+    data class OtherTransaction(
+        override val id: String,
+        override val name: String,
+        override val status: String,
+        override val creationDate: String
+    ) : Transaction
 }
 
-data class DocumentSigningTransaction(
-    override val id: String,
-    override val name: String,
-    override val status: String,
-    override val creationDate: String
-) : Transaction
-
-data class AttestationPresentationTransaction(
-    override val id: String,
-    override val name: String,
-    override val status: String,
-    override val creationDate: String,
-    val issuerName: String,
-    val relyingPartyName: String,
-    val attestationType: String
-) : Transaction
-
-data class OtherTransaction(
-    override val id: String,
-    override val name: String,
-    override val status: String,
-    override val creationDate: String
-) : Transaction
