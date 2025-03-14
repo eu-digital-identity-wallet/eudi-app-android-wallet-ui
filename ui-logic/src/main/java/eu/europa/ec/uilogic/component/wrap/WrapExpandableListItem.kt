@@ -20,11 +20,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
@@ -67,7 +69,7 @@ fun WrapExpandableListItem(
     expandedClickableAreas: List<ClickableArea>? = null,
     addDivider: Boolean = true,
     shape: Shape? = null,
-    colors: CardColors? = null,
+    colors: CardColors? = null
 ) {
     WrapExpandableCard(
         modifier = modifier,
@@ -87,6 +89,9 @@ fun WrapExpandableListItem(
                 clickableAreas = collapsedClickableAreas,
                 shape = RectangleShape,
                 colors = colors,
+                mainContentTextStyle = LocalTextStyle.current.copy(
+                    fontWeight = FontWeight.Bold
+                )
             )
         },
         cardExpandedContent = {

@@ -21,7 +21,6 @@ import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
-import eu.europa.ec.corelogic.extension.sortRecursivelyBy
 import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.DomainClaim
@@ -326,7 +325,7 @@ object TestsData {
                 path = ClaimPath(value = listOf("expiry_date")),
                 isRequired = mockedClaimIsRequired
             )
-        ).sortRecursivelyBy {
+        ).sortedBy {
             it.displayTitle.lowercase()
         }
     )
@@ -572,7 +571,7 @@ object TestsData {
                 path = ClaimPath(value = listOf("sex")),
                 isRequired = mockedClaimIsRequired
             )
-        ).sortRecursivelyBy {
+        ).sortedBy {
             it.displayTitle.lowercase()
         }
     )

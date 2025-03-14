@@ -38,6 +38,8 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 fun extractValueFromDocumentOrEmpty(
     document: IssuedDocument,
@@ -103,83 +105,100 @@ fun getReadableNameFromIdentifier(
         )
 }
 
+@OptIn(ExperimentalUuidApi::class)
 fun createKeyValue(
     item: Any,
     groupKey: String,
     childKey: String = "",
-    resourceProvider: ResourceProvider
-): DomainClaim {
-    return when (item) {
+    disclosurePath: ClaimPath,
+    resourceProvider: ResourceProvider,
+    metadata: DocumentMetaData?,
+    allItems: MutableList<DomainClaim>,
+) {
+    when (item) {
 
         is Map<*, *> -> {
-            val formattedChildren = item.mapNotNull { (key, value) ->
+            item.forEach { (key, value) ->
                 safeLet(key as? String, value) { key, value ->
+                    val newGroupKey = if (value is Collection<*>) key else groupKey
+                    val newChildKey = if (value is Collection<*>) "" else key
                     createKeyValue(
                         item = value,
-                        groupKey = groupKey,
-                        childKey = key,
-                        resourceProvider = resourceProvider
+                        groupKey = newGroupKey,
+                        childKey = newChildKey,
+                        disclosurePath = disclosurePath,
+                        resourceProvider = resourceProvider,
+                        metadata = metadata,
+                        allItems = allItems
                     )
                 }
             }
-
-            DomainClaim.Group(
-                key = if (childKey.isEmpty()) groupKey else childKey,
-                displayTitle = childKey.ifEmpty { groupKey },
-                path = ClaimPath(listOf(groupKey, childKey).filter { it.isNotEmpty() }),
-                items = formattedChildren
-            )
         }
 
         is Collection<*> -> {
-            val formattedItems = item.mapIndexedNotNull { index, value ->
+
+            val children: MutableList<DomainClaim> = mutableListOf()
+
+            item.forEach { value ->
                 value?.let {
-                    val newChildKey = groupKey + childKey + index.toString()
                     createKeyValue(
                         item = it,
                         groupKey = groupKey,
-                        childKey = newChildKey,
-                        resourceProvider = resourceProvider
+                        disclosurePath = disclosurePath,
+                        resourceProvider = resourceProvider,
+                        metadata = metadata,
+                        allItems = children
                     )
                 }
             }
 
-            DomainClaim.Group(
-                key = if (childKey.isEmpty()) groupKey else childKey,
-                displayTitle = childKey.ifEmpty { groupKey },
-                path = ClaimPath(listOf(groupKey, childKey).filter { it.isNotEmpty() }),
-                items = formattedItems
-            )
-        }
-
-        is Boolean -> {
-            DomainClaim.Primitive(
-                key = if (childKey.isEmpty()) groupKey else childKey,
-                displayTitle = childKey.ifEmpty { groupKey },
-                path = ClaimPath(listOf(groupKey, childKey).filter { it.isNotEmpty() }),
-                isRequired = false,
-                value = resourceProvider.getString(
-                    if (item) R.string.document_details_boolean_item_true_readable_value
-                    else R.string.document_details_boolean_item_false_readable_value
+            if (childKey.isEmpty()) {
+                allItems.add(
+                    DomainClaim.Group(
+                        key = groupKey,
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = resourceProvider.getLocale(),
+                            identifier = groupKey
+                        ),
+                        path = ClaimPath(listOf(Uuid.random().toString())),
+                        items = children
+                    )
                 )
-            )
+            } else {
+                allItems.addAll(children)
+            }
         }
 
         else -> {
+
             val date: String? = (item as? String)?.toDateFormatted()
+            val isBool = item is Boolean
+
             val formattedValue = when {
                 keyIsGender(groupKey) -> getGenderValue(item.toString(), resourceProvider)
                 keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64()
                 date != null -> date
+                isBool -> resourceProvider.getString(
+                    if (item) R.string.document_details_boolean_item_true_readable_value
+                    else R.string.document_details_boolean_item_false_readable_value
+                )
+
                 else -> item.toString()
             }
 
-            DomainClaim.Primitive(
-                key = if (childKey.isEmpty()) groupKey else childKey,
-                displayTitle = childKey.ifEmpty { groupKey },
-                path = ClaimPath(listOf(groupKey, childKey).filter { it.isNotEmpty() }),
-                isRequired = false,
-                value = formattedValue
+            allItems.add(
+                DomainClaim.Primitive(
+                    key = if (childKey.isEmpty()) groupKey else childKey,
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = resourceProvider.getLocale(),
+                        identifier = childKey.ifEmpty { groupKey }
+                    ),
+                    path = disclosurePath,
+                    isRequired = false,
+                    value = formattedValue
+                )
             )
         }
     }
@@ -227,18 +246,20 @@ private fun insertPath(
     val existingNode = tree.find { it.key == key }
 
     val currentClaim: DocumentClaim? = claims.find { it.identifier == key }
-    val isRequired = false
 
     return if (path.value.size == 1) {
         // Leaf node (Primitive or Nested Structure)
         if (existingNode == null && currentClaim != null) {
-            val formattedClaim = createKeyValue(
+            val claims: MutableList<DomainClaim> = mutableListOf()
+            createKeyValue(
                 item = currentClaim.value!!,
                 groupKey = currentClaim.identifier,
-                resourceProvider = resourceProvider
+                resourceProvider = resourceProvider,
+                metadata = metadata,
+                disclosurePath = disclosurePath,
+                allItems = claims,
             )
-
-            tree + formattedClaim
+            tree + claims
         } else {
             tree // Already exists or not available, return unchanged
         }
