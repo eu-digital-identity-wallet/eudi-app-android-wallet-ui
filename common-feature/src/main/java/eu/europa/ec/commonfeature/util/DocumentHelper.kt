@@ -19,7 +19,6 @@ package eu.europa.ec.commonfeature.util
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
-import eu.europa.ec.commonfeature.model.ClaimFormatter
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.extension.removeEmptyGroups
@@ -108,78 +107,79 @@ fun createKeyValue(
     item: Any,
     groupKey: String,
     childKey: String = "",
-    resourceProvider: ResourceProvider,
-    allItems: ClaimFormatter,
-) {
-    when (item) {
+    resourceProvider: ResourceProvider
+): DomainClaim {
+    return when (item) {
 
         is Map<*, *> -> {
-            item.forEach { (key, value) ->
+            val formattedChildren = item.mapNotNull { (key, value) ->
                 safeLet(key as? String, value) { key, value ->
                     createKeyValue(
                         item = value,
                         groupKey = groupKey,
                         childKey = key,
-                        resourceProvider = resourceProvider,
-                        allItems = allItems
+                        resourceProvider = resourceProvider
                     )
                 }
             }
+
+            DomainClaim.Group(
+                key = if (childKey.isEmpty()) groupKey else childKey,
+                displayTitle = childKey.ifEmpty { groupKey },
+                path = ClaimPath(listOf(groupKey, childKey).filter { it.isNotEmpty() }),
+                items = formattedChildren
+            )
         }
 
         is Collection<*> -> {
-            item.forEach { value ->
+            val formattedItems = item.mapIndexedNotNull { index, value ->
                 value?.let {
+                    val newChildKey = groupKey + childKey + index.toString()
                     createKeyValue(
                         item = it,
                         groupKey = groupKey,
-                        resourceProvider = resourceProvider,
-                        allItems = allItems
+                        childKey = newChildKey,
+                        resourceProvider = resourceProvider
                     )
                 }
             }
+
+            DomainClaim.Group(
+                key = if (childKey.isEmpty()) groupKey else childKey,
+                displayTitle = childKey.ifEmpty { groupKey },
+                path = ClaimPath(listOf(groupKey, childKey).filter { it.isNotEmpty() }),
+                items = formattedItems
+            )
         }
 
         is Boolean -> {
-            allItems.add(
-                key = childKey,
+            DomainClaim.Primitive(
+                key = if (childKey.isEmpty()) groupKey else childKey,
+                displayTitle = childKey.ifEmpty { groupKey },
+                path = ClaimPath(listOf(groupKey, childKey).filter { it.isNotEmpty() }),
+                isRequired = false,
                 value = resourceProvider.getString(
-                    if (item) {
-                        R.string.document_details_boolean_item_true_readable_value
-                    } else {
-                        R.string.document_details_boolean_item_false_readable_value
-                    }
+                    if (item) R.string.document_details_boolean_item_true_readable_value
+                    else R.string.document_details_boolean_item_false_readable_value
                 )
             )
         }
 
         else -> {
             val date: String? = (item as? String)?.toDateFormatted()
-            allItems.add(
-                key = childKey,
-                value = when {
+            val formattedValue = when {
+                keyIsGender(groupKey) -> getGenderValue(item.toString(), resourceProvider)
+                keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64()
+                date != null -> date
+                else -> item.toString()
+            }
 
-                    keyIsGender(groupKey) -> {
-                        getGenderValue(item.toString(), resourceProvider)
-                    }
-
-                    keyIsUserPseudonym(groupKey) -> {
-                        item.toString().decodeFromBase64()
-                    }
-
-                    date != null && childKey.isEmpty() -> {
-                        date
-                    }
-
-                    else -> {
-                        val jsonString = item.toString()
-                        if (childKey.isEmpty()) {
-                            jsonString
-                        } else {
-                            jsonString.toDateFormatted() ?: jsonString
-                        }
-                    }
-                }
+            DomainClaim.Primitive(
+                key = if (childKey.isEmpty()) groupKey else childKey,
+                displayTitle = childKey.ifEmpty { groupKey },
+                path = ClaimPath(listOf(groupKey, childKey).filter { it.isNotEmpty() }),
+                isRequired = false,
+                value = formattedValue
             )
         }
     }
@@ -230,54 +230,15 @@ private fun insertPath(
     val isRequired = false
 
     return if (path.value.size == 1) {
-        // Leaf node (Primitive)
+        // Leaf node (Primitive or Nested Structure)
         if (existingNode == null && currentClaim != null) {
-            val claimFormatter = ClaimFormatter(items = mutableListOf())
-            createKeyValue(
+            val formattedClaim = createKeyValue(
                 item = currentClaim.value!!,
                 groupKey = currentClaim.identifier,
-                resourceProvider = resourceProvider,
-                allItems = claimFormatter,
+                resourceProvider = resourceProvider
             )
-            val formattedValue = claimFormatter.toList()
 
-            val newEntry = if (formattedValue.size == 1) {
-                DomainClaim.Primitive(
-                    key = currentClaim.identifier,
-                    displayTitle = getReadableNameFromIdentifier(
-                        metadata = metadata,
-                        userLocale = userLocale,
-                        identifier = currentClaim.identifier
-                    ),
-                    path = disclosurePath,
-                    isRequired = isRequired,
-                    value = formattedValue.first().value
-                )
-            } else {
-                DomainClaim.Group(
-                    key = currentClaim.identifier,
-                    displayTitle = getReadableNameFromIdentifier(
-                        metadata = metadata,
-                        userLocale = userLocale,
-                        identifier = currentClaim.identifier
-                    ),
-                    path = disclosurePath,
-                    items = formattedValue.map {
-                        DomainClaim.Primitive(
-                            key = it.key,
-                            displayTitle = getReadableNameFromIdentifier(
-                                metadata = metadata,
-                                userLocale = userLocale,
-                                identifier = it.key
-                            ),
-                            path = disclosurePath,
-                            isRequired = isRequired,
-                            value = it.value
-                        )
-                    }
-                )
-            }
-            tree + newEntry
+            tree + formattedClaim
         } else {
             tree // Already exists or not available, return unchanged
         }
