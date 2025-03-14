@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
+import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
 import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
@@ -562,22 +563,23 @@ class TestDocumentsInteractor {
     //endregion
 
     //region Mock domain models
-    private val mockFilterableItem = FilterableItem(payload = DocumentUi(
-        documentIssuanceState = DocumentUiIssuanceState.Pending,
-        uiData = ListItemData(
-            itemId = "sumo",
-            mainContentData = ListItemMainContentData.Text("test"),
-            overlineText = null,
-            supportingText = null,
-            leadingContentData = null,
-            trailingContentData = null
-        ),
-        documentIdentifier = DocumentIdentifier.MdocPid,
-        documentCategory = DocumentCategory.Government,
-    ), attributes = object : FilterableAttributes {
-        override val searchTags: List<String>
-            get() = listOf("docName", "issuerName")
-    })
+    private val mockFilterableItem = FilterableItem(
+        payload = DocumentUi(
+            documentIssuanceState = DocumentUiIssuanceState.Pending,
+            uiData = ListItemData(
+                itemId = "sumo",
+                mainContentData = ListItemMainContentData.Text("test"),
+                overlineText = null,
+                supportingText = null,
+                leadingContentData = null,
+                trailingContentData = null
+            ),
+            documentIdentifier = DocumentIdentifier.MdocPid,
+            documentCategory = DocumentCategory.Government,
+        ), attributes = object : FilterableAttributes {
+            override val searchTags: List<String>
+                get() = listOf("docName", "issuerName")
+        })
 
     private val mockFilters = Filters(
         filterGroups = listOf(
