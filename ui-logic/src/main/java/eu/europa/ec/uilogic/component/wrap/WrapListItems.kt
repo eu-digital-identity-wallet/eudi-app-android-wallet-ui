@@ -37,7 +37,6 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @Composable
 fun WrapListItems(
@@ -60,10 +59,6 @@ fun WrapListItems(
         items.forEachIndexed { index, item ->
             val itemModifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    top = if (index == 0) SPACING_SMALL.dp else 0.dp,
-                    bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
-                )
 
             when (item) {
                 is ExpandableListItem.NestedListItemData -> {
