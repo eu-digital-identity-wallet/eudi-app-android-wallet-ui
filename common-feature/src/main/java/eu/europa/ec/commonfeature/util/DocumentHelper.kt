@@ -173,13 +173,12 @@ fun createKeyValue(
         else -> {
 
             val date: String? = (item as? String)?.toDateFormatted()
-            val isBool = item is Boolean
 
             val formattedValue = when {
                 keyIsGender(groupKey) -> getGenderValue(item.toString(), resourceProvider)
                 keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64()
                 date != null -> date
-                isBool -> resourceProvider.getString(
+                item is Boolean -> resourceProvider.getString(
                     if (item) R.string.document_details_boolean_item_true_readable_value
                     else R.string.document_details_boolean_item_false_readable_value
                 )
@@ -189,7 +188,7 @@ fun createKeyValue(
 
             allItems.add(
                 DomainClaim.Primitive(
-                    key = if (childKey.isEmpty()) groupKey else childKey,
+                    key = childKey.ifEmpty { groupKey },
                     displayTitle = getReadableNameFromIdentifier(
                         metadata = metadata,
                         userLocale = resourceProvider.getLocale(),
@@ -250,16 +249,16 @@ private fun insertPath(
     return if (path.value.size == 1) {
         // Leaf node (Primitive or Nested Structure)
         if (existingNode == null && currentClaim != null) {
-            val claims: MutableList<DomainClaim> = mutableListOf()
+            val accumulatedClaims: MutableList<DomainClaim> = mutableListOf()
             createKeyValue(
                 item = currentClaim.value!!,
                 groupKey = currentClaim.identifier,
                 resourceProvider = resourceProvider,
                 metadata = metadata,
                 disclosurePath = disclosurePath,
-                allItems = claims,
+                allItems = accumulatedClaims,
             )
-            tree + claims
+            tree + accumulatedClaims
         } else {
             tree // Already exists or not available, return unchanged
         }
