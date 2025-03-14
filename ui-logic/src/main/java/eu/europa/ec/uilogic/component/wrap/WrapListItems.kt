@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
-import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -77,19 +76,20 @@ fun WrapListItems(
                         isExpanded = item.isExpanded,
                         throttleClicks = throttleClicks,
                         hideSensitiveContent = hideSensitiveContent,
-                        collapsedMainContentVerticalPadding = 16.dp,
+                        collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                         shape = RectangleShape,
                     )
                 }
 
                 is ExpandableListItem.SingleListItemData -> {
-                    ListItem(
+                    WrapListItem(
                         modifier = itemModifier,
                         item = item.header,
                         onItemClick = null,
+                        throttleClicks = throttleClicks,
                         hideSensitiveContent = hideSensitiveContent,
                         mainContentVerticalPadding = mainContentVerticalPadding,
-                        clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
+                        clickableAreas = clickableAreas,
                     )
                 }
             }
