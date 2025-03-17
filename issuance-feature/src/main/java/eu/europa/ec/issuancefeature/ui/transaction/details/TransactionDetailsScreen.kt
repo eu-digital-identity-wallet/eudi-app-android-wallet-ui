@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.TransactionDetailsDataSharedHolder
+import eu.europa.ec.commonfeature.model.TransactionDetailsDataSignedHolder
 import eu.europa.ec.commonfeature.model.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
@@ -151,10 +152,10 @@ private fun Content(
                 )
             }
 
-            if (state.transactionDetailsUi?.transactionDetailsDataSigned?.isNotEmpty() == true) {
+            state.transactionDetailsUi?.transactionDetailsDataSigned?.dataSignedItems?.let { safeDataSignedItems ->
                 DataSignedDetails(
                     sectionTitle = state.detailsDataSignedSection,
-                    dataSignedList = state.transactionDetailsUi.transactionDetailsDataSigned,
+                    dataSignedList = safeDataSignedItems,
                     onEventSend = onEventSend
                 )
             }
@@ -271,13 +272,17 @@ private fun TransactionDetailsCard(
                 buttonConfig = ButtonConfig(
                     type = ButtonType.PRIMARY,
                     shape = RoundedCornerShape(SIZE_SMALL.dp),
+                    contentPadding = PaddingValues(
+                        vertical = SPACING_SMALL.dp,
+                        horizontal = SPACING_MEDIUM.dp
+                    ),
                     onClick = {}
                 ),
                 buttonColors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.success)
             ) {
                 Text(
                     text = item.status,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.surfaceContainerLowest
                 )
@@ -314,7 +319,7 @@ private fun DataSharedDetails(
                                 ?: AppIcons.KeyboardArrowDown
                         )
                     ),
-                    expanded = sharedAttestation.transactionDetailsDataShared
+                    expanded = sharedAttestation.dataSharedItems
                 ),
                 onItemClick = { _ -> },
                 modifier = Modifier.fillMaxWidth(),
@@ -466,8 +471,11 @@ private fun ContentPreview() {
         )
     )
     val mockedDataSharedList = listOf(
-        TransactionDetailsDataSharedHolder(transactionDetailsDataShared = items),
-        TransactionDetailsDataSharedHolder(transactionDetailsDataShared = items),
+        TransactionDetailsDataSharedHolder(dataSharedItems = items),
+        TransactionDetailsDataSharedHolder(dataSharedItems = items),
+    )
+    val mockedDataSignedList = TransactionDetailsDataSignedHolder(
+        dataSignedItems = items
     )
     val state = State(
         transactionDetailsCardData = TransactionDetailsCardData(
@@ -482,7 +490,7 @@ private fun ContentPreview() {
             transactionId = "id",
             transactionName = "Transaction",
             transactionDetailsDataSharedList = mockedDataSharedList,
-            transactionDetailsDataSigned = items
+            transactionDetailsDataSigned = mockedDataSignedList
         ),
         detailsDataSharedSection = stringResource(R.string.transaction_details_data_shared),
         detailsDataSignedSection = stringResource(R.string.transaction_details_data_signed),

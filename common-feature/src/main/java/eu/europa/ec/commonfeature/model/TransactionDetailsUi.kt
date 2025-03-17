@@ -23,10 +23,15 @@ data class TransactionDetailsUi(
     val transactionName: String,
     val transactionIdentifier: String? = null,
     val transactionDetailsDataSharedList: List<TransactionDetailsDataSharedHolder> = listOf(),
-    val transactionDetailsDataSigned: List<ListItemData> = listOf(),
+    val transactionDetailsDataSigned: TransactionDetailsDataSignedHolder? = null,
 )
 
 data class TransactionDetailsDataSharedHolder(
     val collapsedData: ListItemData? = null,
-    val transactionDetailsDataShared: List<ListItemData>
+    val dataSharedItems: List<ListItemData>
+)
+
+data class TransactionDetailsDataSignedHolder(
+    val collapsedData: ListItemData? = null,
+    val dataSignedItems: List<ListItemData>
 )

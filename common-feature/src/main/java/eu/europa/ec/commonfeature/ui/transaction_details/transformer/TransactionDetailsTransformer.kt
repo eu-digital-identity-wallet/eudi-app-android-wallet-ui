@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.ui.transaction_details.transformer
 
 import eu.europa.ec.commonfeature.model.TransactionDetailsDataSharedHolder
+import eu.europa.ec.commonfeature.model.TransactionDetailsDataSignedHolder
 import eu.europa.ec.commonfeature.model.TransactionDetailsUi
 import eu.europa.ec.commonfeature.ui.transaction_details.domain.TransactionClaimItem
 import eu.europa.ec.commonfeature.ui.transaction_details.domain.TransactionDetailsDomain
@@ -28,16 +29,17 @@ import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 
 fun TransactionDetailsDomain.transformToTransactionDetailsUi(): TransactionDetailsUi {
-    val dataSharedList: List<TransactionDetailsDataSharedHolder> = listOf(
-        TransactionDetailsDataSharedHolder(transactionDetailsDataShared = this.sharedDataClaimItems.toListItemDataList())
+    val sharedDataList: List<TransactionDetailsDataSharedHolder> = listOf(
+        TransactionDetailsDataSharedHolder(dataSharedItems = this.sharedDataClaimItems.toListItemDataList())
     )
-    val signedData = this.signedDataClaimItems.toListItemDataList()
+    val signedData =
+        TransactionDetailsDataSignedHolder(dataSignedItems = this.signedDataClaimItems.toListItemDataList())
 
     return TransactionDetailsUi(
         transactionId = this.transactionId,
         transactionName = this.transactionName,
         transactionIdentifier = "identifier",
-        transactionDetailsDataSharedList = dataSharedList,
+        transactionDetailsDataSharedList = sharedDataList,
         transactionDetailsDataSigned = signedData,
     )
 }
