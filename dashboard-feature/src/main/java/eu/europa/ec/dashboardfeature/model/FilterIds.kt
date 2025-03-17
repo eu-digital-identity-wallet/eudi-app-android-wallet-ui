@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.model
 
-object FilterIds {
+object DocumentFilterIds {
     const val FILTER_BY_STATE_GROUP_ID = "state_group_id"
     const val FILTER_BY_STATE_VALID = "state_valid"
     const val FILTER_BY_STATE_EXPIRED = "state_expired"
@@ -45,11 +45,11 @@ object TransactionFilterIds {
     const val FILTER_BY_TRANSACTION_DATE_RANGE = "by_transaction_date_range"
 
     const val FILTER_BY_RELYING_PARTY_GROUP_ID = "relying_party_group_id"
-    const val FILTER_BY_RELYING_PARTY_WITHOUT_NAME = "transaction_without_relying_party_item_id"
+    const val FILTER_BY_RELYING_PARTY_WITHOUT_NAME = "by_transaction_without_relying_party"
 
     const val FILTER_BY_ATTESTATION_GROUP_ID = "attestation_group_id"
-    const val FILTER_BY_ATTESTATION_WITHOUT_NAME = "transaction_without_attestation_name_item_id"
+    const val FILTER_BY_ATTESTATION_WITHOUT_NAME = "by_transaction_without_attestation_name"
 
     const val FILTER_BY_DOCUMENT_SIGNING_GROUP_ID = "document_signing_group_id"
-    const val FILTER_BY_DOCUMENT_SIGNED = "is_docuemnt_signed"
+    const val FILTER_BY_DOCUMENT_SIGNED = "by_document_signed"
 }

@@ -54,7 +54,6 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE
 import eu.europa.ec.uilogic.component.utils.ICON_SIZE_40
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
@@ -79,9 +78,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapText
  * @param mainContentData The primary content displayed in the list item. This is typically text
  * but could be other UI elements. See [ListItemMainContentData] for details on how to structure
  * the main content.
- * @param overlineTextData Optional text displayed above the `mainContentData`, providing context
- * or a brief heading for the item. See [ListItemOverlineTextData] for details on how to structure
- * the overline text.
+ * @param overlineText Optional text displayed above the `mainContentData`, providing context
+ * or a brief heading for the item.
  * @param supportingText Optional text displayed below the `mainContentData`, offering
  * additional details or description to supplement the main content.
  * @param leadingContentData Optional data for content displayed at the beginning of the list item.
@@ -398,6 +396,7 @@ fun ListItem(
                     is ListItemTrailingContentData.TextWithIcon ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             WrapText(
+                                modifier = Modifier.padding(start = SPACING_SMALL.dp),
                                 text = safeTrailingContentData.text,
                                 textConfig = TextConfig(
                                     style = MaterialTheme.typography.labelSmall,
@@ -407,7 +406,7 @@ fun ListItem(
 
                             WrapIconButton(
                                 modifier = Modifier
-                                    .padding(start = SIZE_SMALL.dp)
+                                    .padding(start = SPACING_SMALL.dp)
                                     .size(DEFAULT_ICON_SIZE.dp),
                                 iconData = safeTrailingContentData.iconData,
                                 customTint = safeTrailingContentData.tint

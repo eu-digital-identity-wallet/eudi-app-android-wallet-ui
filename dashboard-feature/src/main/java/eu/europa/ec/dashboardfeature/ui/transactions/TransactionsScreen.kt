@@ -147,6 +147,7 @@ internal fun TransactionsScreen(
         ContentScreen(
             isLoading = false,
             navigatableAction = ScreenNavigateAction.NONE,
+            onBack = { context.finish() },
             topBar = {
                 TopBar(
                     onDashboardEventSent = onDashboardEventSent
