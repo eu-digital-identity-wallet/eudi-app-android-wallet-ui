@@ -32,10 +32,27 @@ sealed class TransactionDetailsInteractorPartialState {
     data class Failure(val error: String) : TransactionDetailsInteractorPartialState()
 }
 
+sealed class TransactionDetailsInteractorRequestDataDeletionPartialState {
+    data object Success : TransactionDetailsInteractorRequestDataDeletionPartialState()
+    data class Failure(
+        val errorMessage: String
+    ) : TransactionDetailsInteractorRequestDataDeletionPartialState()
+}
+
+sealed class TransactionDetailsInteractorReportSuspiciousTransactionPartialState {
+    data object Success : TransactionDetailsInteractorReportSuspiciousTransactionPartialState()
+    data class Failure(
+        val errorMessage: String
+    ) : TransactionDetailsInteractorReportSuspiciousTransactionPartialState()
+}
+
 interface TransactionDetailsInteractor {
     fun getTransactionDetails(
         transactionId: String
     ): Flow<TransactionDetailsInteractorPartialState>
+
+    fun requestDataDeletion(transactionId: String): Flow<TransactionDetailsInteractorRequestDataDeletionPartialState>
+    fun reportSuspiciousTransaction(transactionId: String): Flow<TransactionDetailsInteractorReportSuspiciousTransactionPartialState>
 }
 
 class TransactionDetailsInteractorImpl(
@@ -47,7 +64,7 @@ class TransactionDetailsInteractorImpl(
                 detailsTitle = resourceProvider.getString(R.string.transaction_details_screen_title),
                 transactionDetailsDomain = TransactionDetailsDomain(
                     transactionName = "A transaction name",
-                    transactionId = "randomId",
+                    transactionId = transactionId,
                     sharedDataClaimItems = listOf(
                         TransactionClaimItem(
                             transactionId = "0",
@@ -74,6 +91,18 @@ class TransactionDetailsInteractorImpl(
                     )
                 )
             )
+        )
+    }
+
+    override fun requestDataDeletion(transactionId: String): Flow<TransactionDetailsInteractorRequestDataDeletionPartialState> {
+        return flowOf(
+            TransactionDetailsInteractorRequestDataDeletionPartialState.Success
+        )
+    }
+
+    override fun reportSuspiciousTransaction(transactionId: String): Flow<TransactionDetailsInteractorReportSuspiciousTransactionPartialState> {
+        return flowOf(
+            TransactionDetailsInteractorReportSuspiciousTransactionPartialState.Success
         )
     }
 }

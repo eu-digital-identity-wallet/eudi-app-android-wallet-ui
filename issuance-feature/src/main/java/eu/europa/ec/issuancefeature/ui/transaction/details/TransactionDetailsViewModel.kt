@@ -30,6 +30,7 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.InjectedParam
 
 data class State(
     val isLoading: Boolean = false,
@@ -65,8 +66,9 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 internal class TransactionDetailsViewModel(
-    private val transactionDetailsInteractor: TransactionDetailsInteractor,
+    private val interactor: TransactionDetailsInteractor,
     private val resourceProvider: ResourceProvider,
+    @InjectedParam private val transactionId: String,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
         title = resourceProvider.getString(R.string.transaction_details_screen_title),
@@ -94,8 +96,14 @@ internal class TransactionDetailsViewModel(
                 setEffect { Effect.Navigation.Pop }
             }
 
-            is Event.PrimaryButtonPressed -> {}
-            is Event.SecondaryButtonPressed -> {}
+            is Event.PrimaryButtonPressed -> {
+                interactor.requestDataDeletion(transactionId = transactionId)
+            }
+
+            is Event.SecondaryButtonPressed -> {
+                interactor.reportSuspiciousTransaction(transactionId = transactionId)
+            }
+
             is Event.ExpandOrCollapseTransactionDataSharedItem -> {}
             is Event.ExpandOrCollapseTransactionDataSignedItem -> {}
         }
@@ -110,8 +118,8 @@ internal class TransactionDetailsViewModel(
         }
 
         viewModelScope.launch {
-            transactionDetailsInteractor.getTransactionDetails(
-                transactionId = "transactionId",
+            interactor.getTransactionDetails(
+                transactionId = transactionId,
             ).collect { response ->
                 when (response) {
                     is TransactionDetailsInteractorPartialState.Success -> {
