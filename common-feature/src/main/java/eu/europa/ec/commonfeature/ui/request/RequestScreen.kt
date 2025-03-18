@@ -246,10 +246,8 @@ private fun DisplayRequestItems(
                         data = requestDocument.headerUi.nestedItems,
                         onItemClick = { item ->
                             onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
-                            println("onItemClick ${item.itemId}") //TODO remove later
                         },
                         onExpandedChange = { expandedItem ->
-                            println("onExpandedChange ${expandedItem.itemId}") //TODO remove later
                             onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = expandedItem.itemId))
                         },
                         isExpanded = requestDocument.headerUi.isExpanded,

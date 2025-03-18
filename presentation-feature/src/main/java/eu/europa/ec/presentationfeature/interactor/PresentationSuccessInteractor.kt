@@ -23,7 +23,6 @@ import eu.europa.ec.commonfeature.ui.request.transformer.toClaimPath
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -84,34 +83,23 @@ class PresentationSuccessInteractorImpl(
                     val document =
                         walletCoreDocumentsController.getDocumentById(documentId = documentId) as IssuedDocument
 
-                    val selectedClaims = document.data.claims
-                        .filter { claim ->
-                            disclosedDocument.disclosedItems.any { disclosedItem ->
-                                val disclosedItemPath = disclosedItem.toClaimPath()
-
-                                claim.toClaimPaths().any {
-                                    it == disclosedItemPath
-                                }
-                            }
-                        }
-
-                    val selectedClaimPaths = selectedClaims.flatMap { selectedClaim ->
-                        selectedClaim.toClaimPaths()
+                    val disclosedClaimPaths = disclosedDocument.disclosedItems.map {
+                        it.toClaimPath()
                     }
 
-                    val selectedDomainClaims = transformPathsToDomainClaims(
-                        paths = selectedClaimPaths,
-                        claims = selectedClaims,
+                    val disclosedClaims = transformPathsToDomainClaims(
+                        paths = disclosedClaimPaths,
+                        claims = document.data.claims,
                         metadata = document.metadata,
                         resourceProvider = resourceProvider,
                     )
 
-                    val selectedClaimsUi = selectedDomainClaims.map { selectedDomainClaim ->
-                        selectedDomainClaim.toExpandableListItems(docId = documentId)
+                    val disclosedClaimsUi = disclosedClaims.map { disclosedClaim ->
+                        disclosedClaim.toExpandableListItems(docId = documentId)
                     }
 
-                    if (selectedClaimsUi.isNotEmpty()) {
-                        val selectedDocumentUi = ExpandableListItem.NestedListItemData(
+                    if (disclosedClaimsUi.isNotEmpty()) {
+                        val disclosedDocumentUi = ExpandableListItem.NestedListItemData(
                             header = ListItemData(
                                 itemId = documentId,
                                 mainContentData = ListItemMainContentData.Text(text = document.name),
@@ -120,11 +108,11 @@ class PresentationSuccessInteractorImpl(
                                     iconData = AppIcons.KeyboardArrowDown
                                 )
                             ),
-                            nestedItems = selectedClaimsUi,
+                            nestedItems = disclosedClaimsUi,
                             isExpanded = false,
                         )
 
-                        documentsUi.add(selectedDocumentUi)
+                        documentsUi.add(disclosedDocumentUi)
                     }
                 } catch (_: Exception) {
                 }
