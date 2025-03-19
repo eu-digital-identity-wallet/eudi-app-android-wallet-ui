@@ -111,9 +111,9 @@ fun WrapActionCard(
                     modifier = Modifier.fillMaxWidth(),
                     buttonConfig = ButtonConfig(
                         type = ButtonType.PRIMARY,
+                        buttonColors = ButtonDefaults.filledTonalButtonColors(containerColor = Color.Transparent),
                         onClick = onLearnMoreClick
-                    ),
-                    buttonColors = ButtonDefaults.filledTonalButtonColors(containerColor = Color.Transparent)
+                    )
                 ) {
                     WrapIcon(
                         modifier = Modifier.size(SPACING_MEDIUM.dp),

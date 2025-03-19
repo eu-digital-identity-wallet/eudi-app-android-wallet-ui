@@ -288,12 +288,12 @@ private fun Footer(
             modifier = Modifier.fillMaxWidth(),
             buttonConfig = ButtonConfig(
                 type = ButtonType.SECONDARY,
+                buttonColors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                ),
                 onClick = {
                     onEventSend(Event.GoToQrScan)
                 }
-            ),
-            buttonColors = ButtonDefaults.outlinedButtonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
             )
         ) {
             Text(text = stringResource(R.string.issuance_add_document_scan_qr_footer_button_text))

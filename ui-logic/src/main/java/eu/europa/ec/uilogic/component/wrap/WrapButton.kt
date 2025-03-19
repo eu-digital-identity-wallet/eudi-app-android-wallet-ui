@@ -54,27 +54,27 @@ data class ButtonConfig(
     val isWarning: Boolean = false,
     val shape: Shape = buttonsShape,
     val contentPadding: PaddingValues = buttonsContentPadding,
+    val buttonColors: ButtonColors? = null,
 )
 
 @Composable
 fun WrapButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
-    buttonColors: ButtonColors? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
     when (buttonConfig.type) {
         ButtonType.PRIMARY -> WrapPrimaryButton(
             modifier = modifier,
             buttonConfig = buttonConfig,
-            buttonColors = buttonColors ?: ButtonDefaults.buttonColors(),
+            buttonColors = buttonConfig.buttonColors ?: ButtonDefaults.buttonColors(),
             content = content,
         )
 
         ButtonType.SECONDARY -> WrapSecondaryButton(
             modifier = modifier,
             buttonConfig = buttonConfig,
-            buttonColors = buttonColors ?: ButtonDefaults.outlinedButtonColors(),
+            buttonColors = buttonConfig.buttonColors ?: ButtonDefaults.outlinedButtonColors(),
             content = content,
         )
     }
