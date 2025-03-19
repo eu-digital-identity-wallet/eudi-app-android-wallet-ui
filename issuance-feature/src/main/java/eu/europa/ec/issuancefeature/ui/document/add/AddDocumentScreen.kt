@@ -17,6 +17,7 @@
 package eu.europa.ec.issuancefeature.ui.document.add
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,14 +27,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -54,8 +61,14 @@ import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.SIZE_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.WrapButton
+import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
@@ -150,17 +163,66 @@ private fun Content(
     paddingValues: PaddingValues,
     context: Context
 ) {
+    val layoutDirection = LocalLayoutDirection.current
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                paddingValues = PaddingValues(
-                    top = paddingValues.calculateTopPadding(),
-                    bottom = 0.dp,
-                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
-                )
+        modifier = Modifier.fillMaxSize()
+    ) {
+        MainContent(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+                .padding(
+                    paddingValues = PaddingValues(
+                        top = paddingValues.calculateTopPadding(),
+                        bottom = 0.dp,
+                        start = paddingValues.calculateStartPadding(layoutDirection),
+                        end = paddingValues.calculateEndPadding(layoutDirection)
+                    )
+                ),
+            state = state,
+            onEventSend = onEventSend,
+            paddingValues = paddingValues,
+            context = context,
+        )
+
+        if (state.showFooterScanner) {
+            VSpacer.ExtraSmall()
+            Footer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = SIZE_LARGE.dp, topEnd = SIZE_LARGE.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(
+                        top = SPACING_MEDIUM.dp,
+                        start = paddingValues.calculateStartPadding(layoutDirection),
+                        end = paddingValues.calculateEndPadding(layoutDirection),
+                        bottom = paddingValues.calculateBottomPadding()
+                    ),
+                onEventSend = onEventSend,
             )
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        effectFlow.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation -> onNavigationRequested(effect)
+            }
+        }.collect()
+    }
+}
+
+@Composable
+private fun MainContent(
+    modifier: Modifier = Modifier,
+    state: State,
+    onEventSend: (Event) -> Unit,
+    paddingValues: PaddingValues,
+    context: Context,
+) {
+    Column(
+        modifier = modifier
     ) {
         ContentTitle(
             modifier = Modifier.fillMaxWidth(),
@@ -197,13 +259,45 @@ private fun Content(
             }
         }
     }
+}
 
-    LaunchedEffect(Unit) {
-        effectFlow.onEach { effect ->
-            when (effect) {
-                is Effect.Navigation -> onNavigationRequested(effect)
-            }
-        }.collect()
+@Composable
+private fun Footer(
+    modifier: Modifier = Modifier,
+    onEventSend: (Event) -> Unit,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = stringResource(R.string.issuance_add_document_scan_qr_footer_text),
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            textAlign = TextAlign.Center
+        )
+
+        WrapImage(
+            iconData = AppIcons.AddDocumentFromQr
+        )
+
+        WrapButton(
+            modifier = Modifier.fillMaxWidth(),
+            buttonConfig = ButtonConfig(
+                type = ButtonType.SECONDARY,
+                onClick = {
+                    onEventSend(Event.GoToQrScan)
+                }
+            ),
+            buttonColors = ButtonDefaults.outlinedButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+            )
+        ) {
+            Text(text = stringResource(R.string.issuance_add_document_scan_qr_footer_button_text))
+        }
     }
 }
 
@@ -213,6 +307,7 @@ private fun IssuanceAddDocumentScreenPreview() {
     PreviewTheme {
         Content(
             state = State(
+                showFooterScanner = true,
                 navigatableAction = ScreenNavigateAction.NONE,
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
@@ -248,6 +343,7 @@ private fun DashboardAddDocumentScreenPreview() {
     PreviewTheme {
         Content(
             state = State(
+                showFooterScanner = false,
                 navigatableAction = ScreenNavigateAction.BACKABLE,
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
