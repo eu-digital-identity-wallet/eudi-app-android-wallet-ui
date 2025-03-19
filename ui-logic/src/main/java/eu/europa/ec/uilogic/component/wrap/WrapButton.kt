@@ -21,13 +21,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -54,25 +54,27 @@ data class ButtonConfig(
     val isWarning: Boolean = false,
     val shape: Shape = buttonsShape,
     val contentPadding: PaddingValues = buttonsContentPadding,
-    val isWithoutContainerBackground: Boolean = false,
 )
 
 @Composable
 fun WrapButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
+    buttonColors: ButtonColors? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
     when (buttonConfig.type) {
         ButtonType.PRIMARY -> WrapPrimaryButton(
             modifier = modifier,
             buttonConfig = buttonConfig,
+            buttonColors = buttonColors ?: ButtonDefaults.buttonColors(),
             content = content,
         )
 
         ButtonType.SECONDARY -> WrapSecondaryButton(
             modifier = modifier,
             buttonConfig = buttonConfig,
+            buttonColors = buttonColors ?: ButtonDefaults.outlinedButtonColors(),
             content = content,
         )
     }
@@ -82,16 +84,15 @@ fun WrapButton(
 private fun WrapPrimaryButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
+    buttonColors: ButtonColors,
     content: @Composable RowScope.() -> Unit,
 ) {
     val colors = if (buttonConfig.isWarning) {
         ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.error
         )
-    } else if (buttonConfig.isWithoutContainerBackground) {
-        ButtonDefaults.filledTonalButtonColors(containerColor = Color.Transparent)
     } else {
-        ButtonDefaults.buttonColors()
+        buttonColors
     }
 
     Button(
@@ -109,6 +110,7 @@ private fun WrapPrimaryButton(
 private fun WrapSecondaryButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
+    buttonColors: ButtonColors,
     content: @Composable RowScope.() -> Unit,
 ) {
     val borderColor = if (!buttonConfig.enabled) {
@@ -128,7 +130,7 @@ private fun WrapSecondaryButton(
             contentColor = MaterialTheme.colorScheme.error
         )
     } else {
-        ButtonDefaults.outlinedButtonColors()
+        buttonColors
     }
 
     OutlinedButton(
