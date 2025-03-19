@@ -41,6 +41,8 @@
     <string name="generic_bottom_sheet_delete_subtitle">This document will be permanently deleted from your wallet and may affect access to services.</string>
     <string name="generic_bottom_sheet_delete_primary_button_text">Delete</string>
     <string name="generic_bottom_sheet_delete_secondary_button_text">Cancel</string>
+    <string name="generic_scan_qr">Scan QR</string>
+    <string name="generic_or">OR</string>
 
     <!-- Content Description -->
     <string name="content_description_image_or_placeholder_icon">Image or placeholder icon</string>
@@ -232,8 +234,8 @@
     <string name="documents_screen_add_document_title">Add document</string>
     <string name="documents_screen_add_document_description">Add documents to your wallet by choosing from a list or by scanning a provided QR code.</string>
     <string name="documents_screen_add_document_option_list">From list</string>
-    <string name="documents_screen_add_document_option_qr">Scan QR</string>
-    <string name="documents_screen_add_document_option_or">OR</string>
+    <string name="documents_screen_add_document_option_qr">@string/generic_scan_qr</string>
+    <string name="documents_screen_add_document_option_or">@string/generic_or</string>
     <string name="documents_screen_filters_title">Filter</string>
     <string name="documents_screen_filters_sort_by">Sort by</string>
     <string name="documents_screen_filters_ascending">Ascending</string>
@@ -305,6 +307,8 @@
     <!-- Issuance Add Document Screen -->
     <string name="issuance_add_document_title">Add document from list</string>
     <string name="issuance_add_document_subtitle">Choose a digital document from the list below to add to your wallet.</string>
+    <string name="issuance_add_document_scan_qr_footer_text">@string/generic_or</string>
+    <string name="issuance_add_document_scan_qr_footer_button_text">@string/generic_scan_qr</string>
     <string name="issuance_add_document_deferred_success_text">@string/generic_deferred_success_text</string>
     <string name="issuance_add_document_deferred_success_description">Your document has been requested. You will be notified when it has been issued to your wallet.</string>
     <string name="issuance_add_document_deferred_success_primary_button_text">@string/generic_ok</string>
