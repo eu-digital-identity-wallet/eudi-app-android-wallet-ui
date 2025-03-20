@@ -28,7 +28,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -55,21 +54,19 @@ data class ButtonConfig(
     val isWarning: Boolean = false,
     val shape: Shape = buttonsShape,
     val contentPadding: PaddingValues = buttonsContentPadding,
-    val isWithoutContainerBackground: Boolean = false,
+    val buttonColors: ButtonColors? = null,
 )
 
 @Composable
 fun WrapButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
-    buttonColors: ButtonColors = ButtonDefaults.buttonColors(),
     content: @Composable RowScope.() -> Unit,
 ) {
     when (buttonConfig.type) {
         ButtonType.PRIMARY -> WrapPrimaryButton(
             modifier = modifier,
             buttonConfig = buttonConfig,
-            buttonColors = buttonColors,
             content = content,
         )
 
@@ -85,17 +82,14 @@ fun WrapButton(
 private fun WrapPrimaryButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
-    buttonColors: ButtonColors = ButtonDefaults.buttonColors(),
     content: @Composable RowScope.() -> Unit,
 ) {
     val colors = if (buttonConfig.isWarning) {
         ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.error
         )
-    } else if (buttonConfig.isWithoutContainerBackground) {
-        ButtonDefaults.filledTonalButtonColors(containerColor = Color.Transparent)
     } else {
-        buttonColors
+        buttonConfig.buttonColors ?: ButtonDefaults.buttonColors()
     }
 
     Button(
@@ -132,7 +126,7 @@ private fun WrapSecondaryButton(
             contentColor = MaterialTheme.colorScheme.error
         )
     } else {
-        ButtonDefaults.outlinedButtonColors()
+        buttonConfig.buttonColors ?: ButtonDefaults.outlinedButtonColors()
     }
 
     OutlinedButton(
