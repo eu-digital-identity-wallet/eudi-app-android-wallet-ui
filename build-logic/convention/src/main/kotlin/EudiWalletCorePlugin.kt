@@ -25,10 +25,8 @@ class EudiWalletCorePlugin : Plugin<Project> {
             with(pluginManager) {
                 apply("kotlinx-serialization")
             }
-
             dependencies {
                 add("api", libs.findLibrary("eudi.wallet.core").get())
-                add("implementation", libs.findLibrary("cbor-tree").get())
             }
         }
     }
