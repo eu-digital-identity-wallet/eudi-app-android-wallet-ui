@@ -47,6 +47,7 @@ import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.helper.DeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -210,17 +211,27 @@ class AddDocumentViewModel(
                     }
 
                     is AddDocumentInteractorPartialState.Failure -> {
+
+                        val deepLinkAction = getDeepLinkAction(deepLinkUri)
+
                         setState {
                             copy(
-                                error = ContentErrorConfig(
-                                    onRetry = { setEvent(event) },
-                                    errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.DismissError) }
-                                ),
+                                error = if (deepLinkAction == null) {
+                                    ContentErrorConfig(
+                                        onRetry = { setEvent(event) },
+                                        errorSubTitle = response.error,
+                                        onCancel = { setEvent(Event.DismissError) }
+                                    )
+                                } else {
+                                    null
+                                },
                                 options = emptyList(),
                                 isInitialised = true,
                                 isLoading = false
                             )
+                        }
+                        deepLinkAction?.let {
+                            handleDeepLink(it.first, it.second)
                         }
                     }
                 }
@@ -402,49 +413,59 @@ class AddDocumentViewModel(
         }
     }
 
-    private fun handleDeepLink(deepLinkUri: Uri?) {
-        deepLinkUri?.let { uri ->
+    private fun getDeepLinkAction(deepLinkUri: Uri?): Pair<Uri, DeepLinkAction>? {
+        return deepLinkUri?.let { uri ->
             hasDeepLink(uri)?.let {
-                when (it.type) {
-                    DeepLinkType.CREDENTIAL_OFFER -> {
-                        setEffect {
-                            Effect.Navigation.OpenDeepLinkAction(
-                                deepLinkUri = uri,
-                                arguments = generateComposableArguments(
-                                    mapOf(
-                                        OfferUiConfig.serializedKeyName to uiSerializer.toBase64(
-                                            OfferUiConfig(
-                                                offerURI = it.link.toString(),
-                                                onSuccessNavigation = ConfigNavigation(
-                                                    navigationType = NavigationType.PushScreen(
-                                                        screen = DashboardScreens.Dashboard,
-                                                        popUpToScreen = IssuanceScreens.AddDocument
-                                                    )
-                                                ),
-                                                onCancelNavigation = ConfigNavigation(
-                                                    navigationType = NavigationType.Pop
-                                                )
-                                            ),
-                                            OfferUiConfig.Parser
+                uri to it
+            }
+        }
+    }
+
+    private fun handleDeepLink(deepLinkUri: Uri?) {
+        getDeepLinkAction(deepLinkUri)?.let { pair ->
+            handleDeepLink(pair.first, pair.second)
+        }
+    }
+
+    private fun handleDeepLink(uri: Uri, action: DeepLinkAction) {
+        when (action.type) {
+            DeepLinkType.CREDENTIAL_OFFER -> {
+                setEffect {
+                    Effect.Navigation.OpenDeepLinkAction(
+                        deepLinkUri = uri,
+                        arguments = generateComposableArguments(
+                            mapOf(
+                                OfferUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                    OfferUiConfig(
+                                        offerURI = action.link.toString(),
+                                        onSuccessNavigation = ConfigNavigation(
+                                            navigationType = NavigationType.PushScreen(
+                                                screen = DashboardScreens.Dashboard,
+                                                popUpToScreen = IssuanceScreens.AddDocument
+                                            )
+                                        ),
+                                        onCancelNavigation = ConfigNavigation(
+                                            navigationType = NavigationType.Pop
                                         )
-                                    )
+                                    ),
+                                    OfferUiConfig.Parser
                                 )
                             )
-                        }
-                    }
-
-                    DeepLinkType.EXTERNAL -> {
-                        setEffect {
-                            Effect.Navigation.OpenDeepLinkAction(
-                                deepLinkUri = uri,
-                                arguments = null
-                            )
-                        }
-                    }
-
-                    else -> {}
+                        )
+                    )
                 }
             }
+
+            DeepLinkType.EXTERNAL -> {
+                setEffect {
+                    Effect.Navigation.OpenDeepLinkAction(
+                        deepLinkUri = uri,
+                        arguments = null
+                    )
+                }
+            }
+
+            else -> {}
         }
     }
 }
