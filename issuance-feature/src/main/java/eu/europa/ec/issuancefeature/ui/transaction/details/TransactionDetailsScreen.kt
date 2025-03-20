@@ -27,8 +27,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -72,6 +72,7 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapCard
+import eu.europa.ec.uilogic.component.wrap.WrapChip
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 import eu.europa.ec.uilogic.component.wrap.WrapText
@@ -267,26 +268,20 @@ private fun TransactionDetailsCard(
                 )
             }
 
-            WrapButton(
+            WrapChip(
                 modifier = Modifier,
-                buttonConfig = ButtonConfig(
-                    type = ButtonType.PRIMARY,
-                    shape = RoundedCornerShape(SIZE_SMALL.dp),
-                    contentPadding = PaddingValues(
-                        vertical = SPACING_SMALL.dp,
-                        horizontal = SPACING_MEDIUM.dp
-                    ),
-                    onClick = {}
+                label = {
+                    Text(
+                        text = item.status,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                },
+                colors = InputChipDefaults.inputChipColors(
+                    containerColor = MaterialTheme.colorScheme.success,
+                    labelColor = MaterialTheme.colorScheme.surfaceContainerLowest
                 ),
-                buttonColors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.success)
-            ) {
-                Text(
-                    text = item.status,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.surfaceContainerLowest
-                )
-            }
+                border = null,
+            )
         }
     }
 }
