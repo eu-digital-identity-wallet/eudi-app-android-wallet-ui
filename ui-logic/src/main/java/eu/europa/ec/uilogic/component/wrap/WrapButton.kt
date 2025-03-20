@@ -67,14 +67,12 @@ fun WrapButton(
         ButtonType.PRIMARY -> WrapPrimaryButton(
             modifier = modifier,
             buttonConfig = buttonConfig,
-            buttonColors = buttonConfig.buttonColors ?: ButtonDefaults.buttonColors(),
             content = content,
         )
 
         ButtonType.SECONDARY -> WrapSecondaryButton(
             modifier = modifier,
             buttonConfig = buttonConfig,
-            buttonColors = buttonConfig.buttonColors ?: ButtonDefaults.outlinedButtonColors(),
             content = content,
         )
     }
@@ -84,7 +82,6 @@ fun WrapButton(
 private fun WrapPrimaryButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
-    buttonColors: ButtonColors,
     content: @Composable RowScope.() -> Unit,
 ) {
     val colors = if (buttonConfig.isWarning) {
@@ -92,7 +89,7 @@ private fun WrapPrimaryButton(
             containerColor = MaterialTheme.colorScheme.error
         )
     } else {
-        buttonColors
+        buttonConfig.buttonColors ?: ButtonDefaults.buttonColors()
     }
 
     Button(
@@ -110,7 +107,6 @@ private fun WrapPrimaryButton(
 private fun WrapSecondaryButton(
     modifier: Modifier = Modifier,
     buttonConfig: ButtonConfig,
-    buttonColors: ButtonColors,
     content: @Composable RowScope.() -> Unit,
 ) {
     val borderColor = if (!buttonConfig.enabled) {
@@ -130,7 +126,7 @@ private fun WrapSecondaryButton(
             contentColor = MaterialTheme.colorScheme.error
         )
     } else {
-        buttonColors
+        buttonConfig.buttonColors ?: ButtonDefaults.outlinedButtonColors()
     }
 
     OutlinedButton(
