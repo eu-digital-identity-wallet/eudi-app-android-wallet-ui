@@ -55,7 +55,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -66,13 +66,13 @@ import java.time.LocalDateTime
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
         val transactions: List<Pair<TransactionCategory, List<TransactionUi>>>,
-        val filters: List<ExpandableListItemData>,
+        val filters: List<ExpandableListItem.NestedListItemData>,
         val sortOrder: DualSelectorButton,
         val allDefaultFiltersAreSelected: Boolean,
     ) : TransactionInteractorFilterPartialState()
 
     data class FilterUpdateResult(
-        val filters: List<ExpandableListItemData>,
+        val filters: List<ExpandableListItem.NestedListItemData>,
         val sortOrder: DualSelectorButton,
     ) : TransactionInteractorFilterPartialState()
 }
@@ -268,44 +268,47 @@ class TransactionsInteractorImpl(
                 }
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
-                ExpandableListItemData(
-                    collapsed = ListItemData(
+                ExpandableListItem.NestedListItemData(
+                    isExpanded = true,
+                    header = ListItemData(
                         itemId = filterGroup.id,
                         mainContentData = ListItemMainContentData.Text(filterGroup.name),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     ),
-                    expanded = filterGroup.filters.map { filterItem ->
-                        ListItemData(
-                            itemId = filterItem.id,
-                            mainContentData = ListItemMainContentData.Text(filterItem.name),
-                            trailingContentData = when (filterGroup) {
-                                is FilterGroup.MultipleSelectionFilterGroup<*> -> {
-                                    ListItemTrailingContentData.Checkbox(
+                    nestedItems = filterGroup.filters.map { filterItem ->
+                        ExpandableListItem.SingleListItemData(
+                            header = ListItemData(
+                                itemId = filterItem.id,
+                                mainContentData = ListItemMainContentData.Text(filterItem.name),
+                                trailingContentData = when (filterGroup) {
+                                    is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+                                        ListItemTrailingContentData.Checkbox(
+                                            checkboxData = CheckboxData(
+                                                isChecked = filterItem.selected,
+                                                enabled = true
+                                            )
+                                        )
+                                    }
+
+                                    is FilterGroup.SingleSelectionFilterGroup -> {
+                                        ListItemTrailingContentData.RadioButton(
+                                            radioButtonData = RadioButtonData(
+                                                isSelected = filterItem.selected,
+                                                enabled = true
+                                            )
+                                        )
+                                    }
+
+                                    is FilterGroup.ReversibleSingleSelectionFilterGroup -> ListItemTrailingContentData.Checkbox(
                                         checkboxData = CheckboxData(
                                             isChecked = filterItem.selected,
                                             enabled = true
                                         )
                                     )
-                                }
-
-                                is FilterGroup.SingleSelectionFilterGroup -> {
-                                    ListItemTrailingContentData.RadioButton(
-                                        radioButtonData = RadioButtonData(
-                                            isSelected = filterItem.selected,
-                                            enabled = true
-                                        )
-                                    )
-                                }
-
-                                is FilterGroup.ReversibleSingleSelectionFilterGroup -> ListItemTrailingContentData.Checkbox(
-                                    checkboxData = CheckboxData(
-                                        isChecked = filterItem.selected,
-                                        enabled = true
-                                    )
-                                )
-                            },
+                                },
+                            )
                         )
                     }
                 )

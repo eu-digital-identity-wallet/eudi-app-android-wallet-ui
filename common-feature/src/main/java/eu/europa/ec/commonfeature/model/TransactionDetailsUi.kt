@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.model
 
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 data class TransactionDetailsUi(
     val transactionId: String,
@@ -27,11 +27,9 @@ data class TransactionDetailsUi(
 )
 
 data class TransactionDetailsDataSharedHolder(
-    val collapsedData: ListItemData? = null,
-    val dataSharedItems: List<ListItemData>
+    val dataSharedItems: ExpandableListItem.NestedListItemData,
 )
 
 data class TransactionDetailsDataSignedHolder(
-    val collapsedData: ListItemData? = null,
-    val dataSignedItems: List<ListItemData>
+    val dataSignedItems: ExpandableListItem.NestedListItemData,
 )

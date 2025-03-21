@@ -68,7 +68,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapCard
@@ -156,7 +156,7 @@ private fun Content(
             state.transactionDetailsUi?.transactionDetailsDataSigned?.dataSignedItems?.let { safeDataSignedItems ->
                 DataSignedDetails(
                     sectionTitle = state.detailsDataSignedSection,
-                    dataSignedList = safeDataSignedItems,
+                    dataSigned = safeDataSignedItems,
                     onEventSend = onEventSend
                 )
             }
@@ -304,20 +304,12 @@ private fun DataSharedDetails(
         dataSharedList.forEach { sharedAttestation ->
             var expandCollapseState by remember { mutableStateOf(false) }
             WrapExpandableListItem(
-                data = ExpandableListItemData(
-                    collapsed = ListItemData(
-                        itemId = "0",
-                        mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
-                        supportingText = "View details",
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = AppIcons.KeyboardArrowUp.takeIf { expandCollapseState }
-                                ?: AppIcons.KeyboardArrowDown
-                        )
-                    ),
-                    expanded = sharedAttestation.dataSharedItems
-                ),
-                onItemClick = { _ -> },
+                header = sharedAttestation.dataSharedItems.header,
+                data = sharedAttestation.dataSharedItems.nestedItems,
+                onItemClick = null,
                 modifier = Modifier.fillMaxWidth(),
+                collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                 isExpanded = expandCollapseState,
                 onExpandedChange = {
                     expandCollapseState = !expandCollapseState
@@ -334,7 +326,7 @@ private fun DataSharedDetails(
 private fun DataSignedDetails(
     sectionTitle: String,
     onEventSend: (Event) -> Unit,
-    dataSignedList: List<ListItemData>
+    dataSigned: ExpandableListItem.NestedListItemData
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -346,20 +338,12 @@ private fun DataSignedDetails(
         )
         var expandCollapseState by remember { mutableStateOf(false) }
         WrapExpandableListItem(
-            data = ExpandableListItemData(
-                collapsed = ListItemData(
-                    itemId = "0",
-                    mainContentData = ListItemMainContentData.Text(text = "Signature details"),
-                    supportingText = "View details",
-                    trailingContentData = ListItemTrailingContentData.Icon(
-                        iconData = AppIcons.KeyboardArrowUp.takeIf { expandCollapseState }
-                            ?: AppIcons.KeyboardArrowDown
-                    )
-                ),
-                expanded = dataSignedList
-            ),
-            onItemClick = { _ -> },
+            header = dataSigned.header,
+            data = dataSigned.nestedItems,
+            onItemClick = null,
             modifier = Modifier.fillMaxWidth(),
+            collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+            expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
             isExpanded = expandCollapseState,
             onExpandedChange = {
                 expandCollapseState = !expandCollapseState
@@ -453,17 +437,32 @@ private fun PreviewTransactionDetailsCard() {
 @Composable
 @ThemeModePreviews
 private fun ContentPreview() {
-    val items = listOf(
-        ListItemData(
-            itemId = "1",
-            overlineText = "Family name",
-            mainContentData = ListItemMainContentData.Text(text = "Doe"),
+    val items = ExpandableListItem.NestedListItemData(
+        header = ListItemData(
+            itemId = "0",
+            mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+            supportingText = "View Details",
+            trailingContentData = ListItemTrailingContentData.Icon(
+                iconData = AppIcons.KeyboardArrowDown
+            ),
         ),
-        ListItemData(
-            itemId = "2",
-            overlineText = "Given name",
-            mainContentData = ListItemMainContentData.Text(text = "John"),
-        )
+        nestedItems = listOf(
+            ExpandableListItem.SingleListItemData(
+                ListItemData(
+                    itemId = "1",
+                    overlineText = "Family name",
+                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                )
+            ),
+            ExpandableListItem.SingleListItemData(
+                ListItemData(
+                    itemId = "2",
+                    overlineText = "Given name",
+                    mainContentData = ListItemMainContentData.Text(text = "John"),
+                )
+            )
+        ),
+        isExpanded = true
     )
     val mockedDataSharedList = listOf(
         TransactionDetailsDataSharedHolder(dataSharedItems = items),

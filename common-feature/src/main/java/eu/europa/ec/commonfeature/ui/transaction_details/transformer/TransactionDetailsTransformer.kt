@@ -24,16 +24,45 @@ import eu.europa.ec.commonfeature.ui.transaction_details.domain.TransactionDetai
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
+import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 fun TransactionDetailsDomain.transformToTransactionDetailsUi(): TransactionDetailsUi {
     val sharedDataList: List<TransactionDetailsDataSharedHolder> = listOf(
-        TransactionDetailsDataSharedHolder(dataSharedItems = this.sharedDataClaimItems.toListItemDataList())
+        TransactionDetailsDataSharedHolder(
+            dataSharedItems = ExpandableListItem.NestedListItemData(
+                header = ListItemData(
+                    itemId = "01",
+                    mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+                    supportingText = "View Details",
+                    trailingContentData = ListItemTrailingContentData.Icon(
+                        iconData = AppIcons.KeyboardArrowDown
+                    )
+                ),
+                nestedItems = this.sharedDataClaimItems.toExpandableListItem(),
+                isExpanded = false
+            )
+        )
     )
-    val signedData =
-        TransactionDetailsDataSignedHolder(dataSignedItems = this.signedDataClaimItems.toListItemDataList())
+
+    val signedData = TransactionDetailsDataSignedHolder(
+        dataSignedItems = ExpandableListItem.NestedListItemData(
+            header = ListItemData(
+                itemId = "02",
+                mainContentData = ListItemMainContentData.Text(text = "Signature details"),
+                supportingText = "View Details",
+                trailingContentData = ListItemTrailingContentData.Icon(
+                    iconData = AppIcons.KeyboardArrowDown
+                )
+            ),
+            nestedItems = this.signedDataClaimItems.toExpandableListItem(),
+            isExpanded = false
+        )
+    )
 
     return TransactionDetailsUi(
         transactionId = this.transactionId,
@@ -44,7 +73,7 @@ fun TransactionDetailsDomain.transformToTransactionDetailsUi(): TransactionDetai
     )
 }
 
-fun List<TransactionClaimItem>.toListItemDataList(): List<ListItemData> {
+private fun List<TransactionClaimItem>.toExpandableListItem(): List<ExpandableListItem> {
     return this
         .sortedBy { it.readableName.lowercase() }
         .map {
@@ -73,11 +102,13 @@ fun List<TransactionClaimItem>.toListItemDataList(): List<ListItemData> {
                 null
             }
 
-            ListItemData(
-                itemId = itemId,
-                mainContentData = mainContent,
-                overlineText = it.readableName,
-                leadingContentData = leadingContent
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = itemId,
+                    mainContentData = mainContent,
+                    overlineText = it.readableName,
+                    leadingContentData = leadingContent
+                )
             )
         }
 }

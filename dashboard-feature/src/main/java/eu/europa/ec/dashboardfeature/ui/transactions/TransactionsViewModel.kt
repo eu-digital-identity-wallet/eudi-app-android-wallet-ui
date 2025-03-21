@@ -33,7 +33,7 @@ import eu.europa.ec.uilogic.component.DatePickerDialogType
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -61,7 +61,7 @@ data class State(
     ),
 
     val transactionsUi: List<Pair<TransactionCategory, List<TransactionUi>>> = emptyList(),
-    val filtersUi: List<ExpandableListItemData> = emptyList(),
+    val filtersUi: List<ExpandableListItem.NestedListItemData> = emptyList(),
     val shouldRevertFilterChanges: Boolean = true,
     val sortOrder: DualSelectorButtonData,
     val isDatePickerDialogVisible: Boolean = false,
@@ -118,7 +118,8 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class TransactionsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItemData>) : TransactionsBottomSheetContent()
+    data class Filters(val filters: List<ExpandableListItem.SingleListItemData>) :
+        TransactionsBottomSheetContent()
 }
 
 @KoinViewModel
@@ -148,7 +149,7 @@ class TransactionsViewModel(
             is Event.FiltersPressed -> {
                 showBottomSheet(
                     sheetContent = TransactionsBottomSheetContent.Filters(
-                        filters = viewState.value.filtersUi
+                        filters = emptyList()
                     )
                 )
             }

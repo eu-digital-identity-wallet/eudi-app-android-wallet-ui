@@ -55,14 +55,12 @@ fun WrapListItem(
     clickableAreas: List<ClickableArea>? = null,
     shape: Shape? = null,
     colors: CardColors? = null,
-    shape: Shape? = null,
 ) {
     WrapCard(
         modifier = modifier,
         throttleClicks = throttleClicks,
         shape = shape,
         colors = colors,
-        shape = shape,
     ) {
         ListItem(
             modifier = Modifier.fillMaxWidth(),

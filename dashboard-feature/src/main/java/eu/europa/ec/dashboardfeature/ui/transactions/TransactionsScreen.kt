@@ -97,7 +97,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
@@ -455,7 +455,7 @@ private fun TopBar(
 @Composable
 private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
-    filtersUi: List<ExpandableListItemData>,
+    filtersUi: List<ExpandableListItem.NestedListItemData>,
     snapshotFilterDateRangeData: FilterDateRangeSelectionData,
     sortOrder: DualSelectorButtonData,
     onEventSent: (event: Event) -> Unit,
@@ -486,12 +486,12 @@ private fun TransactionsSheetContent(
                         ) {
                             filtersUi.forEachIndexed { index, filter ->
                                 when {
-                                    filter.collapsed.itemId == TransactionFilterIds.FILTER_SORT_GROUP_ID -> {
+                                    filter.header.itemId == TransactionFilterIds.FILTER_SORT_GROUP_ID -> {
                                         WrapExpandableCard(
                                             cardCollapsedContent = {
                                                 WrapListItem(
                                                     mainContentVerticalPadding = SPACING_MEDIUM.dp,
-                                                    item = filter.collapsed,
+                                                    item = filter.header,
                                                     onItemClick = {
                                                         expandStateList[index] =
                                                             !expandStateList[index]
@@ -511,12 +511,12 @@ private fun TransactionsSheetContent(
                                         )
                                     }
 
-                                    filter.collapsed.itemId == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID -> {
+                                    filter.header.itemId == TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID -> {
                                         WrapExpandableCard(
                                             cardCollapsedContent = {
                                                 WrapListItem(
                                                     mainContentVerticalPadding = SPACING_MEDIUM.dp,
-                                                    item = filter.collapsed,
+                                                    item = filter.header,
                                                     onItemClick = {
                                                         expandStateList[index] =
                                                             !expandStateList[index]
@@ -550,16 +550,17 @@ private fun TransactionsSheetContent(
                                         )
                                     }
 
-                                    filter.expanded.isNotEmpty() -> {
+                                    filter.nestedItems.isNotEmpty() -> {
                                         WrapExpandableListItem(
-                                            data = filter,
+                                            header = filter.header,
+                                            data = filter.nestedItems,
                                             isExpanded = expandStateList[index],
                                             onExpandedChange = {
                                                 expandStateList[index] = !expandStateList[index]
                                             },
                                             onItemClick = {
                                                 val id = it.itemId
-                                                val groupId = filter.collapsed.itemId
+                                                val groupId = filter.header.itemId
                                                 onEventSent(
                                                     Event.OnFilterSelectionChanged(
                                                         filterId = id,
@@ -567,7 +568,6 @@ private fun TransactionsSheetContent(
                                                     )
                                                 )
                                             },
-                                            expandedAddDivider = false,
                                         )
                                     }
                                 }
