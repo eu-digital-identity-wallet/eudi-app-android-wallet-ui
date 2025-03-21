@@ -17,17 +17,19 @@
 package eu.europa.ec.dashboardfeature.ui.transactions
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.util.toDisplayedDate
 import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorGetTransactionsPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
+import eu.europa.ec.dashboardfeature.model.FilterDateRangeSelectionData
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.DatePickerDialogConfig
+import eu.europa.ec.uilogic.component.DatePickerDialogType
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -46,7 +48,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-internal data class State(
+data class State(
     val isLoading: Boolean,
     val error: ContentErrorConfig? = null,
 
@@ -119,29 +121,8 @@ sealed class TransactionsBottomSheetContent {
     data class Filters(val filters: List<ExpandableListItemData>) : TransactionsBottomSheetContent()
 }
 
-enum class DatePickerDialogType {
-    SelectStartDate, SelectEndDate
-}
-
-data class DatePickerDialogConfig(
-    val type: DatePickerDialogType,
-    val lowerLimit: LocalDate? = LocalDate.MIN,
-    val upperLimit: LocalDate? = LocalDate.MAX
-)
-
-internal data class FilterDateRangeSelectionData(
-    val startDate: Long? = null,
-    val endDate: Long? = null
-) {
-    val displayedStartDate: String
-        get() = startDate?.toDisplayedDate().orEmpty()
-
-    val displayedEndDate: String
-        get() = endDate?.toDisplayedDate().orEmpty()
-}
-
 @KoinViewModel
-internal class TransactionsViewModel(
+class TransactionsViewModel(
     private val interactor: TransactionsInteractor,
     private val resourceProvider: ResourceProvider
 ) : MviViewModel<Event, State, Effect>() {

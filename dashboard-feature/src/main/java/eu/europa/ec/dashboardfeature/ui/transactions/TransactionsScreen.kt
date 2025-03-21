@@ -36,18 +36,13 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -73,17 +68,20 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.corelogic.model.TransactionCategory
+import eu.europa.ec.dashboardfeature.model.FilterDateRangeSelectionData
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
-import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.eudi.rqesui.domain.util.safeLet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.DatePickerDialogType
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
+import eu.europa.ec.uilogic.component.FiltersDatePickerDialog
+import eu.europa.ec.uilogic.component.FiltersSearchBar
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.SectionTitle
@@ -114,16 +112,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
 typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Show
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun TransactionsScreen(
+fun TransactionsScreen(
     navHostController: NavController,
     viewModel: TransactionsViewModel,
     onDashboardEventSent: (DashboardEvent) -> Unit,
@@ -131,8 +126,6 @@ internal fun TransactionsScreen(
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    val isBottomSheetOpen = state.isBottomSheetOpen
-    val isDatePickerDialogVisible = state.isDatePickerDialogVisible
     val datePickerDialogConfig = state.datePickerDialogConfig
 
     val scope = rememberCoroutineScope()
@@ -140,89 +133,85 @@ internal fun TransactionsScreen(
         skipPartiallyExpanded = true
     )
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        ContentScreen(
-            isLoading = false,
-            navigatableAction = ScreenNavigateAction.NONE,
-            onBack = { context.finish() },
-            topBar = {
-                TopBar(
-                    onDashboardEventSent = onDashboardEventSent
+    ContentScreen(
+        isLoading = false,
+        contentErrorConfig = state.error,
+        navigatableAction = ScreenNavigateAction.NONE,
+        onBack = { context.finish() },
+        topBar = {
+            TopBar(
+                onDashboardEventSent = onDashboardEventSent
+            )
+        }
+    ) { paddingValues ->
+        Content(
+            state = state,
+            effectFlow = viewModel.effect,
+            onEventSend = { viewModel.setEvent(it) },
+            onNavigationRequested = { navigationEffect ->
+                handleNavigationEffect(navigationEffect, navHostController, context)
+            },
+            paddingValues = paddingValues,
+            coroutineScope = scope,
+            modalBottomSheetState = bottomSheetState,
+        )
+
+        if (state.isBottomSheetOpen) {
+            WrapModalBottomSheet(
+                onDismissRequest = {
+                    viewModel.setEvent(
+                        Event.BottomSheet.UpdateBottomSheetState(
+                            isOpen = false
+                        )
+                    )
+                },
+                sheetState = bottomSheetState
+            ) {
+                TransactionsSheetContent(
+                    sheetContent = state.sheetContent,
+                    filtersUi = state.filtersUi,
+                    snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionData,
+                    sortOrder = state.sortOrder,
+                    onEventSent = {
+                        viewModel.setEvent(it)
+                    }
                 )
             }
-        ) { paddingValues ->
-            Content(
-                state = state,
-                effectFlow = viewModel.effect,
-                onEventSend = { viewModel.setEvent(it) },
-                onNavigationRequested = { navigationEffect ->
-                    handleNavigationEffect(navigationEffect, navHostController, context)
-                },
-                paddingValues = paddingValues,
-                coroutineScope = scope,
-                modalBottomSheetState = bottomSheetState,
-            )
+        }
 
-            if (isBottomSheetOpen) {
-                WrapModalBottomSheet(
-                    onDismissRequest = {
-                        viewModel.setEvent(
-                            Event.BottomSheet.UpdateBottomSheetState(
-                                isOpen = false
-                            )
-                        )
-                    },
-                    sheetState = bottomSheetState
-                ) {
-                    TransactionsSheetContent(
-                        sheetContent = state.sheetContent,
-                        filtersUi = state.filtersUi,
-                        snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionData,
-                        sortOrder = state.sortOrder,
-                        onEventSent = {
-                            viewModel.setEvent(it)
-                        }
-                    )
-                }
-            }
-
-            if (isDatePickerDialogVisible) {
-                FiltersDatePickerDialog(
-                    onDateSelected = { millis ->
-                        safeLet(
-                            datePickerDialogConfig.type,
-                            millis,
-                        ) { dateSelectionType, safeMillis ->
-                            when (dateSelectionType) {
-                                DatePickerDialogType.SelectStartDate -> {
-                                    viewModel.setEvent(
-                                        Event.OnStartDateSelected(
-                                            selectedDateMillis = safeMillis
-                                        )
+        if (state.isDatePickerDialogVisible) {
+            FiltersDatePickerDialog(
+                onDateSelected = { millis ->
+                    safeLet(
+                        datePickerDialogConfig.type,
+                        millis,
+                    ) { dateSelectionType, safeMillis ->
+                        when (dateSelectionType) {
+                            DatePickerDialogType.SelectStartDate -> {
+                                viewModel.setEvent(
+                                    Event.OnStartDateSelected(
+                                        selectedDateMillis = safeMillis
                                     )
-                                }
+                                )
+                            }
 
-                                DatePickerDialogType.SelectEndDate -> {
-                                    viewModel.setEvent(
-                                        Event.OnEndDateSelected(
-                                            selectedDateMillis = safeMillis
-                                        )
+                            DatePickerDialogType.SelectEndDate -> {
+                                viewModel.setEvent(
+                                    Event.OnEndDateSelected(
+                                        selectedDateMillis = safeMillis
                                     )
-                                }
+                                )
                             }
                         }
-                    },
-                    onDismiss = {
-                        viewModel.setEvent(
-                            Event.DatePickerDialog.UpdateDialogState(isVisible = false)
-                        )
-                    },
-                    datePickerDialogConfig = datePickerDialogConfig
-                )
-            }
+                    }
+                },
+                onDismiss = {
+                    viewModel.setEvent(
+                        Event.DatePickerDialog.UpdateDialogState(isVisible = false)
+                    )
+                },
+                datePickerDialogConfig = datePickerDialogConfig
+            )
         }
     }
 }
@@ -659,46 +648,6 @@ fun FiltersDatePickerField(
                 }
             }
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FiltersDatePickerDialog(
-    datePickerDialogConfig: DatePickerDialogConfig,
-    onDateSelected: (Long?) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val customSelectableDates = object : SelectableDates {
-        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-            val date = Instant.ofEpochMilli(utcTimeMillis)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-
-            val min = datePickerDialogConfig.lowerLimit ?: LocalDate.MIN
-            val max = datePickerDialogConfig.upperLimit ?: LocalDate.MAX
-            return !date.isBefore(min) && !date.isAfter(max)
-        }
-    }
-
-    val datePickerState = rememberDatePickerState(selectableDates = customSelectableDates)
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                onDateSelected(datePickerState.selectedDateMillis)
-                onDismiss()
-            }) {
-                Text(stringResource(R.string.generic_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.generic_cancel))
-            }
-        }
-    ) {
-        DatePicker(state = datePickerState)
-    }
 }
 
 @ThemeModePreviews

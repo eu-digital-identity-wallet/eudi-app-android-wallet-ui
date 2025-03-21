@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.dayMonthYearFormatter
 import eu.europa.ec.businesslogic.util.fullDateTimeFormatter
 import eu.europa.ec.businesslogic.util.hoursMinutesFormatter
@@ -127,6 +128,9 @@ class TransactionsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val filterValidator: FilterValidator,
 ) : TransactionsInteractor {
+
+    private val genericErrorMsg
+        get() = resourceProvider.genericErrorMessage()
 
     override fun revertFilters() = filterValidator.revertFilters()
     override fun updateLists(filterableList: FilterableList) =
@@ -331,8 +335,8 @@ class TransactionsInteractorImpl(
             }
         }
 
-    override fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState> = flow {
-        runCatching {
+    override fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState> =
+        flow {
             val transactions = getTestTransactions()
             val filterableItems = transactions.map { transaction ->
                 val dateTime = LocalDateTime.parse(transaction.creationDate, fullDateTimeFormatter)
@@ -380,14 +384,11 @@ class TransactionsInteractorImpl(
                     shouldAllowUserInteraction = true
                 )
             )
-        }.onFailure {
-            emit(
-                TransactionInteractorGetTransactionsPartialState.Failure(
-                    error = resourceProvider.getString(R.string.generic_error_message)
-                )
+        }.safeAsync {
+            TransactionInteractorGetTransactionsPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
             )
         }
-    }
 
     override fun getTransactionCategory(dateTime: LocalDateTime): TransactionCategory {
         val transactionCategory = when {
