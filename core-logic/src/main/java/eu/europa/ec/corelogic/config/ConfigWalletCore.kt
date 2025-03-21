@@ -36,14 +36,28 @@ interface WalletCoreConfig {
                     DocumentIdentifier.OTHER(
                         formatType = "eu.europa.ec.eudi.tax.1"
                     ),
-                    DocumentIdentifier.MdocPseudonym,
+                    DocumentIdentifier.OTHER(
+                        formatType = "urn:eu.europa.ec.eudi:tax:1"
+                    ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
+                    ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "urn:eu.europa.ec.eudi:pseudonym_age_over_18:1"
+                    ),
                     DocumentIdentifier.OTHER(
                         formatType = "eu.europa.ec.eudi.pseudonym.age_over_18.deferred_endpoint"
-                    )
+                    ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "eu.europa.ec.eudi.cor.1"
+                    ),
                 ),
                 DocumentCategory.Travel to listOf(
                     DocumentIdentifier.OTHER(
                         formatType = "org.iso.23220.2.photoid.1"
+                    ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "org.iso.23220.photoID.1"
                     ),
                     DocumentIdentifier.OTHER(
                         formatType = "org.iso.18013.5.1.reservation"
@@ -52,7 +66,10 @@ interface WalletCoreConfig {
                 DocumentCategory.Finance to listOf(
                     DocumentIdentifier.OTHER(
                         formatType = "eu.europa.ec.eudi.iban.1"
-                    )
+                    ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "urn:eu.europa.ec.eudi:iban:1"
+                    ),
                 ),
                 DocumentCategory.Education to emptyList(),
                 DocumentCategory.Health to listOf(
@@ -60,13 +77,22 @@ interface WalletCoreConfig {
                         formatType = "eu.europa.ec.eudi.hiid.1"
                     ),
                     DocumentIdentifier.OTHER(
+                        formatType = "urn:eu.europa.ec.eudi:hiid:1"
+                    ),
+                    DocumentIdentifier.OTHER(
                         formatType = "eu.europa.ec.eudi.ehic.1"
+                    ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "urn:eu.europa.ec.eudi:ehic:1"
                     ),
                 ),
                 DocumentCategory.SocialSecurity to listOf(
                     DocumentIdentifier.OTHER(
-                        formatType = "eu.europa.ec.eudi.samplepda1.1"
-                    )
+                        formatType = "eu.europa.ec.eudi.pda1.1"
+                    ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "urn:eu.europa.ec.eudi:pda1:1"
+                    ),
                 ),
                 DocumentCategory.Retail to listOf(
                     DocumentIdentifier.OTHER(
@@ -75,11 +101,17 @@ interface WalletCoreConfig {
                     DocumentIdentifier.OTHER(
                         formatType = "eu.europa.ec.eudi.msisdn.1"
                     ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "urn:eu.europa.ec.eudi:msisdn:1"
+                    ),
                 ),
                 DocumentCategory.Other to listOf(
                     DocumentIdentifier.OTHER(
                         formatType = "eu.europa.ec.eudi.por.1"
-                    )
+                    ),
+                    DocumentIdentifier.OTHER(
+                        formatType = "urn:eu.europa.ec.eudi:por:1"
+                    ),
                 ),
             )
         )

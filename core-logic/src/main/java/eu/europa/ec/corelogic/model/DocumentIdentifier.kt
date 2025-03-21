@@ -30,11 +30,6 @@ sealed interface DocumentIdentifier {
             get() = "eu.europa.ec.eudi.pid.1"
     }
 
-    data object MdocPseudonym : DocumentIdentifier {
-        override val formatType: FormatType
-            get() = "eu.europa.ec.eudi.pseudonym.age_over_18.1"
-    }
-
     data object SdJwtPid : DocumentIdentifier {
         override val formatType: FormatType
             get() = "urn:eu.europa.ec.eudi:pid:1"
