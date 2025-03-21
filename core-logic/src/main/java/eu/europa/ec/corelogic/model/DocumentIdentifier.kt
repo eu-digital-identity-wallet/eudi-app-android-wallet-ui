@@ -43,9 +43,9 @@ sealed interface DocumentIdentifier {
 /**
  * @return A [DocumentIdentifier] from a FormatType.
  */
-fun FormatType.toDocumentIdentifier(): DocumentIdentifier = when (this) {
-    DocumentIdentifier.MdocPid.formatType -> DocumentIdentifier.MdocPid
-    DocumentIdentifier.SdJwtPid.formatType -> DocumentIdentifier.SdJwtPid
+fun FormatType.toDocumentIdentifier(): DocumentIdentifier = when (this.lowercase()) {
+    DocumentIdentifier.MdocPid.formatType.lowercase() -> DocumentIdentifier.MdocPid
+    DocumentIdentifier.SdJwtPid.formatType.lowercase() -> DocumentIdentifier.SdJwtPid
     else -> DocumentIdentifier.OTHER(formatType = this)
 }
 
@@ -60,9 +60,9 @@ fun Document.toDocumentIdentifier(): DocumentIdentifier {
 private fun createDocumentIdentifier(
     formatType: FormatType
 ): DocumentIdentifier {
-    return when (formatType) {
-        DocumentIdentifier.MdocPid.formatType -> DocumentIdentifier.MdocPid
-        DocumentIdentifier.SdJwtPid.formatType -> DocumentIdentifier.SdJwtPid
+    return when (formatType.lowercase()) {
+        DocumentIdentifier.MdocPid.formatType.lowercase() -> DocumentIdentifier.MdocPid
+        DocumentIdentifier.SdJwtPid.formatType.lowercase() -> DocumentIdentifier.SdJwtPid
         else -> DocumentIdentifier.OTHER(formatType = formatType)
     }
 }
@@ -88,8 +88,8 @@ private fun createDocumentIdentifier(
 fun DocumentIdentifier.toDocumentCategory(allCategories: DocumentCategories): DocumentCategory {
     return allCategories.value.entries.find { (_, identifiersInCategory) ->
         val formatTypesInCategory: List<FormatType> = identifiersInCategory
-            .map { it.formatType }
+            .map { it.formatType.lowercase() }
 
-        this.formatType in formatTypesInCategory
+        this.formatType.lowercase() in formatTypesInCategory
     }?.key ?: DocumentCategory.Other
 }
