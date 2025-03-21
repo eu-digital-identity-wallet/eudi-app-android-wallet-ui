@@ -38,11 +38,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
-import eu.europa.ec.commonfeature.ui.request.model.ExpandedUiItem
-import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentClaim
+import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.corelogic.model.ClaimPath
+import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -65,7 +65,7 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
@@ -203,7 +203,7 @@ private fun Content(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = SPACING_SMALL.dp),
-            items = state.items,
+            requestDocuments = state.items,
             noData = state.noItems,
             onEventSend = onEventSend,
         )
@@ -235,7 +235,7 @@ private fun Content(
 @Composable
 private fun DisplayRequestItems(
     modifier: Modifier,
-    items: List<RequestDocumentItemUi>,
+    requestDocuments: List<RequestDocumentItemUi>,
     noData: Boolean,
     onEventSend: (Event) -> Unit,
 ) {
@@ -252,27 +252,27 @@ private fun DisplayRequestItems(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
             ) {
-                items.forEach { requestItem ->
+                requestDocuments.forEach { requestDocument ->
                     WrapExpandableListItem(
-                        data = ExpandableListItemData(
-                            collapsed = requestItem.collapsedUiItem.uiItem,
-                            expanded = requestItem.expandedUiItems.map { it.uiItem }
-                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        header = requestDocument.headerUi.header,
+                        data = requestDocument.headerUi.nestedItems,
                         onItemClick = { item ->
                             onEventSend(Event.UserIdentificationClicked(itemId = item.itemId))
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        hideSensitiveContent = false,
-                        isExpanded = requestItem.collapsedUiItem.isExpanded,
-                        onExpandedChange = {
-                            onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = requestItem.collapsedUiItem.uiItem.itemId))
+                        onExpandedChange = { expandedItem ->
+                            onEventSend(Event.ExpandOrCollapseRequestDocumentItem(itemId = expandedItem.itemId))
                         },
+                        isExpanded = requestDocument.headerUi.isExpanded,
                         throttleClicks = false,
+                        hideSensitiveContent = false,
+                        collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                        expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                     )
                 }
             }
 
-            if (items.isNotEmpty()) {
+            if (requestDocuments.isNotEmpty()) {
                 SectionTitle(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -324,135 +324,59 @@ private fun ContentPreview() {
                 ),
                 items = listOf(
                     RequestDocumentItemUi(
-                        collapsedUiItem = CollapsedUiItem(
-                            isExpanded = false,
-                            uiItem = ListItemData(
+                        domainPayload = DocumentPayloadDomain(
+                            docName = "docName",
+                            docId = "docId",
+                            domainDocFormat = DomainDocumentFormat.MsoMdoc(namespace = "pid"),
+                            docClaimsDomain = listOf(
+                                DomainClaim.Primitive(
+                                    key = "key",
+                                    displayTitle = "title",
+                                    value = "value",
+                                    isRequired = false,
+                                    path = ClaimPath(value = listOf())
+                                ),
+                            )
+                        ),
+                        headerUi = ExpandableListItem.NestedListItemData(
+                            header = ListItemData(
                                 itemId = "000",
                                 mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
                                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
                                 trailingContentData = ListItemTrailingContentData.Icon(
                                     iconData = AppIcons.KeyboardArrowDown
                                 ),
-                            )
-                        ),
-                        expandedUiItems = listOf(
-                            ExpandedUiItem(
-                                domainPayload = DocumentPayloadDomain(
-                                    docName = "docName",
-                                    docId = "docId",
-                                    docNamespace = "docNamespace",
-                                    docClaimsDomain = listOf(
-                                        RequestDocumentClaim(
-                                            elementIdentifier = "elementIdentifier",
-                                            value = "value",
-                                            readableName = "readableName",
-                                            isRequired = true,
-                                            isAvailable = true,
+                            ),
+                            nestedItems = listOf(
+                                ExpandableListItem.SingleListItemData(
+                                    ListItemData(
+                                        itemId = "00",
+                                        overlineText = "Family name",
+                                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                                        trailingContentData = ListItemTrailingContentData.Checkbox(
+                                            checkboxData = CheckboxData(
+                                                isChecked = true
+                                            )
                                         )
                                     )
                                 ),
-                                uiItem = ListItemData(
-                                    itemId = "00",
-                                    overlineText = "Family name",
-                                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                                ExpandableListItem.SingleListItemData(
+                                    ListItemData(
+                                        itemId = "01",
+                                        overlineText = "Given name",
+                                        mainContentData = ListItemMainContentData.Text(text = "John"),
+                                        trailingContentData = ListItemTrailingContentData.Checkbox(
+                                            checkboxData = CheckboxData(
+                                                isChecked = true
+                                            )
+                                        )
+                                    ),
                                 )
+
                             ),
+                            isExpanded = true
                         )
-                    ),
-                    RequestDocumentItemUi(
-                        collapsedUiItem = CollapsedUiItem(
-                            isExpanded = true,
-                            uiItem = ListItemData(
-                                itemId = "111",
-                                mainContentData = ListItemMainContentData.Text(text = "mDL"),
-                                supportingText = stringResource(R.string.request_collapsed_supporting_text),
-                                trailingContentData = ListItemTrailingContentData.Icon(
-                                    iconData = AppIcons.KeyboardArrowUp
-                                ),
-                            )
-                        ),
-                        expandedUiItems = listOf(
-                            ExpandedUiItem(
-                                domainPayload = DocumentPayloadDomain(
-                                    docName = "docName",
-                                    docId = "docId",
-                                    docNamespace = "docNamespace",
-                                    docClaimsDomain = listOf(
-                                        RequestDocumentClaim(
-                                            elementIdentifier = "elementIdentifier",
-                                            value = "value",
-                                            readableName = "readableName",
-                                            isRequired = true,
-                                            isAvailable = true,
-                                        )
-                                    )
-                                ),
-                                uiItem = ListItemData(
-                                    itemId = "10",
-                                    overlineText = "Family name",
-                                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
-                                    trailingContentData = ListItemTrailingContentData.Checkbox(
-                                        checkboxData = CheckboxData(
-                                            isChecked = false
-                                        )
-                                    )
-                                ),
-                            ),
-                            ExpandedUiItem(
-                                domainPayload = DocumentPayloadDomain(
-                                    docName = "docName",
-                                    docId = "docId",
-                                    docNamespace = "docNamespace",
-                                    docClaimsDomain = listOf(
-                                        RequestDocumentClaim(
-                                            elementIdentifier = "elementIdentifier",
-                                            value = "value",
-                                            readableName = "readableName",
-                                            isRequired = true,
-                                            isAvailable = true,
-                                        )
-                                    )
-                                ),
-                                uiItem = ListItemData(
-                                    itemId = "11",
-                                    overlineText = "Given name",
-                                    mainContentData = ListItemMainContentData.Text(text = "John"),
-                                    trailingContentData = ListItemTrailingContentData.Checkbox(
-                                        checkboxData = CheckboxData(
-                                            isChecked = true
-                                        )
-                                    )
-                                ),
-                            ),
-                            ExpandedUiItem(
-                                domainPayload = DocumentPayloadDomain(
-                                    docName = "docName",
-                                    docId = "docId",
-                                    docNamespace = "docNamespace",
-                                    docClaimsDomain = listOf(
-                                        RequestDocumentClaim(
-                                            elementIdentifier = "elementIdentifier",
-                                            value = "value",
-                                            readableName = "readableName",
-                                            isRequired = true,
-                                            isAvailable = true,
-                                        )
-                                    )
-                                ),
-                                uiItem = ListItemData(
-                                    itemId = "12",
-                                    overlineText = "Age in years",
-                                    mainContentData = ListItemMainContentData.Text(text = "18"),
-                                    trailingContentData = ListItemTrailingContentData.Checkbox(
-                                        checkboxData = CheckboxData(
-                                            isChecked = true,
-                                            enabled = false,
-                                        )
-                                    )
-                                ),
-                            ),
-                        )
-                    ),
+                    )
                 )
             ),
             effectFlow = Channel<Effect>().receiveAsFlow(),

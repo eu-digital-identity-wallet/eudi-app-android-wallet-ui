@@ -42,7 +42,7 @@ import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -73,7 +73,7 @@ data class State(
     val isFromOnPause: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 
-    val filtersUi: List<ExpandableListItemData> = emptyList(),
+    val filtersUi: List<ExpandableListItem.NestedListItemData> = emptyList(),
     val sortOrder: DualSelectorButtonData,
     val isFilteringActive: Boolean,
 ) : ViewState
@@ -146,7 +146,9 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class DocumentsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItemData>) : DocumentsBottomSheetContent()
+    data class Filters(val filters: List<ExpandableListItem.SingleListItemData>) :
+        DocumentsBottomSheetContent()
+
     data object AddDocument : DocumentsBottomSheetContent()
     data class DeferredDocumentPressed(val documentId: DocumentId) : DocumentsBottomSheetContent()
     data class DeferredDocumentsReady(

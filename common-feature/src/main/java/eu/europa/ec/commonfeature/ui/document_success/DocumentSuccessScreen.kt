@@ -45,7 +45,6 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItemData
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
@@ -136,7 +135,7 @@ private fun Content(
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
 ) {
     Column(
         modifier = Modifier
@@ -157,18 +156,18 @@ private fun Content(
         ) {
             state.items.forEach { successItem ->
                 WrapExpandableListItem(
-                    data = ExpandableListItemData(
-                        collapsed = successItem.collapsedUiItem.uiItem,
-                        expanded = successItem.expandedUiItems.map { it }
-                    ),
-                    onItemClick = null,
                     modifier = Modifier.fillMaxWidth(),
-                    hideSensitiveContent = false,
-                    isExpanded = successItem.collapsedUiItem.isExpanded,
-                    onExpandedChange = {
-                        onEventSend(Event.ExpandOrCollapseSuccessDocumentItem(itemId = successItem.collapsedUiItem.uiItem.itemId))
+                    header = successItem.header,
+                    data = successItem.nestedItems,
+                    onItemClick = null,
+                    onExpandedChange = { expandedItem ->
+                        onEventSend(Event.ExpandOrCollapseSuccessDocumentItem(itemId = expandedItem.itemId))
                     },
+                    isExpanded = successItem.isExpanded,
                     throttleClicks = false,
+                    hideSensitiveContent = false,
+                    collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                    expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.tertiary,
                     )

@@ -43,9 +43,9 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 @Composable
 fun WrapListItem(
+    modifier: Modifier = Modifier,
     item: ListItemData,
     onItemClick: ((item: ListItemData) -> Unit)?,
-    modifier: Modifier = Modifier,
     throttleClicks: Boolean = true,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
@@ -53,17 +53,19 @@ fun WrapListItem(
     overlineTextStyle: TextStyle? = null,
     supportingTextColor: Color? = null,
     clickableAreas: List<ClickableArea>? = null,
+    shape: Shape? = null,
     colors: CardColors? = null,
     shape: Shape? = null,
 ) {
     WrapCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         throttleClicks = throttleClicks,
+        shape = shape,
         colors = colors,
         shape = shape,
     ) {
         ListItem(
-            modifier = modifier,
+            modifier = Modifier.fillMaxWidth(),
             item = item,
             onItemClick = onItemClick,
             hideSensitiveContent = hideSensitiveContent,

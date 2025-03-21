@@ -20,52 +20,36 @@ import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
-import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.eudi.wallet.document.ElementIdentifier
+import eu.europa.ec.corelogic.extension.getLocalizedClaimName
+import eu.europa.ec.corelogic.extension.removeEmptyGroups
+import eu.europa.ec.corelogic.extension.sortRecursivelyBy
+import eu.europa.ec.corelogic.model.ClaimPath
+import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
+import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
+import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.Locale
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 fun extractValueFromDocumentOrEmpty(
     document: IssuedDocument,
-    key: String
+    key: String,
 ): String {
     return document.data.claims
         .firstOrNull { it.identifier == key }
         ?.value
         ?.toString()
         ?: ""
-}
-
-fun extractFullNameFromDocumentOrEmpty(document: IssuedDocument): String {
-    val firstName = extractValueFromDocumentOrEmpty(
-        document = document,
-        key = DocumentJsonKeys.FIRST_NAME
-    )
-    val lastName = extractValueFromDocumentOrEmpty(
-        document = document,
-        key = DocumentJsonKeys.LAST_NAME
-    )
-    return if (firstName.isNotBlank() && lastName.isNotBlank()) {
-        "$firstName $lastName"
-    } else if (firstName.isNotBlank()) {
-        firstName
-    } else if (lastName.isNotBlank()) {
-        lastName
-    } else {
-        ""
-    }
-}
-
-fun keyIsBase64(key: String): Boolean {
-    val listOfBase64Keys = DocumentJsonKeys.BASE64_IMAGE_KEYS
-    return listOfBase64Keys.contains(key)
 }
 
 fun keyIsPortrait(key: String): Boolean {
@@ -108,25 +92,43 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
-fun parseKeyValueUi(
+fun getReadableNameFromIdentifier(
+    metadata: DocumentMetaData?,
+    userLocale: Locale,
+    identifier: String,
+): String {
+    return metadata?.claims
+        ?.find { it.name.name == identifier }
+        ?.display.getLocalizedClaimName(
+            userLocale = userLocale,
+            fallback = identifier
+        )
+}
+
+@OptIn(ExperimentalUuidApi::class)
+fun createKeyValue(
     item: Any,
-    groupIdentifier: String,
-    groupIdentifierKey: String,
-    keyIdentifier: String = "",
+    groupKey: String,
+    childKey: String = "",
+    disclosurePath: ClaimPath,
     resourceProvider: ResourceProvider,
-    allItems: StringBuilder
+    metadata: DocumentMetaData?,
+    allItems: MutableList<DomainClaim>,
 ) {
     when (item) {
 
         is Map<*, *> -> {
             item.forEach { (key, value) ->
                 safeLet(key as? String, value) { key, value ->
-                    parseKeyValueUi(
+                    val newGroupKey = if (value is Collection<*>) key else groupKey
+                    val newChildKey = if (value is Collection<*>) "" else key
+                    createKeyValue(
                         item = value,
-                        groupIdentifier = groupIdentifier,
-                        groupIdentifierKey = groupIdentifierKey,
-                        keyIdentifier = key,
+                        groupKey = newGroupKey,
+                        childKey = newChildKey,
+                        disclosurePath = disclosurePath,
                         resourceProvider = resourceProvider,
+                        metadata = metadata,
                         allItems = allItems
                     )
                 }
@@ -134,59 +136,68 @@ fun parseKeyValueUi(
         }
 
         is Collection<*> -> {
+
+            val children: MutableList<DomainClaim> = mutableListOf()
+
             item.forEach { value ->
                 value?.let {
-                    parseKeyValueUi(
+                    createKeyValue(
                         item = it,
-                        groupIdentifier = groupIdentifier,
-                        groupIdentifierKey = groupIdentifierKey,
+                        groupKey = groupKey,
+                        disclosurePath = disclosurePath,
                         resourceProvider = resourceProvider,
-                        allItems = allItems
+                        metadata = metadata,
+                        allItems = children
                     )
                 }
             }
-        }
 
-        is Boolean -> {
-            allItems.append(
-                resourceProvider.getString(
-                    if (item) {
-                        R.string.document_details_boolean_item_true_readable_value
-                    } else {
-                        R.string.document_details_boolean_item_false_readable_value
-                    }
+            if (childKey.isEmpty()) {
+                allItems.add(
+                    DomainClaim.Group(
+                        key = groupKey,
+                        displayTitle = getReadableNameFromIdentifier(
+                            metadata = metadata,
+                            userLocale = resourceProvider.getLocale(),
+                            identifier = groupKey
+                        ),
+                        path = ClaimPath(listOf(Uuid.random().toString())),
+                        items = children
+                    )
                 )
-            )
+            } else {
+                allItems.addAll(children)
+            }
         }
 
         else -> {
+
             val date: String? = (item as? String)?.toDateFormatted()
-            allItems.append(
-                when {
 
-                    keyIsGender(groupIdentifierKey) -> {
-                        getGenderValue(item.toString(), resourceProvider)
-                    }
+            val formattedValue = when {
+                keyIsGender(groupKey) -> getGenderValue(item.toString(), resourceProvider)
+                keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64()
+                date != null -> date
+                item is Boolean -> resourceProvider.getString(
+                    if (item) R.string.document_details_boolean_item_true_readable_value
+                    else R.string.document_details_boolean_item_false_readable_value
+                )
 
-                    keyIsUserPseudonym(groupIdentifierKey) -> {
-                        item.toString().decodeFromBase64()
-                    }
+                else -> item.toString()
+            }
 
-                    date != null && keyIdentifier.isEmpty() -> {
-                        date
-                    }
-
-                    else -> {
-                        val jsonString = item.toString()
-                        if (keyIdentifier.isEmpty()) {
-                            jsonString
-                        } else {
-                            val lineChange = if (allItems.isNotEmpty()) "\n" else ""
-                            val value = jsonString.toDateFormatted() ?: jsonString
-                            "$lineChange$keyIdentifier: $value"
-                        }
-                    }
-                }
+            allItems.add(
+                DomainClaim.Primitive(
+                    key = childKey.ifEmpty { groupKey },
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = resourceProvider.getLocale(),
+                        identifier = childKey.ifEmpty { groupKey }
+                    ),
+                    path = disclosurePath,
+                    isRequired = false,
+                    value = formattedValue
+                )
             )
         }
     }
@@ -195,7 +206,7 @@ fun parseKeyValueUi(
 fun documentHasExpired(
     documentExpirationDate: Instant,
     currentDate: LocalDate = LocalDate.now(),
-    zoneId: ZoneId = ZoneId.systemDefault()
+    zoneId: ZoneId = ZoneId.systemDefault(),
 ): Boolean {
     return runCatching {
         // Convert Instant to LocalDate using the provided ZoneId
@@ -217,8 +228,99 @@ val IssuedDocument.docNamespace: NameSpace?
         is SdJwtVcData -> null
     }
 
-fun generateUniqueFieldId(
-    elementIdentifier: ElementIdentifier,
-    documentId: DocumentId,
-): String =
-    elementIdentifier + documentId
+private fun insertPath(
+    tree: List<DomainClaim>,
+    path: ClaimPath,
+    disclosurePath: ClaimPath,
+    claims: List<DocumentClaim>,
+    metadata: DocumentMetaData?,
+    resourceProvider: ResourceProvider,
+): List<DomainClaim> {
+    if (path.value.isEmpty()) return tree
+
+    val userLocale = resourceProvider.getLocale()
+
+    val key = path.value.first()
+
+    val existingNode = tree.find { it.key == key }
+
+    val currentClaim: DocumentClaim? = claims.find { it.identifier == key }
+
+    return if (path.value.size == 1) {
+        // Leaf node (Primitive or Nested Structure)
+        if (existingNode == null && currentClaim != null) {
+            val accumulatedClaims: MutableList<DomainClaim> = mutableListOf()
+            createKeyValue(
+                item = currentClaim.value!!,
+                groupKey = currentClaim.identifier,
+                resourceProvider = resourceProvider,
+                metadata = metadata,
+                disclosurePath = disclosurePath,
+                allItems = accumulatedClaims,
+            )
+            tree + accumulatedClaims
+        } else {
+            tree // Already exists or not available, return unchanged
+        }
+    } else {
+        // Group node (Intermediate)
+        val childClaims =
+            (claims.find { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
+        val updatedNode = if (existingNode is DomainClaim.Group) {
+            // Update existing group by inserting the next path segment into its items
+            existingNode.copy(
+                items = insertPath(
+                    tree = existingNode.items,
+                    path = ClaimPath(path.value.drop(1)),
+                    disclosurePath = disclosurePath,
+                    claims = childClaims,
+                    metadata = metadata,
+                    resourceProvider = resourceProvider,
+                )
+            )
+        } else {
+            // Create a new group and insert the next path segment
+            DomainClaim.Group(
+                key = currentClaim?.identifier ?: key,
+                displayTitle = getReadableNameFromIdentifier(
+                    metadata = metadata,
+                    userLocale = userLocale,
+                    identifier = currentClaim?.identifier ?: key
+                ),
+                path = ClaimPath(disclosurePath.value.take((disclosurePath.value.size - path.value.size) + 1)),
+                items = insertPath(
+                    tree = emptyList(),
+                    path = ClaimPath(path.value.drop(1)),
+                    disclosurePath = disclosurePath,
+                    claims = childClaims,
+                    metadata = metadata,
+                    resourceProvider = resourceProvider,
+                )
+            )
+        }
+
+        tree.filter { it.key != key } + updatedNode // Replace or add the updated node
+    }
+}
+
+// Function to build the tree from a list of paths
+fun transformPathsToDomainClaims(
+    paths: List<ClaimPath>,
+    claims: List<DocumentClaim>,
+    metadata: DocumentMetaData?,
+    resourceProvider: ResourceProvider,
+): List<DomainClaim> {
+    return paths.fold<ClaimPath, List<DomainClaim>>(initial = emptyList()) { acc, path ->
+        insertPath(
+            tree = acc,
+            path = path,
+            disclosurePath = path,
+            claims = claims,
+            metadata = metadata,
+            resourceProvider = resourceProvider,
+        )
+    }.removeEmptyGroups()
+        .sortRecursivelyBy {
+            it.displayTitle.lowercase()
+        }
+}

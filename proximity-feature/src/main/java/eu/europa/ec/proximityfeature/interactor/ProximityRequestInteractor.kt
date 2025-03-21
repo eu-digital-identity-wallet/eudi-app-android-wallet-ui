@@ -21,7 +21,6 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
-import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer.transformToUiItems
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
@@ -75,20 +74,27 @@ class ProximityRequestInteractorImpl(
                             verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
-                        val requestDataUi = RequestTransformer.transformToDomainItems(
+                        val documentsDomain = RequestTransformer.transformToDomainItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
                             resourceProvider = resourceProvider
-                        )
+                        ).getOrThrow()
 
-                        ProximityRequestInteractorPartialState.Success(
-                            verifierName = response.verifierName,
-                            verifierIsTrusted = response.verifierIsTrusted,
-                            requestDocuments = transformToUiItems(
-                                documentsDomain = requestDataUi.getOrThrow(),
-                                resourceProvider = resourceProvider,
+                        if (documentsDomain.isNotEmpty()) {
+                            ProximityRequestInteractorPartialState.Success(
+                                verifierName = response.verifierName,
+                                verifierIsTrusted = response.verifierIsTrusted,
+                                requestDocuments = RequestTransformer.transformToUiItems(
+                                    documentsDomain = documentsDomain,
+                                    resourceProvider = resourceProvider,
+                                )
                             )
-                        )
+                        } else {
+                            ProximityRequestInteractorPartialState.NoData(
+                                verifierName = response.verifierName,
+                                verifierIsTrusted = response.verifierIsTrusted,
+                            )
+                        }
                     }
                 }
 
