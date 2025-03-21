@@ -56,10 +56,9 @@ slf4j = "2.0.7"
 gson = "2.11.0"
 googlePhoneNumber = "8.13.40"
 zxing = "3.5.3"
-eudiWalletCore = "0.14.0"
-cborTree = "0.01.02"
+eudiWalletCore = "0.15.1"
 cameraCore = "1.4.1"
-owaspDependencyCheck = "10.0.3"
+owaspDependencyCheck = "12.1.0"
 material3 = "1.3.1"
 appCenter = "5.0.6"
 kover = "0.7.5"
@@ -151,7 +150,6 @@ okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver",
 google-phonenumber = { group = "com.googlecode.libphonenumber", name = "libphonenumber", version.ref = "googlePhoneNumber" }
 zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 eudi-wallet-core = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-wallet-core", version.ref = "eudiWalletCore" }
-cbor-tree = { group = "com.google.iot.cbor", name = "cbor", version.ref = "cborTree" }
 appcenter-analytics = { group = "com.microsoft.appcenter", name = "appcenter-analytics", version.ref = "appCenter" }
 appcenter-crashes = { group = "com.microsoft.appcenter", name = "appcenter-crashes", version.ref = "appCenter" }
 appcenter-distribute = { group = "com.microsoft.appcenter", name = "appcenter-distribute", version.ref = "appCenter" }

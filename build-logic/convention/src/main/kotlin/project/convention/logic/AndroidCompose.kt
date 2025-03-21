@@ -51,8 +51,8 @@ internal fun Project.configureAndroidCompose(
             add("implementation", libs.findLibrary("accompanist-permissions").get())
 
             add("implementation", libs.findLibrary("androidx.constraintlayout.compose").get())
-            add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())
             add("implementation", libs.findLibrary("androidx.compose.ui.tooling.preview").get())
+            add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())
 
             add("androidTestImplementation", platform(bom))
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.testManifest").get())

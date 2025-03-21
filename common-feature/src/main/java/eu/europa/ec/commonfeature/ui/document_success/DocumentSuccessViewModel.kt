@@ -18,13 +18,14 @@ package eu.europa.ec.commonfeature.ui.document_success
 
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
-import eu.europa.ec.commonfeature.ui.document_success.model.DocumentSuccessItemUi
 import eu.europa.ec.uilogic.component.AppIconAndTextData
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -36,7 +37,7 @@ data class State(
     val isLoading: Boolean = false,
     val headerConfig: ContentHeaderConfig,
 
-    val items: List<DocumentSuccessItemUi> = emptyList(),
+    val items: List<ExpandableListItem.NestedListItemData> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -50,19 +51,19 @@ sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data class SwitchScreen(
             val screenRoute: String,
-            val popUpRoute: String?
+            val popUpRoute: String?,
         ) : Navigation()
 
         data class PopBackStackUpTo(
             val screenRoute: String,
-            val inclusive: Boolean
+            val inclusive: Boolean,
         ) : Navigation()
 
         data object Pop : Navigation()
 
         data class DeepLink(
             val link: Uri,
-            val routeToPop: String?
+            val routeToPop: String?,
         ) : Navigation()
     }
 }
@@ -95,31 +96,33 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
 
     private fun expandOrCollapseSuccessDocumentItem(id: String) {
         val currentItems = viewState.value.items
-        val updatedItems = currentItems.map { item ->
-            if (item.collapsedUiItem.uiItem.itemId == id) {
 
-                val newIsExpanded = !item.collapsedUiItem.isExpanded
-
-                // Change the Icon based on the new isExpanded state
-                val newIconData = if (newIsExpanded) {
-                    AppIcons.KeyboardArrowUp
-                } else {
-                    AppIcons.KeyboardArrowDown
-                }
-
-                item.copy(
-                    collapsedUiItem = item.collapsedUiItem.copy(
-                        isExpanded = newIsExpanded,
-                        uiItem = item.collapsedUiItem.uiItem.copy(
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = newIconData
-                            )
-                        )
+        val updatedItems = currentItems.map { successDocument ->
+            val newHeader = if (successDocument.header.itemId == id) {
+                val newIsExpanded = !successDocument.isExpanded
+                val newCollapsed = successDocument.header.copy(
+                    trailingContentData = ListItemTrailingContentData.Icon(
+                        iconData = if (newIsExpanded) {
+                            AppIcons.KeyboardArrowUp
+                        } else {
+                            AppIcons.KeyboardArrowDown
+                        }
                     )
                 )
+
+                successDocument.copy(
+                    header = newCollapsed,
+                    isExpanded = newIsExpanded
+                )
             } else {
-                item
+                successDocument
             }
+
+            successDocument.copy(
+                header = newHeader.header,
+                isExpanded = newHeader.isExpanded,
+                nestedItems = newHeader.nestedItems.toggleExpansionState(id)
+            )
         }
 
         setState {

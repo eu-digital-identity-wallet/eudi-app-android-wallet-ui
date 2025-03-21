@@ -16,11 +16,17 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
@@ -31,63 +37,105 @@ import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
-import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
-data class ExpandableListItemData(
-    val collapsed: ListItemData,
-    val expanded: List<ListItemData>,
-)
+sealed class ExpandableListItem {
+    abstract val header: ListItemData
+
+    data class SingleListItemData(
+        override val header: ListItemData,
+    ) : ExpandableListItem()
+
+    data class NestedListItemData(
+        override val header: ListItemData,
+        val nestedItems: List<ExpandableListItem>,
+        val isExpanded: Boolean,
+    ) : ExpandableListItem()
+}
 
 @Composable
 fun WrapExpandableListItem(
-    data: ExpandableListItemData,
-    onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
+    header: ListItemData,
+    data: List<ExpandableListItem>,
+    onItemClick: ((item: ListItemData) -> Unit)?,
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
-    onExpandedChange: () -> Unit,
+    onExpandedChange: ((item: ListItemData) -> Unit)?,
     throttleClicks: Boolean = true,
-    collapsedMainContentVerticalPadding: Dp = SPACING_MEDIUM.dp,
+    collapsedMainContentVerticalPadding: Dp? = null,
     collapsedClickableAreas: List<ClickableArea>? = null,
-    expandedMainContentVerticalPadding: Dp = 12.dp,
+    expandedMainContentVerticalPadding: Dp? = null,
     expandedClickableAreas: List<ClickableArea>? = null,
-    expandedAddDivider: Boolean = true,
-    colors: CardColors? = null,
+    addDivider: Boolean = true,
+    shape: Shape? = null,
+    colors: CardColors? = null
 ) {
     WrapExpandableCard(
         modifier = modifier,
+        isExpanded = isExpanded,
+        throttleClicks = throttleClicks,
+        shape = shape,
+        colors = colors,
+        onExpandedChange = { onExpandedChange?.invoke(header) },
         cardCollapsedContent = {
             WrapListItem(
-                item = data.collapsed,
-                onItemClick = {
-                    onExpandedChange()
-                },
+                modifier = Modifier.fillMaxWidth(),
+                item = header,
+                onItemClick = onExpandedChange,
                 throttleClicks = throttleClicks,
                 hideSensitiveContent = false,
                 mainContentVerticalPadding = collapsedMainContentVerticalPadding,
                 clickableAreas = collapsedClickableAreas,
+                shape = RectangleShape,
                 colors = colors,
+                mainContentTextStyle = LocalTextStyle.current.copy(
+                    fontWeight = FontWeight.Bold
+                )
             )
         },
         cardExpandedContent = {
-            WrapListItems(
-                items = data.expanded,
-                onItemClick = onItemClick,
-                hideSensitiveContent = hideSensitiveContent,
-                mainContentVerticalPadding = expandedMainContentVerticalPadding,
-                clickableAreas = expandedClickableAreas,
-                addDivider = expandedAddDivider,
-                shape = RoundedCornerShape(
-                    bottomStart = SIZE_SMALL.dp,
-                    bottomEnd = SIZE_SMALL.dp,
-                ),
-                colors = colors,
-            )
-        },
-        isExpanded = isExpanded,
-        throttleClicks = throttleClicks,
-        colors = colors,
+            data.forEachIndexed { index, listItem ->
+                when (listItem) {
+                    is ExpandableListItem.SingleListItemData -> {
+                        WrapListItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            item = listItem.header,
+                            onItemClick = onItemClick,
+                            throttleClicks = throttleClicks,
+                            hideSensitiveContent = hideSensitiveContent,
+                            mainContentVerticalPadding = expandedMainContentVerticalPadding,
+                            clickableAreas = expandedClickableAreas,
+                            shape = RectangleShape,
+                            colors = colors,
+                        )
+                    }
+
+                    is ExpandableListItem.NestedListItemData -> {
+                        WrapExpandableListItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            header = listItem.header,
+                            data = listItem.nestedItems,
+                            onItemClick = onItemClick,
+                            onExpandedChange = onExpandedChange,
+                            throttleClicks = throttleClicks,
+                            hideSensitiveContent = hideSensitiveContent,
+                            isExpanded = listItem.isExpanded,
+                            collapsedMainContentVerticalPadding = collapsedMainContentVerticalPadding,
+                            collapsedClickableAreas = collapsedClickableAreas,
+                            expandedMainContentVerticalPadding = expandedMainContentVerticalPadding,
+                            expandedClickableAreas = expandedClickableAreas,
+                            shape = RectangleShape,
+                            colors = colors
+                        )
+                    }
+                }
+
+                if (addDivider && index < data.lastIndex) {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = SPACING_MEDIUM.dp))
+                }
+            }
+        }
     )
 }
 
@@ -95,8 +143,8 @@ fun WrapExpandableListItem(
 @Composable
 private fun WrapExpandableListItemPreview() {
     PreviewTheme {
-        val data = ExpandableListItemData(
-            collapsed = ListItemData(
+        val data = ExpandableListItem.NestedListItemData(
+            header = ListItemData(
                 itemId = "0",
                 mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
@@ -104,27 +152,28 @@ private fun WrapExpandableListItemPreview() {
                     iconData = AppIcons.KeyboardArrowDown
                 ),
             ),
-            expanded = listOf(
-                ListItemData(
-                    itemId = "1",
-                    overlineText = "Family name",
-                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
+            isExpanded = true,
+            nestedItems = listOf(
+                ExpandableListItem.SingleListItemData(
+                    ListItemData(
+                        itemId = "1",
+                        overlineText = "Family name",
+                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                    )
                 ),
-                ListItemData(
-                    itemId = "2",
-                    overlineText = "Given name",
-                    mainContentData = ListItemMainContentData.Text(text = "John"),
-                ),
-                ListItemData(
-                    itemId = "3",
-                    overlineText = "Date of birth",
-                    mainContentData = ListItemMainContentData.Text(text = "21 Oct 2023"),
+                ExpandableListItem.SingleListItemData(
+                    ListItemData(
+                        itemId = "1",
+                        overlineText = "Given Name",
+                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                    )
                 ),
             )
         )
 
         WrapExpandableListItem(
-            data = data,
+            header = data.header,
+            data = listOf(data),
             isExpanded = true,
             onExpandedChange = {},
             onItemClick = {},

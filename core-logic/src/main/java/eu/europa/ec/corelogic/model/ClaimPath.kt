@@ -14,17 +14,26 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.document_details.domain
+package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.DomainClaim
-import eu.europa.ec.eudi.wallet.document.DocumentId
+data class ClaimPath(val value: List<String>) {
+    companion object {
+        const val PATH_SEPARATOR = ","
 
-data class DocumentDetailsDomain(
-    val docName: String,
-    val docId: DocumentId,
-    val documentIdentifier: DocumentIdentifier,
-    val documentExpirationDateFormatted: String,
-    val documentHasExpired: Boolean,
-    val documentClaims: List<DomainClaim>
-)
+        fun toElementIdentifier(itemId: String): String {
+            return itemId
+                .split(PATH_SEPARATOR)
+                .drop(1)
+                .first()
+        }
+
+        fun toSdJwtVcPath(itemId: String): List<String> {
+            return itemId
+                .split(PATH_SEPARATOR)
+                .drop(1)
+        }
+    }
+
+    fun toId(docId: String): String =
+        (listOf(docId) + value).joinToString(separator = PATH_SEPARATOR)
+}

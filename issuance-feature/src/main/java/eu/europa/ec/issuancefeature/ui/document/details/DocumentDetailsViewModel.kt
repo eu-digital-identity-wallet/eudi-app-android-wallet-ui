@@ -29,6 +29,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -61,6 +62,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
+    data class ClaimClicked(val itemId: String) : Event()
     data object PrimaryButtonPressed : Event()
     data object SecondaryButtonPressed : Event()
 
@@ -135,6 +137,8 @@ class DocumentDetailsViewModel(
                 setState { copy(error = null) }
                 setEffect { Effect.Navigation.Pop }
             }
+
+            is Event.ClaimClicked -> onClaimClicked(event.itemId)
 
             is Event.PrimaryButtonPressed -> {
                 // TODO: will redirect to transactions screen
@@ -215,8 +219,9 @@ class DocumentDetailsViewModel(
             ).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
-                        val documentDetailsUi =
-                            response.documentDetailsDomain.transformToDocumentDetailsUi()
+                        val documentDetailsUi = response.documentDetailsDomain
+                            .transformToDocumentDetailsUi()
+
                         setState {
                             copy(
                                 isLoading = false,
@@ -243,6 +248,21 @@ class DocumentDetailsViewModel(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun onClaimClicked(itemId: String) {
+        val currentItem = viewState.value.documentDetailsUi
+        if (currentItem != null) {
+            val updatedDocumentClaims = currentItem.documentClaims.toggleExpansionState(itemId)
+
+            setState {
+                copy(
+                    documentDetailsUi = currentItem.copy(
+                        documentClaims = updatedDocumentClaims
+                    )
+                )
             }
         }
     }

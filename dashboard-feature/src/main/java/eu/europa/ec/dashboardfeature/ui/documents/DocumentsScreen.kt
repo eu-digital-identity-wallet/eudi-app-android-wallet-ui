@@ -430,19 +430,22 @@ private fun DocumentsSheetContent(
                                 onEventSent(Event.OnSortingOrderChanged(it))
                             }
                             state.filtersUi.forEachIndexed { index, filter ->
-                                if (filter.expanded.isNotEmpty()) {
+                                if (filter.nestedItems.isNotEmpty()) {
                                     WrapExpandableListItem(
-                                        data = filter,
+                                        header = filter.header,
+                                        data = filter.nestedItems,
                                         isExpanded = expandStateList[index],
                                         onExpandedChange = {
                                             expandStateList[index] = !expandStateList[index]
                                         },
                                         onItemClick = {
                                             val id = it.itemId
-                                            val groupId = filter.collapsed.itemId
+                                            val groupId = filter.header.itemId
                                             onEventSent(Event.OnFilterSelectionChanged(id, groupId))
                                         },
-                                        expandedAddDivider = false,
+                                        addDivider = false,
+                                        collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                                        expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                                     )
                                 }
                             }

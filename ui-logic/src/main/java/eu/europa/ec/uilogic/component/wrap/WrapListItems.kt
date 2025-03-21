@@ -16,20 +16,19 @@
 
 package eu.europa.ec.uilogic.component.wrap
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
-import eu.europa.ec.uilogic.component.ListItem
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -38,16 +37,16 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
-import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 @Composable
 fun WrapListItems(
-    items: List<ListItemData>,
-    onItemClick: ((item: ListItemData) -> Unit)?,
     modifier: Modifier = Modifier,
+    items: List<ExpandableListItem>,
+    onItemClick: ((item: ListItemData) -> Unit)?,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     clickableAreas: List<ClickableArea>? = null,
+    throttleClicks: Boolean = true,
     addDivider: Boolean = true,
     shape: Shape? = null,
     colors: CardColors? = null,
@@ -57,27 +56,41 @@ fun WrapListItems(
         shape = shape,
         colors = colors,
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            items.forEachIndexed { index, item ->
-                val itemModifier = Modifier.padding(
-                    top = if (index == 0) SPACING_SMALL.dp else 0.dp,
-                    bottom = if (index == items.lastIndex) SPACING_SMALL.dp else 0.dp,
-                )
+        items.forEachIndexed { index, item ->
+            val itemModifier = Modifier
+                .fillMaxWidth()
 
-                ListItem(
-                    item = item,
-                    onItemClick = onItemClick,
-                    modifier = itemModifier,
-                    hideSensitiveContent = hideSensitiveContent,
-                    mainContentVerticalPadding = mainContentVerticalPadding,
-                    clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
-                )
-
-                if (addDivider && index < items.lastIndex) {
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = SPACING_MEDIUM.dp))
+            when (item) {
+                is ExpandableListItem.NestedListItemData -> {
+                    WrapExpandableListItem(
+                        modifier = itemModifier,
+                        header = item.header,
+                        data = item.nestedItems,
+                        onItemClick = null,
+                        onExpandedChange = onItemClick,
+                        isExpanded = item.isExpanded,
+                        throttleClicks = throttleClicks,
+                        hideSensitiveContent = hideSensitiveContent,
+                        collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                        shape = RectangleShape,
+                    )
                 }
+
+                is ExpandableListItem.SingleListItemData -> {
+                    WrapListItem(
+                        modifier = itemModifier,
+                        item = item.header,
+                        onItemClick = null,
+                        throttleClicks = throttleClicks,
+                        hideSensitiveContent = hideSensitiveContent,
+                        mainContentVerticalPadding = mainContentVerticalPadding,
+                        clickableAreas = clickableAreas,
+                    )
+                }
+            }
+
+            if (addDivider && index < items.lastIndex) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = SPACING_MEDIUM.dp))
             }
         }
     }
@@ -145,7 +158,7 @@ private fun WrapListItemsPreview(
         )
 
         WrapListItems(
-            items = items,
+            items = items.map { ExpandableListItem.SingleListItemData(it) },
             onItemClick = {},
         )
     }

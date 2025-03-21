@@ -23,6 +23,7 @@ import androidx.compose.material3.CardColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
@@ -41,24 +42,26 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
 @Composable
 fun WrapListItem(
+    modifier: Modifier = Modifier,
     item: ListItemData,
     onItemClick: ((item: ListItemData) -> Unit)?,
-    modifier: Modifier = Modifier,
     throttleClicks: Boolean = true,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     mainContentTextStyle: TextStyle? = null,
     supportingTextColor: Color? = null,
     clickableAreas: List<ClickableArea>? = null,
+    shape: Shape? = null,
     colors: CardColors? = null,
 ) {
     WrapCard(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         throttleClicks = throttleClicks,
+        shape = shape,
         colors = colors,
     ) {
         ListItem(
-            modifier = modifier,
+            modifier = Modifier.fillMaxWidth(),
             item = item,
             onItemClick = onItemClick,
             hideSensitiveContent = hideSensitiveContent,

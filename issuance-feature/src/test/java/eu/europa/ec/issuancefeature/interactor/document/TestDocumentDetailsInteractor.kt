@@ -17,7 +17,6 @@
 package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
-import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
@@ -26,7 +25,9 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedFormattedExpirationDate
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
@@ -278,12 +279,13 @@ class TestDocumentDetailsInteractor {
                             documentIdentifier = DocumentIdentifier.MdocPid,
                             documentExpirationDateFormatted = mockedFormattedExpirationDate,
                             documentHasExpired = mockedDocumentHasExpired,
-                            detailsItems = listOf(
-                                DocumentItem(
-                                    elementIdentifier = "no_data_item",
+                            documentClaims = listOf(
+                                DomainClaim.Primitive(
+                                    key = "no_data_item",
                                     value = "0",
-                                    readableName = "no_data_item",
-                                    docId = mockedPidId,
+                                    displayTitle = "no_data_item",
+                                    path = ClaimPath(value = listOf("no_data_item")),
+                                    isRequired = false,
                                 ),
                             )
                         ),

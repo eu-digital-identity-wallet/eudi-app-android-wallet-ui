@@ -14,12 +14,27 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.document_success.model
+package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.commonfeature.ui.request.model.CollapsedUiItem
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 
-data class DocumentSuccessItemUi(
-    val collapsedUiItem: CollapsedUiItem,
-    val expandedUiItems: List<ListItemData>,
-)
+sealed class DomainClaim {
+    abstract val key: ElementIdentifier
+    abstract val displayTitle: String
+    abstract val path: ClaimPath
+
+    data class Group(
+        override val key: ElementIdentifier,
+        override val displayTitle: String,
+        override val path: ClaimPath,
+        val items: List<DomainClaim>,
+    ) : DomainClaim()
+
+    data class Primitive(
+        override val key: ElementIdentifier,
+        override val displayTitle: String,
+        override val path: ClaimPath,
+        val value: String,
+        val isRequired: Boolean,
+    ) : DomainClaim()
+}

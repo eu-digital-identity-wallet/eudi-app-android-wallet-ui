@@ -21,8 +21,9 @@ import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
-import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentItem
+import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.corelogic.model.ScopedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.ReaderAuth
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
@@ -33,6 +34,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.DashboardScreens
@@ -72,6 +74,7 @@ object TestsData {
     const val mockedPrimaryButtonText = "Primary button text"
     const val mockedRouteArguments = "mockedRouteArguments"
     const val mockedTxCode = "mockedTxCode"
+    const val mockedClaimIsRequired = false
 
     const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
     const val mockedMdlNameSpace = "org.iso.18013.5.1"
@@ -183,7 +186,7 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.MdocPid,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        documentDetails = emptyList(),
+        documentClaims = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
 
@@ -199,48 +202,64 @@ object TestsData {
     )
 
     val mockedBasicPidUi = mockedFullPidUi.copy(
-        documentDetails = listOf(
-            ListItemData(
-                itemId = "",
-                overlineText = "birth_city",
-                mainContentData = ListItemMainContentData.Text("KATRINEHOLM")
+        documentClaims = listOf(
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "birth_city",
+                    mainContentData = ListItemMainContentData.Text("KATRINEHOLM")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "gender",
-                mainContentData = ListItemMainContentData.Text("male")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "gender",
+                    mainContentData = ListItemMainContentData.Text("male")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "age_over_18",
-                mainContentData = ListItemMainContentData.Text("yes")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "age_over_18",
+                    mainContentData = ListItemMainContentData.Text("yes")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "age_birth_year",
-                mainContentData = ListItemMainContentData.Text("1985")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "age_birth_year",
+                    mainContentData = ListItemMainContentData.Text("1985")
+                ),
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "expiry_date",
-                mainContentData = ListItemMainContentData.Text("30 Mar 2050")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "expiry_date",
+                    mainContentData = ListItemMainContentData.Text("30 Mar 2050")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "given_name",
-                mainContentData = ListItemMainContentData.Text("JAN")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "given_name",
+                    mainContentData = ListItemMainContentData.Text("JAN")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "family_name",
-                mainContentData = ListItemMainContentData.Text("ANDERSSON")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "family_name",
+                    mainContentData = ListItemMainContentData.Text("ANDERSSON")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "age_over_65",
-                mainContentData = ListItemMainContentData.Text("no")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "age_over_65",
+                    mainContentData = ListItemMainContentData.Text("no")
+                )
             )
-        ),
+        )
     )
 
     val mockedBasicPidDomain = DocumentDetailsDomain(
@@ -249,57 +268,66 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.MdocPid,
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        detailsItems = listOf(
-            DocumentItem(
-                elementIdentifier = "family_name",
+        documentClaims = listOf(
+            DomainClaim.Primitive(
+                key = "family_name",
                 value = "ANDERSSON",
-                readableName = "family_name",
-                docId = mockedPidId
+                displayTitle = "family_name",
+                path = ClaimPath(value = listOf("family_name")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "given_name",
+            DomainClaim.Primitive(
+                key = "given_name",
                 value = "JAN",
-                readableName = "given_name",
-                docId = mockedPidId
+                displayTitle = "given_name",
+                path = ClaimPath(value = listOf("given_name")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "age_over_18",
+            DomainClaim.Primitive(
+                key = "age_over_18",
                 value = "yes",
-                readableName = "age_over_18",
-                docId = mockedPidId
+                displayTitle = "age_over_18",
+                path = ClaimPath(value = listOf("age_over_18")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "age_over_65",
+            DomainClaim.Primitive(
+                key = "age_over_65",
                 value = "no",
-                readableName = "age_over_65",
-                docId = mockedPidId
+                displayTitle = "age_over_65",
+                path = ClaimPath(value = listOf("age_over_65")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "age_birth_year",
+            DomainClaim.Primitive(
+                key = "age_birth_year",
                 value = "1985",
-                readableName = "age_birth_year",
-                docId = mockedPidId
+                displayTitle = "age_birth_year",
+                path = ClaimPath(value = listOf("age_birth_year")),
+                isRequired = mockedClaimIsRequired
             ),
-
-            DocumentItem(
-                elementIdentifier = "birth_city",
+            DomainClaim.Primitive(
+                key = "birth_city",
                 value = "KATRINEHOLM",
-                readableName = "birth_city",
-                docId = mockedPidId
+                displayTitle = "birth_city",
+                path = ClaimPath(value = listOf("birth_city")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "gender",
+            DomainClaim.Primitive(
+                key = "gender",
                 value = "Male",
-                readableName = "gender",
-                docId = mockedPidId
+                displayTitle = "gender",
+                path = ClaimPath(value = listOf("gender")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "expiry_date",
+            DomainClaim.Primitive(
+                key = "expiry_date",
                 value = "30 Mar 2050",
-                readableName = "expiry_date",
-                docId = mockedPidId
+                displayTitle = "expiry_date",
+                path = ClaimPath(value = listOf("expiry_date")),
+                isRequired = mockedClaimIsRequired
             )
-        )
+        ).sortedBy {
+            it.displayTitle.lowercase()
+        }
     )
 
     val mockedFullMdlUi = DocumentDetailsUi(
@@ -308,7 +336,7 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        documentDetails = emptyList(),
+        documentClaims = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
 
@@ -317,57 +345,57 @@ object TestsData {
     )
 
     val mockedBasicMdlUi = mockedFullMdlUi.copy(
-        documentDetails = listOf(
-            ListItemData(
-                itemId = "",
-                overlineText = "driving_privileges",
-                mainContentData = ListItemMainContentData.Text(
-                    text = arrayOf(
-                        "issue_date: 1 Jul 2010\n" +
-                                "expiry_date: 30 Mar 2050\n" +
-                                "vehicle_category_code: A\n" +
-                                "issue_date: 19 May 2008\n" +
-                                "expiry_date: 30 Mar 2050\n" +
-                                "vehicle_category_code: B"
-                    ).contentDeepToString()
+        documentClaims = listOf(
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "expiry_date",
+                    mainContentData = ListItemMainContentData.Text("30 Mar 2050")
                 )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "expiry_date",
-                mainContentData = ListItemMainContentData.Text("30 Mar 2050")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "sex",
+                    mainContentData = ListItemMainContentData.Text("male")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "sex",
-                mainContentData = ListItemMainContentData.Text("male")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "birth_place",
+                    mainContentData = ListItemMainContentData.Text("SWEDEN")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "birth_place",
-                mainContentData = ListItemMainContentData.Text("SWEDEN")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "portrait",
+                    mainContentData = ListItemMainContentData.Image("SE")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "portrait",
-                mainContentData = ListItemMainContentData.Image("SE")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "given_name",
+                    mainContentData = ListItemMainContentData.Text("JAN")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "given_name",
-                mainContentData = ListItemMainContentData.Text("JAN")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "family_name",
+                    mainContentData = ListItemMainContentData.Text("ANDERSSON")
+                )
             ),
-            ListItemData(
-                itemId = "",
-                overlineText = "family_name",
-                mainContentData = ListItemMainContentData.Text("ANDERSSON")
-            ),
-            ListItemData(
-                itemId = "",
-                overlineText = "signature_usual_mark",
-                mainContentData = ListItemMainContentData.Image("SE")
+            ExpandableListItem.SingleListItemData(
+                header = ListItemData(
+                    itemId = "",
+                    overlineText = "signature_usual_mark",
+                    mainContentData = ListItemMainContentData.Image("SE")
+                )
             )
-        ),
+        )
     )
 
     val mockedBasicMdlDomain = DocumentDetailsDomain(
@@ -376,61 +404,59 @@ object TestsData {
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
         documentExpirationDateFormatted = mockedFormattedExpirationDate,
         documentHasExpired = mockedDocumentHasExpired,
-        detailsItems = listOf(
-            DocumentItem(
-                elementIdentifier = "family_name",
+        documentClaims = listOf(
+            DomainClaim.Primitive(
+                key = "family_name",
                 value = "ANDERSSON",
-                readableName = "family_name",
-                docId = mockedMdlId
+                displayTitle = "family_name",
+                path = ClaimPath(value = listOf("family_name")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "given_name",
+            DomainClaim.Primitive(
+                key = "given_name",
                 value = "JAN",
-                readableName = "given_name",
-                docId = mockedMdlId
+                displayTitle = "given_name",
+                path = ClaimPath(value = listOf("given_name")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "birth_place",
+            DomainClaim.Primitive(
+                key = "birth_place",
                 value = "SWEDEN",
-                readableName = "birth_place",
-                docId = mockedMdlId
+                displayTitle = "birth_place",
+                path = ClaimPath(value = listOf("birth_place")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "expiry_date",
+            DomainClaim.Primitive(
+                key = "expiry_date",
                 value = "30 Mar 2050",
-                readableName = "expiry_date",
-                docId = mockedMdlId
+                displayTitle = "expiry_date",
+                path = ClaimPath(value = listOf("expiry_date")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "portrait",
+            DomainClaim.Primitive(
+                key = "portrait",
                 value = "SE",
-                readableName = "portrait",
-                docId = mockedMdlId
+                displayTitle = "portrait",
+                path = ClaimPath(value = listOf("portrait")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "driving_privileges",
-                value = "issue_date: 1 Jul 2010\n" +
-                        "expiry_date: 30 Mar 2050\n" +
-                        "vehicle_category_code: A\n" +
-                        "issue_date: 19 May 2008\n" +
-                        "expiry_date: 30 Mar 2050\n" +
-                        "vehicle_category_code: B",
-                readableName = "driving_privileges",
-                docId = mockedMdlId
-            ),
-            DocumentItem(
-                elementIdentifier = "signature_usual_mark",
+            DomainClaim.Primitive(
+                key = "signature_usual_mark",
                 value = "SE",
-                readableName = "signature_usual_mark",
-                docId = mockedMdlId
+                displayTitle = "signature_usual_mark",
+                path = ClaimPath(value = listOf("signature_usual_mark")),
+                isRequired = mockedClaimIsRequired
             ),
-            DocumentItem(
-                elementIdentifier = "sex",
+            DomainClaim.Primitive(
+                key = "sex",
                 value = "Male",
-                readableName = "sex",
-                docId = mockedMdlId
+                displayTitle = "sex",
+                path = ClaimPath(value = listOf("sex")),
+                isRequired = mockedClaimIsRequired
             )
-        )
+        ).sortedBy {
+            it.displayTitle.lowercase()
+        }
     )
 
     val mockedMdlUiWithNoUserNameAndNoUserImage: DocumentDetailsUi = mockedFullMdlUi
