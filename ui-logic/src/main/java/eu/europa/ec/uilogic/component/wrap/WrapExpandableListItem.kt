@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -89,8 +89,9 @@ fun WrapExpandableListItem(
                 clickableAreas = collapsedClickableAreas,
                 shape = RectangleShape,
                 colors = colors,
-                mainContentTextStyle = LocalTextStyle.current.copy(
-                    fontWeight = FontWeight.Bold
+                mainContentTextStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
