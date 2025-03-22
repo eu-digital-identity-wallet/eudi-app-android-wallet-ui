@@ -103,10 +103,6 @@ gradlePlugin {
             id = "project.owasp.dependency.check"
             implementationClass = "OwaspDependencyCheckPlugin"
         }
-        register("appCenter") {
-            id = "project.appcenter"
-            implementationClass = "AppCenterPlugin"
-        }
         register("sonar") {
             id = "project.sonar"
             implementationClass = "SonarPlugin"

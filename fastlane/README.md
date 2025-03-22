@@ -31,6 +31,22 @@ Runs all the unit tests
 
 Build Wallet and upload it to appcenter
 
+### android prepare_binary
+
+```sh
+[bundle exec] fastlane android prepare_binary
+```
+
+Rename apk before release
+
+### android github_release
+
+```sh
+[bundle exec] fastlane android github_release
+```
+
+Release to github
+
 ### android upload_tag
 
 ```sh
@@ -39,21 +55,21 @@ Build Wallet and upload it to appcenter
 
 Upload tag to remote repo
 
-### android upload_to_appcenter
+### android upload_firebase
 
 ```sh
-[bundle exec] fastlane android upload_to_appcenter
+[bundle exec] fastlane android upload_firebase
 ```
 
-Upload to AppCenter
+Distribute to Firebase
 
-### android latest_appcenter_release
+### android latest_firebase_release
 
 ```sh
-[bundle exec] fastlane android latest_appcenter_release
+[bundle exec] fastlane android latest_firebase_release
 ```
 
-Get Release version From AppCenter
+Get Release version From Firebase
 
 ### android build_number
 
