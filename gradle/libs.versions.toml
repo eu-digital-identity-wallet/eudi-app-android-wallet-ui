@@ -60,7 +60,6 @@ eudiWalletCore = "0.15.1"
 cameraCore = "1.4.1"
 owaspDependencyCheck = "12.1.0"
 material3 = "1.3.1"
-appCenter = "5.0.6"
 kover = "0.7.5"
 sonar = "5.1.0.4882"
 baselineprofile = "1.3.3"
@@ -150,9 +149,6 @@ okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver",
 google-phonenumber = { group = "com.googlecode.libphonenumber", name = "libphonenumber", version.ref = "googlePhoneNumber" }
 zxing = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 eudi-wallet-core = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-wallet-core", version.ref = "eudiWalletCore" }
-appcenter-analytics = { group = "com.microsoft.appcenter", name = "appcenter-analytics", version.ref = "appCenter" }
-appcenter-crashes = { group = "com.microsoft.appcenter", name = "appcenter-crashes", version.ref = "appCenter" }
-appcenter-distribute = { group = "com.microsoft.appcenter", name = "appcenter-distribute", version.ref = "appCenter" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 treessence = { group = "com.github.bastienpaulfr", name = "Treessence", version.ref = "treessence" }
 rqes-ui-sdk = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-rqes-ui", version.ref = "rqesUiSDK" }
