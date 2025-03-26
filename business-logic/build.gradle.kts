@@ -39,6 +39,7 @@ dependencies {
     implementation(libs.google.phonenumber)
     implementation(libs.timber)
     implementation(libs.treessence)
+    api(libs.androidx.work.ktx)
 
     testImplementation(project(LibraryModule.TestLogic.path))
     androidTestImplementation(project(LibraryModule.TestLogic.path))
