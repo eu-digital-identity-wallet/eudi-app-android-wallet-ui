@@ -16,6 +16,7 @@
 
 package eu.europa.ec.storagelogic.di
 
+import androidx.work.PeriodicWorkRequest
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.storagelogic.config.StorageConfig
 import eu.europa.ec.storagelogic.config.StorageConfigImpl
@@ -25,10 +26,12 @@ import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageControllerImpl
 import eu.europa.ec.storagelogic.service.RealmService
 import eu.europa.ec.storagelogic.service.RealmServiceImpl
+import eu.europa.ec.storagelogic.workmanager.RevocationWorkManager
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
+import java.util.concurrent.TimeUnit
 
 @Module
 @ComponentScan("eu.europa.ec.storagelogic")
@@ -49,3 +52,9 @@ fun provideBookmarkStorageController(realmService: RealmService): BookmarkStorag
 @Factory
 fun provideRevokedDocumentsStorageController(realmService: RealmService): RevokedDocumentsStorageController =
     RevokedDocumentsStorageControllerImpl(realmService)
+
+@Single
+fun providePeriodicWorkRequest(): PeriodicWorkRequest = PeriodicWorkRequest.Builder(
+    RevocationWorkManager::class.java,
+    15, TimeUnit.MINUTES
+).build()

@@ -23,17 +23,16 @@ import androidx.work.WorkManager
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigLogic
-import eu.europa.ec.businesslogic.controller.workmanager.RevocationWorkManager
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import org.koin.android.ext.android.inject
 import org.koin.core.KoinApplication
-import java.util.concurrent.TimeUnit
 
 class Application : Application() {
 
     private val revocationWorker = "revocationWorker"
     private val analyticsController: AnalyticsController by inject()
     private val configLogic: ConfigLogic by inject()
+    private val periodicWorkRequest: PeriodicWorkRequest by inject()
 
     override fun onCreate() {
         super.onCreate()
@@ -59,15 +58,10 @@ class Application : Application() {
     }
 
     private fun scheduleWork() {
-        val workRequest = PeriodicWorkRequest.Builder(
-            RevocationWorkManager::class.java,
-            15, TimeUnit.MINUTES
-        ).build()
-
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             revocationWorker,
             ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
+            periodicWorkRequest
         )
     }
 }

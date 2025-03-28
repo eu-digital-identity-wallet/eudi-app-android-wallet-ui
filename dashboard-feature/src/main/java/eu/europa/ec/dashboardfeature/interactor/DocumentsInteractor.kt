@@ -52,6 +52,7 @@ import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
@@ -166,6 +167,7 @@ interface DocumentsInteractor {
 class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val revokedDocumentsController: RevokedDocumentsStorageController,
     private val filterValidator: FilterValidator,
 ) : DocumentsInteractor {
 
@@ -288,6 +290,9 @@ class DocumentsInteractorImpl(
             val documentCategories = walletCoreDocumentsController.getAllDocumentCategories()
 
             val userLocale = resourceProvider.getLocale()
+
+            val retrieveAll = revokedDocumentsController.retrieveAll()
+            val retrieve = revokedDocumentsController.retrieve("DF242-23321DF-F321F-F1413")
 
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->

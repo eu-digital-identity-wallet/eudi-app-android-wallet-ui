@@ -29,7 +29,7 @@ data class RevokedDocument(
     val identifier: String
 ): StoredObject
 
-internal fun RevokedDocument.toRealm() = RealmBookmark().apply {
+internal fun RevokedDocument.toRealm() = RealmRevokedDocument().apply {
     identifier = this@toRealm.identifier
 }
 
