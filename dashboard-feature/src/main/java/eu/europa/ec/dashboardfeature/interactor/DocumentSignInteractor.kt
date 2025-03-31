@@ -29,7 +29,7 @@ import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 
 interface DocumentSignInteractor {
-    fun launchRQESSdk(context: Context, uri: Uri)
+    fun launchRqesSdk(context: Context, uri: Uri)
     fun getUiItem(): SignDocumentButtonUi
 }
 
@@ -37,7 +37,7 @@ class DocumentSignInteractorImpl(
     private val resourceProvider: ResourceProvider,
 ) : DocumentSignInteractor {
 
-    override fun launchRQESSdk(context: Context, uri: Uri) {
+    override fun launchRqesSdk(context: Context, uri: Uri) {
         EudiRQESUi.initiate(
             context = context,
             documentUri = DocumentUri(uri)

@@ -29,8 +29,6 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.interactor.QrScanInteractor
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.eudi.rqesui.domain.extension.toUriOrEmpty
-import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
-import eu.europa.ec.eudi.rqesui.infrastructure.RemoteUri
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -251,9 +249,9 @@ class QrScanViewModel(
     }
 
     private fun navigateToRqesSdk(context: Context, scanResult: String) {
-        EudiRQESUi.initiate(
+        interactor.launchRqesSdk(
             context = context,
-            remoteUri = RemoteUri(scanResult.toUriOrEmpty())
+            uri = scanResult.toUriOrEmpty()
         )
         setEffect {
             Effect.Navigation.Pop

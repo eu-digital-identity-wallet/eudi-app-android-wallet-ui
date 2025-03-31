@@ -70,7 +70,7 @@ class DocumentSignViewModel(
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
-            is Event.DocumentUriRetrieved -> documentSignInteractor.launchRQESSdk(
+            is Event.DocumentUriRetrieved -> documentSignInteractor.launchRqesSdk(
                 event.context,
                 event.uri
             )
