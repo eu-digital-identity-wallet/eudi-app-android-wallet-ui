@@ -16,15 +16,18 @@
 
 package eu.europa.ec.businesslogic.config
 
+import android.content.Context
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.eudi.rqes.HashAlgorithmOID
-import eu.europa.ec.eudi.rqesui.domain.extension.toUri
+import eu.europa.ec.eudi.rqesui.domain.extension.toUriOrEmpty
+import eu.europa.ec.eudi.rqesui.infrastructure.config.DocumentRetrievalConfig
 import eu.europa.ec.eudi.rqesui.infrastructure.config.EudiRQESUiConfig
 import eu.europa.ec.eudi.rqesui.infrastructure.config.RqesServiceConfig
 import eu.europa.ec.eudi.rqesui.infrastructure.config.data.QtspData
+import eu.europa.ec.resourceslogic.R
 import java.net.URI
 
-class RQESConfigImpl : EudiRQESUiConfig {
+class RQESConfigImpl(val context: Context) : EudiRQESUiConfig {
 
     override val rqesServiceConfig: RqesServiceConfig
         get() = RqesServiceConfig(
@@ -38,10 +41,17 @@ class RQESConfigImpl : EudiRQESUiConfig {
         get() = listOf(
             QtspData(
                 name = "Wallet-Centric",
-                endpoint = "https://walletcentric.signer.eudiw.dev/csc/v2".toUri(),
+                endpoint = "https://walletcentric.signer.eudiw.dev/csc/v2".toUriOrEmpty(),
                 scaUrl = "https://walletcentric.signer.eudiw.dev",
             )
         )
 
     override val printLogs: Boolean get() = BuildConfig.DEBUG
+
+    override val documentRetrievalConfig: DocumentRetrievalConfig
+        get() = DocumentRetrievalConfig.X509Certificates(
+            context = context,
+            certificates = listOf(R.raw.rp_certificate),
+            shouldLog = true
+        )
 }

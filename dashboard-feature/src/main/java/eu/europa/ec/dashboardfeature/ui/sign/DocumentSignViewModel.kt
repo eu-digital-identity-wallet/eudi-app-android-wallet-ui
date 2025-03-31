@@ -48,7 +48,7 @@ sealed class Effect : ViewSideEffect {
         data object Pop : Navigation()
     }
 
-    data class OpenDocumentSelection(val selection: Array<String>) : Effect()
+    data class OpenDocumentSelection(val selection: List<String>) : Effect()
 }
 
 @KoinViewModel
@@ -66,7 +66,7 @@ class DocumentSignViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.OnSelectDocument -> {
-                setEffect { Effect.OpenDocumentSelection(arrayOf("application/pdf")) }
+                setEffect { Effect.OpenDocumentSelection(listOf("application/pdf")) }
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }

@@ -99,6 +99,7 @@ fun QrScanScreen(
         onBack = { viewModel.setEvent(Event.GoBack) },
     ) { paddingValues ->
         Content(
+            context = context,
             state = state,
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
@@ -134,6 +135,7 @@ private fun handleNavigationEffect(
 
 @Composable
 private fun Content(
+    context: Context,
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
@@ -168,7 +170,7 @@ private fun Content(
                 shouldShowPermissionRational = state.shouldShowPermissionRational,
                 onEventSend = onEventSend,
                 onQrScanned = { qrCode ->
-                    onEventSend(Event.OnQrScanned(resultQr = qrCode))
+                    onEventSend(Event.OnQrScanned(context = context, resultQr = qrCode))
                 }
             )
 

@@ -124,7 +124,9 @@ private fun Content(
         effectFlow.onEach { effect ->
             when (effect) {
                 is Effect.Navigation.Pop -> onNavigationRequested(effect)
-                is Effect.OpenDocumentSelection -> selectPdfLauncher.launch(effect.selection)
+                is Effect.OpenDocumentSelection -> selectPdfLauncher.launch(
+                    effect.selection.toTypedArray()
+                )
             }
         }.collect()
     }

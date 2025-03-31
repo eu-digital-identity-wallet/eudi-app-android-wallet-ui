@@ -19,6 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import android.content.Context
 import android.net.Uri
 import eu.europa.ec.dashboardfeature.model.SignDocumentButtonUi
+import eu.europa.ec.eudi.rqesui.infrastructure.DocumentUri
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -37,7 +38,10 @@ class DocumentSignInteractorImpl(
 ) : DocumentSignInteractor {
 
     override fun launchRQESSdk(context: Context, uri: Uri) {
-        EudiRQESUi.initiate(context, uri)
+        EudiRQESUi.initiate(
+            context = context,
+            documentUri = DocumentUri(uri)
+        )
     }
 
     override fun getUiItem(): SignDocumentButtonUi {
