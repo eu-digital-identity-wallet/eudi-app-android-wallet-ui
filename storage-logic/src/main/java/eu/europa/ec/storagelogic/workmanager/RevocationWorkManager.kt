@@ -17,11 +17,13 @@
 package eu.europa.ec.storagelogic.workmanager
 
 import android.content.Context
+import android.content.Intent
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.model.RevokedDocument
+import eu.europa.ec.storagelogic.receiver.RevocationWorkCompletionReceiver
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -41,11 +43,21 @@ class RevocationWorkManager(
         try {
             logController.d(TAG) { "Checking for revoked documents..." }
 
-            revokedDocumentsController.store(listOf("DF242-23321DF-F321F-F1413").map {
-                RevokedDocument(
-                    identifier = it
-                )
-            })
+            val mockRequestResult = listOf("DF242-23321DF-F321F-LFKDSA3")
+                .map {
+                    RevokedDocument(
+                        identifier = it
+                    )
+                }
+
+            if (mockRequestResult.isNotEmpty()) {
+                revokedDocumentsController.store(mockRequestResult)
+                val intent = Intent(RevocationWorkCompletionReceiver.ACTION).apply {
+                    putExtra(RevocationWorkCompletionReceiver.EXTRA_SHOW_NOTIFICATION, true)
+                    putExtra(RevocationWorkCompletionReceiver.EXTRA_IDS, arrayOf(mockRequestResult))
+                }
+                applicationContext.sendBroadcast(intent)
+            }
 
             logController.d(TAG) { "Done!" }
 

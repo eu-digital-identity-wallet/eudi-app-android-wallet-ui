@@ -53,6 +53,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsWorkController
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
@@ -162,12 +163,15 @@ interface DocumentsInteractor {
     ): Filters
 
     fun getFilters(): Filters
+
+    fun onRevokedDocumentEvent(): Flow<List<String>>
 }
 
 class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val revokedDocumentsController: RevokedDocumentsStorageController,
+    private val revokedDocumentsWorkController: RevokedDocumentsWorkController,
     private val filterValidator: FilterValidator,
 ) : DocumentsInteractor {
 
@@ -290,9 +294,6 @@ class DocumentsInteractorImpl(
             val documentCategories = walletCoreDocumentsController.getAllDocumentCategories()
 
             val userLocale = resourceProvider.getLocale()
-
-            val retrieveAll = revokedDocumentsController.retrieveAll()
-            val retrieve = revokedDocumentsController.retrieve("DF242-23321DF-F321F-F1413")
 
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
@@ -531,6 +532,8 @@ class DocumentsInteractorImpl(
                     }
 
                     is DeleteDocumentPartialState.Success -> {
+                        // Also remove the document from the database
+                        revokedDocumentsController.delete(documentId)
                         if (walletCoreDocumentsController.getAllDocuments().isEmpty()) {
                             emit(DocumentInteractorDeleteDocumentPartialState.AllDocumentsDeleted)
                         } else
@@ -704,6 +707,9 @@ class DocumentsInteractorImpl(
         ),
         sortOrder = SortOrder.Ascending(isDefault = true)
     )
+
+    override fun onRevokedDocumentEvent(): Flow<List<String>> =
+        revokedDocumentsWorkController.workEvent
 
     private fun addDocumentCategoryFilter(documents: FilterableList): List<FilterItem> {
         return documents.items

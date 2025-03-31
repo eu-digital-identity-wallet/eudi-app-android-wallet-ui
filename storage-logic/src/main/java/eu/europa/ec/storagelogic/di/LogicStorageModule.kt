@@ -24,6 +24,8 @@ import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.storagelogic.controller.BookmarkStorageControllerImpl
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageControllerImpl
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsWorkController
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsWorkControllerImpl
 import eu.europa.ec.storagelogic.service.RealmService
 import eu.europa.ec.storagelogic.service.RealmServiceImpl
 import eu.europa.ec.storagelogic.workmanager.RevocationWorkManager
@@ -52,6 +54,10 @@ fun provideBookmarkStorageController(realmService: RealmService): BookmarkStorag
 @Factory
 fun provideRevokedDocumentsStorageController(realmService: RealmService): RevokedDocumentsStorageController =
     RevokedDocumentsStorageControllerImpl(realmService)
+
+@Single
+fun provideRevokedDocumentWorkController(): RevokedDocumentsWorkController =
+    RevokedDocumentsWorkControllerImpl()
 
 @Single
 fun providePeriodicWorkRequest(): PeriodicWorkRequest = PeriodicWorkRequest.Builder(

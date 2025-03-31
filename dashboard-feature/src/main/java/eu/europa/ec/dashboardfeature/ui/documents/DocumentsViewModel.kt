@@ -182,6 +182,7 @@ class DocumentsViewModel(
         when (event) {
             is Event.Init -> {
                 filterStateChanged()
+                revokedDocumentsStateChanged()
             }
 
             is Event.GetDocuments -> {
@@ -278,6 +279,14 @@ class DocumentsViewModel(
             is Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected -> {
                 hideBottomSheet()
                 goToDocumentDetails(docId = event.documentId)
+            }
+        }
+    }
+
+    private fun revokedDocumentsStateChanged() {
+        viewModelScope.launch {
+            interactor.onRevokedDocumentEvent().collect { revokedIds ->
+                println("All work pretty good $revokedIds")
             }
         }
     }
