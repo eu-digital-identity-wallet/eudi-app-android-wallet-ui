@@ -22,14 +22,14 @@ import kotlinx.coroutines.flow.asStateFlow
 
 interface RevokedDocumentsWorkController {
     val workEvent: StateFlow<List<String>>
-    fun updateWorkEvent(message: List<String>)
+    suspend fun updateWorkEvent(ids: List<String>)
 }
 
 class RevokedDocumentsWorkControllerImpl : RevokedDocumentsWorkController {
     private val _workEvent = MutableStateFlow<List<String>>(listOf())
     override val workEvent: StateFlow<List<String>> = _workEvent.asStateFlow()
 
-    override fun updateWorkEvent(message: List<String>) {
-        _workEvent.value = message
+    override suspend fun updateWorkEvent(ids: List<String>) {
+        _workEvent.emit(ids)
     }
 }

@@ -26,6 +26,7 @@ import eu.europa.ec.storagelogic.model.RevokedDocument
 import eu.europa.ec.storagelogic.receiver.RevocationWorkCompletionReceiver
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import kotlin.random.Random
 
 class RevocationWorkManager(
     appContext: Context,
@@ -43,18 +44,23 @@ class RevocationWorkManager(
         try {
             logController.d(TAG) { "Checking for revoked documents..." }
 
-            val mockRequestResult = listOf("DF242-23321DF-F321F-LFKDSA3")
-                .map {
-                    RevokedDocument(
-                        identifier = it
-                    )
-                }
+            val mockedRequestResult = listOf("DF242-23321DF-F321F-LFKDSA3-${Random.nextInt(100, 1000)}")
+            val resultToDomain =
+                mockedRequestResult
+                    .map {
+                        RevokedDocument(
+                            identifier = it
+                        )
+                    }
 
-            if (mockRequestResult.isNotEmpty()) {
-                revokedDocumentsController.store(mockRequestResult)
+            if (mockedRequestResult.isNotEmpty()) {
+                revokedDocumentsController.store(resultToDomain)
+                val allRevokedDocuments = revokedDocumentsController.retrieveAll().map {
+                    it.identifier
+                }.toTypedArray()
                 val intent = Intent(RevocationWorkCompletionReceiver.ACTION).apply {
                     putExtra(RevocationWorkCompletionReceiver.EXTRA_SHOW_NOTIFICATION, true)
-                    putExtra(RevocationWorkCompletionReceiver.EXTRA_IDS, arrayOf(mockRequestResult))
+                    putExtra(RevocationWorkCompletionReceiver.EXTRA_IDS, allRevokedDocuments)
                 }
                 applicationContext.sendBroadcast(intent)
             }

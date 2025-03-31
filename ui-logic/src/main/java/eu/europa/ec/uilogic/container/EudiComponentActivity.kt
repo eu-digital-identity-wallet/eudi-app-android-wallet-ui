@@ -85,7 +85,9 @@ open class EudiComponentActivity : FragmentActivity() {
                 val ids = getStringArray(RevocationWorkCompletionReceiver.EXTRA_IDS)?.toList()
                     ?: emptyList()
 
-                revocationWorkController.updateWorkEvent(ids)
+                lifecycleScope.launch {
+                    revocationWorkController.updateWorkEvent(ids)
+                }
             }
         }
 

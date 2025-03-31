@@ -286,7 +286,7 @@ class DocumentsViewModel(
     private fun revokedDocumentsStateChanged() {
         viewModelScope.launch {
             interactor.onRevokedDocumentEvent().collect { revokedIds ->
-                println("All work pretty good $revokedIds")
+                println("RevocationWorkManager: All work pretty good. I got these from DocumentsViewModel -> $revokedIds")
             }
         }
     }
