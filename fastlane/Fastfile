@@ -34,13 +34,12 @@ platform :android do
 
     git_pull
 
-    appcenter_build_number = latest_appcenter_release(
-      appName: ENV["APP_CENTER_APP_NAME"],
-      appToken: ENV["APP_CENTER_APP_TOKEN"],
-      ownerName: ENV["APP_CENTER_ACCOUNT"],
+    firebase_release = latest_firebase_release(
+      appId: ENV["FIREBASE_APP_ID"],
+      token: ENV["FIREBASE_TOKEN"]
     )
 
-    buildNumber = build_number(versionNumber: appcenter_build_number)
+    buildNumber = build_number(release: firebase_release)
 
     set_version(buildCode: buildNumber)
     fullVersion = full_version(buildType: ENV["APP_BUILD_TYPE"])
@@ -60,12 +59,10 @@ platform :android do
     gradle(task: "clean")
     gradle(task: "assemble#{ENV["APP_BUILD_TYPE"]}Release")
 
-    upload_to_appcenter(
-      appName: ENV["APP_CENTER_APP_NAME"],
-      path: ENV["APP_BUILD_TYPE"],
-      appToken: ENV["APP_CENTER_APP_TOKEN"],
-      ownerName: ENV["APP_CENTER_ACCOUNT"],
-      groups: ENV["APP_CENTER_GROUPS"],
+    upload_firebase(
+      appId: ENV["FIREBASE_APP_ID"],
+      groups: ENV["FIREBASE_GROUPS"],
+      token: ENV["FIREBASE_TOKEN"]
     )
 
     clean_build_artifacts
@@ -89,6 +86,55 @@ platform :android do
         tag: tagVersion,
       )
     end
+
+    if ENV['GITHUB_RELEASE_REPO'] && ENV['GITHUB_RELEASE_TOKEN']
+      apkPath = prepare_binary(
+        appVersion: fullVersion,
+        buildType: ENV["APP_BUILD_TYPE"]
+      )
+      github_release(
+        token: ENV['GITHUB_RELEASE_TOKEN'],
+        repo: ENV['GITHUB_RELEASE_REPO'],
+        tag: tagVersion,
+        version: fullVersion,
+        path: apkPath
+      )
+    end
+
+  end
+
+  desc "Rename apk before release"
+  lane :prepare_binary do |values|
+    appVersion = values[:appVersion]
+    buildType = values[:buildType]
+
+    defaultApkName = "app-#{buildType}-release.apk"
+    newApkName = "#{appVersion}.apk"
+
+    defaultApkPath = "app/build/outputs/apk/#{buildType}/release/#{defaultApkName}"
+    newApkPath = "app/build/outputs/apk/#{buildType}/release/#{newApkName}"
+
+    sh("cd .. && mv #{defaultApkPath} #{newApkPath}")
+
+    puts "New Apk Path For Upload: #{newApkPath}"
+    newApkPath
+  end
+
+  desc "Release to github"
+  lane :github_release do |values|
+    token = values[:token]
+    repo = values[:repo]
+    tag = values[:tag]
+    version = values[:version]
+    path = values[:path]
+    github_release = set_github_release(
+      repository_name: repo,
+      api_token: token,
+      name: version,
+      tag_name: tag,
+      is_generate_release_notes: true,
+      upload_assets: [path]
+    )
   end
 
   desc "Upload tag to remote repo"
@@ -99,46 +145,32 @@ platform :android do
     push_git_tags(tag: tag)
   end
 
-  desc "Upload to AppCenter"
-  lane :upload_to_appcenter do |values|
-    appName = values[:appName]
-    path = values[:path]
-    appToken = values[:appToken]
-    ownerName = values[:ownerName]
+  desc "Distribute to Firebase"
+  lane :upload_firebase do |values|
+    appId = values[:appId]
     groups = values[:groups]
-    appcenter_upload(
-      api_token: appToken,
-      owner_name: ownerName,
-      app_name: appName,
-      file: "app/build/outputs/apk/#{path}/release/app-#{path}-release.apk",
-      notify_testers: true,
-      destinations: groups,
+    token = values[:token]
+    firebase_app_distribution(
+      app: appId,
+      firebase_cli_token: token,
+      groups: groups,
     )
   end
 
-  desc "Get Release version From AppCenter"
-  lane :latest_appcenter_release do |values|
-    appName = values[:appName]
-    appVersion = values[:appVersion]
-    appToken = values[:appToken]
-    ownerName = values[:ownerName]
-    version = "1"
-    begin
-      version = appcenter_fetch_version_number(
-        api_token: appToken,
-        owner_name: ownerName,
-        app_name: appName,
-        version: appVersion,
-      )["build_number"]
-    rescue => ex
-    end
-    puts "AppCenter Version: #{version}"
-    version
+  desc "Get Release version From Firebase"
+  lane :latest_firebase_release do |values|
+    appId = values[:appId]
+    token = values[:token]
+    firebase_app_distribution_get_latest_release(
+      firebase_cli_token: token,
+      app: appId,
+    )
   end
 
   desc "Build Number"
   lane :build_number do |values|
-    number = values[:versionNumber].to_i + 1
+    release = values[:release]
+    number = release ? release[:buildVersion].to_i + 1 : 1
     puts "Build Number: #{number}"
     number
   end

@@ -101,7 +101,7 @@ Proximity
 
 ### Prerequisites
 
-You can download the application [here](https://install.appcenter.ms/orgs/eu-digital-identity-wallet/apps/eudi-reference-android/distribution_groups/eudi%20wallet%20(demo)%20public)
+You can download the application (apk file) through GitHub releases [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases)
 
 You will also need to download the Android Verifier app. More information can be found [here](wiki/verifier_proximity.md)
 
