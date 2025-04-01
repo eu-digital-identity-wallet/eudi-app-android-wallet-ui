@@ -182,7 +182,7 @@ class DocumentsViewModel(
         when (event) {
             is Event.Init -> {
                 filterStateChanged()
-                revokedDocumentsStateChanged()
+                revokedDocumentsStateChanged(event)
             }
 
             is Event.GetDocuments -> {
@@ -283,10 +283,14 @@ class DocumentsViewModel(
         }
     }
 
-    private fun revokedDocumentsStateChanged() {
+    private fun revokedDocumentsStateChanged(event: Event) {
         viewModelScope.launch {
             interactor.onRevokedDocumentEvent().collect { revokedIds ->
-                println("RevocationWorkManager: All work pretty good. I got these from DocumentsViewModel -> $revokedIds")
+                getDocuments(
+                    event = event,
+                    revokedDocIds = revokedIds,
+                    deferredFailedDocIds = viewState.value.deferredFailedDocIds
+                )
             }
         }
     }
@@ -323,6 +327,7 @@ class DocumentsViewModel(
     private fun getDocuments(
         event: Event,
         deferredFailedDocIds: List<DocumentId>,
+        revokedDocIds: List<DocumentId> = emptyList<DocumentId>(),
     ) {
         setState {
             copy(
@@ -363,9 +368,9 @@ class DocumentsViewModel(
                                 }
                             }
                             val documentsWithFailed =
-                                response.allDocuments.generateFailedDeferredDocs(
-                                    deferredFailedDocIds
-                                )
+                                response.allDocuments
+                                    .generateFailedDeferredDocs(deferredFailedDocIds)
+                                    .generateRevokedDocs(revokedDocIds)
 
                             if (viewState.value.isFromOnPause) {
                                 interactor.initializeFilters(
@@ -403,6 +408,28 @@ class DocumentsViewModel(
                     documentIssuanceState = DocumentUiIssuanceState.Failed,
                     uiData = data.uiData.copy(
                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.ErrorFilled,
+                            tint = ThemeColors.error
+                        )
+                    )
+                )
+            } else {
+                data
+            }
+
+            filterableItem.copy(payload = failedUiItem)
+        })
+    }
+
+    private fun FilterableList.generateRevokedDocs(revokedDocIds: List<DocumentId>): FilterableList {
+        return copy(items = items.map { filterableItem ->
+            val data = filterableItem.payload as DocumentUi
+            val failedUiItem = if (data.uiData.itemId in revokedDocIds) {
+                data.copy(
+                    documentIssuanceState = DocumentUiIssuanceState.Revoked,
+                    uiData = data.uiData.copy(
+                        supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_revoked),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.ErrorFilled,
                             tint = ThemeColors.error

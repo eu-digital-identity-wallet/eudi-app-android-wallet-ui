@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
@@ -71,9 +72,12 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
+import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
+import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -205,6 +209,34 @@ private fun Content(
                 )
             )
         ) {
+
+            if (state.isRevoked) {
+                WrapCard(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = CardDefaults.cardColors(contentColor = MaterialTheme.colorScheme.errorContainer)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(SPACING_MEDIUM.dp)
+                    ) {
+                        WrapText(
+                            text = stringResource(
+                                R.string.document_details_revoked_document_message,
+                                state.title ?: ""
+                            ),
+                            textConfig = TextConfig(
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        )
+                    }
+                }
+
+                VSpacer.Large()
+            }
+
             // Screen title
             state.title?.let { safeTitle ->
                 ContentTitle(

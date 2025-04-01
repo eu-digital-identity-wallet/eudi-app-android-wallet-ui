@@ -373,6 +373,7 @@ private fun DocumentCategory(
                     DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
                     DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
                     DocumentUiIssuanceState.Expired -> MaterialTheme.colorScheme.error
+                    DocumentUiIssuanceState.Revoked -> MaterialTheme.colorScheme.error
                 }
             )
         }

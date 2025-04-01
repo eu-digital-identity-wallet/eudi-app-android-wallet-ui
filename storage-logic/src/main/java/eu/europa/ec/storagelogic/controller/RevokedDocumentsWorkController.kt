@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+/**
+ * Manages the communication between the application and the work manager
+* */
 interface RevokedDocumentsWorkController {
     val workEvent: StateFlow<List<String>>
     suspend fun updateWorkEvent(ids: List<String>)

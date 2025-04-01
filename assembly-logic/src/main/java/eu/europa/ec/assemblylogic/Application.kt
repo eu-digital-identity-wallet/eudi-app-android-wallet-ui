@@ -24,12 +24,12 @@ import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
+import eu.europa.ec.storagelogic.workmanager.RevocationWorkManager
 import org.koin.android.ext.android.inject
 import org.koin.core.KoinApplication
 
 class Application : Application() {
 
-    private val revocationWorker = "revocationWorker"
     private val analyticsController: AnalyticsController by inject()
     private val configLogic: ConfigLogic by inject()
     private val periodicWorkRequest: PeriodicWorkRequest by inject()
@@ -38,7 +38,7 @@ class Application : Application() {
         super.onCreate()
         initializeKoin().initializeRqes()
         initializeReporting()
-        scheduleWork()
+        initializeRevocationWorkManager()
     }
 
     private fun KoinApplication.initializeRqes() {
@@ -57,9 +57,9 @@ class Application : Application() {
         analyticsController.initialize(this)
     }
 
-    private fun scheduleWork() {
+    private fun initializeRevocationWorkManager() {
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            revocationWorker,
+            RevocationWorkManager.revocationWorkName,
             ExistingPeriodicWorkPolicy.KEEP,
             periodicWorkRequest
         )

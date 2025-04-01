@@ -24,9 +24,9 @@ import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.model.RevokedDocument
 import eu.europa.ec.storagelogic.receiver.RevocationWorkCompletionReceiver
+import kotlinx.coroutines.delay
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.random.Random
 
 class RevocationWorkManager(
     appContext: Context,
@@ -38,13 +38,16 @@ class RevocationWorkManager(
 
     companion object {
         private const val TAG = "RevocationWorkManager"
+        const val revocationWorkName = "revocationWorker"
     }
 
     override suspend fun doWork(): Result {
         try {
             logController.d(TAG) { "Checking for revoked documents..." }
 
-            val mockedRequestResult = listOf("DF242-23321DF-F321F-LFKDSA3-${Random.nextInt(100, 1000)}")
+            // Mock request
+            delay(15000)
+            val mockedRequestResult = listOf("Document_EudiWalletDocumentManager_f41499c9-4c4e-4930-9f0d-feed089932e1")
             val resultToDomain =
                 mockedRequestResult
                     .map {

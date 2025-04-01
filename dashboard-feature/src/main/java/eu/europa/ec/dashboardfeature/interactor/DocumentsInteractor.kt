@@ -320,20 +320,23 @@ class DocumentsInteractorImpl(
                             val documentHasExpired =
                                 documentHasExpired(documentExpirationDate = document.validUntil)
 
-                            val documentIssuanceState = if (documentHasExpired) {
-                                DocumentUiIssuanceState.Expired
-                            } else {
-                                DocumentUiIssuanceState.Issued
+                            val documentIsRevoked = revokedDocumentsController.retrieve(document.id) != null
+
+                            val documentIssuanceState = when {
+                                documentIsRevoked -> DocumentUiIssuanceState.Revoked
+                                documentHasExpired == true -> DocumentUiIssuanceState.Failed
+                                else -> DocumentUiIssuanceState.Issued
                             }
 
-                            val supportingText = if (documentHasExpired) {
-                                resourceProvider.getString(R.string.dashboard_document_has_expired)
-                            } else {
-                                resourceProvider.getString(
+                            val supportingText = when {
+                                documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_deferred_revoked)
+                                documentHasExpired == true -> resourceProvider.getString(R.string.dashboard_document_has_expired)
+                                else -> resourceProvider.getString(
                                     R.string.dashboard_document_has_not_expired,
                                     document.validUntil.formatInstant()
                                 )
                             }
+
                             FilterableItem(
                                 payload = DocumentUi(
                                     documentIssuanceState = documentIssuanceState,

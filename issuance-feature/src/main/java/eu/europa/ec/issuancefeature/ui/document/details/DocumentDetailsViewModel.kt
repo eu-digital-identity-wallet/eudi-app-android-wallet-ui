@@ -45,6 +45,7 @@ data class State(
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
+    val isRevoked: Boolean = false,
 
     val documentDetailsUi: DocumentDetailsUi? = null,
     val title: String? = null,
@@ -229,6 +230,7 @@ class DocumentDetailsViewModel(
                                 documentDetailsUi = documentDetailsUi,
                                 title = documentDetailsUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
+                                isRevoked = response.isRevoked,
                                 issuerName = response.issuerName,
                                 issuerLogo = response.issuerLogo
                             )

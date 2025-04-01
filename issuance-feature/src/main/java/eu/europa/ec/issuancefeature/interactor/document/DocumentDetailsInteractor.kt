@@ -31,6 +31,7 @@ import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.controller.BookmarkStorageController
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.model.Bookmark
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -43,6 +44,7 @@ sealed class DocumentDetailsInteractorPartialState {
         val issuerLogo: URI?,
         val documentDetailsDomain: DocumentDetailsDomain,
         val documentIsBookmarked: Boolean,
+        val isRevoked: Boolean
     ) : DocumentDetailsInteractorPartialState()
 
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
@@ -90,6 +92,7 @@ interface DocumentDetailsInteractor {
 class DocumentDetailsInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val bookmarkStorageController: BookmarkStorageController,
+    private val revokedDocumentsStorageController: RevokedDocumentsStorageController,
     private val resourceProvider: ResourceProvider
 ) : DocumentDetailsInteractor {
 
@@ -117,13 +120,15 @@ class DocumentDetailsInteractorImpl(
                 val issuerLogo = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.logo
 
                 val documentIsBookmarked = bookmarkStorageController.retrieve(documentId) != null
+                val documentIsRevoked = revokedDocumentsStorageController.retrieve(documentId) != null
 
                 emit(
                     DocumentDetailsInteractorPartialState.Success(
                         issuerName = issuerName,
                         documentDetailsDomain = documentDetailsDomain,
                         documentIsBookmarked = documentIsBookmarked,
-                        issuerLogo = issuerLogo?.uri
+                        issuerLogo = issuerLogo?.uri,
+                        isRevoked = documentIsRevoked
                     )
                 )
             } ?: emit(DocumentDetailsInteractorPartialState.Failure(error = genericErrorMsg))
