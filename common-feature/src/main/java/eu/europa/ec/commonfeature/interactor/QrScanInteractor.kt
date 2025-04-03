@@ -16,10 +16,24 @@
 
 package eu.europa.ec.commonfeature.interactor
 
+import android.content.Context
+import android.net.Uri
 import eu.europa.ec.businesslogic.validator.FormValidator
+import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
+import eu.europa.ec.eudi.rqesui.infrastructure.RemoteUri
 
-interface QrScanInteractor : FormValidator
+interface QrScanInteractor : FormValidator {
+    fun launchRqesSdk(context: Context, uri: Uri)
+}
 
 class QrScanInteractorImpl(
     private val formValidator: FormValidator
-) : FormValidator by formValidator, QrScanInteractor
+) : FormValidator by formValidator, QrScanInteractor {
+
+    override fun launchRqesSdk(context: Context, uri: Uri) {
+        EudiRQESUi.initiate(
+            context = context,
+            remoteUri = RemoteUri(uri)
+        )
+    }
+}

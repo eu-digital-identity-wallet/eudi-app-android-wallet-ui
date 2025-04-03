@@ -16,9 +16,10 @@
 
 package eu.europa.ec.businesslogic.config
 
+import android.content.Context
 import eu.europa.ec.eudi.rqesui.infrastructure.config.EudiRQESUiConfig
 
-class ConfigLogicImpl : ConfigLogic {
+class ConfigLogicImpl(val context: Context) : ConfigLogic {
     override val appFlavor: AppFlavor
         get() = AppFlavor.DEV
 
@@ -26,7 +27,7 @@ class ConfigLogicImpl : ConfigLogic {
         get() = DevEnvironmentConfig()
 
     override val rqesConfig: EudiRQESUiConfig
-        get() = RQESConfigImpl()
+        get() = RQESConfigImpl(context)
 
     override val changelogUrl: String?
         get() = null
