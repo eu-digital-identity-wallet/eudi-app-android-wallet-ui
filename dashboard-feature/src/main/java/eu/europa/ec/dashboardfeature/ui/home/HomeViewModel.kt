@@ -24,6 +24,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractorGetUserNameViaMainPidDocumentPartialState
+import eu.europa.ec.dashboardfeature.ui.home.HomeScreenBottomSheetContent.Bluetooth
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -81,6 +82,11 @@ sealed class Event : ViewEvent {
             data object OpenAuthenticateOnLine : Authenticate()
         }
 
+        sealed class SignDocument : BottomSheet() {
+            data object OpenFromDevice : Authenticate()
+            data object OpenScanQR : Authenticate()
+        }
+
         sealed class Bluetooth : BottomSheet() {
             data class PrimaryButtonPressed(val availability: BleAvailability) : Bluetooth()
             data object SecondaryButtonPressed : Bluetooth()
@@ -111,6 +117,7 @@ sealed class HomeScreenBottomSheetContent {
     data object Authenticate : HomeScreenBottomSheetContent()
     data object LearnMoreAboutAuthenticate : HomeScreenBottomSheetContent()
     data object LearnMoreAboutSignDocument : HomeScreenBottomSheetContent()
+    data object Sign : HomeScreenBottomSheetContent()
 
     data class Bluetooth(val availability: BleAvailability) : HomeScreenBottomSheetContent()
 }
@@ -155,9 +162,9 @@ class HomeViewModel(
                 sheetContent = HomeScreenBottomSheetContent.LearnMoreAboutAuthenticate
             )
 
-            is Event.SignDocumentCard.SignDocumentPressed -> {
-                navigateToDocumentSign()
-            }
+            is Event.SignDocumentCard.SignDocumentPressed -> showBottomSheet(
+                sheetContent = HomeScreenBottomSheetContent.Sign
+            )
 
             is Event.SignDocumentCard.LearnMorePressed -> showBottomSheet(
                 sheetContent = HomeScreenBottomSheetContent.LearnMoreAboutSignDocument
@@ -182,6 +189,16 @@ class HomeViewModel(
                 navigateToQrScan()
             }
 
+            is Event.BottomSheet.SignDocument.OpenFromDevice -> {
+                hideBottomSheet()
+                navigateToDocumentSign()
+            }
+
+            is Event.BottomSheet.SignDocument.OpenScanQR -> {
+                hideBottomSheet()
+                navigateToQrSignatureScan()
+            }
+
             is Event.OnPermissionStateChanged -> {
                 setState { copy(bleAvailability = event.availability) }
             }
@@ -189,7 +206,7 @@ class HomeViewModel(
             is Event.OnShowPermissionsRational -> {
                 setState { copy(bleAvailability = BleAvailability.UNKNOWN) }
                 showBottomSheet(
-                    sheetContent = HomeScreenBottomSheetContent.Bluetooth(
+                    sheetContent = Bluetooth(
                         BleAvailability.NO_PERMISSION
                     )
                 )
@@ -218,7 +235,7 @@ class HomeViewModel(
             setState { copy(bleAvailability = BleAvailability.DISABLED) }
             hideAndShowNextBottomSheet()
             showBottomSheet(
-                sheetContent = HomeScreenBottomSheetContent.Bluetooth(BleAvailability.DISABLED)
+                sheetContent = Bluetooth(BleAvailability.DISABLED)
             )
         }
     }
@@ -289,6 +306,29 @@ class HomeViewModel(
         }
     }
 
+    private fun navigateToQrSignatureScan() {
+        val navigationEffect = Effect.Navigation.SwitchScreen(
+            screenRoute = generateComposableNavigationLink(
+                screen = CommonScreens.QrScan,
+                arguments = generateComposableArguments(
+                    mapOf(
+                        QrScanUiConfig.serializedKeyName to uiSerializer.toBase64(
+                            QrScanUiConfig(
+                                title = resourceProvider.getString(R.string.signature_qr_scan_title),
+                                subTitle = resourceProvider.getString(R.string.signature_qr_scan_subtitle),
+                                qrScanFlow = QrScanFlow.Signature
+                            ),
+                            QrScanUiConfig.Parser
+                        )
+                    )
+                )
+            )
+        )
+        setEffect {
+            navigationEffect
+        }
+    }
+
     private fun navigateToQrScan() {
         val navigationEffect = Effect.Navigation.SwitchScreen(
             screenRoute = generateComposableNavigationLink(
@@ -307,7 +347,6 @@ class HomeViewModel(
                 )
             )
         )
-
         setEffect {
             navigationEffect
         }

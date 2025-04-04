@@ -19,6 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import android.content.Context
 import android.net.Uri
 import eu.europa.ec.dashboardfeature.model.SignDocumentButtonUi
+import eu.europa.ec.eudi.rqesui.infrastructure.DocumentUri
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -28,7 +29,7 @@ import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 
 interface DocumentSignInteractor {
-    fun launchRQESSdk(context: Context, uri: Uri)
+    fun launchRqesSdk(context: Context, uri: Uri)
     fun getUiItem(): SignDocumentButtonUi
 }
 
@@ -36,8 +37,11 @@ class DocumentSignInteractorImpl(
     private val resourceProvider: ResourceProvider,
 ) : DocumentSignInteractor {
 
-    override fun launchRQESSdk(context: Context, uri: Uri) {
-        EudiRQESUi.initiate(context, uri)
+    override fun launchRqesSdk(context: Context, uri: Uri) {
+        EudiRQESUi.initiate(
+            context = context,
+            documentUri = DocumentUri(uri)
+        )
     }
 
     override fun getUiItem(): SignDocumentButtonUi {

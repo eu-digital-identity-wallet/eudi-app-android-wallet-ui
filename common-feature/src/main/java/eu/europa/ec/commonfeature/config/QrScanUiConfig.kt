@@ -25,6 +25,7 @@ import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 sealed interface QrScanFlow {
     data object Presentation : QrScanFlow
     data class Issuance(val issuanceFlow: IssuanceFlowUiConfig) : QrScanFlow
+    data object Signature : QrScanFlow
 }
 
 data class QrScanUiConfig(

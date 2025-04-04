@@ -26,6 +26,7 @@ import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
+import eu.europa.ec.eudi.rqesui.infrastructure.RemoteUri
 import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 import eu.europa.ec.uilogic.extension.openUrl
@@ -148,6 +149,14 @@ fun handleDeepLinkAction(
             }
             return
         }
+
+        DeepLinkType.RQES_DOC_RETRIEVAL -> {
+            EudiRQESUi.initiate(
+                context = navController.context,
+                remoteUri = RemoteUri(action.link)
+            )
+            return
+        }
     }
 
     val navigationLink = arguments?.let {
@@ -188,6 +197,9 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
     RQES(
         schemas = listOf(BuildConfig.RQES_SCHEME),
         host = BuildConfig.RQES_HOST
+    ),
+    RQES_DOC_RETRIEVAL(
+        schemas = listOf(BuildConfig.RQES_DOC_RETRIEVAL_SCHEME)
     );
 
     companion object {
@@ -207,6 +219,10 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
 
             RQES.schemas.contains(scheme) && host == RQES.host -> {
                 RQES
+            }
+
+            RQES_DOC_RETRIEVAL.schemas.contains(scheme) -> {
+                RQES_DOC_RETRIEVAL
             }
 
             else -> EXTERNAL
