@@ -440,7 +440,12 @@ class TransactionsViewModel(
                                 transactionsUi = transactionsUiWithCategoryItemsSorted,
                                 showNoResultsFound = result.transactions.isEmpty(),
                                 filtersUi = result.filters,
-                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                                sortOrder = sortOrder.copy(
+                                    selectedButton = when (result.sortOrder) {
+                                        is SortOrder.Descending -> DualSelectorButton.FIRST
+                                        is SortOrder.Ascending -> DualSelectorButton.SECOND
+                                    }
+                                )
                             )
                         }
                     }
@@ -449,7 +454,12 @@ class TransactionsViewModel(
                         setState {
                             copy(
                                 filtersUi = result.filters,
-                                sortOrder = sortOrder.copy(selectedButton = result.sortOrder)
+                                sortOrder = sortOrder.copy(
+                                    selectedButton = when (result.sortOrder) {
+                                        is SortOrder.Descending -> DualSelectorButton.FIRST
+                                        is SortOrder.Ascending -> DualSelectorButton.SECOND
+                                    }
+                                )
                             )
                         }
                     }
@@ -469,8 +479,6 @@ class TransactionsViewModel(
                     val dateTime = category.dateRange?.start
                     TransactionCategory.Month(dateTime ?: LocalDateTime.now())
                 }
-
-                else -> category
             }
         }.toList()
 

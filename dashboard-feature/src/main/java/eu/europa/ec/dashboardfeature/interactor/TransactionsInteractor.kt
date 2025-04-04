@@ -17,7 +17,6 @@
 package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.businesslogic.util.dayMonthYearFormatter
 import eu.europa.ec.businesslogic.util.fullDateTimeFormatter
 import eu.europa.ec.businesslogic.util.hoursMinutesFormatter
 import eu.europa.ec.businesslogic.util.isToday
@@ -50,7 +49,6 @@ import eu.europa.ec.dashboardfeature.model.toTransactionUiStatus
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
@@ -62,18 +60,19 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
         val transactions: List<Pair<TransactionCategory, List<TransactionUi>>>,
         val filters: List<ExpandableListItem.NestedListItemData>,
-        val sortOrder: DualSelectorButton,
+        val sortOrder: SortOrder,
         val allDefaultFiltersAreSelected: Boolean,
     ) : TransactionInteractorFilterPartialState()
 
     data class FilterUpdateResult(
         val filters: List<ExpandableListItem.NestedListItemData>,
-        val sortOrder: DualSelectorButton,
+        val sortOrder: SortOrder,
     ) : TransactionInteractorFilterPartialState()
 }
 
@@ -138,97 +137,122 @@ class TransactionsInteractorImpl(
 
     override fun getTestTransactions(): List<Transaction> {
         val now = LocalDateTime.now()
-        val someMinutesAgo = now.minusMinutes(20)
+
+        val twentyMinutesAgo = now.minusMinutes(20)
+        val threeHoursAgo = now.minusHours(3)
+
+        val twoDaysAgo = now.minusDays(2)
+        val threeDaysAgo = now.minusDays(3)
+        val threeDaysMinusFourHoursAgo = now.minusDays(3).minusHours(4)
+
         val transactions = listOf(
             DocumentSigningTransaction(
-                id = "recent",
+                id = "today1",
                 name = "Document Signing",
                 status = "Completed",
-                creationDate = someMinutesAgo.format(fullDateTimeFormatter)
+                creationDate = twentyMinutesAgo.format(fullDateTimeFormatter)
+            ),
+            DocumentSigningTransaction(
+                id = "today2",
+                name = "Document Signing",
+                status = "Completed",
+                creationDate = threeHoursAgo.format(fullDateTimeFormatter)
+            ),
+            DocumentSigningTransaction(
+                id = "thisWeek1",
+                name = "Document Signing",
+                status = "Completed",
+                creationDate = twoDaysAgo.format(fullDateTimeFormatter)
+            ),
+            DocumentSigningTransaction(
+                id = "thisWeek2",
+                name = "Document Signing",
+                status = "Completed",
+                creationDate = threeDaysAgo.format(fullDateTimeFormatter)
+            ),
+            DocumentSigningTransaction(
+                id = "thisWeek3",
+                name = "Document Signing",
+                status = "Completed",
+                creationDate = threeDaysMinusFourHoursAgo.format(fullDateTimeFormatter)
             ),
             DocumentSigningTransaction(
                 id = "t001",
-                name = "Document Signing",
+                name = "Another Document Signing",
                 status = "Completed",
-                creationDate = now.minusDays(1).format(fullDateTimeFormatter)
+                creationDate = "23 Feb 2025 09:20 AM"
             ),
             DocumentSigningTransaction(
                 id = "t002",
-                name = "Another Document Signing",
-                status = "Completed",
-                creationDate = "23 February 2025 09:20 AM"
-            ),
-            DocumentSigningTransaction(
-                id = "t003",
                 name = "Document Signing",
                 status = "Completed",
-                creationDate = "20 February 2025 09:20 AM"
+                creationDate = "20 Feb 2025 09:20 AM"
             ),
             AttestationPresentationTransaction(
-                id = "t004",
+                id = "t003",
                 name = "PID Presentation",
                 status = "Failed",
-                creationDate = "19 February 2025 05:40 PM",
+                creationDate = "19 Feb 2025 05:40 PM",
                 issuerName = "Test issuer",
                 relyingPartyName = "Test relying party",
                 attestationType = "Presentation (test)"
             ),
             AttestationPresentationTransaction(
-                id = "t005",
+                id = "t004",
                 name = "Identity Verification",
                 status = "Completed",
-                creationDate = "17 February 2025 11:55 AM",
+                creationDate = "17 Feb 2025 11:55 AM",
                 issuerName = "Test issuer",
                 relyingPartyName = "Test relying party",
                 attestationType = "Issuance (test)"
             ),
             DocumentSigningTransaction(
-                id = "t006",
+                id = "t005",
                 name = "Document Signing",
                 status = "Completed",
-                creationDate = "10 February 2025 01:15 PM"
+                creationDate = "10 Feb 2025 01:15 PM"
             ),
             AttestationPresentationTransaction(
-                id = "t007",
+                id = "t006",
                 name = "Data Sharing Request",
                 status = "Failed",
-                creationDate = "20 January 2025 04:30 PM",
+                creationDate = "20 Jan 2025 04:30 PM",
                 issuerName = "Test issuer",
                 relyingPartyName = "Test relying party, other",
                 attestationType = "Request (test)"
             ),
             DocumentSigningTransaction(
-                id = "t008",
+                id = "t007",
                 name = "Document Signing",
                 status = "Completed",
-                creationDate = "20 December 2024 10:05 AM"
+                creationDate = "20 Dec 2024 10:05 AM"
             ),
             AttestationPresentationTransaction(
-                id = "t009",
+                id = "t008",
                 name = "PID Presentation",
                 status = "Completed",
-                creationDate = "01 March 2024 02:20 PM",
+                creationDate = "01 Mar 2024 02:20 PM",
                 issuerName = "Test issuer",
                 relyingPartyName = "Test relying party",
                 attestationType = "Presentation (test)"
             ),
             DocumentSigningTransaction(
-                id = "t010",
+                id = "t009",
                 name = "Document Signing",
                 status = "Failed",
-                creationDate = "22 February 2024 09:45 AM"
+                creationDate = "22 Feb 2024 09:45 AM"
             ),
             AttestationPresentationTransaction(
-                id = "t011",
+                id = "t010",
                 name = "Identity Verification",
                 status = "Completed",
-                creationDate = "17 February 2024 11:30 AM",
+                creationDate = "17 Feb 2024 11:30 AM",
                 issuerName = "Test issuer",
                 relyingPartyName = "Test relying party",
-                attestationType = "Verification (test)"
+                attestationType = "Verification (test)" // TODO Data sharing
             ),
             DocumentSigningTransaction(
-                id = "t012",
+                id = "t011",
                 name = "Old Document",
                 status = "Completed",
                 creationDate = "15 May 1999 10:30 AM"
@@ -314,17 +338,12 @@ class TransactionsInteractorImpl(
                 )
             }
 
-            val sortOrderUi = when (result.updatedFilters.sortOrder) {
-                is SortOrder.Descending -> DualSelectorButton.FIRST
-                is SortOrder.Ascending -> DualSelectorButton.SECOND
-            }
-
             when (result) {
                 is FilterValidatorPartialState.FilterListResult -> {
                     TransactionInteractorFilterPartialState.FilterApplyResult(
                         transactions = transactionsUi,
                         filters = filtersUi,
-                        sortOrder = sortOrderUi,
+                        sortOrder = result.updatedFilters.sortOrder,
                         allDefaultFiltersAreSelected = result.allDefaultFiltersAreSelected
                     )
                 }
@@ -332,7 +351,7 @@ class TransactionsInteractorImpl(
                 is FilterValidatorPartialState.FilterUpdateResult -> {
                     TransactionInteractorFilterPartialState.FilterUpdateResult(
                         filters = filtersUi,
-                        sortOrder = sortOrderUi
+                        sortOrder = result.updatedFilters.sortOrder
                     )
                 }
             }
@@ -352,19 +371,21 @@ class TransactionsInteractorImpl(
 
                 FilterableItem(
                     payload = TransactionUi(
-                        uiData = ListItemData(
-                            itemId = transaction.id,
-                            mainContentData = ListItemMainContentData.Text(text = transaction.name),
-                            overlineText = transaction.status,
-                            supportingText = transaction.creationDate.toFormattedDisplayableDate(),
-                            trailingContentData = trailingContentData
+                        uiData = ExpandableListItem.SingleListItemData(
+                            header = ListItemData(
+                                itemId = transaction.id,
+                                mainContentData = ListItemMainContentData.Text(text = transaction.name),
+                                overlineText = transaction.status,
+                                supportingText = transaction.creationDate.toFormattedDisplayableDate(),
+                                trailingContentData = trailingContentData
+                            )
                         ),
                         uiStatus = transaction.status.toTransactionUiStatus(
                             completedStatusString = resourceProvider.getString(
                                 R.string.transactions_filter_item_status_completed
                             )
                         ),
-                        transactionCategory = getTransactionCategory(dateTime = dateTime)
+                        transactionCategory = getTransactionCategory(dateTime = dateTime),
                     ),
                     attributes = TransactionsFilterableAttributes(
                         searchTags = buildList {
@@ -441,6 +462,17 @@ class TransactionsInteractorImpl(
                 id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
                 name = resourceProvider.getString(R.string.transactions_screen_filters_sort_by),
                 filters = listOf()
+                filters = listOf(
+                    FilterItem(
+                        id = TransactionFilterIds.FILTER_SORT_TRANSACTION_DATE,
+                        name = resourceProvider.getString(R.string.transactions_screen_filters_sort_transaction_date),
+                        selected = true,
+                        isDefault = true,
+                        filterableAction = FilterAction.Sort<TransactionsFilterableAttributes, Instant> { attributes ->
+                            attributes.creationDate
+                        }
+                    ),
+                )
             ),
 
             // Filter by Transaction date
@@ -607,7 +639,7 @@ class TransactionsInteractorImpl(
 
             else -> TransactionInteractorDateTimeCategoryPartialState.WithinMonth(
                 date = format(
-                    dayMonthYearFormatter
+                    fullDateTimeFormatter
                 )
             )
         }

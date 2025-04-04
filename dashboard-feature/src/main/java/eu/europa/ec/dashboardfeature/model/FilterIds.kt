@@ -36,6 +36,7 @@ object DocumentFilterIds {
 
 object TransactionFilterIds {
     const val FILTER_SORT_GROUP_ID = "sort_group_id"
+    const val FILTER_SORT_TRANSACTION_DATE = "sort_transaction_date"
 
     const val FILTER_BY_STATUS_GROUP_ID = "status_group_id"
     const val FILTER_BY_STATUS_COMPLETE = "status_complete"

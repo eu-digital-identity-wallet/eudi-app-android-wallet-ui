@@ -167,15 +167,12 @@ fun Long?.toDisplayedDate(): String {
     }.orEmpty()
 }
 
-private const val FULL_DATETIME_PATTERN = "dd MMMM yyyy hh:mm a"
+private const val FULL_DATETIME_PATTERN = "dd MMM yyyy hh:mm a"
 private const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
-private const val DAY_MONTH_YEAR_DATETIME_PATTERN = "dd MMM yyyy"
 private const val MONTH_YEAR_DATETIME_PATTERN = "MMMM yyyy"
 private const val DAY_MONTH_YEAR_TEXT_FIELD_PATTERN = "dd/MM/yyyy"
 
 val fullDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(FULL_DATETIME_PATTERN)
 val hoursMinutesFormatter: DateTimeFormatter =
     DateTimeFormatter.ofPattern(HOURS_MINUTES_DATETIME_PATTERN)
-val dayMonthYearFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofPattern(DAY_MONTH_YEAR_DATETIME_PATTERN)
 val monthYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(MONTH_YEAR_DATETIME_PATTERN)

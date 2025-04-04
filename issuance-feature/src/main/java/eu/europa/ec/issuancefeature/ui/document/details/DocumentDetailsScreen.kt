@@ -369,9 +369,10 @@ private fun DocumentDetails(
             modifier = Modifier.fillMaxWidth(),
             items = documentDetailsUi.documentClaims,
             hideSensitiveContent = hideSensitiveContent,
-            onItemClick = { item ->
+            onExpandedChange = { item ->
                 onEventSend(Event.ClaimClicked(itemId = item.itemId))
             },
+            onItemClick = null,
             throttleClicks = false,
         )
     }
