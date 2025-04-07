@@ -17,6 +17,7 @@
 package eu.europa.ec.corelogic.controller
 
 import com.android.identity.securearea.KeyUnlockData
+import com.nimbusds.jose.shaded.gson.Gson
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -43,8 +44,11 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
+import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
+import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTransactionLog
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
@@ -171,12 +175,15 @@ interface WalletCoreDocumentsController {
     suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState
 
     fun getAllDocumentCategories(): DocumentCategories
+
+    suspend fun getPresentationTransactionLogs(): List<PresentationTransactionLog>
 }
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val eudiWallet: EudiWallet,
     private val walletCoreConfig: WalletCoreConfig,
+    private val transactionLogStorageController: TransactionLogStorageController,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : WalletCoreDocumentsController {
 
@@ -509,6 +516,21 @@ class WalletCoreDocumentsControllerImpl(
     override fun getAllDocumentCategories(): DocumentCategories {
         return walletCoreConfig.documentCategories
     }
+
+    override suspend fun getPresentationTransactionLogs(): List<PresentationTransactionLog> =
+        transactionLogStorageController.retrieveAll()
+            .mapNotNull {
+                try {
+                    Gson().fromJson(
+                        it.value,
+                        TransactionLog::class.java
+                    )
+                } catch (_: Exception) {
+                    null
+                }
+            }.mapNotNull {
+                PresentationTransactionLog.fromTransactionLog(it).getOrNull()
+            }
 
     private fun issueDocumentWithOpenId4VCI(configId: String): Flow<IssueDocumentsPartialState> =
         callbackFlow {

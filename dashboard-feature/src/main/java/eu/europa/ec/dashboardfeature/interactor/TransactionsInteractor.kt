@@ -36,6 +36,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.model.Transaction
 import eu.europa.ec.dashboardfeature.model.Transaction.AttestationPresentationTransaction
@@ -126,6 +127,7 @@ interface TransactionsInteractor {
 class TransactionsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val filterValidator: FilterValidator,
+    private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : TransactionsInteractor {
 
     private val genericErrorMsg

@@ -119,5 +119,9 @@ gradlePlugin {
             id = "project.kotlin.realm"
             implementationClass = "RealmPlugin"
         }
+        register("eudiStorage") {
+            id = "project.wallet.storage"
+            implementationClass = "EudiWalletStoragePlugin"
+        }
     }
 }

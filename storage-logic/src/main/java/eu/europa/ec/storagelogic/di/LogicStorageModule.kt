@@ -21,6 +21,8 @@ import eu.europa.ec.storagelogic.config.StorageConfig
 import eu.europa.ec.storagelogic.config.StorageConfigImpl
 import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.storagelogic.controller.BookmarkStorageControllerImpl
+import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
+import eu.europa.ec.storagelogic.controller.TransactionLogStorageControllerImpl
 import eu.europa.ec.storagelogic.service.RealmService
 import eu.europa.ec.storagelogic.service.RealmServiceImpl
 import org.koin.core.annotation.ComponentScan
@@ -43,3 +45,7 @@ fun provideRealmService(storageConfig: StorageConfig): RealmService =
 @Factory
 fun provideBookmarkStorageController(realmService: RealmService): BookmarkStorageController =
     BookmarkStorageControllerImpl(realmService)
+
+@Factory
+fun provideTransactionLogStorageController(realmService: RealmService): TransactionLogStorageController =
+    TransactionLogStorageControllerImpl(realmService)

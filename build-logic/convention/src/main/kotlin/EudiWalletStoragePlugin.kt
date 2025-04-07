@@ -14,33 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.dependencies
 import project.convention.logic.config.LibraryModule
-import project.convention.logic.kover.KoverExclusionRules
-import project.convention.logic.kover.excludeFromKoverReport
 
-plugins {
-    id("project.android.library")
-    id("project.wallet.core")
-    id("project.wallet.storage")
+class EudiWalletStoragePlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            dependencies {
+                add("implementation", project(LibraryModule.StorageLogic.path))
+            }
+        }
+    }
 }
-
-android {
-    namespace = "eu.europa.ec.corelogic"
-}
-
-moduleConfig {
-    module = LibraryModule.CoreLogic
-}
-
-dependencies {
-    implementation(project(LibraryModule.ResourcesLogic.path))
-    implementation(project(LibraryModule.BusinessLogic.path))
-    implementation(project(LibraryModule.AuthenticationLogic.path))
-
-    implementation(libs.androidx.biometric)
-}
-
-excludeFromKoverReport(
-    excludedClasses = KoverExclusionRules.CoreLogic.classes,
-    excludedPackages = KoverExclusionRules.CoreLogic.packages,
-)
