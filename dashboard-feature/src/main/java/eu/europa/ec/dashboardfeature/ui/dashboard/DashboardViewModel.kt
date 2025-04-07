@@ -19,14 +19,18 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 import android.content.Intent
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.model.RevokedDocumentPayload
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.model.SideMenuItemType
 import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
+import eu.europa.ec.dashboardfeature.ui.dashboard.Event.OptionListItemForRevokedDocumentSelected
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -34,6 +38,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -42,6 +47,7 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -59,10 +65,15 @@ data class State(
     val menuAnimationDuration: Int = 1500,
     val appVersion: String = "",
     val changelogUrl: String?,
+    val revokedDialogOptions: List<ModalOptionUi<Event>> = emptyList(),
+    val showRevokedDialog: Boolean = false
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data class Init(val deepLinkUri: Uri?) : Event()
+    data class ShowRevocationModal(val payload: List<RevokedDocumentPayload>): Event()
+    data object CloseRevocationModal: Event()
+    data class OptionListItemForRevokedDocumentSelected(val documentId: String): Event()
     data object Pop : Event()
 
     // side menu events
@@ -140,6 +151,65 @@ class DashboardViewModel(
                     )
                 }
             }
+
+            is Event.ShowRevocationModal -> {
+                showBottomSheet(event.payload)
+            }
+
+            is OptionListItemForRevokedDocumentSelected -> {
+                hideBottomSheet()
+                goToDocumentDetails(docId = event.documentId)
+            }
+
+            is Event.CloseRevocationModal -> {
+                hideBottomSheet()
+            }
+        }
+    }
+
+    private fun goToDocumentDetails(docId: DocumentId) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = IssuanceScreens.DocumentDetails,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
+                            "documentId" to docId
+                        )
+                    )
+                )
+            )
+        }
+    }
+
+    private fun showBottomSheet(payload: List<RevokedDocumentPayload>) {
+        setState {
+            copy(
+                showRevokedDialog = true,
+                revokedDialogOptions = getBottomSheetOptions(payload)
+            )
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setState {
+            copy(
+                showRevokedDialog = false,
+                revokedDialogOptions = emptyList()
+            )
+        }
+    }
+
+    private fun getBottomSheetOptions(revokedDocumentPayload: List<RevokedDocumentPayload>): List<ModalOptionUi<Event>> {
+        return revokedDocumentPayload.map {
+            ModalOptionUi(
+                title = it.name,
+                trailingIcon = AppIcons.KeyboardArrowRight,
+                event = OptionListItemForRevokedDocumentSelected(
+                    documentId = it.id
+                )
+            )
         }
     }
 

@@ -197,6 +197,10 @@
 
     <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
     <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
+
+    <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Revoked documents</string>
+    <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">The following documents have been revoked.</string>
+
     <string name="dashboard_intent_chooser_logs_share_title">Share logs</string>
 
     <!-- Dashboard Side Menu -->
@@ -248,6 +252,7 @@
     <string name="documents_screen_filters_filter_by_category">Filter by Category</string>
     <string name="documents_screen_filters_filter_by_all">All</string>
     <string name="documents_screen_filters_filter_by_state">Filter by State</string>
+    <string name="documents_screen_filters_filter_by_state_revoked">Revoked</string>
     <string name="documents_screen_filters_filter_by_state_valid">Valid</string>
     <string name="documents_screen_filters_filter_by_state_expired">Expired</string>
     <string name="documents_screen_filters_filter_by_expiry_period">Filter by Expiry Period</string>
@@ -273,7 +278,7 @@
     <string name="qr_scan_informative_text_issuance_flow">Having trouble scanning the QR Code?\nPlease try an alternative way</string>
 
     <!-- Document Details -->
-    <string name="document_details_revoked_document_message">The document ‘%1$s’ has been revoked by the issuing service.</string>
+    <string name="document_details_revoked_document_message">This document has been revoked by the issuer. Contact the issuing service for more information.</string>
     <string name="document_details_portrait_readable_identifier">Shown above</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>

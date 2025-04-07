@@ -32,6 +32,8 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPa
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
 import eu.europa.ec.dashboardfeature.model.DocumentUi
+import eu.europa.ec.dashboardfeature.ui.documents.DocumentsBottomSheetContent.DeferredDocumentPressed
+import eu.europa.ec.dashboardfeature.ui.documents.DocumentsBottomSheetContent.Filters
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -63,7 +65,7 @@ data class State(
     val isLoading: Boolean,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
+    val sheetContent: DocumentsBottomSheetContent = Filters(filters = emptyList()),
 
     val documentsUi: List<Pair<DocumentCategory, List<DocumentUi>>> = emptyList(),
     val showNoResultsFound: Boolean = false,
@@ -182,7 +184,6 @@ class DocumentsViewModel(
         when (event) {
             is Event.Init -> {
                 filterStateChanged()
-                revokedDocumentsStateChanged(event)
             }
 
             is Event.GetDocuments -> {
@@ -213,7 +214,7 @@ class DocumentsViewModel(
 
             is Event.FiltersPressed -> {
                 stopDeferredIssuing()
-                showBottomSheet(sheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()))
+                showBottomSheet(sheetContent = Filters(filters = emptyList()))
             }
 
             is Event.OnSearchQueryChanged -> {
@@ -237,7 +238,7 @@ class DocumentsViewModel(
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+                if (viewState.value.sheetContent is Filters
                     && !event.isOpen
                 ) {
                     setEffect { Effect.ResumeOnApplyFilter }
@@ -261,7 +262,7 @@ class DocumentsViewModel(
 
             is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected -> {
                 showBottomSheet(
-                    sheetContent = DocumentsBottomSheetContent.DeferredDocumentPressed(
+                    sheetContent = DeferredDocumentPressed(
                         documentId = event.documentId
                     )
                 )
@@ -279,18 +280,6 @@ class DocumentsViewModel(
             is Event.BottomSheet.DeferredDocument.OptionListItemForSuccessfullyIssuingDeferredDocumentSelected -> {
                 hideBottomSheet()
                 goToDocumentDetails(docId = event.documentId)
-            }
-        }
-    }
-
-    private fun revokedDocumentsStateChanged(event: Event) {
-        viewModelScope.launch {
-            interactor.onRevokedDocumentEvent().collect { revokedIds ->
-                getDocuments(
-                    event = event,
-                    revokedDocIds = revokedIds,
-                    deferredFailedDocIds = viewState.value.deferredFailedDocIds
-                )
             }
         }
     }
@@ -327,7 +316,6 @@ class DocumentsViewModel(
     private fun getDocuments(
         event: Event,
         deferredFailedDocIds: List<DocumentId>,
-        revokedDocIds: List<DocumentId> = emptyList<DocumentId>(),
     ) {
         setState {
             copy(
@@ -370,7 +358,6 @@ class DocumentsViewModel(
                             val documentsWithFailed =
                                 response.allDocuments
                                     .generateFailedDeferredDocs(deferredFailedDocIds)
-                                    .generateRevokedDocs(revokedDocIds)
 
                             if (viewState.value.isFromOnPause) {
                                 interactor.initializeFilters(
@@ -408,28 +395,6 @@ class DocumentsViewModel(
                     documentIssuanceState = DocumentUiIssuanceState.Failed,
                     uiData = data.uiData.copy(
                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = AppIcons.ErrorFilled,
-                            tint = ThemeColors.error
-                        )
-                    )
-                )
-            } else {
-                data
-            }
-
-            filterableItem.copy(payload = failedUiItem)
-        })
-    }
-
-    private fun FilterableList.generateRevokedDocs(revokedDocIds: List<DocumentId>): FilterableList {
-        return copy(items = items.map { filterableItem ->
-            val data = filterableItem.payload as DocumentUi
-            val failedUiItem = if (data.uiData.itemId in revokedDocIds) {
-                data.copy(
-                    documentIssuanceState = DocumentUiIssuanceState.Revoked,
-                    uiData = data.uiData.copy(
-                        supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_revoked),
                         trailingContentData = ListItemTrailingContentData.Icon(
                             iconData = AppIcons.ErrorFilled,
                             tint = ThemeColors.error
@@ -673,7 +638,7 @@ class DocumentsViewModel(
     }
 
     private fun revertFilters(isOpening: Boolean) {
-        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+        if (viewState.value.sheetContent is Filters
             && !isOpening
             && viewState.value.shouldRevertFilterChanges
         ) {

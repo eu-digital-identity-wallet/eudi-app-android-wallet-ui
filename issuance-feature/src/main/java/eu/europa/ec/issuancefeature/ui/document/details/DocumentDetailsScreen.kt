@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -56,6 +57,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.SectionTitle
+import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -168,6 +170,22 @@ fun DocumentDetailsScreen(
     ) {
         viewModel.setEvent(Event.Init)
     }
+
+    SystemBroadcastReceiver(
+        actions = listOf(
+            CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION
+        )
+    ) {
+        when (it?.action) {
+            CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION -> {
+                val ids =
+                    it.getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)?.toList()
+                        ?: emptyList()
+
+                viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
+            }
+        }
+    }
 }
 
 private fun handleNavigationEffect(
@@ -210,6 +228,13 @@ private fun Content(
             )
         ) {
 
+            // Screen title
+            state.title?.let { safeTitle ->
+                ContentTitle(
+                    title = safeTitle,
+                )
+            }
+
             if (state.isRevoked) {
                 WrapCard(
                     modifier = Modifier
@@ -223,25 +248,18 @@ private fun Content(
                     ) {
                         WrapText(
                             text = stringResource(
-                                R.string.document_details_revoked_document_message,
-                                state.title ?: ""
+                                R.string.document_details_revoked_document_message
                             ),
                             textConfig = TextConfig(
                                 color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.titleMedium
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 4
                             )
                         )
                     }
                 }
 
                 VSpacer.Large()
-            }
-
-            // Screen title
-            state.title?.let { safeTitle ->
-                ContentTitle(
-                    title = safeTitle,
-                )
             }
 
             Column(

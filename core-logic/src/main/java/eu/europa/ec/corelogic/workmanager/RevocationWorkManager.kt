@@ -14,16 +14,19 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.storagelogic.workmanager
+package eu.europa.ec.corelogic.workmanager
 
 import android.content.Context
 import android.content.Intent
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.corelogic.model.RevokedDocumentPayload
+import eu.europa.ec.corelogic.util.CoreActions
+import eu.europa.ec.corelogic.util.CoreActions.REVOCATION_IDS_DETAILS_EXTRA
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.model.RevokedDocument
-import eu.europa.ec.storagelogic.receiver.RevocationWorkCompletionReceiver
 import kotlinx.coroutines.delay
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -34,11 +37,12 @@ class RevocationWorkManager(
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
 
     private val revokedDocumentsController: RevokedDocumentsStorageController by inject()
+    private val walletCoreDocumentsController: WalletCoreDocumentsController by inject()
     private val logController: LogController by inject()
 
     companion object {
         private const val TAG = "RevocationWorkManager"
-        const val revocationWorkName = "revocationWorker"
+        const val REVOCATION_WORK_NAME = "revocationWorker"
     }
 
     override suspend fun doWork(): Result {
@@ -46,8 +50,9 @@ class RevocationWorkManager(
             logController.d(TAG) { "Checking for revoked documents..." }
 
             // Mock request
-            delay(15000)
-            val mockedRequestResult = listOf("Document_EudiWalletDocumentManager_f41499c9-4c4e-4930-9f0d-feed089932e1")
+            delay(50000)
+            val mockedRequestResult =
+                listOf("Document_EudiWalletDocumentManager_597c1f9f-91bd-4848-aaac-414b8720a79e")
             val resultToDomain =
                 mockedRequestResult
                     .map {
@@ -56,16 +61,31 @@ class RevocationWorkManager(
                         )
                     }
 
+            val revokedDocumentsPayloadList = walletCoreDocumentsController.getAllDocuments()
+                .filter { mockedRequestResult.contains(it.id) }
+                .map { RevokedDocumentPayload(name = it.name, id = it.id) }
+                .toTypedArray()
+
             if (mockedRequestResult.isNotEmpty()) {
                 revokedDocumentsController.store(resultToDomain)
-                val allRevokedDocuments = revokedDocumentsController.retrieveAll().map {
-                    it.identifier
-                }.toTypedArray()
-                val intent = Intent(RevocationWorkCompletionReceiver.ACTION).apply {
-                    putExtra(RevocationWorkCompletionReceiver.EXTRA_SHOW_NOTIFICATION, true)
-                    putExtra(RevocationWorkCompletionReceiver.EXTRA_IDS, allRevokedDocuments)
+                val messageIntent = Intent(CoreActions.REVOCATION_WORK_MESSAGE_ACTION).apply {
+                    putParcelableArrayListExtra(
+                        CoreActions.REVOCATION_IDS_EXTRA,
+                        ArrayList(revokedDocumentsPayloadList.toList())
+                    )
                 }
-                applicationContext.sendBroadcast(intent)
+                val refreshIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_ACTION)
+                val detailsIntent =
+                    Intent(CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION).apply {
+                        putStringArrayListExtra(
+                            REVOCATION_IDS_DETAILS_EXTRA,
+                            ArrayList(mockedRequestResult)
+                        )
+                    }
+
+                applicationContext.sendBroadcast(messageIntent)
+                applicationContext.sendBroadcast(detailsIntent)
+                applicationContext.sendBroadcast(refreshIntent)
             }
 
             logController.d(TAG) { "Done!" }

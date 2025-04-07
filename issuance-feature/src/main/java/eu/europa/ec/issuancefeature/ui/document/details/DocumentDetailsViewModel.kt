@@ -25,6 +25,9 @@ import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteracto
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorStoreBookmarkPartialState
+import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsBottomSheetContent.BookmarkRemovedInfo
+import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsBottomSheetContent.BookmarkStoredInfo
+import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -83,6 +86,7 @@ sealed class Event : ViewEvent {
     data object OnBookmarkStored : Event()
     data object OnBookmarkRemoved : Event()
     data object IssuerCardPressed : Event()
+    data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
 }
 
 
@@ -182,7 +186,7 @@ class DocumentDetailsViewModel(
 
             is Event.OnBookmarkStored -> {
                 showBottomSheet(
-                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo(
+                    sheetContent = BookmarkStoredInfo(
                         bottomSheetTextData = getBookmarkStoredBottomSheetTextData()
                     )
                 )
@@ -190,7 +194,7 @@ class DocumentDetailsViewModel(
 
             is Event.OnBookmarkRemoved -> {
                 showBottomSheet(
-                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkRemovedInfo(
+                    sheetContent = BookmarkRemovedInfo(
                         bottomSheetTextData = getBookmarkRemovedBottomSheetTextData()
                     )
                 )
@@ -198,10 +202,18 @@ class DocumentDetailsViewModel(
 
             is Event.IssuerCardPressed -> {
                 showBottomSheet(
-                    sheetContent = DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo(
+                    sheetContent = TrustedRelyingPartyInfo(
                         bottomSheetTextData = getTrustedRelyingPartyBottomSheetTextData()
                     )
                 )
+            }
+
+            is Event.OnRevocationStatusChanged -> {
+                setState {
+                    copy(
+                        isRevoked = event.revokedIds.contains(documentId)
+                    )
+                }
             }
         }
     }

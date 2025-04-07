@@ -17,25 +17,17 @@
 package eu.europa.ec.uilogic.container
 
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.Uri
-import android.os.Build
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import eu.europa.ec.resourceslogic.theme.ThemeManager
-import eu.europa.ec.storagelogic.controller.RevokedDocumentsWorkController
-import eu.europa.ec.storagelogic.receiver.RevocationWorkCompletionReceiver
-import eu.europa.ec.uilogic.component.utils.LifecycleEffect
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkAction
@@ -50,7 +42,6 @@ import org.koin.androidx.compose.KoinAndroidContext
 open class EudiComponentActivity : FragmentActivity() {
 
     private val routerHost: RouterHost by inject()
-    private val revocationWorkController: RevokedDocumentsWorkController by inject()
 
     private var flowStarted: Boolean = false
 
@@ -78,35 +69,6 @@ open class EudiComponentActivity : FragmentActivity() {
                     handleDeepLink(intent, coldBoot = true)
                 }
             }
-        }
-
-        val revocationWorkReceiver = RevocationWorkCompletionReceiver { intent ->
-            intent.extras?.apply {
-                val ids = getStringArray(RevocationWorkCompletionReceiver.EXTRA_IDS)?.toList()
-                    ?: emptyList()
-
-                lifecycleScope.launch {
-                    revocationWorkController.updateWorkEvent(ids)
-                }
-            }
-        }
-
-        LaunchedEffect(Unit) {
-            val filter = IntentFilter(RevocationWorkCompletionReceiver.ACTION)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                this@EudiComponentActivity.registerReceiver(
-                    revocationWorkReceiver,
-                    filter,
-                    RECEIVER_NOT_EXPORTED
-                )
-            }
-        }
-
-        LifecycleEffect(
-            lifecycleOwner = LocalLifecycleOwner.current,
-            lifecycleEvent = Lifecycle.Event.ON_DESTROY
-        ) {
-            unregisterReceiver(revocationWorkReceiver)
         }
     }
 
