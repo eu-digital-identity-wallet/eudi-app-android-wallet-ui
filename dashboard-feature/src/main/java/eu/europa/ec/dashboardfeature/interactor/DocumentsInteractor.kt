@@ -328,7 +328,7 @@ class DocumentsInteractorImpl(
                             }
 
                             val supportingText = when {
-                                documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_deferred_revoked)
+                                documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_revoked)
                                 documentHasExpired == true -> resourceProvider.getString(R.string.dashboard_document_has_expired)
                                 else -> resourceProvider.getString(
                                     R.string.dashboard_document_has_not_expired,

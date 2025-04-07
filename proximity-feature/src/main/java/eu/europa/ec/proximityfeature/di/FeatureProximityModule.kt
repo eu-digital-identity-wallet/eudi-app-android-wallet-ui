@@ -29,6 +29,7 @@ import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -49,12 +50,14 @@ fun provideProximityQRInteractor(
 fun provideProximityRequestInteractor(
     resourceProvider: ResourceProvider,
     walletCoreDocumentsController: WalletCoreDocumentsController,
+    revokedDocumentsStorageController: RevokedDocumentsStorageController,
     @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
 ): ProximityRequestInteractor =
     ProximityRequestInteractorImpl(
         resourceProvider,
         walletCorePresentationController,
-        walletCoreDocumentsController
+        walletCoreDocumentsController,
+        revokedDocumentsStorageController
     )
 
 @Factory

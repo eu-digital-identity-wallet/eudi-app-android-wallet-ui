@@ -183,7 +183,7 @@
     <string name="dashboard_document_has_expired">Expired</string>
     <string name="dashboard_document_deferred_pending">Pending</string>
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
-    <string name="dashboard_document_deferred_revoked">Revoked</string>
+    <string name="dashboard_document_revoked">Revoked</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
     <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the Authenticate in person or online option</string>
