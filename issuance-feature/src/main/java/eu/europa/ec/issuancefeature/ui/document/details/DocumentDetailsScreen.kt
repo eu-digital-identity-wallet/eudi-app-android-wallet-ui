@@ -176,15 +176,12 @@ fun DocumentDetailsScreen(
             CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION
         )
     ) {
-        when (it?.action) {
-            CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION -> {
-                val ids =
-                    it.getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)?.toList()
-                        ?: emptyList()
+        val ids = it
+            ?.getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)
+            ?.toList()
+            ?: emptyList()
 
-                viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
-            }
-        }
+        viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
     }
 }
 

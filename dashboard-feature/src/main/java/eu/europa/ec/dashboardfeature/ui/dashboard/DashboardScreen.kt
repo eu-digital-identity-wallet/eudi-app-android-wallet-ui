@@ -17,7 +17,6 @@
 package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Context
-import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -41,6 +40,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import eu.europa.ec.businesslogic.extension.getParcelableArrayListExtra
 import eu.europa.ec.corelogic.model.RevokedDocumentPayload
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationBar
@@ -129,7 +129,7 @@ fun DashboardScreen(
                     )
                 },
                 sheetState = bottomSheetState
-            ){
+            ) {
                 BottomSheetWithOptionsList(
                     textData = BottomSheetTextData(
                         title = stringResource(
@@ -194,24 +194,12 @@ fun DashboardScreen(
             CoreActions.REVOCATION_WORK_MESSAGE_ACTION
         )
     ) { intent ->
-        when (intent?.action) {
-            CoreActions.REVOCATION_WORK_MESSAGE_ACTION -> {
-                val revokedDocumentsPayload: ArrayList<RevokedDocumentPayload>? =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        intent.getParcelableArrayListExtra(
-                            CoreActions.REVOCATION_IDS_EXTRA,
-                            RevokedDocumentPayload::class.java
-                        )
-                    } else {
-                        @Suppress("DEPRECATION")
-                        intent.getParcelableArrayListExtra(CoreActions.REVOCATION_IDS_EXTRA)
-                    }
-                revokedDocumentsPayload?.let {
-                    viewModel.setEvent(
-                        Event.ShowRevocationModal(it.toList())
-                    )
-                }
-            }
+        intent.getParcelableArrayListExtra<RevokedDocumentPayload>(
+            action = CoreActions.REVOCATION_IDS_EXTRA
+        )?.let {
+            viewModel.setEvent(
+                Event.ShowRevocationModal(it)
+            )
         }
     }
 }

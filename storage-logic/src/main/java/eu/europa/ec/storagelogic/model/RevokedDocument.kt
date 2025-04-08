@@ -20,14 +20,14 @@ import eu.europa.ec.storagelogic.model.type.StoredObject
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 
-internal class RealmRevokedDocument: RealmObject{
+internal class RealmRevokedDocument : RealmObject {
     @PrimaryKey
     var identifier: String = ""
 }
 
 data class RevokedDocument(
     val identifier: String
-): StoredObject
+) : StoredObject
 
 internal fun RevokedDocument.toRealm() = RealmRevokedDocument().apply {
     identifier = this@toRealm.identifier

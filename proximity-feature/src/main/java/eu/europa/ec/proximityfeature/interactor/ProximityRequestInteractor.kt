@@ -25,7 +25,6 @@ import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
@@ -55,8 +54,7 @@ interface ProximityRequestInteractor {
 class ProximityRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCorePresentationController: WalletCorePresentationController,
-    private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val revokedDocumentsStorageController: RevokedDocumentsStorageController
+    private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : ProximityRequestInteractor {
 
     private val genericErrorMsg
@@ -76,14 +74,13 @@ class ProximityRequestInteractorImpl(
                             verifierIsTrusted = response.verifierIsTrusted,
                         )
                     } else {
-                        val revokedDocumentIds = revokedDocumentsStorageController.retrieveAll().map { it.identifier }
                         val documentsDomain = RequestTransformer.transformToDomainItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
                             resourceProvider = resourceProvider
                         ).getOrThrow()
                             .filterNot {
-                                it.docId in revokedDocumentIds
+                                walletCoreDocumentsController.isDocumentRevoked(it.docId)
                             }
 
                         if (documentsDomain.isNotEmpty()) {

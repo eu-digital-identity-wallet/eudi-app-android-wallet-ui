@@ -45,6 +45,7 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
@@ -171,12 +172,17 @@ interface WalletCoreDocumentsController {
     suspend fun getScopedDocuments(locale: Locale): FetchScopedDocumentsPartialState
 
     fun getAllDocumentCategories(): DocumentCategories
+
+    suspend fun getRevokedDocumentIds(): List<String>
+
+    suspend fun isDocumentRevoked(id: String): Boolean
 }
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val eudiWallet: EudiWallet,
     private val walletCoreConfig: WalletCoreConfig,
+    private val revokedDocumentsStorageController: RevokedDocumentsStorageController,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : WalletCoreDocumentsController {
 
@@ -509,6 +515,12 @@ class WalletCoreDocumentsControllerImpl(
     override fun getAllDocumentCategories(): DocumentCategories {
         return walletCoreConfig.documentCategories
     }
+
+    override suspend fun getRevokedDocumentIds(): List<String> =
+        revokedDocumentsStorageController.retrieveAll().map { it.identifier }
+
+    override suspend fun isDocumentRevoked(id: String): Boolean =
+        revokedDocumentsStorageController.retrieve(id) != null
 
     private fun issueDocumentWithOpenId4VCI(configId: String): Flow<IssueDocumentsPartialState> =
         callbackFlow {

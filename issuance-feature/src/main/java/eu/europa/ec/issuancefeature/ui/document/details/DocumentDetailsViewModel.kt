@@ -89,7 +89,6 @@ sealed class Event : ViewEvent {
     data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
 }
 
-
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data object Pop : Navigation()

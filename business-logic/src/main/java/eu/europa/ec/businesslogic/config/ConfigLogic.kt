@@ -18,6 +18,7 @@ package eu.europa.ec.businesslogic.config
 
 import eu.europa.ec.businesslogic.BuildConfig
 import eu.europa.ec.eudi.rqesui.infrastructure.config.EudiRQESUiConfig
+import java.time.Duration
 
 interface ConfigLogic {
 
@@ -58,6 +59,15 @@ interface ConfigLogic {
      *   changelog is maintained for development builds.
      */
     val changelogUrl: String?
+
+
+    /**
+     * The interval at which revocations are checked.
+     *
+     * This property defines the time interval between checks for revoked tokens or credentials.
+     * It is currently set to 15 minutes.
+     */
+    val revocationInterval: Duration get() = Duration.ofMinutes(15)
 }
 
 enum class AppFlavor {

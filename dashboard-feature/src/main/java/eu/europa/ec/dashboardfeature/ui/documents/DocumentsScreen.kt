@@ -178,11 +178,7 @@ fun DocumentsScreen(
             CoreActions.REVOCATION_WORK_REFRESH_ACTION
         )
     ) {
-        when (it?.action) {
-            CoreActions.REVOCATION_WORK_REFRESH_ACTION -> {
-                viewModel.setEvent(Event.GetDocuments)
-            }
-        }
+        viewModel.setEvent(Event.GetDocuments)
     }
 }
 

@@ -581,7 +581,10 @@ class DocumentsInteractorImpl(
                     FilterIds.FILTER_BY_STATE_GROUP_ID -> {
                         filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
                         filterGroup.copy(
-                            filters = addRevokedDocumentFilter(documents, filterGroup.filters.toMutableList())
+                            filters = addRevokedDocumentFilter(
+                                documents,
+                                filterGroup.filters.toMutableList()
+                            )
                         )
                     }
 
@@ -745,7 +748,10 @@ class DocumentsInteractorImpl(
             }
     }
 
-    private fun addRevokedDocumentFilter(documents: FilterableList, filtersList: MutableList<FilterItem>): List<FilterItem> {
+    private fun addRevokedDocumentFilter(
+        documents: FilterableList,
+        filtersList: MutableList<FilterItem>
+    ): List<FilterItem> {
         val updatedFilters = documents.items
             .distinctBy { (it.attributes as DocumentsFilterableAttributes).isRevoked }
             .map { filterableItem ->

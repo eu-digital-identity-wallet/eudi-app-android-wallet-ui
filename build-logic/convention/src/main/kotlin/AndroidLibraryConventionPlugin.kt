@@ -74,6 +74,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 apply("org.jetbrains.kotlin.android")
                 apply("kotlinx-serialization")
                 apply("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+                apply("kotlin-parcelize")
             }
 
             extensions.configure<LibraryExtension> {

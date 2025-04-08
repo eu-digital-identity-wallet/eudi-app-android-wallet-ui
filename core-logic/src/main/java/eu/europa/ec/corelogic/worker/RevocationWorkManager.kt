@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.workmanager
+package eu.europa.ec.corelogic.worker
 
 import android.content.Context
 import android.content.Intent
@@ -67,21 +67,28 @@ class RevocationWorkManager(
                 .toTypedArray()
 
             if (mockedRequestResult.isNotEmpty()) {
+
                 revokedDocumentsController.store(resultToDomain)
-                val messageIntent = Intent(CoreActions.REVOCATION_WORK_MESSAGE_ACTION).apply {
+
+                val messageIntent = Intent(
+                    CoreActions.REVOCATION_WORK_MESSAGE_ACTION
+                ).apply {
                     putParcelableArrayListExtra(
                         CoreActions.REVOCATION_IDS_EXTRA,
                         ArrayList(revokedDocumentsPayloadList.toList())
                     )
                 }
+
                 val refreshIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_ACTION)
-                val detailsIntent =
-                    Intent(CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION).apply {
-                        putStringArrayListExtra(
-                            REVOCATION_IDS_DETAILS_EXTRA,
-                            ArrayList(mockedRequestResult)
-                        )
-                    }
+
+                val detailsIntent = Intent(
+                    CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION
+                ).apply {
+                    putStringArrayListExtra(
+                        REVOCATION_IDS_DETAILS_EXTRA,
+                        ArrayList(mockedRequestResult)
+                    )
+                }
 
                 applicationContext.sendBroadcast(messageIntent)
                 applicationContext.sendBroadcast(detailsIntent)

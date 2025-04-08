@@ -71,9 +71,9 @@ data class State(
 
 sealed class Event : ViewEvent {
     data class Init(val deepLinkUri: Uri?) : Event()
-    data class ShowRevocationModal(val payload: List<RevokedDocumentPayload>): Event()
-    data object CloseRevocationModal: Event()
-    data class OptionListItemForRevokedDocumentSelected(val documentId: String): Event()
+    data class ShowRevocationModal(val payload: List<RevokedDocumentPayload>) : Event()
+    data object CloseRevocationModal : Event()
+    data class OptionListItemForRevokedDocumentSelected(val documentId: String) : Event()
     data object Pop : Event()
 
     // side menu events
