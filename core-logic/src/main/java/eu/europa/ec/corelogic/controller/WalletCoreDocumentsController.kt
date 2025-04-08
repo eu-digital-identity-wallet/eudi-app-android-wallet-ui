@@ -24,7 +24,7 @@ import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
 import eu.europa.ec.corelogic.extension.parseTransactionLog
 import eu.europa.ec.corelogic.extension.toCoreTransactionLog
-import eu.europa.ec.corelogic.extension.toDomain
+import eu.europa.ec.corelogic.extension.toTransactionLogData
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -531,7 +531,7 @@ class WalletCoreDocumentsControllerImpl(
             transactionLogStorageController.retrieve(id)
                 ?.toCoreTransactionLog()
                 ?.parseTransactionLog()
-                ?.toDomain(id)
+                ?.toTransactionLogData(id)
         }
 
     private fun issueDocumentWithOpenId4VCI(configId: String): Flow<IssueDocumentsPartialState> =
