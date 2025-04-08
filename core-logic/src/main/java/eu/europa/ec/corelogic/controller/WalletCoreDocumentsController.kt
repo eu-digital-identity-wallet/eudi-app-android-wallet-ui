@@ -22,14 +22,15 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
+import eu.europa.ec.corelogic.extension.parseTransactionLog
 import eu.europa.ec.corelogic.extension.toCoreTransactionLog
 import eu.europa.ec.corelogic.extension.toDomain
-import eu.europa.ec.corelogic.extension.toPresentationLog
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.ScopedDocument
+import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.wallet.EudiWallet
@@ -59,7 +60,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.util.Locale
-import eu.europa.ec.corelogic.model.PresentationTransactionLog as PresentationLogDomain
 
 enum class IssuanceMethod {
     OPENID4VCI
@@ -177,9 +177,9 @@ interface WalletCoreDocumentsController {
 
     fun getAllDocumentCategories(): DocumentCategories
 
-    suspend fun getPresentationTransactionLogs(): List<PresentationLogDomain>
+    suspend fun getPresentationTransactionLogs(): List<TransactionLogData>
 
-    suspend fun getPresentationTransactionLog(id: String): PresentationLogDomain?
+    suspend fun getPresentationTransactionLog(id: String): TransactionLogData?
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -520,17 +520,17 @@ class WalletCoreDocumentsControllerImpl(
         return walletCoreConfig.documentCategories
     }
 
-    override suspend fun getPresentationTransactionLogs(): List<PresentationLogDomain> =
+    override suspend fun getPresentationTransactionLogs(): List<TransactionLogData> =
         withContext(dispatcher) {
             transactionLogStorageController.retrieveAll()
                 .mapNotNull { getPresentationTransactionLog(it.identifier) }
         }
 
-    override suspend fun getPresentationTransactionLog(id: String): PresentationLogDomain? =
+    override suspend fun getPresentationTransactionLog(id: String): TransactionLogData? =
         withContext(dispatcher) {
             transactionLogStorageController.retrieve(id)
                 ?.toCoreTransactionLog()
-                ?.toPresentationLog()
+                ?.parseTransactionLog()
                 ?.toDomain(id)
         }
 

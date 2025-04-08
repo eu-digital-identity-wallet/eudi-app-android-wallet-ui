@@ -43,12 +43,6 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
-import eu.europa.ec.uilogic.component.ListItemMainContentData.Actionable
-import eu.europa.ec.uilogic.component.ListItemMainContentData.Image
-import eu.europa.ec.uilogic.component.ListItemMainContentData.Text
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Checkbox
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData.Icon
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData.RadioButton
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ICON_SIZE

@@ -14,12 +14,22 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.extension
+package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTransactionLog
-import eu.europa.ec.corelogic.model.PresentationTransactionLog as DomainModel
 
-internal fun PresentationTransactionLog.toDomain(id: String): DomainModel = DomainModel(
-    id = id,
-    log = this
-)
+sealed class TransactionLogData(val id: String) {
+
+    data class PresentationLog(
+        val identifier: String,
+        val log: PresentationTransactionLog
+    ) : TransactionLogData(identifier)
+
+    data class IssuanceLog(
+        val identifier: String
+    ) : TransactionLogData(identifier)
+
+    data class SigningLog(
+        val identifier: String
+    ) : TransactionLogData(identifier)
+}

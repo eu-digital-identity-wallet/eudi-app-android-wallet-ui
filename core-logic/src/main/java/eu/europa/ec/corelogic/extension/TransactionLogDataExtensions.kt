@@ -14,11 +14,15 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.model
+package eu.europa.ec.corelogic.extension
 
+import eu.europa.ec.corelogic.model.TransactionLogData
+import eu.europa.ec.corelogic.model.TransactionLogData.PresentationLog
 import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTransactionLog
 
-data class PresentationTransactionLog(
-    val id: String,
-    val log: PresentationTransactionLog
-)
+// TODO RETURN PROPER OBJECTS ONCE READY FROM CORE ISSUANCE,SIGNING
+@Throws(IllegalArgumentException::class)
+internal fun Any.toDomain(id: String): TransactionLogData = when (this) {
+    is PresentationTransactionLog -> PresentationLog(id, this)
+    else -> throw IllegalArgumentException("Unknown transaction log type")
+}

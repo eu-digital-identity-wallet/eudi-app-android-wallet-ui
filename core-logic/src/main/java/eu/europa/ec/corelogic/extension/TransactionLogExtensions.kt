@@ -30,5 +30,17 @@ internal fun StorageTransaction.toCoreTransactionLog(): TransactionLog? = try {
     null
 }
 
-internal fun TransactionLog.toPresentationLog(): PresentationTransactionLog? =
-    PresentationTransactionLog.fromTransactionLog(this).getOrNull()
+// TODO RETURN PROPER OBJECTS ONCE READY FROM CORE ISSUANCE,SIGNING
+@Throws(IllegalArgumentException::class)
+internal fun TransactionLog.parseTransactionLog(): Any? =
+    when (this.type) {
+        TransactionLog.Type.Presentation ->
+            PresentationTransactionLog.fromTransactionLog(this)
+                .getOrNull()
+
+        TransactionLog.Type.Issuance ->
+            throw IllegalArgumentException("UnSupported transaction log type")
+
+        TransactionLog.Type.Signing ->
+            throw IllegalArgumentException("UnSupported transaction log type")
+    }
