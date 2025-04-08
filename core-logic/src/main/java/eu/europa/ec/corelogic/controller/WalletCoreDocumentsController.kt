@@ -17,12 +17,14 @@
 package eu.europa.ec.corelogic.controller
 
 import com.android.identity.securearea.KeyUnlockData
-import com.nimbusds.jose.shaded.gson.Gson
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
+import eu.europa.ec.corelogic.extension.toCoreTransactionLog
+import eu.europa.ec.corelogic.extension.toDomain
+import eu.europa.ec.corelogic.extension.toPresentationLog
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -44,8 +46,6 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.IssueEvent
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
-import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
-import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTransactionLog
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
@@ -59,6 +59,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import eu.europa.ec.corelogic.model.PresentationTransactionLog as PresentationLogDomain
 
 enum class IssuanceMethod {
     OPENID4VCI
@@ -176,7 +177,9 @@ interface WalletCoreDocumentsController {
 
     fun getAllDocumentCategories(): DocumentCategories
 
-    suspend fun getPresentationTransactionLogs(): List<PresentationTransactionLog>
+    suspend fun getPresentationTransactionLogs(): List<PresentationLogDomain>
+
+    suspend fun getPresentationTransactionLog(id: String): PresentationLogDomain?
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -517,20 +520,19 @@ class WalletCoreDocumentsControllerImpl(
         return walletCoreConfig.documentCategories
     }
 
-    override suspend fun getPresentationTransactionLogs(): List<PresentationTransactionLog> =
-        transactionLogStorageController.retrieveAll()
-            .mapNotNull {
-                try {
-                    Gson().fromJson(
-                        it.value,
-                        TransactionLog::class.java
-                    )
-                } catch (_: Exception) {
-                    null
-                }
-            }.mapNotNull {
-                PresentationTransactionLog.fromTransactionLog(it).getOrNull()
-            }
+    override suspend fun getPresentationTransactionLogs(): List<PresentationLogDomain> =
+        withContext(dispatcher) {
+            transactionLogStorageController.retrieveAll()
+                .mapNotNull { getPresentationTransactionLog(it.identifier) }
+        }
+
+    override suspend fun getPresentationTransactionLog(id: String): PresentationLogDomain? =
+        withContext(dispatcher) {
+            transactionLogStorageController.retrieve(id)
+                ?.toCoreTransactionLog()
+                ?.toPresentationLog()
+                ?.toDomain(id)
+        }
 
     private fun issueDocumentWithOpenId4VCI(configId: String): Flow<IssueDocumentsPartialState> =
         callbackFlow {
