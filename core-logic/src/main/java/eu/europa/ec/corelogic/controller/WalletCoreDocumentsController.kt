@@ -335,7 +335,10 @@ class WalletCoreDocumentsControllerImpl(
     override fun deleteDocument(documentId: String): Flow<DeleteDocumentPartialState> = flow {
         eudiWallet.deleteDocumentById(documentId = documentId)
             .kotlinResult
-            .onSuccess { emit(DeleteDocumentPartialState.Success) }
+            .onSuccess {
+                revokedDocumentsStorageController.delete(documentId)
+                emit(DeleteDocumentPartialState.Success)
+            }
             .onFailure {
                 emit(
                     DeleteDocumentPartialState.Failure(
@@ -352,10 +355,12 @@ class WalletCoreDocumentsControllerImpl(
 
     override fun deleteAllDocuments(mainPidDocumentId: String): Flow<DeleteAllDocumentsPartialState> =
         flow {
+
             val allDocuments = getAllDocuments()
             val mainPidDocument = getMainPidDocument()
 
             mainPidDocument?.let {
+
                 val restOfDocuments = allDocuments.minusElement(it)
 
                 var restOfAllDocsDeleted = true

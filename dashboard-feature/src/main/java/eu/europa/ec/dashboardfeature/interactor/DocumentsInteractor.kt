@@ -52,7 +52,6 @@ import eu.europa.ec.eudi.wallet.document.UnsignedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
-import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.ListItemData
@@ -167,7 +166,6 @@ interface DocumentsInteractor {
 class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val revokedDocumentsController: RevokedDocumentsStorageController,
     private val filterValidator: FilterValidator,
 ) : DocumentsInteractor {
 
@@ -289,14 +287,13 @@ class DocumentsInteractorImpl(
 
             val documentCategories = walletCoreDocumentsController.getAllDocumentCategories()
 
-            val revokedDocumentIds = revokedDocumentsController.retrieveAll()
-
             val userLocale = resourceProvider.getLocale()
 
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
 
-                    val documentIsRevoked = revokedDocumentIds.any { it.identifier == document.id }
+                    val documentIsRevoked =
+                        walletCoreDocumentsController.isDocumentRevoked(document.id)
 
                     when (document) {
                         is IssuedDocument -> {
@@ -545,8 +542,6 @@ class DocumentsInteractorImpl(
                     }
 
                     is DeleteDocumentPartialState.Success -> {
-                        // Also remove the document from the database
-                        revokedDocumentsController.delete(documentId)
                         if (walletCoreDocumentsController.getAllDocuments().isEmpty()) {
                             emit(DocumentInteractorDeleteDocumentPartialState.AllDocumentsDeleted)
                         } else
