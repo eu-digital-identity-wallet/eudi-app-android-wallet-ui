@@ -225,6 +225,11 @@
     <string name="home_screen_authenticate_option_in_person">In person</string>
     <string name="home_screen_add_document_option_online">Online</string>
 
+    <string name="home_screen_sign_document">Sign document</string>
+    <string name="home_screen_sign_document_description">Sign a document digitally by choosing a file from your device or by scanning a QR code.</string>
+    <string name="home_screen_sign_document_option_from_device">From device</string>
+    <string name="home_screen_sign_document_option_scan_qr">Scan QR</string>
+
     <!-- Home Screen Learn More Popups content -->
     <string name="home_screen_authenticate_learn_more_inner_title">Sign documents safely</string>
     <string name="home_screen_authenticate_learn_more_description">Sign documents with just your wallet. Providing a legally binding e-signature will be faster and easier than ever, enabling you to conduct business whenever you are.</string>
@@ -276,6 +281,7 @@
     <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>
     <string name="qr_scan_informative_text_presentation_flow">Having trouble scanning the QR Code?\nPlease try an alternative way</string>
     <string name="qr_scan_informative_text_issuance_flow">Having trouble scanning the QR Code?\nPlease try an alternative way</string>
+    <string name="qr_scan_informative_text_signature_flow">Having trouble scanning the QR Code?\nPlease try an alternative way</string>
 
     <!-- Document Details -->
     <string name="document_details_revoked_document_message">This document has been revoked by the issuer. Contact the issuing service for more information.</string>
@@ -310,6 +316,10 @@
     <!-- Presentation Qr Scan -->
     <string name="presentation_qr_scan_title">Present document online</string>
     <string name="presentation_qr_scan_subtitle">Scan a QR code provided from a Relying Party to present a digital document.</string>
+
+    <!-- Signature Qr Scan -->
+    <string name="signature_qr_scan_title">Sign document</string>
+    <string name="signature_qr_scan_subtitle">Scan a QR code to electronically sign a document.</string>
 
     <!-- Issuance Add Document Screen -->
     <string name="issuance_add_document_title">Add document from list</string>

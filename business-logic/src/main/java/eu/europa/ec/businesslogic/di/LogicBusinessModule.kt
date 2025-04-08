@@ -44,7 +44,7 @@ import org.koin.core.annotation.Single
 class LogicBusinessModule
 
 @Single
-fun provideConfigLogic(): ConfigLogic = ConfigLogicImpl()
+fun provideConfigLogic(context: Context): ConfigLogic = ConfigLogicImpl(context)
 
 @Single
 fun provideLogController(context: Context, configLogic: ConfigLogic): LogController =
