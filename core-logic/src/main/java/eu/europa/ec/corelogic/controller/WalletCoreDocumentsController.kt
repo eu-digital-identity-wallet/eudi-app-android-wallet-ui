@@ -177,9 +177,9 @@ interface WalletCoreDocumentsController {
 
     fun getAllDocumentCategories(): DocumentCategories
 
-    suspend fun getPresentationTransactionLogs(): List<TransactionLogData>
+    suspend fun getTransactionLogs(): List<TransactionLogData>
 
-    suspend fun getPresentationTransactionLog(id: String): TransactionLogData?
+    suspend fun getTransactionLog(id: String): TransactionLogData?
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -520,13 +520,13 @@ class WalletCoreDocumentsControllerImpl(
         return walletCoreConfig.documentCategories
     }
 
-    override suspend fun getPresentationTransactionLogs(): List<TransactionLogData> =
+    override suspend fun getTransactionLogs(): List<TransactionLogData> =
         withContext(dispatcher) {
             transactionLogStorageController.retrieveAll()
-                .mapNotNull { getPresentationTransactionLog(it.identifier) }
+                .mapNotNull { getTransactionLog(it.identifier) }
         }
 
-    override suspend fun getPresentationTransactionLog(id: String): TransactionLogData? =
+    override suspend fun getTransactionLog(id: String): TransactionLogData? =
         withContext(dispatcher) {
             transactionLogStorageController.retrieve(id)
                 ?.toCoreTransactionLog()
