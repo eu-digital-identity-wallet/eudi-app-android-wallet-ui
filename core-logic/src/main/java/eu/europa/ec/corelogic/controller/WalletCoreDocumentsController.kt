@@ -49,7 +49,9 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
+import eu.europa.ec.storagelogic.model.Bookmark
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
@@ -180,6 +182,12 @@ interface WalletCoreDocumentsController {
     suspend fun getTransactionLogs(): List<TransactionLogData>
 
     suspend fun getTransactionLog(id: String): TransactionLogData?
+
+    suspend fun isDocumentBookmarked(documentId: DocumentId): Boolean
+
+    suspend fun storeBookmark(bookmarkId: DocumentId)
+
+    suspend fun deleteBookmark(bookmarkId: DocumentId)
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -187,6 +195,7 @@ class WalletCoreDocumentsControllerImpl(
     private val eudiWallet: EudiWallet,
     private val walletCoreConfig: WalletCoreConfig,
     private val transactionLogStorageController: TransactionLogStorageController,
+    private val bookmarkStorageController: BookmarkStorageController,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : WalletCoreDocumentsController {
 
@@ -533,6 +542,15 @@ class WalletCoreDocumentsControllerImpl(
                 ?.parseTransactionLog()
                 ?.toTransactionLogData(id)
         }
+
+    override suspend fun isDocumentBookmarked(documentId: DocumentId): Boolean =
+        bookmarkStorageController.retrieve(documentId) != null
+
+    override suspend fun storeBookmark(bookmarkId: DocumentId) =
+        bookmarkStorageController.store(Bookmark(bookmarkId))
+
+    override suspend fun deleteBookmark(bookmarkId: DocumentId) =
+        bookmarkStorageController.delete(bookmarkId)
 
     private fun issueDocumentWithOpenId4VCI(configId: String): Flow<IssueDocumentsPartialState> =
         callbackFlow {

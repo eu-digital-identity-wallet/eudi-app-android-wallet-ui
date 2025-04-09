@@ -30,8 +30,6 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.storagelogic.controller.BookmarkStorageController
-import eu.europa.ec.storagelogic.model.Bookmark
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -58,7 +56,7 @@ sealed class DocumentDetailsInteractorDeleteDocumentPartialState {
 
 sealed class DocumentDetailsInteractorStoreBookmarkPartialState {
     data class Success(
-        val bookmarkId: String
+        val documentId: String
     ) : DocumentDetailsInteractorStoreBookmarkPartialState()
 
     data object Failure : DocumentDetailsInteractorStoreBookmarkPartialState()
@@ -89,7 +87,6 @@ interface DocumentDetailsInteractor {
 
 class DocumentDetailsInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val bookmarkStorageController: BookmarkStorageController,
     private val resourceProvider: ResourceProvider
 ) : DocumentDetailsInteractor {
 
@@ -116,7 +113,8 @@ class DocumentDetailsInteractorImpl(
                 val issuerName = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.name
                 val issuerLogo = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.logo
 
-                val documentIsBookmarked = bookmarkStorageController.retrieve(documentId) != null
+                val documentIsBookmarked =
+                    walletCoreDocumentsController.isDocumentBookmarked(documentId)
 
                 emit(
                     DocumentDetailsInteractorPartialState.Success(
@@ -191,17 +189,17 @@ class DocumentDetailsInteractorImpl(
             )
         }
 
-    override fun storeBookmark(bookmarkId: DocumentId): Flow<DocumentDetailsInteractorStoreBookmarkPartialState> =
+    override fun storeBookmark(documentId: DocumentId): Flow<DocumentDetailsInteractorStoreBookmarkPartialState> =
         flow {
-            bookmarkStorageController.store(Bookmark(identifier = bookmarkId))
-            emit(DocumentDetailsInteractorStoreBookmarkPartialState.Success(bookmarkId = bookmarkId))
+            walletCoreDocumentsController.storeBookmark(documentId)
+            emit(DocumentDetailsInteractorStoreBookmarkPartialState.Success(documentId))
         }.safeAsync {
             DocumentDetailsInteractorStoreBookmarkPartialState.Failure
         }
 
-    override fun deleteBookmark(bookmarkId: DocumentId): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState> =
+    override fun deleteBookmark(documentId: DocumentId): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState> =
         flow {
-            bookmarkStorageController.delete(bookmarkId)
+            walletCoreDocumentsController.deleteBookmark(documentId)
             emit(DocumentDetailsInteractorDeleteBookmarkPartialState.Success)
         }.safeAsync {
             DocumentDetailsInteractorDeleteBookmarkPartialState.Failure

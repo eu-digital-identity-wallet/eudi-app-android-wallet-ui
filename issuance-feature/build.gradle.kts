@@ -20,7 +20,6 @@ import project.convention.logic.kover.excludeFromKoverReport
 
 plugins {
     id("project.android.feature")
-    id("project.wallet.storage")
 }
 
 android {
