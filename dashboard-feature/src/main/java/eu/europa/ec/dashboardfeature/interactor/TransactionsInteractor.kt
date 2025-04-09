@@ -61,7 +61,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
@@ -463,7 +462,6 @@ class TransactionsInteractorImpl(
             FilterGroup.SingleSelectionFilterGroup(
                 id = TransactionFilterIds.FILTER_SORT_GROUP_ID,
                 name = resourceProvider.getString(R.string.transactions_screen_filters_sort_by),
-                filters = listOf()
                 filters = listOf(
                     FilterItem(
                         id = TransactionFilterIds.FILTER_SORT_TRANSACTION_DATE,

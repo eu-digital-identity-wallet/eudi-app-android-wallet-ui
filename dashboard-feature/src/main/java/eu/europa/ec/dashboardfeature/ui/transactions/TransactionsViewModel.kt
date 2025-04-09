@@ -430,14 +430,12 @@ class TransactionsViewModel(
             interactor.onFilterStateChange().collect { result ->
                 when (result) {
                     is TransactionInteractorFilterPartialState.FilterApplyResult -> {
-                        val transactionsUiWithCategoryItemsSorted =
-                            result.transactions.sortCategoryItems(result.sortOrder)
                         val isDefaultFilterDateRangeSelected =
                             with(viewState.value.filterDateRangeSelectionData) { startDate == null && endDate == null }
                         setState {
                             copy(
                                 isFilteringActive = !result.allDefaultFiltersAreSelected || !isDefaultFilterDateRangeSelected,
-                                transactionsUi = transactionsUiWithCategoryItemsSorted,
+                                transactionsUi = result.transactions,
                                 showNoResultsFound = result.transactions.isEmpty(),
                                 filtersUi = result.filters,
                                 sortOrder = sortOrder.copy(
@@ -486,8 +484,8 @@ class TransactionsViewModel(
             .map { (category, transactions) ->
                 // Sort transactions within each category
                 category to when (sortOrder) {
-                    is SortOrder.Descending -> transactions.sortedByDescending { it.uiData.supportingText }
-                    is SortOrder.Ascending -> transactions.sortedBy { it.uiData.supportingText }
+                    is SortOrder.Descending -> transactions.sortedByDescending { it.uiData.header.supportingText }
+                    is SortOrder.Ascending -> transactions.sortedBy { it.uiData.header.supportingText }
 
                 }
             }.sortByOrder(sortOrder = sortOrder) { (category, _) ->
@@ -519,8 +517,8 @@ class TransactionsViewModel(
     ): List<Pair<TransactionCategory, List<TransactionUi>>> {
         return this.map { (category, transactionList) ->
             val sortedTransactions = when (sortOrder) {
-                DualSelectorButton.FIRST -> transactionList.sortedByDescending { it.uiData.supportingText }
-                DualSelectorButton.SECOND -> transactionList.sortedBy { it.uiData.supportingText }
+                DualSelectorButton.FIRST -> transactionList.sortedByDescending { it.uiData.header.supportingText }
+                DualSelectorButton.SECOND -> transactionList.sortedBy { it.uiData.header.supportingText }
             }
             category to sortedTransactions
         }
