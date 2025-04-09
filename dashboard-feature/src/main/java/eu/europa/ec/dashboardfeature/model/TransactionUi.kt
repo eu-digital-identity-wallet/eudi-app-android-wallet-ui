@@ -18,6 +18,8 @@ package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
 import eu.europa.ec.corelogic.model.TransactionCategory
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 data class TransactionUi(
@@ -28,6 +30,12 @@ data class TransactionUi(
 
 enum class TransactionUiStatus {
     Completed, Failed
+}
+
+enum class TransactionType {
+    PRESENTATION,
+    ISSUANCE,
+    SIGNING;
 }
 
 internal fun String.toTransactionUiStatus(completedStatusString: String): TransactionUiStatus =
@@ -43,28 +51,34 @@ sealed interface Transaction {
     val status: String
     val creationDate: String
 
-    data class DocumentSigningTransaction(
-        override val id: String,
-        override val name: String,
-        override val status: String,
-        override val creationDate: String
-    ) : Transaction
-
     data class AttestationPresentationTransaction(
         override val id: String,
         override val name: String,
         override val status: String,
         override val creationDate: String,
-        val issuerName: String,
-        val relyingPartyName: String,
-        val attestationType: String
     ) : Transaction
 
-    data class OtherTransaction(
+    data class IssuanceTransaction(
         override val id: String,
         override val name: String,
         override val status: String,
-        override val creationDate: String
+        override val creationDate: String,
     ) : Transaction
-}
 
+    data class DocumentSigningTransaction(
+        override val id: String,
+        override val name: String,
+        override val status: String,
+        override val creationDate: String,
+    ) : Transaction
+
+    companion object {
+        fun Transaction.getUiLabel(resourceProvider: ResourceProvider): String {
+            return when (this) {
+                is AttestationPresentationTransaction -> resourceProvider.getString(R.string.transactions_screen_filters_filter_by_transaction_type_presentation)
+                is IssuanceTransaction -> resourceProvider.getString(R.string.transactions_screen_filters_filter_by_transaction_type_issuance)
+                is DocumentSigningTransaction -> resourceProvider.getString(R.string.transactions_screen_filters_filter_by_transaction_type_signing)
+            }
+        }
+    }
+}

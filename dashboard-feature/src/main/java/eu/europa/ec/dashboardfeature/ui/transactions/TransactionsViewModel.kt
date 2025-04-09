@@ -481,16 +481,6 @@ class TransactionsViewModel(
         }.toList()
 
         return groupedTransactions
-            .map { (category, transactions) ->
-                // Sort transactions within each category
-                category to when (sortOrder) {
-                    is SortOrder.Descending -> transactions.sortedByDescending { it.uiData.header.supportingText }
-                    is SortOrder.Ascending -> transactions.sortedBy { it.uiData.header.supportingText }
-
-                }
-            }.sortByOrder(sortOrder = sortOrder) { (category, _) ->
-                category.order
-            }
     }
 
     private fun sortOrderChanged(orderButton: DualSelectorButton) {
@@ -509,18 +499,6 @@ class TransactionsViewModel(
         return when (sortOrder) {
             is SortOrder.Ascending -> this.sortedBy(selector)
             is SortOrder.Descending -> this.sortedByDescending(selector)
-        }
-    }
-
-    private fun List<Pair<TransactionCategory, List<TransactionUi>>>.sortCategoryItems(
-        sortOrder: DualSelectorButton
-    ): List<Pair<TransactionCategory, List<TransactionUi>>> {
-        return this.map { (category, transactionList) ->
-            val sortedTransactions = when (sortOrder) {
-                DualSelectorButton.FIRST -> transactionList.sortedByDescending { it.uiData.header.supportingText }
-                DualSelectorButton.SECOND -> transactionList.sortedBy { it.uiData.header.supportingText }
-            }
-            category to sortedTransactions
         }
     }
 }

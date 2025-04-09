@@ -58,6 +58,13 @@ sealed class FilterGroup {
         override val filters: List<FilterElement>,
         val filterableAction: FilterMultipleAction<T>,
     ) : FilterGroup()
+
+    data class ReversibleMultipleSelectionFilterGroup<T : FilterableAttributes>(
+        override val id: String,
+        override val name: String,
+        override val filters: List<FilterElement>,
+        val filterableAction: FilterMultipleAction<T>,
+    ) : FilterGroup()
 }
 
 sealed class FilterElement {

@@ -20,14 +20,18 @@ object DocumentFilterIds {
     const val FILTER_BY_STATE_GROUP_ID = "state_group_id"
     const val FILTER_BY_STATE_VALID = "state_valid"
     const val FILTER_BY_STATE_EXPIRED = "state_expired"
+
     const val FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID = "category_group_id"
+
     const val FILTER_BY_ISSUER_GROUP_ID = "issuer_group_id"
+
     const val FILTER_BY_PERIOD_GROUP_ID = "by_period_group_id"
     const val FILTER_BY_PERIOD_DEFAULT = "by_period_default"
     const val FILTER_BY_PERIOD_NEXT_7 = "by_period_next_7"
     const val FILTER_BY_PERIOD_NEXT_30 = "by_period_next_30"
     const val FILTER_BY_PERIOD_BEYOND_30 = "by_period_beyond_30"
     const val FILTER_BY_PERIOD_EXPIRED = "by_period_expired"
+
     const val FILTER_SORT_GROUP_ID = "sort_group_id"
     const val FILTER_SORT_DEFAULT = "sort_default"
     const val FILTER_SORT_DATE_ISSUED = "sort_date_issued"
@@ -48,9 +52,8 @@ object TransactionFilterIds {
     const val FILTER_BY_RELYING_PARTY_GROUP_ID = "relying_party_group_id"
     const val FILTER_BY_RELYING_PARTY_WITHOUT_NAME = "by_transaction_without_relying_party"
 
-    const val FILTER_BY_ATTESTATION_GROUP_ID = "attestation_group_id"
-    const val FILTER_BY_ATTESTATION_WITHOUT_NAME = "by_transaction_without_attestation_name"
-
-    const val FILTER_BY_DOCUMENT_SIGNING_GROUP_ID = "document_signing_group_id"
-    const val FILTER_BY_DOCUMENT_SIGNED = "by_document_signed"
+    const val FILTER_BY_TRANSACTION_TYPE_GROUP_ID = "transaction_type_group_id"
+    const val FILTER_BY_TRANSACTION_TYPE_PRESENTATION = "by_transaction_type_presentation"
+    const val FILTER_BY_TRANSACTION_TYPE_ISSUANCE = "by_transaction_type_issuance"
+    const val FILTER_BY_TRANSACTION_TYPE_SIGNING = "by_transaction_type_signing"
 }

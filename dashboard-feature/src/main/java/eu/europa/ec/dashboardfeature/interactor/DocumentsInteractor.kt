@@ -209,7 +209,7 @@ class DocumentsInteractorImpl(
                                 mainContentData = ListItemMainContentData.Text(filterItem.name),
                                 trailingContentData = when (filterGroup) {
                                     is FilterGroup.MultipleSelectionFilterGroup<*>,
-                                    is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
+                                    is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
                                         ListItemTrailingContentData.Checkbox(
                                             checkboxData = CheckboxData(
                                                 isChecked = filterItem.selected,
@@ -218,7 +218,8 @@ class DocumentsInteractorImpl(
                                         )
                                     }
 
-                                    is FilterGroup.SingleSelectionFilterGroup -> {
+                                    is FilterGroup.SingleSelectionFilterGroup,
+                                    is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
                                         ListItemTrailingContentData.RadioButton(
                                             radioButtonData = RadioButtonData(
                                                 isSelected = filterItem.selected,
