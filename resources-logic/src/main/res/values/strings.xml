@@ -294,7 +294,7 @@
     <string name="transactions_screen_filters_date_to">Date to</string>
     <string name="transactions_filter_item_status_completed">Completed</string>
     <string name="transactions_filter_item_status_failed">Failed</string>
-    <string name="transactions_filter_item_no_relying_party_transactions">Transactions without Relying Party</string>
+    <string name="transactions_filter_item_no_relying_party_transactions">No Relying Party</string>
     <string name="transactions_screen_filters_apply">@string/generic_filters_apply</string>
     <string name="transactions_screen_filters_reset">@string/generic_filters_reset</string>
 
