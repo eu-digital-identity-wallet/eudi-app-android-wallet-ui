@@ -420,7 +420,7 @@ class FilterValidatorImpl(
             appliedFilters.sortOrder,
             currentList,
             selectedFilter
-        ) ?: FilterableList(emptyList())
+        ) ?: currentList
     }
 
     private fun applyReversibleSingleSelectionFilter(
