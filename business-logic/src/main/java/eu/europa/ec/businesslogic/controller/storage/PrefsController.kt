@@ -16,10 +16,12 @@
 
 package eu.europa.ec.businesslogic.controller.storage
 
+import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import androidx.core.content.edit
 import eu.europa.ec.businesslogic.extension.decodeFromPemBase64String
+import eu.europa.ec.businesslogic.extension.shuffle
+import eu.europa.ec.businesslogic.extension.unShuffle
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 interface PrefsController {
@@ -136,42 +138,13 @@ class PrefsControllerImpl(
 ) : PrefsController {
 
     /**
-     * Master key used to encrypt/decrypt shared preferences.
-     */
-    private val masterKey: MasterKey by lazy {
-        MasterKey.Builder(resourceProvider.provideContext())
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-    }
-
-    /**
-     * Pref key scheme used to initialize [EncryptedSharedPreferences] instance.
-     */
-    private val prefKeyEncryptionScheme by lazy {
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV
-    }
-
-    /**
-     * Pref value scheme used to initialize [EncryptedSharedPreferences] instance.
-     */
-    private val prefValueEncryptionScheme by lazy {
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    }
-
-    /**
      * Initializes and returns a new [SharedPreferences] instance. Instance is using an encryption
      * to store data in device.
      *
      * @return A new [SharedPreferences] instance.
      */
     private fun getSharedPrefs(): SharedPreferences {
-        return EncryptedSharedPreferences.create(
-            resourceProvider.provideContext(),
-            "secret_shared_prefs",
-            masterKey,
-            prefKeyEncryptionScheme,
-            prefValueEncryptionScheme
-        )
+        return resourceProvider.provideContext().getSharedPreferences("eudi-wallet", MODE_PRIVATE)
     }
 
     /**
@@ -191,7 +164,7 @@ class PrefsControllerImpl(
      * irreversible and may lead to data loss.
      */
     override fun clear(key: String) {
-        getSharedPrefs().edit().remove(key).apply()
+        getSharedPrefs().edit { remove(key) }
     }
 
     /**
@@ -199,7 +172,7 @@ class PrefsControllerImpl(
      * irreversible and may lead to data loss.
      */
     override fun clear() {
-        getSharedPrefs().edit().clear().apply()
+        getSharedPrefs().edit { clear() }
     }
 
     /**
@@ -213,9 +186,9 @@ class PrefsControllerImpl(
      * @param value Value to add after given [key].
      */
     override fun setString(key: String, value: String) {
-        getSharedPrefs().edit()
-            .putString(key, value)
-            .apply()
+        getSharedPrefs().edit {
+            putString(key, value.shuffle())
+        }
     }
 
     /**
@@ -231,9 +204,9 @@ class PrefsControllerImpl(
     override fun setLong(
         key: String, value: Long
     ) {
-        getSharedPrefs().edit()
-            .putLong(key, value)
-            .apply()
+        getSharedPrefs().edit {
+            putLong(key, value)
+        }
     }
 
     /**
@@ -247,9 +220,9 @@ class PrefsControllerImpl(
      * @param value Value to add after given [key].
      */
     override fun setBool(key: String, value: Boolean) {
-        getSharedPrefs().edit()
-            .putBoolean(key, value)
-            .apply()
+        getSharedPrefs().edit {
+            putBoolean(key, value)
+        }
     }
 
     /**
@@ -264,7 +237,7 @@ class PrefsControllerImpl(
      * key value is invalid.
      */
     override fun getString(key: String, defaultValue: String): String {
-        return getSharedPrefs().getString(key, defaultValue) ?: defaultValue
+        return getSharedPrefs().getString(key, defaultValue)?.unShuffle() ?: defaultValue
     }
 
     /**
@@ -297,14 +270,28 @@ class PrefsControllerImpl(
         return getSharedPrefs().getBoolean(key, defaultValue)
     }
 
+    /**
+     * Retrieves an integer value from SharedPreferences associated with the given key.
+     * If no value is found for the key, returns the provided default value.
+     *
+     * @param key The key associated with the integer value to retrieve.
+     * @param defaultValue The default integer value to return if no value is found for the key.
+     * @return The integer value associated with the key, or the default value if no value is found.
+     */
     override fun getInt(key: String, defaultValue: Int): Int {
         return getSharedPrefs().getInt(key, defaultValue)
     }
 
+    /**
+     * Sets an integer value in the shared preferences.
+     *
+     * @param key The key under which the value should be stored.
+     * @param value The integer value to be stored.
+     */
     override fun setInt(key: String, value: Int) {
-        getSharedPrefs().edit()
-            .putInt(key, value)
-            .apply()
+        getSharedPrefs().edit {
+            putInt(key, value)
+        }
     }
 }
 
@@ -335,10 +322,29 @@ class PrefKeysImpl(
         prefsController.setString("BiometricAlias", value)
     }
 
+    /**
+     * Sets the storage key used for persisting data.
+     *
+     * This function updates the stored storage key in the preferences controller.
+     * Subsequent data persistence operations will use this new key.
+     *
+     * @param key The new storage key to be used.
+     */
     override fun setStorageKey(key: String) {
         prefsController.setString("StorageKey", key)
     }
 
+    /**
+     * Retrieves the storage key from persistent storage.
+     *
+     * The storage key is used for encrypting and decrypting data that needs to be
+     * persistently stored. It is retrieved from the `prefsController` using the
+     * key "StorageKey". If a non-empty key is found, it is assumed to be a PEM-encoded
+     * base64 string and is decoded into a byte array. If no key is found or the retrieved
+     * key is empty, `null` is returned.
+     *
+     * @return The storage key as a byte array, or `null` if no key is found or the key is empty.
+     */
     override fun getStorageKey(): ByteArray? {
         val key = prefsController.getString("StorageKey", "")
         return if (key.isNotEmpty()) key.decodeFromPemBase64String() else null
