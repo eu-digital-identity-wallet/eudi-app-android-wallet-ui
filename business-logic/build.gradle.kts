@@ -34,7 +34,6 @@ moduleConfig {
 dependencies {
     implementation(project(LibraryModule.ResourcesLogic.path))
     implementation(libs.gson)
-    implementation(libs.androidx.security)
     implementation(libs.androidx.appAuth)
     implementation(libs.google.phonenumber)
     implementation(libs.timber)
