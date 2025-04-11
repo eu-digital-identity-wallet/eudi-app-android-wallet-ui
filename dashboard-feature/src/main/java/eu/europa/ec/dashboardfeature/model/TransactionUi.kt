@@ -18,9 +18,15 @@ package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
 import eu.europa.ec.corelogic.model.TransactionCategory
+import eu.europa.ec.corelogic.model.TransactionLogData
+import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 data class TransactionUi(
     val uiData: ExpandableListItem.SingleListItemData,
@@ -29,20 +35,45 @@ data class TransactionUi(
 ) : FilterableItemPayload
 
 enum class TransactionUiStatus {
-    Completed, Failed
+    Completed, Failed;
+
+    companion object {
+        internal fun TransactionUiStatus.toUiText(resourceProvider: ResourceProvider): String {
+            return when (this) {
+                Completed -> resourceProvider.getString(R.string.transactions_filter_item_status_completed)
+                Failed -> resourceProvider.getString(R.string.transactions_filter_item_status_failed)
+            }
+        }
+    }
 }
 
-enum class TransactionType {
+enum class TransactionUiType {
     PRESENTATION,
     ISSUANCE,
     SIGNING;
 }
 
-internal fun String.toTransactionUiStatus(completedStatusString: String): TransactionUiStatus =
-    when {
-        equals(completedStatusString, ignoreCase = true) -> TransactionUiStatus.Completed
-        else -> TransactionUiStatus.Failed
+internal fun TransactionLog.Status.toTransactionUiStatus(): TransactionUiStatus {
+    return when (this) {
+        TransactionLog.Status.Incomplete, TransactionLog.Status.Error -> TransactionUiStatus.Failed
+        TransactionLog.Status.Completed -> TransactionUiStatus.Completed
     }
+}
+
+internal fun TransactionLogData.toTransactionUiType(): TransactionUiType {
+    return when (this) {
+        is TransactionLogData.IssuanceLog -> TransactionUiType.ISSUANCE
+        is TransactionLogData.PresentationLog -> TransactionUiType.PRESENTATION
+        is TransactionLogData.SigningLog -> TransactionUiType.SIGNING
+    }
+}
+
+//TODO once mocked Data is no longer needed
+private const val FULL_DATETIME_PATTERN = "dd MMM yyyy hh:mm a"
+
+//TODO once mocked Data is no longer needed
+private val fullDateTimeFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern(FULL_DATETIME_PATTERN)
 
 // TODO should be replaced with actual transaction data
 sealed interface Transaction {
@@ -50,6 +81,10 @@ sealed interface Transaction {
     val name: String
     val status: String
     val creationDate: String
+    val creationDateInstant: Instant
+        get() = LocalDateTime.parse(
+            creationDate, fullDateTimeFormatter
+        ).toInstant(ZoneOffset.ofHours(3))
 
     data class AttestationPresentationTransaction(
         override val id: String,

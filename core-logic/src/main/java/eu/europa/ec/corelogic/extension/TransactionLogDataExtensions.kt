@@ -23,6 +23,14 @@ import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTran
 // TODO RETURN PROPER OBJECTS ONCE READY FROM CORE ISSUANCE,SIGNING
 @Throws(IllegalArgumentException::class)
 internal fun Any.toTransactionLogData(id: String): TransactionLogData = when (this) {
-    is PresentationTransactionLog -> PresentationLog(id, this)
+    is PresentationTransactionLog -> PresentationLog(
+        id = id,
+        name = relyingParty.name,
+        status = status,
+        creationDate = timestamp,
+        relyingParty = relyingParty,
+        documents = documents,
+    )
+
     else -> throw IllegalArgumentException("Unknown transaction log type")
 }

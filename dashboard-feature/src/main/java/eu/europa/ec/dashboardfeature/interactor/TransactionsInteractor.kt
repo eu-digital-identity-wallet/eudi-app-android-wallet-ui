@@ -24,7 +24,6 @@ import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
 import eu.europa.ec.businesslogic.util.minutesToNow
 import eu.europa.ec.businesslogic.util.plusOneDay
-import eu.europa.ec.businesslogic.util.toInstantOrNull
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterAction
@@ -38,14 +37,18 @@ import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.TransactionCategory
+import eu.europa.ec.corelogic.model.TransactionLogData
+import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
 import eu.europa.ec.dashboardfeature.model.Transaction
 import eu.europa.ec.dashboardfeature.model.Transaction.Companion.getUiLabel
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
-import eu.europa.ec.dashboardfeature.model.TransactionType
 import eu.europa.ec.dashboardfeature.model.TransactionUi
 import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
+import eu.europa.ec.dashboardfeature.model.TransactionUiStatus.Companion.toUiText
+import eu.europa.ec.dashboardfeature.model.TransactionUiType
 import eu.europa.ec.dashboardfeature.model.TransactionsFilterableAttributes
 import eu.europa.ec.dashboardfeature.model.toTransactionUiStatus
+import eu.europa.ec.dashboardfeature.model.toTransactionUiType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -60,6 +63,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
@@ -96,6 +100,7 @@ interface TransactionsInteractor {
     fun getTestTransactions(): List<Transaction>
 
     fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState>
+    fun getMockedTransactions(): Flow<TransactionInteractorGetTransactionsPartialState>
     fun getTransactionCategory(dateTime: LocalDateTime): TransactionCategory
 
     fun initializeFilters(
@@ -350,51 +355,102 @@ class TransactionsInteractorImpl(
 
     override fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState> =
         flow {
-            val transactions = getTestTransactions()
+            val transactions = walletCoreDocumentsController.getTransactionLogs()
             val filterableItems = transactions.map { transaction ->
-                val dateTime = LocalDateTime.parse(transaction.creationDate, fullDateTimeFormatter)
+
+                val transactionDateTime = LocalDateTime.ofInstant(
+                    transaction.creationDate,
+                    ZoneId.systemDefault()
+                )
+
                 val trailingContentData = ListItemTrailingContentData.TextWithIcon(
-                    text = transaction.getUiLabel(resourceProvider),
+                    text = transaction.getTransactionTypeLabel(resourceProvider),
                     iconData = AppIcons.KeyboardArrowRight
                 )
+
+                val transactionName = transaction.name
+                val transactionStatus = transaction.status.toTransactionUiStatus()
 
                 FilterableItem(
                     payload = TransactionUi(
                         uiData = ExpandableListItem.SingleListItemData(
                             header = ListItemData(
                                 itemId = transaction.id,
-                                mainContentData = ListItemMainContentData.Text(text = transaction.name),
-                                overlineText = transaction.status,
+                                mainContentData = ListItemMainContentData.Text(text = transactionName),
+                                overlineText = transactionStatus.toUiText(resourceProvider),
                                 supportingText = transaction.creationDate.toFormattedDisplayableDate(),
                                 trailingContentData = trailingContentData
                             )
                         ),
-                        uiStatus = transaction.status.toTransactionUiStatus(
-                            completedStatusString = resourceProvider.getString(
-                                R.string.transactions_filter_item_status_completed
+                        uiStatus = transaction.status.toTransactionUiStatus(),
+                        transactionCategory = getTransactionCategory(dateTime = transactionDateTime),
+                    ),
+                    attributes = TransactionsFilterableAttributes(
+                        searchTags = buildList {
+                            add(transactionName)
+                        },
+                        transactionStatus = transactionStatus,
+                        transactionType = transaction.toTransactionUiType(),
+                        creationDate = transaction.creationDate,
+                        relyingPartyName = when (transaction) {
+                            is TransactionLogData.IssuanceLog -> null // TODO Update this once Core supports Issuance transactions
+                            is TransactionLogData.PresentationLog -> transaction.relyingParty.name
+                            is TransactionLogData.SigningLog -> null
+                        }
+                    )
+                )
+            }
+
+            emit(
+                TransactionInteractorGetTransactionsPartialState.Success(
+                    allTransactions = FilterableList(items = filterableItems),
+                    shouldAllowUserInteraction = true
+                )
+            )
+        }.safeAsync {
+            TransactionInteractorGetTransactionsPartialState.Failure(
+                error = it.localizedMessage ?: genericErrorMsg
+            )
+        }
+
+    override fun getMockedTransactions(): Flow<TransactionInteractorGetTransactionsPartialState> =
+        flow {
+            val transactions = getTestTransactions()
+            val filterableItems = transactions.map { transaction ->
+                val dateTime = LocalDateTime.ofInstant(
+                    transaction.creationDateInstant,
+                    ZoneId.systemDefault()
+                )
+                val trailingContentData = ListItemTrailingContentData.TextWithIcon(
+                    text = transaction.getUiLabel(resourceProvider),
+                    iconData = AppIcons.KeyboardArrowRight
+                )
+
+                val transactionName = transaction.name
+                val transactionStatus = TransactionUiStatus.Completed
+
+                FilterableItem(
+                    payload = TransactionUi(
+                        uiData = ExpandableListItem.SingleListItemData(
+                            header = ListItemData(
+                                itemId = transaction.id,
+                                mainContentData = ListItemMainContentData.Text(text = transactionName),
+                                overlineText = transactionStatus.toUiText(resourceProvider),
+                                supportingText = transaction.creationDateInstant.toFormattedDisplayableDate(),
+                                trailingContentData = trailingContentData
                             )
                         ),
+                        uiStatus = transactionStatus,
                         transactionCategory = getTransactionCategory(dateTime = dateTime),
                     ),
                     attributes = TransactionsFilterableAttributes(
                         searchTags = buildList {
-                            add(transaction.name)
+                            add(transactionName)
                         },
-                        transactionStatus = transaction.status.toTransactionUiStatus(
-                            completedStatusString = resourceProvider.getString(R.string.transactions_filter_item_status_completed)
-                        ),
-                        transactionType = when (transaction) {
-                            is Transaction.AttestationPresentationTransaction -> TransactionType.PRESENTATION
-                            is Transaction.IssuanceTransaction -> TransactionType.ISSUANCE
-                            is Transaction.DocumentSigningTransaction -> TransactionType.SIGNING
-                        },
-                        creationDate = transaction.creationDate.toInstantOrNull(),
-                        relyingParty = when (transaction) {
-                            is Transaction.AttestationPresentationTransaction,
-                            is Transaction.IssuanceTransaction -> transaction.name
-
-                            is Transaction.DocumentSigningTransaction -> null
-                        }
+                        transactionStatus = transactionStatus,
+                        transactionType = TransactionUiType.PRESENTATION, //TODO change this once Core supports more transaction types
+                        creationDate = transaction.creationDateInstant,
+                        relyingPartyName = transactionName
                     )
                 )
             }
@@ -526,12 +582,12 @@ class TransactionsInteractorImpl(
                     // Check if it is the "no relying party" filter
                     if (filter.id == TransactionFilterIds.FILTER_BY_RELYING_PARTY_WITHOUT_NAME) {
                         // Return true only for transactions with no relying party
-                        return@FilterMultipleAction attributes.relyingParty == null
+                        return@FilterMultipleAction attributes.relyingPartyName == null
                     }
 
                     // Check if the transaction has a relying party and matches the filter name
-                    if (attributes.relyingParty != null) {
-                        return@FilterMultipleAction attributes.relyingParty == filter.name
+                    if (attributes.relyingPartyName != null) {
+                        return@FilterMultipleAction attributes.relyingPartyName == filter.name
                     }
 
                     // Default case: return false if no conditions are met
@@ -566,15 +622,15 @@ class TransactionsInteractorImpl(
                 filterableAction = FilterMultipleAction<TransactionsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
                         TransactionFilterIds.FILTER_BY_TRANSACTION_TYPE_PRESENTATION -> {
-                            attributes.transactionType == TransactionType.PRESENTATION
+                            attributes.transactionType == TransactionUiType.PRESENTATION
                         }
 
                         TransactionFilterIds.FILTER_BY_TRANSACTION_TYPE_ISSUANCE -> {
-                            attributes.transactionType == TransactionType.ISSUANCE
+                            attributes.transactionType == TransactionUiType.ISSUANCE
                         }
 
                         TransactionFilterIds.FILTER_BY_TRANSACTION_TYPE_SIGNING -> {
-                            attributes.transactionType == TransactionType.SIGNING
+                            attributes.transactionType == TransactionUiType.SIGNING
                         }
 
                         else -> false
@@ -625,9 +681,12 @@ class TransactionsInteractorImpl(
             )
         }
 
-    private fun String.toFormattedDisplayableDate(): String {
+    private fun Instant.toFormattedDisplayableDate(zoneId: ZoneId = ZoneId.systemDefault()): String {
         return runCatching {
-            val parsedDate = LocalDateTime.parse(this, fullDateTimeFormatter)
+            val parsedDate = LocalDateTime.ofInstant(
+                this,
+                zoneId
+            )//.format(fullDateTimeFormatter) //TODO do we still have the proper format?
 
             when (val dateTimeState = parsedDate.toDateTimeState()) {
                 is TransactionInteractorDateTimeCategoryPartialState.WithinLastHour -> resourceProvider.getString(
@@ -638,7 +697,7 @@ class TransactionsInteractorImpl(
                 is TransactionInteractorDateTimeCategoryPartialState.Today -> dateTimeState.time
                 is TransactionInteractorDateTimeCategoryPartialState.WithinMonth -> dateTimeState.date
             }
-        }.getOrDefault(this)
+        }.getOrDefault(this.toString()) //TODO is this handling ok?
     }
 
     private fun <T> List<T>.sortByOrder(
@@ -653,13 +712,13 @@ class TransactionsInteractorImpl(
 
     private fun addRelyingPartyFilter(transactions: FilterableList): List<FilterItem> {
         val transactionsWithRelyingParty = transactions.items
-            .distinctBy { (it.attributes as TransactionsFilterableAttributes).relyingParty }
+            .distinctBy { (it.attributes as TransactionsFilterableAttributes).relyingPartyName }
             .mapNotNull { filterableItem ->
                 with(filterableItem.attributes as TransactionsFilterableAttributes) {
-                    if (relyingParty != null) {
+                    if (relyingPartyName != null) {
                         FilterItem(
-                            id = relyingParty,
-                            name = relyingParty,
+                            id = relyingPartyName,
+                            name = relyingPartyName,
                             selected = true,
                             isDefault = true,
                         )

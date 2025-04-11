@@ -46,13 +46,13 @@ import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 data class State(
     val isLoading: Boolean,
     val error: ContentErrorConfig? = null,
 
     val searchText: String = "",
+    val isFromOnPause: Boolean = true,
     val isFilteringActive: Boolean,
     val showNoResultsFound: Boolean = false,
     val isBottomSheetOpen: Boolean = false,
@@ -76,6 +76,8 @@ data class State(
 
 sealed class Event : ViewEvent {
     data object Init : Event()
+    data object OnResume : Event()
+    data object OnPause : Event()
     data object Pop : Event()
 
     data class OnSearchQueryChanged(val query: String) : Event()
@@ -129,7 +131,7 @@ class TransactionsViewModel(
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
         return State(
-            isLoading = false,
+            isLoading = true,
             sortOrder = DualSelectorButtonData(
                 first = resourceProvider.getString(R.string.transactions_screen_filters_descending),
                 second = resourceProvider.getString(R.string.transactions_screen_filters_ascending),
@@ -143,7 +145,14 @@ class TransactionsViewModel(
         when (event) {
             is Event.Init -> {
                 collectSearchAndFilterStateChanges()
-                getTransactions()
+            }
+
+            is Event.OnResume -> {
+                getTransactions(event)
+            }
+
+            is Event.OnPause -> {
+                setState { copy(isFromOnPause = true) }
             }
 
             is Event.FiltersPressed -> {
@@ -378,28 +387,34 @@ class TransactionsViewModel(
         }
     }
 
-    private fun getTransactions() {
+    private fun getTransactions(event: Event) {
+        setState {
+            copy(
+                isLoading = transactionsUi.isEmpty(),
+                error = null
+            )
+        }
+
         viewModelScope.launch {
             interactor.getTransactions().collect { response ->
                 when (response) {
                     is TransactionInteractorGetTransactionsPartialState.Success -> {
-                        val sortOrder = SortOrder.Descending()
-                            .takeIf { viewState.value.sortOrder.selectedButton == DualSelectorButton.FIRST }
-                            ?: SortOrder.Ascending()
 
-                        val groupedItems =
-                            response.allTransactions.items.map { filterableTransactionItem ->
-                                filterableTransactionItem.payload as TransactionUi
-                            }.groupByCategory(sortOrder)
+                        if (viewState.value.isFromOnPause) {
+                            interactor.initializeFilters(filterableList = response.allTransactions)
+                        } else {
+                            interactor.updateLists(filterableList = response.allTransactions)
+                        }
 
                         interactor.initializeFilters(filterableList = response.allTransactions)
+
                         interactor.applyFilters()
 
                         setState {
                             copy(
-                                isLoading = transactionsUi.isEmpty(),
+                                isLoading = false,
                                 error = null,
-                                transactionsUi = groupedItems
+                                isFromOnPause = false
                             )
                         }
                     }
@@ -409,12 +424,10 @@ class TransactionsViewModel(
                             copy(
                                 isLoading = false,
                                 error = ContentErrorConfig(
+                                    onRetry = { setEvent(event) },
                                     errorSubTitle = response.error,
                                     onCancel = {
-                                        setState {
-                                            copy(error = null)
-                                        }
-                                        setEvent(Event.Pop)
+                                        setState { copy(error = null) } //TODO is this ok? Do we also want to Pop?
                                     }
                                 )
                             )
@@ -466,23 +479,6 @@ class TransactionsViewModel(
         }
     }
 
-    private fun List<TransactionUi>.groupByCategory(
-        sortOrder: SortOrder
-    ): List<Pair<TransactionCategory, List<TransactionUi>>> {
-        val groupedTransactions = groupBy { transactionUi ->
-            when (val category = transactionUi.transactionCategory) {
-                is TransactionCategory.Today -> category
-                is TransactionCategory.ThisWeek -> category
-                is TransactionCategory.Month -> {
-                    val dateTime = category.dateRange?.start
-                    TransactionCategory.Month(dateTime ?: LocalDateTime.now())
-                }
-            }
-        }.toList()
-
-        return groupedTransactions
-    }
-
     private fun sortOrderChanged(orderButton: DualSelectorButton) {
         val sortOrder = when (orderButton) {
             DualSelectorButton.FIRST -> SortOrder.Descending(isDefault = true)
@@ -490,15 +486,5 @@ class TransactionsViewModel(
         }
         setState { copy(shouldRevertFilterChanges = true) }
         interactor.updateSortOrder(sortOrder)
-    }
-
-    private fun <T> List<T>.sortByOrder(
-        sortOrder: SortOrder,
-        selector: (T) -> Int
-    ): List<T> {
-        return when (sortOrder) {
-            is SortOrder.Ascending -> this.sortedBy(selector)
-            is SortOrder.Descending -> this.sortedByDescending(selector)
-        }
     }
 }

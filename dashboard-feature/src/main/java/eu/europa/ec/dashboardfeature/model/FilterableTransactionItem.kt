@@ -22,7 +22,7 @@ import java.time.Instant
 data class TransactionsFilterableAttributes(
     override val searchTags: List<String>,
     val transactionStatus: TransactionUiStatus,
-    val transactionType: TransactionType,
+    val transactionType: TransactionUiType,
     val creationDate: Instant?,
-    val relyingParty: String?,
+    val relyingPartyName: String?,
 ) : FilterableAttributes

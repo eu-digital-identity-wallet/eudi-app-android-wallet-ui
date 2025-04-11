@@ -16,20 +16,48 @@
 
 package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTransactionLog
+import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
+import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentedDocument
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import java.time.Instant
 
-sealed class TransactionLogData(val id: String) {
+sealed interface TransactionLogData {
+
+    val id: String
+    val name: String
+    val status: TransactionLog.Status
+    val creationDate: Instant
 
     data class PresentationLog(
-        val identifier: String,
-        val log: PresentationTransactionLog
-    ) : TransactionLogData(identifier)
+        override val id: String,
+        override val name: String,
+        override val status: TransactionLog.Status,
+        override val creationDate: Instant,
+        val relyingParty: TransactionLog.RelyingParty,
+        val documents: List<PresentedDocument>,
+    ) : TransactionLogData
 
     data class IssuanceLog(
-        val identifier: String
-    ) : TransactionLogData(identifier)
+        override val id: String,
+        override val name: String,
+        override val status: TransactionLog.Status,
+        override val creationDate: Instant,
+    ) : TransactionLogData
 
     data class SigningLog(
-        val identifier: String
-    ) : TransactionLogData(identifier)
+        override val id: String,
+        override val name: String,
+        override val status: TransactionLog.Status,
+        override val creationDate: Instant,
+    ) : TransactionLogData
+
+    companion object {
+        fun TransactionLogData.getTransactionTypeLabel(resourceProvider: ResourceProvider): String {
+            return when (this) {
+                is PresentationLog -> resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.transactions_screen_filters_filter_by_transaction_type_presentation)
+                is IssuanceLog -> resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.transactions_screen_filters_filter_by_transaction_type_issuance)
+                is SigningLog -> resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.transactions_screen_filters_filter_by_transaction_type_signing)
+            }
+        }
+    }
 }
