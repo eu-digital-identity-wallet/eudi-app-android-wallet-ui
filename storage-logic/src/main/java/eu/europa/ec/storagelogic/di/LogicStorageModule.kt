@@ -21,10 +21,10 @@ import eu.europa.ec.storagelogic.config.StorageConfig
 import eu.europa.ec.storagelogic.config.StorageConfigImpl
 import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.storagelogic.controller.BookmarkStorageControllerImpl
-import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
-import eu.europa.ec.storagelogic.controller.TransactionLogStorageControllerImpl
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageControllerImpl
+import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
+import eu.europa.ec.storagelogic.controller.TransactionLogStorageControllerImpl
 import eu.europa.ec.storagelogic.service.RealmService
 import eu.europa.ec.storagelogic.service.RealmServiceImpl
 import org.koin.core.annotation.ComponentScan

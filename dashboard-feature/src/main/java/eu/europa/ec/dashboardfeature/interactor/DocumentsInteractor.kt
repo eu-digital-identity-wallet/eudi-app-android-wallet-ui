@@ -578,10 +578,10 @@ class DocumentsInteractorImpl(
                     DocumentFilterIds.FILTER_BY_STATE_GROUP_ID -> {
                         filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
                         filterGroup.copy(
-                            filters = addRevokedDocumentFilter(
-                                documents,
-                                filterGroup.filters.toMutableList()
-                            )
+                            filters = buildList {
+                                addAll(filterGroup.filters)
+                                addAll(addRevokedDocumentFilter(documents))
+                            }
                         )
                     }
 
@@ -714,11 +714,12 @@ class DocumentsInteractorImpl(
                 ),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
-                            DocumentFilterIds.FILTER_BY_STATE_VALID -> {
+                        DocumentFilterIds.FILTER_BY_STATE_VALID -> {
                             (attributes.expiryDate?.isValid() == true
                                     || attributes.expiryDate == null)
                                     && attributes.isRevoked == false
                         }
+
                         DocumentFilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isExpired() == true
                         DocumentFilterIds.FILTER_BY_STATE_REVOKED -> attributes.isRevoked
                         else -> true
@@ -745,25 +746,20 @@ class DocumentsInteractorImpl(
     }
 
     private fun addRevokedDocumentFilter(
-        documents: FilterableList,
-        filtersList: MutableList<FilterItem>
+        documents: FilterableList
     ): List<FilterItem> {
-        val updatedFilters = documents.items
+        return documents.items
             .distinctBy { (it.attributes as DocumentsFilterableAttributes).isRevoked }
             .map { filterableItem ->
                 with(filterableItem.attributes as DocumentsFilterableAttributes) {
                     FilterItem(
-                        id = FilterIds.FILTER_BY_STATE_REVOKED,
+                        id = DocumentFilterIds.FILTER_BY_STATE_REVOKED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_revoked),
                         selected = true,
                         isDefault = true,
                     )
                 }
             }
-
-        filtersList.addAll(updatedFilters)
-
-        return filtersList
     }
 
     private fun addIssuerFilter(documents: FilterableList): List<FilterItem> {

@@ -621,7 +621,7 @@ class TestDocumentDetailsInteractor {
                 // Assert
                 assertEquals(
                     DocumentDetailsInteractorStoreBookmarkPartialState.Success(
-                        documentId = mockedBookmarkId
+                        bookmarkId = mockedBookmarkId
                     ),
                     awaitItem()
                 )
