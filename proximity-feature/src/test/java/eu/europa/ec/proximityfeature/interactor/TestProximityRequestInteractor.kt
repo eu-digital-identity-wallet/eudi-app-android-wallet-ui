@@ -315,6 +315,7 @@ class TestProximityRequestInteractor {
             mockGetAllIssuedDocumentsCall(
                 response = listOf(mockedPidWithBasicFields)
             )
+            mockIsDocumentRevoked(isRevoked = false)
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
@@ -378,7 +379,7 @@ class TestProximityRequestInteractor {
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
             )
-
+            mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     requestData = listOf(
@@ -440,7 +441,7 @@ class TestProximityRequestInteractor {
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
             )
-
+            mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     requestData = listOf(
@@ -509,7 +510,7 @@ class TestProximityRequestInteractor {
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
             )
-
+            mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(
                 event = TransferEventPartialState.RequestReceived(
                     requestData = listOf(
@@ -711,6 +712,10 @@ class TestProximityRequestInteractor {
     private fun mockGetAllIssuedDocumentsCall(response: List<IssuedDocument>) {
         whenever(walletCoreDocumentsController.getAllIssuedDocuments())
             .thenReturn(response)
+    }
+
+    private suspend fun mockIsDocumentRevoked(isRevoked: Boolean) {
+        whenever(walletCoreDocumentsController.isDocumentRevoked(any())).thenReturn(isRevoked)
     }
     //endregion
 }
