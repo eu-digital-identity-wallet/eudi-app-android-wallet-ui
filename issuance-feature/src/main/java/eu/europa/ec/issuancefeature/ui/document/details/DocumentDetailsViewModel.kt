@@ -45,6 +45,7 @@ data class State(
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
+    val isRevoked: Boolean = false,
 
     val documentDetailsUi: DocumentDetailsUi? = null,
     val title: String? = null,
@@ -82,8 +83,8 @@ sealed class Event : ViewEvent {
     data object OnBookmarkStored : Event()
     data object OnBookmarkRemoved : Event()
     data object IssuerCardPressed : Event()
+    data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
 }
-
 
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
@@ -202,6 +203,14 @@ class DocumentDetailsViewModel(
                     )
                 )
             }
+
+            is Event.OnRevocationStatusChanged -> {
+                setState {
+                    copy(
+                        isRevoked = event.revokedIds.contains(documentId)
+                    )
+                }
+            }
         }
     }
 
@@ -229,6 +238,7 @@ class DocumentDetailsViewModel(
                                 documentDetailsUi = documentDetailsUi,
                                 title = documentDetailsUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
+                                isRevoked = response.isRevoked,
                                 issuerName = response.issuerName,
                                 issuerLogo = response.issuerLogo
                             )

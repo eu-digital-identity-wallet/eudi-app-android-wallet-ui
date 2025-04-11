@@ -74,6 +74,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 apply("org.jetbrains.kotlin.android")
                 apply("kotlinx-serialization")
                 apply("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+                apply("kotlin-parcelize")
             }
 
             extensions.configure<LibraryExtension> {
@@ -146,6 +147,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
                 add("implementation", libs.findLibrary("kotlinx-coroutines-guava").get())
                 add("implementation", libs.findLibrary("kotlinx.serialization.json").get())
+                add("implementation", libs.findLibrary("androidx-work-ktx").get())
             }
             afterEvaluate {
                 if (!config.module.isLogicModule && !config.module.isFeatureCommon) {

@@ -14,30 +14,24 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.model
+package eu.europa.ec.businesslogic.extension
 
-data class ClaimPath(val value: List<String>) {
+import android.content.Intent
+import android.os.Build
+import android.os.Parcelable
+import androidx.annotation.CheckResult
 
-    companion object {
-        const val PATH_SEPARATOR = ","
-
-        fun toElementIdentifier(itemId: String): String {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(1)
-                .first()
-        }
-
-        fun toSdJwtVcPath(itemId: String): List<String> {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(1)
-        }
-    }
-
-    val joined: String
-        get() = value.joinToString(PATH_SEPARATOR)
-
-    fun toId(docId: String): String =
-        (listOf(docId) + value).joinToString(separator = PATH_SEPARATOR)
+@CheckResult
+inline fun <reified T : Parcelable> Intent?.getParcelableArrayListExtra(
+    action: String
+): List<T>? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        this?.getParcelableArrayListExtra(
+            action,
+            T::class.java
+        )
+    } else {
+        @Suppress("DEPRECATION")
+        this?.getParcelableArrayListExtra(action)
+    }?.filterNotNull()
 }

@@ -19,14 +19,17 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 import android.content.Intent
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
+import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.model.RevokedDocumentPayload
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.model.SideMenuItemType
 import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -34,6 +37,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -42,6 +46,7 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -59,17 +64,36 @@ data class State(
     val menuAnimationDuration: Int = 1500,
     val appVersion: String = "",
     val changelogUrl: String?,
+
+    val isBottomSheetOpen: Boolean = false,
+    val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.DocumentRevocation(
+        options = emptyList()
+    ),
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data class Init(val deepLinkUri: Uri?) : Event()
     data object Pop : Event()
 
+    data class DocumentRevocationNotificationReceived(
+        val payload: List<RevokedDocumentPayload>
+    ) : Event()
+
     // side menu events
     sealed class SideMenu : Event() {
         data object Show : SideMenu()
         data object Hide : SideMenu()
         data class ItemClicked(val itemType: SideMenuItemType) : SideMenu()
+    }
+
+    sealed class BottomSheet : Event() {
+        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
+
+        sealed class DocumentRevocation : BottomSheet() {
+            data class OptionListItemForRevokedDocumentSelected(
+                val documentId: String
+            ) : DocumentRevocation()
+        }
     }
 }
 
@@ -91,6 +115,15 @@ sealed class Effect : ViewSideEffect {
     }
 
     data class ShareLogFile(val intent: Intent, val chooserTitle: String) : Effect()
+
+    data object ShowBottomSheet : Effect()
+    data object CloseBottomSheet : Effect()
+}
+
+sealed class DashboardBottomSheetContent {
+    data class DocumentRevocation(
+        val options: List<ModalOptionUi<Event>>,
+    ) : DashboardBottomSheetContent()
 }
 
 enum class SideMenuAnimation {
@@ -140,6 +173,71 @@ class DashboardViewModel(
                     )
                 }
             }
+
+            is Event.DocumentRevocationNotificationReceived -> {
+                showBottomSheet(
+                    sheetContent = DashboardBottomSheetContent.DocumentRevocation(
+                        options = getDocumentRevocationBottomSheetOptions(event.payload)
+                    )
+                )
+            }
+
+            is Event.BottomSheet.UpdateBottomSheetState -> {
+                setState {
+                    copy(isBottomSheetOpen = event.isOpen)
+                }
+            }
+
+            is Event.BottomSheet.DocumentRevocation.OptionListItemForRevokedDocumentSelected -> {
+                hideBottomSheet()
+                goToDocumentDetails(docId = event.documentId)
+            }
+
+        }
+    }
+
+    private fun goToDocumentDetails(docId: DocumentId) {
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = generateComposableNavigationLink(
+                    screen = IssuanceScreens.DocumentDetails,
+                    arguments = generateComposableArguments(
+                        mapOf(
+                            "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
+                            "documentId" to docId
+                        )
+                    )
+                )
+            )
+        }
+    }
+
+    private fun showBottomSheet(sheetContent: DashboardBottomSheetContent) {
+        setState {
+            copy(
+                sheetContent = sheetContent
+            )
+        }
+        setEffect {
+            Effect.ShowBottomSheet
+        }
+    }
+
+    private fun hideBottomSheet() {
+        setEffect {
+            Effect.CloseBottomSheet
+        }
+    }
+
+    private fun getDocumentRevocationBottomSheetOptions(revokedDocumentPayload: List<RevokedDocumentPayload>): List<ModalOptionUi<Event>> {
+        return revokedDocumentPayload.map {
+            ModalOptionUi(
+                title = it.name,
+                trailingIcon = AppIcons.KeyboardArrowRight,
+                event = Event.BottomSheet.DocumentRevocation.OptionListItemForRevokedDocumentSelected(
+                    documentId = it.id
+                )
+            )
         }
     }
 

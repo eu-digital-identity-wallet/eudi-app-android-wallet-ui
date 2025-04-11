@@ -43,6 +43,7 @@ sealed class DocumentDetailsInteractorPartialState {
         val issuerLogo: URI?,
         val documentDetailsDomain: DocumentDetailsDomain,
         val documentIsBookmarked: Boolean,
+        val isRevoked: Boolean
     ) : DocumentDetailsInteractorPartialState()
 
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
@@ -117,13 +118,15 @@ class DocumentDetailsInteractorImpl(
                 val issuerLogo = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.logo
 
                 val documentIsBookmarked = bookmarkStorageController.retrieve(documentId) != null
+                val documentIsRevoked = walletCoreDocumentsController.isDocumentRevoked(documentId)
 
                 emit(
                     DocumentDetailsInteractorPartialState.Success(
                         issuerName = issuerName,
                         documentDetailsDomain = documentDetailsDomain,
                         documentIsBookmarked = documentIsBookmarked,
-                        issuerLogo = issuerLogo?.uri
+                        issuerLogo = issuerLogo?.uri,
+                        isRevoked = documentIsRevoked
                     )
                 )
             } ?: emit(DocumentDetailsInteractorPartialState.Failure(error = genericErrorMsg))

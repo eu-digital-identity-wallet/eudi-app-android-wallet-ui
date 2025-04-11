@@ -16,28 +16,11 @@
 
 package eu.europa.ec.corelogic.model
 
-data class ClaimPath(val value: List<String>) {
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-    companion object {
-        const val PATH_SEPARATOR = ","
-
-        fun toElementIdentifier(itemId: String): String {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(1)
-                .first()
-        }
-
-        fun toSdJwtVcPath(itemId: String): List<String> {
-            return itemId
-                .split(PATH_SEPARATOR)
-                .drop(1)
-        }
-    }
-
-    val joined: String
-        get() = value.joinToString(PATH_SEPARATOR)
-
-    fun toId(docId: String): String =
-        (listOf(docId) + value).joinToString(separator = PATH_SEPARATOR)
-}
+@Parcelize
+data class RevokedDocumentPayload(
+    val name: String,
+    val id: String,
+) : Parcelable

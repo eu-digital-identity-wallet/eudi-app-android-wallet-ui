@@ -21,7 +21,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 enum class DocumentUiIssuanceState {
-    Issued, Pending, Failed, Expired
+    Issued, Pending, Failed, Expired, Revoked
 }
 
 data class DocumentDetailsUi(
