@@ -98,7 +98,6 @@ sealed class Event : ViewEvent {
 
     sealed class BottomSheet : Event() {
         data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
-        data object Close : BottomSheet()
 
         sealed class AddDocument : BottomSheet() {
             data object FromList : AddDocument()
@@ -244,10 +243,6 @@ class DocumentsViewModel(
                     setEffect { Effect.ResumeOnApplyFilter }
                 }
                 revertFilters(event.isOpen)
-            }
-
-            is Event.BottomSheet.Close -> {
-                hideBottomSheet()
             }
 
             is Event.BottomSheet.AddDocument.FromList -> {
