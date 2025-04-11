@@ -29,7 +29,6 @@ import eu.europa.ec.corelogic.model.RevokedDocumentPayload
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.model.SideMenuItemType
 import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
-import eu.europa.ec.dashboardfeature.ui.dashboard.Event.OptionListItemForRevokedDocumentSelected
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -65,22 +64,36 @@ data class State(
     val menuAnimationDuration: Int = 1500,
     val appVersion: String = "",
     val changelogUrl: String?,
-    val revokedDialogOptions: List<ModalOptionUi<Event>> = emptyList(),
-    val showRevokedDialog: Boolean = false
+
+    val isBottomSheetOpen: Boolean = false,
+    val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.DocumentRevocation(
+        options = emptyList()
+    ),
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data class Init(val deepLinkUri: Uri?) : Event()
-    data class ShowRevocationModal(val payload: List<RevokedDocumentPayload>) : Event()
-    data object CloseRevocationModal : Event()
-    data class OptionListItemForRevokedDocumentSelected(val documentId: String) : Event()
     data object Pop : Event()
+
+    data class DocumentRevocationNotificationReceived(
+        val payload: List<RevokedDocumentPayload>
+    ) : Event()
 
     // side menu events
     sealed class SideMenu : Event() {
         data object Show : SideMenu()
         data object Hide : SideMenu()
         data class ItemClicked(val itemType: SideMenuItemType) : SideMenu()
+    }
+
+    sealed class BottomSheet : Event() {
+        data class UpdateBottomSheetState(val isOpen: Boolean) : BottomSheet()
+
+        sealed class DocumentRevocation : BottomSheet() {
+            data class OptionListItemForRevokedDocumentSelected(
+                val documentId: String
+            ) : DocumentRevocation()
+        }
     }
 }
 
@@ -102,6 +115,15 @@ sealed class Effect : ViewSideEffect {
     }
 
     data class ShareLogFile(val intent: Intent, val chooserTitle: String) : Effect()
+
+    data object ShowBottomSheet : Effect()
+    data object CloseBottomSheet : Effect()
+}
+
+sealed class DashboardBottomSheetContent {
+    data class DocumentRevocation(
+        val options: List<ModalOptionUi<Event>>,
+    ) : DashboardBottomSheetContent()
 }
 
 enum class SideMenuAnimation {
@@ -152,18 +174,25 @@ class DashboardViewModel(
                 }
             }
 
-            is Event.ShowRevocationModal -> {
-                showBottomSheet(event.payload)
+            is Event.DocumentRevocationNotificationReceived -> {
+                showBottomSheet(
+                    sheetContent = DashboardBottomSheetContent.DocumentRevocation(
+                        options = getDocumentRevocationBottomSheetOptions(event.payload)
+                    )
+                )
             }
 
-            is OptionListItemForRevokedDocumentSelected -> {
+            is Event.BottomSheet.UpdateBottomSheetState -> {
+                setState {
+                    copy(isBottomSheetOpen = event.isOpen)
+                }
+            }
+
+            is Event.BottomSheet.DocumentRevocation.OptionListItemForRevokedDocumentSelected -> {
                 hideBottomSheet()
                 goToDocumentDetails(docId = event.documentId)
             }
 
-            is Event.CloseRevocationModal -> {
-                hideBottomSheet()
-            }
         }
     }
 
@@ -183,30 +212,29 @@ class DashboardViewModel(
         }
     }
 
-    private fun showBottomSheet(payload: List<RevokedDocumentPayload>) {
+    private fun showBottomSheet(sheetContent: DashboardBottomSheetContent) {
         setState {
             copy(
-                showRevokedDialog = true,
-                revokedDialogOptions = getBottomSheetOptions(payload)
+                sheetContent = sheetContent
             )
+        }
+        setEffect {
+            Effect.ShowBottomSheet
         }
     }
 
     private fun hideBottomSheet() {
-        setState {
-            copy(
-                showRevokedDialog = false,
-                revokedDialogOptions = emptyList()
-            )
+        setEffect {
+            Effect.CloseBottomSheet
         }
     }
 
-    private fun getBottomSheetOptions(revokedDocumentPayload: List<RevokedDocumentPayload>): List<ModalOptionUi<Event>> {
+    private fun getDocumentRevocationBottomSheetOptions(revokedDocumentPayload: List<RevokedDocumentPayload>): List<ModalOptionUi<Event>> {
         return revokedDocumentPayload.map {
             ModalOptionUi(
                 title = it.name,
                 trailingIcon = AppIcons.KeyboardArrowRight,
-                event = OptionListItemForRevokedDocumentSelected(
+                event = Event.BottomSheet.DocumentRevocation.OptionListItemForRevokedDocumentSelected(
                     documentId = it.id
                 )
             )
