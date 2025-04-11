@@ -250,7 +250,7 @@ private fun Content(
                             textConfig = TextConfig(
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.titleMedium,
-                                maxLines = 4
+                                maxLines = Int.MAX_VALUE
                             )
                         )
                     }

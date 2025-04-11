@@ -29,6 +29,7 @@ import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.ScopedDocument
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
+import eu.europa.ec.eudi.statium.Status
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
 import eu.europa.ec.eudi.wallet.document.Document
@@ -176,6 +177,8 @@ interface WalletCoreDocumentsController {
     suspend fun getRevokedDocumentIds(): List<String>
 
     suspend fun isDocumentRevoked(id: String): Boolean
+
+    suspend fun resolveDocumentStatus(document: IssuedDocument): Result<Status>
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -526,6 +529,9 @@ class WalletCoreDocumentsControllerImpl(
 
     override suspend fun isDocumentRevoked(id: String): Boolean =
         revokedDocumentsStorageController.retrieve(id) != null
+
+    override suspend fun resolveDocumentStatus(document: IssuedDocument): Result<Status> =
+        eudiWallet.resolveStatus(document)
 
     private fun issueDocumentWithOpenId4VCI(configId: String): Flow<IssueDocumentsPartialState> =
         callbackFlow {

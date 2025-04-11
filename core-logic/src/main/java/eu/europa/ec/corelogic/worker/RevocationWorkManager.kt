@@ -20,14 +20,14 @@ import android.content.Context
 import android.content.Intent
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.RevokedDocumentPayload
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.corelogic.util.CoreActions.REVOCATION_IDS_DETAILS_EXTRA
+import eu.europa.ec.eudi.statium.Status
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.model.RevokedDocument
-import kotlinx.coroutines.delay
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -38,7 +38,6 @@ class RevocationWorkManager(
 
     private val revokedDocumentsController: RevokedDocumentsStorageController by inject()
     private val walletCoreDocumentsController: WalletCoreDocumentsController by inject()
-    private val logController: LogController by inject()
 
     companion object {
         private const val TAG = "RevocationWorkManager"
@@ -47,60 +46,67 @@ class RevocationWorkManager(
 
     override suspend fun doWork(): Result {
         try {
-            logController.d(TAG) { "Checking for revoked documents..." }
 
-            // Mock request
-            delay(50000)
-            val mockedRequestResult =
-                listOf("Document_EudiWalletDocumentManager_597c1f9f-91bd-4848-aaac-414b8720a79e")
-            val resultToDomain =
-                mockedRequestResult
-                    .map {
-                        RevokedDocument(
-                            identifier = it
-                        )
-                    }
-
-            val revokedDocumentsPayloadList = walletCoreDocumentsController.getAllDocuments()
-                .filter { mockedRequestResult.contains(it.id) }
-                .map { RevokedDocumentPayload(name = it.name, id = it.id) }
-                .toTypedArray()
-
-            if (mockedRequestResult.isNotEmpty()) {
-
-                revokedDocumentsController.store(resultToDomain)
-
-                val messageIntent = Intent(
-                    CoreActions.REVOCATION_WORK_MESSAGE_ACTION
-                ).apply {
-                    putParcelableArrayListExtra(
-                        CoreActions.REVOCATION_IDS_EXTRA,
-                        ArrayList(revokedDocumentsPayloadList.toList())
+            val revokedDocuments = walletCoreDocumentsController
+                .getAllIssuedDocuments()
+                .mapNotNull { document ->
+                    walletCoreDocumentsController.resolveDocumentStatus(document).fold(
+                        onSuccess = { status ->
+                            when (status) {
+                                is Status.Invalid, Status.Suspended -> document
+                                else -> null
+                            }
+                        },
+                        onFailure = {
+                            null
+                        }
                     )
                 }
 
-                val refreshIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_ACTION)
-
-                val detailsIntent = Intent(
-                    CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION
-                ).apply {
-                    putStringArrayListExtra(
-                        REVOCATION_IDS_DETAILS_EXTRA,
-                        ArrayList(mockedRequestResult)
-                    )
-                }
-
-                applicationContext.sendBroadcast(messageIntent)
-                applicationContext.sendBroadcast(detailsIntent)
-                applicationContext.sendBroadcast(refreshIntent)
+            if (revokedDocuments.isNotEmpty()) {
+                storeRevokedDocuments(revokedDocuments)
+                sendRevocationBroadcasts(revokedDocuments)
             }
 
-            logController.d(TAG) { "Done!" }
-
             return Result.success()
-        } catch (ex: Exception) {
-            logController.d(TAG) { ex.message ?: "RevocationWorkManager encountered an error" }
+        } catch (_: IllegalArgumentException) {
             return Result.failure()
         }
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private suspend fun storeRevokedDocuments(revokedDocuments: List<IssuedDocument>) {
+        revokedDocumentsController.store(
+            revokedDocuments.map { RevokedDocument(identifier = it.id) }
+        )
+    }
+
+    private fun sendRevocationBroadcasts(revokedDocuments: List<IssuedDocument>) {
+
+        val messageIntent = Intent(CoreActions.REVOCATION_WORK_MESSAGE_ACTION).apply {
+            putParcelableArrayListExtra(
+                CoreActions.REVOCATION_IDS_EXTRA,
+                ArrayList(
+                    revokedDocuments.map {
+                        RevokedDocumentPayload(name = it.name, id = it.id)
+                    }
+                )
+            )
+        }
+
+        val refreshIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_ACTION)
+
+        val detailsIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION).apply {
+            putStringArrayListExtra(
+                REVOCATION_IDS_DETAILS_EXTRA,
+                ArrayList(
+                    revokedDocuments.map { it.id }
+                )
+            )
+        }
+
+        applicationContext.sendBroadcast(messageIntent)
+        applicationContext.sendBroadcast(detailsIntent)
+        applicationContext.sendBroadcast(refreshIntent)
     }
 }
