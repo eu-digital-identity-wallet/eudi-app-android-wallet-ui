@@ -92,38 +92,6 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
-@OptIn(ExperimentalUuidApi::class)
-private fun calculateGroup(
-    allItems: MutableList<DomainClaim>,
-    children: List<DomainClaim>,
-    groupKey: String,
-    metadata: DocumentMetaData?,
-    locale: Locale,
-    predicate: () -> Boolean
-) {
-
-    val groupIsAlreadyPresent = children
-        .filterIsInstance<DomainClaim.Group>()
-        .any { it.key == groupKey }
-
-    if (predicate() && !groupIsAlreadyPresent) {
-        allItems.add(
-            DomainClaim.Group(
-                key = groupKey,
-                displayTitle = getReadableNameFromIdentifier(
-                    metadata = metadata,
-                    userLocale = locale,
-                    identifier = groupKey
-                ),
-                path = ClaimPath(listOf(Uuid.random().toString())),
-                items = children
-            )
-        )
-    } else {
-        allItems.addAll(children)
-    }
-}
-
 fun getReadableNameFromIdentifier(
     metadata: DocumentMetaData?,
     userLocale: Locale,
@@ -146,6 +114,39 @@ fun createKeyValue(
     metadata: DocumentMetaData?,
     allItems: MutableList<DomainClaim>,
 ) {
+
+    @OptIn(ExperimentalUuidApi::class)
+    fun addFlatOrGroupedChildren(
+        allItems: MutableList<DomainClaim>,
+        children: List<DomainClaim>,
+        groupKey: String,
+        metadata: DocumentMetaData?,
+        locale: Locale,
+        predicate: () -> Boolean
+    ) {
+
+        val groupIsAlreadyPresent = children
+            .filterIsInstance<DomainClaim.Group>()
+            .any { it.key == groupKey }
+
+        if (predicate() && !groupIsAlreadyPresent) {
+            allItems.add(
+                DomainClaim.Group(
+                    key = groupKey,
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = locale,
+                        identifier = groupKey
+                    ),
+                    path = ClaimPath(listOf(Uuid.random().toString())),
+                    items = children
+                )
+            )
+        } else {
+            allItems.addAll(children)
+        }
+    }
+
     when (item) {
 
         is Map<*, *> -> {
@@ -173,7 +174,7 @@ fun createKeyValue(
                 }
             }
 
-            calculateGroup(
+            addFlatOrGroupedChildren(
                 allItems = allItems,
                 children = children,
                 groupKey = groupKey,
@@ -201,7 +202,7 @@ fun createKeyValue(
                 }
             }
 
-            calculateGroup(
+            addFlatOrGroupedChildren(
                 allItems = allItems,
                 children = children,
                 groupKey = groupKey,
