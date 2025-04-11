@@ -92,6 +92,38 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
         }
     }
 
+@OptIn(ExperimentalUuidApi::class)
+private fun calculateGroup(
+    allItems: MutableList<DomainClaim>,
+    children: List<DomainClaim>,
+    groupKey: String,
+    metadata: DocumentMetaData?,
+    locale: Locale,
+    predicate: () -> Boolean
+) {
+
+    val groupIsAlreadyPresent = children
+        .filterIsInstance<DomainClaim.Group>()
+        .any { it.key == groupKey }
+
+    if (predicate() && !groupIsAlreadyPresent) {
+        allItems.add(
+            DomainClaim.Group(
+                key = groupKey,
+                displayTitle = getReadableNameFromIdentifier(
+                    metadata = metadata,
+                    userLocale = locale,
+                    identifier = groupKey
+                ),
+                path = ClaimPath(listOf(Uuid.random().toString())),
+                items = children
+            )
+        )
+    } else {
+        allItems.addAll(children)
+    }
+}
+
 fun getReadableNameFromIdentifier(
     metadata: DocumentMetaData?,
     userLocale: Locale,
@@ -105,7 +137,6 @@ fun getReadableNameFromIdentifier(
         )
 }
 
-@OptIn(ExperimentalUuidApi::class)
 fun createKeyValue(
     item: Any,
     groupKey: String,
@@ -118,10 +149,18 @@ fun createKeyValue(
     when (item) {
 
         is Map<*, *> -> {
+
+            val children: MutableList<DomainClaim> = mutableListOf()
+            val childKeys: MutableList<String> = mutableListOf()
+
             item.forEach { (key, value) ->
                 safeLet(key as? String, value) { key, value ->
+
                     val newGroupKey = if (value is Collection<*>) key else groupKey
                     val newChildKey = if (value is Collection<*>) "" else key
+
+                    childKeys.add(newChildKey)
+
                     createKeyValue(
                         item = value,
                         groupKey = newGroupKey,
@@ -129,9 +168,19 @@ fun createKeyValue(
                         disclosurePath = disclosurePath,
                         resourceProvider = resourceProvider,
                         metadata = metadata,
-                        allItems = allItems
+                        allItems = children
                     )
                 }
+            }
+
+            calculateGroup(
+                allItems = allItems,
+                children = children,
+                groupKey = groupKey,
+                metadata = metadata,
+                locale = resourceProvider.getLocale()
+            ) {
+                !childKeys.any { it.isEmpty() }
             }
         }
 
@@ -152,21 +201,14 @@ fun createKeyValue(
                 }
             }
 
-            if (childKey.isEmpty()) {
-                allItems.add(
-                    DomainClaim.Group(
-                        key = groupKey,
-                        displayTitle = getReadableNameFromIdentifier(
-                            metadata = metadata,
-                            userLocale = resourceProvider.getLocale(),
-                            identifier = groupKey
-                        ),
-                        path = ClaimPath(listOf(Uuid.random().toString())),
-                        items = children
-                    )
-                )
-            } else {
-                allItems.addAll(children)
+            calculateGroup(
+                allItems = allItems,
+                children = children,
+                groupKey = groupKey,
+                metadata = metadata,
+                locale = resourceProvider.getLocale()
+            ) {
+                childKey.isEmpty()
             }
         }
 
