@@ -25,9 +25,6 @@ import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteracto
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteDocumentPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorStoreBookmarkPartialState
-import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsBottomSheetContent.BookmarkRemovedInfo
-import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsBottomSheetContent.BookmarkStoredInfo
-import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -185,7 +182,7 @@ class DocumentDetailsViewModel(
 
             is Event.OnBookmarkStored -> {
                 showBottomSheet(
-                    sheetContent = BookmarkStoredInfo(
+                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkStoredInfo(
                         bottomSheetTextData = getBookmarkStoredBottomSheetTextData()
                     )
                 )
@@ -193,7 +190,7 @@ class DocumentDetailsViewModel(
 
             is Event.OnBookmarkRemoved -> {
                 showBottomSheet(
-                    sheetContent = BookmarkRemovedInfo(
+                    sheetContent = DocumentDetailsBottomSheetContent.BookmarkRemovedInfo(
                         bottomSheetTextData = getBookmarkRemovedBottomSheetTextData()
                     )
                 )
@@ -201,7 +198,7 @@ class DocumentDetailsViewModel(
 
             is Event.IssuerCardPressed -> {
                 showBottomSheet(
-                    sheetContent = TrustedRelyingPartyInfo(
+                    sheetContent = DocumentDetailsBottomSheetContent.TrustedRelyingPartyInfo(
                         bottomSheetTextData = getTrustedRelyingPartyBottomSheetTextData()
                     )
                 )

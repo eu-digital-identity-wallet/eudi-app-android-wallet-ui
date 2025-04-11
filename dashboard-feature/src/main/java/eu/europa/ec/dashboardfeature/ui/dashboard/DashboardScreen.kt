@@ -30,6 +30,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -45,7 +46,6 @@ import eu.europa.ec.corelogic.model.RevokedDocumentPayload
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationBar
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationItem
-import eu.europa.ec.dashboardfeature.ui.dashboard.Event.CloseRevocationModal
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsScreen
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsViewModel
 import eu.europa.ec.dashboardfeature.ui.home.HomeScreen
@@ -68,6 +68,7 @@ import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,10 +80,13 @@ fun DashboardScreen(
     transactionsViewModel: TransactionsViewModel,
 ) {
     val context = LocalContext.current
+
     val bottomNavigationController = rememberNavController()
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
+
+    val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
+        skipPartiallyExpanded = false
     )
 
     Scaffold(
@@ -121,28 +125,22 @@ fun DashboardScreen(
             }
         }
 
-        if (state.showRevokedDialog) {
+        if (state.isBottomSheetOpen) {
             WrapModalBottomSheet(
                 onDismissRequest = {
                     viewModel.setEvent(
-                        CloseRevocationModal
+                        Event.BottomSheet.UpdateBottomSheetState(
+                            isOpen = false
+                        )
                     )
                 },
                 sheetState = bottomSheetState
             ) {
-                BottomSheetWithOptionsList(
-                    textData = BottomSheetTextData(
-                        title = stringResource(
-                            id = R.string.dashboard_bottom_sheet_revoked_document_dialog_title
-                        ),
-                        message = stringResource(
-                            id = R.string.dashboard_bottom_sheet_revoked_document_dialog_subtitle
-                        ),
-                    ),
-                    options = state.revokedDialogOptions,
+                DashboardSheetContent(
+                    sheetContent = state.sheetContent,
                     onEventSent = {
                         viewModel.setEvent(it)
-                    },
+                    }
                 )
             }
         }
@@ -179,6 +177,20 @@ fun DashboardScreen(
             when (effect) {
                 is Effect.Navigation -> handleNavigationEffect(effect, hostNavController, context)
 
+                is Effect.CloseBottomSheet -> {
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }.invokeOnCompletion {
+                        if (!bottomSheetState.isVisible) {
+                            viewModel.setEvent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                        }
+                    }
+                }
+
+                is Effect.ShowBottomSheet -> {
+                    viewModel.setEvent(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+                }
+
                 is Effect.ShareLogFile -> {
                     context.openIntentChooser(
                         effect.intent,
@@ -198,7 +210,7 @@ fun DashboardScreen(
             action = CoreActions.REVOCATION_IDS_EXTRA
         )?.let {
             viewModel.setEvent(
-                Event.ShowRevocationModal(it)
+                Event.DocumentRevocationNotificationReceived(it)
             )
         }
     }
@@ -230,5 +242,28 @@ private fun handleNavigationEffect(
         is Effect.Navigation.OnAppSettings -> context.openAppSettings()
         is Effect.Navigation.OnSystemSettings -> context.openBleSettings()
         is Effect.Navigation.OpenUrlExternally -> context.openUrl(uri = navigationEffect.url)
+    }
+}
+
+@Composable
+private fun DashboardSheetContent(
+    sheetContent: DashboardBottomSheetContent,
+    onEventSent: (even: Event) -> Unit,
+) {
+    when (sheetContent) {
+        is DashboardBottomSheetContent.DocumentRevocation -> {
+            BottomSheetWithOptionsList(
+                textData = BottomSheetTextData(
+                    title = stringResource(
+                        id = R.string.dashboard_bottom_sheet_revoked_document_dialog_title
+                    ),
+                    message = stringResource(
+                        id = R.string.dashboard_bottom_sheet_revoked_document_dialog_subtitle
+                    ),
+                ),
+                options = sheetContent.options,
+                onEventSent = onEventSent,
+            )
+        }
     }
 }
