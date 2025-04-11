@@ -22,6 +22,7 @@ import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
+import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
@@ -48,16 +49,27 @@ object RequestTransformer {
         val resultList = mutableListOf<DocumentPayloadDomain>()
 
         requestDocuments.forEach { requestDocument ->
+
             val storageDocument =
                 storageDocuments.first { it.id == requestDocument.documentId }
+
+            val claimsPaths = storageDocument.data.claims.flatMap { claim ->
+                claim.toClaimPaths()
+            }
 
             val requestedItemsPaths = requestDocument.requestedItems.keys
                 .map {
                     it.toClaimPath()
                 }
 
+            val filteredPaths = claimsPaths.filter { available ->
+                requestedItemsPaths.any { requested ->
+                    available.joined.startsWith(requested.joined)
+                }
+            }
+
             val domainClaims = transformPathsToDomainClaims(
-                paths = requestedItemsPaths,
+                paths = filteredPaths,
                 claims = storageDocument.data.claims,
                 metadata = storageDocument.metadata,
                 resourceProvider = resourceProvider,

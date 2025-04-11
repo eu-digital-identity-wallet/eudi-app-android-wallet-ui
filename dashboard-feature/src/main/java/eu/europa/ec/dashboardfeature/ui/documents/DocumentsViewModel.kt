@@ -166,6 +166,7 @@ class DocumentsViewModel(
 ) : MviViewModel<Event, State, Effect>() {
 
     private var retryDeferredDocsJob: Job? = null
+    private var fetchDocumentsJob: Job? = null
 
     override fun setInitialState(): State {
         return State(
@@ -194,6 +195,7 @@ class DocumentsViewModel(
 
             is Event.OnPause -> {
                 stopDeferredIssuing()
+                stopFetchDocuments()
                 setState { copy(isFromOnPause = true) }
             }
 
@@ -318,7 +320,7 @@ class DocumentsViewModel(
                 error = null
             )
         }
-        viewModelScope.launch {
+        fetchDocumentsJob = viewModelScope.launch {
             interactor.getDocuments()
                 .collect { response ->
                     when (response) {
@@ -657,5 +659,9 @@ class DocumentsViewModel(
 
     private fun stopDeferredIssuing() {
         retryDeferredDocsJob?.cancel()
+    }
+
+    private fun stopFetchDocuments() {
+        fetchDocumentsJob?.cancel()
     }
 }

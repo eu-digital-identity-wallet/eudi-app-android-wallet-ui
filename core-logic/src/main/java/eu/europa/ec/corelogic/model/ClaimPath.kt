@@ -17,6 +17,7 @@
 package eu.europa.ec.corelogic.model
 
 data class ClaimPath(val value: List<String>) {
+
     companion object {
         const val PATH_SEPARATOR = ","
 
@@ -33,6 +34,9 @@ data class ClaimPath(val value: List<String>) {
                 .drop(1)
         }
     }
+
+    val joined: String
+        get() = value.joinToString(PATH_SEPARATOR)
 
     fun toId(docId: String): String =
         (listOf(docId) + value).joinToString(separator = PATH_SEPARATOR)
