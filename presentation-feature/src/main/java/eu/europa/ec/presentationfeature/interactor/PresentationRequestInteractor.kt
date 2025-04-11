@@ -79,6 +79,9 @@ class PresentationRequestInteractorImpl(
                             requestDocuments = response.requestData,
                             resourceProvider = resourceProvider
                         ).getOrThrow()
+                            .filterNot {
+                                walletCoreDocumentsController.isDocumentRevoked(it.docId)
+                            }
 
                         if (documentsDomain.isNotEmpty()) {
                             PresentationRequestInteractorPartialState.Success(

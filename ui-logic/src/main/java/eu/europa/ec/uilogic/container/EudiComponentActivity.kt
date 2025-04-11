@@ -56,7 +56,7 @@ open class EudiComponentActivity : FragmentActivity() {
     @Composable
     protected fun Content(
         intent: Intent?,
-        builder: NavGraphBuilder.(NavController) -> Unit
+        builder: NavGraphBuilder.(NavController) -> Unit,
     ) {
         ThemeManager.instance.Theme {
             Surface(

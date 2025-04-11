@@ -112,6 +112,7 @@ class TestDocumentDetailsInteractor {
 
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
             mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
 
             // When
             interactor.getDocumentDetails(
@@ -123,7 +124,8 @@ class TestDocumentDetailsInteractor {
                         documentDetailsDomain = mockedBasicPidDomain,
                         documentIsBookmarked = false,
                         issuerName = null,
-                        issuerLogo = null
+                        issuerLogo = null,
+                        isRevoked = false
                     ),
                     awaitItem()
                 )
@@ -146,6 +148,7 @@ class TestDocumentDetailsInteractor {
 
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
             mockRetrieveBookmarkCall(response = true)
+            mockIsDocumentRevoked(isRevoked = false)
 
             // When
             interactor.getDocumentDetails(
@@ -157,7 +160,8 @@ class TestDocumentDetailsInteractor {
                         documentDetailsDomain = mockedBasicPidDomain,
                         documentIsBookmarked = true,
                         issuerName = null,
-                        issuerLogo = null
+                        issuerLogo = null,
+                        isRevoked = false
                     ),
                     awaitItem()
                 )
@@ -180,6 +184,7 @@ class TestDocumentDetailsInteractor {
 
             mockGetDocumentByIdCall(response = mockedMdlWithBasicFields)
             mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
 
             // When
             interactor.getDocumentDetails(
@@ -191,7 +196,8 @@ class TestDocumentDetailsInteractor {
                         documentDetailsDomain = mockedBasicMdlDomain,
                         documentIsBookmarked = false,
                         issuerName = null,
-                        issuerLogo = null
+                        issuerLogo = null,
+                        isRevoked = false
                     ),
                     awaitItem()
                 )
@@ -259,6 +265,7 @@ class TestDocumentDetailsInteractor {
                 )
             )
             mockRetrieveBookmarkCall(response = false)
+            mockIsDocumentRevoked(isRevoked = false)
 
             // When
             interactor.getDocumentDetails(
@@ -285,7 +292,8 @@ class TestDocumentDetailsInteractor {
                         ),
                         documentIsBookmarked = false,
                         issuerName = null,
-                        issuerLogo = null
+                        issuerLogo = null,
+                        isRevoked = false
                     ),
                     awaitItem()
                 )
@@ -746,6 +754,10 @@ class TestDocumentDetailsInteractor {
     private suspend fun mockRetrieveBookmarkCall(response: Boolean) {
         whenever(walletCoreDocumentsController.isDocumentBookmarked(anyString()))
             .thenReturn(response)
+    }
+
+    private suspend fun mockIsDocumentRevoked(isRevoked: Boolean) {
+        whenever(walletCoreDocumentsController.isDocumentRevoked(any())).thenReturn(isRevoked)
     }
     //endregion
 }

@@ -20,6 +20,7 @@ object DocumentFilterIds {
     const val FILTER_BY_STATE_GROUP_ID = "state_group_id"
     const val FILTER_BY_STATE_VALID = "state_valid"
     const val FILTER_BY_STATE_EXPIRED = "state_expired"
+    const val FILTER_BY_STATE_REVOKED = "state_revoked"
 
     const val FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID = "category_group_id"
 

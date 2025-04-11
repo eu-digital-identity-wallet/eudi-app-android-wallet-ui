@@ -30,6 +30,7 @@ import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -77,6 +78,7 @@ fun provideWalletCoreDocumentsController(
     walletCoreConfig: WalletCoreConfig,
     transactionLogStorageController: TransactionLogStorageController,
     bookmarkStorageController: BookmarkStorageController
+    revokedDocumentsStorageController: RevokedDocumentsStorageController
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
         resourceProvider,
@@ -84,6 +86,7 @@ fun provideWalletCoreDocumentsController(
         walletCoreConfig,
         transactionLogStorageController,
         bookmarkStorageController
+        revokedDocumentsStorageController
     )
 
 /**
