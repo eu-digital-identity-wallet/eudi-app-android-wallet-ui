@@ -32,6 +32,8 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPa
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
 import eu.europa.ec.dashboardfeature.model.DocumentUi
+import eu.europa.ec.dashboardfeature.ui.documents.DocumentsBottomSheetContent.DeferredDocumentPressed
+import eu.europa.ec.dashboardfeature.ui.documents.DocumentsBottomSheetContent.Filters
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -63,7 +65,7 @@ data class State(
     val isLoading: Boolean,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val sheetContent: DocumentsBottomSheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()),
+    val sheetContent: DocumentsBottomSheetContent = Filters(filters = emptyList()),
 
     val documentsUi: List<Pair<DocumentCategory, List<DocumentUi>>> = emptyList(),
     val showNoResultsFound: Boolean = false,
@@ -212,7 +214,7 @@ class DocumentsViewModel(
 
             is Event.FiltersPressed -> {
                 stopDeferredIssuing()
-                showBottomSheet(sheetContent = DocumentsBottomSheetContent.Filters(filters = emptyList()))
+                showBottomSheet(sheetContent = Filters(filters = emptyList()))
             }
 
             is Event.OnSearchQueryChanged -> {
@@ -236,7 +238,7 @@ class DocumentsViewModel(
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-                if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+                if (viewState.value.sheetContent is Filters
                     && !event.isOpen
                 ) {
                     setEffect { Effect.ResumeOnApplyFilter }
@@ -260,7 +262,7 @@ class DocumentsViewModel(
 
             is Event.BottomSheet.DeferredDocument.DeferredNotReadyYet.DocumentSelected -> {
                 showBottomSheet(
-                    sheetContent = DocumentsBottomSheetContent.DeferredDocumentPressed(
+                    sheetContent = DeferredDocumentPressed(
                         documentId = event.documentId
                     )
                 )
@@ -354,9 +356,8 @@ class DocumentsViewModel(
                                 }
                             }
                             val documentsWithFailed =
-                                response.allDocuments.generateFailedDeferredDocs(
-                                    deferredFailedDocIds
-                                )
+                                response.allDocuments
+                                    .generateFailedDeferredDocs(deferredFailedDocIds)
 
                             if (viewState.value.isFromOnPause) {
                                 interactor.initializeFilters(
@@ -637,7 +638,7 @@ class DocumentsViewModel(
     }
 
     private fun revertFilters(isOpening: Boolean) {
-        if (viewState.value.sheetContent is DocumentsBottomSheetContent.Filters
+        if (viewState.value.sheetContent is Filters
             && !isOpening
             && viewState.value.shouldRevertFilterChanges
         ) {

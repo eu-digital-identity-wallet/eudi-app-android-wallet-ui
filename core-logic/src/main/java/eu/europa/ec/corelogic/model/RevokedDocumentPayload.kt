@@ -14,18 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.corelogic.model
 
-import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
-import eu.europa.ec.corelogic.model.DocumentCategory
-import java.time.Instant
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-data class DocumentsFilterableAttributes(
-    override val searchTags: List<String>,
+@Parcelize
+data class RevokedDocumentPayload(
     val name: String,
-    val expiryDate: Instant?,
-    val issuedDate: Instant?,
-    val issuer: String?,
-    val category: DocumentCategory,
-    val isRevoked: Boolean,
-) : FilterableAttributes
+    val id: String,
+) : Parcelable

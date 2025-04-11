@@ -291,6 +291,10 @@ class DocumentsInteractorImpl(
 
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
+
+                    val documentIsRevoked =
+                        walletCoreDocumentsController.isDocumentRevoked(document.id)
+
                     when (document) {
                         is IssuedDocument -> {
                             val localizedIssuerMetadata =
@@ -314,20 +318,32 @@ class DocumentsInteractorImpl(
                             val documentHasExpired =
                                 documentHasExpired(documentExpirationDate = document.validUntil)
 
-                            val documentIssuanceState = if (documentHasExpired) {
-                                DocumentUiIssuanceState.Expired
-                            } else {
-                                DocumentUiIssuanceState.Issued
+                            val documentIssuanceState = when {
+                                documentIsRevoked -> DocumentUiIssuanceState.Revoked
+                                documentHasExpired == true -> DocumentUiIssuanceState.Failed
+                                else -> DocumentUiIssuanceState.Issued
                             }
 
-                            val supportingText = if (documentHasExpired) {
-                                resourceProvider.getString(R.string.dashboard_document_has_expired)
-                            } else {
-                                resourceProvider.getString(
+                            val supportingText = when {
+                                documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_revoked)
+                                documentHasExpired == true -> resourceProvider.getString(R.string.dashboard_document_has_expired)
+                                else -> resourceProvider.getString(
                                     R.string.dashboard_document_has_not_expired,
                                     document.validUntil.formatInstant()
                                 )
                             }
+
+                            val trailingContentData = if (documentIsRevoked) {
+                                ListItemTrailingContentData.Icon(
+                                    iconData = AppIcons.ErrorFilled,
+                                    tint = ThemeColors.error
+                                )
+                            } else {
+                                ListItemTrailingContentData.Icon(
+                                    iconData = AppIcons.KeyboardArrowRight
+                                )
+                            }
+
                             FilterableItem(
                                 payload = DocumentUi(
                                     documentIssuanceState = documentIssuanceState,
@@ -340,9 +356,7 @@ class DocumentsInteractorImpl(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
                                             errorImage = AppIcons.Id,
                                         ),
-                                        trailingContentData = ListItemTrailingContentData.Icon(
-                                            iconData = AppIcons.KeyboardArrowRight
-                                        )
+                                        trailingContentData = trailingContentData
                                     ),
                                     documentIdentifier = documentIdentifier,
                                     documentCategory = documentCategory,
@@ -353,7 +367,8 @@ class DocumentsInteractorImpl(
                                     expiryDate = document.validUntil,
                                     issuer = issuerName,
                                     name = document.name,
-                                    category = documentCategory
+                                    category = documentCategory,
+                                    isRevoked = documentIsRevoked
                                 )
                             )
                         }
@@ -403,7 +418,8 @@ class DocumentsInteractorImpl(
                                     expiryDate = null,
                                     issuer = issuerName,
                                     name = document.name,
-                                    category = documentCategory
+                                    category = documentCategory,
+                                    isRevoked = documentIsRevoked
                                 )
                             )
                         }
@@ -557,6 +573,16 @@ class DocumentsInteractorImpl(
                         )
                     }
 
+                    FilterIds.FILTER_BY_STATE_GROUP_ID -> {
+                        filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
+                        filterGroup.copy(
+                            filters = addRevokedDocumentFilter(
+                                documents,
+                                filterGroup.filters.toMutableList()
+                            )
+                        )
+                    }
+
                     else -> {
                         filterGroup
                     }
@@ -687,11 +713,13 @@ class DocumentsInteractorImpl(
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
                         FilterIds.FILTER_BY_STATE_VALID -> {
-                            attributes.expiryDate?.isValid() == true
-                                    || attributes.expiryDate == null
+                            (attributes.expiryDate?.isValid() == true
+                                    || attributes.expiryDate == null)
+                                    && attributes.isRevoked == false
                         }
 
                         FilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isExpired() == true
+                        FilterIds.FILTER_BY_STATE_REVOKED -> attributes.isRevoked
                         else -> true
                     }
                 }
@@ -713,6 +741,28 @@ class DocumentsInteractorImpl(
                     )
                 }
             }
+    }
+
+    private fun addRevokedDocumentFilter(
+        documents: FilterableList,
+        filtersList: MutableList<FilterItem>
+    ): List<FilterItem> {
+        val updatedFilters = documents.items
+            .distinctBy { (it.attributes as DocumentsFilterableAttributes).isRevoked }
+            .map { filterableItem ->
+                with(filterableItem.attributes as DocumentsFilterableAttributes) {
+                    FilterItem(
+                        id = FilterIds.FILTER_BY_STATE_REVOKED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_revoked),
+                        selected = true,
+                        isDefault = true,
+                    )
+                }
+            }
+
+        filtersList.addAll(updatedFilters)
+
+        return filtersList
     }
 
     private fun addIssuerFilter(documents: FilterableList): List<FilterItem> {

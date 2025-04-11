@@ -14,18 +14,24 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.businesslogic.extension
 
-import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
-import eu.europa.ec.corelogic.model.DocumentCategory
-import java.time.Instant
+import android.content.Intent
+import android.os.Build
+import android.os.Parcelable
+import androidx.annotation.CheckResult
 
-data class DocumentsFilterableAttributes(
-    override val searchTags: List<String>,
-    val name: String,
-    val expiryDate: Instant?,
-    val issuedDate: Instant?,
-    val issuer: String?,
-    val category: DocumentCategory,
-    val isRevoked: Boolean,
-) : FilterableAttributes
+@CheckResult
+inline fun <reified T : Parcelable> Intent?.getParcelableArrayListExtra(
+    action: String
+): List<T>? {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        this?.getParcelableArrayListExtra(
+            action,
+            T::class.java
+        )
+    } else {
+        @Suppress("DEPRECATION")
+        this?.getParcelableArrayListExtra(action)
+    }?.filterNotNull()
+}

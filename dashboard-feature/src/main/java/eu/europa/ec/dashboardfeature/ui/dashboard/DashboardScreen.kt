@@ -24,12 +24,15 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,8 +40,12 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import eu.europa.ec.businesslogic.extension.getParcelableArrayListExtra
+import eu.europa.ec.corelogic.model.RevokedDocumentPayload
+import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationBar
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationItem
+import eu.europa.ec.dashboardfeature.ui.dashboard.Event.CloseRevocationModal
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsScreen
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsViewModel
 import eu.europa.ec.dashboardfeature.ui.home.HomeScreen
@@ -46,7 +53,12 @@ import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
 import eu.europa.ec.dashboardfeature.ui.sidemenu.SideMenuScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
+import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
@@ -57,6 +69,7 @@ import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     hostNavController: NavController,
@@ -68,6 +81,9 @@ fun DashboardScreen(
     val context = LocalContext.current
     val bottomNavigationController = rememberNavController()
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     Scaffold(
         bottomBar = { BottomNavigationBar(bottomNavigationController) }
@@ -101,6 +117,32 @@ fun DashboardScreen(
                 TransactionsScreen(
                     hostNavController,
                     transactionsViewModel
+                )
+            }
+        }
+
+        if (state.showRevokedDialog) {
+            WrapModalBottomSheet(
+                onDismissRequest = {
+                    viewModel.setEvent(
+                        CloseRevocationModal
+                    )
+                },
+                sheetState = bottomSheetState
+            ) {
+                BottomSheetWithOptionsList(
+                    textData = BottomSheetTextData(
+                        title = stringResource(
+                            id = R.string.dashboard_bottom_sheet_revoked_document_dialog_title
+                        ),
+                        message = stringResource(
+                            id = R.string.dashboard_bottom_sheet_revoked_document_dialog_subtitle
+                        ),
+                    ),
+                    options = state.revokedDialogOptions,
+                    onEventSent = {
+                        viewModel.setEvent(it)
+                    },
                 )
             }
         }
@@ -146,12 +188,26 @@ fun DashboardScreen(
             }
         }.collect()
     }
+
+    SystemBroadcastReceiver(
+        actions = listOf(
+            CoreActions.REVOCATION_WORK_MESSAGE_ACTION
+        )
+    ) { intent ->
+        intent.getParcelableArrayListExtra<RevokedDocumentPayload>(
+            action = CoreActions.REVOCATION_IDS_EXTRA
+        )?.let {
+            viewModel.setEvent(
+                Event.ShowRevocationModal(it)
+            )
+        }
+    }
 }
 
 private fun handleNavigationEffect(
     navigationEffect: Effect.Navigation,
     navController: NavController,
-    context: Context
+    context: Context,
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> context.finish()
