@@ -31,6 +31,29 @@ import eu.europa.ec.storagelogic.model.RevokedDocument
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+/**
+ * [RevocationWorkManager] is a [CoroutineWorker] responsible for checking the revocation status of issued documents
+ * and updating the local storage and sending broadcasts when revocations are detected.
+ *
+ * It utilizes Koin for dependency injection to obtain instances of [RevokedDocumentsStorageController] and [WalletCoreDocumentsController].
+ *
+ * Key functionalities:
+ *  - Periodically retrieves all issued documents from the [WalletCoreDocumentsController].
+ *  - Checks the status of each document for revocation using [WalletCoreDocumentsController.resolveDocumentStatus].
+ *  - Identifies documents with statuses [Status.Invalid] or [Status.Suspended] as revoked.
+ *  - Stores revoked documents in the [RevokedDocumentsStorageController].
+ *  - Sends three broadcasts to notify the application about the revoked documents:
+ *      - `CoreActions.REVOCATION_WORK_MESSAGE_ACTION`: Includes a list of [RevokedDocumentPayload] with names and IDs.
+ *      - `CoreActions.REVOCATION_WORK_REFRESH_ACTION`: A general refresh action without specific data.
+ *      - `CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION`: Includes a list of revoked document IDs in `REVOCATION_IDS_DETAILS_EXTRA`.
+ *
+ *  The worker returns:
+ *      - [Result.success] if the revocation check and updates were successful.
+ *      - [Result.failure] if an [IllegalArgumentException] occurred during the process.  This indicates a configuration or data issue.
+ *
+ * @param appContext The application context.
+ * @param workerParams Parameters for the worker.
+ */
 class RevocationWorkManager(
     appContext: Context,
     workerParams: WorkerParameters,
@@ -40,7 +63,6 @@ class RevocationWorkManager(
     private val walletCoreDocumentsController: WalletCoreDocumentsController by inject()
 
     companion object {
-        private const val TAG = "RevocationWorkManager"
         const val REVOCATION_WORK_NAME = "revocationWorker"
     }
 
