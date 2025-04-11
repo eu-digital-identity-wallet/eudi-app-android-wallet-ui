@@ -24,6 +24,7 @@ import eu.europa.ec.eudi.rqesui.infrastructure.config.DocumentRetrievalConfig
 import eu.europa.ec.eudi.rqesui.infrastructure.config.EudiRQESUiConfig
 import eu.europa.ec.eudi.rqesui.infrastructure.config.RqesServiceConfig
 import eu.europa.ec.eudi.rqesui.infrastructure.config.data.QtspData
+import eu.europa.ec.resourceslogic.R
 import java.net.URI
 
 class RQESConfigImpl(val context: Context) : EudiRQESUiConfig {
@@ -48,5 +49,16 @@ class RQESConfigImpl(val context: Context) : EudiRQESUiConfig {
     override val printLogs: Boolean get() = BuildConfig.DEBUG
 
     override val documentRetrievalConfig: DocumentRetrievalConfig
-        get() = DocumentRetrievalConfig.NoValidation
+        get() = DocumentRetrievalConfig.X509Certificates(
+            context,
+            listOf(
+                R.raw.pidissuerca02_cz,
+                R.raw.pidissuerca02_ee,
+                R.raw.pidissuerca02_eu,
+                R.raw.pidissuerca02_lu,
+                R.raw.pidissuerca02_nl,
+                R.raw.pidissuerca02_pt,
+                R.raw.pidissuerca02_ut
+            )
+        )
 }
