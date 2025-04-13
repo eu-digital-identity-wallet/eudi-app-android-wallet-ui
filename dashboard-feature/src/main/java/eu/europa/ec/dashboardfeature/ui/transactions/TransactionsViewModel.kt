@@ -116,7 +116,6 @@ sealed class Effect : ViewSideEffect {
     data object ShowBottomSheet : Effect()
     data object CloseBottomSheet : Effect()
     data object ShowDatePickerDialog : Effect()
-    data object ResumeOnApplyFilter : Effect()
 }
 
 sealed class TransactionsBottomSheetContent {
@@ -188,11 +187,6 @@ class TransactionsViewModel(
             }
 
             is Event.BottomSheet.UpdateBottomSheetState -> {
-                if (viewState.value.sheetContent is TransactionsBottomSheetContent.Filters
-                    && !event.isOpen
-                ) {
-                    setEffect { Effect.ResumeOnApplyFilter }
-                }
                 revertFilters(event.isOpen)
             }
 
@@ -425,7 +419,7 @@ class TransactionsViewModel(
                                     onRetry = { setEvent(event) },
                                     errorSubTitle = response.error,
                                     onCancel = {
-                                        setState { copy(error = null) } //TODO is this ok? Do we also want to Pop?
+                                        setState { copy(error = null) }
                                     }
                                 )
                             )

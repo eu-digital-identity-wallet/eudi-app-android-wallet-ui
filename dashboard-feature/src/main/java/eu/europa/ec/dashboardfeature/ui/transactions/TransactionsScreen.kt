@@ -310,10 +310,6 @@ private fun Content(
                     onEventSend(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
                 }
 
-                is Effect.ResumeOnApplyFilter -> {
-                    // TODO check if needed
-                }
-
                 is Effect.ShowDatePickerDialog -> {
                     onEventSend(Event.DatePickerDialog.UpdateDialogState(isVisible = true))
                 }
