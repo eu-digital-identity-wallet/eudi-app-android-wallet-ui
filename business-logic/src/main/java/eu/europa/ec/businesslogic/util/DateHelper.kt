@@ -57,6 +57,19 @@ fun String.toDateFormatted(
     return formattedDate?.let { dateFormat.format(it) }
 }
 
+fun LocalDate.toDateFormatted(
+    selectedLanguage: String = LocaleUtils.DEFAULT_LOCALE,
+    dateFormatStyle: Int = DateFormat.MEDIUM
+): String? {
+    return try {
+        val locale = LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
+        val dateFormat = DateFormat.getDateInstance(dateFormatStyle, locale)
+        dateFormat.format(Date.from(this.atStartOfDay(ZoneId.systemDefault()).toInstant()))
+    } catch (e: Exception) {
+        null
+    }
+}
+
 fun String.toLocalDate(
     selectedLanguage: String = LocaleUtils.DEFAULT_LOCALE,
 ): LocalDate? {
