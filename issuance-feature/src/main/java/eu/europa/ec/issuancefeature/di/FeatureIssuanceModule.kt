@@ -64,9 +64,13 @@ fun provideDocumentDetailsInteractor(
 
 @Factory
 fun provideTransactionDetailsInteractor(
+    walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
 ): TransactionDetailsInteractor =
-    TransactionDetailsInteractorImpl(resourceProvider)
+    TransactionDetailsInteractorImpl(
+        walletCoreDocumentsController,
+        resourceProvider,
+    )
 
 @Factory
 fun provideDocumentIssuanceSuccessInteractor(

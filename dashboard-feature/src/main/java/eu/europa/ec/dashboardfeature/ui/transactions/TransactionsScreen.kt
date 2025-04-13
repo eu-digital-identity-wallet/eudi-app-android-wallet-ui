@@ -67,12 +67,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.model.TransactionUiStatus
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.model.FilterDateRangeSelectionData
 import eu.europa.ec.dashboardfeature.model.SearchItem
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
-import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
 import eu.europa.ec.eudi.rqesui.domain.util.safeLet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success

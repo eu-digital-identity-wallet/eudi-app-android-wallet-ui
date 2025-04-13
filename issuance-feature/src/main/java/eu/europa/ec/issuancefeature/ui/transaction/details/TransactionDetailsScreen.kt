@@ -20,34 +20,33 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.TransactionDetailsDataSharedHolder
-import eu.europa.ec.commonfeature.model.TransactionDetailsDataSignedHolder
-import eu.europa.ec.commonfeature.model.TransactionDetailsUi
+import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsCardData
+import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsDataSharedHolder
+import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsDataSignedHolder
+import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
@@ -59,13 +58,12 @@ import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
+import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
-import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
@@ -93,8 +91,7 @@ internal fun TransactionDetailsScreen(
         contentErrorConfig = state.error,
         navigatableAction = ScreenNavigateAction.BACKABLE,
         onBack = { viewModel.setEvent(Event.Pop) },
-
-        ) { paddingValues ->
+    ) { paddingValues ->
         Content(
             state = state,
             onEventSend = { viewModel.setEvent(it) },
@@ -120,51 +117,55 @@ private fun Content(
     paddingValues: PaddingValues,
 ) {
     Column(
-        modifier = Modifier.padding(
-            PaddingValues(
-                top = paddingValues.calculateTopPadding(),
-                bottom = 0.dp,
-                start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                end = paddingValues.calculateStartPadding(LayoutDirection.Ltr)
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(
+                paddingValues = PaddingValues(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = 0.dp,
+                    start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+                    end = paddingValues.calculateEndPadding(LocalLayoutDirection.current)
+                )
             )
-        )
     ) {
-        state.title?.let { safeTitle ->
-            ContentTitle(
-                title = safeTitle,
+        ContentTitle(title = state.title)
+
+        state.transactionDetailsUi?.let { safeTransactionDetailsUi ->
+            TransactionDetailsCard(
+                modifier = Modifier.fillMaxWidth(),
+                item = safeTransactionDetailsUi.transactionDetailsCardData
             )
         }
 
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+                .fillMaxWidth()
+                .padding(vertical = SPACING_LARGE.dp),
             verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
         ) {
-            TransactionDetailsCard(
-                item = state.transactionDetailsCardData,
-            )
 
-            if (state.transactionDetailsUi?.transactionDetailsDataSharedList?.isNotEmpty() == true) {
-                DataSharedDetails(
-                    sectionTitle = state.detailsDataSharedSection,
-                    dataSharedList = state.transactionDetailsUi.transactionDetailsDataSharedList,
-                    onEventSend = onEventSend
+            state.transactionDetailsUi?.transactionDetailsDataShared?.let { safeTransactionDetailsDataShared ->
+                ExpandableDataSection(
+                    modifier = Modifier.fillMaxWidth(),
+                    sectionTitle = stringResource(R.string.transaction_details_data_shared_section_title),
+                    dataItems = safeTransactionDetailsDataShared.dataSharedItems,
+                    onEventSend = onEventSend,
                 )
             }
 
             state.transactionDetailsUi?.transactionDetailsDataSigned?.dataSignedItems?.let { safeDataSignedItems ->
-                DataSignedDetails(
-                    sectionTitle = state.detailsDataSignedSection,
-                    dataSigned = safeDataSignedItems,
-                    onEventSend = onEventSend
+                ExpandableDataSection(
+                    modifier = Modifier.fillMaxWidth(),
+                    sectionTitle = stringResource(R.string.transaction_details_data_signed_section_title),
+                    dataItems = safeDataSignedItems,
+                    onEventSend = onEventSend,
                 )
             }
-
-            ButtonsSection(
-                onEventSend = onEventSend
-            )
         }
+
+        // TODO Show again, once functionality has been added
+        /*ButtonsSection(onEventSend = onEventSend)*/
     }
 
     LaunchedEffect(Unit) {
@@ -194,14 +195,6 @@ private fun handleNavigationEffect(
     }
 }
 
-data class TransactionDetailsCardData(
-    val transactionItemLabel: String,
-    val transactionType: String,
-    val relyingPartyName: String,
-    val transactionDate: String,
-    val status: String,
-    val isVerified: Boolean = false
-)
 
 @Composable
 private fun TransactionDetailsCard(
@@ -210,148 +203,115 @@ private fun TransactionDetailsCard(
 ) {
     WrapCard(
         modifier = modifier,
-        throttleClicks = true,
-        shape = RoundedCornerShape(SIZE_SMALL.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(SPACING_MEDIUM.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
+            verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
         ) {
-            Column {
-                Text(
-                    text = item.transactionType,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
-                ) {
+            Text(
+                text = item.transactionTypeLabel,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Start)
+            ) {
+                item.relyingPartyName?.let { safeRelyingPartyName ->
                     Text(
-                        text = item.transactionItemLabel,
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .weight(weight = 1f, fill = false),
+                        text = safeRelyingPartyName,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.Normal
                     )
-                    if (item.isVerified) {
-                        WrapIcon(
-                            iconData = AppIcons.Certified,
-                            customTint = MaterialTheme.colorScheme.success
-                        )
-                    }
                 }
 
-                Text(
-                    text = item.relyingPartyName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                VSpacer.Medium()
-                Text(
-                    text = stringResource(R.string.transaction_details_screen_card_date_label),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = item.transactionDate,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Normal
-                )
+                if (item.relyingPartyIsVerified == true) {
+                    WrapIcon(
+                        iconData = AppIcons.Certified,
+                        customTint = MaterialTheme.colorScheme.success
+                    )
+                }
             }
 
-            WrapChip(
-                modifier = Modifier,
-                label = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                ) {
                     Text(
-                        text = item.status,
-                        style = MaterialTheme.typography.labelLarge,
+                        text = stringResource(R.string.transaction_details_screen_card_date_label),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = item.transactionDate,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                WrapChip(
+                    modifier = Modifier,
+                    label = {
+                        Text(
+                            text = item.transactionStatusLabel,
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                    },
+                    colors = InputChipDefaults.inputChipColors(
+                        containerColor = MaterialTheme.colorScheme.success,
+                        labelColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                    ),
+                    border = null,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExpandableDataSection(
+    modifier: Modifier,
+    sectionTitle: String,
+    dataItems: List<ExpandableListItem.NestedListItemData>,
+    onEventSend: (Event) -> Unit
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        SectionTitle(
+            modifier = Modifier.fillMaxWidth(),
+            text = sectionTitle,
+        )
+
+        dataItems.forEach { sharedDocument ->
+            WrapExpandableListItem(
+                modifier = Modifier.fillMaxWidth(),
+                header = sharedDocument.header,
+                data = sharedDocument.nestedItems,
+                onItemClick = null,
+                onExpandedChange = {
+                    onEventSend(
+                        Event.ExpandOrCollapseGroupItem(itemId = it.itemId)
                     )
                 },
-                colors = InputChipDefaults.inputChipColors(
-                    containerColor = MaterialTheme.colorScheme.success,
-                    labelColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                ),
-                border = null,
-            )
-        }
-    }
-}
-
-@Composable
-private fun DataSharedDetails(
-    sectionTitle: String,
-    onEventSend: (Event) -> Unit,
-    dataSharedList: List<TransactionDetailsDataSharedHolder>
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
-    ) {
-        SectionTitle(
-            modifier = Modifier.fillMaxWidth(),
-            text = sectionTitle,
-        )
-
-        dataSharedList.forEach { sharedAttestation ->
-            var expandCollapseState by remember { mutableStateOf(false) }
-            WrapExpandableListItem(
-                header = sharedAttestation.dataSharedItems.header,
-                data = sharedAttestation.dataSharedItems.nestedItems,
-                onItemClick = null,
-                modifier = Modifier.fillMaxWidth(),
+                isExpanded = sharedDocument.isExpanded,
                 collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                 expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                isExpanded = expandCollapseState,
-                onExpandedChange = {
-                    expandCollapseState = !expandCollapseState
-                    onEventSend(
-                        Event.ExpandOrCollapseTransactionDataSharedItem(itemId = "id")
-                    )
-                }
             )
         }
-    }
-}
-
-@Composable
-private fun DataSignedDetails(
-    sectionTitle: String,
-    onEventSend: (Event) -> Unit,
-    dataSigned: ExpandableListItem.NestedListItemData
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
-    ) {
-        SectionTitle(
-            modifier = Modifier.fillMaxWidth(),
-            text = sectionTitle,
-        )
-        var expandCollapseState by remember { mutableStateOf(false) }
-        WrapExpandableListItem(
-            header = dataSigned.header,
-            data = dataSigned.nestedItems,
-            onItemClick = null,
-            modifier = Modifier.fillMaxWidth(),
-            collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-            expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-            isExpanded = expandCollapseState,
-            onExpandedChange = {
-                expandCollapseState = !expandCollapseState
-                onEventSend(
-                    Event.ExpandOrCollapseTransactionDataSharedItem(itemId = "id")
-                )
-            }
-        )
     }
 }
 
@@ -360,9 +320,7 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(
-                bottom = SPACING_MEDIUM.dp
-            ),
+            .padding(bottom = SPACING_MEDIUM.dp),
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)) {
@@ -415,17 +373,18 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
     }
 }
 
-@Composable
 @ThemeModePreviews
-private fun PreviewTransactionDetailsCard() {
+@Composable
+private fun PreviewTransactionDetailsCard(
+    @PreviewParameter(TextLengthPreviewProvider::class) text: String
+) {
     PreviewTheme {
         val transactionDetailsCardData = TransactionDetailsCardData(
-            transactionType = "e-Signature/data sharing",
-            transactionItemLabel = "File_signed.pdf or\nAttestation label",
-            relyingPartyName = "SecureSign Inc.",
+            transactionTypeLabel = "Data sharing",
+            relyingPartyName = "RP name $text",
             transactionDate = "21 January 2025",
-            status = "Completed",
-            isVerified = true
+            transactionStatusLabel = "Completed",
+            relyingPartyIsVerified = true
         )
 
         TransactionDetailsCard(
@@ -434,60 +393,55 @@ private fun PreviewTransactionDetailsCard() {
     }
 }
 
-@Composable
 @ThemeModePreviews
+@Composable
 private fun ContentPreview() {
-    val items = ExpandableListItem.NestedListItemData(
-        header = ListItemData(
-            itemId = "0",
-            mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
-            supportingText = "View Details",
-            trailingContentData = ListItemTrailingContentData.Icon(
-                iconData = AppIcons.KeyboardArrowDown
+    val items = listOf(
+        ExpandableListItem.NestedListItemData(
+            header = ListItemData(
+                itemId = "0",
+                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+                supportingText = "View Details",
+                trailingContentData = ListItemTrailingContentData.Icon(
+                    iconData = AppIcons.KeyboardArrowDown
+                ),
             ),
-        ),
-        nestedItems = listOf(
-            ExpandableListItem.SingleListItemData(
-                ListItemData(
-                    itemId = "1",
-                    overlineText = "Family name",
-                    mainContentData = ListItemMainContentData.Text(text = "Doe"),
+            nestedItems = listOf(
+                ExpandableListItem.SingleListItemData(
+                    ListItemData(
+                        itemId = "1",
+                        overlineText = "Family name",
+                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                    )
+                ),
+                ExpandableListItem.SingleListItemData(
+                    ListItemData(
+                        itemId = "2",
+                        overlineText = "Given name",
+                        mainContentData = ListItemMainContentData.Text(text = "John"),
+                    )
                 )
             ),
-            ExpandableListItem.SingleListItemData(
-                ListItemData(
-                    itemId = "2",
-                    overlineText = "Given name",
-                    mainContentData = ListItemMainContentData.Text(text = "John"),
-                )
-            )
-        ),
-        isExpanded = true
+            isExpanded = true
+        )
     )
-    val mockedDataSharedList = listOf(
-        TransactionDetailsDataSharedHolder(dataSharedItems = items),
-        TransactionDetailsDataSharedHolder(dataSharedItems = items),
-    )
-    val mockedDataSignedList = TransactionDetailsDataSignedHolder(
-        dataSignedItems = items
-    )
+    val mockedDataSharedList = TransactionDetailsDataSharedHolder(dataSharedItems = items)
+    val mockedDataSignedList = TransactionDetailsDataSignedHolder(dataSignedItems = items)
+
     val state = State(
-        transactionDetailsCardData = TransactionDetailsCardData(
-            transactionItemLabel = "File_signed.pdf",
-            transactionType = "SecureSign Inc.",
-            transactionDate = "21 January 2025",
-            relyingPartyName = "Verisign",
-            status = "Completed",
-            isVerified = true
-        ),
+        title = stringResource(R.string.transaction_details_screen_title),
         transactionDetailsUi = TransactionDetailsUi(
             transactionId = "id",
-            transactionName = "Transaction",
-            transactionDetailsDataSharedList = mockedDataSharedList,
+            transactionDetailsCardData = TransactionDetailsCardData(
+                transactionTypeLabel = "Presentation",
+                transactionDate = "21 January 2025",
+                relyingPartyName = "Verisign",
+                transactionStatusLabel = "Completed",
+                relyingPartyIsVerified = true
+            ),
+            transactionDetailsDataShared = mockedDataSharedList,
             transactionDetailsDataSigned = mockedDataSignedList
-        ),
-        detailsDataSharedSection = stringResource(R.string.transaction_details_data_shared),
-        detailsDataSignedSection = stringResource(R.string.transaction_details_data_signed),
+        )
     )
 
     PreviewTheme {

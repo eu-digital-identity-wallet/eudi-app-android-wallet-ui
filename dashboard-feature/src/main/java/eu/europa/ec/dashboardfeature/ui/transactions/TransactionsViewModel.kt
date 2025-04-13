@@ -406,8 +406,6 @@ class TransactionsViewModel(
                             interactor.updateLists(filterableList = response.allTransactions)
                         }
 
-                        interactor.initializeFilters(filterableList = response.allTransactions)
-
                         interactor.applyFilters()
 
                         setState {

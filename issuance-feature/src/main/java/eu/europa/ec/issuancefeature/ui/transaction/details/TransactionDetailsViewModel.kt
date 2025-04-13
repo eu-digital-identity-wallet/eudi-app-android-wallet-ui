@@ -17,13 +17,15 @@
 package eu.europa.ec.issuancefeature.ui.transaction.details
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.model.TransactionDetailsUi
-import eu.europa.ec.commonfeature.ui.transaction_details.transformer.transformToTransactionDetailsUi
 import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractor
 import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractorPartialState
+import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
+import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -34,23 +36,21 @@ import org.koin.core.annotation.InjectedParam
 
 data class State(
     val isLoading: Boolean = false,
-    val title: String? = null,
     val error: ContentErrorConfig? = null,
-    val detailsDataSharedSection: String,
-    val detailsDataSignedSection: String,
-    val transactionDetailsCardData: TransactionDetailsCardData,
+
+    val title: String,
     val transactionDetailsUi: TransactionDetailsUi? = null,
 ) : ViewState
 
 sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
-    data object PrimaryButtonPressed : Event()
-    data object SecondaryButtonPressed : Event()
     data object DismissError : Event()
 
-    data class ExpandOrCollapseTransactionDataSharedItem(val itemId: String) : Event()
-    data object ExpandOrCollapseTransactionDataSignedItem : Event()
+    data class ExpandOrCollapseGroupItem(val itemId: String) : Event()
+
+    data object PrimaryButtonPressed : Event()
+    data object SecondaryButtonPressed : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -72,16 +72,6 @@ internal class TransactionDetailsViewModel(
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
         title = resourceProvider.getString(R.string.transaction_details_screen_title),
-        detailsDataSharedSection = resourceProvider.getString(R.string.transaction_details_data_shared),
-        detailsDataSignedSection = resourceProvider.getString(R.string.transaction_details_data_signed),
-        transactionDetailsCardData = TransactionDetailsCardData(
-            transactionType = "e-Signature",
-            transactionItemLabel = "File_signed.pdf",
-            relyingPartyName = "Central issuer",
-            transactionDate = "16 February 2024",
-            status = "Completed",
-            isVerified = true
-        )
     )
 
     override fun handleEvents(event: Event) {
@@ -90,7 +80,10 @@ internal class TransactionDetailsViewModel(
                 getTransactionDetails(event)
             }
 
-            is Event.DismissError -> TODO()
+            is Event.DismissError -> {
+                setState { copy(error = null) }
+            }
+
             is Event.Pop -> {
                 setState { copy(error = null) }
                 setEffect { Effect.Navigation.Pop }
@@ -104,8 +97,9 @@ internal class TransactionDetailsViewModel(
                 interactor.reportSuspiciousTransaction(transactionId = transactionId)
             }
 
-            is Event.ExpandOrCollapseTransactionDataSharedItem -> {}
-            is Event.ExpandOrCollapseTransactionDataSignedItem -> {}
+            is Event.ExpandOrCollapseGroupItem -> {
+                expandOrCollapseGroupItem(event.itemId)
+            }
         }
     }
 
@@ -123,15 +117,11 @@ internal class TransactionDetailsViewModel(
             ).collect { response ->
                 when (response) {
                     is TransactionDetailsInteractorPartialState.Success -> {
-                        val detailsUiTitle =
-                            response.detailsTitle
-                        val transactionDetailsUi =
-                            response.transactionDetailsDomain.transformToTransactionDetailsUi()
+                        val transactionDetailsUi = response.transactionDetailsUi
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                title = detailsUiTitle,
                                 transactionDetailsUi = transactionDetailsUi
                             )
                         }
@@ -153,4 +143,49 @@ internal class TransactionDetailsViewModel(
             }
         }
     }
+
+    private fun expandOrCollapseGroupItem(itemId: String) {
+        viewState.value.transactionDetailsUi?.let { safeTransactionDetailsUi ->
+
+            val updatedItems =
+                safeTransactionDetailsUi.transactionDetailsDataShared.dataSharedItems.map { dataSharedItem ->
+                    val newHeader = if (dataSharedItem.header.itemId == itemId) {
+                        val newIsExpanded = !dataSharedItem.isExpanded
+                        val newCollapsed = dataSharedItem.header.copy(
+                            trailingContentData = ListItemTrailingContentData.Icon(
+                                iconData = if (newIsExpanded) {
+                                    AppIcons.KeyboardArrowUp
+                                } else {
+                                    AppIcons.KeyboardArrowDown
+                                }
+                            )
+                        )
+
+                        dataSharedItem.copy(
+                            header = newCollapsed,
+                            isExpanded = newIsExpanded
+                        )
+                    } else {
+                        dataSharedItem
+                    }
+
+                    dataSharedItem.copy(
+                        header = newHeader.header,
+                        isExpanded = newHeader.isExpanded,
+                        nestedItems = newHeader.nestedItems.toggleExpansionState(itemId)
+                    )
+                }
+
+            setState {
+                copy(
+                    transactionDetailsUi = safeTransactionDetailsUi.copy(
+                        transactionDetailsDataShared = safeTransactionDetailsUi.transactionDetailsDataShared.copy(
+                            dataSharedItems = updatedItems
+                        )
+                    )
+                )
+            }
+        }
+    }
+
 }

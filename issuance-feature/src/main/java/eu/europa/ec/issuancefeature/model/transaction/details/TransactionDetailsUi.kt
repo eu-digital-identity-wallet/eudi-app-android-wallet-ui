@@ -14,22 +14,29 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.model
+package eu.europa.ec.issuancefeature.model.transaction.details
 
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 data class TransactionDetailsUi(
     val transactionId: String,
-    val transactionName: String,
-    val transactionIdentifier: String? = null,
-    val transactionDetailsDataSharedList: List<TransactionDetailsDataSharedHolder> = listOf(),
-    val transactionDetailsDataSigned: TransactionDetailsDataSignedHolder? = null,
+    val transactionDetailsCardData: TransactionDetailsCardData,
+    val transactionDetailsDataShared: TransactionDetailsDataSharedHolder,
+    val transactionDetailsDataSigned: TransactionDetailsDataSignedHolder?,
+)
+
+data class TransactionDetailsCardData(
+    val transactionTypeLabel: String,
+    val transactionStatusLabel: String,
+    val transactionDate: String,
+    val relyingPartyName: String?,
+    val relyingPartyIsVerified: Boolean?,
 )
 
 data class TransactionDetailsDataSharedHolder(
-    val dataSharedItems: ExpandableListItem.NestedListItemData,
+    val dataSharedItems: List<ExpandableListItem.NestedListItemData>,
 )
 
 data class TransactionDetailsDataSignedHolder(
-    val dataSignedItems: ExpandableListItem.NestedListItemData,
+    val dataSignedItems: List<ExpandableListItem.NestedListItemData>,
 )

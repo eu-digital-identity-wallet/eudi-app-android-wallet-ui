@@ -72,3 +72,30 @@ fun List<Display>.getLocalizedDisplayName(
         fallback = fallback,
     )
 }
+
+/**
+ * Retrieves the localized display name of a document based on the user's locale.
+ *
+ * This function attempts to find a localized version of the document's name
+ * within the [DocumentMetaData.display] property of the [DocumentMetaData] object. If a localized
+ * version matching the user's locale is found, it is returned. If no matching
+ * localized version is found, a fallback string is returned instead.
+ *
+ * @param userLocale The user's locale, used to find a matching localized name.
+ * @param fallback The string to return if no matching localized name is found.
+ * @return The localized document name, or the fallback string if no matching localized name is available.
+ * If [DocumentMetaData] or its display is null, it will return the [fallback].
+ *
+ * @see getLocalizedString
+ */
+fun DocumentMetaData?.getLocalizedDocumentName(
+    userLocale: Locale,
+    fallback: String,
+): String{
+    return this?.display.getLocalizedString(
+        userLocale = userLocale,
+        localeExtractor = { it.locale },
+        stringExtractor = { it.name },
+        fallback = fallback,
+    )
+}

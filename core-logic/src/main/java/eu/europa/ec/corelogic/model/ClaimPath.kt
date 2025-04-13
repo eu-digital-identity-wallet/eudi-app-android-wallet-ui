@@ -33,6 +33,10 @@ data class ClaimPath(val value: List<String>) {
                 .split(PATH_SEPARATOR)
                 .drop(1)
         }
+
+        fun List<String>.toClaimPath(): ClaimPath {
+            return ClaimPath(value = this)
+        }
     }
 
     val joined: String

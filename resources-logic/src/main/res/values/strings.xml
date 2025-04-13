@@ -347,9 +347,11 @@
     <string name="transaction_details_report_transaction_message">If you believe this relying party has unlawfully requested personal data, you can report this transaction to the authorities.</string>
     <string name="transaction_details_request_deletion_button">Request data deletion</string>
     <string name="transaction_details_report_transaction_button">Report suspicious transaction</string>
-    <string name="transaction_details_data_shared">DATA SHARED</string>
-    <string name="transaction_details_data_signed">DATA SIGNED</string>
-    <string name="transactions_screen_details_section_view_details">@string/generic_view_details</string>
+    <string name="transaction_details_data_shared_section_title">DATA SHARED</string>
+    <string name="transaction_details_data_shared_prefix_id">transactionDetailsDataSharedId</string>
+    <string name="transaction_details_data_signed_section_title">DATA SIGNED</string>
+    <string name="transaction_details_data_signed_prefix_id">transactionDetailsDataSignedId</string>
+    <string name="transaction_details_collapsed_supporting_text">@string/generic_view_details</string>
 
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Present document in person</string>

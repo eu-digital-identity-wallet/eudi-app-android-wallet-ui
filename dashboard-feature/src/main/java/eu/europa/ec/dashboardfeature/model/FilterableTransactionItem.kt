@@ -17,6 +17,8 @@
 package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
+import eu.europa.ec.commonfeature.model.TransactionUiStatus
+import eu.europa.ec.commonfeature.model.TransactionUiType
 import java.time.Instant
 
 data class TransactionsFilterableAttributes(

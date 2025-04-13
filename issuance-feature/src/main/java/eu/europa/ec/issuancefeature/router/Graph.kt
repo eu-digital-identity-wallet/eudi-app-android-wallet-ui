@@ -103,7 +103,12 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         // Transaction Details
         composable(
             route = IssuanceScreens.TransactionDetails.screenRoute,
-            // deepLinks = listOf() TODO
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + IssuanceScreens.TransactionDetails.screenRoute
+                }
+            ),
             arguments = listOf(
                 navArgument("transactionId") {
                     type = NavType.StringType

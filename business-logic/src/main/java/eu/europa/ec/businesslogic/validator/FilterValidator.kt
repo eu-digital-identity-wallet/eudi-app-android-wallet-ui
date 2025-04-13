@@ -456,31 +456,55 @@ class FilterValidatorImpl(
         val existingFilters = existingFilterGroup.filters
         val mergedFilters = mutableListOf<FilterElement>()
 
+        // Iterate over the filters in the new group to merge selection states from existing filters
         newFilters.forEach { newFilter ->
             val existingFilter = existingFilters.find { it.id == newFilter.id }
-            if (existingFilter != null && newFilter is FilterItem) {
-                // Filter exists in both, copy selection state
-                mergedFilters.add(newFilter.copy(selected = existingFilter.selected))
+
+            if (existingFilter != null) {
+                // Filter exists in both new and existing groups, copy selection state
+                when (newFilter) {
+                    is FilterItem -> {
+                        // For simple filters, just copy selection state
+                        mergedFilters.add(newFilter.copy(selected = existingFilter.selected))
+                    }
+
+                    is FilterElement.DateTimeRangeFilterItem -> {
+                        // Attempt to smart cast existing filter to DateTimeRangeFilterItem
+                        val existingDateFilter =
+                            existingFilter as? FilterElement.DateTimeRangeFilterItem
+                        if (existingDateFilter != null) {
+                            // Copy selection state and also preserve the selected date range
+                            mergedFilters.add(
+                                newFilter.copy(
+                                    selected = existingDateFilter.selected,
+                                    startDateTime = existingDateFilter.startDateTime,
+                                    endDateTime = existingDateFilter.endDateTime
+                                )
+                            )
+                        } else {
+                            // Fallback: type mismatch, retain new filter as-is
+                            mergedFilters.add(newFilter)
+                        }
+                    }
+                }
             } else {
-                // Filter is new, add it directly
+                // Filter is new, add it directly without any changes
                 mergedFilters.add(newFilter)
             }
         }
 
+        // Reconstruct and return the appropriate FilterGroup subtype with merged filters
         return when (newFilterGroup) {
             is FilterGroup.MultipleSelectionFilterGroup<*> -> {
                 newFilterGroup.copy(filters = mergedFilters)
             }
 
             is FilterGroup.SingleSelectionFilterGroup -> {
-                val filterItems: List<FilterItem> =
-                    mergedFilters.filterIsInstance<FilterItem>()
-                newFilterGroup.copy(filters = filterItems)
+                newFilterGroup.copy(filters = mergedFilters)
             }
 
             is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
-                val filterItems = filterByInstanceType(mergedFilters)
-                newFilterGroup.copy(filters = filterItems)
+                newFilterGroup.copy(filters = mergedFilters)
             }
 
             is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
@@ -489,7 +513,4 @@ class FilterValidatorImpl(
         }
     }
 
-    private fun filterByInstanceType(list: List<FilterElement>): List<FilterItem> {
-        return list.filterIsInstance<FilterItem>()
-    }
 }
