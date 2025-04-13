@@ -48,9 +48,6 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
 
     data class ExpandOrCollapseGroupItem(val itemId: String) : Event()
-
-    data object PrimaryButtonPressed : Event()
-    data object SecondaryButtonPressed : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -87,14 +84,6 @@ internal class TransactionDetailsViewModel(
             is Event.Pop -> {
                 setState { copy(error = null) }
                 setEffect { Effect.Navigation.Pop }
-            }
-
-            is Event.PrimaryButtonPressed -> {
-                interactor.requestDataDeletion(transactionId = transactionId)
-            }
-
-            is Event.SecondaryButtonPressed -> {
-                interactor.reportSuspiciousTransaction(transactionId = transactionId)
             }
 
             is Event.ExpandOrCollapseGroupItem -> {

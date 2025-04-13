@@ -64,16 +64,11 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.wrap.ButtonConfig
-import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
-import eu.europa.ec.uilogic.component.wrap.TextConfig
-import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapChip
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
-import eu.europa.ec.uilogic.component.wrap.WrapText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
@@ -163,9 +158,6 @@ private fun Content(
                 )
             }
         }
-
-        // TODO Show again, once functionality has been added
-        /*ButtonsSection(onEventSend = onEventSend)*/
     }
 
     LaunchedEffect(Unit) {
@@ -311,64 +303,6 @@ private fun ExpandableDataSection(
                 collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
                 expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
             )
-        }
-    }
-}
-
-@Composable
-private fun ButtonsSection(onEventSend: (Event) -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = SPACING_MEDIUM.dp),
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)) {
-            WrapText(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.transaction_details_request_deletion_message),
-                textConfig = TextConfig(
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-            )
-            WrapButton(
-                modifier = Modifier.fillMaxWidth(),
-                buttonConfig = ButtonConfig(
-                    type = ButtonType.SECONDARY,
-                    onClick = { onEventSend(Event.PrimaryButtonPressed) },
-                    isWarning = true,
-                )
-            ) {
-                Text(
-                    text = stringResource(R.string.transaction_details_request_deletion_button),
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)) {
-            WrapText(
-                modifier = Modifier.fillMaxWidth(),
-                text = stringResource(R.string.transaction_details_report_transaction_message),
-                textConfig = TextConfig(
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-            )
-            WrapButton(
-                modifier = Modifier.fillMaxWidth(),
-                buttonConfig = ButtonConfig(
-                    type = ButtonType.SECONDARY,
-                    onClick = { onEventSend(Event.SecondaryButtonPressed) },
-                    isWarning = false,
-                )
-            ) {
-                Text(
-                    text = stringResource(R.string.transaction_details_report_transaction_button),
-                    style = MaterialTheme.typography.labelLarge
-                )
-            }
         }
     }
 }
