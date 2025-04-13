@@ -24,6 +24,8 @@ import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.ClaimPath
+import eu.europa.ec.corelogic.model.ClaimPath.Companion.isPrefixOf
+import eu.europa.ec.corelogic.model.ClaimPath.Companion.toClaimPath
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
@@ -64,7 +66,7 @@ object RequestTransformer {
 
             val filteredPaths = claimsPaths.filter { available ->
                 requestedItemsPaths.any { requested ->
-                    available.joined.startsWith(requested.joined)
+                    requested.isPrefixOf(available)
                 }
             }
 
@@ -178,8 +180,8 @@ object RequestTransformer {
 
 fun DocItem.toClaimPath(): ClaimPath {
     return when (this) {
-        is MsoMdocItem -> return ClaimPath(listOf(this.elementIdentifier))
-        is SdJwtVcItem -> return ClaimPath(this.path)
-        else -> ClaimPath(emptyList())
-    }
+        is MsoMdocItem -> listOf(this.elementIdentifier)
+        is SdJwtVcItem -> this.path
+        else -> emptyList()
+    }.toClaimPath()
 }
