@@ -38,6 +38,8 @@ dependencies {
     implementation(project(LibraryModule.AuthenticationLogic.path))
 
     implementation(libs.androidx.biometric)
+
+    testImplementation(project(LibraryModule.TestLogic.path))
 }
 
 excludeFromKoverReport(

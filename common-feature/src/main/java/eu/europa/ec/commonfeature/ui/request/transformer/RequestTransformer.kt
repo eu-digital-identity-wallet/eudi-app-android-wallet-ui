@@ -22,13 +22,12 @@ import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
+import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.ClaimPath.Companion.isPrefixOf
-import eu.europa.ec.corelogic.model.ClaimPath.Companion.toClaimPath
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
-import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -176,12 +175,4 @@ object RequestTransformer {
 
         return DisclosedDocuments(disclosedDocuments)
     }
-}
-
-fun DocItem.toClaimPath(): ClaimPath {
-    return when (this) {
-        is MsoMdocItem -> listOf(this.elementIdentifier)
-        is SdJwtVcItem -> this.path
-        else -> emptyList()
-    }.toClaimPath()
 }
