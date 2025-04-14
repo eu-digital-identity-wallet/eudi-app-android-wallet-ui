@@ -279,7 +279,7 @@
     <string name="transactions_screen_title">Transactions</string>
     <string name="transactions_screen_search_label">Search Transactions</string>
     <string name="transactions_screen_search_no_results_id">noTransactionsId</string>
-    <string name="transactions_screen_search_no_results">No transactions match your search. Try changing your search query or filters.</string>
+    <string name="transactions_screen_search_no_results">No transactions found. Try changing your search query or filters.</string>
     <string name="transactions_screen_minutes_ago_message">%1$s minutes ago</string>
     <string name="transactions_screen_text_field_date_pattern">dd/mm/yyyy</string>
 
