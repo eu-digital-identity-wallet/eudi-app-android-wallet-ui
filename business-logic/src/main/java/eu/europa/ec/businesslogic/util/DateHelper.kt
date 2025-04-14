@@ -27,7 +27,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.Date
-import java.util.Locale
 
 private val dtoDateFormatters = listOf(
     "yyyy-MM-dd'T'HH:mm:ss.SSS",
@@ -37,18 +36,37 @@ private val dtoDateFormatters = listOf(
     "yyyy-MM-dd"
 )
 
+private const val DAY_MONTH_YEAR_SHORT_PATTERN = "dd MMM yyyy"
+private const val FULL_DATETIME_PATTERN = "dd MMM yyyy hh:mm a"
+private const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
+private const val MONTH_YEAR_DATETIME_PATTERN = "MMMM yyyy"
+private const val DAY_MONTH_YEAR_TEXT_FIELD_PATTERN = "dd/MM/yyyy"
+
+val fullDateTimeFormatter: DateTimeFormatter = DateTimeFormatter
+    .ofPattern(FULL_DATETIME_PATTERN)
+    .withLocale(LocaleUtils.getLocaleFromSelectedLanguage(LocaleUtils.PROJECT_DEFAULT_LOCALE))
+
+val hoursMinutesFormatter: DateTimeFormatter = DateTimeFormatter
+    .ofPattern(HOURS_MINUTES_DATETIME_PATTERN)
+    .withLocale(LocaleUtils.getLocaleFromSelectedLanguage(LocaleUtils.PROJECT_DEFAULT_LOCALE))
+
+val monthYearFormatter: DateTimeFormatter = DateTimeFormatter
+    .ofPattern(MONTH_YEAR_DATETIME_PATTERN)
+    .withLocale(LocaleUtils.getLocaleFromSelectedLanguage(LocaleUtils.PROJECT_DEFAULT_LOCALE))
+
 fun String.toDateFormatted(
-    selectedLanguage: String = LocaleUtils.DEFAULT_LOCALE,
+    selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
     dateFormatStyle: Int = DateFormat.MEDIUM,
 ): String? {
     var formattedDate: Date? = null
+    val locale = LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
     val dateFormat = SimpleDateFormat.getDateInstance(
         dateFormatStyle,
-        LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
+        locale
     )
     for (formatter in dtoDateFormatters) {
         try {
-            formattedDate = SimpleDateFormat(formatter, Locale.ENGLISH).parse(this)
+            formattedDate = SimpleDateFormat(formatter, locale).parse(this)
             break
         } catch (_: Exception) {
             continue
@@ -58,7 +76,7 @@ fun String.toDateFormatted(
 }
 
 fun LocalDate.toDateFormatted(
-    selectedLanguage: String = LocaleUtils.DEFAULT_LOCALE,
+    selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
     dateFormatStyle: Int = DateFormat.MEDIUM
 ): String? {
     return try {
@@ -71,7 +89,7 @@ fun LocalDate.toDateFormatted(
 }
 
 fun String.toLocalDate(
-    selectedLanguage: String = LocaleUtils.DEFAULT_LOCALE,
+    selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
 ): LocalDate? {
     var dateFormatter: DateTimeFormatter?
     var result: LocalDate? = null
@@ -99,9 +117,12 @@ fun Long.toLocalDate(): LocalDate {
 
 fun Instant.formatInstant(
     zoneId: ZoneId = ZoneId.systemDefault(),
-    locale: Locale = Locale.ENGLISH
+    selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
 ): String {
-    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy", locale)
+    val formatter = DateTimeFormatter.ofPattern(
+        DAY_MONTH_YEAR_SHORT_PATTERN,
+        LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
+    )
         .withZone(zoneId)
     return formatter.format(this)
 }
@@ -147,9 +168,12 @@ fun LocalDateTime.endOfMonth(): LocalDateTime =
 
 fun String.toInstantOrNull(
     pattern: String = FULL_DATETIME_PATTERN,
-    locale: Locale = Locale.getDefault()
+    selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
 ): Instant? = runCatching {
-    val formatter = DateTimeFormatter.ofPattern(pattern, locale)
+    val formatter = DateTimeFormatter.ofPattern(
+        pattern,
+        LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
+    )
     LocalDateTime.parse(this, formatter)
         .atZone(ZoneId.systemDefault())
         .toInstant()
@@ -167,8 +191,14 @@ fun Instant.plusOneDay(): Instant {
     }
 }
 
-fun convertMillisToDate(millis: Long): String {
-    val formatter = SimpleDateFormat(DAY_MONTH_YEAR_TEXT_FIELD_PATTERN, Locale.getDefault())
+fun convertMillisToDate(
+    millis: Long,
+    selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
+): String {
+    val formatter = SimpleDateFormat(
+        DAY_MONTH_YEAR_TEXT_FIELD_PATTERN,
+        LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
+    )
     return formatter.format(Date(millis))
 }
 
@@ -179,13 +209,3 @@ fun Long?.toDisplayedDate(): String {
         }
     }.orEmpty()
 }
-
-private const val FULL_DATETIME_PATTERN = "dd MMM yyyy hh:mm a"
-private const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
-private const val MONTH_YEAR_DATETIME_PATTERN = "MMMM yyyy"
-private const val DAY_MONTH_YEAR_TEXT_FIELD_PATTERN = "dd/MM/yyyy"
-
-val fullDateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(FULL_DATETIME_PATTERN)
-val hoursMinutesFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofPattern(HOURS_MINUTES_DATETIME_PATTERN)
-val monthYearFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern(MONTH_YEAR_DATETIME_PATTERN)

@@ -477,8 +477,12 @@ class TransactionsInteractorImpl(
     override fun updateSortOrder(sortOrder: SortOrder) =
         filterValidator.updateSortOrder(sortOrder)
 
-    private fun LocalDateTime.toDateTimeState(): TransactionInteractorDateTimeCategoryPartialState =
-        when {
+    private fun LocalDateTime.toDateTimeState(): TransactionInteractorDateTimeCategoryPartialState {
+        fun String.uppercaseAmPm(): String {
+            return this.replace(Regex("\\b(am|pm)\\b")) { it.value.uppercase() }
+        }
+
+        return when {
             isWithinLastHour() -> TransactionInteractorDateTimeCategoryPartialState.WithinLastHour(
                 minutes = minutesToNow()
             )
@@ -486,15 +490,16 @@ class TransactionsInteractorImpl(
             isToday() -> TransactionInteractorDateTimeCategoryPartialState.Today(
                 time = format(
                     hoursMinutesFormatter
-                )
+                ).uppercaseAmPm()
             )
 
             else -> TransactionInteractorDateTimeCategoryPartialState.WithinMonth(
                 date = format(
                     fullDateTimeFormatter
-                )
+                ).uppercaseAmPm()
             )
         }
+    }
 
     private fun Instant.toFormattedDisplayableDate(zoneId: ZoneId = ZoneId.systemDefault()): String {
         return runCatching {
