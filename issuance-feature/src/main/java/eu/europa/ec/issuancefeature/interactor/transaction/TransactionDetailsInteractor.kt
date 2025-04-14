@@ -178,7 +178,10 @@ class TransactionDetailsInteractorImpl(
                         text = presentedDocument.metadata.getLocalizedDocumentName(
                             userLocale = userLocale,
                             fallback = presentedDocument.metadata?.display?.firstOrNull()?.name
-                                ?: presentedDocument.metadata?.documentConfigurationIdentifier.orEmpty()
+                                ?: when (val format = presentedDocument.format) {
+                                    is MsoMdocFormat -> format.docType
+                                    is SdJwtVcFormat -> format.vct
+                                }
                         )
                     ),
                     supportingText = documentSupportingText,
