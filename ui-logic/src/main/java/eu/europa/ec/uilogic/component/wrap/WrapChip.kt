@@ -38,7 +38,7 @@ import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
 
 @Composable
 fun WrapChip(
-    labelText: String,
+    label: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
     enabled: Boolean = true,
@@ -59,9 +59,7 @@ fun WrapChip(
     InputChip(
         selected = selected,
         onClick = onClick,
-        label = {
-            Text(text = labelText)
-        },
+        label = label,
         modifier = modifier,
         enabled = enabled,
         leadingIcon = if (leadingIcon != null) {
@@ -101,7 +99,9 @@ private fun WrapChipPlainPreview() {
     PreviewTheme {
         WrapChip(
             modifier = Modifier.wrapContentWidth(),
-            labelText = "Label text",
+            label = {
+                Text(text = "Label text")
+            },
         )
     }
 }
@@ -112,7 +112,9 @@ private fun WrapChipWithTrailingIconPreview() {
     PreviewTheme {
         WrapChip(
             modifier = Modifier.wrapContentWidth(),
-            labelText = "Label text",
+            label = {
+                Text(text = "Label text")
+            },
             trailingIcon = AppIcons.Close
         )
     }
@@ -124,7 +126,9 @@ private fun WrapChipWithLeadingIconPreview() {
     PreviewTheme {
         WrapChip(
             modifier = Modifier.wrapContentWidth(),
-            labelText = "Label text",
+            label = {
+                Text(text = "Label text")
+            },
             leadingIcon = AppIcons.Close
         )
     }
@@ -136,7 +140,9 @@ private fun WrapChipFullPreview() {
     PreviewTheme {
         WrapChip(
             modifier = Modifier.wrapContentWidth(),
-            labelText = "Label text",
+            label = {
+                Text(text = "Label text")
+            },
             leadingIcon = AppIcons.Close,
             trailingIcon = AppIcons.Close,
         )

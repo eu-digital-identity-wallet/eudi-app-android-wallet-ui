@@ -17,6 +17,7 @@
 package eu.europa.ec.businesslogic.validator.model
 
 import eu.europa.ec.businesslogic.extension.sortByOrder
+import java.time.Instant
 
 data class Filters(
     val filterGroups: List<FilterGroup>,
@@ -37,45 +38,76 @@ data class Filters(
 sealed class FilterGroup {
     abstract val id: String
     abstract val name: String
-    abstract val filters: List<FilterItem>
+    abstract val filters: List<FilterElement>
 
     data class SingleSelectionFilterGroup(
         override val id: String,
         override val name: String,
-        override val filters: List<FilterItem>,
+        override val filters: List<FilterElement>,
+    ) : FilterGroup()
+
+    data class ReversibleSingleSelectionFilterGroup(
+        override val id: String,
+        override val name: String,
+        override val filters: List<FilterElement>,
     ) : FilterGroup()
 
     data class MultipleSelectionFilterGroup<T : FilterableAttributes>(
         override val id: String,
         override val name: String,
-        override val filters: List<FilterItem>,
+        override val filters: List<FilterElement>,
+        val filterableAction: FilterMultipleAction<T>,
+    ) : FilterGroup()
+
+    data class ReversibleMultipleSelectionFilterGroup<T : FilterableAttributes>(
+        override val id: String,
+        override val name: String,
+        override val filters: List<FilterElement>,
         val filterableAction: FilterMultipleAction<T>,
     ) : FilterGroup()
 }
 
-data class FilterItem(
-    val id: String,
-    val name: String,
-    val selected: Boolean,
-    val isDefault: Boolean = false,
-    val filterableAction: FilterAction = DefaultFilterAction,
-) {
-    companion object {
-        fun emptyFilter(): FilterItem {
-            return FilterItem(
-                id = "",
-                name = "",
-                selected = false
-            )
+sealed class FilterElement {
+    abstract val id: String
+    abstract val name: String
+    abstract val selected: Boolean
+    abstract val isDefault: Boolean
+    abstract val filterableAction: FilterAction
+
+    data class FilterItem(
+        override val id: String,
+        override val name: String,
+        override val selected: Boolean,
+        override val isDefault: Boolean = false,
+        override val filterableAction: FilterAction = DefaultFilterAction,
+    ) : FilterElement() {
+        companion object {
+            fun emptyFilter(): FilterItem {
+                return FilterItem(
+                    id = "",
+                    name = "",
+                    selected = false
+                )
+            }
         }
     }
+
+    data class DateTimeRangeFilterItem(
+        override val id: String,
+        override val name: String,
+        override val selected: Boolean,
+        override val isDefault: Boolean = false,
+        val startDateTime: Instant,
+        val endDateTime: Instant,
+        override val filterableAction: FilterAction = DefaultFilterAction,
+    ) : FilterElement()
 }
 
 data object DefaultFilterAction : FilterAction() {
     override fun applyFilter(
         sortOrder: SortOrder,
         filterableItems: FilterableList,
-        filter: FilterItem,
+        filter: FilterElement,
     ): FilterableList {
         return filterableItems
     }
@@ -89,7 +121,7 @@ sealed class SortOrder {
 }
 
 @Suppress("UNCHECKED_CAST")
-data class FilterMultipleAction<T : FilterableAttributes>(val predicate: (T, FilterItem) -> Boolean) {
+data class FilterMultipleAction<T : FilterableAttributes>(val predicate: (T, FilterElement) -> Boolean) {
     fun applyFilter(
         filterableItems: FilterableList,
         filterGroup: FilterGroup,
@@ -114,16 +146,16 @@ sealed class FilterAction {
     abstract fun applyFilter(
         sortOrder: SortOrder = SortOrder.Ascending(isDefault = true),
         filterableItems: FilterableList,
-        filter: FilterItem,
+        filter: FilterElement,
     ): FilterableList
 
     @Suppress("UNCHECKED_CAST")
-    data class Filter<T : FilterableAttributes>(val predicate: (T, FilterItem) -> Boolean) :
+    data class Filter<T : FilterableAttributes>(val predicate: (T, FilterElement) -> Boolean) :
         FilterAction() {
         override fun applyFilter(
             sortOrder: SortOrder,
             filterableItems: FilterableList,
-            filter: FilterItem,
+            filter: FilterElement,
         ): FilterableList {
             return filterableItems.copy(
                 items = filterableItems.items.filter {
@@ -147,7 +179,7 @@ sealed class FilterAction {
         override fun applyFilter(
             sortOrder: SortOrder,
             filterableItems: FilterableList,
-            filter: FilterItem,
+            filter: FilterElement,
         ): FilterableList {
             return filterableItems.copy(items = filterableItems.items.sortByOrder(sortOrder) {
                 selector(

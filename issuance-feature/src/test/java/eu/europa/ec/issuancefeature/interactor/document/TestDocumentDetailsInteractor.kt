@@ -32,8 +32,6 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.storagelogic.controller.BookmarkStorageController
-import eu.europa.ec.storagelogic.model.Bookmark
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemCall
 import eu.europa.ec.testfeature.createMockedNamespaceData
 import eu.europa.ec.testfeature.mockedBookmarkId
@@ -73,9 +71,6 @@ class TestDocumentDetailsInteractor {
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     @Mock
-    private lateinit var bookmarkStorageController: BookmarkStorageController
-
-    @Mock
     private lateinit var resourceProvider: ResourceProvider
 
     private lateinit var interactor: DocumentDetailsInteractor
@@ -88,7 +83,6 @@ class TestDocumentDetailsInteractor {
 
         interactor = DocumentDetailsInteractorImpl(
             walletCoreDocumentsController = walletCoreDocumentsController,
-            bookmarkStorageController = bookmarkStorageController,
             resourceProvider = resourceProvider,
         )
 
@@ -105,7 +99,7 @@ class TestDocumentDetailsInteractor {
 
     // Case 1:
     // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
-    // 2. bookmarkStorageController.retrieve() returns null.
+    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
 
     // Case 1 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with a PID document item and
@@ -117,7 +111,7 @@ class TestDocumentDetailsInteractor {
             mockTransformToUiItemCall(resourceProvider)
 
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
-            mockRetrieveBookmarkCall(response = null)
+            mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
             // When
@@ -141,7 +135,7 @@ class TestDocumentDetailsInteractor {
 
     // Case 2:
     // 1. walletCoreDocumentsController.getDocumentById() returns a PID document.
-    // 2. bookmarkStorageController.retrieve() returns a Bookmark.
+    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns true.
 
     // Case 2 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with a PID document item and
@@ -153,7 +147,7 @@ class TestDocumentDetailsInteractor {
             mockTransformToUiItemCall(resourceProvider)
 
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
-            mockRetrieveBookmarkCall(response = Bookmark(mockedPidWithBasicFields.id))
+            mockRetrieveBookmarkCall(response = true)
             mockIsDocumentRevoked(isRevoked = false)
 
             // When
@@ -177,7 +171,7 @@ class TestDocumentDetailsInteractor {
 
     // Case 3:
     // 1. walletCoreDocumentsController.getDocumentById() returns an mDL document.
-    // 2. bookmarkStorageController.retrieve() returns null.
+    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
 
     // Case 3 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with an mDL document item and
@@ -189,7 +183,7 @@ class TestDocumentDetailsInteractor {
             mockTransformToUiItemCall(resourceProvider)
 
             mockGetDocumentByIdCall(response = mockedMdlWithBasicFields)
-            mockRetrieveBookmarkCall(response = null)
+            mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
             // When
@@ -243,7 +237,7 @@ class TestDocumentDetailsInteractor {
     // no expiration date,
     // no image, and
     // no user name.
-    // 2. bookmarkStorageController.retrieve() returns null.
+    // 2. walletCoreDocumentsController.isDocumentBookmarked() returns false.
 
     // Case 5 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with a PID document item, with:
@@ -270,7 +264,7 @@ class TestDocumentDetailsInteractor {
                     )
                 )
             )
-            mockRetrieveBookmarkCall(response = null)
+            mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
 
             // When
@@ -613,7 +607,7 @@ class TestDocumentDetailsInteractor {
     //region storeBookmark()
     // Case 1:
     // 1. A valid bookmarkId is provided.
-    // 2. bookmarkStorageController.store() succeeds.
+    // 2. walletCoreDocumentsController.storeBookmark() succeeds.
     // Expected result:
     // DocumentDetailsInteractorStoreBookmarkPartialState.Success state is returned with the bookmarkId.
     @Test
@@ -637,7 +631,7 @@ class TestDocumentDetailsInteractor {
 
     // Case 2:
     // 1. A valid bookmarkId is provided.
-    // 2. When bookmarkStorageController.store() is called, an exception is thrown.
+    // 2. When walletCoreDocumentsController.storeBookmark() is called, an exception is thrown.
     // Expected result:
     // DocumentDetailsInteractorStoreBookmarkPartialState.Failure state is returned.
     @Test
@@ -664,7 +658,7 @@ class TestDocumentDetailsInteractor {
     //region deleteBookmark()
     // Case 1:
     // 1. A valid bookmarkId is provided.
-    // 2. bookmarkStorageController.delete() succeeds.
+    // 2. walletCoreDocumentsController.deleteBookmark() succeeds.
     // Expected result:
     // DocumentDetailsInteractorDeleteBookmarkPartialState.Success state is returned.
     @Test
@@ -686,7 +680,7 @@ class TestDocumentDetailsInteractor {
 
     // Case 2:
     // 1. A valid bookmarkId is provided for the bookmark to be deleted.
-    // 2. When bookmarkStorageController.delete() is called, an exception is thrown.
+    // 2. When walletCoreDocumentsController.deleteBookmark() is called, an exception is thrown.
     // Expected result:
     // DocumentDetailsInteractorDeleteBookmarkPartialState.Failure state is returned.
     @Test
@@ -742,7 +736,7 @@ class TestDocumentDetailsInteractor {
     }
 
     private suspend fun mockStoreBookmarkCall(bookmarkId: String, throwable: Throwable? = null) {
-        whenever(bookmarkStorageController.store(Bookmark(bookmarkId)))
+        whenever(walletCoreDocumentsController.storeBookmark(bookmarkId))
             .thenAnswer {
                 throwable?.let { throw throwable }
                 Unit
@@ -750,15 +744,15 @@ class TestDocumentDetailsInteractor {
     }
 
     private suspend fun mockDeleteBookmarkCall(bookmarkId: String, throwable: Throwable? = null) {
-        whenever(bookmarkStorageController.delete(bookmarkId))
+        whenever(walletCoreDocumentsController.deleteBookmark(bookmarkId))
             .thenAnswer {
                 throwable?.let { throw throwable }
                 Unit
             }
     }
 
-    private suspend fun mockRetrieveBookmarkCall(response: Bookmark?) {
-        whenever(bookmarkStorageController.retrieve(anyString()))
+    private suspend fun mockRetrieveBookmarkCall(response: Boolean) {
+        whenever(walletCoreDocumentsController.isDocumentBookmarked(anyString()))
             .thenReturn(response)
     }
 

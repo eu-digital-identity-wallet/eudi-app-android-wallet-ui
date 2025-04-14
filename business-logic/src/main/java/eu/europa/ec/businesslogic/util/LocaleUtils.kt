@@ -20,7 +20,7 @@ import java.util.Locale
 
 object LocaleUtils {
 
-    const val DEFAULT_LOCALE = "en-GB"
+    const val PROJECT_DEFAULT_LOCALE = "en-GB"
 
     /**
      *  Returns locale from string

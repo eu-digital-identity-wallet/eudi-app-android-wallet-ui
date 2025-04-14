@@ -20,10 +20,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -42,6 +44,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 fun WrapListItems(
     modifier: Modifier = Modifier,
     items: List<ExpandableListItem>,
+    onExpandedChange: ((item: ListItemData) -> Unit)?,
     onItemClick: ((item: ListItemData) -> Unit)?,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
@@ -50,6 +53,7 @@ fun WrapListItems(
     addDivider: Boolean = true,
     shape: Shape? = null,
     colors: CardColors? = null,
+    overlineTextStyle: (@Composable (item: ListItemData) -> TextStyle)? = null,
 ) {
     WrapCard(
         modifier = modifier,
@@ -66,8 +70,8 @@ fun WrapListItems(
                         modifier = itemModifier,
                         header = item.header,
                         data = item.nestedItems,
-                        onItemClick = null,
-                        onExpandedChange = onItemClick,
+                        onItemClick = onItemClick,
+                        onExpandedChange = onExpandedChange,
                         isExpanded = item.isExpanded,
                         throttleClicks = throttleClicks,
                         hideSensitiveContent = hideSensitiveContent,
@@ -77,14 +81,21 @@ fun WrapListItems(
                 }
 
                 is ExpandableListItem.SingleListItemData -> {
+                    val defaultOverlineTextStyle = MaterialTheme.typography.labelMedium.copy(
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
                     WrapListItem(
                         modifier = itemModifier,
                         item = item.header,
-                        onItemClick = null,
+                        onItemClick = onItemClick,
                         throttleClicks = throttleClicks,
                         hideSensitiveContent = hideSensitiveContent,
                         mainContentVerticalPadding = mainContentVerticalPadding,
                         clickableAreas = clickableAreas,
+                        overlineTextStyle = overlineTextStyle?.invoke(item.header)
+                            ?: defaultOverlineTextStyle,
+                        shape = RectangleShape
                     )
                 }
             }
@@ -160,6 +171,7 @@ private fun WrapListItemsPreview(
         WrapListItems(
             items = items.map { ExpandableListItem.SingleListItemData(it) },
             onItemClick = {},
+            onExpandedChange = {},
         )
     }
 }

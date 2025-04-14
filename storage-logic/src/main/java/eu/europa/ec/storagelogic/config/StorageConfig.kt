@@ -20,6 +20,7 @@ import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.encodeToPemBase64String
 import eu.europa.ec.storagelogic.model.RealmBookmark
 import eu.europa.ec.storagelogic.model.RealmRevokedDocument
+import eu.europa.ec.storagelogic.model.RealmTransactionLog
 import io.realm.kotlin.Realm
 import io.realm.kotlin.RealmConfiguration
 import java.security.SecureRandom
@@ -43,6 +44,7 @@ class StorageConfigImpl(
         get() = RealmConfiguration.Builder(
             schema = setOf(
                 RealmBookmark::class,
+                RealmTransactionLog::class,
                 RealmRevokedDocument::class
             )
         )

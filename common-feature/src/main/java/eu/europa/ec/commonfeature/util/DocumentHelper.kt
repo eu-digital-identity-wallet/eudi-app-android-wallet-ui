@@ -16,7 +16,9 @@
 
 package eu.europa.ec.commonfeature.util
 
+import android.util.Base64
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
+import eu.europa.ec.businesslogic.extension.encodeToBase64String
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
@@ -215,9 +217,13 @@ fun createKeyValue(
 
         else -> {
 
+            val base64Image = (item as? ByteArray)?.encodeToBase64String(Base64.URL_SAFE)
+
             val date: String? = (item as? String)?.toDateFormatted()
+                ?: (item as? LocalDate)?.toDateFormatted()
 
             val formattedValue = when {
+                base64Image != null -> base64Image
                 keyIsGender(groupKey) -> getGenderValue(item.toString(), resourceProvider)
                 keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64()
                 date != null -> date

@@ -33,7 +33,6 @@ moduleConfig {
 
 dependencies {
     implementation(libs.gson)
-
     implementation(libs.zxing)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.lifecycle)

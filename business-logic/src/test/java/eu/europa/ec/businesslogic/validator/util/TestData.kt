@@ -17,8 +17,9 @@
 package eu.europa.ec.businesslogic.validator.util
 
 import eu.europa.ec.businesslogic.validator.model.FilterAction
+import eu.europa.ec.businesslogic.validator.model.FilterElement
+import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
-import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
 import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
@@ -32,21 +33,21 @@ val filterItemsSingle = listOf(
         id = "1",
         name = "PID",
         selected = true,
-        filterableAction = FilterAction.Filter { attributes: TestAttributes, filterItem: FilterItem ->
+        filterableAction = FilterAction.Filter { attributes: TestAttributes, filterItem: FilterElement ->
             attributes.name == filterItem.name
         }
     ),
     FilterItem(
         id = "2",
         name = "mDL", selected = false,
-        filterableAction = FilterAction.Filter { attributes: TestAttributes, filterItem: FilterItem ->
+        filterableAction = FilterAction.Filter { attributes: TestAttributes, filterItem: FilterElement ->
             attributes.name == filterItem.name
         }
     ),
     FilterItem(
         id = "3",
         name = "Age Verification", selected = false,
-        filterableAction = FilterAction.Filter { attributes: TestAttributes, filterItem: FilterItem ->
+        filterableAction = FilterAction.Filter { attributes: TestAttributes, filterItem: FilterElement ->
             attributes.name == filterItem.name
         }
     )
@@ -99,7 +100,7 @@ val multipleSelectionGroupSize3 = FilterGroup.MultipleSelectionFilterGroup(
     id = "multi_filter",
     name = "Multi Document Selection",
     filters = filterItemsMultipleSize3,
-    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterItem ->
+    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterElement ->
         filterItem.name == attributes.name
     }
 )
@@ -108,7 +109,7 @@ val multipleSelectionGroupSize4 = FilterGroup.MultipleSelectionFilterGroup(
     id = "multi_filter",
     name = "Multi Document Selection",
     filters = filterItemsMultipleSize4,
-    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterItem ->
+    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterElement ->
         filterItem.name == attributes.name
     }
 )
@@ -117,7 +118,7 @@ val multipleSelectionGroup = FilterGroup.MultipleSelectionFilterGroup(
     id = "multi_filter",
     name = "Multi Document Selection",
     filters = filterItemsMultiple,
-    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterItem ->
+    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterElement ->
         filterItem.name == attributes.name
     }
 )
@@ -126,7 +127,7 @@ val multipleSelectionGroupNoSelection = FilterGroup.MultipleSelectionFilterGroup
     id = "multi_filter_noselection",
     name = "Multi Document Selection",
     filters = filterItemsMultipleNoSelections,
-    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterItem ->
+    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterElement ->
         filterItem.name == attributes.name
     }
 )
@@ -135,7 +136,7 @@ val multipleSelectionGroupAllSelected = FilterGroup.MultipleSelectionFilterGroup
     id = "multi_filter_all",
     name = "Multi Document Selection All",
     filters = filterItemsMultipleAllSelected,
-    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterItem ->
+    filterableAction = FilterMultipleAction { attributes: TestAttributes, filterItem: FilterElement ->
         filterItem.name == attributes.name
     }
 )

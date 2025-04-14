@@ -22,11 +22,15 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
+import eu.europa.ec.corelogic.extension.parseTransactionLog
+import eu.europa.ec.corelogic.extension.toCoreTransactionLog
+import eu.europa.ec.corelogic.extension.toTransactionLogData
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.ScopedDocument
+import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.statium.Status
@@ -46,7 +50,10 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OfferResult
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
+import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
+import eu.europa.ec.storagelogic.model.Bookmark
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
@@ -179,12 +186,24 @@ interface WalletCoreDocumentsController {
     suspend fun isDocumentRevoked(id: String): Boolean
 
     suspend fun resolveDocumentStatus(document: IssuedDocument): Result<Status>
+
+    suspend fun getTransactionLogs(): List<TransactionLogData>
+
+    suspend fun getTransactionLog(id: String): TransactionLogData?
+
+    suspend fun isDocumentBookmarked(documentId: DocumentId): Boolean
+
+    suspend fun storeBookmark(bookmarkId: DocumentId)
+
+    suspend fun deleteBookmark(bookmarkId: DocumentId)
 }
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val eudiWallet: EudiWallet,
     private val walletCoreConfig: WalletCoreConfig,
+    private val transactionLogStorageController: TransactionLogStorageController,
+    private val bookmarkStorageController: BookmarkStorageController,
     private val revokedDocumentsStorageController: RevokedDocumentsStorageController,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : WalletCoreDocumentsController {
@@ -523,6 +542,29 @@ class WalletCoreDocumentsControllerImpl(
     override fun getAllDocumentCategories(): DocumentCategories {
         return walletCoreConfig.documentCategories
     }
+
+    override suspend fun getTransactionLogs(): List<TransactionLogData> =
+        withContext(dispatcher) {
+            transactionLogStorageController.retrieveAll()
+                .mapNotNull { getTransactionLog(it.identifier) }
+        }
+
+    override suspend fun getTransactionLog(id: String): TransactionLogData? =
+        withContext(dispatcher) {
+            transactionLogStorageController.retrieve(id)
+                ?.toCoreTransactionLog()
+                ?.parseTransactionLog()
+                ?.toTransactionLogData(id)
+        }
+
+    override suspend fun isDocumentBookmarked(documentId: DocumentId): Boolean =
+        bookmarkStorageController.retrieve(documentId) != null
+
+    override suspend fun storeBookmark(bookmarkId: DocumentId) =
+        bookmarkStorageController.store(Bookmark(bookmarkId))
+
+    override suspend fun deleteBookmark(bookmarkId: DocumentId) =
+        bookmarkStorageController.delete(bookmarkId)
 
     override suspend fun getRevokedDocumentIds(): List<String> =
         revokedDocumentsStorageController.retrieveAll().map { it.identifier }
