@@ -546,7 +546,12 @@ class WalletCoreDocumentsControllerImpl(
     override suspend fun getTransactionLogs(): List<TransactionLogData> =
         withContext(dispatcher) {
             transactionLogStorageController.retrieveAll()
-                .mapNotNull { getTransactionLog(it.identifier) }
+                .mapNotNull { transactionLog ->
+                    transactionLog
+                        .toCoreTransactionLog()
+                        ?.parseTransactionLog()
+                        ?.toTransactionLogData(transactionLog.identifier)
+                }
         }
 
     override suspend fun getTransactionLog(id: String): TransactionLogData? =
