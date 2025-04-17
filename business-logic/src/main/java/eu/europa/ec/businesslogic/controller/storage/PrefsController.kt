@@ -249,7 +249,7 @@ class PrefsControllerImpl(
      * key value is invalid.
      */
     override fun getString(key: String, defaultValue: String): String {
-        return getSharedPrefs().getString(key, defaultValue)?.unShuffle() ?: defaultValue
+        return getSharedPrefs().getString(key, null)?.unShuffle() ?: defaultValue
     }
 
     /**
