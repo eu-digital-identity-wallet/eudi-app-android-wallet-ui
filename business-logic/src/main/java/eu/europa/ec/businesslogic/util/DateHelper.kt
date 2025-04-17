@@ -127,6 +127,10 @@ fun Instant.formatInstant(
     return formatter.format(this)
 }
 
+fun LocalDateTime.isJustNow(): Boolean {
+    return ChronoUnit.MINUTES.between(this, LocalDateTime.now()) == 0L
+}
+
 fun LocalDateTime.isWithinLastHour(): Boolean {
     return ChronoUnit.MINUTES.between(this, LocalDateTime.now()) < 60
 }

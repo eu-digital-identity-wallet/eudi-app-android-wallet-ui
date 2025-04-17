@@ -19,6 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.fullDateTimeFormatter
 import eu.europa.ec.businesslogic.util.hoursMinutesFormatter
+import eu.europa.ec.businesslogic.util.isJustNow
 import eu.europa.ec.businesslogic.util.isToday
 import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
@@ -86,6 +87,7 @@ sealed class TransactionInteractorGetTransactionsPartialState {
 }
 
 sealed class TransactionInteractorDateTimeCategoryPartialState {
+    data object JustNow : TransactionInteractorDateTimeCategoryPartialState()
     data class WithinLastHour(val minutes: Long) :
         TransactionInteractorDateTimeCategoryPartialState()
 
@@ -483,6 +485,8 @@ class TransactionsInteractorImpl(
         }
 
         return when {
+            isJustNow() -> TransactionInteractorDateTimeCategoryPartialState.JustNow
+
             isWithinLastHour() -> TransactionInteractorDateTimeCategoryPartialState.WithinLastHour(
                 minutes = minutesToNow()
             )
@@ -506,8 +510,13 @@ class TransactionsInteractorImpl(
             val parsedDate = LocalDateTime.ofInstant(this, zoneId)
 
             when (val dateTimeState = parsedDate.toDateTimeState()) {
-                is TransactionInteractorDateTimeCategoryPartialState.WithinLastHour -> resourceProvider.getString(
-                    R.string.transactions_screen_minutes_ago_message,
+                is TransactionInteractorDateTimeCategoryPartialState.JustNow -> resourceProvider.getString(
+                    R.string.transactions_screen_0_minutes_ago_message
+                )
+
+                is TransactionInteractorDateTimeCategoryPartialState.WithinLastHour -> resourceProvider.getQuantityString(
+                    R.plurals.transactions_screen_some_minutes_ago_message,
+                    dateTimeState.minutes.toInt(),
                     dateTimeState.minutes
                 )
 
