@@ -69,25 +69,41 @@ class RevocationWorkManager(
     override suspend fun doWork(): Result {
         try {
 
-            val revokedDocuments = walletCoreDocumentsController
+            val storedRevokedDocuments = walletCoreDocumentsController.getRevokedDocumentIds()
+            val fromRevokedToValid = mutableListOf<String>()
+            val revokedDocuments = mutableListOf<IssuedDocument>()
+
+            walletCoreDocumentsController
                 .getAllIssuedDocuments()
-                .mapNotNull { document ->
+                .forEach { document ->
                     walletCoreDocumentsController.resolveDocumentStatus(document).fold(
                         onSuccess = { status ->
                             when (status) {
-                                is Status.Invalid, Status.Suspended -> document
-                                else -> null
+                                is Status.Invalid, Status.Suspended -> revokedDocuments.add(document)
+                                is Status.Valid -> {
+                                    if (storedRevokedDocuments.any { it == document.id }) {
+                                        fromRevokedToValid.add(document.id)
+                                    }
+                                }
+
+                                else -> {}
                             }
                         },
-                        onFailure = {
-                            null
-                        }
+                        onFailure = {}
                     )
                 }
+
+            if (fromRevokedToValid.isNotEmpty()) {
+                removeRevokedDocumentsFromStorage(fromRevokedToValid)
+            }
 
             if (revokedDocuments.isNotEmpty()) {
                 storeRevokedDocuments(revokedDocuments)
                 sendRevocationBroadcasts(revokedDocuments)
+            }
+
+            if (fromRevokedToValid.isNotEmpty() || revokedDocuments.isNotEmpty()) {
+                notifyDocumentsList()
             }
 
             return Result.success()
@@ -103,6 +119,13 @@ class RevocationWorkManager(
         )
     }
 
+    @Throws(IllegalArgumentException::class)
+    private suspend fun removeRevokedDocumentsFromStorage(ids: List<String>) {
+        ids.forEach {
+            revokedDocumentsController.delete(it)
+        }
+    }
+
     private fun sendRevocationBroadcasts(revokedDocuments: List<IssuedDocument>) {
 
         val messageIntent = Intent(CoreActions.REVOCATION_WORK_MESSAGE_ACTION).apply {
@@ -116,8 +139,6 @@ class RevocationWorkManager(
             )
         }
 
-        val refreshIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_ACTION)
-
         val detailsIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION).apply {
             putStringArrayListExtra(
                 REVOCATION_IDS_DETAILS_EXTRA,
@@ -129,6 +150,10 @@ class RevocationWorkManager(
 
         applicationContext.sendBroadcast(messageIntent)
         applicationContext.sendBroadcast(detailsIntent)
+    }
+
+    private fun notifyDocumentsList() {
+        val refreshIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_ACTION)
         applicationContext.sendBroadcast(refreshIntent)
     }
 }
