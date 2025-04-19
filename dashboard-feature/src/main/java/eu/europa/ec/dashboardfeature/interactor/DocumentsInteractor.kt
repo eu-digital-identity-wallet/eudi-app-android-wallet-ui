@@ -715,12 +715,11 @@ class DocumentsInteractorImpl(
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
                         DocumentFilterIds.FILTER_BY_STATE_VALID -> {
-                            (attributes.expiryDate?.isValid() == true
-                                    || attributes.expiryDate == null)
+                            (attributes.expiryDate?.isValid() == true || attributes.expiryDate == null)
                                     && attributes.isRevoked == false
                         }
 
-                        DocumentFilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isExpired() == true
+                        DocumentFilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isExpired() == true && attributes.isRevoked == false
                         DocumentFilterIds.FILTER_BY_STATE_REVOKED -> attributes.isRevoked
                         else -> true
                     }
