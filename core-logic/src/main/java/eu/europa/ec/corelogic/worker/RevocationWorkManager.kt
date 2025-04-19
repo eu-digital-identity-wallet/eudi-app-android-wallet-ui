@@ -79,7 +79,12 @@ class RevocationWorkManager(
                     walletCoreDocumentsController.resolveDocumentStatus(document).fold(
                         onSuccess = { status ->
                             when (status) {
-                                is Status.Invalid, Status.Suspended -> revokedDocuments.add(document)
+                                is Status.Invalid, Status.Suspended -> {
+                                    if (!storedRevokedDocuments.any { it == document.id }) {
+                                        revokedDocuments.add(document)
+                                    }
+                                }
+
                                 is Status.Valid -> {
                                     if (storedRevokedDocuments.any { it == document.id }) {
                                         fromRevokedToValid.add(document.id)
