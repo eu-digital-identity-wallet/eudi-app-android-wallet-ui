@@ -20,10 +20,40 @@ import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
+import java.time.Duration
 
 interface WalletCoreConfig {
+
+
+    /**
+     * Holds the configuration settings for the EudiWallet.
+     * This configuration includes settings such as API endpoints, cryptographic parameters,
+     * and storage locations.
+     */
     val config: EudiWalletConfig
 
+    /**
+     * Returns a predefined set of document categories and their associated identifiers.
+     *
+     * This property provides a structured mapping of common document categories (e.g., Government, Travel, Finance)
+     * to specific document identifiers.  These identifiers are used to uniquely identify different types of
+     * documents within a given category and are based on standard formats and specifications.
+     *
+     * The structure is a map where:
+     * - Keys are [DocumentCategory] enum values representing broad document types.
+     * - Values are lists of [DocumentIdentifier] objects, each representing a specific document type within that category.
+     *
+     * The supported document identifiers utilize various formats, including:
+     * - Predefined types like [DocumentIdentifier.MdocPid] and [DocumentIdentifier.SdJwtPid].
+     * - Formats defined by ISO standards (e.g., "org.iso.18013.5.1.mDL", "org.iso.23220.2.photoid.1").
+     * - Formats specified by the European Union (e.g., "eu.europa.ec.eudi.tax.1", "eu.europa.ec.eudi.iban.1").
+     * - URNs following the "urn:eu.europa.ec.eudi" namespace (e.g., "urn:eu.europa.ec.eudi:tax:1", "urn:eu.europa.ec.eudi:iban:1").
+     *
+     * The "Other" category is used for identifiers that don't fit neatly into the other predefined categories.
+     *
+     * Note:  An empty list for a category (e.g., Education) indicates that no specific document identifiers are
+     * currently defined for that category.
+     */
     val documentCategories: DocumentCategories
         get() = DocumentCategories(
             value = mapOf(
@@ -115,4 +145,12 @@ interface WalletCoreConfig {
                 ),
             )
         )
+
+    /**
+     * The interval at which revocations are checked.
+     *
+     * This property defines the time interval between checks for revoked tokens or credentials.
+     * It is currently set to 15 minutes.
+     */
+    val revocationInterval: Duration get() = Duration.ofMinutes(15)
 }
