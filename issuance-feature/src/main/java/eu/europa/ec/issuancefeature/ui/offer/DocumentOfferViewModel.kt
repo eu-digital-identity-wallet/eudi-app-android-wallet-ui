@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.offer
+package eu.europa.ec.issuancefeature.ui.offer
 
 import android.content.Context
 import android.net.Uri
@@ -31,7 +31,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.ResolveDocumentOfferInteractorPartialState
-import eu.europa.ec.issuancefeature.ui.document.offer.transformer.DocumentOfferTransformer.toListItemDataList
+import eu.europa.ec.issuancefeature.ui.offer.transformer.DocumentOfferTransformer.toListItemDataList
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.ListItemData

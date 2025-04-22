@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.success
+package eu.europa.ec.issuancefeature.ui.success
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController

@@ -61,7 +61,7 @@ import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractorImpl
 import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.ResolveDocumentOfferInteractorPartialState
-import eu.europa.ec.issuancefeature.ui.document.offer.model.DocumentOfferItemUi
+import eu.europa.ec.issuancefeature.ui.offer.model.DocumentOfferItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors

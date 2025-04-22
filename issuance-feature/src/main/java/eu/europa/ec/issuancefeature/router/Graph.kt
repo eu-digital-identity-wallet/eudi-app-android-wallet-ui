@@ -28,10 +28,10 @@ import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.issuancefeature.BuildConfig
-import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
-import eu.europa.ec.issuancefeature.ui.document.code.DocumentOfferCodeScreen
-import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
-import eu.europa.ec.issuancefeature.ui.document.success.DocumentIssuanceSuccessScreen
+import eu.europa.ec.issuancefeature.ui.add.AddDocumentScreen
+import eu.europa.ec.issuancefeature.ui.code.DocumentOfferCodeScreen
+import eu.europa.ec.issuancefeature.ui.offer.DocumentOfferScreen
+import eu.europa.ec.issuancefeature.ui.success.DocumentIssuanceSuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel

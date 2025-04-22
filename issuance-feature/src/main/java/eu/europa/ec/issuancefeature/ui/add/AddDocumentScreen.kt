@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.add
+package eu.europa.ec.issuancefeature.ui.add
 
 import android.content.Context
 import androidx.compose.foundation.background

@@ -34,7 +34,7 @@ import eu.europa.ec.corelogic.extension.getName
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.issuancefeature.ui.document.offer.model.DocumentOfferItemUi
+import eu.europa.ec.issuancefeature.ui.offer.model.DocumentOfferItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
