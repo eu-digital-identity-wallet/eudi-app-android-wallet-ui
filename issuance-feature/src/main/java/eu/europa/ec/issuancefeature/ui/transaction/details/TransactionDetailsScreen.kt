@@ -262,7 +262,10 @@ private fun TransactionDetailsCard(
                         )
                     },
                     colors = InputChipDefaults.inputChipColors(
-                        containerColor = MaterialTheme.colorScheme.success,
+                        containerColor = when (item.transactionIsCompleted) {
+                            true -> MaterialTheme.colorScheme.success
+                            false -> MaterialTheme.colorScheme.error
+                        },
                         labelColor = MaterialTheme.colorScheme.surfaceContainerLowest
                     ),
                     border = null,
@@ -309,7 +312,7 @@ private fun ExpandableDataSection(
 
 @ThemeModePreviews
 @Composable
-private fun PreviewTransactionDetailsCard(
+private fun PreviewTransactionDetailsCompletedCard(
     @PreviewParameter(TextLengthPreviewProvider::class) text: String
 ) {
     PreviewTheme {
@@ -318,7 +321,29 @@ private fun PreviewTransactionDetailsCard(
             relyingPartyName = "RP name $text",
             transactionDate = "21 January 2025",
             transactionStatusLabel = "Completed",
-            relyingPartyIsVerified = true
+            transactionIsCompleted = true,
+            relyingPartyIsVerified = true,
+        )
+
+        TransactionDetailsCard(
+            item = transactionDetailsCardData
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun PreviewTransactionDetailsFailedCard(
+    @PreviewParameter(TextLengthPreviewProvider::class) text: String
+) {
+    PreviewTheme {
+        val transactionDetailsCardData = TransactionDetailsCardData(
+            transactionTypeLabel = "Data sharing",
+            relyingPartyName = "RP name $text",
+            transactionDate = "21 January 2025",
+            transactionStatusLabel = "Failed",
+            transactionIsCompleted = false,
+            relyingPartyIsVerified = true,
         )
 
         TransactionDetailsCard(
@@ -371,7 +396,8 @@ private fun ContentPreview() {
                 transactionDate = "21 January 2025",
                 relyingPartyName = "Verisign",
                 transactionStatusLabel = "Completed",
-                relyingPartyIsVerified = true
+                transactionIsCompleted = true,
+                relyingPartyIsVerified = true,
             ),
             transactionDetailsDataShared = mockedDataSharedList,
             transactionDetailsDataSigned = mockedDataSignedList

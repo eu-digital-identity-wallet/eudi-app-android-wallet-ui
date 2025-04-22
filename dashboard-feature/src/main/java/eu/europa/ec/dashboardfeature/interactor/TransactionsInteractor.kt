@@ -25,6 +25,7 @@ import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
 import eu.europa.ec.businesslogic.util.minutesToNow
 import eu.europa.ec.businesslogic.util.plusOneDay
+import eu.europa.ec.businesslogic.util.uppercaseAmPm
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterAction
@@ -480,10 +481,6 @@ class TransactionsInteractorImpl(
         filterValidator.updateSortOrder(sortOrder)
 
     private fun LocalDateTime.toDateTimeState(): TransactionInteractorDateTimeCategoryPartialState {
-        fun String.uppercaseAmPm(): String {
-            return this.replace(Regex("\\b(am|pm)\\b")) { it.value.uppercase() }
-        }
-
         return when {
             isJustNow() -> TransactionInteractorDateTimeCategoryPartialState.JustNow
 

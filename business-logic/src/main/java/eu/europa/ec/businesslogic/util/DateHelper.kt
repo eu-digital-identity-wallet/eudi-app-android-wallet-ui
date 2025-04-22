@@ -37,7 +37,7 @@ private val dtoDateFormatters = listOf(
 )
 
 private const val DAY_MONTH_YEAR_SHORT_PATTERN = "dd MMM yyyy"
-private const val FULL_DATETIME_PATTERN = "dd MMM yyyy hh:mm a"
+const val FULL_DATETIME_PATTERN = "dd MMM yyyy hh:mm a"
 private const val HOURS_MINUTES_DATETIME_PATTERN = "hh:mm a"
 private const val MONTH_YEAR_DATETIME_PATTERN = "MMMM yyyy"
 private const val DAY_MONTH_YEAR_TEXT_FIELD_PATTERN = "dd/MM/yyyy"
@@ -116,14 +116,14 @@ fun Long.toLocalDate(): LocalDate {
 }
 
 fun Instant.formatInstant(
+    pattern: String = DAY_MONTH_YEAR_SHORT_PATTERN,
     zoneId: ZoneId = ZoneId.systemDefault(),
     selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
 ): String {
     val formatter = DateTimeFormatter.ofPattern(
-        DAY_MONTH_YEAR_SHORT_PATTERN,
+        pattern,
         LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
-    )
-        .withZone(zoneId)
+    ).withZone(zoneId)
     return formatter.format(this)
 }
 
@@ -212,4 +212,8 @@ fun Long?.toDisplayedDate(): String {
             dateValue > Long.MIN_VALUE && dateValue < Long.MAX_VALUE
         }
     }.orEmpty()
+}
+
+fun String.uppercaseAmPm(): String {
+    return this.replace(Regex("\\b(am|pm)\\b")) { it.value.uppercase() }
 }
