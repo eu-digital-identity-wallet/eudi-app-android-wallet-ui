@@ -48,6 +48,7 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import java.util.Locale
 
 sealed class TransactionDetailsInteractorPartialState {
@@ -58,10 +59,27 @@ sealed class TransactionDetailsInteractorPartialState {
     data class Failure(val error: String) : TransactionDetailsInteractorPartialState()
 }
 
+sealed class TransactionDetailsInteractorRequestDataDeletionPartialState {
+    data object Success : TransactionDetailsInteractorRequestDataDeletionPartialState()
+    data class Failure(
+        val errorMessage: String
+    ) : TransactionDetailsInteractorRequestDataDeletionPartialState()
+}
+
+sealed class TransactionDetailsInteractorReportSuspiciousTransactionPartialState {
+    data object Success : TransactionDetailsInteractorReportSuspiciousTransactionPartialState()
+    data class Failure(
+        val errorMessage: String
+    ) : TransactionDetailsInteractorReportSuspiciousTransactionPartialState()
+}
+
 interface TransactionDetailsInteractor {
     fun getTransactionDetails(
         transactionId: String
     ): Flow<TransactionDetailsInteractorPartialState>
+
+    fun requestDataDeletion(transactionId: String): Flow<TransactionDetailsInteractorRequestDataDeletionPartialState>
+    fun reportSuspiciousTransaction(transactionId: String): Flow<TransactionDetailsInteractorReportSuspiciousTransactionPartialState>
 }
 
 class TransactionDetailsInteractorImpl(
@@ -148,6 +166,18 @@ class TransactionDetailsInteractorImpl(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }
+
+    override fun requestDataDeletion(transactionId: String): Flow<TransactionDetailsInteractorRequestDataDeletionPartialState> {
+        return flowOf(
+            TransactionDetailsInteractorRequestDataDeletionPartialState.Success
+        )
+    }
+
+    override fun reportSuspiciousTransaction(transactionId: String): Flow<TransactionDetailsInteractorReportSuspiciousTransactionPartialState> {
+        return flowOf(
+            TransactionDetailsInteractorReportSuspiciousTransactionPartialState.Success
+        )
+    }
 
     private fun List<PresentedDocument>.toGroupedNestedClaims(
         documentSupportingText: String,

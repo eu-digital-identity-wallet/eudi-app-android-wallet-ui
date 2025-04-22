@@ -347,6 +347,10 @@
     <!-- Transaction Details -->
     <string name="transaction_details_screen_title">Transaction information</string>
     <string name="transaction_details_screen_card_date_label">Date</string>
+    <string name="transaction_details_request_deletion_message">You can request to stop processing personal data linked to this transaction. This may affect your access to services.</string>
+    <string name="transaction_details_report_transaction_message">If you believe this relying party has unlawfully requested personal data, you can report this transaction to the authorities.</string>
+    <string name="transaction_details_request_deletion_button">Request data deletion</string>
+    <string name="transaction_details_report_transaction_button">Report suspicious transaction</string>
     <string name="transaction_details_data_shared_section_title">DATA SHARED</string>
     <string name="transaction_details_data_shared_prefix_id">transactionDetailsDataSharedId</string>
     <string name="transaction_details_data_signed_section_title">DATA SIGNED</string>

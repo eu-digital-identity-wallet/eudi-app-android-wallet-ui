@@ -30,6 +30,7 @@ import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
@@ -48,6 +49,9 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
 
     data class ExpandOrCollapseGroupItem(val itemId: String) : Event()
+
+    data object RequestDataDeletionPressed : Event()
+    data object ReportSuspiciousTransactionPressed : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -84,6 +88,18 @@ internal class TransactionDetailsViewModel(
             is Event.Pop -> {
                 setState { copy(error = null) }
                 setEffect { Effect.Navigation.Pop }
+            }
+
+            is Event.RequestDataDeletionPressed -> {
+                viewModelScope.launch {
+                    interactor.requestDataDeletion(transactionId = transactionId).collect()
+                }
+            }
+
+            is Event.ReportSuspiciousTransactionPressed -> {
+                viewModelScope.launch {
+                    interactor.reportSuspiciousTransaction(transactionId = transactionId).collect()
+                }
             }
 
             is Event.ExpandOrCollapseGroupItem -> {
