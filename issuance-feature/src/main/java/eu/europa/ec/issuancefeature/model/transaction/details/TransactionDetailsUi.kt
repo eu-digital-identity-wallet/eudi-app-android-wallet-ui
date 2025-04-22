@@ -28,6 +28,7 @@ data class TransactionDetailsUi(
 data class TransactionDetailsCardData(
     val transactionTypeLabel: String,
     val transactionStatusLabel: String,
+    val transactionIsCompleted: Boolean,
     val transactionDate: String,
     val relyingPartyName: String?,
     val relyingPartyIsVerified: Boolean?,

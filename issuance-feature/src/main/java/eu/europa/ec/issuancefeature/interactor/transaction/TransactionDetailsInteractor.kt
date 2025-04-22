@@ -17,8 +17,11 @@
 package eu.europa.ec.issuancefeature.interactor.transaction
 
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.businesslogic.util.FULL_DATETIME_PATTERN
 import eu.europa.ec.businesslogic.util.formatInstant
+import eu.europa.ec.businesslogic.util.uppercaseAmPm
 import eu.europa.ec.commonfeature.extensions.toExpandableListItems
+import eu.europa.ec.commonfeature.model.TransactionUiStatus
 import eu.europa.ec.commonfeature.model.TransactionUiStatus.Companion.toUiText
 import eu.europa.ec.commonfeature.model.toTransactionUiStatus
 import eu.europa.ec.commonfeature.util.createKeyValue
@@ -45,6 +48,7 @@ import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import java.util.Locale
 
 sealed class TransactionDetailsInteractorPartialState {
@@ -55,10 +59,27 @@ sealed class TransactionDetailsInteractorPartialState {
     data class Failure(val error: String) : TransactionDetailsInteractorPartialState()
 }
 
+sealed class TransactionDetailsInteractorRequestDataDeletionPartialState {
+    data object Success : TransactionDetailsInteractorRequestDataDeletionPartialState()
+    data class Failure(
+        val errorMessage: String
+    ) : TransactionDetailsInteractorRequestDataDeletionPartialState()
+}
+
+sealed class TransactionDetailsInteractorReportSuspiciousTransactionPartialState {
+    data object Success : TransactionDetailsInteractorReportSuspiciousTransactionPartialState()
+    data class Failure(
+        val errorMessage: String
+    ) : TransactionDetailsInteractorReportSuspiciousTransactionPartialState()
+}
+
 interface TransactionDetailsInteractor {
     fun getTransactionDetails(
         transactionId: String
     ): Flow<TransactionDetailsInteractorPartialState>
+
+    fun requestDataDeletion(transactionId: String): Flow<TransactionDetailsInteractorRequestDataDeletionPartialState>
+    fun reportSuspiciousTransaction(transactionId: String): Flow<TransactionDetailsInteractorReportSuspiciousTransactionPartialState>
 }
 
 class TransactionDetailsInteractorImpl(
@@ -75,6 +96,11 @@ class TransactionDetailsInteractorImpl(
                 ?.let { transaction ->
 
                     val userLocale = resourceProvider.getLocale()
+
+                    val transactionUiStatus = transaction.status.toTransactionUiStatus()
+                    val transactionUiDate = transaction.creationDate.formatInstant(
+                        pattern = FULL_DATETIME_PATTERN
+                    ).uppercaseAmPm()
 
                     val relyingPartyData: TransactionLog.RelyingParty?
                     val dataShared: List<ExpandableListItem.NestedListItemData>?
@@ -110,10 +136,12 @@ class TransactionDetailsInteractorImpl(
                             transactionTypeLabel = transaction.getTransactionTypeLabel(
                                 resourceProvider
                             ),
-                            transactionStatusLabel = transaction.status
-                                .toTransactionUiStatus()
-                                .toUiText(resourceProvider),
-                            transactionDate = transaction.creationDate.formatInstant(),
+                            transactionStatusLabel = transactionUiStatus.toUiText(resourceProvider),
+                            transactionIsCompleted = when (transactionUiStatus) {
+                                TransactionUiStatus.Completed -> true
+                                TransactionUiStatus.Failed -> false
+                            },
+                            transactionDate = transactionUiDate,
                             relyingPartyName = relyingPartyData?.name,
                             relyingPartyIsVerified = relyingPartyData?.isVerified
                         ),
@@ -138,6 +166,18 @@ class TransactionDetailsInteractorImpl(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }
+
+    override fun requestDataDeletion(transactionId: String): Flow<TransactionDetailsInteractorRequestDataDeletionPartialState> {
+        return flowOf(
+            TransactionDetailsInteractorRequestDataDeletionPartialState.Success
+        )
+    }
+
+    override fun reportSuspiciousTransaction(transactionId: String): Flow<TransactionDetailsInteractorReportSuspiciousTransactionPartialState> {
+        return flowOf(
+            TransactionDetailsInteractorReportSuspiciousTransactionPartialState.Success
+        )
+    }
 
     private fun List<PresentedDocument>.toGroupedNestedClaims(
         documentSupportingText: String,

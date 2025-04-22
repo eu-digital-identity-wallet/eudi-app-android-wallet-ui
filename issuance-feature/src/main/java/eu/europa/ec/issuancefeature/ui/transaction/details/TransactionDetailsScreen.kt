@@ -64,7 +64,10 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
+import eu.europa.ec.uilogic.component.wrap.ButtonConfig
+import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapChip
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
@@ -156,6 +159,14 @@ private fun Content(
                     dataItems = safeDataSignedItems,
                     onEventSend = onEventSend,
                 )
+            }
+
+            state.transactionDetailsUi?.let { safeTransactionDetailsUi ->
+                if (safeTransactionDetailsUi.transactionDetailsDataShared.dataSharedItems.isNotEmpty()
+                    || safeTransactionDetailsUi.transactionDetailsDataSigned?.dataSignedItems?.isNotEmpty() == true
+                ) {
+                    ButtonsSection(onEventSend = onEventSend)
+                }
             }
         }
     }
@@ -262,7 +273,10 @@ private fun TransactionDetailsCard(
                         )
                     },
                     colors = InputChipDefaults.inputChipColors(
-                        containerColor = MaterialTheme.colorScheme.success,
+                        containerColor = when (item.transactionIsCompleted) {
+                            true -> MaterialTheme.colorScheme.success
+                            false -> MaterialTheme.colorScheme.error
+                        },
                         labelColor = MaterialTheme.colorScheme.surfaceContainerLowest
                     ),
                     border = null,
@@ -307,9 +321,61 @@ private fun ExpandableDataSection(
     }
 }
 
+@Composable
+private fun ButtonsSection(onEventSend: (Event) -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.transaction_details_request_deletion_message),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            WrapButton(
+                modifier = Modifier.fillMaxWidth(),
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.SECONDARY,
+                    onClick = { onEventSend(Event.RequestDataDeletionPressed) },
+                    isWarning = true,
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.transaction_details_request_deletion_button),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.transaction_details_report_transaction_message),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            WrapButton(
+                modifier = Modifier.fillMaxWidth(),
+                buttonConfig = ButtonConfig(
+                    type = ButtonType.SECONDARY,
+                    onClick = { onEventSend(Event.ReportSuspiciousTransactionPressed) },
+                    isWarning = false,
+                )
+            ) {
+                Text(
+                    text = stringResource(R.string.transaction_details_report_transaction_button),
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
+    }
+}
+
 @ThemeModePreviews
 @Composable
-private fun PreviewTransactionDetailsCard(
+private fun PreviewTransactionDetailsCompletedCard(
     @PreviewParameter(TextLengthPreviewProvider::class) text: String
 ) {
     PreviewTheme {
@@ -318,7 +384,29 @@ private fun PreviewTransactionDetailsCard(
             relyingPartyName = "RP name $text",
             transactionDate = "21 January 2025",
             transactionStatusLabel = "Completed",
-            relyingPartyIsVerified = true
+            transactionIsCompleted = true,
+            relyingPartyIsVerified = true,
+        )
+
+        TransactionDetailsCard(
+            item = transactionDetailsCardData
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun PreviewTransactionDetailsFailedCard(
+    @PreviewParameter(TextLengthPreviewProvider::class) text: String
+) {
+    PreviewTheme {
+        val transactionDetailsCardData = TransactionDetailsCardData(
+            transactionTypeLabel = "Data sharing",
+            relyingPartyName = "RP name $text",
+            transactionDate = "21 January 2025",
+            transactionStatusLabel = "Failed",
+            transactionIsCompleted = false,
+            relyingPartyIsVerified = true,
         )
 
         TransactionDetailsCard(
@@ -371,7 +459,8 @@ private fun ContentPreview() {
                 transactionDate = "21 January 2025",
                 relyingPartyName = "Verisign",
                 transactionStatusLabel = "Completed",
-                relyingPartyIsVerified = true
+                transactionIsCompleted = true,
+                relyingPartyIsVerified = true,
             ),
             transactionDetailsDataShared = mockedDataSharedList,
             transactionDetailsDataSigned = mockedDataSignedList
