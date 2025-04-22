@@ -11,220 +11,135 @@
 #
 
 # Uncomment the line if you want fastlane to automatically update itself
-# update_fastlane
-
-require "date"
+#update_fastlane
 
 default_platform(:android)
 
 platform :android do
-  desc "Runs all the unit tests"
-  lane :tests do
 
-    # Run tests
-    gradle(task: "clean")
-    gradle(task: "koverHtmlReport#{ENV["APP_BUILD_TYPE"]}Debug")
-
-    # Clean Artifacts
-    clean_build_artifacts
+  desc "Build and deploy app to the Google Play Store"
+  lane :build_deploy do
+    version = prepare_build()
+    gradle(task: ENV["GRADLE_TASKS"])
+    upload_to_play_store(track: 'alpha',
+                         release_status: 'completed',
+                         skip_upload_apk: true,
+                         skip_upload_images: true,
+                         skip_upload_screenshots: true)
   end
 
-  desc "Build Wallet and upload it to appcenter"
-  lane :deploy do
-
-    git_pull
-
-    firebase_release = latest_firebase_release(
-      appId: ENV["FIREBASE_APP_ID"],
-      token: ENV["FIREBASE_TOKEN"]
-    )
-
-    buildNumber = build_number(release: firebase_release)
-
-    set_version(buildCode: buildNumber)
-    fullVersion = full_version(buildType: ENV["APP_BUILD_TYPE"])
-
-    tagVersion = tag_name(
-      buildName: fullVersion,
-      buildNumber: buildNumber,
-      brand: ENV["APP_TAG"],
-      buildType: ENV["APP_BUILD_TYPE"],
-    )
-
-    increment_version_code(
-      gradle_file_path: "app/build.gradle.kts",
-      version_code: buildNumber,
-    )
-
-    gradle(task: "clean")
-    gradle(task: "assemble#{ENV["APP_BUILD_TYPE"]}Release")
-
-    upload_firebase(
-      appId: ENV["FIREBASE_APP_ID"],
-      groups: ENV["FIREBASE_GROUPS"],
-      token: ENV["FIREBASE_TOKEN"]
-    )
-
-    clean_build_artifacts
-    reset_versioncode
-    reset_versionName
-
-    add_git_tag(
-      tag: tagVersion,
-    )
-
-    if ENV['PROD_REMOTE_REPO']
-      upload_tag(
-        remoteUrl: ENV['PROD_REMOTE_REPO'],
-        tag: tagVersion,
+  lane :prepare_build do
+      version_code = get_version_code()
+      android_set_version_code(
+        version_code: version_code,
+        gradle_file: "./build.gradle.kts"
       )
+
+      version_name = ENV["RELEASE_VERSION"].split(/[^0-9.]/)[0]
+      android_set_version_name(
+        version_name: version_name,
+        gradle_file: "./build.gradle.kts"
+      )
+
+      change_log = "#{ENV['CHANGELOG']}"
+      sh("printf '%s' '#{change_log}' > metadata/android/no-NO/changelogs/#{version_code}.txt")
+      version_name + "#" + version_code.to_s
+  end
+
+  lane :get_version_code do
+#    gp = google_play_track_version_codes(track: 'production')
+#    gb = google_play_track_version_codes(track: 'beta')
+    ga = google_play_track_version_codes(track: 'alpha')
+    gi = google_play_track_version_codes(track: 'internal')
+#    max_value = [gp[0].to_i, gb[0].to_i, ga[0].to_i, gi[0].to_i].max
+    max_value = [ga[0].to_i, gi[0].to_i].max
+    max_value + 1
+  end
+
+  desc "Run Kotlinter for lint checks."
+  private_lane :lintKotlin do
+    begin
+        gradle(task: "lintKotlin")
+    rescue => ex
+        UI.user_error!("There are format exceptions. Please run ./gradlew formatKotlin and try again!")
     end
-  
-    if ENV['DEV_REMOTE_REPO']
-      upload_tag(
-        remoteUrl: ENV['DEV_REMOTE_REPO'],
-        tag: tagVersion,
+  end
+
+  desc "Run unit test."
+  private_lane :run_unittests_dev do
+      gradle(task: "testDevDebugUnitTest")
+  end
+
+  desc "Assemble DevDebug Build"
+  private_lane :assemble_build do
+    gradle(task: "assembleDevDebug")
+  end
+
+  desc "Assemble DevRelease Build"
+  private_lane :assemble_dev_release_build do
+     gradle(task: "assembleDevRelease")
+  end
+
+  desc "Assemble DevDebug Test Application"
+  private_lane :assemble_test_application do
+    gradle(task: "assembleDevDebugAndroidTest")
+  end
+
+  desc "Assemble Build and Test Application"
+  lane :assemble do
+    assemble_build
+    assemble_test_application
+  end
+
+  desc "Deploy a new version to Firebase app distribution"
+    lane :deploy_dev do
+      latest_release = firebase_app_distribution_get_latest_release(
+        app: "1:673327080494:android:928aff209789a126666bbf",
+        service_credentials_file: "firebase-distribution-service-account.json"
       )
+      android_set_version_code(
+        version_code: latest_release[:buildVersion].to_i + 1,
+        gradle_file: "app/build.gradle.kts" # optional
+      )
+      combinedVersionName =  "#{latest_release[:displayVersion]}(#{android_get_version_code(gradle_file: "app/build.gradle.kts" )})"
+      puts "#{combinedVersionName}"
+      assemble_dev_release_build()
+      firebase_app_distribution(
+              service_credentials_file: "firebase-distribution-service-account.json",
+              android_artifact_type: "APK",
+              app: "1:673327080494:android:928aff209789a126666bbf",
+              #release_notes_file: "release_note.txt",
+              groups: "lommebok-testers"
+            )
     end
 
-    if ENV['GITHUB_RELEASE_REPO'] && ENV['GITHUB_RELEASE_TOKEN']
-      apkPath = prepare_binary(
-        appVersion: fullVersion,
-        buildType: ENV["APP_BUILD_TYPE"]
-      )
-      github_release(
-        token: ENV['GITHUB_RELEASE_TOKEN'],
-        repo: ENV['GITHUB_RELEASE_REPO'],
-        tag: tagVersion,
-        version: fullVersion,
-        path: apkPath
-      )
-    end
-
+  desc "Build and test application"
+  lane :check_format_build_test do
+    lintKotlin()
+    run_unittests_dev()
   end
 
-  desc "Rename apk before release"
-  lane :prepare_binary do |values|
-    appVersion = values[:appVersion]
-    buildType = values[:buildType]
-
-    defaultApkName = "app-#{buildType}-release.apk"
-    newApkName = "#{appVersion}.apk"
-
-    defaultApkPath = "app/build/outputs/apk/#{buildType}/release/#{defaultApkName}"
-    newApkPath = "app/build/outputs/apk/#{buildType}/release/#{newApkName}"
-
-    sh("cd .. && mv #{defaultApkPath} #{newApkPath}")
-
-    puts "New Apk Path For Upload: #{newApkPath}"
-    newApkPath
+  desc "Run instrumentation tests in Firebase Test Lab"
+  lane :instrumentation_tests_testlab do
+    assemble()
+    run_tests_firebase_testlab(
+      project_id: "minid-authenticator-dev",
+      devices: [
+        {
+          model: "redfin",
+          version: "30"
+          #model: "oriole",
+          #version: "31"
+          #model: "Pixel3",
+          #version: "30"
+        }
+      ],
+      timeout: "10m",
+      delete_firebase_files: false,
+      download_results_from_firebase: false,
+      gcloud_service_key_file: "client-secret.json",
+      android_test_apk: "app/build/outputs/apk/androidTest/dev/debug/app-dev-debug-androidTest.apk",
+      app_apk: "app/build/outputs/apk/dev/debug/app-dev-debug.apk")
   end
 
-  desc "Release to github"
-  lane :github_release do |values|
-    token = values[:token]
-    repo = values[:repo]
-    tag = values[:tag]
-    version = values[:version]
-    path = values[:path]
-    github_release = set_github_release(
-      repository_name: repo,
-      api_token: token,
-      name: version,
-      tag_name: tag,
-      is_generate_release_notes: true,
-      upload_assets: [path]
-    )
-  end
-
-  desc "Upload tag to remote repo"
-  lane :upload_tag do |values|
-    remoteUrl = values[:remoteUrl]
-    tag = values[:tag]
-    sh("git remote set-url origin #{remoteUrl}")
-    push_git_tags(tag: tag)
-  end
-
-  desc "Distribute to Firebase"
-  lane :upload_firebase do |values|
-    appId = values[:appId]
-    groups = values[:groups]
-    token = values[:token]
-    firebase_app_distribution(
-      app: appId,
-      firebase_cli_token: token,
-      groups: groups,
-    )
-  end
-
-  desc "Get Release version From Firebase"
-  lane :latest_firebase_release do |values|
-    appId = values[:appId]
-    token = values[:token]
-    firebase_app_distribution_get_latest_release(
-      firebase_cli_token: token,
-      app: appId,
-    )
-  end
-
-  desc "Build Number"
-  lane :build_number do |values|
-    release = values[:release]
-    number = release ? release[:buildVersion].to_i + 1 : 1
-    puts "Build Number: #{number}"
-    number
-  end
-
-  desc "Build Tag Name"
-  lane :tag_name do |values|
-    buildName = values[:buildName]
-    buildNumber = values[:buildNumber]
-    brand = values[:brand]
-    buildType = values[:buildType]
-    name = "#{brand}/#{buildType}_Version=#{buildName}_Build=#{buildNumber}"
-    puts "Tag Name: #{name}"
-    name
-  end
-
-  desc "Get version version From Project"
-  lane :full_version do |values|
-    buildType = values[:buildType]
-    versionName = get_properties_value(
-      key: "VERSION_NAME",
-      path: "version.properties",
-    )
-    version = "#{versionName}-#{buildType}"
-    puts "Full version based on properties value: #{version}"
-    version
-  end
-
-  desc "Set versionCode back to default 1"
-  lane :reset_versioncode do
-    increment_version_code(
-      gradle_file_path: "app/build.gradle.kts",
-      version_code: 1,
-    )
-  end
-
-  desc "Set versionName back to default yyyy.d.m"
-  lane :reset_versionName do
-    set_properties_value(
-      path: "version.properties",
-      key: "VERSION_NAME",
-      value: "yyyy.mm.v",
-    )
-  end
-
-  desc "Build VersionName based on CalVer"
-  lane :set_version do |values|
-    buildCode = values[:buildCode]
-    date = DateTime.now
-    version = "#{date.strftime("%Y.%m")}.#{buildCode}"
-    puts "Generated Calver: #{version}"
-    set_properties_value(
-      path: "version.properties",
-      key: "VERSION_NAME",
-      value: version,
-    )
-  end
 end

@@ -17,6 +17,8 @@
 import project.convention.logic.AppBuildType
 import project.convention.logic.config.LibraryModule
 import project.convention.logic.getProperty
+import java.util.Properties
+import kotlin.apply
 
 plugins {
     id("project.android.application")
@@ -25,8 +27,11 @@ plugins {
 
 android {
 
+    val propsFile = rootProject.file("keystore.properties")
+    val hasReleaseSigningConfig = propsFile.isFile
+
     signingConfigs {
-        create("release") {
+        /*create("release") {
 
             storeFile = file("${rootProject.projectDir}/sign")
 
@@ -36,11 +41,25 @@ android {
                 getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
 
             enableV2Signing = true
+        }*/
+
+        if (hasReleaseSigningConfig) {
+            val props = Properties().apply {
+                load(propsFile.reader())
+            }
+            create("release") {
+                storeFile = rootProject.file(props.getProperty("storeFile"))
+                storePassword = props.getProperty("storePassword")
+                keyPassword = props.getProperty("keyPassword")
+                keyAlias = props.getProperty("keyAlias")
+                enableV2Signing = true
+            }
         }
     }
 
     defaultConfig {
-        applicationId = "eu.europa.ec.euidi"
+        applicationId = "net.eidas2sandkasse.demolommebok"
+        versionName = "1.0.0"
         versionCode = 1
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -64,7 +83,7 @@ android {
         }
     }
 
-    namespace = "eu.europa.ec.euidi"
+    namespace = "net.eidas2sandkasse.demolommebok"
 }
 
 dependencies {

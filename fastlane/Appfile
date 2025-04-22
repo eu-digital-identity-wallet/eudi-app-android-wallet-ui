@@ -1,2 +1,2 @@
-json_key_file("")
-package_name("")
+json_key_file("google-services.json")
+package_name("net.eidas2sandkasse.demolommebok.dev")
