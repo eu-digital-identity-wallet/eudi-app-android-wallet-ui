@@ -91,7 +91,7 @@ fun List<Display>.getLocalizedDisplayName(
 fun DocumentMetaData?.getLocalizedDocumentName(
     userLocale: Locale,
     fallback: String,
-): String{
+): String {
     return this?.display.getLocalizedString(
         userLocale = userLocale,
         localeExtractor = { it.locale },
