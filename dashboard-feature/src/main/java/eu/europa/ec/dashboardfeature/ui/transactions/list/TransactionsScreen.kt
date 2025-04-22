@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.transactions
+package eu.europa.ec.dashboardfeature.ui.transactions.list
 
 import android.content.Context
 import androidx.compose.foundation.background

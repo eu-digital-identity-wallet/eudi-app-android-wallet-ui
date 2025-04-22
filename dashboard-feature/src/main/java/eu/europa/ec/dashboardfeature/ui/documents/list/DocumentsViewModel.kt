@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.documents
+package eu.europa.ec.dashboardfeature.ui.documents.list
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.model.FilterableList
@@ -32,8 +32,8 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPa
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
 import eu.europa.ec.dashboardfeature.model.DocumentUi
-import eu.europa.ec.dashboardfeature.ui.documents.DocumentsBottomSheetContent.DeferredDocumentPressed
-import eu.europa.ec.dashboardfeature.ui.documents.DocumentsBottomSheetContent.Filters
+import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsBottomSheetContent.DeferredDocumentPressed
+import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsBottomSheetContent.Filters
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -544,7 +544,7 @@ class DocumentsViewModel(
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.DocumentDetails,
+                    screen = DashboardScreens.DocumentDetails,
                     arguments = generateComposableArguments(
                         mapOf(
                             "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,

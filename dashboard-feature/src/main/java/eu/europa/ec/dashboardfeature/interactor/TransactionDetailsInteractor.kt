@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.interactor.transaction
+package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.FULL_DATETIME_PATTERN
@@ -32,13 +32,13 @@ import eu.europa.ec.corelogic.model.ClaimPath.Companion.toClaimPath
 import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
+import eu.europa.ec.dashboardfeature.model.TransactionDetailsCardData
+import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSharedHolder
+import eu.europa.ec.dashboardfeature.model.TransactionDetailsUi
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
 import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentedDocument
-import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsCardData
-import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsDataSharedHolder
-import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons

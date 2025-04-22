@@ -14,17 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.document.details
+package eu.europa.ec.dashboardfeature.ui.documents.detail
 
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorDeleteBookmarkPartialState
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorDeleteDocumentPartialState
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorPartialState
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorStoreBookmarkPartialState
 import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
-import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteBookmarkPartialState
-import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorDeleteDocumentPartialState
-import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorPartialState
-import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorStoreBookmarkPartialState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig

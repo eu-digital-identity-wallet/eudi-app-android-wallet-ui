@@ -14,12 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.transaction.details
+package eu.europa.ec.dashboardfeature.ui.transactions.detail
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractor
-import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractorPartialState
-import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsUi
+import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractor
+import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractorPartialState
+import eu.europa.ec.dashboardfeature.model.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons

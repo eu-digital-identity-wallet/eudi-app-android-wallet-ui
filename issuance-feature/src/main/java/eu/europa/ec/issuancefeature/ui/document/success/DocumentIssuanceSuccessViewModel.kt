@@ -19,8 +19,8 @@ package eu.europa.ec.issuancefeature.ui.document.success
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessViewModel
-import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractor
-import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractorGetUiItemsPartialState
+import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
+import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorGetUiItemsPartialState
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch

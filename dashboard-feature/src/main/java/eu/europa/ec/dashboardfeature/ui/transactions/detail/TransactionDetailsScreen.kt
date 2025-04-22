@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.transaction.details
+package eu.europa.ec.dashboardfeature.ui.transactions.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,10 +43,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsCardData
-import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsDataSharedHolder
-import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsDataSignedHolder
-import eu.europa.ec.issuancefeature.model.transaction.details.TransactionDetailsUi
+import eu.europa.ec.dashboardfeature.model.TransactionDetailsCardData
+import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSharedHolder
+import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSignedHolder
+import eu.europa.ec.dashboardfeature.model.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons

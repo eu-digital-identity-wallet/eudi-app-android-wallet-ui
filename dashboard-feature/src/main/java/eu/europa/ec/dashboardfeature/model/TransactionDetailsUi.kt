@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.model.transaction.details
+package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 

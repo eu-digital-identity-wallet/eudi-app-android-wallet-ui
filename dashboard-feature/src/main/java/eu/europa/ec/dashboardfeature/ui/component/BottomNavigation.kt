@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui
+package eu.europa.ec.dashboardfeature.ui.component
 
 import androidx.annotation.StringRes
 import androidx.compose.material3.MaterialTheme

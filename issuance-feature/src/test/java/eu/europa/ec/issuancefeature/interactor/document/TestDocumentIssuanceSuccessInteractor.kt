@@ -18,6 +18,8 @@ package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
+import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testlogic.rule.CoroutineTestRule

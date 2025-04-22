@@ -28,9 +28,9 @@ import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
-import eu.europa.ec.issuancefeature.interactor.document.IssueDocumentsInteractorPartialState
-import eu.europa.ec.issuancefeature.interactor.document.ResolveDocumentOfferInteractorPartialState
+import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
+import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
+import eu.europa.ec.issuancefeature.interactor.ResolveDocumentOfferInteractorPartialState
 import eu.europa.ec.issuancefeature.ui.document.offer.transformer.DocumentOfferTransformer.toListItemDataList
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider

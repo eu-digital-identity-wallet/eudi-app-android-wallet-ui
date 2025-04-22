@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.documents
+package eu.europa.ec.dashboardfeature.ui.documents.list
 
 import android.content.Context
 import androidx.compose.foundation.background

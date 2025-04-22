@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.interactor.document
+package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlDomain
@@ -32,7 +32,7 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemCall
+import eu.europa.ec.testfeature.MockResourceProviderForStringCalls
 import eu.europa.ec.testfeature.createMockedNamespaceData
 import eu.europa.ec.testfeature.mockedBookmarkId
 import eu.europa.ec.testfeature.mockedDefaultLocale
@@ -56,7 +56,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyString
+import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -108,7 +108,7 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 1, When getDocumentDetails is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockTransformToUiItemCall(resourceProvider)
+            MockResourceProviderForStringCalls.mockTransformToUiItemCall(resourceProvider)
 
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
             mockRetrieveBookmarkCall(response = false)
@@ -144,7 +144,7 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 2, When getDocumentDetails is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockTransformToUiItemCall(resourceProvider)
+            MockResourceProviderForStringCalls.mockTransformToUiItemCall(resourceProvider)
 
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
             mockRetrieveBookmarkCall(response = true)
@@ -180,7 +180,7 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 3, When getDocumentDetails is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockTransformToUiItemCall(resourceProvider)
+            MockResourceProviderForStringCalls.mockTransformToUiItemCall(resourceProvider)
 
             mockGetDocumentByIdCall(response = mockedMdlWithBasicFields)
             mockRetrieveBookmarkCall(response = false)
@@ -249,7 +249,7 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 5, When getDocumentDetails is called, Then Case 5 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            mockTransformToUiItemCall(resourceProvider)
+            MockResourceProviderForStringCalls.mockTransformToUiItemCall(resourceProvider)
 
             mockGetDocumentByIdCall(
                 response = mockedPidWithBasicFields.copy(
@@ -716,7 +716,7 @@ class TestDocumentDetailsInteractor {
     }
 
     private fun mockGetDocumentByIdCall(response: IssuedDocument?) {
-        whenever(walletCoreDocumentsController.getDocumentById(anyString()))
+        whenever(walletCoreDocumentsController.getDocumentById(ArgumentMatchers.anyString()))
             .thenReturn(response)
     }
 
@@ -726,12 +726,12 @@ class TestDocumentDetailsInteractor {
     }
 
     private fun mockDeleteAllDocumentsCall(response: DeleteAllDocumentsPartialState) {
-        whenever(walletCoreDocumentsController.deleteAllDocuments(anyString()))
+        whenever(walletCoreDocumentsController.deleteAllDocuments(ArgumentMatchers.anyString()))
             .thenReturn(response.toFlow())
     }
 
     private fun mockDeleteDocumentCall(response: DeleteDocumentPartialState) {
-        whenever(walletCoreDocumentsController.deleteDocument(anyString()))
+        whenever(walletCoreDocumentsController.deleteDocument(ArgumentMatchers.anyString()))
             .thenReturn(response.toFlow())
     }
 
@@ -752,7 +752,7 @@ class TestDocumentDetailsInteractor {
     }
 
     private suspend fun mockRetrieveBookmarkCall(response: Boolean) {
-        whenever(walletCoreDocumentsController.isDocumentBookmarked(anyString()))
+        whenever(walletCoreDocumentsController.isDocumentBookmarked(ArgumentMatchers.anyString()))
             .thenReturn(response)
     }
 
