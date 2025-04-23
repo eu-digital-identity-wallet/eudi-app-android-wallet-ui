@@ -49,12 +49,12 @@ sealed class DashboardScreens {
     data object SignDocument : Screen(name = "SIGN_DOCUMENT")
 
     data object DocumentDetails : Screen(
-        name = "ISSUANCE_DOCUMENT_DETAILS",
+        name = "DOCUMENT_DETAILS",
         parameters = "?documentId={documentId}"
     )
 
     data object TransactionDetails : Screen(
-        name = "ISSUANCE_TRANSACTION_DETAILS",
+        name = "TRANSACTION_DETAILS",
         parameters = "?transactionId={transactionId}"
     )
 }

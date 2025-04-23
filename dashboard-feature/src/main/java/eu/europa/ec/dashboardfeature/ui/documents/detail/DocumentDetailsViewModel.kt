@@ -64,7 +64,6 @@ sealed class Event : ViewEvent {
     data object Init : Event()
     data object Pop : Event()
     data class ClaimClicked(val itemId: String) : Event()
-    data object PrimaryButtonPressed : Event()
     data object SecondaryButtonPressed : Event()
 
     data object DismissError : Event()
@@ -140,10 +139,6 @@ class DocumentDetailsViewModel(
             }
 
             is Event.ClaimClicked -> onClaimClicked(event.itemId)
-
-            is Event.PrimaryButtonPressed -> {
-                // TODO: will redirect to transactions screen
-            }
 
             is Event.SecondaryButtonPressed -> {
                 showBottomSheet(sheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation)
