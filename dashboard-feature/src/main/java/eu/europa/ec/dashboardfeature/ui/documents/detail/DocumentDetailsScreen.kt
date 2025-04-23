@@ -237,7 +237,10 @@ private fun Content(
                     modifier = Modifier
                         .fillMaxWidth(),
                     shape = MaterialTheme.shapes.small,
-                    colors = CardDefaults.cardColors(contentColor = MaterialTheme.colorScheme.errorContainer)
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
                 ) {
                     Column(
                         modifier = Modifier
@@ -248,8 +251,7 @@ private fun Content(
                                 R.string.document_details_revoked_document_message
                             ),
                             textConfig = TextConfig(
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.titleMedium,
+                                style = MaterialTheme.typography.bodyMedium,
                                 maxLines = Int.MAX_VALUE
                             )
                         )
