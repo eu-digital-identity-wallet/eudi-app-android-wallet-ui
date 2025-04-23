@@ -293,30 +293,32 @@ private fun ExpandableDataSection(
     dataItems: List<ExpandableListItem.NestedListItemData>,
     onEventSend: (Event) -> Unit
 ) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
-    ) {
-        SectionTitle(
-            modifier = Modifier.fillMaxWidth(),
-            text = sectionTitle,
-        )
-
-        dataItems.forEach { sharedDocument ->
-            WrapExpandableListItem(
+    if (dataItems.isNotEmpty()) {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+        ) {
+            SectionTitle(
                 modifier = Modifier.fillMaxWidth(),
-                header = sharedDocument.header,
-                data = sharedDocument.nestedItems,
-                onItemClick = null,
-                onExpandedChange = {
-                    onEventSend(
-                        Event.ExpandOrCollapseGroupItem(itemId = it.itemId)
-                    )
-                },
-                isExpanded = sharedDocument.isExpanded,
-                collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
-                expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                text = sectionTitle,
             )
+
+            dataItems.forEach { sharedDocument ->
+                WrapExpandableListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    header = sharedDocument.header,
+                    data = sharedDocument.nestedItems,
+                    onItemClick = null,
+                    onExpandedChange = {
+                        onEventSend(
+                            Event.ExpandOrCollapseGroupItem(itemId = it.itemId)
+                        )
+                    },
+                    isExpanded = sharedDocument.isExpanded,
+                    collapsedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                    expandedMainContentVerticalPadding = SPACING_MEDIUM.dp,
+                )
+            }
         }
     }
 }
