@@ -213,7 +213,3 @@ fun Long?.toDisplayedDate(): String {
         }
     }.orEmpty()
 }
-
-fun String.uppercaseAmPm(): String {
-    return this.replace(Regex("\\b(am|pm)\\b")) { it.value.uppercase() }
-}

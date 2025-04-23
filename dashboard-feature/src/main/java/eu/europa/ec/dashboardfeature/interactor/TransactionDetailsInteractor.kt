@@ -19,7 +19,6 @@ package eu.europa.ec.dashboardfeature.interactor
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.FULL_DATETIME_PATTERN
 import eu.europa.ec.businesslogic.util.formatInstant
-import eu.europa.ec.businesslogic.util.uppercaseAmPm
 import eu.europa.ec.commonfeature.extensions.toExpandableListItems
 import eu.europa.ec.commonfeature.model.TransactionUiStatus
 import eu.europa.ec.commonfeature.model.TransactionUiStatus.Companion.toUiText
@@ -100,7 +99,7 @@ class TransactionDetailsInteractorImpl(
                     val transactionUiStatus = transaction.status.toTransactionUiStatus()
                     val transactionUiDate = transaction.creationDate.formatInstant(
                         pattern = FULL_DATETIME_PATTERN
-                    ).uppercaseAmPm()
+                    )
 
                     val relyingPartyData: TransactionLog.RelyingParty?
                     val dataShared: List<ExpandableListItem.NestedListItemData>?
