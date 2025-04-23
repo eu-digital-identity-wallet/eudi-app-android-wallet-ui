@@ -25,7 +25,6 @@ import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
 import eu.europa.ec.businesslogic.util.minutesToNow
 import eu.europa.ec.businesslogic.util.plusOneDay
-import eu.europa.ec.businesslogic.util.uppercaseAmPm
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterAction
@@ -491,13 +490,13 @@ class TransactionsInteractorImpl(
             isToday() -> TransactionInteractorDateTimeCategoryPartialState.Today(
                 time = format(
                     hoursMinutesFormatter
-                ).uppercaseAmPm()
+                )
             )
 
             else -> TransactionInteractorDateTimeCategoryPartialState.WithinMonth(
                 date = format(
                     fullDateTimeFormatter
-                ).uppercaseAmPm()
+                )
             )
         }
     }
