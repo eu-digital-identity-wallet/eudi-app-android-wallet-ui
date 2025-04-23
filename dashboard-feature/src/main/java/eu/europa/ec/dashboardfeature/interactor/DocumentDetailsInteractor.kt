@@ -78,11 +78,11 @@ interface DocumentDetailsInteractor {
     ): Flow<DocumentDetailsInteractorDeleteDocumentPartialState>
 
     fun storeBookmark(
-        bookmarkId: String
+        documentId: String
     ): Flow<DocumentDetailsInteractorStoreBookmarkPartialState>
 
     fun deleteBookmark(
-        bookmarkId: String
+        documentId: String
     ): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState>
 }
 
