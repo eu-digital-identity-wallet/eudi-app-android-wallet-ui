@@ -617,7 +617,7 @@ class TestDocumentDetailsInteractor {
             mockStoreBookmarkCall(bookmarkId = mockedBookmarkId)
 
             // Act
-            interactor.storeBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+            interactor.storeBookmark(documentId = mockedBookmarkId).runFlowTest {
                 // Assert
                 assertEquals(
                     DocumentDetailsInteractorStoreBookmarkPartialState.Success(
@@ -644,7 +644,7 @@ class TestDocumentDetailsInteractor {
             )
 
             // Act
-            interactor.storeBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+            interactor.storeBookmark(documentId = mockedBookmarkId).runFlowTest {
                 // Assert
                 assertEquals(
                     DocumentDetailsInteractorStoreBookmarkPartialState.Failure,
@@ -668,7 +668,7 @@ class TestDocumentDetailsInteractor {
             mockDeleteBookmarkCall(bookmarkId = mockedBookmarkId)
 
             // Act
-            interactor.deleteBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+            interactor.deleteBookmark(documentId = mockedBookmarkId).runFlowTest {
                 // Assert
                 assertEquals(
                     DocumentDetailsInteractorDeleteBookmarkPartialState.Success,
@@ -693,7 +693,7 @@ class TestDocumentDetailsInteractor {
             )
 
             // When
-            interactor.deleteBookmark(bookmarkId = mockedBookmarkId).runFlowTest {
+            interactor.deleteBookmark(documentId = mockedBookmarkId).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorDeleteBookmarkPartialState.Failure,
