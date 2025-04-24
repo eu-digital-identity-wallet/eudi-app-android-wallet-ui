@@ -24,8 +24,13 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreLogController
 import eu.europa.ec.corelogic.controller.WalletCoreLogControllerImpl
+import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
+import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.storagelogic.controller.BookmarkStorageController
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
+import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -43,9 +48,11 @@ class LogicCoreModule
 fun provideEudiWallet(
     context: Context,
     walletCoreConfig: WalletCoreConfig,
-    walletCoreLogController: WalletCoreLogController
+    walletCoreLogController: WalletCoreLogController,
+    walletCoreTransactionLogController: WalletCoreTransactionLogController
 ): EudiWallet = EudiWallet(context, walletCoreConfig.config) {
     withLogger(walletCoreLogController)
+    withTransactionLogger(walletCoreTransactionLogController)
 }
 
 @Single
@@ -57,16 +64,29 @@ fun provideWalletCoreConfig(
 fun provideWalletCoreLogController(logController: LogController): WalletCoreLogController =
     WalletCoreLogControllerImpl(logController)
 
+@Single
+fun provideWalletCoreTransactionLogController(
+    transactionLogStorageController: TransactionLogStorageController
+): WalletCoreTransactionLogController = WalletCoreTransactionLogControllerImpl(
+    transactionLogStorageController = transactionLogStorageController
+)
+
 @Factory
 fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
     eudiWallet: EudiWallet,
     walletCoreConfig: WalletCoreConfig,
+    transactionLogStorageController: TransactionLogStorageController,
+    bookmarkStorageController: BookmarkStorageController,
+    revokedDocumentsStorageController: RevokedDocumentsStorageController
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
         resourceProvider,
         eudiWallet,
         walletCoreConfig,
+        transactionLogStorageController,
+        bookmarkStorageController,
+        revokedDocumentsStorageController
     )
 
 /**

@@ -25,8 +25,8 @@ import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterAction
+import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterGroup
-import eu.europa.ec.businesslogic.validator.model.FilterItem
 import eu.europa.ec.businesslogic.validator.model.FilterMultipleAction
 import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
@@ -43,9 +43,9 @@ import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentCategory
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.dashboardfeature.model.DocumentFilterIds
 import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.DocumentsFilterableAttributes
-import eu.europa.ec.dashboardfeature.model.FilterIds
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
@@ -208,7 +208,8 @@ class DocumentsInteractorImpl(
                                 itemId = filterItem.id,
                                 mainContentData = ListItemMainContentData.Text(filterItem.name),
                                 trailingContentData = when (filterGroup) {
-                                    is FilterGroup.MultipleSelectionFilterGroup<*> -> {
+                                    is FilterGroup.MultipleSelectionFilterGroup<*>,
+                                    is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
                                         ListItemTrailingContentData.Checkbox(
                                             checkboxData = CheckboxData(
                                                 isChecked = filterItem.selected,
@@ -217,7 +218,8 @@ class DocumentsInteractorImpl(
                                         )
                                     }
 
-                                    is FilterGroup.SingleSelectionFilterGroup -> {
+                                    is FilterGroup.SingleSelectionFilterGroup,
+                                    is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
                                         ListItemTrailingContentData.RadioButton(
                                             radioButtonData = RadioButtonData(
                                                 isSelected = filterItem.selected,
@@ -291,6 +293,10 @@ class DocumentsInteractorImpl(
 
             val allDocuments = FilterableList(
                 items = walletCoreDocumentsController.getAllDocuments().map { document ->
+
+                    val documentIsRevoked =
+                        walletCoreDocumentsController.isDocumentRevoked(document.id)
+
                     when (document) {
                         is IssuedDocument -> {
                             val localizedIssuerMetadata =
@@ -314,20 +320,32 @@ class DocumentsInteractorImpl(
                             val documentHasExpired =
                                 documentHasExpired(documentExpirationDate = document.validUntil)
 
-                            val documentIssuanceState = if (documentHasExpired) {
-                                DocumentUiIssuanceState.Expired
-                            } else {
-                                DocumentUiIssuanceState.Issued
+                            val documentIssuanceState = when {
+                                documentIsRevoked -> DocumentUiIssuanceState.Revoked
+                                documentHasExpired == true -> DocumentUiIssuanceState.Failed
+                                else -> DocumentUiIssuanceState.Issued
                             }
 
-                            val supportingText = if (documentHasExpired) {
-                                resourceProvider.getString(R.string.dashboard_document_has_expired)
-                            } else {
-                                resourceProvider.getString(
+                            val supportingText = when {
+                                documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_revoked)
+                                documentHasExpired == true -> resourceProvider.getString(R.string.dashboard_document_has_expired)
+                                else -> resourceProvider.getString(
                                     R.string.dashboard_document_has_not_expired,
                                     document.validUntil.formatInstant()
                                 )
                             }
+
+                            val trailingContentData = if (documentIsRevoked) {
+                                ListItemTrailingContentData.Icon(
+                                    iconData = AppIcons.ErrorFilled,
+                                    tint = ThemeColors.error
+                                )
+                            } else {
+                                ListItemTrailingContentData.Icon(
+                                    iconData = AppIcons.KeyboardArrowRight
+                                )
+                            }
+
                             FilterableItem(
                                 payload = DocumentUi(
                                     documentIssuanceState = documentIssuanceState,
@@ -340,9 +358,7 @@ class DocumentsInteractorImpl(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
                                             errorImage = AppIcons.Id,
                                         ),
-                                        trailingContentData = ListItemTrailingContentData.Icon(
-                                            iconData = AppIcons.KeyboardArrowRight
-                                        )
+                                        trailingContentData = trailingContentData
                                     ),
                                     documentIdentifier = documentIdentifier,
                                     documentCategory = documentCategory,
@@ -353,7 +369,8 @@ class DocumentsInteractorImpl(
                                     expiryDate = document.validUntil,
                                     issuer = issuerName,
                                     name = document.name,
-                                    category = documentCategory
+                                    category = documentCategory,
+                                    isRevoked = documentIsRevoked
                                 )
                             )
                         }
@@ -403,7 +420,8 @@ class DocumentsInteractorImpl(
                                     expiryDate = null,
                                     issuer = issuerName,
                                     name = document.name,
-                                    category = documentCategory
+                                    category = documentCategory,
+                                    isRevoked = documentIsRevoked
                                 )
                             )
                         }
@@ -543,17 +561,27 @@ class DocumentsInteractorImpl(
         return filters.copy(
             filterGroups = filters.filterGroups.map { filterGroup ->
                 when (filterGroup.id) {
-                    FilterIds.FILTER_BY_ISSUER_GROUP_ID -> {
+                    DocumentFilterIds.FILTER_BY_ISSUER_GROUP_ID -> {
                         filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
                         filterGroup.copy(
                             filters = addIssuerFilter(documents)
                         )
                     }
 
-                    FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID -> {
+                    DocumentFilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID -> {
                         filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
                         filterGroup.copy(
                             filters = addDocumentCategoryFilter(documents)
+                        )
+                    }
+
+                    DocumentFilterIds.FILTER_BY_STATE_GROUP_ID -> {
+                        filterGroup as FilterGroup.MultipleSelectionFilterGroup<*>
+                        filterGroup.copy(
+                            filters = buildList {
+                                addAll(filterGroup.filters)
+                                addAll(addRevokedDocumentFilter(documents))
+                            }
                         )
                     }
 
@@ -570,11 +598,11 @@ class DocumentsInteractorImpl(
         filterGroups = listOf(
             // Sort
             FilterGroup.SingleSelectionFilterGroup(
-                id = FilterIds.FILTER_SORT_GROUP_ID,
+                id = DocumentFilterIds.FILTER_SORT_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_sort_by),
                 filters = listOf(
                     FilterItem(
-                        id = FilterIds.FILTER_SORT_DEFAULT,
+                        id = DocumentFilterIds.FILTER_SORT_DEFAULT,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
                         isDefault = true,
@@ -583,7 +611,7 @@ class DocumentsInteractorImpl(
                         }
                     ),
                     FilterItem(
-                        id = FilterIds.FILTER_SORT_DATE_ISSUED,
+                        id = DocumentFilterIds.FILTER_SORT_DATE_ISSUED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_date_issued),
                         selected = false,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
@@ -591,7 +619,7 @@ class DocumentsInteractorImpl(
                         }
                     ),
                     FilterItem(
-                        id = FilterIds.FILTER_SORT_EXPIRY_DATE,
+                        id = DocumentFilterIds.FILTER_SORT_EXPIRY_DATE,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_expiry_date),
                         selected = false,
                         filterableAction = FilterAction.Sort<DocumentsFilterableAttributes, Instant> { attributes ->
@@ -602,11 +630,11 @@ class DocumentsInteractorImpl(
             ),
             // Filter by expiry period
             FilterGroup.SingleSelectionFilterGroup(
-                id = FilterIds.FILTER_BY_PERIOD_GROUP_ID,
+                id = DocumentFilterIds.FILTER_BY_PERIOD_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period),
                 filters = listOf(
                     FilterItem(
-                        id = FilterIds.FILTER_BY_PERIOD_DEFAULT,
+                        id = DocumentFilterIds.FILTER_BY_PERIOD_DEFAULT,
                         name = resourceProvider.getString(R.string.documents_screen_filters_sort_default),
                         selected = true,
                         isDefault = true,
@@ -615,7 +643,7 @@ class DocumentsInteractorImpl(
                         }
                     ),
                     FilterItem(
-                        id = FilterIds.FILTER_BY_PERIOD_NEXT_7,
+                        id = DocumentFilterIds.FILTER_BY_PERIOD_NEXT_7,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_1),
                         selected = false,
                         filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
@@ -623,7 +651,7 @@ class DocumentsInteractorImpl(
                         }
                     ),
                     FilterItem(
-                        id = FilterIds.FILTER_BY_PERIOD_NEXT_30,
+                        id = DocumentFilterIds.FILTER_BY_PERIOD_NEXT_30,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_2),
                         selected = false,
                         filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
@@ -631,7 +659,7 @@ class DocumentsInteractorImpl(
                         }
                     ),
                     FilterItem(
-                        id = FilterIds.FILTER_BY_PERIOD_BEYOND_30,
+                        id = DocumentFilterIds.FILTER_BY_PERIOD_BEYOND_30,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_3),
                         selected = false,
                         filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
@@ -639,7 +667,7 @@ class DocumentsInteractorImpl(
                         }
                     ),
                     FilterItem(
-                        id = FilterIds.FILTER_BY_PERIOD_EXPIRED,
+                        id = DocumentFilterIds.FILTER_BY_PERIOD_EXPIRED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_expiry_period_4),
                         selected = false,
                         filterableAction = FilterAction.Filter<DocumentsFilterableAttributes> { attributes, _ ->
@@ -650,7 +678,7 @@ class DocumentsInteractorImpl(
             ),
             // Filter by Issuer
             FilterGroup.MultipleSelectionFilterGroup(
-                id = FilterIds.FILTER_BY_ISSUER_GROUP_ID,
+                id = DocumentFilterIds.FILTER_BY_ISSUER_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_issuer),
                 filters = emptyList(),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
@@ -659,7 +687,7 @@ class DocumentsInteractorImpl(
             ),
             // Filter by category
             FilterGroup.MultipleSelectionFilterGroup(
-                id = FilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID,
+                id = DocumentFilterIds.FILTER_BY_DOCUMENT_CATEGORY_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_category),
                 filters = emptyList(),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
@@ -668,17 +696,17 @@ class DocumentsInteractorImpl(
             ),
             // Filter by State
             FilterGroup.MultipleSelectionFilterGroup(
-                id = FilterIds.FILTER_BY_STATE_GROUP_ID,
+                id = DocumentFilterIds.FILTER_BY_STATE_GROUP_ID,
                 name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state),
                 filters = listOf(
                     FilterItem(
-                        id = FilterIds.FILTER_BY_STATE_VALID,
+                        id = DocumentFilterIds.FILTER_BY_STATE_VALID,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_valid),
                         selected = true,
                         isDefault = true,
                     ),
                     FilterItem(
-                        id = FilterIds.FILTER_BY_STATE_EXPIRED,
+                        id = DocumentFilterIds.FILTER_BY_STATE_EXPIRED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
                         selected = false,
                         isDefault = false,
@@ -686,12 +714,13 @@ class DocumentsInteractorImpl(
                 ),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
-                        FilterIds.FILTER_BY_STATE_VALID -> {
-                            attributes.expiryDate?.isValid() == true
-                                    || attributes.expiryDate == null
+                        DocumentFilterIds.FILTER_BY_STATE_VALID -> {
+                            (attributes.expiryDate?.isValid() == true || attributes.expiryDate == null)
+                                    && attributes.isRevoked == false
                         }
 
-                        FilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isExpired() == true
+                        DocumentFilterIds.FILTER_BY_STATE_EXPIRED -> attributes.expiryDate?.isExpired() == true && attributes.isRevoked == false
+                        DocumentFilterIds.FILTER_BY_STATE_REVOKED -> attributes.isRevoked
                         else -> true
                     }
                 }
@@ -710,6 +739,23 @@ class DocumentsInteractorImpl(
                         name = resourceProvider.getString(category.stringResId),
                         selected = true,
                         isDefault = true
+                    )
+                }
+            }
+    }
+
+    private fun addRevokedDocumentFilter(
+        documents: FilterableList
+    ): List<FilterItem> {
+        return documents.items
+            .distinctBy { (it.attributes as DocumentsFilterableAttributes).isRevoked }
+            .map { filterableItem ->
+                with(filterableItem.attributes as DocumentsFilterableAttributes) {
+                    FilterItem(
+                        id = DocumentFilterIds.FILTER_BY_STATE_REVOKED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_revoked),
+                        selected = true,
+                        isDefault = true,
                     )
                 }
             }

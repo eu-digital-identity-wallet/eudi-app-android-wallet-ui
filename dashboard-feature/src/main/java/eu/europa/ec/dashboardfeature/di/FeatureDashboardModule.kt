@@ -73,7 +73,15 @@ fun provideDocumentsInteractor(
     )
 
 @Factory
-fun provideTransactionInteractor(): TransactionsInteractor = TransactionsInteractorImpl()
+fun provideTransactionInteractor(
+    resourceProvider: ResourceProvider,
+    filterValidator: FilterValidator,
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+): TransactionsInteractor = TransactionsInteractorImpl(
+    resourceProvider,
+    filterValidator,
+    walletCoreDocumentsController
+)
 
 @Factory
 fun provideDocumentSignInteractor(

@@ -40,7 +40,7 @@ class FeaturePresentationModule
 fun providePresentationRequestInteractor(
     resourceProvider: ResourceProvider,
     walletCoreDocumentsController: WalletCoreDocumentsController,
-    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController
+    @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController,
 ): PresentationRequestInteractor {
     return PresentationRequestInteractorImpl(
         resourceProvider,
@@ -52,7 +52,7 @@ fun providePresentationRequestInteractor(
 @Factory
 fun providePresentationLoadingInteractor(
     @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController,
-    deviceAuthenticationInteractor: DeviceAuthenticationInteractor
+    deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
 ): PresentationLoadingInteractor {
     return PresentationLoadingInteractorImpl(
         walletCorePresentationController,

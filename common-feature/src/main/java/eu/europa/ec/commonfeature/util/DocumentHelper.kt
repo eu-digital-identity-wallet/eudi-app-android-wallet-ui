@@ -16,7 +16,9 @@
 
 package eu.europa.ec.commonfeature.util
 
+import android.util.Base64
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
+import eu.europa.ec.businesslogic.extension.encodeToBase64String
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.commonfeature.ui.document_details.model.DocumentJsonKeys
@@ -105,7 +107,6 @@ fun getReadableNameFromIdentifier(
         )
 }
 
-@OptIn(ExperimentalUuidApi::class)
 fun createKeyValue(
     item: Any,
     groupKey: String,
@@ -115,13 +116,54 @@ fun createKeyValue(
     metadata: DocumentMetaData?,
     allItems: MutableList<DomainClaim>,
 ) {
+
+    @OptIn(ExperimentalUuidApi::class)
+    fun addFlatOrGroupedChildren(
+        allItems: MutableList<DomainClaim>,
+        children: List<DomainClaim>,
+        groupKey: String,
+        metadata: DocumentMetaData?,
+        locale: Locale,
+        predicate: () -> Boolean
+    ) {
+
+        val groupIsAlreadyPresent = children
+            .filterIsInstance<DomainClaim.Group>()
+            .any { it.key == groupKey }
+
+        if (predicate() && !groupIsAlreadyPresent) {
+            allItems.add(
+                DomainClaim.Group(
+                    key = groupKey,
+                    displayTitle = getReadableNameFromIdentifier(
+                        metadata = metadata,
+                        userLocale = locale,
+                        identifier = groupKey
+                    ),
+                    path = ClaimPath(listOf(Uuid.random().toString())),
+                    items = children
+                )
+            )
+        } else {
+            allItems.addAll(children)
+        }
+    }
+
     when (item) {
 
         is Map<*, *> -> {
+
+            val children: MutableList<DomainClaim> = mutableListOf()
+            val childKeys: MutableList<String> = mutableListOf()
+
             item.forEach { (key, value) ->
                 safeLet(key as? String, value) { key, value ->
+
                     val newGroupKey = if (value is Collection<*>) key else groupKey
                     val newChildKey = if (value is Collection<*>) "" else key
+
+                    childKeys.add(newChildKey)
+
                     createKeyValue(
                         item = value,
                         groupKey = newGroupKey,
@@ -129,9 +171,19 @@ fun createKeyValue(
                         disclosurePath = disclosurePath,
                         resourceProvider = resourceProvider,
                         metadata = metadata,
-                        allItems = allItems
+                        allItems = children
                     )
                 }
+            }
+
+            addFlatOrGroupedChildren(
+                allItems = allItems,
+                children = children,
+                groupKey = groupKey,
+                metadata = metadata,
+                locale = resourceProvider.getLocale()
+            ) {
+                !childKeys.any { it.isEmpty() }
             }
         }
 
@@ -152,29 +204,26 @@ fun createKeyValue(
                 }
             }
 
-            if (childKey.isEmpty()) {
-                allItems.add(
-                    DomainClaim.Group(
-                        key = groupKey,
-                        displayTitle = getReadableNameFromIdentifier(
-                            metadata = metadata,
-                            userLocale = resourceProvider.getLocale(),
-                            identifier = groupKey
-                        ),
-                        path = ClaimPath(listOf(Uuid.random().toString())),
-                        items = children
-                    )
-                )
-            } else {
-                allItems.addAll(children)
+            addFlatOrGroupedChildren(
+                allItems = allItems,
+                children = children,
+                groupKey = groupKey,
+                metadata = metadata,
+                locale = resourceProvider.getLocale()
+            ) {
+                childKey.isEmpty()
             }
         }
 
         else -> {
 
+            val base64Image = (item as? ByteArray)?.encodeToBase64String(Base64.URL_SAFE)
+
             val date: String? = (item as? String)?.toDateFormatted()
+                ?: (item as? LocalDate)?.toDateFormatted()
 
             val formattedValue = when {
+                base64Image != null -> base64Image
                 keyIsGender(groupKey) -> getGenderValue(item.toString(), resourceProvider)
                 keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64()
                 date != null -> date

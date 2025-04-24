@@ -16,7 +16,15 @@
 
 package eu.europa.ec.dashboardfeature.model
 
-data class UserInfo(
-    val userFirstName: String,
-    val userBase64Portrait: String
-)
+import eu.europa.ec.businesslogic.util.toDisplayedDate
+
+data class FilterDateRangeSelectionData(
+    val startDate: Long? = null,
+    val endDate: Long? = null
+) {
+    val displayedStartDate: String
+        get() = startDate?.toDisplayedDate().orEmpty()
+
+    val displayedEndDate: String
+        get() = endDate?.toDisplayedDate().orEmpty()
+}

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -404,5 +405,11 @@ object AppIcons {
         resourceId = R.drawable.ic_open_in_browser,
         contentDescriptionId = R.string.content_description_open_in_browser_icon,
         imageVector = null
+    )
+
+    val DateRange: IconData = IconData(
+        resourceId = null,
+        contentDescriptionId = R.string.content_description_date_range_icon,
+        imageVector = Icons.Default.DateRange
     )
 }

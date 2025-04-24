@@ -44,7 +44,7 @@ interface WalletCoreConfig {
 }
 ```
 
-Same as the Verifier and Issuing APIs you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+Same as the Verifier and Issuing APIs, you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
 
 ```Kotlin
 _config = EudiWalletConfig {
@@ -93,7 +93,7 @@ interface ConfigLogic {
 }
 ```
 
-You can configure the *RQESConfig*, which implements the EudiRQESUiConfig interface from the RQESUi SDK, per flavor. You can find both implementations inside the business-logic module at src/demo/config/RQESConfigImpl and src/dev/config/RQESConfigImpl.
+You can configure the *RQESConfig*, which implements the EudiRQESUiConfig interface from the RQESUi SDK, per flavor. Both implementations are inside the business-logic module at src/demo/config/RQESConfigImpl and src/dev/config/RQESConfigImpl.
 
 ```Kotlin
 class RQESConfigImpl : EudiRQESUiConfig {
@@ -110,6 +110,8 @@ class RQESConfigImpl : EudiRQESUiConfig {
 
     // Optional. Default is false.
     override val printLogs: Boolean get()
+
+    override val documentRetrievalConfig: DocumentRetrievalConfig get()
 }
 ```
 
@@ -136,12 +138,19 @@ class RQESConfigImpl : EudiRQESUiConfig {
         )
 
     override val printLogs: Boolean get() = BuildConfig.DEBUG
+
+    override val documentRetrievalConfig: DocumentRetrievalConfig
+        get() = DocumentRetrievalConfig.X509Certificates(
+            context = context,
+            certificates = listOf(R.raw.my_certificate),
+            shouldLog = should_log_option
+        )
 }
 ```
 
 ## DeepLink Schemas configuration
 
-According to the specifications issuance and presentation require deep-linking for the same device flows.
+According to the specifications, issuance, presentation, and RQES require deep-linking for the same device flows.
 
 If you want to adjust any schema, you can alter the *AndroidLibraryConventionPlugin* inside the build-logic module.
 
@@ -157,6 +166,13 @@ val openid4VpHost = "*"
 
 val credentialOfferScheme = "openid-credential-offer"
 val credentialOfferHost = "*"
+
+val rqesScheme = "rqes"
+val rqesHost = "oauth"
+val rqesPath = "/callback"
+
+val rqesDocRetrievalScheme = "eudi-rqes"
+val rqesDocRetrievalHost = "*"
 ```
 
 Let's assume you want to change the credential offer schema to custom-my-offer:// the *AndroidLibraryConventionPlugin* should look like this:
@@ -175,7 +191,7 @@ val credentialOfferScheme = "custom-my-offer"
 val credentialOfferHost = "*"
 ```
 
-In case of an additive change, e.g. adding an extra credential offer schema, you must adjust the following.
+In case of an additive change, e.g., adding an extra credential offer schema, you must adjust the following.
 
 AndroidLibraryConventionPlugin:
 
@@ -250,11 +266,21 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
         schemas = listOf(BuildConfig.ISSUE_AUTHORIZATION_SCHEME),
         host = BuildConfig.ISSUE_AUTHORIZATION_HOST
     ),
-    EXTERNAL(listOf("external"))
+    DYNAMIC_PRESENTATION(
+        emptyList()
+    ),
+    RQES(
+        schemas = listOf(BuildConfig.RQES_SCHEME),
+        host = BuildConfig.RQES_HOST
+    ),
+    RQES_DOC_RETRIEVAL(
+        schemas = listOf(BuildConfig.RQES_DOC_RETRIEVAL_SCHEME)
+    ),
+    EXTERNAL(emptyList())
 }
 ```
 
-In the case of an additive change regarding openId4VP, you also need to update the *EudiWalletConfig* for each flavor inside the core-logic module.
+In the case of an additive change regarding OpenID4VP, you also need to update the *EudiWalletConfig* for each flavor inside the core-logic module.
 
 ```Kotlin
 .openId4VpConfig {
@@ -279,7 +305,7 @@ If you want to add or adjust the displayed scoped documents, you must modify the
 This section describes configuring the application to interact with services utilizing self-signed certificates.
 
 1. Open the build.gradle.kts file of the "core-logic" module.
-2. In the 'dependencies' block add the following two:
+2. In the 'dependencies' block, add the following two:
     ```Gradle
     implementation(libs.ktor.android)
     implementation(libs.ktor.logging)
@@ -385,7 +411,7 @@ interface StorageConfig {
 }
 ```
 
-You can provide your storage implementation by implementing the *PinStorageProvider* interface and then setting it as default to the *StorageConfigImpl* pinStorageProvider variable.
+You can provide your storage implementation by implementing the *PinStorageProvider* interface and then setting it as the default to the *StorageConfigImpl* pinStorageProvider variable.
 The project utilizes Koin for Dependency Injection (DI), thus requiring adjustment of the *LogicAuthenticationModule* graph to provide the configuration.
 
 Implementation Example:
@@ -434,7 +460,7 @@ fun provideStorageConfig(
 
 The application allows the configuration of multiple analytics providers. You can configure the following:
 
-1. Initializing the provider (e.g. Firebase, Appcenter, etc...)
+1. Initializing the provider (e.g., Firebase, Appcenter, etc)
 2. Screen logging
 3. Event logging
 

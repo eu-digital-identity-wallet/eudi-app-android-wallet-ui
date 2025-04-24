@@ -52,6 +52,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -239,6 +240,7 @@ class TestPresentationRequestInteractor {
                     mockedMdlWithBasicFields
                 )
             )
+            mockIsDocumentRevoked(isRevoked = false)
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
                 notAvailableString = mockedRequestElementIdentifierNotAvailable
@@ -436,6 +438,10 @@ class TestPresentationRequestInteractor {
     private fun mockGetAllIssuedDocumentsCall(response: List<IssuedDocument>) {
         whenever(walletCoreDocumentsController.getAllIssuedDocuments())
             .thenReturn(response)
+    }
+
+    private suspend fun mockIsDocumentRevoked(isRevoked: Boolean) {
+        whenever(walletCoreDocumentsController.isDocumentRevoked(any())).thenReturn(isRevoked)
     }
     //endregion
 

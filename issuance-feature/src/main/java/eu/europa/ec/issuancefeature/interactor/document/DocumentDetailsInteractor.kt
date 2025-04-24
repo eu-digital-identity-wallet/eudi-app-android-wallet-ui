@@ -30,8 +30,6 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.storagelogic.controller.BookmarkStorageController
-import eu.europa.ec.storagelogic.model.Bookmark
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -43,6 +41,7 @@ sealed class DocumentDetailsInteractorPartialState {
         val issuerLogo: URI?,
         val documentDetailsDomain: DocumentDetailsDomain,
         val documentIsBookmarked: Boolean,
+        val isRevoked: Boolean
     ) : DocumentDetailsInteractorPartialState()
 
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
@@ -89,7 +88,6 @@ interface DocumentDetailsInteractor {
 
 class DocumentDetailsInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val bookmarkStorageController: BookmarkStorageController,
     private val resourceProvider: ResourceProvider
 ) : DocumentDetailsInteractor {
 
@@ -116,14 +114,18 @@ class DocumentDetailsInteractorImpl(
                 val issuerName = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.name
                 val issuerLogo = safeIssuedDocument.localizedIssuerMetadata(userLocale)?.logo
 
-                val documentIsBookmarked = bookmarkStorageController.retrieve(documentId) != null
+                val documentIsBookmarked =
+                    walletCoreDocumentsController.isDocumentBookmarked(documentId)
+
+                val documentIsRevoked = walletCoreDocumentsController.isDocumentRevoked(documentId)
 
                 emit(
                     DocumentDetailsInteractorPartialState.Success(
                         issuerName = issuerName,
                         documentDetailsDomain = documentDetailsDomain,
                         documentIsBookmarked = documentIsBookmarked,
-                        issuerLogo = issuerLogo?.uri
+                        issuerLogo = issuerLogo?.uri,
+                        isRevoked = documentIsRevoked
                     )
                 )
             } ?: emit(DocumentDetailsInteractorPartialState.Failure(error = genericErrorMsg))
@@ -191,17 +193,17 @@ class DocumentDetailsInteractorImpl(
             )
         }
 
-    override fun storeBookmark(bookmarkId: DocumentId): Flow<DocumentDetailsInteractorStoreBookmarkPartialState> =
+    override fun storeBookmark(documentId: DocumentId): Flow<DocumentDetailsInteractorStoreBookmarkPartialState> =
         flow {
-            bookmarkStorageController.store(Bookmark(identifier = bookmarkId))
-            emit(DocumentDetailsInteractorStoreBookmarkPartialState.Success(bookmarkId = bookmarkId))
+            walletCoreDocumentsController.storeBookmark(documentId)
+            emit(DocumentDetailsInteractorStoreBookmarkPartialState.Success(documentId))
         }.safeAsync {
             DocumentDetailsInteractorStoreBookmarkPartialState.Failure
         }
 
-    override fun deleteBookmark(bookmarkId: DocumentId): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState> =
+    override fun deleteBookmark(documentId: DocumentId): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState> =
         flow {
-            bookmarkStorageController.delete(bookmarkId)
+            walletCoreDocumentsController.deleteBookmark(documentId)
             emit(DocumentDetailsInteractorDeleteBookmarkPartialState.Success)
         }.safeAsync {
             DocumentDetailsInteractorDeleteBookmarkPartialState.Failure

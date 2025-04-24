@@ -33,6 +33,7 @@ import eu.europa.ec.issuancefeature.ui.document.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
 import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
 import eu.europa.ec.issuancefeature.ui.document.success.DocumentIssuanceSuccessScreen
+import eu.europa.ec.issuancefeature.ui.transaction.details.TransactionDetailsScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.getViewModel
@@ -93,6 +94,33 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
                     parameters = {
                         parametersOf(
                             it.arguments?.getString("documentId").orEmpty(),
+                        )
+                    }
+                )
+            )
+        }
+
+        // Transaction Details
+        composable(
+            route = IssuanceScreens.TransactionDetails.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + IssuanceScreens.TransactionDetails.screenRoute
+                }
+            ),
+            arguments = listOf(
+                navArgument("transactionId") {
+                    type = NavType.StringType
+                },
+            )
+        ) {
+            TransactionDetailsScreen(
+                navController,
+                getViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString("transactionId").orEmpty(),
                         )
                     }
                 )

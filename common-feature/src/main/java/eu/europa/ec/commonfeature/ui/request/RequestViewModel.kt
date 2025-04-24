@@ -63,12 +63,12 @@ sealed class Event : ViewEvent {
 sealed class Effect : ViewSideEffect {
     sealed class Navigation : Effect() {
         data class SwitchScreen(
-            val screenRoute: String
+            val screenRoute: String,
         ) : Navigation()
 
         data object Pop : Navigation()
         data class PopTo(
-            val screenRoute: String
+            val screenRoute: String,
         ) : Navigation()
     }
 
@@ -99,7 +99,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     open fun updateData(
         updatedItems: List<RequestDocumentItemUi>,
-        allowShare: Boolean? = null
+        allowShare: Boolean? = null,
     ) {
         val hasAtLeastOneFieldSelected = hasAtLeastOneFieldSelected(
             requestDocuments = updatedItems
@@ -265,7 +265,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     }
 
     private fun hasAtLeastOneFieldSelected(
-        requestDocuments: List<RequestDocumentItemUi>
+        requestDocuments: List<RequestDocumentItemUi>,
     ): Boolean {
         val hasAtLeastOneFieldSelected: Boolean = requestDocuments.any { requestDocument ->
             requestDocument.headerUi.nestedItems.hasAnySingleSelected()

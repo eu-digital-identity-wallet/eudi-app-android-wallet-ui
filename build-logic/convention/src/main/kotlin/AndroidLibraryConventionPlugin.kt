@@ -62,6 +62,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             val rqesHost = "oauth"
             val rqesPath = "/callback"
 
+            // TODO This is temporary until proper value
+            val rqesDocRetrievalScheme = "eudi-rqes"
+            val rqesDocRetrievalHost = "*"
+
             with(pluginManager) {
                 apply("com.android.library")
                 apply("project.android.library.kover")
@@ -70,6 +74,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 apply("org.jetbrains.kotlin.android")
                 apply("kotlinx-serialization")
                 apply("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+                apply("kotlin-parcelize")
             }
 
             extensions.configure<LibraryExtension> {
@@ -94,6 +99,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     addConfigField("RQES_SCHEME", rqesScheme)
                     addConfigField("RQES_HOST", rqesHost)
                     addConfigField("RQES_DEEPLINK", "$rqesScheme://$rqesHost$rqesPath")
+                    addConfigField("RQES_DOC_RETRIEVAL_SCHEME", rqesDocRetrievalScheme)
 
                     // Manifest placeholders for Wallet deepLink
                     manifestPlaceholders["deepLinkScheme"] = walletScheme
@@ -121,6 +127,10 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     manifestPlaceholders["rqesHost"] = rqesHost
                     manifestPlaceholders["rqesScheme"] = rqesScheme
                     manifestPlaceholders["rqesPath"] = rqesPath
+
+                    // Manifest placeholders used for RQES Document Retrieval
+                    manifestPlaceholders["rqesDocRetrievalScheme"] = rqesDocRetrievalScheme
+                    manifestPlaceholders["rqesDocRetrievalHost"] = rqesDocRetrievalHost
                 }
                 configureFlavors(this)
                 configureGradleManagedDevices(this)
@@ -137,6 +147,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 add("implementation", libs.findLibrary("kotlinx-coroutines-android").get())
                 add("implementation", libs.findLibrary("kotlinx-coroutines-guava").get())
                 add("implementation", libs.findLibrary("kotlinx.serialization.json").get())
+                add("implementation", libs.findLibrary("androidx-work-ktx").get())
             }
             afterEvaluate {
                 if (!config.module.isLogicModule && !config.module.isFeatureCommon) {

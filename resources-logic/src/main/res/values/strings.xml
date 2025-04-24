@@ -43,6 +43,12 @@
     <string name="generic_bottom_sheet_delete_secondary_button_text">Cancel</string>
     <string name="generic_scan_qr">Scan QR</string>
     <string name="generic_or">OR</string>
+    <string name="generic_filters_apply">Apply</string>
+    <string name="generic_filters_reset">Reset all</string>
+    <string name="generic_filters_title">Filter</string>
+    <string name="generic_filters_sort_by">Sort by</string>
+    <string name="generic_filters_ascending">Ascending</string>
+    <string name="generic_filters_descending">Descending</string>
 
     <!-- Content Description -->
     <string name="content_description_image_or_placeholder_icon">Image or placeholder icon</string>
@@ -109,6 +115,7 @@
     <string name="content_description_change_pin_icon">Change PIN</string>
     <string name="content_description_check_icon">Check</string>
     <string name="content_description_open_in_browser_icon">Open in browser</string>
+    <string name="content_description_date_range_icon">Select filter date range</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
@@ -183,6 +190,7 @@
     <string name="dashboard_document_has_expired">Expired</string>
     <string name="dashboard_document_deferred_pending">Pending</string>
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
+    <string name="dashboard_document_revoked">Revoked</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
     <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the Authenticate in person or online option</string>
@@ -196,6 +204,10 @@
 
     <string name="dashboard_bottom_sheet_deferred_documents_ready_title">Documents issued</string>
     <string name="dashboard_bottom_sheet_deferred_documents_ready_subtitle">New documents have been added to your wallet.</string>
+
+    <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Revoked documents</string>
+    <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">The following documents have been revoked.</string>
+
     <string name="dashboard_intent_chooser_logs_share_title">Share logs</string>
 
     <!-- Dashboard Side Menu -->
@@ -220,6 +232,11 @@
     <string name="home_screen_authenticate_option_in_person">In person</string>
     <string name="home_screen_add_document_option_online">Online</string>
 
+    <string name="home_screen_sign_document">Sign document</string>
+    <string name="home_screen_sign_document_description">Sign a document digitally by choosing a file from your device or by scanning a QR code.</string>
+    <string name="home_screen_sign_document_option_from_device">From device</string>
+    <string name="home_screen_sign_document_option_scan_qr">Scan QR</string>
+
     <!-- Home Screen Learn More Popups content -->
     <string name="home_screen_authenticate_learn_more_inner_title">Sign documents safely</string>
     <string name="home_screen_authenticate_learn_more_description">Sign documents with just your wallet. Providing a legally binding e-signature will be faster and easier than ever, enabling you to conduct business whenever you are.</string>
@@ -236,10 +253,10 @@
     <string name="documents_screen_add_document_option_list">From list</string>
     <string name="documents_screen_add_document_option_qr">@string/generic_scan_qr</string>
     <string name="documents_screen_add_document_option_or">@string/generic_or</string>
-    <string name="documents_screen_filters_title">Filter</string>
-    <string name="documents_screen_filters_sort_by">Sort by</string>
-    <string name="documents_screen_filters_ascending">Ascending</string>
-    <string name="documents_screen_filters_descending">Descending</string>
+    <string name="documents_screen_filters_title">@string/generic_filters_title</string>
+    <string name="documents_screen_filters_sort_by">@string/generic_filters_sort_by</string>
+    <string name="documents_screen_filters_ascending">@string/generic_filters_ascending</string>
+    <string name="documents_screen_filters_descending">@string/generic_filters_descending</string>
     <string name="documents_screen_filters_sort_default">Default</string>
     <string name="documents_screen_filters_sort_date_issued">Date Issued</string>
     <string name="documents_screen_filters_sort_expiry_date">Expiry Date</string>
@@ -247,6 +264,7 @@
     <string name="documents_screen_filters_filter_by_category">Filter by Category</string>
     <string name="documents_screen_filters_filter_by_all">All</string>
     <string name="documents_screen_filters_filter_by_state">Filter by State</string>
+    <string name="documents_screen_filters_filter_by_state_revoked">Revoked</string>
     <string name="documents_screen_filters_filter_by_state_valid">Valid</string>
     <string name="documents_screen_filters_filter_by_state_expired">Expired</string>
     <string name="documents_screen_filters_filter_by_expiry_period">Filter by Expiry Period</string>
@@ -254,11 +272,41 @@
     <string name="documents_screen_filters_filter_by_expiry_period_2">Next 30 days</string>
     <string name="documents_screen_filters_filter_by_expiry_period_3">Beyond 30 days</string>
     <string name="documents_screen_filters_filter_by_expiry_period_4">Before today (expired)</string>
-    <string name="documents_screen_filters_apply">Apply</string>
-    <string name="documents_screen_filters_reset">Reset all</string>
+    <string name="documents_screen_filters_apply">@string/generic_filters_apply</string>
+    <string name="documents_screen_filters_reset">@string/generic_filters_reset</string>
 
     <!-- Transactions Screen -->
     <string name="transactions_screen_title">Transactions</string>
+    <string name="transactions_screen_search_label">Search Transactions</string>
+    <string name="transactions_screen_search_no_results_id">noTransactionsId</string>
+    <string name="transactions_screen_search_no_results">No transactions found. Try changing your search query or filters.</string>
+    <string name="transactions_screen_0_minutes_ago_message">Just now</string>
+    <plurals name="transactions_screen_some_minutes_ago_message">
+        <item quantity="one">%d minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    <string name="transactions_screen_text_field_date_pattern">dd/mm/yyyy</string>
+
+    <!-- Transactions Screen, Filter labels-->
+    <string name="transactions_screen_filters_title">@string/generic_filters_title</string>
+    <string name="transactions_screen_filters_sort_by">@string/generic_filters_sort_by</string>
+    <string name="transactions_screen_filters_ascending">@string/generic_filters_ascending</string>
+    <string name="transactions_screen_filters_descending">@string/generic_filters_descending</string>
+    <string name="transactions_screen_filters_sort_transaction_date">Transaction Date</string>
+    <string name="transactions_screen_filter_by_date_period">Filter by Transaction Date Period</string>
+    <string name="transactions_screen_filter_by_status">Filter by Status</string>
+    <string name="transactions_screen_filters_filter_by_relying_party">Filter by Relying Party</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type">Filter by Transaction Type</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_presentation">Presentation</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_issuance">Issuance</string>
+    <string name="transactions_screen_filters_filter_by_transaction_type_signing">Signing</string>
+    <string name="transactions_screen_filters_date_from">Date from</string>
+    <string name="transactions_screen_filters_date_to">Date to</string>
+    <string name="transactions_filter_item_status_completed">Completed</string>
+    <string name="transactions_filter_item_status_failed">Failed</string>
+    <string name="transactions_filter_item_no_relying_party_transactions">No Relying Party</string>
+    <string name="transactions_screen_filters_apply">@string/generic_filters_apply</string>
+    <string name="transactions_screen_filters_reset">@string/generic_filters_reset</string>
 
     <!-- Document Sign -->
     <string name="document_sign_title">Sign Document</string>
@@ -270,8 +318,10 @@
     <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>
     <string name="qr_scan_informative_text_presentation_flow">Having trouble scanning the QR Code?\nPlease try an alternative way</string>
     <string name="qr_scan_informative_text_issuance_flow">Having trouble scanning the QR Code?\nPlease try an alternative way</string>
+    <string name="qr_scan_informative_text_signature_flow">Having trouble scanning the QR Code?\nPlease try an alternative way</string>
 
     <!-- Document Details -->
+    <string name="document_details_revoked_document_message">This document has been revoked by the issuer. Contact the issuing service for more information.</string>
     <string name="document_details_portrait_readable_identifier">Shown above</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
@@ -294,6 +344,15 @@
     <string name="document_details_bottom_sheet_badge_subtitle">A Relying Party is considered trusted when it meets
         predefined criteria for security, data protection, compliance, and responsible data handling.</string>
 
+    <!-- Transaction Details -->
+    <string name="transaction_details_screen_title">Transaction information</string>
+    <string name="transaction_details_screen_card_date_label">Date</string>
+    <string name="transaction_details_data_shared_section_title">DATA SHARED</string>
+    <string name="transaction_details_data_shared_prefix_id">transactionDetailsDataSharedId</string>
+    <string name="transaction_details_data_signed_section_title">DATA SIGNED</string>
+    <string name="transaction_details_data_signed_prefix_id">transactionDetailsDataSignedId</string>
+    <string name="transaction_details_collapsed_supporting_text">@string/generic_view_details</string>
+
     <!-- Proximity QR -->
     <string name="proximity_qr_title">Present document in person</string>
     <string name="proximity_qr_subtitle">Show this QR code to a Relying Party to present a digital document.</string>
@@ -303,6 +362,10 @@
     <!-- Presentation Qr Scan -->
     <string name="presentation_qr_scan_title">Present document online</string>
     <string name="presentation_qr_scan_subtitle">Scan a QR code provided from a Relying Party to present a digital document.</string>
+
+    <!-- Signature Qr Scan -->
+    <string name="signature_qr_scan_title">Sign document</string>
+    <string name="signature_qr_scan_subtitle">Scan a QR code to electronically sign a document.</string>
 
     <!-- Issuance Add Document Screen -->
     <string name="issuance_add_document_title">Add document from list</string>
@@ -353,4 +416,8 @@
     <string name="document_category_retail">RETAIL</string>
     <string name="document_category_other">OTHER</string>
 
+    <!-- Transaction Categories -->
+    <string name="transaction_category_today">TODAY</string>">
+    <string name="transaction_category_this_week">THIS WEEK</string>">
+    <string name="transaction_category_month_year">MONTH</string>">
 </resources>

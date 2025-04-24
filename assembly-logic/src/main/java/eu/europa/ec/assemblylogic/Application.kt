@@ -17,9 +17,14 @@
 package eu.europa.ec.assemblylogic
 
 import android.app.Application
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigLogic
+import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.worker.RevocationWorkManager
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import org.koin.android.ext.android.inject
 import org.koin.core.KoinApplication
@@ -28,11 +33,13 @@ class Application : Application() {
 
     private val analyticsController: AnalyticsController by inject()
     private val configLogic: ConfigLogic by inject()
+    private val walletCoreConfig: WalletCoreConfig by inject()
 
     override fun onCreate() {
         super.onCreate()
         initializeKoin().initializeRqes()
         initializeReporting()
+        initializeRevocationWorkManager()
     }
 
     private fun KoinApplication.initializeRqes() {
@@ -49,5 +56,19 @@ class Application : Application() {
 
     private fun initializeReporting() {
         analyticsController.initialize(this)
+    }
+
+    private fun initializeRevocationWorkManager() {
+
+        val periodicWorkRequest = PeriodicWorkRequest.Builder(
+            workerClass = RevocationWorkManager::class.java,
+            repeatInterval = walletCoreConfig.revocationInterval,
+        ).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            RevocationWorkManager.REVOCATION_WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            periodicWorkRequest
+        )
     }
 }

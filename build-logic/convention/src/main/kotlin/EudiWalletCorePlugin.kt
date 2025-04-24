@@ -24,6 +24,7 @@ class EudiWalletCorePlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("kotlinx-serialization")
+                apply("project.wallet.storage")
             }
             dependencies {
                 add("api", libs.findLibrary("eudi.wallet.core").get())

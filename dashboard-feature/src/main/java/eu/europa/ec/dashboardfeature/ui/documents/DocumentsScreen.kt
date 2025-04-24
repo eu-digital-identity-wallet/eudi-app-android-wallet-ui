@@ -62,19 +62,21 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.model.DocumentUi
 import eu.europa.ec.dashboardfeature.model.SearchItem
-import eu.europa.ec.dashboardfeature.ui.FiltersSearchBar
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
+import eu.europa.ec.uilogic.component.FiltersSearchBar
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.SectionTitle
+import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -169,6 +171,14 @@ fun DocumentsScreen(
                 )
             }
         }
+    }
+
+    SystemBroadcastReceiver(
+        actions = listOf(
+            CoreActions.REVOCATION_WORK_REFRESH_ACTION
+        )
+    ) {
+        viewModel.setEvent(Event.GetDocuments)
     }
 }
 
@@ -373,6 +383,7 @@ private fun DocumentCategory(
                     DocumentUiIssuanceState.Pending -> MaterialTheme.colorScheme.warning
                     DocumentUiIssuanceState.Failed -> MaterialTheme.colorScheme.error
                     DocumentUiIssuanceState.Expired -> MaterialTheme.colorScheme.error
+                    DocumentUiIssuanceState.Revoked -> MaterialTheme.colorScheme.error
                 }
             )
         }

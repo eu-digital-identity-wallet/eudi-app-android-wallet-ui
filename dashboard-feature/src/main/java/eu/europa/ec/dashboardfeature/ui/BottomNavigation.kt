@@ -76,12 +76,10 @@ fun BottomNavigationBar(navController: NavController) {
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
     ) {
         navItems.forEach { screen ->
-            val enabled = screen.route != BottomNavigationItem.Transactions.route
             NavigationBarItem(
                 icon = {
                     WrapIcon(
                         iconData = screen.icon,
-                        enabled = enabled,
                     )
                 },
                 label = { Text(text = stringResource(screen.titleRes)) },
@@ -93,7 +91,6 @@ fun BottomNavigationBar(navController: NavController) {
                 selected = currentDestination?.hierarchy?.any {
                     it.route == screen.route
                 } == true,
-                enabled = enabled,
                 onClick = {
                     navController.navigate(screen.route) {
                         popUpTo(navController.graph.findStartDestination().id) {

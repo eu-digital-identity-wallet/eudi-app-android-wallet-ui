@@ -24,12 +24,16 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +41,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import eu.europa.ec.businesslogic.extension.getParcelableArrayListExtra
+import eu.europa.ec.corelogic.model.RevokedDocumentPayload
+import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationBar
 import eu.europa.ec.dashboardfeature.ui.BottomNavigationItem
 import eu.europa.ec.dashboardfeature.ui.documents.DocumentsScreen
@@ -46,7 +53,12 @@ import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
 import eu.europa.ec.dashboardfeature.ui.sidemenu.SideMenuScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
+import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.openAppSettings
@@ -56,9 +68,11 @@ import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(
+internal fun DashboardScreen(
     hostNavController: NavController,
     viewModel: DashboardViewModel,
     documentsViewModel: DocumentsViewModel,
@@ -66,8 +80,14 @@ fun DashboardScreen(
     transactionsViewModel: TransactionsViewModel,
 ) {
     val context = LocalContext.current
+
     val bottomNavigationController = rememberNavController()
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
+
+    val scope = rememberCoroutineScope()
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = false
+    )
 
     Scaffold(
         bottomBar = { BottomNavigationBar(bottomNavigationController) }
@@ -100,7 +120,30 @@ fun DashboardScreen(
             composable(BottomNavigationItem.Transactions.route) {
                 TransactionsScreen(
                     hostNavController,
-                    transactionsViewModel
+                    transactionsViewModel,
+                    onDashboardEventSent = { event ->
+                        viewModel.setEvent(event)
+                    }
+                )
+            }
+        }
+
+        if (state.isBottomSheetOpen) {
+            WrapModalBottomSheet(
+                onDismissRequest = {
+                    viewModel.setEvent(
+                        Event.BottomSheet.UpdateBottomSheetState(
+                            isOpen = false
+                        )
+                    )
+                },
+                sheetState = bottomSheetState
+            ) {
+                DashboardSheetContent(
+                    sheetContent = state.sheetContent,
+                    onEventSent = {
+                        viewModel.setEvent(it)
+                    }
                 )
             }
         }
@@ -137,6 +180,20 @@ fun DashboardScreen(
             when (effect) {
                 is Effect.Navigation -> handleNavigationEffect(effect, hostNavController, context)
 
+                is Effect.CloseBottomSheet -> {
+                    scope.launch {
+                        bottomSheetState.hide()
+                    }.invokeOnCompletion {
+                        if (!bottomSheetState.isVisible) {
+                            viewModel.setEvent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
+                        }
+                    }
+                }
+
+                is Effect.ShowBottomSheet -> {
+                    viewModel.setEvent(Event.BottomSheet.UpdateBottomSheetState(isOpen = true))
+                }
+
                 is Effect.ShareLogFile -> {
                     context.openIntentChooser(
                         effect.intent,
@@ -146,12 +203,26 @@ fun DashboardScreen(
             }
         }.collect()
     }
+
+    SystemBroadcastReceiver(
+        actions = listOf(
+            CoreActions.REVOCATION_WORK_MESSAGE_ACTION
+        )
+    ) { intent ->
+        intent.getParcelableArrayListExtra<RevokedDocumentPayload>(
+            action = CoreActions.REVOCATION_IDS_EXTRA
+        )?.let {
+            viewModel.setEvent(
+                Event.DocumentRevocationNotificationReceived(it)
+            )
+        }
+    }
 }
 
 private fun handleNavigationEffect(
     navigationEffect: Effect.Navigation,
     navController: NavController,
-    context: Context
+    context: Context,
 ) {
     when (navigationEffect) {
         is Effect.Navigation.Pop -> context.finish()
@@ -174,5 +245,28 @@ private fun handleNavigationEffect(
         is Effect.Navigation.OnAppSettings -> context.openAppSettings()
         is Effect.Navigation.OnSystemSettings -> context.openBleSettings()
         is Effect.Navigation.OpenUrlExternally -> context.openUrl(uri = navigationEffect.url)
+    }
+}
+
+@Composable
+private fun DashboardSheetContent(
+    sheetContent: DashboardBottomSheetContent,
+    onEventSent: (even: Event) -> Unit,
+) {
+    when (sheetContent) {
+        is DashboardBottomSheetContent.DocumentRevocation -> {
+            BottomSheetWithOptionsList(
+                textData = BottomSheetTextData(
+                    title = stringResource(
+                        id = R.string.dashboard_bottom_sheet_revoked_document_dialog_title
+                    ),
+                    message = stringResource(
+                        id = R.string.dashboard_bottom_sheet_revoked_document_dialog_subtitle
+                    ),
+                ),
+                options = sheetContent.options,
+                onEventSent = onEventSent,
+            )
+        }
     }
 }

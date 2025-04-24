@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +50,7 @@ fun WrapListItem(
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     mainContentTextStyle: TextStyle? = null,
+    overlineTextStyle: TextStyle? = null,
     supportingTextColor: Color? = null,
     clickableAreas: List<ClickableArea>? = null,
     shape: Shape? = null,
@@ -67,6 +69,9 @@ fun WrapListItem(
             hideSensitiveContent = hideSensitiveContent,
             mainContentVerticalPadding = mainContentVerticalPadding,
             mainContentTextStyle = mainContentTextStyle,
+            overlineTextStyle = overlineTextStyle ?: MaterialTheme.typography.labelMedium.copy(
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
             supportingTextColor = supportingTextColor,
             clickableAreas = clickableAreas ?: listOf(ClickableArea.ENTIRE_ROW),
         )

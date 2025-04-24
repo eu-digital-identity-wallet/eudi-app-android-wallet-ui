@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
@@ -45,6 +46,7 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -55,6 +57,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.SectionTitle
+import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -71,9 +74,12 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
+import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
+import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.component.wrap.WrapText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -164,6 +170,19 @@ fun DocumentDetailsScreen(
     ) {
         viewModel.setEvent(Event.Init)
     }
+
+    SystemBroadcastReceiver(
+        actions = listOf(
+            CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION
+        )
+    ) {
+        val ids = it
+            ?.getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)
+            ?.toList()
+            ?: emptyList()
+
+        viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
+    }
 }
 
 private fun handleNavigationEffect(
@@ -205,11 +224,39 @@ private fun Content(
                 )
             )
         ) {
+
             // Screen title
             state.title?.let { safeTitle ->
                 ContentTitle(
                     title = safeTitle,
                 )
+            }
+
+            if (state.isRevoked) {
+                WrapCard(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    shape = MaterialTheme.shapes.small,
+                    colors = CardDefaults.cardColors(contentColor = MaterialTheme.colorScheme.errorContainer)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(SPACING_MEDIUM.dp)
+                    ) {
+                        WrapText(
+                            text = stringResource(
+                                R.string.document_details_revoked_document_message
+                            ),
+                            textConfig = TextConfig(
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = Int.MAX_VALUE
+                            )
+                        )
+                    }
+                }
+
+                VSpacer.Large()
             }
 
             Column(
@@ -369,9 +416,10 @@ private fun DocumentDetails(
             modifier = Modifier.fillMaxWidth(),
             items = documentDetailsUi.documentClaims,
             hideSensitiveContent = hideSensitiveContent,
-            onItemClick = { item ->
+            onExpandedChange = { item ->
                 onEventSend(Event.ClaimClicked(itemId = item.itemId))
             },
+            onItemClick = null,
             throttleClicks = false,
         )
     }
