@@ -205,7 +205,7 @@ internal fun DashboardScreen(
     }
 
     SystemBroadcastReceiver(
-        actions = listOf(
+        intentFilters = listOf(
             CoreActions.REVOCATION_WORK_MESSAGE_ACTION
         )
     ) { intent ->

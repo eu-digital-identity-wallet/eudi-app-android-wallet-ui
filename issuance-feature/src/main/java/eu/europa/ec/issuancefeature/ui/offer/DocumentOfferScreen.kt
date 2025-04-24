@@ -43,7 +43,7 @@ import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.RelyingPartyData
-import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
+import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -103,7 +103,25 @@ fun DocumentOfferScreen(
             ) {
                 Text(text = stringResource(R.string.issuance_document_offer_primary_button_text_add))
             }
-        }
+        },
+        broadcastAction = BroadcastAction(
+            intentFilters = listOf(
+                CoreActions.VCI_RESUME_ACTION,
+                CoreActions.VCI_DYNAMIC_PRESENTATION
+            ),
+            callback = {
+                when (it?.action) {
+                    CoreActions.VCI_RESUME_ACTION -> it.extras?.getString("uri")?.let { link ->
+                        viewModel.setEvent(Event.OnResumeIssuance(link))
+                    }
+
+                    CoreActions.VCI_DYNAMIC_PRESENTATION -> it.extras?.getString("uri")
+                        ?.let { link ->
+                            viewModel.setEvent(Event.OnDynamicPresentation(link))
+                        }
+                }
+            }
+        )
     ) { paddingValues ->
         Content(
             state = state,
@@ -127,23 +145,6 @@ fun DocumentOfferScreen(
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
-    }
-
-    SystemBroadcastReceiver(
-        actions = listOf(
-            CoreActions.VCI_RESUME_ACTION,
-            CoreActions.VCI_DYNAMIC_PRESENTATION
-        )
-    ) {
-        when (it?.action) {
-            CoreActions.VCI_RESUME_ACTION -> it.extras?.getString("uri")?.let { link ->
-                viewModel.setEvent(Event.OnResumeIssuance(link))
-            }
-
-            CoreActions.VCI_DYNAMIC_PRESENTATION -> it.extras?.getString("uri")?.let { link ->
-                viewModel.setEvent(Event.OnDynamicPresentation(link))
-            }
-        }
     }
 }
 
