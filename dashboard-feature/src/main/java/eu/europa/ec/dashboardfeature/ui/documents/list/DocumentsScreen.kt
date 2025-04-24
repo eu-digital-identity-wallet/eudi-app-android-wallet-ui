@@ -76,7 +76,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.SectionTitle
-import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
+import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -138,6 +138,14 @@ fun DocumentsScreen(
                 onDashboardEventSent = onDashboardEventSent
             )
         },
+        broadcastAction = BroadcastAction(
+            intentFilters = listOf(
+                CoreActions.REVOCATION_WORK_REFRESH_ACTION
+            ),
+            callback = {
+                viewModel.setEvent(Event.GetDocuments)
+            }
+        )
     ) { paddingValues ->
         Content(
             state = state,
@@ -171,14 +179,6 @@ fun DocumentsScreen(
                 )
             }
         }
-    }
-
-    SystemBroadcastReceiver(
-        actions = listOf(
-            CoreActions.REVOCATION_WORK_REFRESH_ACTION
-        )
-    ) {
-        viewModel.setEvent(Event.GetDocuments)
     }
 }
 

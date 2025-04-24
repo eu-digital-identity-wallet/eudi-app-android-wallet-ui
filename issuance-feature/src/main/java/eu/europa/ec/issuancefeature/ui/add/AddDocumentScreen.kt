@@ -54,7 +54,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
+import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -92,7 +92,25 @@ fun AddDocumentScreen(
         isLoading = state.isLoading,
         navigatableAction = state.navigatableAction,
         onBack = state.onBackAction,
-        contentErrorConfig = state.error
+        contentErrorConfig = state.error,
+        broadcastAction = BroadcastAction(
+            intentFilters = listOf(
+                CoreActions.VCI_RESUME_ACTION,
+                CoreActions.VCI_DYNAMIC_PRESENTATION
+            ),
+            callback = {
+                when (it?.action) {
+                    CoreActions.VCI_RESUME_ACTION -> it.extras?.getString("uri")?.let { link ->
+                        viewModel.setEvent(Event.OnResumeIssuance(link))
+                    }
+
+                    CoreActions.VCI_DYNAMIC_PRESENTATION -> it.extras?.getString("uri")
+                        ?.let { link ->
+                            viewModel.setEvent(Event.OnDynamicPresentation(link))
+                        }
+                }
+            }
+        )
     ) { paddingValues ->
         Content(
             state = state,
@@ -118,7 +136,7 @@ fun AddDocumentScreen(
                 }
             },
             paddingValues = paddingValues,
-            context = context
+            context = context,
         )
     }
 
@@ -134,23 +152,6 @@ fun AddDocumentScreen(
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
-    }
-
-    SystemBroadcastReceiver(
-        actions = listOf(
-            CoreActions.VCI_RESUME_ACTION,
-            CoreActions.VCI_DYNAMIC_PRESENTATION
-        )
-    ) {
-        when (it?.action) {
-            CoreActions.VCI_RESUME_ACTION -> it.extras?.getString("uri")?.let { link ->
-                viewModel.setEvent(Event.OnResumeIssuance(link))
-            }
-
-            CoreActions.VCI_DYNAMIC_PRESENTATION -> it.extras?.getString("uri")?.let { link ->
-                viewModel.setEvent(Event.OnDynamicPresentation(link))
-            }
-        }
     }
 }
 

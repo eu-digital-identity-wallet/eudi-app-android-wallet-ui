@@ -57,7 +57,7 @@ import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
 import eu.europa.ec.uilogic.component.SectionTitle
-import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
+import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -130,6 +130,19 @@ fun DocumentDetailsScreen(
         navigatableAction = ScreenNavigateAction.BACKABLE,
         onBack = { viewModel.setEvent(Event.Pop) },
         toolBarConfig = toolbarConfig,
+        broadcastAction = BroadcastAction(
+            intentFilters = listOf(
+                CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION
+            ),
+            callback = {
+                val ids = it
+                    ?.getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)
+                    ?.toList()
+                    ?: emptyList()
+
+                viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
+            }
+        )
     ) { paddingValues ->
         Content(
             state = state,
@@ -169,19 +182,6 @@ fun DocumentDetailsScreen(
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
         viewModel.setEvent(Event.Init)
-    }
-
-    SystemBroadcastReceiver(
-        actions = listOf(
-            CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION
-        )
-    ) {
-        val ids = it
-            ?.getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)
-            ?.toList()
-            ?: emptyList()
-
-        viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
     }
 }
 
