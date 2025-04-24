@@ -340,6 +340,7 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 buttonConfig = ButtonConfig(
                     type = ButtonType.SECONDARY,
+                    enabled = false,
                     onClick = { onEventSend(Event.RequestDataDeletionPressed) },
                     isWarning = true,
                 )
@@ -362,6 +363,7 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 buttonConfig = ButtonConfig(
                     type = ButtonType.SECONDARY,
+                    enabled = false,
                     onClick = { onEventSend(Event.ReportSuspiciousTransactionPressed) },
                     isWarning = false,
                 )
