@@ -217,7 +217,8 @@ class TransactionsViewModel(
                     DatePickerDialogType.SelectStartDate -> DatePickerDialogConfig(
                         type = DatePickerDialogType.SelectStartDate,
                         lowerLimit = startLowerLimit,
-                        upperLimit = startUpperLimit
+                        upperLimit = startUpperLimit,
+                        selectedDate = viewState.value.snapshotFilterDateRangeSelectionData.startDate
                     )
 
                     DatePickerDialogType.SelectEndDate -> {
@@ -225,6 +226,7 @@ class TransactionsViewModel(
                             type = DatePickerDialogType.SelectEndDate,
                             lowerLimit = endLowerLimit,
                             upperLimit = endUpperLimit,
+                            selectedDate = viewState.value.snapshotFilterDateRangeSelectionData.endDate
                         )
                     }
                 }

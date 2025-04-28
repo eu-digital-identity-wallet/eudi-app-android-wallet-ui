@@ -25,6 +25,7 @@ import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
 import eu.europa.ec.businesslogic.util.minutesToNow
 import eu.europa.ec.businesslogic.util.plusOneDay
+import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterAction
@@ -282,8 +283,11 @@ class TransactionsInteractorImpl(
             emit(
                 TransactionInteractorGetTransactionsPartialState.Success(
                     allTransactions = FilterableList(items = filterableItems),
-                    availableDates = creationDates.minOrNull()?.let { min ->
-                        creationDates.maxOrNull()?.let { max -> min to max }
+                    availableDates = safeLet(
+                        creationDates.minOrNull(),
+                        creationDates.maxOrNull()
+                    ) { minDate, maxDate ->
+                        minDate to maxDate
                     }
                 )
             )
