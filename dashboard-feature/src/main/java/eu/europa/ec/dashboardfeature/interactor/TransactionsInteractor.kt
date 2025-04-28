@@ -81,6 +81,7 @@ sealed class TransactionInteractorFilterPartialState {
 sealed class TransactionInteractorGetTransactionsPartialState {
     data class Success(
         val allTransactions: FilterableList,
+        val availableDates: Pair<Long, Long>?
     ) : TransactionInteractorGetTransactionsPartialState()
 
     data class Failure(val error: String) : TransactionInteractorGetTransactionsPartialState()
@@ -273,9 +274,17 @@ class TransactionsInteractorImpl(
                 )
             }
 
+            val creationDates = filterableItems
+                .mapNotNull {
+                    (it.attributes as? TransactionsFilterableAttributes)?.creationDate?.toEpochMilli()
+                }
+
             emit(
                 TransactionInteractorGetTransactionsPartialState.Success(
                     allTransactions = FilterableList(items = filterableItems),
+                    availableDates = creationDates.minOrNull()?.let { min ->
+                        creationDates.maxOrNull()?.let { max -> min to max }
+                    }
                 )
             )
         }.safeAsync {
