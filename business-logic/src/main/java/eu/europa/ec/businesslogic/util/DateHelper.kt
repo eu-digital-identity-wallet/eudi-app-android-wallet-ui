@@ -22,7 +22,9 @@ import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
@@ -88,6 +90,18 @@ fun LocalDate.toDateFormatted(
     }
 }
 
+fun LocalDateTime.formatLocalDateTime(
+    pattern: String = DAY_MONTH_YEAR_SHORT_PATTERN,
+    selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
+): String {
+    val formatter = DateTimeFormatter.ofPattern(
+        pattern,
+        LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
+    )
+    return this.format(formatter)
+}
+
+
 fun String.toLocalDate(
     selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE,
 ): LocalDate? {
@@ -108,11 +122,6 @@ fun String.toLocalDate(
     }
 
     return result
-}
-
-fun Long.toLocalDate(): LocalDate {
-    val instant = Instant.ofEpochMilli(this)
-    return instant.atZone(ZoneId.systemDefault()).toLocalDate()
 }
 
 fun Instant.formatInstant(
@@ -212,4 +221,43 @@ fun Long?.toDisplayedDate(): String {
             dateValue > Long.MIN_VALUE && dateValue < Long.MAX_VALUE
         }
     }.orEmpty()
+}
+
+fun convertLocalDateToFormattedString(
+    localDate: LocalDate,
+    selectedLanguage: String = LocaleUtils.PROJECT_DEFAULT_LOCALE
+): String {
+    val formatter = DateTimeFormatter.ofPattern(
+        DAY_MONTH_YEAR_TEXT_FIELD_PATTERN,
+        LocaleUtils.getLocaleFromSelectedLanguage(selectedLanguage)
+    )
+    return localDate.format(formatter)
+}
+
+fun LocalDate?.toDisplayedDate(): String {
+    return this?.let { convertLocalDateToFormattedString(it) }.orEmpty()
+}
+
+fun Instant.toLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime {
+    return LocalDateTime.ofInstant(this, zoneId)
+}
+
+fun Instant.toLocalDate(zoneId: ZoneId = ZoneId.systemDefault()): LocalDate {
+    return this.atZone(zoneId).toLocalDate()
+}
+
+fun utcMillisToLocalDate(utcMillis: Long, zoneId: ZoneId = ZoneId.systemDefault()): LocalDate {
+    return Instant.ofEpochMilli(utcMillis).atZone(zoneId).toLocalDate()
+}
+
+fun localDateToUtcMillis(localDate: LocalDate): Long {
+    return localDateToMillis(localDate = localDate, zoneId = ZoneOffset.UTC)
+}
+
+fun localDateToMillis(localDate: LocalDate, zoneId: ZoneId = ZoneId.systemDefault()): Long {
+    return localDate.atStartOfDay(zoneId).toInstant().toEpochMilli()
+}
+
+fun LocalDate.toLocalDateTime(time: LocalTime = LocalTime.MIDNIGHT): LocalDateTime {
+    return this.atTime(time)
 }

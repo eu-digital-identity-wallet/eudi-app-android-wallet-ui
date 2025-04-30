@@ -16,6 +16,8 @@
 
 package eu.europa.ec.corelogic.extension
 
+import eu.europa.ec.businesslogic.util.toLocalDate
+import eu.europa.ec.businesslogic.util.toLocalDateTime
 import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.corelogic.model.TransactionLogData.PresentationLog
 import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTransactionLog
@@ -27,7 +29,8 @@ internal fun Any.toTransactionLogData(id: String): TransactionLogData = when (th
         id = id,
         name = relyingParty.name,
         status = status,
-        creationDate = timestamp,
+        creationLocalDateTime = timestamp.toLocalDateTime(),
+        creationLocalDate = timestamp.toLocalDate(),
         relyingParty = relyingParty,
         documents = documents,
     )

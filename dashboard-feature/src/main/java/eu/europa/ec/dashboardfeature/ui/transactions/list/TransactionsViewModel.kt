@@ -17,7 +17,9 @@
 package eu.europa.ec.dashboardfeature.ui.transactions.list
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.util.toLocalDate
+import eu.europa.ec.businesslogic.util.localDateToUtcMillis
+import eu.europa.ec.businesslogic.util.toLocalDateTime
+import eu.europa.ec.businesslogic.util.utcMillisToLocalDate
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorFilterPartialState
@@ -43,7 +45,6 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
-import java.time.Instant
 import java.time.LocalDate
 
 data class State(
@@ -71,6 +72,8 @@ data class State(
     val filterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
     // temporary date range data while filter bottom sheet is open to collect date picker dialog selections
     val snapshotFilterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
+    // defines the overall date picker boundaries based on the fetched documents.
+    val datePickerLimits: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -98,8 +101,8 @@ sealed class Event : ViewEvent {
     }
 
     data class ShowDatePicker(val datePickerType: DatePickerDialogType) : Event()
-    data class OnStartDateSelected(val selectedDateMillis: Long) : Event()
-    data class OnEndDateSelected(val selectedDateMillis: Long) : Event()
+    data class OnStartDateSelected(val selectedDateUtcMillis: Long) : Event()
+    data class OnEndDateSelected(val selectedDateUtcMillis: Long) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -195,23 +198,51 @@ class TransactionsViewModel(
             }
 
             is Event.ShowDatePicker -> {
-                val appliedStartDate =
-                    viewState.value.snapshotFilterDateRangeSelectionData.startDate
-                val minStartDate = appliedStartDate?.toLocalDate() ?: LocalDate.MIN
+                /* Computes dynamic date limits for the DatePicker:
+                    - startUpperLimit: the earliest non-null end date from either the selected filter or picker constraints.
+                    - endLowerLimit: the latest non-null start date from either the selected filter or picker constraints.
+                    Safely handles nullable dates using listOfNotNull(...).minOrNull() and maxOrNull().
+                */
+                val viewStateValue = viewState.value
+                val snapshotData = viewStateValue.snapshotFilterDateRangeSelectionData
+                val limits = viewStateValue.datePickerLimits
 
-                val appliedEndDate = viewState.value.snapshotFilterDateRangeSelectionData.endDate
-                val maxEndDate = appliedEndDate?.toLocalDate() ?: LocalDate.MAX
+                val startLowerLimit = limits.startDate
+                val startUpperLimit = listOfNotNull(
+                    snapshotData.endDate,
+                    limits.endDate
+                ).minOrNull()
+                val selectedStartDate = snapshotData.startDate ?: limits.startDate
+
+                val endLowerLimit = listOfNotNull(
+                    snapshotData.startDate,
+                    limits.startDate
+                ).maxOrNull()
+                val endUpperLimit = limits.endDate
+                val selectedEndDate = snapshotData.endDate ?: limits.endDate
 
                 val datePickerDialogConfig = when (event.datePickerType) {
                     DatePickerDialogType.SelectStartDate -> DatePickerDialogConfig(
                         type = DatePickerDialogType.SelectStartDate,
-                        upperLimit = maxEndDate
+                        lowerLimit = startLowerLimit,
+                        upperLimit = startUpperLimit,
+                        selectedUtcDateMillis = selectedStartDate?.let {
+                            localDateToUtcMillis(
+                                localDate = it
+                            )
+                        }
                     )
 
                     DatePickerDialogType.SelectEndDate -> {
                         DatePickerDialogConfig(
                             type = DatePickerDialogType.SelectEndDate,
-                            lowerLimit = minStartDate
+                            lowerLimit = endLowerLimit,
+                            upperLimit = endUpperLimit,
+                            selectedUtcDateMillis = selectedEndDate?.let {
+                                localDateToUtcMillis(
+                                    localDate = it
+                                )
+                            }
                         )
                     }
                 }
@@ -221,8 +252,11 @@ class TransactionsViewModel(
             is Event.OnStartDateSelected -> {
                 val datePickerSelectionData =
                     viewState.value.snapshotFilterDateRangeSelectionData.copy(
-                        startDate = event.selectedDateMillis,
+                        startDate = utcMillisToLocalDate(
+                            utcMillis = event.selectedDateUtcMillis
+                        )
                     )
+
                 setState {
                     copy(
                         snapshotFilterDateRangeSelectionData = datePickerSelectionData
@@ -230,24 +264,28 @@ class TransactionsViewModel(
                 }
 
                 updateDateRangeFilter(
-                    lowerLimit = datePickerSelectionData.startDate ?: Long.MIN_VALUE,
-                    upperLimit = datePickerSelectionData.endDate ?: Long.MAX_VALUE,
+                    lowerLimit = datePickerSelectionData.startDate ?: LocalDate.MIN,
+                    upperLimit = datePickerSelectionData.endDate ?: LocalDate.MAX,
                 )
             }
 
             is Event.OnEndDateSelected -> {
                 val datePickerSelectionData =
                     viewState.value.snapshotFilterDateRangeSelectionData.copy(
-                        endDate = event.selectedDateMillis,
+                        endDate = utcMillisToLocalDate(
+                            utcMillis = event.selectedDateUtcMillis
+                        )
                     )
+
                 setState {
                     copy(
                         snapshotFilterDateRangeSelectionData = datePickerSelectionData
                     )
                 }
+
                 updateDateRangeFilter(
-                    lowerLimit = datePickerSelectionData.startDate ?: Long.MIN_VALUE,
-                    upperLimit = datePickerSelectionData.endDate ?: Long.MAX_VALUE,
+                    lowerLimit = datePickerSelectionData.startDate ?: LocalDate.MIN,
+                    upperLimit = datePickerSelectionData.endDate ?: LocalDate.MAX,
                 )
             }
 
@@ -283,16 +321,16 @@ class TransactionsViewModel(
     private fun updateDateRangeFilter(
         groupId: String = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_GROUP_ID,
         filterId: String = TransactionFilterIds.FILTER_BY_TRANSACTION_DATE_RANGE,
-        lowerLimit: Long,
-        upperLimit: Long
+        lowerLimit: LocalDate,
+        upperLimit: LocalDate
     ) {
         setState { copy(shouldRevertFilterChanges = true) }
 
         interactor.updateDateFilterById(
             filterGroupId = groupId,
             filterId = filterId,
-            lowerLimitDate = Instant.ofEpochMilli(lowerLimit),
-            upperLimitDate = Instant.ofEpochMilli(upperLimit)
+            lowerLimitDate = lowerLimit.toLocalDateTime(),
+            upperLimitDate = upperLimit.toLocalDateTime(),
         )
     }
 
@@ -318,7 +356,8 @@ class TransactionsViewModel(
     private fun resetFilters() {
         setState {
             copy(
-                filterDateRangeSelectionData = FilterDateRangeSelectionData()
+                filterDateRangeSelectionData = datePickerLimits,
+                snapshotFilterDateRangeSelectionData = FilterDateRangeSelectionData()
             )
         }
         interactor.resetFilters()
@@ -340,7 +379,11 @@ class TransactionsViewModel(
         setState {
             copy(
                 sheetContent = sheetContent,
-                snapshotFilterDateRangeSelectionData = filterDateRangeSelectionData
+                snapshotFilterDateRangeSelectionData = if (filterDateRangeSelectionData.isEmpty) {
+                    datePickerLimits
+                } else {
+                    filterDateRangeSelectionData
+                }
             )
         }
         setEffect {
@@ -401,11 +444,25 @@ class TransactionsViewModel(
 
                         interactor.applyFilters()
 
+                        val oldDatePickerAllowedLimits = viewState.value.datePickerLimits
+                        val newDatePickerAllowedLimits = FilterDateRangeSelectionData(
+                            startDate = response.availableDates?.first,
+                            endDate = response.availableDates?.second
+                        )
+                        val hasNewLimits = newDatePickerAllowedLimits != oldDatePickerAllowedLimits
+
                         setState {
                             copy(
                                 isLoading = false,
                                 error = null,
-                                isFromOnPause = false
+                                isFromOnPause = false,
+                                datePickerLimits = newDatePickerAllowedLimits,
+                                filterDateRangeSelectionData = resolveUpdatedFilterDateRange(
+                                    hasNewLimits = hasNewLimits,
+                                    currentFilterDateRangeSelectionData = filterDateRangeSelectionData,
+                                    oldLimits = oldDatePickerAllowedLimits,
+                                    newLimits = newDatePickerAllowedLimits
+                                )
                             )
                         }
                     }
@@ -429,13 +486,30 @@ class TransactionsViewModel(
         }
     }
 
+    private fun resolveUpdatedFilterDateRange(
+        hasNewLimits: Boolean,
+        currentFilterDateRangeSelectionData: FilterDateRangeSelectionData,
+        oldLimits: FilterDateRangeSelectionData,
+        newLimits: FilterDateRangeSelectionData
+    ): FilterDateRangeSelectionData {
+        return when {
+            hasNewLimits && currentFilterDateRangeSelectionData.isEmpty -> newLimits
+            hasNewLimits && currentFilterDateRangeSelectionData == oldLimits -> newLimits
+            hasNewLimits -> currentFilterDateRangeSelectionData
+            !currentFilterDateRangeSelectionData.isEmpty -> currentFilterDateRangeSelectionData
+            else -> FilterDateRangeSelectionData(startDate = null, endDate = null)
+        }
+    }
+
     private fun collectSearchAndFilterStateChanges() {
         viewModelScope.launch {
             interactor.onFilterStateChange().collect { result ->
                 when (result) {
                     is TransactionInteractorFilterPartialState.FilterApplyResult -> {
-                        val isDefaultFilterDateRangeSelected =
-                            with(viewState.value.filterDateRangeSelectionData) { startDate == null && endDate == null }
+                        val isDefaultFilterDateRangeSelected = with(viewState.value) {
+                            (!datePickerLimits.isEmpty && filterDateRangeSelectionData == datePickerLimits)
+                                    || (datePickerLimits.isEmpty && filterDateRangeSelectionData.isEmpty)
+                        }
                         setState {
                             copy(
                                 isFilteringActive = !result.allDefaultFiltersAreSelected || !isDefaultFilterDateRangeSelected,
