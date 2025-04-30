@@ -19,20 +19,23 @@ package eu.europa.ec.corelogic.model
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
 import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 sealed interface TransactionLogData {
 
     val id: String
     val name: String
     val status: TransactionLog.Status
-    val creationDate: Instant
+    val creationLocalDateTime: LocalDateTime
+    val creationLocalDate: LocalDate
 
     data class PresentationLog(
         override val id: String,
         override val name: String,
         override val status: TransactionLog.Status,
-        override val creationDate: Instant,
+        override val creationLocalDateTime: LocalDateTime,
+        override val creationLocalDate: LocalDate,
         val relyingParty: TransactionLog.RelyingParty,
         val documents: List<PresentedDocument>,
     ) : TransactionLogData
@@ -41,14 +44,16 @@ sealed interface TransactionLogData {
         override val id: String,
         override val name: String,
         override val status: TransactionLog.Status,
-        override val creationDate: Instant,
+        override val creationLocalDateTime: LocalDateTime,
+        override val creationLocalDate: LocalDate,
     ) : TransactionLogData
 
     data class SigningLog(
         override val id: String,
         override val name: String,
         override val status: TransactionLog.Status,
-        override val creationDate: Instant,
+        override val creationLocalDateTime: LocalDateTime,
+        override val creationLocalDate: LocalDate,
     ) : TransactionLogData
 
     companion object {

@@ -17,7 +17,7 @@
 package eu.europa.ec.businesslogic.validator.model
 
 import eu.europa.ec.businesslogic.extension.sortByOrder
-import java.time.Instant
+import java.time.LocalDateTime
 
 data class Filters(
     val filterGroups: List<FilterGroup>,
@@ -97,8 +97,8 @@ sealed class FilterElement {
         override val name: String,
         override val selected: Boolean,
         override val isDefault: Boolean = false,
-        val startDateTime: Instant,
-        val endDateTime: Instant,
+        val startDateTime: LocalDateTime,
+        val endDateTime: LocalDateTime,
         override val filterableAction: FilterAction = DefaultFilterAction,
     ) : FilterElement()
 }

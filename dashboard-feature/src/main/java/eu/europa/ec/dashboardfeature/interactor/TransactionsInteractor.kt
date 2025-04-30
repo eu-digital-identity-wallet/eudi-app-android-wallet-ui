@@ -24,7 +24,6 @@ import eu.europa.ec.businesslogic.util.isToday
 import eu.europa.ec.businesslogic.util.isWithinLastHour
 import eu.europa.ec.businesslogic.util.isWithinThisWeek
 import eu.europa.ec.businesslogic.util.minutesToNow
-import eu.europa.ec.businesslogic.util.plusOneDay
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
@@ -61,9 +60,8 @@ import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
 
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
@@ -82,7 +80,7 @@ sealed class TransactionInteractorFilterPartialState {
 sealed class TransactionInteractorGetTransactionsPartialState {
     data class Success(
         val allTransactions: FilterableList,
-        val availableDates: Pair<Long, Long>?
+        val availableDates: Pair<LocalDate, LocalDate>?
     ) : TransactionInteractorGetTransactionsPartialState()
 
     data class Failure(val error: String) : TransactionInteractorGetTransactionsPartialState()
@@ -113,8 +111,8 @@ interface TransactionsInteractor {
     fun updateDateFilterById(
         filterGroupId: String,
         filterId: String,
-        lowerLimitDate: Instant,
-        upperLimitDate: Instant
+        lowerLimitDate: LocalDateTime,
+        upperLimitDate: LocalDateTime
     )
 
     fun addDynamicFilters(transactions: FilterableList, filters: Filters): Filters
@@ -232,11 +230,6 @@ class TransactionsInteractorImpl(
             val transactions = walletCoreDocumentsController.getTransactionLogs()
             val filterableItems = transactions.map { transaction ->
 
-                val transactionDateTime = LocalDateTime.ofInstant(
-                    transaction.creationDate,
-                    ZoneId.systemDefault()
-                )
-
                 val trailingContentData = ListItemTrailingContentData.TextWithIcon(
                     text = transaction.getTransactionTypeLabel(resourceProvider),
                     iconData = AppIcons.KeyboardArrowRight
@@ -252,12 +245,12 @@ class TransactionsInteractorImpl(
                                 itemId = transaction.id,
                                 mainContentData = ListItemMainContentData.Text(text = transactionName),
                                 overlineText = transactionStatus.toUiText(resourceProvider),
-                                supportingText = transaction.creationDate.toFormattedDisplayableDate(),
+                                supportingText = transaction.creationLocalDateTime.toFormattedDisplayableDate(),
                                 trailingContentData = trailingContentData
                             )
                         ),
                         uiStatus = transaction.status.toTransactionUiStatus(),
-                        transactionCategory = getTransactionCategory(dateTime = transactionDateTime),
+                        transactionCategory = getTransactionCategory(dateTime = transaction.creationLocalDateTime),
                     ),
                     attributes = TransactionsFilterableAttributes(
                         searchTags = buildList {
@@ -265,7 +258,7 @@ class TransactionsInteractorImpl(
                         },
                         transactionStatus = transactionStatus,
                         transactionType = transaction.toTransactionUiType(),
-                        creationDate = transaction.creationDate,
+                        creationLocalDateTime = transaction.creationLocalDateTime,
                         relyingPartyName = when (transaction) {
                             is TransactionLogData.IssuanceLog -> null // TODO Update this once Core supports Issuance transactions
                             is TransactionLogData.PresentationLog -> transaction.relyingParty.name
@@ -277,7 +270,7 @@ class TransactionsInteractorImpl(
 
             val creationDates = filterableItems
                 .mapNotNull {
-                    (it.attributes as? TransactionsFilterableAttributes)?.creationDate?.toEpochMilli()
+                    (it.attributes as? TransactionsFilterableAttributes)?.creationLocalDateTime?.toLocalDate()
                 }
 
             emit(
@@ -343,8 +336,8 @@ class TransactionsInteractorImpl(
                         name = resourceProvider.getString(R.string.transactions_screen_filters_sort_transaction_date),
                         selected = true,
                         isDefault = true,
-                        filterableAction = FilterAction.Sort<TransactionsFilterableAttributes, Instant> { attributes ->
-                            attributes.creationDate
+                        filterableAction = FilterAction.Sort<TransactionsFilterableAttributes, LocalDateTime> { attributes ->
+                            attributes.creationLocalDateTime
                         }
                     ),
                 )
@@ -360,8 +353,8 @@ class TransactionsInteractorImpl(
                         name = resourceProvider.getString(R.string.transactions_screen_filter_by_date_period),
                         selected = true,
                         isDefault = true,
-                        startDateTime = Instant.MIN,
-                        endDateTime = Instant.MAX,
+                        startDateTime = LocalDateTime.MIN,
+                        endDateTime = LocalDateTime.MAX,
                         filterableAction = FilterAction.Filter<TransactionsFilterableAttributes> { attributes, filter ->
                             return@Filter isDateAttributeWithinFilterRange(
                                 filter = filter,
@@ -478,8 +471,8 @@ class TransactionsInteractorImpl(
     override fun updateDateFilterById(
         filterGroupId: String,
         filterId: String,
-        lowerLimitDate: Instant,
-        upperLimitDate: Instant
+        lowerLimitDate: LocalDateTime,
+        upperLimitDate: LocalDateTime
     ) {
         filterValidator.updateDateFilter(
             filterGroupId,
@@ -514,11 +507,9 @@ class TransactionsInteractorImpl(
         }
     }
 
-    private fun Instant.toFormattedDisplayableDate(zoneId: ZoneId = ZoneId.systemDefault()): String {
+    private fun LocalDateTime.toFormattedDisplayableDate(): String {
         return runCatching {
-            val parsedDate = LocalDateTime.ofInstant(this, zoneId)
-
-            when (val dateTimeState = parsedDate.toDateTimeState()) {
+            when (val dateTimeState = this.toDateTimeState()) {
                 is TransactionInteractorDateTimeCategoryPartialState.JustNow -> resourceProvider.getString(
                     R.string.transactions_screen_0_minutes_ago_message
                 )
@@ -567,20 +558,15 @@ class TransactionsInteractorImpl(
 
     private fun isDateAttributeWithinFilterRange(
         filter: FilterElement,
-        attributes: TransactionsFilterableAttributes
+        attributes: TransactionsFilterableAttributes,
     ): Boolean {
-        val creationDate = attributes.creationDate
-        return when {
-            filter is FilterElement.DateTimeRangeFilterItem && creationDate != null -> {
-                creationDate.isAfter(
-                    filter.startDateTime
-                ) && creationDate.isBefore(
-                    // plus one day to the end date limit to not filter out same day item
-                    filter.endDateTime.plusOneDay()
-                )
-            }
-
-            else -> true
+        val creationDate = attributes.creationLocalDateTime?.toLocalDate()
+        return if (filter is FilterElement.DateTimeRangeFilterItem && creationDate != null) {
+            val startDate = filter.startDateTime.toLocalDate()
+            val endDate = filter.endDateTime.toLocalDate()
+            creationDate in startDate..endDate
+        } else {
+            true
         }
     }
 }

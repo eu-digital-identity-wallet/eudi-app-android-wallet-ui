@@ -191,7 +191,7 @@ fun TransactionsScreen(
                             DatePickerDialogType.SelectStartDate -> {
                                 viewModel.setEvent(
                                     Event.OnStartDateSelected(
-                                        selectedDateMillis = safeMillis
+                                        selectedDateUtcMillis = safeMillis
                                     )
                                 )
                             }
@@ -199,7 +199,7 @@ fun TransactionsScreen(
                             DatePickerDialogType.SelectEndDate -> {
                                 viewModel.setEvent(
                                     Event.OnEndDateSelected(
-                                        selectedDateMillis = safeMillis
+                                        selectedDateUtcMillis = safeMillis
                                     )
                                 )
                             }
