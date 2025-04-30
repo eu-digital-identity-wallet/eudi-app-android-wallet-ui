@@ -44,6 +44,7 @@ import eu.europa.ec.commonfeature.model.toTransactionUiType
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.corelogic.model.TransactionLogData
+import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionDocumentNames
 import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
@@ -237,6 +238,9 @@ class TransactionsInteractorImpl(
 
                 val transactionName = transaction.name
                 val transactionStatus = transaction.status.toTransactionUiStatus()
+                val transactionDocumentNames = transaction.getTransactionDocumentNames(
+                    userLocale = resourceProvider.getLocale()
+                )
 
                 FilterableItem(
                     payload = TransactionUi(
@@ -255,6 +259,9 @@ class TransactionsInteractorImpl(
                     attributes = TransactionsFilterableAttributes(
                         searchTags = buildList {
                             add(transactionName)
+                            if (transactionDocumentNames.isNotEmpty()) {
+                                addAll(transactionDocumentNames)
+                            }
                         },
                         transactionStatus = transactionStatus,
                         transactionType = transaction.toTransactionUiType(),
