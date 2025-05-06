@@ -31,7 +31,7 @@ internal class WalletCoreConfigImpl(
 ) : WalletCoreConfig {
 
     private companion object {
-        const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
+        const val VCI_ISSUER_URL = "https://demo-utsteder.test.eidas2sandkasse.net"
         const val VCI_CLIENT_ID = "wallet-dev"
         const val AUTHENTICATION_REQUIRED = false
     }
@@ -81,13 +81,9 @@ internal class WalletCoreConfigImpl(
 
                     configureReaderTrustStore(
                         context,
-                        R.raw.pidissuerca02_cz,
-                        R.raw.pidissuerca02_ee,
-                        R.raw.pidissuerca02_eu,
-                        R.raw.pidissuerca02_lu,
-                        R.raw.pidissuerca02_nl,
-                        R.raw.pidissuerca02_pt,
-                        R.raw.pidissuerca02_ut
+                        R.raw.intermediate_utsteder_ca,
+                        R.raw.intermediate_brukersted_ca,
+                        R.raw.root_ca
                     )
                 }
             }
