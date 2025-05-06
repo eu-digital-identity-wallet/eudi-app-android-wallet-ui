@@ -49,7 +49,7 @@ import eu.europa.ec.eudi.openid4vci.CredentialConfigurationIdentifier
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerEndpoint
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerId
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadata
-import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadata.Display
+import eu.europa.ec.eudi.openid4vci.Display
 import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.openid4vci.TxCode
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
@@ -1102,7 +1102,7 @@ class TestDocumentOfferInteractor {
             display = listOf(
                 Display(
                     name = issuerName,
-                    locale = mockedDefaultLocale.language
+                    locale = mockedDefaultLocale
                 )
             )
         )
@@ -1111,8 +1111,8 @@ class TestDocumentOfferInteractor {
     private fun mockOfferedDocument(
         name: String = mockedOfferedDocumentName,
         docType: String = mockedOfferedDocumentDocType,
-        display: List<eu.europa.ec.eudi.openid4vci.Display> = listOf(
-            eu.europa.ec.eudi.openid4vci.Display(
+        display: List<Display> = listOf(
+            Display(
                 name = name,
                 locale = mockedDefaultLocale
             )

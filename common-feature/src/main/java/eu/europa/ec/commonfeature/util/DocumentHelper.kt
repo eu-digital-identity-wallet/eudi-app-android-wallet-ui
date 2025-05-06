@@ -100,7 +100,10 @@ fun getReadableNameFromIdentifier(
     identifier: String,
 ): String {
     return metadata?.claims
-        ?.find { it.name.name == identifier }
+        ?.find {
+            it.path.last() == identifier
+
+        }
         ?.display.getLocalizedClaimName(
             userLocale = userLocale,
             fallback = identifier
