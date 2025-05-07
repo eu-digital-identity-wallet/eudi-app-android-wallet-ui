@@ -39,11 +39,11 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
  
 - ISO18013-5 (proximity presentation),
  
-- OpenID4VCI draft 14 (issuing)
+- OpenID4VCI draft 15 (issuing)
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
 
-  - [EUDI Issuer (Draft 14)](https://issuer.eudiw.dev/)
+  - [EUDI Issuer (Draft 15)](https://issuer.eudiw.dev/)
 
   - [OpenID4VCI PID and mDL Issuer (python)](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py)
  

@@ -203,7 +203,7 @@ class TransactionDetailsInteractorImpl(
                     groupKey = elementIdentifier,
                     disclosurePath = itemPath,
                     resourceProvider = resourceProvider,
-                    metadata = presentedDocument.metadata,
+                    claimMetaData = presentedClaim.metadata,
                     allItems = domainClaims,
                 )
             }
