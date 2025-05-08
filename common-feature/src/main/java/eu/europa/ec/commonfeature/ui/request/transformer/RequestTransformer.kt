@@ -145,21 +145,31 @@ object RequestTransformer {
         val disclosedDocuments: List<DisclosedDocument> =
             groupedByDocument.mapNotNull { (documentPayload, selectedItemsForDocument) ->
 
-                val disclosedItems = selectedItemsForDocument.map { selectedItem ->
+                val mDocItems: MutableList<MsoMdocItem> = mutableListOf()
+                val sdJwtItems: MutableList<SdJwtVcItem> = mutableListOf()
+
+                selectedItemsForDocument.forEach { selectedItem ->
 
                     val selectedItemId = selectedItem.header.itemId
 
                     when (documentPayload.domainDocFormat) {
-                        is DomainDocumentFormat.SdJwtVc -> SdJwtVcItem(
-                            path = ClaimPath.toSdJwtVcPath(selectedItemId)
+
+                        is DomainDocumentFormat.SdJwtVc -> sdJwtItems.add(
+                            SdJwtVcItem(
+                                path = ClaimPath.toSdJwtVcPath(selectedItemId)
+                            )
                         )
 
-                        is DomainDocumentFormat.MsoMdoc -> MsoMdocItem(
-                            namespace = documentPayload.domainDocFormat.namespace,
-                            elementIdentifier = ClaimPath.toElementIdentifier(selectedItemId)
+                        is DomainDocumentFormat.MsoMdoc -> mDocItems.add(
+                            MsoMdocItem(
+                                namespace = documentPayload.domainDocFormat.namespace,
+                                elementIdentifier = ClaimPath.toElementIdentifier(selectedItemId)
+                            )
                         )
                     }
                 }
+
+                val disclosedItems = mDocItems.distinctBy { it.elementIdentifier } + sdJwtItems
 
                 return@mapNotNull if (disclosedItems.isNotEmpty()) {
                     DisclosedDocument(

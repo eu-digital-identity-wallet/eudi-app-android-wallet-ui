@@ -97,12 +97,12 @@ private fun getGenderValue(value: String, resourceProvider: ResourceProvider): S
 fun getReadableNameFromIdentifier(
     claimMetaData: DocumentMetaData.Claim?,
     userLocale: Locale,
-    identifier: String,
+    fallback: String,
 ): String {
     return claimMetaData
         ?.display.getLocalizedClaimName(
             userLocale = userLocale,
-            fallback = identifier
+            fallback = fallback
         )
 }
 
@@ -121,8 +121,7 @@ fun createKeyValue(
         allItems: MutableList<DomainClaim>,
         children: List<DomainClaim>,
         groupKey: String,
-        claimMetaData: DocumentMetaData.Claim?,
-        locale: Locale,
+        displayTitle: String,
         predicate: () -> Boolean
     ) {
 
@@ -134,11 +133,7 @@ fun createKeyValue(
             allItems.add(
                 DomainClaim.Group(
                     key = groupKey,
-                    displayTitle = getReadableNameFromIdentifier(
-                        claimMetaData = claimMetaData,
-                        userLocale = locale,
-                        identifier = groupKey
-                    ),
+                    displayTitle = displayTitle,
                     path = ClaimPath(listOf(Uuid.random().toString())),
                     items = children
                 )
@@ -169,7 +164,7 @@ fun createKeyValue(
                         childKey = newChildKey,
                         disclosurePath = disclosurePath,
                         resourceProvider = resourceProvider,
-                        claimMetaData = claimMetaData,
+                        claimMetaData = null,
                         allItems = children
                     )
                 }
@@ -179,10 +174,13 @@ fun createKeyValue(
                 allItems = allItems,
                 children = children,
                 groupKey = groupKey,
-                claimMetaData = claimMetaData,
-                locale = resourceProvider.getLocale()
+                displayTitle = getReadableNameFromIdentifier(
+                    claimMetaData = claimMetaData,
+                    userLocale = resourceProvider.getLocale(),
+                    fallback = groupKey
+                )
             ) {
-                !childKeys.any { it.isEmpty() }
+                childKeys.none { it.isEmpty() }
             }
         }
 
@@ -207,8 +205,11 @@ fun createKeyValue(
                 allItems = allItems,
                 children = children,
                 groupKey = groupKey,
-                claimMetaData = claimMetaData,
-                locale = resourceProvider.getLocale()
+                displayTitle = getReadableNameFromIdentifier(
+                    claimMetaData = claimMetaData,
+                    userLocale = resourceProvider.getLocale(),
+                    fallback = groupKey
+                )
             ) {
                 childKey.isEmpty()
             }
@@ -237,11 +238,13 @@ fun createKeyValue(
             allItems.add(
                 DomainClaim.Primitive(
                     key = childKey.ifEmpty { groupKey },
-                    displayTitle = getReadableNameFromIdentifier(
-                        claimMetaData = claimMetaData,
-                        userLocale = resourceProvider.getLocale(),
-                        identifier = childKey.ifEmpty { groupKey }
-                    ),
+                    displayTitle = childKey.ifEmpty {
+                        getReadableNameFromIdentifier(
+                            claimMetaData = claimMetaData,
+                            userLocale = resourceProvider.getLocale(),
+                            fallback = groupKey
+                        )
+                    },
                     path = disclosurePath,
                     isRequired = false,
                     value = formattedValue
@@ -331,7 +334,7 @@ private fun insertPath(
                 displayTitle = getReadableNameFromIdentifier(
                     claimMetaData = currentClaim?.metadata,
                     userLocale = userLocale,
-                    identifier = currentClaim?.identifier ?: key
+                    fallback = currentClaim?.identifier ?: key
                 ),
                 path = ClaimPath(disclosurePath.value.take((disclosurePath.value.size - path.value.size) + 1)),
                 items = insertPath(
