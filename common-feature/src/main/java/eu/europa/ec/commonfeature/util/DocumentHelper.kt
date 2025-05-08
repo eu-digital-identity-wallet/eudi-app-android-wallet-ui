@@ -134,11 +134,13 @@ fun createKeyValue(
             allItems.add(
                 DomainClaim.Group(
                     key = groupKey,
-                    displayTitle = getReadableNameFromIdentifier(
-                        claimMetaData = claimMetaData,
-                        userLocale = locale,
-                        identifier = groupKey
-                    ),
+                    displayTitle = childKey.ifEmpty {
+                        getReadableNameFromIdentifier(
+                            claimMetaData = claimMetaData,
+                            userLocale = locale,
+                            identifier = groupKey
+                        )
+                    },
                     path = ClaimPath(listOf(Uuid.random().toString())),
                     items = children
                 )
@@ -237,11 +239,13 @@ fun createKeyValue(
             allItems.add(
                 DomainClaim.Primitive(
                     key = childKey.ifEmpty { groupKey },
-                    displayTitle = getReadableNameFromIdentifier(
-                        claimMetaData = claimMetaData,
-                        userLocale = resourceProvider.getLocale(),
-                        identifier = childKey.ifEmpty { groupKey }
-                    ),
+                    displayTitle = childKey.ifEmpty {
+                        getReadableNameFromIdentifier(
+                            claimMetaData = claimMetaData,
+                            userLocale = resourceProvider.getLocale(),
+                            identifier = groupKey
+                        )
+                    },
                     path = disclosurePath,
                     isRequired = false,
                     value = formattedValue
