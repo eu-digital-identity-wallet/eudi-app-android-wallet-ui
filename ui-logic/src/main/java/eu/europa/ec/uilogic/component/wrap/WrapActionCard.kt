@@ -49,6 +49,7 @@ data class ActionCardConfig(
     val icon: IconData,
     val primaryButtonText: String,
     val secondaryButtonText: String,
+    val enabled: Boolean = true,
 )
 
 @Composable
@@ -58,75 +59,77 @@ fun WrapActionCard(
     onActionClick: () -> Unit = {},
     onLearnMoreClick: () -> Unit = {}
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SPACING_MEDIUM.dp),
-            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+    if (config.enabled) {
+        Card(
+            modifier = modifier
+                .fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = SPACING_MEDIUM.dp),
-                    text = config.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                WrapImage(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .defaultMinSize(minHeight = DEFAULT_ACTION_CARD_HEIGHT.dp),
-                    iconData = config.icon,
-                    contentScale = ContentScale.Fit
-                )
-            }
-
             Column(
-                verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(SPACING_MEDIUM.dp),
+                verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
             ) {
-                WrapButton(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    buttonConfig = ButtonConfig(
-                        type = ButtonType.PRIMARY,
-                        onClick = onActionClick
-                    ),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(config.primaryButtonText)
+                    Text(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = SPACING_MEDIUM.dp),
+                        text = config.title,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    WrapImage(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .defaultMinSize(minHeight = DEFAULT_ACTION_CARD_HEIGHT.dp),
+                        iconData = config.icon,
+                        contentScale = ContentScale.Fit
+                    )
                 }
 
-                WrapButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    buttonConfig = ButtonConfig(
-                        type = ButtonType.PRIMARY,
-                        buttonColors = ButtonDefaults.filledTonalButtonColors(containerColor = Color.Transparent),
-                        onClick = onLearnMoreClick
-                    )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp)
                 ) {
-                    WrapIcon(
-                        modifier = Modifier.size(SPACING_MEDIUM.dp),
-                        iconData = AppIcons.Info,
-                        customTint = MaterialTheme.colorScheme.primary
-                    )
+                    WrapButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        buttonConfig = ButtonConfig(
+                            type = ButtonType.PRIMARY,
+                            onClick = onActionClick
+                        ),
+                    ) {
+                        Text(config.primaryButtonText)
+                    }
 
-                    HSpacer.Small()
+                    WrapButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        buttonConfig = ButtonConfig(
+                            type = ButtonType.PRIMARY,
+                            buttonColors = ButtonDefaults.filledTonalButtonColors(containerColor = Color.Transparent),
+                            onClick = onLearnMoreClick
+                        )
+                    ) {
+                        WrapIcon(
+                            modifier = Modifier.size(SPACING_MEDIUM.dp),
+                            iconData = AppIcons.Info,
+                            customTint = MaterialTheme.colorScheme.primary
+                        )
 
-                    Text(
-                        text = config.secondaryButtonText,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                        HSpacer.Small()
+
+                        Text(
+                            text = config.secondaryButtonText,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }

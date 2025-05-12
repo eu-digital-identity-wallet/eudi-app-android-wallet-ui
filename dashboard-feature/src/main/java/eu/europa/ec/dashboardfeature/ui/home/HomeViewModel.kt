@@ -142,7 +142,8 @@ class HomeViewModel(
                 title = resourceProvider.getString(R.string.home_screen_sign_card_title),
                 icon = AppIcons.Contract,
                 primaryButtonText = resourceProvider.getString(R.string.home_screen_sign),
-                secondaryButtonText = resourceProvider.getString(R.string.home_screen_learn_more)
+                secondaryButtonText = resourceProvider.getString(R.string.home_screen_learn_more),
+                enabled = false
             ),
             isBleCentralClientModeEnabled = homeInteractor.isBleCentralClientModeEnabled(),
         )

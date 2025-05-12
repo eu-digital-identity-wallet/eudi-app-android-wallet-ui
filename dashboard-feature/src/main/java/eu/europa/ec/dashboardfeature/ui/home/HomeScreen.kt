@@ -310,7 +310,7 @@ private fun HomeScreenSheetContent(
                 },
                 sheetState = modalBottomSheetState
             ) {
-                BottomSheetWithTwoBigIcons(
+                /*BottomSheetWithTwoBigIcons(
                     textData = BottomSheetTextData(
                         title = stringResource(R.string.home_screen_authenticate),
                         message = stringResource(R.string.home_screen_authenticate_description)
@@ -330,7 +330,10 @@ private fun HomeScreenSheetContent(
                     onEventSent = { event ->
                         onEventSent(event)
                     }
-                )
+                )*/
+
+                onEventSent(Event.BottomSheet.Authenticate.OpenAuthenticateOnLine)
+
             }
         }
 
