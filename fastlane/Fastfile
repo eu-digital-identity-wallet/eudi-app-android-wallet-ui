@@ -88,16 +88,25 @@ platform :android do
     end
 
     if ENV['GITHUB_RELEASE_REPO'] && ENV['GITHUB_RELEASE_TOKEN']
-      apkPath = prepare_binary(
+      walletApkPath = prepare_binary(
         appVersion: fullVersion,
         buildType: ENV["APP_BUILD_TYPE"]
       )
+
+      extraAttachments = ENV['GITHUB_EXTRA_ATTACHMENTS']
+      attachments = [walletApkPath]
+    
+      if extraAttachments && !extraAttachments.strip.empty?
+        extraPaths = extraAttachments.split(',').map(&:strip)
+        attachments.concat(extraPaths)
+      end
+
       github_release(
         token: ENV['GITHUB_RELEASE_TOKEN'],
         repo: ENV['GITHUB_RELEASE_REPO'],
         tag: tagVersion,
         version: fullVersion,
-        path: apkPath
+        attachments: attachments
       )
     end
 
@@ -126,14 +135,14 @@ platform :android do
     repo = values[:repo]
     tag = values[:tag]
     version = values[:version]
-    path = values[:path]
+    attachments = values[:attachments]
     github_release = set_github_release(
       repository_name: repo,
       api_token: token,
       name: version,
       tag_name: tag,
       is_generate_release_notes: true,
-      upload_assets: [path]
+      upload_assets: attachments
     )
   end
 
