@@ -713,8 +713,8 @@ class DocumentsInteractorImpl(
                     FilterItem(
                         id = DocumentFilterIds.FILTER_BY_STATE_REVOKED,
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_revoked),
-                        selected = true,
-                        isDefault = true,
+                        selected = false,
+                        isDefault = false,
                     ),
                 ),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
