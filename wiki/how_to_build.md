@@ -62,7 +62,7 @@ private companion object {
         const val AUTHENTICATION_REQUIRED = false
 }
 ```
-into something like this:
+with this:
 ```Kotlin
 private companion object {
         const val VCI_ISSUER_URL = "local_IP_address_of_issuer"
@@ -74,18 +74,15 @@ private companion object {
 for example:
 ```Kotlin
 private companion object {
-        const val VCI_ISSUER_URL = "https://192.168.1.1:5000"
+        const val VCI_ISSUER_URL = "https://10.0.2.2"
         const val VCI_CLIENT_ID = "wallet-dev"
         const val AUTHENTICATION_REQUIRED = false
 }
 ```
+## Why 10.0.2.2?
 
-Finally, you have to also change the content of ***network_security_config.xml*** file and allow HTTP traffic, to this:
-```Xml
-<network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
-</network-security-config>
-```
+When using the Android emulator, 10.0.2.2 is a special alias that routes to localhost on your development machine.
+So if you’re running the issuer locally on your host, the emulator can access it via http://10.0.2.2.
 
 ## How to work with self-signed certificates
 
@@ -153,7 +150,7 @@ This section describes configuring the application to interact with services uti
 
     }
     ```
-5. Finally, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
+5. Also, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
     ```Kotlin
     @Single
     fun provideEudiWallet(
@@ -168,5 +165,27 @@ This section describes configuring the application to interact with services uti
         }
     }
     ```
+6. Finally, you need to use preregistered clientId scheme instead of X509. Change this:
+```Kotlin
+withClientIdSchemes(
+   listOf(ClientIdScheme.X509SanDns)
+)
+```
+into something like this:
+```Kotlin
+withClientIdSchemes(
+   listOf(
+      ClientIdScheme.Preregistered(
+         preregisteredVerifiers = listOf(
+            PreregisteredVerifier(
+               clientId = "Verifier",
+               legalName = "Verifier",
+               verifierApi = "https://10.0.2.2"
+            )
+         )
+      )
+   )
+)
+```
 
 For all configuration options please refer to [this document](configuration.md)
