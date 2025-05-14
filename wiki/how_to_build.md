@@ -80,13 +80,6 @@ private companion object {
 }
 ```
 
-Finally, you have to also change the content of ***network_security_config.xml*** file and allow HTTP traffic, to this:
-```Xml
-<network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
-</network-security-config>
-```
-
 ## How to work with self-signed certificates
 
 This section describes configuring the application to interact with services utilizing self-signed certificates.
@@ -153,7 +146,7 @@ This section describes configuring the application to interact with services uti
 
     }
     ```
-5. Finally, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
+5. Also, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
     ```Kotlin
     @Single
     fun provideEudiWallet(
@@ -168,5 +161,27 @@ This section describes configuring the application to interact with services uti
         }
     }
     ```
+6. Finally, you need to use preregistered clientId scheme instead of X509. Change this:
+```Kotlin
+withClientIdSchemes(
+   listOf(ClientIdScheme.X509SanDns)
+)
+```
+into something like this:
+```Kotlin
+withClientIdSchemes(
+   listOf(
+      ClientIdScheme.Preregistered(
+         preregisteredVerifiers = listOf(
+            PreregisteredVerifier(
+               clientId = "Verifier",
+               legalName = "Verifier",
+               verifierApi = "https://10.0.2.2"
+            )
+         )
+      )
+   )
+)
+```
 
 For all configuration options please refer to [this document](configuration.md)
