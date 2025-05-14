@@ -57,7 +57,7 @@ object TestsData {
     const val mockedNoUserFistNameFound = ""
     const val mockedNoUserBase64PortraitFound = ""
     const val mockedNoExpirationDateFound = ""
-    const val mockedFormattedExpirationDate = "13 May 2025"
+    const val mockedFormattedExpirationDate = "13 May 2030"
     const val mockedDocumentHasExpired = false
     const val mockedVerifierName = "EUDIW Verifier"
     const val mockedIssuerName = "EUDIW Issuer"

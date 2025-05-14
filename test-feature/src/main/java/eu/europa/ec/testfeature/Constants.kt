@@ -36,7 +36,7 @@ val mockedDefaultLocale: Locale = Locale.ENGLISH
 
 const val mockedOldestDocumentCreationDate = "2000-01-25T14:25:00.073Z"
 const val mockedDocumentCreationDate = "2024-01-25T14:25:00.073Z"
-const val mockedDocumentValidUntilDate = "2025-05-13T14:25:00.073Z"
+const val mockedDocumentValidUntilDate = "2030-05-13T14:25:00.073Z"
 const val mockedOldestPidId = "000000"
 const val mockedPidId = "000001"
 const val mockedMdlId = "000002"
