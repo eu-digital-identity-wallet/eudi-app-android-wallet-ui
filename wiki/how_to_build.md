@@ -89,7 +89,7 @@ So if you’re running the issuer locally on your host, the emulator can access 
 This section describes configuring the application to interact with services utilizing self-signed certificates.
 
 1. Open the build.gradle.kts file of the "core-logic" module.
-2. In the 'dependencies' block add the following two:
+2. In the 'dependencies' block, add the following two:
     ```Gradle
     implementation(libs.ktor.android)
     implementation(libs.ktor.logging)
@@ -165,27 +165,31 @@ This section describes configuring the application to interact with services uti
         }
     }
     ```
-6. Finally, you need to use preregistered clientId scheme instead of X509. Change this:
-```Kotlin
-withClientIdSchemes(
-   listOf(ClientIdScheme.X509SanDns)
-)
-```
-into something like this:
-```Kotlin
-withClientIdSchemes(
-   listOf(
-      ClientIdScheme.Preregistered(
-         preregisteredVerifiers = listOf(
-            PreregisteredVerifier(
-               clientId = "Verifier",
-               legalName = "Verifier",
-               verifierApi = "https://10.0.2.2"
-            )
-         )
-      )
+6. Finally, you need to use the preregistered clientId scheme instead of X509.
+   
+   Change this:
+   ```Kotlin
+   withClientIdSchemes(
+    listOf(ClientIdScheme.X509SanDns)
    )
-)
-```
+    ```
+   
+   into something like this:
+   ```Kotlin
+   withClientIdSchemes(
+    listOf(
+        ClientIdScheme.Preregistered(
+            preregisteredVerifiers =
+                listOf(
+                    PreregisteredVerifier(
+                        clientId = "Verifier",
+                        legalName = "Verifier",
+                        verifierApi = "https://10.0.2.2"
+                    )
+                )
+            )
+        )
+   )
+   ```
 
-For all configuration options please refer to [this document](configuration.md)
+   For all configuration options, please refer to [this document](configuration.md)
