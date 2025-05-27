@@ -1,5 +1,3 @@
-@file:Suppress("ERROR_SUPPRESSION", "ERROR_SUPPRESSION")
-
 /*
 * Copyright (c) 2023 European Commission
 *
