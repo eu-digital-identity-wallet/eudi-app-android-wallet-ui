@@ -1,5 +1,5 @@
 [versions]
-accompanist = "0.34.0"
+accompanist = "0.36.0"
 androidDesugarJdkLibs = "2.1.5"
 androidGradlePlugin = "8.10.0"
 androidxActivity = "1.10.1"
@@ -27,7 +27,7 @@ androidxWindowManager = "1.4.0"
 androidxWork = "2.10.1"
 androidxBiometric = "1.2.0-alpha05"
 androidxAppAuth = "1.0.0-rc01"
-coil = "2.6.0"
+coil = "3.2.0"
 constraintlayoutVersion = "1.1.1"
 gmsPlugin = "4.4.2"
 junit4 = "4.13.2"
@@ -40,8 +40,8 @@ lint = "31.10.0"
 okhttp = "4.12.0"
 protobuf = "3.24.0"
 protobufPlugin = "0.9.4"
-retrofit = "2.11.0"
-robolectric = "4.11.1"
+retrofit = "3.0.0"
+robolectric = "4.14.1"
 secrets = "2.0.1"
 turbine = "1.1.0"
 koin = "4.0.4"
@@ -49,10 +49,10 @@ koinAnnotations = "2.0.1-RC1"
 material = "1.12.0"
 mockito = "5.18.0"
 mockitoKotlin = "5.4.0"
-ktor = "3.0.1"
-slf4j = "2.0.7"
+ktor = "3.1.3"
+slf4j = "2.0.17"
 gson = "2.11.0"
-googlePhoneNumber = "8.13.40"
+googlePhoneNumber = "9.0.5"
 zxing = "3.5.3"
 eudiWalletCore = "0.16.1"
 cameraCore = "1.4.2"
@@ -110,9 +110,9 @@ androidx-tracing-ktx = { group = "androidx.tracing", name = "tracing-ktx", versi
 androidx-window-manager = { module = "androidx.window:window", version.ref = "androidxWindowManager" }
 androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
-coil-kt = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
-coil-kt-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
-coil-kt-svg = { group = "io.coil-kt", name = "coil-svg", version.ref = "coil" }
+coil-kt = { group = "io.coil-kt.coil3", name = "coil", version.ref = "coil" }
+coil-kt-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-kt-svg = { group = "io.coil-kt.coil3", name = "coil-svg", version.ref = "coil" }
 junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin" }
 kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
