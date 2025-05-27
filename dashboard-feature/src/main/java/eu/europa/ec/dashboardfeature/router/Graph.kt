@@ -30,7 +30,6 @@ import eu.europa.ec.dashboardfeature.ui.sign.DocumentSignScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.TransactionDetailsScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -79,7 +78,7 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
         ) {
             DocumentDetailsScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString("documentId").orEmpty(),
@@ -105,7 +104,7 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
         ) {
             TransactionDetailsScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString("transactionId").orEmpty(),

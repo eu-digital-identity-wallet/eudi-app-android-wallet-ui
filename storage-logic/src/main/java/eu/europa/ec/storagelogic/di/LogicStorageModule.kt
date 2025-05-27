@@ -16,19 +16,13 @@
 
 package eu.europa.ec.storagelogic.di
 
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
-import eu.europa.ec.storagelogic.config.StorageConfig
-import eu.europa.ec.storagelogic.config.StorageConfigImpl
-import eu.europa.ec.storagelogic.controller.BookmarkStorageController
-import eu.europa.ec.storagelogic.controller.BookmarkStorageControllerImpl
-import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
-import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageControllerImpl
-import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
-import eu.europa.ec.storagelogic.controller.TransactionLogStorageControllerImpl
-import eu.europa.ec.storagelogic.service.RealmService
-import eu.europa.ec.storagelogic.service.RealmServiceImpl
+import android.content.Context
+import androidx.room.Room
+import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
+import eu.europa.ec.storagelogic.dao.TransactionLogDao
+import eu.europa.ec.storagelogic.service.DatabaseService
 import org.koin.core.annotation.ComponentScan
-import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
@@ -37,21 +31,20 @@ import org.koin.core.annotation.Single
 class LogicStorageModule
 
 @Single
-fun provideStorageConfig(prefKeys: PrefKeys): StorageConfig =
-    StorageConfigImpl(prefKeys)
+fun provideAppDatabase(context: Context): DatabaseService =
+    Room.databaseBuilder(
+        context,
+        DatabaseService::class.java,
+        "eudi.app.wallet.storage"
+    ).fallbackToDestructiveMigration(true).build()
 
 @Single
-fun provideRealmService(storageConfig: StorageConfig): RealmService =
-    RealmServiceImpl(storageConfig)
+fun provideBookmarkDao(service: DatabaseService): BookmarkDao = service.bookmarkDao()
 
-@Factory
-fun provideBookmarkStorageController(realmService: RealmService): BookmarkStorageController =
-    BookmarkStorageControllerImpl(realmService)
+@Single
+fun provideRevokedDocumentDao(service: DatabaseService): RevokedDocumentDao =
+    service.revokedDocumentDao()
 
-@Factory
-fun provideTransactionLogStorageController(realmService: RealmService): TransactionLogStorageController =
-    TransactionLogStorageControllerImpl(realmService)
-
-@Factory
-fun provideRevokedDocumentsStorageController(realmService: RealmService): RevokedDocumentsStorageController =
-    RevokedDocumentsStorageControllerImpl(realmService)
+@Single
+fun provideTransactionLogDao(service: DatabaseService): TransactionLogDao =
+    service.transactionLogDao()

@@ -97,7 +97,7 @@ Proximity
 
 ### Minimum device requirements
 
-- API level 28.
+- API level 31.
 
 ### Prerequisites
 
