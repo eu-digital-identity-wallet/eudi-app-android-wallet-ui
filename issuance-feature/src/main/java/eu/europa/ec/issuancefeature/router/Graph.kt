@@ -34,7 +34,7 @@ import eu.europa.ec.issuancefeature.ui.offer.DocumentOfferScreen
 import eu.europa.ec.issuancefeature.ui.success.DocumentIssuanceSuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
@@ -59,7 +59,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             AddDocumentScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             IssuanceFlowUiConfig.fromString(
@@ -88,7 +88,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             DocumentOfferScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(OfferUiConfig.serializedKeyName).orEmpty()
@@ -115,7 +115,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             DocumentOfferCodeScreen(
                 navController = navController,
-                viewModel = getViewModel(
+                viewModel = koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(OfferCodeUiConfig.serializedKeyName).orEmpty()
@@ -142,7 +142,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             DocumentIssuanceSuccessScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(IssuanceSuccessUiConfig.serializedKeyName)
