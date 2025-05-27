@@ -19,7 +19,6 @@ package eu.europa.ec.authenticationlogic.controller.authentication
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.os.Build
 import android.provider.Settings
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
@@ -138,15 +137,11 @@ class BiometricAuthenticationControllerImpl(
     }
 
     override fun launchBiometricSystemScreen() {
-        val enrollIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
-                putExtra(
-                    Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
-                    BIOMETRIC_WEAK
-                )
-            }
-        } else {
-            Intent(Settings.ACTION_SECURITY_SETTINGS)
+        val enrollIntent = Intent(Settings.ACTION_BIOMETRIC_ENROLL).apply {
+            putExtra(
+                Settings.EXTRA_BIOMETRIC_AUTHENTICATORS_ALLOWED,
+                BIOMETRIC_WEAK
+            )
         }
         enrollIntent.addFlags(FLAG_ACTIVITY_NEW_TASK)
         resourceProvider.provideContext().startActivity(enrollIntent)

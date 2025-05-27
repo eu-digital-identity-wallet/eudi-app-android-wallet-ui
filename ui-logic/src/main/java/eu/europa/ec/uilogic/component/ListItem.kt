@@ -16,7 +16,6 @@
 
 package eu.europa.ec.uilogic.component
 
-import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -224,9 +223,8 @@ fun ListItem(
     )
 
     // API check
-    val supportsBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val blurModifier = remember(supportsBlur, hideSensitiveContent) {
-        if (supportsBlur && hideSensitiveContent) {
+    val blurModifier = remember(hideSensitiveContent) {
+        if (hideSensitiveContent) {
             Modifier.blur(10.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
         } else {
             Modifier
@@ -265,7 +263,7 @@ fun ListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Leading Content
-            if (!hideSensitiveContent || supportsBlur) {
+            if (!hideSensitiveContent) {
                 leadingContentData?.let { safeLeadingContentData ->
                     val leadingContentModifier = Modifier
                         .padding(end = SIZE_MEDIUM.dp)
@@ -307,12 +305,12 @@ fun ListItem(
                 overlineText?.let { safeOverlineText ->
                     Text(
                         text = safeOverlineText,
-                        style = if (hideSensitiveContent && !supportsBlur) mainTextStyle else overlineTextStyle,
+                        style = if (hideSensitiveContent) mainTextStyle else overlineTextStyle,
                     )
                 }
 
                 // Main Content
-                if (!hideSensitiveContent || supportsBlur) {
+                if (!hideSensitiveContent) {
                     when (mainContentData) {
                         is ListItemMainContentData.Image -> ImageOrPlaceholder(
                             modifier = Modifier
