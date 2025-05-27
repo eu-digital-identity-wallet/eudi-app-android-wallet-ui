@@ -14,21 +14,25 @@
  * governing permissions and limitations under the Licence.
  */
 
+import androidx.room.gradle.RoomExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import project.convention.logic.libs
 
-class RealmPlugin : Plugin<Project> {
+class RoomPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
-                apply("io.realm.kotlin")
+                apply("androidx.room")
             }
-
+            extensions.configure<RoomExtension> {
+                schemaDirectory("$projectDir/schemas")
+            }
             dependencies {
-                add("implementation", libs.findLibrary("kotlinx-coroutines").get())
-                add("implementation", libs.findLibrary("kotlin-realm").get())
+                add("implementation", libs.findLibrary("androidx-room").get())
+                add("ksp", libs.findLibrary("androidx-room-ksp").get())
             }
         }
     }

@@ -31,11 +31,11 @@ coil = "3.2.0"
 constraintlayoutVersion = "1.1.1"
 gmsPlugin = "4.4.2"
 junit4 = "4.13.2"
-kotlin = "2.0.21"
+kotlin = "2.1.21"
 kotlinxCoroutines = "1.10.2"
 kotlinxDatetime = "0.6.2"
 kotlinxSerializationJson = "1.8.0"
-ksp = "2.0.21-1.0.27"
+ksp = "2.1.21-2.0.1"
 lint = "31.10.0"
 okhttp = "4.12.0"
 protobuf = "3.24.0"
@@ -51,7 +51,7 @@ mockito = "5.18.0"
 mockitoKotlin = "5.4.0"
 ktor = "3.1.3"
 slf4j = "2.0.17"
-gson = "2.11.0"
+gson = "2.13.1"
 googlePhoneNumber = "9.0.5"
 zxing = "3.5.3"
 eudiWalletCore = "0.16.1"
@@ -64,7 +64,7 @@ baselineprofile = "1.3.4"
 timber = "5.0.1"
 treessence = "1.1.2"
 rqesUiSDK = "0.2.1"
-realm = "2.3.0"
+androidxRoom = "2.7.1"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -148,7 +148,8 @@ eudi-wallet-core = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-walle
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 treessence = { group = "com.github.bastienpaulfr", name = "Treessence", version.ref = "treessence" }
 rqes-ui-sdk = { group = "eu.europa.ec.eudi", name = "eudi-lib-android-rqes-ui", version.ref = "rqesUiSDK" }
-kotlin-realm = { group = "io.realm.kotlin", name = "library-base", version.ref = "realm" }
+androidx-room = { group = "androidx.room", name = "room-runtime", version.ref = "androidxRoom" }
+androidx-room-ksp = { group = "androidx.room", name = "room-compiler", version.ref = "androidxRoom" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -163,6 +164,7 @@ androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", 
 owasp-dependencycheck-gradlePlugin = { group = "org.owasp", name = "dependency-check-gradle", version.ref = "owaspDependencyCheck" }
 kotlinx-kover-gradlePlugin = { group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "kover" }
 baselineprofile-gradlePlugin = { group = "androidx.benchmark", name = "benchmark-baseline-profile-gradle-plugin", version.ref = "baselineprofile" }
+androidx-room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "androidxRoom" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
@@ -180,4 +182,4 @@ owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owasp
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
-realm = { id = "io.realm.kotlin", version.ref = "realm" }
+androidx-room = { id = "androidx.room", version.ref = "androidxRoom" }

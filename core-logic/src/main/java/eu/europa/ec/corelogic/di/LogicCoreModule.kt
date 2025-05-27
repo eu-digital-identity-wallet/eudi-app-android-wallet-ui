@@ -28,9 +28,9 @@ import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.storagelogic.controller.BookmarkStorageController
-import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
-import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
+import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
+import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -66,9 +66,9 @@ fun provideWalletCoreLogController(logController: LogController): WalletCoreLogC
 
 @Single
 fun provideWalletCoreTransactionLogController(
-    transactionLogStorageController: TransactionLogStorageController
+    transactionLogDao: TransactionLogDao,
 ): WalletCoreTransactionLogController = WalletCoreTransactionLogControllerImpl(
-    transactionLogStorageController = transactionLogStorageController
+    transactionLogDao
 )
 
 @Factory
@@ -76,17 +76,17 @@ fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
     eudiWallet: EudiWallet,
     walletCoreConfig: WalletCoreConfig,
-    transactionLogStorageController: TransactionLogStorageController,
-    bookmarkStorageController: BookmarkStorageController,
-    revokedDocumentsStorageController: RevokedDocumentsStorageController
+    bookmarkDao: BookmarkDao,
+    transactionLogDao: TransactionLogDao,
+    revokedDocumentDao: RevokedDocumentDao
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
         resourceProvider,
         eudiWallet,
         walletCoreConfig,
-        transactionLogStorageController,
-        bookmarkStorageController,
-        revokedDocumentsStorageController
+        bookmarkDao,
+        transactionLogDao,
+        revokedDocumentDao
     )
 
 /**

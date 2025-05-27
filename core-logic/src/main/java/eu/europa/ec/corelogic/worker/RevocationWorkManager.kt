@@ -26,7 +26,7 @@ import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.corelogic.util.CoreActions.REVOCATION_IDS_DETAILS_EXTRA
 import eu.europa.ec.eudi.statium.Status
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
+import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.model.RevokedDocument
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -35,13 +35,13 @@ import org.koin.core.component.inject
  * [RevocationWorkManager] is a [CoroutineWorker] responsible for checking the revocation status of issued documents
  * and updating the local storage and sending broadcasts when revocations are detected.
  *
- * It utilizes Koin for dependency injection to obtain instances of [RevokedDocumentsStorageController] and [WalletCoreDocumentsController].
+ * It utilizes Koin for dependency injection to obtain instances of [eu.europa.ec.storagelogic.dao.RevokedDocumentDao] and [WalletCoreDocumentsController].
  *
  * Key functionalities:
  *  - Periodically retrieves all issued documents from the [WalletCoreDocumentsController].
  *  - Checks the status of each document for revocation using [WalletCoreDocumentsController.resolveDocumentStatus].
  *  - Identifies documents with statuses [Status.Invalid] or [Status.Suspended] as revoked.
- *  - Stores revoked documents in the [RevokedDocumentsStorageController].
+ *  - Stores revoked documents in the [eu.europa.ec.storagelogic.dao.RevokedDocumentDao].
  *  - Sends three broadcasts to notify the application about the revoked documents:
  *      - `CoreActions.REVOCATION_WORK_MESSAGE_ACTION`: Includes a list of [RevokedDocumentPayload] with names and IDs.
  *      - `CoreActions.REVOCATION_WORK_REFRESH_ACTION`: A general refresh action without specific data.
@@ -59,7 +59,7 @@ class RevocationWorkManager(
     workerParams: WorkerParameters,
 ) : CoroutineWorker(appContext, workerParams), KoinComponent {
 
-    private val revokedDocumentsController: RevokedDocumentsStorageController by inject()
+    private val revokedDocumentDao: RevokedDocumentDao by inject()
     private val walletCoreDocumentsController: WalletCoreDocumentsController by inject()
 
     companion object {
@@ -119,7 +119,7 @@ class RevocationWorkManager(
 
     @Throws(IllegalArgumentException::class)
     private suspend fun storeRevokedDocuments(revokedDocuments: List<IssuedDocument>) {
-        revokedDocumentsController.store(
+        revokedDocumentDao.storeAll(
             revokedDocuments.map { RevokedDocument(identifier = it.id) }
         )
     }
@@ -127,7 +127,7 @@ class RevocationWorkManager(
     @Throws(IllegalArgumentException::class)
     private suspend fun removeRevokedDocumentsFromStorage(ids: List<String>) {
         ids.forEach {
-            revokedDocumentsController.delete(it)
+            revokedDocumentDao.delete(it)
         }
     }
 
