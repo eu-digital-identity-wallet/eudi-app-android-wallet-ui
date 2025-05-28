@@ -23,7 +23,7 @@ interface UuidProvider {
     fun provideUuid(): String
 }
 
-class UuidProviderImpl(): UuidProvider {
+class UuidProviderImpl() : UuidProvider {
     @OptIn(ExperimentalUuidApi::class)
     override fun provideUuid(): String {
         return Uuid.random().toString()

@@ -475,7 +475,7 @@ private fun RequiredPermissionsAsk(
     permissions.add(Manifest.permission.BLUETOOTH_ADVERTISE)
     permissions.add(Manifest.permission.BLUETOOTH_SCAN)
     permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
-    
+
     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2 && state.isBleCentralClientModeEnabled) {
         permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
         permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)

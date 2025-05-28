@@ -264,7 +264,7 @@ object TestsData {
                 header = ListItemData(
                     itemId = "$mockedSdJwtPidId,exp",
                     overlineText = "exp",
-                    mainContentData = ListItemMainContentData.Text(text="1755730800")
+                    mainContentData = ListItemMainContentData.Text(text = "1755730800")
                 )
             ),
             ExpandableListItem.SingleListItemData(
@@ -285,14 +285,14 @@ object TestsData {
                 header = ListItemData(
                     itemId = "$mockedSdJwtPidId,iat",
                     overlineText = "iat",
-                    mainContentData = ListItemMainContentData.Text(text="1747954800")
+                    mainContentData = ListItemMainContentData.Text(text = "1747954800")
                 )
             ),
             ExpandableListItem.SingleListItemData(
                 header = ListItemData(
                     itemId = "$mockedSdJwtPidId,issuing_authority",
                     overlineText = "issuing_authority",
-                    mainContentData = ListItemMainContentData.Text(text= "Test PID issuer")
+                    mainContentData = ListItemMainContentData.Text(text = "Test PID issuer")
                 )
             ),
             ExpandableListItem.SingleListItemData(

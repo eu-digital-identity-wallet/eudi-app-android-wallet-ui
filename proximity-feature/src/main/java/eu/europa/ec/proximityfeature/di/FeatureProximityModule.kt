@@ -16,6 +16,7 @@
 
 package eu.europa.ec.proximityfeature.di
 
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
@@ -29,7 +30,6 @@ import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorImpl
 import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.businesslogic.provider.UuidProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
