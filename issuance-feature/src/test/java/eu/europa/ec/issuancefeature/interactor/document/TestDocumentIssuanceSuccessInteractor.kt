@@ -93,7 +93,10 @@ class TestDocumentIssuanceSuccessInteractor {
         whenever(resourceProvider.getLocale()).thenReturn(mockedDefaultLocale)
 
         mockIssuerName(resourceProvider = resourceProvider, name = mockedIssuerName)
-        mockTransformToUiItemsCall(resourceProvider = resourceProvider, notAvailableString = mockedRequestElementIdentifierNotAvailable)
+        mockTransformToUiItemsCall(
+            resourceProvider = resourceProvider,
+            notAvailableString = mockedRequestElementIdentifierNotAvailable
+        )
     }
 
     @After
@@ -235,7 +238,7 @@ class TestDocumentIssuanceSuccessInteractor {
 
             // When
             interactor.getUiItems(
-                documentIds = listOf(mockedPidWithBasicFields.id , mockedSdJwtPidId)
+                documentIds = listOf(mockedPidWithBasicFields.id, mockedSdJwtPidId)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -289,7 +292,7 @@ class TestDocumentIssuanceSuccessInteractor {
 
             // When
             interactor.getUiItems(
-                documentIds = listOf(mockedPidWithBasicFields.id , mockedSdJwtPidId)
+                documentIds = listOf(mockedPidWithBasicFields.id, mockedSdJwtPidId)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -366,7 +369,10 @@ class TestDocumentIssuanceSuccessInteractor {
             mockSupportingText()
             mockItemId()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
-            mockSdJwtGetDocumentByIdCall(docId = mockedSdJwtPidId, response = mockedSdJwtPidWithBasicFields)
+            mockSdJwtGetDocumentByIdCall(
+                docId = mockedSdJwtPidId,
+                response = mockedSdJwtPidWithBasicFields
+            )
 
             // When
             interactor.getUiItems(
@@ -540,7 +546,9 @@ class TestDocumentIssuanceSuccessInteractor {
         whenever(resourceProvider.getString(R.string.request_gender_not_known)).thenReturn(notKnown)
         whenever(resourceProvider.getString(R.string.request_gender_male)).thenReturn(male)
         whenever(resourceProvider.getString(R.string.request_gender_female)).thenReturn(female)
-        whenever(resourceProvider.getString(R.string.request_gender_not_applicable)).thenReturn(notApplicable)
+        whenever(resourceProvider.getString(R.string.request_gender_not_applicable)).thenReturn(
+            notApplicable
+        )
     }
 
     private fun mockGetDocumentByIdCall(response: IssuedDocument?) {

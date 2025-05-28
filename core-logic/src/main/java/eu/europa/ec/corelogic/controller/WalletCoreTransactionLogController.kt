@@ -17,10 +17,10 @@
 package eu.europa.ec.corelogic.controller
 
 import com.nimbusds.jose.shaded.gson.Gson
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLogger
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
-import eu.europa.ec.businesslogic.provider.UuidProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

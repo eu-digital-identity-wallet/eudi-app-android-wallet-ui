@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.document_details.transformer
 
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.commonfeature.extensions.toExpandableListItems
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
@@ -27,7 +28,6 @@ import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.businesslogic.provider.UuidProvider
 
 object DocumentDetailsTransformer {
 
