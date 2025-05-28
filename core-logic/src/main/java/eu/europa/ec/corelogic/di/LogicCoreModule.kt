@@ -70,8 +70,8 @@ fun provideWalletCoreTransactionLogController(
     transactionLogDao: TransactionLogDao,
     uuidProvider: UuidProvider
 ): WalletCoreTransactionLogController = WalletCoreTransactionLogControllerImpl(
-    transactionLogDao,
-    uuidProvider
+    transactionLogDao = transactionLogDao,
+    uuidProvider = uuidProvider
 )
 
 @Factory
