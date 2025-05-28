@@ -87,7 +87,10 @@ class KeystoreControllerImpl(
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .setUserAuthenticationRequired(true)
                 .setInvalidatedByBiometricEnrollment(true)
-                .setUserAuthenticationValidityDurationSeconds(-1)
+                .setUserAuthenticationParameters(
+                    0,
+                    KeyProperties.AUTH_DEVICE_CREDENTIAL or KeyProperties.AUTH_BIOMETRIC_STRONG
+                )
                 .build()
         )
         keyGenerator.generateKey()

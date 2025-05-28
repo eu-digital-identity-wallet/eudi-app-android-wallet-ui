@@ -14,6 +14,14 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.storagelogic.model.type
+package eu.europa.ec.storagelogic.dao.type
 
-interface StoredObject
+interface StorageDao<T> {
+    suspend fun store(value: T)
+    suspend fun storeAll(values: List<T>)
+    suspend fun retrieve(identifier: String): T?
+    suspend fun retrieveAll(): List<T>
+    suspend fun update(value: T)
+    suspend fun delete(identifier: String)
+    suspend fun deleteAll()
+}

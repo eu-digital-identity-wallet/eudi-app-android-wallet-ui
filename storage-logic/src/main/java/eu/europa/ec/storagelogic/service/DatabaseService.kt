@@ -16,18 +16,25 @@
 
 package eu.europa.ec.storagelogic.service
 
-import eu.europa.ec.storagelogic.config.StorageConfig
-import io.realm.kotlin.Realm
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
+import eu.europa.ec.storagelogic.dao.TransactionLogDao
+import eu.europa.ec.storagelogic.model.Bookmark
+import eu.europa.ec.storagelogic.model.RevokedDocument
+import eu.europa.ec.storagelogic.model.TransactionLog
 
-interface RealmService {
-    fun get(): Realm
-}
-
-internal class RealmServiceImpl(private val storageConfig: StorageConfig) : RealmService {
-
-    private val realm: Realm by lazy {
-        Realm.open(storageConfig.realmConfiguration)
-    }
-
-    override fun get(): Realm = realm
+@Database(
+    entities = [
+        Bookmark::class,
+        RevokedDocument::class,
+        TransactionLog::class
+    ],
+    version = 1
+)
+abstract class DatabaseService : RoomDatabase() {
+    abstract fun bookmarkDao(): BookmarkDao
+    abstract fun revokedDocumentDao(): RevokedDocumentDao
+    abstract fun transactionLogDao(): TransactionLogDao
 }
