@@ -20,8 +20,8 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import java.security.KeyStore
-import java.util.UUID
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
@@ -32,6 +32,7 @@ interface KeystoreController {
 class KeystoreControllerImpl(
     private val prefKeys: PrefKeys,
     private val logController: LogController,
+    private val uuidProvider: UuidProvider
 ) : KeystoreController {
 
     companion object {
@@ -106,6 +107,6 @@ class KeystoreControllerImpl(
      * @return a string containing 64 characters
      */
     private fun createPublicKey(): GUID =
-        (UUID.randomUUID().toString() + UUID.randomUUID()
-            .toString()).take(CryptoControllerImpl.MAX_GUID_LENGTH)
+        (uuidProvider.provideUuid() + uuidProvider.provideUuid())
+            .take(CryptoControllerImpl.MAX_GUID_LENGTH)
 }

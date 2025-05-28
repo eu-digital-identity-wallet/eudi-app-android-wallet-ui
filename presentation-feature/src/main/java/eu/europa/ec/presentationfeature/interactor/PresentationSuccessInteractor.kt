@@ -26,6 +26,7 @@ import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -59,6 +60,7 @@ class PresentationSuccessInteractorImpl(
     private val walletCorePresentationController: WalletCorePresentationController,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
+    private val uuidProvider: UuidProvider
 ) : PresentationSuccessInteractor {
 
     private val genericErrorMsg
@@ -91,6 +93,7 @@ class PresentationSuccessInteractorImpl(
                         paths = disclosedClaimPaths,
                         claims = document.data.claims,
                         resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     val disclosedClaimsUi = disclosedClaims.map { disclosedClaim ->

@@ -34,6 +34,7 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -45,6 +46,7 @@ object RequestTransformer {
     fun transformToDomainItems(
         storageDocuments: List<IssuedDocument>,
         resourceProvider: ResourceProvider,
+        uuidProvider: UuidProvider,
         requestDocuments: List<RequestedDocument>,
     ): Result<List<DocumentPayloadDomain>> = runCatching {
         val resultList = mutableListOf<DocumentPayloadDomain>()
@@ -73,6 +75,7 @@ object RequestTransformer {
                 paths = filteredPaths,
                 claims = storageDocument.data.claims,
                 resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider
             )
 
             if (domainClaims.isNotEmpty()) {

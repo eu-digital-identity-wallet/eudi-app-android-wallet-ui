@@ -36,6 +36,7 @@ import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -98,18 +99,22 @@ fun provideDocumentSignInteractor(
 fun provideDocumentDetailsInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
+    uuidProvider: UuidProvider
 ): DocumentDetailsInteractor =
     DocumentDetailsInteractorImpl(
         walletCoreDocumentsController,
-        resourceProvider
+        resourceProvider,
+        uuidProvider
     )
 
 @Factory
 fun provideTransactionDetailsInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
+    uuidProvider: UuidProvider
 ): TransactionDetailsInteractor =
     TransactionDetailsInteractorImpl(
         walletCoreDocumentsController,
         resourceProvider,
+        uuidProvider
     )

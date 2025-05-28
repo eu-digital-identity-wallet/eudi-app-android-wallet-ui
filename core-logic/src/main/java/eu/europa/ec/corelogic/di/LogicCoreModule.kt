@@ -31,6 +31,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -67,8 +68,10 @@ fun provideWalletCoreLogController(logController: LogController): WalletCoreLogC
 @Single
 fun provideWalletCoreTransactionLogController(
     transactionLogDao: TransactionLogDao,
+    uuidProvider: UuidProvider
 ): WalletCoreTransactionLogController = WalletCoreTransactionLogControllerImpl(
-    transactionLogDao
+    transactionLogDao = transactionLogDao,
+    uuidProvider = uuidProvider
 )
 
 @Factory
