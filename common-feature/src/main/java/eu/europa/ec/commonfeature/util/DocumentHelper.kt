@@ -36,7 +36,7 @@ import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
 import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.resourceslogic.provider.UuidProvider
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId

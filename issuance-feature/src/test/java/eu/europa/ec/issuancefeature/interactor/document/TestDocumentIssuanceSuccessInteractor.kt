@@ -16,6 +16,7 @@
 
 package eu.europa.ec.issuancefeature.interactor.document
 
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.util.TestsData
 import eu.europa.ec.commonfeature.util.TestsData.mockedErrorDescription
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
@@ -24,16 +25,12 @@ import eu.europa.ec.commonfeature.util.TestsData.mockedRequestElementIdentifierN
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessDescription
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessText
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
-import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
 import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorGetUiItemsPartialState
 import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorImpl
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.resourceslogic.provider.UuidProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockIssuerName
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemsCall
 import eu.europa.ec.testfeature.mockedDefaultLocale
@@ -553,11 +550,6 @@ class TestDocumentIssuanceSuccessInteractor {
 
     private fun mockSdJwtGetDocumentByIdCall(docId: String, response: IssuedDocument?) {
         whenever(walletCoreDocumentsController.getDocumentById(docId))
-            .thenReturn(response)
-    }
-
-    private fun mockLocalizedIssuerMetadata(document: Document, response: DocumentMetaData.IssuerDisplay?) {
-        whenever(document.localizedIssuerMetadata(resourceProvider.getLocale()))
             .thenReturn(response)
     }
 

@@ -19,8 +19,6 @@ package eu.europa.ec.resourceslogic.di
 import android.content.Context
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.provider.ResourceProviderImpl
-import eu.europa.ec.resourceslogic.provider.UUidProviderImpl
-import eu.europa.ec.resourceslogic.provider.UuidProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
@@ -32,9 +30,4 @@ class LogicResourceModule
 @Single
 fun provideResourceProvider(context: Context): ResourceProvider {
     return ResourceProviderImpl(context)
-}
-
-@Single
-fun provideUuidProvider(): UuidProvider {
-    return UUidProviderImpl()
 }

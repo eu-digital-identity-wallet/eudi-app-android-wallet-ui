@@ -28,6 +28,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.storagelogic.controller.BookmarkStorageController
 import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
 import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
@@ -66,9 +67,11 @@ fun provideWalletCoreLogController(logController: LogController): WalletCoreLogC
 
 @Single
 fun provideWalletCoreTransactionLogController(
-    transactionLogStorageController: TransactionLogStorageController
+    transactionLogStorageController: TransactionLogStorageController,
+    uuidProvider: UuidProvider
 ): WalletCoreTransactionLogController = WalletCoreTransactionLogControllerImpl(
-    transactionLogStorageController = transactionLogStorageController
+    transactionLogStorageController = transactionLogStorageController,
+    uuidProvider = uuidProvider
 )
 
 @Factory
