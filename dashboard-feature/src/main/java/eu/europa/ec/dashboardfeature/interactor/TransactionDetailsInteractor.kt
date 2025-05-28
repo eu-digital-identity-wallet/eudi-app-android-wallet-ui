@@ -40,6 +40,7 @@ import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
 import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.provider.UuidProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -84,6 +85,7 @@ interface TransactionDetailsInteractor {
 class TransactionDetailsInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
+    private val uuidProvider: UuidProvider,
 ) : TransactionDetailsInteractor {
 
     private val genericErrorMsg
@@ -119,6 +121,7 @@ class TransactionDetailsInteractorImpl(
                                 itemIdentifierPrefix = resourceProvider.getString(R.string.transaction_details_data_shared_prefix_id),
                                 userLocale = userLocale,
                                 resourceProvider = resourceProvider,
+                                uuidProvider = uuidProvider,
                             )
                         }
 
@@ -182,7 +185,8 @@ class TransactionDetailsInteractorImpl(
         documentSupportingText: String,
         itemIdentifierPrefix: String,
         userLocale: Locale,
-        resourceProvider: ResourceProvider
+        resourceProvider: ResourceProvider,
+        uuidProvider: UuidProvider
     ): List<ExpandableListItem.NestedListItemData> {
         return this.mapIndexed { index, presentedDocument ->
             val domainClaims: MutableList<DomainClaim> = mutableListOf()
@@ -205,6 +209,7 @@ class TransactionDetailsInteractorImpl(
                     resourceProvider = resourceProvider,
                     claimMetaData = presentedClaim.metadata,
                     allItems = domainClaims,
+                    uuidProvider = uuidProvider
                 )
             }
 

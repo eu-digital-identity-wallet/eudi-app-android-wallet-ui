@@ -26,6 +26,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.provider.UuidProvider
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
 import eu.europa.ec.uilogic.component.ListItemMainContentData
@@ -55,6 +56,7 @@ interface DocumentIssuanceSuccessInteractor {
 class DocumentIssuanceSuccessInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
+    private val uuidProvider: UuidProvider
 ) : DocumentIssuanceSuccessInteractor {
 
     private val genericErrorMsg
@@ -95,6 +97,7 @@ class DocumentIssuanceSuccessInteractorImpl(
                         paths = claimsPaths,
                         claims = document.data.claims,
                         resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     val claimsUi = domainClaims.map { selectedDomainClaim ->

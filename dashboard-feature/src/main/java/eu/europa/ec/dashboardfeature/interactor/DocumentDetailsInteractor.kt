@@ -30,6 +30,7 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.provider.UuidProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -88,8 +89,9 @@ interface DocumentDetailsInteractor {
 
 class DocumentDetailsInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
-    private val resourceProvider: ResourceProvider
-) : DocumentDetailsInteractor {
+    private val resourceProvider: ResourceProvider,
+    private val uuidProvider: UuidProvider
+    ) : DocumentDetailsInteractor {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
@@ -106,7 +108,8 @@ class DocumentDetailsInteractorImpl(
                 val documentDetailsDomainResult =
                     DocumentDetailsTransformer.transformToDocumentDetailsDomain(
                         document = safeIssuedDocument,
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
                 val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
 

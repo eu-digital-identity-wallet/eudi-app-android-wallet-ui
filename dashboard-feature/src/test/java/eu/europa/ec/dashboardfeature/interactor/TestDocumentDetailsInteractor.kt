@@ -32,6 +32,7 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.provider.UuidProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls
 import eu.europa.ec.testfeature.createMockedNamespaceData
 import eu.europa.ec.testfeature.mockedBookmarkId
@@ -71,6 +72,9 @@ class TestDocumentDetailsInteractor {
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     @Mock
+    private lateinit var uuidProvider: UuidProvider
+
+    @Mock
     private lateinit var resourceProvider: ResourceProvider
 
     private lateinit var interactor: DocumentDetailsInteractor
@@ -84,6 +88,7 @@ class TestDocumentDetailsInteractor {
         interactor = DocumentDetailsInteractorImpl(
             walletCoreDocumentsController = walletCoreDocumentsController,
             resourceProvider = resourceProvider,
+            uuidProvider = uuidProvider
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)

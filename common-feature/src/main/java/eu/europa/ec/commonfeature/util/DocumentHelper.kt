@@ -36,12 +36,12 @@ import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
 import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.provider.UuidProvider
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 fun extractValueFromDocumentOrEmpty(
     document: IssuedDocument,
@@ -112,6 +112,7 @@ fun createKeyValue(
     childKey: String = "",
     disclosurePath: ClaimPath,
     resourceProvider: ResourceProvider,
+    uuidProvider: UuidProvider,
     claimMetaData: DocumentMetaData.Claim?,
     allItems: MutableList<DomainClaim>,
 ) {
@@ -134,7 +135,7 @@ fun createKeyValue(
                 DomainClaim.Group(
                     key = groupKey,
                     displayTitle = displayTitle,
-                    path = ClaimPath(listOf(Uuid.random().toString())),
+                    path = ClaimPath(listOf(uuidProvider.provideUuid())),
                     items = children
                 )
             )
@@ -164,6 +165,7 @@ fun createKeyValue(
                         childKey = newChildKey,
                         disclosurePath = disclosurePath,
                         resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider,
                         claimMetaData = null,
                         allItems = children
                     )
@@ -195,6 +197,7 @@ fun createKeyValue(
                         groupKey = groupKey,
                         disclosurePath = disclosurePath,
                         resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider,
                         claimMetaData = claimMetaData,
                         allItems = children
                     )
@@ -285,6 +288,7 @@ private fun insertPath(
     disclosurePath: ClaimPath,
     claims: List<DocumentClaim>,
     resourceProvider: ResourceProvider,
+    uuidProvider: UuidProvider,
 ): List<DomainClaim> {
     if (path.value.isEmpty()) return tree
 
@@ -304,6 +308,7 @@ private fun insertPath(
                 item = currentClaim.value!!,
                 groupKey = currentClaim.identifier,
                 resourceProvider = resourceProvider,
+                uuidProvider = uuidProvider,
                 claimMetaData = currentClaim.metadata,
                 disclosurePath = disclosurePath,
                 allItems = accumulatedClaims,
@@ -325,6 +330,7 @@ private fun insertPath(
                     disclosurePath = disclosurePath,
                     claims = childClaims,
                     resourceProvider = resourceProvider,
+                    uuidProvider = uuidProvider,
                 )
             )
         } else {
@@ -343,6 +349,7 @@ private fun insertPath(
                     disclosurePath = disclosurePath,
                     claims = childClaims,
                     resourceProvider = resourceProvider,
+                    uuidProvider = uuidProvider,
                 )
             )
         }
@@ -356,6 +363,7 @@ fun transformPathsToDomainClaims(
     paths: List<ClaimPath>,
     claims: List<DocumentClaim>,
     resourceProvider: ResourceProvider,
+    uuidProvider: UuidProvider
 ): List<DomainClaim> {
     return paths.fold<ClaimPath, List<DomainClaim>>(initial = emptyList()) { acc, path ->
         insertPath(
@@ -364,6 +372,7 @@ fun transformPathsToDomainClaims(
             disclosurePath = path,
             claims = claims,
             resourceProvider = resourceProvider,
+            uuidProvider = uuidProvider
         )
     }.removeEmptyGroups()
         .sortRecursivelyBy {

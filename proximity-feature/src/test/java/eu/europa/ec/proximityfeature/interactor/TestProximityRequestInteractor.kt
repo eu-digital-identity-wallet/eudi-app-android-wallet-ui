@@ -29,6 +29,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.provider.UuidProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemsCall
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
@@ -71,6 +72,9 @@ class TestProximityRequestInteractor {
     private lateinit var walletCorePresentationController: WalletCorePresentationController
 
     @Mock
+    private lateinit var uuidProvider: UuidProvider
+
+    @Mock
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     private lateinit var interactor: ProximityRequestInteractor
@@ -84,7 +88,8 @@ class TestProximityRequestInteractor {
         interactor = ProximityRequestInteractorImpl(
             resourceProvider = resourceProvider,
             walletCorePresentationController = walletCorePresentationController,
-            walletCoreDocumentsController = walletCoreDocumentsController
+            walletCoreDocumentsController = walletCoreDocumentsController,
+            uuidProvider = uuidProvider
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
@@ -337,7 +342,8 @@ class TestProximityRequestInteractor {
                     val requestDataUi = RequestTransformer.transformToDomainItems(
                         storageDocuments = listOf(mockedPidWithBasicFields),
                         requestDocuments = listOf(mockedValidPidWithBasicFieldsRequestDocument),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     // Then
@@ -396,7 +402,8 @@ class TestProximityRequestInteractor {
                     val requestDataUi = RequestTransformer.transformToDomainItems(
                         storageDocuments = listOf(mockedMdlWithBasicFields),
                         requestDocuments = listOf(mockedValidMdlWithBasicFieldsRequestDocument),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     // Then
@@ -465,7 +472,8 @@ class TestProximityRequestInteractor {
                             mockedValidMdlWithBasicFieldsRequestDocument,
                             mockedValidPidWithBasicFieldsRequestDocument
                         ),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     // Then
@@ -534,7 +542,8 @@ class TestProximityRequestInteractor {
                             mockedValidPidWithBasicFieldsRequestDocument,
                             mockedValidMdlWithBasicFieldsRequestDocument
                         ),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     // Then

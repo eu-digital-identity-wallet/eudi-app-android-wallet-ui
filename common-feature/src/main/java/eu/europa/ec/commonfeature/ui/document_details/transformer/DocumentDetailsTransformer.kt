@@ -27,12 +27,14 @@ import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.resourceslogic.provider.UuidProvider
 
 object DocumentDetailsTransformer {
 
     fun transformToDocumentDetailsDomain(
         document: IssuedDocument,
-        resourceProvider: ResourceProvider
+        resourceProvider: ResourceProvider,
+        uuidProvider: UuidProvider
     ): Result<DocumentDetailsDomain> = runCatching {
         val claimsPaths = document.data.claims.flatMap { claim ->
             claim.toClaimPaths()
@@ -42,6 +44,7 @@ object DocumentDetailsTransformer {
             paths = claimsPaths,
             claims = document.data.claims,
             resourceProvider = resourceProvider,
+            uuidProvider = uuidProvider
         )
 
         val docHasExpired = documentHasExpired(document.validUntil)
