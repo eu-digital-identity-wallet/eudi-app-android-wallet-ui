@@ -1,4 +1,4 @@
-package eu.europa.ec.commonfeature.extensions
+package eu.europa.ec.commonfeature.extension
 
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.util.keyIsPortrait

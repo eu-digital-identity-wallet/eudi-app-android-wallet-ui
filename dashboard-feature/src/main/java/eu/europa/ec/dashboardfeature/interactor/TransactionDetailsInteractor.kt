@@ -20,7 +20,7 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.util.FULL_DATETIME_PATTERN
 import eu.europa.ec.businesslogic.util.formatLocalDateTime
-import eu.europa.ec.commonfeature.extensions.toExpandableListItems
+import eu.europa.ec.commonfeature.extension.toExpandableListItems
 import eu.europa.ec.commonfeature.model.TransactionUiStatus
 import eu.europa.ec.commonfeature.model.TransactionUiStatus.Companion.toUiText
 import eu.europa.ec.commonfeature.model.toTransactionUiStatus
