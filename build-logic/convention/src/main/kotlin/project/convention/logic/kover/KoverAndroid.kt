@@ -24,7 +24,7 @@ fun Project.excludeFromKoverReport(
     excludedClasses: List<String>,
     excludedPackages: List<String>,
 ) {
-    extensions.configure<KoverProjectExtension> {
+    configure<KoverProjectExtension> {
         reports {
             filters {
                 excludes {
