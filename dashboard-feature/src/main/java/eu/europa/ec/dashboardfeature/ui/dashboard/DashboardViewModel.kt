@@ -18,7 +18,6 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Intent
 import android.net.Uri
-import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
@@ -33,10 +32,6 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -57,12 +52,10 @@ data class State(
 
     // side menu
     val isSideMenuVisible: Boolean = false,
-    val sideMenuTitle: String = "",
+    val sideMenuTitle: String,
     val sideMenuOptions: List<SideMenuItemUi>,
     val sideMenuAnimation: SideMenuAnimation = SideMenuAnimation.SLIDE,
     val menuAnimationDuration: Int = 1500,
-    val appVersion: String = "",
-    val changelogUrl: String?,
 
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: DashboardBottomSheetContent = DashboardBottomSheetContent.DocumentRevocation(
@@ -80,8 +73,8 @@ sealed class Event : ViewEvent {
 
     // side menu events
     sealed class SideMenu : Event() {
-        data object Show : SideMenu()
-        data object Hide : SideMenu()
+        data object Open : SideMenu()
+        data object Close : SideMenu()
         data class ItemClicked(val itemType: SideMenuItemType) : SideMenu()
     }
 
@@ -136,12 +129,9 @@ class DashboardViewModel(
     private val resourceProvider: ResourceProvider,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
-        val changelogUrl = dashboardInteractor.getChangelogUrl()
         return State(
             sideMenuTitle = resourceProvider.getString(R.string.dashboard_side_menu_title),
-            sideMenuOptions = getSideMenuOptions(changelogUrl = changelogUrl),
-            appVersion = dashboardInteractor.getAppVersion(),
-            changelogUrl = changelogUrl,
+            sideMenuOptions = dashboardInteractor.getSideMenuOptions(),
         )
     }
 
@@ -155,7 +145,7 @@ class DashboardViewModel(
                 handleSideMenuItemClicked(event.itemType)
             }
 
-            is Event.SideMenu.Hide -> {
+            is Event.SideMenu.Close -> {
                 setState {
                     copy(
                         isSideMenuVisible = false,
@@ -164,7 +154,7 @@ class DashboardViewModel(
                 }
             }
 
-            is Event.SideMenu.Show -> {
+            is Event.SideMenu.Open -> {
                 setState {
                     copy(
                         isSideMenuVisible = true,
@@ -228,6 +218,15 @@ class DashboardViewModel(
         }
     }
 
+    private fun hideSideMenu() {
+        setState {
+            copy(
+                isSideMenuVisible = false,
+                sideMenuAnimation = SideMenuAnimation.FADE
+            )
+        }
+    }
+
     private fun getDocumentRevocationBottomSheetOptions(revokedDocumentPayload: List<RevokedDocumentPayload>): List<ModalOptionUi<Event>> {
         return revokedDocumentPayload.map {
             ModalOptionUi(
@@ -250,98 +249,13 @@ class DashboardViewModel(
                     )
                 )
 
-                setState {
-                    copy(
-                        isSideMenuVisible = false,
-                        sideMenuAnimation = SideMenuAnimation.FADE
-                    )
-                }
+                hideSideMenu()
                 setEffect { Effect.Navigation.SwitchScreen(screenRoute = nextScreenRoute) }
             }
 
-            SideMenuItemType.RETRIEVE_LOGS -> {
-                val logs = dashboardInteractor.retrieveLogFileUris()
-                if (logs.isNotEmpty()) {
-                    setEffect {
-                        Effect.ShareLogFile(
-                            intent = Intent().apply {
-                                action = Intent.ACTION_SEND_MULTIPLE
-                                putParcelableArrayListExtra(Intent.EXTRA_STREAM, logs)
-                                type = "text/*"
-                            },
-                            chooserTitle = resourceProvider.getString(R.string.dashboard_intent_chooser_logs_share_title)
-                        )
-                    }
-                }
-            }
-
-            SideMenuItemType.CHANGELOG -> {
-                val changelogUrl = viewState.value.changelogUrl
-                if (changelogUrl != null) {
-                    setEffect {
-                        Effect.Navigation.OpenUrlExternally(
-                            url = changelogUrl.toUri()
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun getSideMenuOptions(changelogUrl: String?): List<SideMenuItemUi> {
-        return buildList {
-            add(
-                SideMenuItemUi(
-                    type = SideMenuItemType.CHANGE_PIN,
-                    data = ListItemData(
-                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_change_pin_id),
-                        mainContentData = ListItemMainContentData.Text(
-                            text = resourceProvider.getString(R.string.dashboard_side_menu_change_pin)
-                        ),
-                        leadingContentData = ListItemLeadingContentData.Icon(
-                            iconData = AppIcons.ChangePin
-                        ),
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = AppIcons.KeyboardArrowRight
-                        )
-                    )
-                )
-            )
-            add(
-                SideMenuItemUi(
-                    type = SideMenuItemType.RETRIEVE_LOGS,
-                    data = ListItemData(
-                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs_id),
-                        mainContentData = ListItemMainContentData.Text(
-                            text = resourceProvider.getString(R.string.dashboard_side_menu_retrieve_logs)
-                        ),
-                        leadingContentData = ListItemLeadingContentData.Icon(
-                            iconData = AppIcons.OpenNew
-                        ),
-                        trailingContentData = ListItemTrailingContentData.Icon(
-                            iconData = AppIcons.KeyboardArrowRight
-                        )
-                    )
-                )
-            )
-            if (changelogUrl != null) {
-                add(
-                    SideMenuItemUi(
-                        type = SideMenuItemType.CHANGELOG,
-                        data = ListItemData(
-                            itemId = resourceProvider.getString(R.string.dashboard_side_menu_changelog_id),
-                            mainContentData = ListItemMainContentData.Text(
-                                text = resourceProvider.getString(R.string.dashboard_side_menu_changelog)
-                            ),
-                            leadingContentData = ListItemLeadingContentData.Icon(
-                                iconData = AppIcons.OpenInBrowser
-                            ),
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = AppIcons.KeyboardArrowRight
-                            )
-                        )
-                    )
-                )
+            SideMenuItemType.SETTINGS -> {
+                hideSideMenu()
+                setEffect { Effect.Navigation.SwitchScreen(screenRoute = DashboardScreens.Settings.screenRoute) }
             }
         }
     }

@@ -16,25 +16,61 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import android.net.Uri
-import eu.europa.ec.businesslogic.config.ConfigLogic
-import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.dashboardfeature.model.SideMenuItemType
+import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentData
+import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentData
 
 interface DashboardInteractor {
-    fun getAppVersion(): String
-    fun getChangelogUrl(): String?
-    fun retrieveLogFileUris(): ArrayList<Uri>
+    fun getSideMenuOptions(): List<SideMenuItemUi>
 }
 
 class DashboardInteractorImpl(
-    private val configLogic: ConfigLogic,
-    private val logController: LogController
+    private val resourceProvider: ResourceProvider,
 ) : DashboardInteractor {
-    override fun getAppVersion(): String = configLogic.appVersion
 
-    override fun getChangelogUrl(): String? = configLogic.changelogUrl
+    override fun getSideMenuOptions(): List<SideMenuItemUi> {
+        return buildList {
+            add(
+                SideMenuItemUi(
+                    type = SideMenuItemType.CHANGE_PIN,
+                    data = ListItemData(
+                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_option_change_pin_id),
+                        mainContentData = ListItemMainContentData.Text(
+                            text = resourceProvider.getString(R.string.dashboard_side_menu_option_change_pin)
+                        ),
+                        leadingContentData = ListItemLeadingContentData.Icon(
+                            iconData = AppIcons.ChangePin
+                        ),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        )
+                    )
+                )
+            )
 
-    override fun retrieveLogFileUris(): ArrayList<Uri> {
-        return ArrayList(logController.retrieveLogFileUris())
+            add(
+                SideMenuItemUi(
+                    type = SideMenuItemType.SETTINGS,
+                    data = ListItemData(
+                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_option_settings_id),
+                        mainContentData = ListItemMainContentData.Text(
+                            text = resourceProvider.getString(R.string.dashboard_side_menu_option_settings)
+                        ),
+                        leadingContentData = ListItemLeadingContentData.Icon(
+                            iconData = AppIcons.Settings
+                        ),
+                        trailingContentData = ListItemTrailingContentData.Icon(
+                            iconData = AppIcons.KeyboardArrowRight
+                        )
+                    )
+                )
+            )
+        }
     }
 }

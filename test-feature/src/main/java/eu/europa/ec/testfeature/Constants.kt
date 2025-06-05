@@ -39,6 +39,7 @@ val mockedExceptionWithNoMessage = RuntimeException()
 
 val mockedDefaultLocale: Locale = Locale.ENGLISH
 
+const val mockedChangeLogUrl = "https://example.com/changelog"
 const val mockedOldestDocumentCreationDate = "2000-01-25T14:25:00.073Z"
 const val mockedDocumentCreationDate = "2024-01-25T14:25:00.073Z"
 const val mockedDocumentValidUntilDate = "2030-05-13T14:25:00.073Z"

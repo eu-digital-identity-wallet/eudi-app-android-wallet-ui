@@ -26,6 +26,7 @@ import androidx.navigation.navDeepLink
 import eu.europa.ec.dashboardfeature.BuildConfig
 import eu.europa.ec.dashboardfeature.ui.dashboard.DashboardScreen
 import eu.europa.ec.dashboardfeature.ui.documents.detail.DocumentDetailsScreen
+import eu.europa.ec.dashboardfeature.ui.settings.SettingsScreen
 import eu.europa.ec.dashboardfeature.ui.sign.DocumentSignScreen
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.TransactionDetailsScreen
 import eu.europa.ec.uilogic.navigation.DashboardScreens
@@ -53,6 +54,21 @@ fun NavGraphBuilder.featureDashboardGraph(navController: NavController) {
                 documentsViewModel = koinViewModel(),
                 homeViewModel = koinViewModel(),
                 transactionsViewModel = koinViewModel()
+            )
+        }
+
+        composable(
+            route = DashboardScreens.Settings.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + DashboardScreens.Settings.screenRoute
+                }
+            ),
+        ) {
+            SettingsScreen(
+                navController = navController,
+                viewModel = koinViewModel()
             )
         }
 

@@ -18,12 +18,13 @@ package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.uilogic.component.ListItemData
 
-data class SideMenuItemUi(
-    val type: SideMenuItemType,
+data class SettingsItemUi(
+    val type: SettingsMenuItemType,
     val data: ListItemData,
 )
 
-enum class SideMenuItemType {
-    CHANGE_PIN,
-    SETTINGS,
+enum class SettingsMenuItemType {
+    SHOW_BATCH_ISSUANCE_COUNTER,
+    RETRIEVE_LOGS,
+    CHANGELOG,
 }

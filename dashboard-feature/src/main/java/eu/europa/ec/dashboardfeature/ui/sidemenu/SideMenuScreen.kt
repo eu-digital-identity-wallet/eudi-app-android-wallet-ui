@@ -25,13 +25,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.dashboardfeature.model.SideMenuItemType
 import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
@@ -62,7 +59,7 @@ internal fun SideMenuScreen(
         isLoading = false,
         onBack = {
             onEventSent(
-                Event.SideMenu.Hide
+                Event.SideMenu.Close
             )
         }
     ) { paddingValues ->
@@ -96,16 +93,6 @@ private fun Content(
                 onEventSent = onEventSent,
             )
         }
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = SPACING_MEDIUM.dp),
-            text = state.appVersion,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-            textAlign = TextAlign.Center
-        )
     }
 }
 
@@ -153,9 +140,9 @@ private fun SideMenuContentPreview() {
                     SideMenuItemUi(
                         type = SideMenuItemType.CHANGE_PIN,
                         data = ListItemData(
-                            itemId = stringResource(R.string.dashboard_side_menu_change_pin_id),
+                            itemId = stringResource(R.string.dashboard_side_menu_option_change_pin_id),
                             mainContentData = ListItemMainContentData.Text(
-                                text = stringResource(R.string.dashboard_side_menu_change_pin)
+                                text = stringResource(R.string.dashboard_side_menu_option_change_pin)
                             ),
                             leadingContentData = ListItemLeadingContentData.Icon(
                                 iconData = AppIcons.ChangePin
@@ -166,29 +153,14 @@ private fun SideMenuContentPreview() {
                         )
                     ),
                     SideMenuItemUi(
-                        type = SideMenuItemType.CHANGE_PIN,
+                        type = SideMenuItemType.SETTINGS,
                         data = ListItemData(
-                            itemId = stringResource(R.string.dashboard_side_menu_change_pin_id),
+                            itemId = stringResource(R.string.dashboard_side_menu_option_settings_id),
                             mainContentData = ListItemMainContentData.Text(
-                                text = stringResource(R.string.dashboard_side_menu_change_pin)
+                                text = stringResource(R.string.dashboard_side_menu_option_settings)
                             ),
                             leadingContentData = ListItemLeadingContentData.Icon(
-                                iconData = AppIcons.ChangePin
-                            ),
-                            trailingContentData = ListItemTrailingContentData.Icon(
-                                iconData = AppIcons.KeyboardArrowRight
-                            )
-                        )
-                    ),
-                    SideMenuItemUi(
-                        type = SideMenuItemType.CHANGE_PIN,
-                        data = ListItemData(
-                            itemId = stringResource(R.string.dashboard_side_menu_change_pin_id),
-                            mainContentData = ListItemMainContentData.Text(
-                                text = stringResource(R.string.dashboard_side_menu_change_pin)
-                            ),
-                            leadingContentData = ListItemLeadingContentData.Icon(
-                                iconData = AppIcons.ChangePin
+                                iconData = AppIcons.Settings
                             ),
                             trailingContentData = ListItemTrailingContentData.Icon(
                                 iconData = AppIcons.KeyboardArrowRight
@@ -196,8 +168,6 @@ private fun SideMenuContentPreview() {
                         )
                     ),
                 ),
-                appVersion = "1.0.0",
-                changelogUrl = null,
             ),
             onEventSent = {},
             paddingValues = PaddingValues(SPACING_MEDIUM.dp)

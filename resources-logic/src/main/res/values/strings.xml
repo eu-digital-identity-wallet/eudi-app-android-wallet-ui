@@ -116,6 +116,7 @@
     <string name="content_description_check_icon">Check</string>
     <string name="content_description_open_in_browser_icon">Open in browser</string>
     <string name="content_description_date_range_icon">Select filter date range</string>
+    <string name="content_description_settings_icon">Settings</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
@@ -208,16 +209,22 @@
     <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Revoked documents</string>
     <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">The following documents have been revoked.</string>
 
-    <string name="dashboard_intent_chooser_logs_share_title">Share logs</string>
-
     <!-- Dashboard Side Menu -->
     <string name="dashboard_side_menu_title">My EU Wallet</string>
-    <string name="dashboard_side_menu_change_pin">Change PIN</string>
-    <string name="dashboard_side_menu_change_pin_id">changePinId</string>
-    <string name="dashboard_side_menu_retrieve_logs">Retrieve logs</string>
-    <string name="dashboard_side_menu_retrieve_logs_id">retrieveLogsId</string>
-    <string name="dashboard_side_menu_changelog">Changelog</string>
-    <string name="dashboard_side_menu_changelog_id">changelogId</string>
+    <string name="dashboard_side_menu_option_change_pin">Change PIN</string>
+    <string name="dashboard_side_menu_option_change_pin_id">changePinId</string>
+    <string name="dashboard_side_menu_option_settings">Settings</string>
+    <string name="dashboard_side_menu_option_settings_id">settingsId</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_screen_title">Settings</string>
+    <string name="settings_screen_option_show_batch_issuance_counter">Batch issuance counter</string>
+    <string name="settings_screen_option_show_batch_issuance_counter_id">batchIssuanceCounterId</string>
+    <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
+    <string name="settings_screen_option_retrieve_logs_id">retrieveLogsId</string>
+    <string name="settings_screen_option_changelog">Changelog</string>
+    <string name="settings_screen_option_changelog_id">changelogId</string>
+    <string name="settings_intent_chooser_logs_share_title">Share logs</string>
 
     <!-- Home Screen -->
     <string name="home_screen_title">Home</string>

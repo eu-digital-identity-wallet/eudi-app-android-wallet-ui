@@ -365,12 +365,6 @@ object AppIcons {
         imageVector = null
     )
 
-    val IssuerPlaceholder: IconData = IconData(
-        resourceId = R.drawable.issuer_placeholder,
-        contentDescriptionId = R.string.content_description_issuer_icon,
-        imageVector = null
-    )
-
     val IdCards: IconData = IconData(
         resourceId = R.drawable.ic_authenticate_id_cards,
         contentDescriptionId = R.string.content_description_issuer_icon,
@@ -411,5 +405,11 @@ object AppIcons {
         resourceId = null,
         contentDescriptionId = R.string.content_description_date_range_icon,
         imageVector = Icons.Default.DateRange
+    )
+
+    val Settings: IconData = IconData(
+        resourceId = R.drawable.ic_settings,
+        contentDescriptionId = R.string.content_description_settings_icon,
+        imageVector = null
     )
 }
