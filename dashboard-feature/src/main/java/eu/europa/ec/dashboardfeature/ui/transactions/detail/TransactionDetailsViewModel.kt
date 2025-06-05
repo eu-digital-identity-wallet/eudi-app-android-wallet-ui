@@ -111,7 +111,7 @@ internal class TransactionDetailsViewModel(
     private fun getTransactionDetails(event: Event) {
         setState {
             copy(
-                isLoading = false,
+                isLoading = true,
                 error = null
             )
         }
