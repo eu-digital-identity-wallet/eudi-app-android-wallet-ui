@@ -25,6 +25,18 @@ import org.mockito.kotlin.whenever
 object MockResourceProviderForStringCalls {
 
     /**
+     * Mocks ResourceProvider.getString(...) for each (resId → returnValue) pair.
+     */
+    fun mockResourceProviderStrings(
+        resourceProvider: ResourceProvider,
+        pairs: List<Pair<Int, String>>,
+    ) {
+        pairs.forEach { (resId, returnValue) ->
+            whenever(resourceProvider.getString(resId)).thenReturn(returnValue)
+        }
+    }
+
+    /**
      * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToUiItem]
      */
     fun mockTransformToUiItemCall(resourceProvider: ResourceProvider) {
@@ -35,9 +47,11 @@ object MockResourceProviderForStringCalls {
      * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsUi]
      */
     fun mockTransformToDocumentDetailsUiCall(resourceProvider: ResourceProvider) {
-        whenever(resourceProvider.getString(R.string.document_details_portrait_readable_identifier))
-            .thenReturn("Shown above")
+        val mockedStrings = listOf(
+            R.string.document_details_portrait_readable_identifier to "Shown above",
+        )
 
+        mockResourceProviderStrings(resourceProvider, mockedStrings)
         mockGetKeyValueUiCall(resourceProvider)
     }
 
@@ -45,12 +59,12 @@ object MockResourceProviderForStringCalls {
      * Mock the call of [eu.europa.ec.commonfeature.util.getKeyValueUi]
      */
     fun mockGetKeyValueUiCall(resourceProvider: ResourceProvider) {
+        val mockedStrings = listOf(
+            R.string.document_details_boolean_item_true_readable_value to "yes",
+            R.string.document_details_boolean_item_false_readable_value to "no",
+        )
 
-        whenever(resourceProvider.getString(R.string.document_details_boolean_item_true_readable_value))
-            .thenReturn("yes")
-        whenever(resourceProvider.getString(R.string.document_details_boolean_item_false_readable_value))
-            .thenReturn("no")
-
+        mockResourceProviderStrings(resourceProvider, mockedStrings)
         mockGetGenderValueCall(resourceProvider)
     }
 
@@ -58,14 +72,14 @@ object MockResourceProviderForStringCalls {
      * Mock the call of [eu.europa.ec.commonfeature.util.getGenderValue]
      */
     fun mockGetGenderValueCall(resourceProvider: ResourceProvider) {
-        whenever(resourceProvider.getString(R.string.request_gender_male))
-            .thenReturn("Male")
-        whenever(resourceProvider.getString(R.string.request_gender_female))
-            .thenReturn("Female")
-        whenever(resourceProvider.getString(R.string.request_gender_not_known))
-            .thenReturn("Not known")
-        whenever(resourceProvider.getString(R.string.request_gender_not_applicable))
-            .thenReturn("Not applicable")
+        val mockedStrings = listOf(
+            R.string.request_gender_male to "Male",
+            R.string.request_gender_female to "Female",
+            R.string.request_gender_not_known to "Not known",
+            R.string.request_gender_not_applicable to "Not applicable",
+        )
+
+        mockResourceProviderStrings(resourceProvider, mockedStrings)
     }
 
     /**
@@ -75,9 +89,13 @@ object MockResourceProviderForStringCalls {
         resourceProvider: ResourceProvider,
         notAvailableString: String
     ) {
-        whenever(resourceProvider.getString(R.string.request_element_identifier_not_available))
-            .thenReturn(notAvailableString)
+        val mockedStrings = listOf(
+            R.string.request_element_identifier_not_available to notAvailableString,
+        )
+        mockResourceProviderStrings(resourceProvider, mockedStrings)
+
         mockGetKeyValueUiCall(resourceProvider)
+
         whenever(resourceProvider.getLocale())
             .thenReturn(mockedDefaultLocale)
     }
@@ -86,7 +104,9 @@ object MockResourceProviderForStringCalls {
         resourceProvider: ResourceProvider,
         name: String
     ) {
-        whenever(resourceProvider.getString(R.string.issuance_success_header_issuer_default_name))
-            .thenReturn(name)
+        val mockedStrings = listOf(
+            R.string.issuance_success_header_issuer_default_name to name,
+        )
+        mockResourceProviderStrings(resourceProvider, mockedStrings)
     }
 }
