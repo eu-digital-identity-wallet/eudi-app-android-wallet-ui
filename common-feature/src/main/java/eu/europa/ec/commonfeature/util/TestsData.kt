@@ -187,8 +187,6 @@ object TestsData {
         documentId = mockedPidId,
         documentName = mockedPidDocName,
         documentIdentifier = DocumentIdentifier.MdocPid,
-        documentExpirationDateFormatted = mockedFormattedExpirationDate,
-        documentHasExpired = mockedDocumentHasExpired,
         documentClaims = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
@@ -201,7 +199,6 @@ object TestsData {
         documentName = mockedPidDocName,
         documentIssuanceState = DocumentUiIssuanceState.Pending,
         documentIdentifier = DocumentIdentifier.MdocPid,
-        documentExpirationDateFormatted = ""
     )
 
     val mockedBasicPidUi = mockedFullPidUi.copy(
@@ -349,8 +346,6 @@ object TestsData {
         docName = mockedDocUiNamePid,
         docId = mockedPidId,
         documentIdentifier = DocumentIdentifier.MdocPid,
-        documentExpirationDateFormatted = mockedFormattedExpirationDate,
-        documentHasExpired = mockedDocumentHasExpired,
         documentClaims = listOf(
             DomainClaim.Primitive(
                 key = "family_name",
@@ -417,8 +412,6 @@ object TestsData {
         documentId = mockedMdlId,
         documentName = mockedMdlDocName,
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
-        documentExpirationDateFormatted = mockedFormattedExpirationDate,
-        documentHasExpired = mockedDocumentHasExpired,
         documentClaims = emptyList(),
         documentIssuanceState = DocumentUiIssuanceState.Issued,
     )
@@ -485,8 +478,6 @@ object TestsData {
         docName = mockedDocUiNameMdl,
         docId = mockedMdlId,
         documentIdentifier = DocumentIdentifier.OTHER("org.iso.18013.5.1.mDL"),
-        documentExpirationDateFormatted = mockedFormattedExpirationDate,
-        documentHasExpired = mockedDocumentHasExpired,
         documentClaims = listOf(
             DomainClaim.Primitive(
                 key = "family_name",
@@ -543,10 +534,6 @@ object TestsData {
     )
 
     val mockedMdlUiWithNoUserNameAndNoUserImage: DocumentDetailsUi = mockedFullMdlUi
-
-    val mockedMdlUiWithNoExpirationDate: DocumentDetailsUi = mockedFullMdlUi.copy(
-        documentExpirationDateFormatted = mockedNoExpirationDateFound
-    )
 
     val mockedFullDocumentsUi: List<DocumentDetailsUi> = listOf(
         mockedFullPidUi, mockedFullMdlUi

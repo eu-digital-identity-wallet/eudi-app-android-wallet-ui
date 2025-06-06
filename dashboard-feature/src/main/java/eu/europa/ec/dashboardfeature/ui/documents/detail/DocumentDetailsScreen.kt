@@ -464,8 +464,6 @@ private fun DocumentDetailsScreenPreview() {
                 documentId = "1",
                 documentName = "Mobile Driving License",
                 documentIdentifier = DocumentIdentifier.OTHER(formatType = "org.iso.18013.5.1.mDL"),
-                documentExpirationDateFormatted = "10 Feb 2025",
-                documentHasExpired = false,
                 documentClaims = listOf(
                     ExpandableListItem.SingleListItemData(
                         header = ListItemData(

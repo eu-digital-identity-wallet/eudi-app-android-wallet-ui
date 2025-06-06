@@ -29,7 +29,5 @@ data class DocumentDetailsUi(
     val documentName: String,
     val documentIdentifier: DocumentIdentifier,
     val documentIssuanceState: DocumentUiIssuanceState,
-    val documentExpirationDateFormatted: String,
-    val documentHasExpired: Boolean,
     val documentClaims: List<ExpandableListItem>,
 )

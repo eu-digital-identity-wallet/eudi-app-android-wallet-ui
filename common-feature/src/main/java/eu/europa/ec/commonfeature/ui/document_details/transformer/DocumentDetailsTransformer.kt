@@ -17,12 +17,10 @@
 package eu.europa.ec.commonfeature.ui.document_details.transformer
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.businesslogic.util.formatInstant
 import eu.europa.ec.commonfeature.extension.toExpandableListItems
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
-import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
@@ -47,14 +45,10 @@ object DocumentDetailsTransformer {
             uuidProvider = uuidProvider
         )
 
-        val docHasExpired = documentHasExpired(document.validUntil)
-
         return@runCatching DocumentDetailsDomain(
             docName = document.name,
             docId = document.id,
             documentIdentifier = document.toDocumentIdentifier(),
-            documentExpirationDateFormatted = document.validUntil.formatInstant(),
-            documentHasExpired = docHasExpired,
             documentClaims = domainClaims
         )
     }
@@ -67,8 +61,6 @@ object DocumentDetailsTransformer {
             documentId = this.docId,
             documentName = this.docName,
             documentIdentifier = this.documentIdentifier,
-            documentExpirationDateFormatted = this.documentExpirationDateFormatted,
-            documentHasExpired = this.documentHasExpired,
             documentIssuanceState = DocumentUiIssuanceState.Issued,
             documentClaims = documentDetailsUi,
         )

@@ -283,8 +283,6 @@ class TestDocumentDetailsInteractor {
                             docName = mockedDocUiNamePid,
                             docId = mockedPidId,
                             documentIdentifier = DocumentIdentifier.MdocPid,
-                            documentExpirationDateFormatted = mockedFormattedExpirationDate,
-                            documentHasExpired = mockedDocumentHasExpired,
                             documentClaims = listOf(
                                 DomainClaim.Primitive(
                                     key = "no_data_item",
