@@ -44,15 +44,15 @@ import androidx.navigation.compose.rememberNavController
 import eu.europa.ec.businesslogic.extension.getParcelableArrayListExtra
 import eu.europa.ec.corelogic.model.RevokedDocumentPayload
 import eu.europa.ec.corelogic.util.CoreActions
-import eu.europa.ec.dashboardfeature.ui.BottomNavigationBar
-import eu.europa.ec.dashboardfeature.ui.BottomNavigationItem
-import eu.europa.ec.dashboardfeature.ui.documents.DocumentsScreen
-import eu.europa.ec.dashboardfeature.ui.documents.DocumentsViewModel
+import eu.europa.ec.dashboardfeature.ui.component.BottomNavigationBar
+import eu.europa.ec.dashboardfeature.ui.component.BottomNavigationItem
+import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsScreen
+import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsViewModel
 import eu.europa.ec.dashboardfeature.ui.home.HomeScreen
 import eu.europa.ec.dashboardfeature.ui.home.HomeViewModel
 import eu.europa.ec.dashboardfeature.ui.sidemenu.SideMenuScreen
-import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsScreen
-import eu.europa.ec.dashboardfeature.ui.transactions.TransactionsViewModel
+import eu.europa.ec.dashboardfeature.ui.transactions.list.TransactionsScreen
+import eu.europa.ec.dashboardfeature.ui.transactions.list.TransactionsViewModel
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
@@ -205,7 +205,7 @@ internal fun DashboardScreen(
     }
 
     SystemBroadcastReceiver(
-        actions = listOf(
+        intentFilters = listOf(
             CoreActions.REVOCATION_WORK_MESSAGE_ACTION
         )
     ) { intent ->

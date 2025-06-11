@@ -45,8 +45,18 @@ sealed class CommonScreens {
 
 sealed class DashboardScreens {
     data object Dashboard : Screen(name = "DASHBOARD")
-    data object SignDocument :
-        Screen(name = "SIGN_DOCUMENT")
+
+    data object SignDocument : Screen(name = "SIGN_DOCUMENT")
+
+    data object DocumentDetails : Screen(
+        name = "DOCUMENT_DETAILS",
+        parameters = "?documentId={documentId}"
+    )
+
+    data object TransactionDetails : Screen(
+        name = "TRANSACTION_DETAILS",
+        parameters = "?transactionId={transactionId}"
+    )
 }
 
 sealed class PresentationScreens {
@@ -80,16 +90,6 @@ sealed class IssuanceScreens {
     data object AddDocument : Screen(
         name = "ISSUANCE_ADD_DOCUMENT",
         parameters = "?flowType={flowType}"
-    )
-
-    data object DocumentDetails : Screen(
-        name = "ISSUANCE_DOCUMENT_DETAILS",
-        parameters = "?documentId={documentId}"
-    )
-
-    data object TransactionDetails : Screen(
-        name = "ISSUANCE_TRANSACTION_DETAILS",
-        parameters = "?transactionId={transactionId}"
     )
 
     data object DocumentOffer : Screen(

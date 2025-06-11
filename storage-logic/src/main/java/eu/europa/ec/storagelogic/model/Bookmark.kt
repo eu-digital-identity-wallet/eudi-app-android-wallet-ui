@@ -16,31 +16,11 @@
 
 package eu.europa.ec.storagelogic.model
 
-import eu.europa.ec.storagelogic.model.type.StoredObject
-import io.realm.kotlin.types.RealmObject
-import io.realm.kotlin.types.annotations.PrimaryKey
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-internal class RealmBookmark : RealmObject {
-    @PrimaryKey
-    var identifier: String = ""
-}
-
+@Entity(tableName = "bookmarks")
 data class Bookmark(
+    @PrimaryKey
     val identifier: String
-) : StoredObject
-
-internal fun Bookmark.toRealm() = RealmBookmark().apply {
-    identifier = this@toRealm.identifier
-}
-
-internal fun RealmBookmark?.toBookmark() = this?.let {
-    Bookmark(
-        it.identifier
-    )
-}
-
-internal fun List<RealmBookmark>.toBookmarks() = this.map {
-    Bookmark(
-        it.identifier
-    )
-}
+)

@@ -16,18 +16,15 @@
 
 package eu.europa.ec.issuancefeature.di
 
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractor
-import eu.europa.ec.issuancefeature.interactor.document.AddDocumentInteractorImpl
-import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractor
-import eu.europa.ec.issuancefeature.interactor.document.DocumentDetailsInteractorImpl
-import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractor
-import eu.europa.ec.issuancefeature.interactor.document.DocumentIssuanceSuccessInteractorImpl
-import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractor
-import eu.europa.ec.issuancefeature.interactor.document.DocumentOfferInteractorImpl
-import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractor
-import eu.europa.ec.issuancefeature.interactor.transaction.TransactionDetailsInteractorImpl
+import eu.europa.ec.issuancefeature.interactor.AddDocumentInteractor
+import eu.europa.ec.issuancefeature.interactor.AddDocumentInteractorImpl
+import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
+import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorImpl
+import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
+import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.core.annotation.ComponentScan
@@ -53,32 +50,14 @@ fun provideAddDocumentInteractor(
     )
 
 @Factory
-fun provideDocumentDetailsInteractor(
-    walletCoreDocumentsController: WalletCoreDocumentsController,
-    resourceProvider: ResourceProvider,
-): DocumentDetailsInteractor =
-    DocumentDetailsInteractorImpl(
-        walletCoreDocumentsController,
-        resourceProvider
-    )
-
-@Factory
-fun provideTransactionDetailsInteractor(
-    walletCoreDocumentsController: WalletCoreDocumentsController,
-    resourceProvider: ResourceProvider,
-): TransactionDetailsInteractor =
-    TransactionDetailsInteractorImpl(
-        walletCoreDocumentsController,
-        resourceProvider,
-    )
-
-@Factory
 fun provideDocumentIssuanceSuccessInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
-    resourceProvider: ResourceProvider
+    resourceProvider: ResourceProvider,
+    uuIdProvider: UuidProvider
 ): DocumentIssuanceSuccessInteractor = DocumentIssuanceSuccessInteractorImpl(
     walletCoreDocumentsController,
     resourceProvider,
+    uuIdProvider,
 )
 
 @Factory

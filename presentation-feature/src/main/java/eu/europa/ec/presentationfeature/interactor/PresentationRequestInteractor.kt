@@ -17,6 +17,7 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
@@ -53,6 +54,7 @@ interface PresentationRequestInteractor {
 
 class PresentationRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
+    private val uuidProvider: UuidProvider,
     private val walletCorePresentationController: WalletCorePresentationController,
     private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : PresentationRequestInteractor {
@@ -77,7 +79,8 @@ class PresentationRequestInteractorImpl(
                         val documentsDomain = RequestTransformer.transformToDomainItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
-                            resourceProvider = resourceProvider
+                            resourceProvider = resourceProvider,
+                            uuidProvider = uuidProvider
                         ).getOrThrow()
                             .filterNot {
                                 walletCoreDocumentsController.isDocumentRevoked(it.docId)

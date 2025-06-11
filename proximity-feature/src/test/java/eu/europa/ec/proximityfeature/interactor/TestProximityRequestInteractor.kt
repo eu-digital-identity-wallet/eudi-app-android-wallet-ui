@@ -16,6 +16,7 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
@@ -71,6 +72,9 @@ class TestProximityRequestInteractor {
     private lateinit var walletCorePresentationController: WalletCorePresentationController
 
     @Mock
+    private lateinit var uuidProvider: UuidProvider
+
+    @Mock
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
     private lateinit var interactor: ProximityRequestInteractor
@@ -84,7 +88,8 @@ class TestProximityRequestInteractor {
         interactor = ProximityRequestInteractorImpl(
             resourceProvider = resourceProvider,
             walletCorePresentationController = walletCorePresentationController,
-            walletCoreDocumentsController = walletCoreDocumentsController
+            walletCoreDocumentsController = walletCoreDocumentsController,
+            uuidProvider = uuidProvider
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
@@ -337,7 +342,8 @@ class TestProximityRequestInteractor {
                     val requestDataUi = RequestTransformer.transformToDomainItems(
                         storageDocuments = listOf(mockedPidWithBasicFields),
                         requestDocuments = listOf(mockedValidPidWithBasicFieldsRequestDocument),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     // Then
@@ -396,7 +402,8 @@ class TestProximityRequestInteractor {
                     val requestDataUi = RequestTransformer.transformToDomainItems(
                         storageDocuments = listOf(mockedMdlWithBasicFields),
                         requestDocuments = listOf(mockedValidMdlWithBasicFieldsRequestDocument),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     // Then
@@ -465,7 +472,8 @@ class TestProximityRequestInteractor {
                             mockedValidMdlWithBasicFieldsRequestDocument,
                             mockedValidPidWithBasicFieldsRequestDocument
                         ),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     // Then
@@ -534,7 +542,8 @@ class TestProximityRequestInteractor {
                             mockedValidPidWithBasicFieldsRequestDocument,
                             mockedValidMdlWithBasicFieldsRequestDocument
                         ),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     // Then

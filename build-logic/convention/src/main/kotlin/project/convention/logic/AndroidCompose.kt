@@ -42,6 +42,7 @@ internal fun Project.configureAndroidCompose(
             add("implementation", libs.findLibrary("coil.kt").get())
             add("implementation", libs.findLibrary("coil.kt.compose").get())
             add("implementation", libs.findLibrary("coil.kt.svg").get())
+            add("implementation", libs.findLibrary("coil-kt-network-okhttp").get())
 
             add("implementation", libs.findLibrary("androidx-navigation-compose").get())
 
@@ -60,7 +61,6 @@ internal fun Project.configureAndroidCompose(
             add("testImplementation", libs.findLibrary("robolectric").get())
         }
 
-        @Suppress("UnstableApiUsage")
         testOptions {
             unitTests {
                 isIncludeAndroidResources = true
