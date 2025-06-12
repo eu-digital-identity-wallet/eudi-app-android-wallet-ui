@@ -16,6 +16,6 @@
 
 package eu.europa.ec.issuancefeature.ui.offer.model
 
-data class DocumentOfferItemUi(
+data class DocumentOfferUi(
     val title: String,
 )
