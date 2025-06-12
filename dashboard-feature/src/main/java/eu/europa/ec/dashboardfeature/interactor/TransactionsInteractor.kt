@@ -37,10 +37,10 @@ import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionDocumentNames
 import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionCategoryUi
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionsFilterableAttributes
@@ -66,7 +66,7 @@ import java.time.LocalDateTime
 
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
-        val transactions: List<Pair<TransactionCategory, List<TransactionUi>>>,
+        val transactions: List<Pair<TransactionCategoryUi, List<TransactionUi>>>,
         val filters: List<ExpandableListItem.NestedListItemData>,
         val sortOrder: SortOrder,
         val allDefaultFiltersAreSelected: Boolean,
@@ -100,7 +100,7 @@ interface TransactionsInteractor {
 
     fun getTransactions(): Flow<TransactionInteractorGetTransactionsPartialState>
 
-    fun getTransactionCategory(dateTime: LocalDateTime): TransactionCategory
+    fun getTransactionCategory(dateTime: LocalDateTime): TransactionCategoryUi
 
     fun initializeFilters(
         filterableList: FilterableList,
@@ -162,7 +162,7 @@ class TransactionsInteractorImpl(
                     emptyList()
                 }
             }.groupBy {
-                it.transactionCategory
+                it.transactionCategoryUi
             }.toList()
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
@@ -254,7 +254,7 @@ class TransactionsInteractorImpl(
                             )
                         ),
                         uiStatus = transaction.status.toTransactionStatusUi(),
-                        transactionCategory = getTransactionCategory(dateTime = transaction.creationLocalDateTime),
+                        transactionCategoryUi = getTransactionCategory(dateTime = transaction.creationLocalDateTime),
                     ),
                     attributes = TransactionsFilterableAttributes(
                         searchTags = buildList {
@@ -297,13 +297,13 @@ class TransactionsInteractorImpl(
             )
         }
 
-    override fun getTransactionCategory(dateTime: LocalDateTime): TransactionCategory {
-        val transactionCategory = when {
-            dateTime.isToday() -> TransactionCategory.Today
-            dateTime.isWithinThisWeek() -> TransactionCategory.ThisWeek
-            else -> TransactionCategory.Month(dateTime = dateTime)
+    override fun getTransactionCategory(dateTime: LocalDateTime): TransactionCategoryUi {
+        val transactionCategoryUi = when {
+            dateTime.isToday() -> TransactionCategoryUi.Today
+            dateTime.isWithinThisWeek() -> TransactionCategoryUi.ThisWeek
+            else -> TransactionCategoryUi.Month(dateTime = dateTime)
         }
-        return transactionCategory
+        return transactionCategoryUi
     }
 
     override fun applySearch(query: String) = filterValidator.applySearch(query)

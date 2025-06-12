@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.model
+package eu.europa.ec.dashboardfeature.ui.transactions.list.model
 
 import androidx.annotation.StringRes
 import eu.europa.ec.businesslogic.util.endOfDay
@@ -27,28 +27,28 @@ import eu.europa.ec.businesslogic.util.startOfWeek
 import eu.europa.ec.resourceslogic.R
 import java.time.LocalDateTime
 
-sealed class TransactionCategory(
+sealed class TransactionCategoryUi(
     @StringRes val stringResId: Int,
     val id: Int,
     val order: Int,
     val dateRange: ClosedRange<LocalDateTime>? = null,
     val displayName: String? = null
 ) {
-    data object Today : TransactionCategory(
+    data object Today : TransactionCategoryUi(
         stringResId = R.string.transaction_category_today,
         id = 1,
         order = Int.MAX_VALUE,
         dateRange = LocalDateTime.now().startOfDay()..LocalDateTime.now().endOfDay()
     )
 
-    data object ThisWeek : TransactionCategory(
+    data object ThisWeek : TransactionCategoryUi(
         stringResId = R.string.transaction_category_this_week,
         id = 2,
         order = Int.MAX_VALUE - 1,
         dateRange = LocalDateTime.now().startOfWeek()..LocalDateTime.now().endOfWeek()
     )
 
-    class Month(dateTime: LocalDateTime) : TransactionCategory(
+    class Month(dateTime: LocalDateTime) : TransactionCategoryUi(
         stringResId = R.string.transaction_category_month_year,
         id = generateMonthId(dateTime),
         order = calculateMonthOrder(dateTime),

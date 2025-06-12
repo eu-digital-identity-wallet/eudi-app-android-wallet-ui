@@ -67,9 +67,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.model.SearchItemUi
-import eu.europa.ec.dashboardfeature.ui.transactions.list.model.FilterDateRangeSelectionData
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.FilterDateRangeSelectionUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionCategoryUi
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
 import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
@@ -171,7 +171,7 @@ fun TransactionsScreen(
                 TransactionsSheetContent(
                     sheetContent = state.sheetContent,
                     filtersUi = state.filtersUi,
-                    snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionData,
+                    snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionUi,
                     sortOrder = state.sortOrder,
                     onEventSent = {
                         viewModel.setEvent(it)
@@ -338,7 +338,7 @@ private fun handleNavigationEffect(
 @Composable
 private fun TransactionCategory(
     modifier: Modifier = Modifier,
-    category: TransactionCategory,
+    category: TransactionCategoryUi,
     transactions: List<TransactionUi>,
     onEventSend: (Event) -> Unit,
 ) {
@@ -437,7 +437,7 @@ private fun TopBar(
 private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
     filtersUi: List<ExpandableListItem.NestedListItemData>,
-    snapshotFilterDateRangeData: FilterDateRangeSelectionData,
+    snapshotFilterDateRangeData: FilterDateRangeSelectionUi,
     sortOrder: DualSelectorButtonData,
     onEventSent: (event: Event) -> Unit,
 ) {

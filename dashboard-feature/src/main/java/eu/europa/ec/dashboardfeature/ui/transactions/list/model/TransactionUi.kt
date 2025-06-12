@@ -17,12 +17,11 @@
 package eu.europa.ec.dashboardfeature.ui.transactions.list.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
-import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 data class TransactionUi(
     val uiData: ExpandableListItem.SingleListItemData,
     val uiStatus: TransactionStatusUi,
-    val transactionCategory: TransactionCategory,
+    val transactionCategoryUi: TransactionCategoryUi,
 ) : FilterableItemPayload
