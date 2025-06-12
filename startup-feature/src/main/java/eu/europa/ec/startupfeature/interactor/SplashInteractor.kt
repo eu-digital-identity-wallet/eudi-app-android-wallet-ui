@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.startupfeature.interactor.splash
+package eu.europa.ec.startupfeature.interactor
 
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
