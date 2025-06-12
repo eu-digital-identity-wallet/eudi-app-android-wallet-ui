@@ -19,7 +19,10 @@ package eu.europa.ec.corelogic.config
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.corelogic.model.DocumentIssuanceConfig
+import eu.europa.ec.corelogic.model.DocumentIssuanceRule
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
+import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import java.time.Duration
 
 interface WalletCoreConfig {
@@ -153,4 +156,41 @@ interface WalletCoreConfig {
      * It is currently set to 15 minutes.
      */
     val revocationInterval: Duration get() = Duration.ofMinutes(15)
+
+    /**
+     * Configuration for document issuance, including default rules and specific overrides.
+     *
+     * This property defines the behavior for how many credentials of each document type are issued
+     * and their usage policy (e.g., rotate use, one-time use).
+     *
+     * It consists of:
+     * - `defaultRule`: A [DocumentIssuanceRule] that applies to all document types unless overridden.
+     *   By default, it uses [CredentialPolicy.RotateUse] and issues 1 credential.
+     * - `documentSpecificRules`: A map allowing overrides for specific document types.
+     *   - Keys are [DocumentIdentifier] objects representing specific document types.
+     *   - Values are [DocumentIssuanceRule] objects defining the policy and number of credentials for that document.
+     *
+     * For example:
+     * - [DocumentIdentifier.MdocPid] is configured for [CredentialPolicy.OneTimeUse] with 10 credentials.
+     * - [DocumentIdentifier.SdJwtPid] is configured for [CredentialPolicy.OneTimeUse] with 10 credentials.
+     *
+     * Any document type not listed in `documentSpecificRules` will use the `defaultRule`.
+     */
+    val documentIssuanceConfig: DocumentIssuanceConfig
+        get() = DocumentIssuanceConfig(
+            defaultRule = DocumentIssuanceRule(
+                policy = CredentialPolicy.RotateUse,
+                numberOfCredentials = 1
+            ),
+            documentSpecificRules = mapOf(
+                DocumentIdentifier.MdocPid to DocumentIssuanceRule(
+                    policy = CredentialPolicy.OneTimeUse,
+                    numberOfCredentials = 10
+                ),
+                DocumentIdentifier.SdJwtPid to DocumentIssuanceRule(
+                    policy = CredentialPolicy.OneTimeUse,
+                    numberOfCredentials = 10
+                ),
+            )
+        )
 }

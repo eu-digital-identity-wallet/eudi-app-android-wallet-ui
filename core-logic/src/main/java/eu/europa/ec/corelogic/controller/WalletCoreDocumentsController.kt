@@ -20,6 +20,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.extension.documentIdentifier
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
 import eu.europa.ec.corelogic.extension.parseTransactionLog
 import eu.europa.ec.corelogic.extension.toCoreTransactionLog
@@ -613,9 +614,17 @@ class WalletCoreDocumentsControllerImpl(
 
                 is IssueEvent.DocumentRequiresCreateSettings -> {
                     launch {
+                        val offeredDocIdentifier = event.offeredDocument.documentIdentifier
+
+                        val documentIssuanceRule = walletCoreConfig
+                            .documentIssuanceConfig
+                            .getRuleForDocument(documentIdentifier = offeredDocIdentifier)
+
                         event.resume(
                             eudiWallet.getDefaultCreateDocumentSettings(
-                                offeredDocument = event.offeredDocument
+                                offeredDocument = event.offeredDocument,
+                                credentialPolicy = documentIssuanceRule.policy,
+                                numberOfCredentials = documentIssuanceRule.numberOfCredentials,
                             )
                         )
                     }
