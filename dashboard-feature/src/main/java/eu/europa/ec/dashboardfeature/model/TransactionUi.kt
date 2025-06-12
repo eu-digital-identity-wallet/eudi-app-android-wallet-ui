@@ -17,7 +17,6 @@
 package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
-import eu.europa.ec.commonfeature.model.TransactionUiStatus
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 

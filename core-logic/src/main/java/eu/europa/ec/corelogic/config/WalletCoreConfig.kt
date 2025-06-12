@@ -19,8 +19,6 @@ package eu.europa.ec.corelogic.config
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.DocumentIssuanceConfig
-import eu.europa.ec.corelogic.model.DocumentIssuanceRule
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import java.time.Duration

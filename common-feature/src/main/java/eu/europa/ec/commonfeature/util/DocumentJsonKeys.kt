@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.document_details.model
+package eu.europa.ec.commonfeature.util
 
 object DocumentJsonKeys {
     const val FIRST_NAME = "given_name"

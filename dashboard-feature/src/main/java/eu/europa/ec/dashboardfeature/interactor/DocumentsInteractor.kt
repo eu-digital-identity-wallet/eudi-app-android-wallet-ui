@@ -33,7 +33,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import eu.europa.ec.commonfeature.model.DocumentCredentialsInfo
+import eu.europa.ec.commonfeature.model.DocumentCredentialsInfoUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
@@ -356,7 +356,7 @@ class DocumentsInteractorImpl(
                                     val documentTotalCredentials =
                                         document.initialCredentialsCount()
 
-                                    val documentCredentialsInfo = DocumentCredentialsInfo(
+                                    val documentCredentialsInfoUi = DocumentCredentialsInfoUi(
                                         availableCredentials = documentAvailableCredentials,
                                         totalCredentials = documentTotalCredentials,
                                         title = resourceProvider.getString(
@@ -367,7 +367,7 @@ class DocumentsInteractorImpl(
                                     )
 
                                     ListItemTrailingContentData.TextWithIcon(
-                                        text = documentCredentialsInfo.title,
+                                        text = documentCredentialsInfoUi.title,
                                         iconData = AppIcons.KeyboardArrowRight
                                     )
                                 } else {

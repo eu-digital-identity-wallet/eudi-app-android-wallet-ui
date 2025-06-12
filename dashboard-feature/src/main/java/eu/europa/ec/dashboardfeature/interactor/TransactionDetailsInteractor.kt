@@ -21,9 +21,6 @@ import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.util.FULL_DATETIME_PATTERN
 import eu.europa.ec.businesslogic.util.formatLocalDateTime
 import eu.europa.ec.commonfeature.extension.toExpandableListItems
-import eu.europa.ec.commonfeature.model.TransactionUiStatus
-import eu.europa.ec.commonfeature.model.TransactionUiStatus.Companion.toUiText
-import eu.europa.ec.commonfeature.model.toTransactionUiStatus
 import eu.europa.ec.commonfeature.util.createKeyValue
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.getLocalizedDocumentName
@@ -35,6 +32,9 @@ import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionT
 import eu.europa.ec.dashboardfeature.model.TransactionDetailsCardData
 import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSharedHolder
 import eu.europa.ec.dashboardfeature.model.TransactionDetailsUi
+import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
+import eu.europa.ec.dashboardfeature.model.TransactionUiStatus.Companion.toUiText
+import eu.europa.ec.dashboardfeature.model.toTransactionUiStatus
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog

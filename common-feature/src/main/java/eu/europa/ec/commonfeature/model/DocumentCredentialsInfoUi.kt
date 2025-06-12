@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.model
 
-data class DocumentCredentialsInfo(
+data class DocumentCredentialsInfoUi(
     val availableCredentials: Int,
     val totalCredentials: Int,
     val title: String,

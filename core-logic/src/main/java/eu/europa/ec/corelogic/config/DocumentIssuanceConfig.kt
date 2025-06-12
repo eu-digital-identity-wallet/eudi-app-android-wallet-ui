@@ -14,23 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.model
+package eu.europa.ec.corelogic.config
 
+import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
-
-/**
- * Represents a rule for issuing a document.
- *
- * This class encapsulates the policy and the number of credentials associated with a document
- * issuance.
- *
- * @property policy The [CredentialPolicy] to be applied during document issuance.
- * @property numberOfCredentials The number of credentials to be issued for the document.
- */
-data class DocumentIssuanceRule(
-    val policy: CredentialPolicy,
-    val numberOfCredentials: Int,
-)
 
 /**
  * Represents the configuration for document issuance.
@@ -40,7 +27,7 @@ data class DocumentIssuanceRule(
  *
  * @property defaultRule The default [DocumentIssuanceRule] to be applied when no specific rule
  *                       is defined for a document type.
- * @property documentSpecificRules A map where keys are [DocumentIdentifier]s and values are
+ * @property documentSpecificRules A map where keys are [eu.europa.ec.corelogic.model.DocumentIdentifier]s and values are
  *                                  [DocumentIssuanceRule]s, defining specific rules for
  *                                  particular document types.
  */
@@ -63,3 +50,17 @@ data class DocumentIssuanceConfig(
     fun getRuleForDocument(documentIdentifier: DocumentIdentifier?): DocumentIssuanceRule =
         documentSpecificRules[documentIdentifier] ?: defaultRule
 }
+
+/**
+ * Represents a rule for issuing a document.
+ *
+ * This class encapsulates the policy and the number of credentials associated with a document
+ * issuance.
+ *
+ * @property policy The [CredentialPolicy] to be applied during document issuance.
+ * @property numberOfCredentials The number of credentials to be issued for the document.
+ */
+data class DocumentIssuanceRule(
+    val policy: CredentialPolicy,
+    val numberOfCredentials: Int,
+)

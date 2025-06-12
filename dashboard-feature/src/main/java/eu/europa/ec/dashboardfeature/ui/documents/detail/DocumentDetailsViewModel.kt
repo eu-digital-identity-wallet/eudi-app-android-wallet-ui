@@ -17,7 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.documents.detail
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.model.DocumentCredentialsInfo
+import eu.europa.ec.commonfeature.model.DocumentCredentialsInfoUi
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
@@ -52,7 +52,7 @@ data class State(
     val title: String? = null,
     val issuerName: String? = null,
     val issuerLogo: URI? = null,
-    val documentCredentialsInfo: DocumentCredentialsInfo? = null,
+    val documentCredentialsInfoUi: DocumentCredentialsInfoUi? = null,
     val documentCredentialsInfoIsExpanded: Boolean,
     val documentDetailsSectionTitle: String,
     val documentIssuerSectionTitle: String,
@@ -238,7 +238,7 @@ class DocumentDetailsViewModel(
                                 isLoading = false,
                                 error = null,
                                 documentDetailsUi = documentDetailsUi,
-                                documentCredentialsInfo = response.documentCredentialsInfo,
+                                documentCredentialsInfoUi = response.documentCredentialsInfoUi,
                                 title = documentDetailsUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
                                 isRevoked = response.isRevoked,

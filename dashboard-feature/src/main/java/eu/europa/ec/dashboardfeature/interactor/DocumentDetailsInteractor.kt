@@ -19,7 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.commonfeature.model.DocumentCredentialsInfo
+import eu.europa.ec.commonfeature.model.DocumentCredentialsInfoUi
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.createDocumentCredentialsInfo
@@ -46,7 +46,7 @@ sealed class DocumentDetailsInteractorPartialState {
         val documentDetailsDomain: DocumentDetailsDomain,
         val documentIsBookmarked: Boolean,
         val isRevoked: Boolean,
-        val documentCredentialsInfo: DocumentCredentialsInfo?,
+        val documentCredentialsInfoUi: DocumentCredentialsInfoUi?,
     ) : DocumentDetailsInteractorPartialState()
 
     data class Failure(val error: String) : DocumentDetailsInteractorPartialState()
@@ -143,7 +143,7 @@ class DocumentDetailsInteractorImpl(
                         documentIsBookmarked = documentIsBookmarked,
                         issuerLogo = issuerLogo?.uri,
                         isRevoked = documentIsRevoked,
-                        documentCredentialsInfo = documentCredentialsInfo,
+                        documentCredentialsInfoUi = documentCredentialsInfo,
                     )
                 )
             } ?: emit(DocumentDetailsInteractorPartialState.Failure(error = genericErrorMsg))

@@ -57,7 +57,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentCredentialsInfo
+import eu.europa.ec.commonfeature.model.DocumentCredentialsInfoUi
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -286,12 +286,12 @@ private fun Content(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
             ) {
-                state.documentCredentialsInfo?.let { safeDocumentCredentialsInfo ->
+                state.documentCredentialsInfoUi?.let { safeDocumentCredentialsInfo ->
                     ExpandableDocumentCredentialsSection(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = SPACING_SMALL.dp),
-                        documentCredentialsInfo = safeDocumentCredentialsInfo,
+                        documentCredentialsInfoUi = safeDocumentCredentialsInfo,
                         isExpanded = state.documentCredentialsInfoIsExpanded,
                         onExpandedStateChanged = {
                             onEventSend(Event.ToggleExpansionStateOfDocumentCredentialsSection)
@@ -439,7 +439,7 @@ private fun IssuerDetails(
 @Composable
 private fun ExpandableDocumentCredentialsSection(
     modifier: Modifier = Modifier,
-    documentCredentialsInfo: DocumentCredentialsInfo,
+    documentCredentialsInfoUi: DocumentCredentialsInfoUi,
     isExpanded: Boolean,
     onExpandedStateChanged: () -> Unit,
 ) {
@@ -449,10 +449,10 @@ private fun ExpandableDocumentCredentialsSection(
             modifier = modifier,
         ) { providedIsExpanded: Boolean ->
             if (providedIsExpanded) {
-                documentCredentialsInfo.expandedInfo?.let { safeExpandedInfo ->
+                documentCredentialsInfoUi.expandedInfo?.let { safeExpandedInfo ->
                     ExpandedDocumentCredentials(
                         modifier = Modifier.fillMaxWidth(),
-                        title = documentCredentialsInfo.title,
+                        title = documentCredentialsInfoUi.title,
                         expandedInfo = safeExpandedInfo,
                         onHideClicked = onExpandedStateChanged,
                         animatedVisibilityScope = this@AnimatedContent,
@@ -460,10 +460,10 @@ private fun ExpandableDocumentCredentialsSection(
                     )
                 }
             } else {
-                documentCredentialsInfo.collapsedInfo?.let { safeCollapsedInfo ->
+                documentCredentialsInfoUi.collapsedInfo?.let { safeCollapsedInfo ->
                     CollapsedDocumentCredentials(
                         modifier = Modifier.fillMaxWidth(),
-                        title = documentCredentialsInfo.title,
+                        title = documentCredentialsInfoUi.title,
                         collapsedInfo = safeCollapsedInfo,
                         onMoreInfoClicked = onExpandedStateChanged,
                         animatedVisibilityScope = this@AnimatedContent,
@@ -480,7 +480,7 @@ private fun ExpandableDocumentCredentialsSection(
 private fun ExpandedDocumentCredentials(
     modifier: Modifier,
     title: String,
-    expandedInfo: DocumentCredentialsInfo.ExpandedInfo,
+    expandedInfo: DocumentCredentialsInfoUi.ExpandedInfo,
     onHideClicked: () -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -549,7 +549,7 @@ private fun ExpandedDocumentCredentials(
 private fun CollapsedDocumentCredentials(
     modifier: Modifier,
     title: String,
-    collapsedInfo: DocumentCredentialsInfo.CollapsedInfo,
+    collapsedInfo: DocumentCredentialsInfoUi.CollapsedInfo,
     onMoreInfoClicked: () -> Unit,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
@@ -658,7 +658,7 @@ private fun DocumentDetailsScreenPreview() {
         val availableCredentials = 3
         val totalCredentials = 15
         val state = State(
-            documentCredentialsInfo = DocumentCredentialsInfo(
+            documentCredentialsInfoUi = DocumentCredentialsInfoUi(
                 availableCredentials = availableCredentials,
                 totalCredentials = totalCredentials,
                 title = stringResource(
@@ -666,10 +666,10 @@ private fun DocumentDetailsScreenPreview() {
                     availableCredentials,
                     totalCredentials
                 ),
-                collapsedInfo = DocumentCredentialsInfo.CollapsedInfo(
+                collapsedInfo = DocumentCredentialsInfoUi.CollapsedInfo(
                     moreInfoText = stringResource(R.string.document_details_document_credentials_info_more_info_text),
                 ),
-                expandedInfo = DocumentCredentialsInfo.ExpandedInfo(
+                expandedInfo = DocumentCredentialsInfoUi.ExpandedInfo(
                     subtitle = stringResource(R.string.document_details_document_credentials_info_expanded_text_subtitle),
                     updateNowButtonText = null,
                     hideButtonText = stringResource(R.string.document_details_document_credentials_info_expanded_button_hide_text),
@@ -740,7 +740,7 @@ private fun ExpandableDocumentCredentialsSectionPreview() {
     PreviewTheme {
         val availableCredentials = 3
         val totalCredentials = 15
-        val documentCredentialsInfo = DocumentCredentialsInfo(
+        val documentCredentialsInfoUi = DocumentCredentialsInfoUi(
             availableCredentials = availableCredentials,
             totalCredentials = totalCredentials,
             title = stringResource(
@@ -748,10 +748,10 @@ private fun ExpandableDocumentCredentialsSectionPreview() {
                 availableCredentials,
                 totalCredentials
             ),
-            collapsedInfo = DocumentCredentialsInfo.CollapsedInfo(
+            collapsedInfo = DocumentCredentialsInfoUi.CollapsedInfo(
                 moreInfoText = stringResource(R.string.document_details_document_credentials_info_more_info_text),
             ),
-            expandedInfo = DocumentCredentialsInfo.ExpandedInfo(
+            expandedInfo = DocumentCredentialsInfoUi.ExpandedInfo(
                 subtitle = stringResource(R.string.document_details_document_credentials_info_expanded_text_subtitle),
                 updateNowButtonText = null,
                 hideButtonText = stringResource(R.string.document_details_document_credentials_info_expanded_button_hide_text),
@@ -766,14 +766,14 @@ private fun ExpandableDocumentCredentialsSectionPreview() {
         ) {
             ExpandableDocumentCredentialsSection(
                 modifier = Modifier.fillMaxWidth(),
-                documentCredentialsInfo = documentCredentialsInfo,
+                documentCredentialsInfoUi = documentCredentialsInfoUi,
                 isExpanded = false,
                 onExpandedStateChanged = {},
             )
 
             ExpandableDocumentCredentialsSection(
                 modifier = Modifier.fillMaxWidth(),
-                documentCredentialsInfo = documentCredentialsInfo,
+                documentCredentialsInfoUi = documentCredentialsInfoUi,
                 isExpanded = true,
                 onExpandedStateChanged = {},
             )

@@ -36,11 +36,6 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import eu.europa.ec.commonfeature.model.TransactionUiStatus
-import eu.europa.ec.commonfeature.model.TransactionUiStatus.Companion.toUiText
-import eu.europa.ec.commonfeature.model.TransactionUiType
-import eu.europa.ec.commonfeature.model.toTransactionUiStatus
-import eu.europa.ec.commonfeature.model.toTransactionUiType
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.corelogic.model.TransactionLogData
@@ -48,7 +43,12 @@ import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionD
 import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
 import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.model.TransactionUi
+import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
+import eu.europa.ec.dashboardfeature.model.TransactionUiStatus.Companion.toUiText
+import eu.europa.ec.dashboardfeature.model.TransactionUiType
 import eu.europa.ec.dashboardfeature.model.TransactionsFilterableAttributes
+import eu.europa.ec.dashboardfeature.model.toTransactionUiStatus
+import eu.europa.ec.dashboardfeature.model.toTransactionUiType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons

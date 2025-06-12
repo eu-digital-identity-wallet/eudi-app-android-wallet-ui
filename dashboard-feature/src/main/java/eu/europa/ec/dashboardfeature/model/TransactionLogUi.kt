@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.model
+package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog

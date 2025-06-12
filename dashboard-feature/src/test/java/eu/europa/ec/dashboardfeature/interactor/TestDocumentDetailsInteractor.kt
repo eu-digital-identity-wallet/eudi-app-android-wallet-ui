@@ -18,7 +18,7 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.commonfeature.model.DocumentCredentialsInfo
+import eu.europa.ec.commonfeature.model.DocumentCredentialsInfoUi
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlDomain
 import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidDomain
@@ -144,7 +144,7 @@ class TestDocumentDetailsInteractor {
                         issuerName = null,
                         issuerLogo = null,
                         isRevoked = false,
-                        documentCredentialsInfo = documentCredentialsInfo,
+                        documentCredentialsInfoUi = documentCredentialsInfo,
                     ),
                     awaitItem()
                 )
@@ -186,7 +186,7 @@ class TestDocumentDetailsInteractor {
                         issuerName = null,
                         issuerLogo = null,
                         isRevoked = false,
-                        documentCredentialsInfo = documentCredentialsInfo,
+                        documentCredentialsInfoUi = documentCredentialsInfo,
                     ),
                     awaitItem()
                 )
@@ -228,7 +228,7 @@ class TestDocumentDetailsInteractor {
                         issuerName = null,
                         issuerLogo = null,
                         isRevoked = false,
-                        documentCredentialsInfo = documentCredentialsInfo,
+                        documentCredentialsInfoUi = documentCredentialsInfo,
                     ),
                     awaitItem()
                 )
@@ -327,7 +327,7 @@ class TestDocumentDetailsInteractor {
                         issuerName = null,
                         issuerLogo = null,
                         isRevoked = false,
-                        documentCredentialsInfo = null,
+                        documentCredentialsInfoUi = null,
                     ),
                     awaitItem()
                 )
@@ -812,8 +812,8 @@ class TestDocumentDetailsInteractor {
         resourceProvider: ResourceProvider,
         availableCredentials: Int = mockedDocumentAvailableCredentials,
         totalCredentials: Int = mockedDocumentTotalCredentials,
-    ): DocumentCredentialsInfo {
-        return DocumentCredentialsInfo(
+    ): DocumentCredentialsInfoUi {
+        return DocumentCredentialsInfoUi(
             availableCredentials = availableCredentials,
             totalCredentials = totalCredentials,
             title = resourceProvider.getString(
@@ -821,10 +821,10 @@ class TestDocumentDetailsInteractor {
                 availableCredentials,
                 totalCredentials
             ),
-            collapsedInfo = DocumentCredentialsInfo.CollapsedInfo(
+            collapsedInfo = DocumentCredentialsInfoUi.CollapsedInfo(
                 moreInfoText = resourceProvider.getString(R.string.document_details_document_credentials_info_more_info_text),
             ),
-            expandedInfo = DocumentCredentialsInfo.ExpandedInfo(
+            expandedInfo = DocumentCredentialsInfoUi.ExpandedInfo(
                 subtitle = resourceProvider.getString(R.string.document_details_document_credentials_info_expanded_text_subtitle),
                 updateNowButtonText = null,
                 hideButtonText = resourceProvider.getString(R.string.document_details_document_credentials_info_expanded_button_hide_text),
