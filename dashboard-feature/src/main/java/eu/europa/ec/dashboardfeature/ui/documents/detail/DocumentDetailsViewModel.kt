@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.documents.detail
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.model.DocumentCredentialsInfo
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
@@ -51,6 +52,8 @@ data class State(
     val title: String? = null,
     val issuerName: String? = null,
     val issuerLogo: URI? = null,
+    val documentCredentialsInfo: DocumentCredentialsInfo? = null,
+    val documentCredentialsInfoIsExpanded: Boolean,
     val documentDetailsSectionTitle: String,
     val documentIssuerSectionTitle: String,
 
@@ -83,6 +86,7 @@ sealed class Event : ViewEvent {
     data object OnBookmarkRemoved : Event()
     data object IssuerCardPressed : Event()
     data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
+    data object ToggleExpansionStateOfDocumentCredentialsSection : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -125,6 +129,7 @@ class DocumentDetailsViewModel(
     @InjectedParam private val documentId: DocumentId,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
+        documentCredentialsInfoIsExpanded = false,
         documentDetailsSectionTitle = resourceProvider.getString(R.string.document_details_main_section_text),
         documentIssuerSectionTitle = resourceProvider.getString(R.string.document_details_issuer_section_text),
     )
@@ -206,6 +211,8 @@ class DocumentDetailsViewModel(
                     )
                 }
             }
+
+            is Event.ToggleExpansionStateOfDocumentCredentialsSection -> toggleExpansionStateOfDocumentCredentialsSection()
         }
     }
 
@@ -231,6 +238,7 @@ class DocumentDetailsViewModel(
                                 isLoading = false,
                                 error = null,
                                 documentDetailsUi = documentDetailsUi,
+                                documentCredentialsInfo = response.documentCredentialsInfo,
                                 title = documentDetailsUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
                                 isRevoked = response.isRevoked,
@@ -402,5 +410,13 @@ class DocumentDetailsViewModel(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_subtitle)
         )
+    }
+
+    private fun toggleExpansionStateOfDocumentCredentialsSection() {
+        setState {
+            copy(
+                documentCredentialsInfoIsExpanded = !documentCredentialsInfoIsExpanded
+            )
+        }
     }
 }

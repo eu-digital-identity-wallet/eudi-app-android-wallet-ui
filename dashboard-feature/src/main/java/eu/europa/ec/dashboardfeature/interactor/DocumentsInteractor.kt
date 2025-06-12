@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.isBeyondNextDays
 import eu.europa.ec.businesslogic.extension.isExpired
 import eu.europa.ec.businesslogic.extension.isValid
@@ -32,6 +33,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
+import eu.europa.ec.commonfeature.model.DocumentCredentialsInfo
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
@@ -167,6 +169,7 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filterValidator: FilterValidator,
+    private val prefKeys: PrefKeys,
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -297,8 +300,12 @@ class DocumentsInteractorImpl(
                     val documentIsRevoked =
                         walletCoreDocumentsController.isDocumentRevoked(document.id)
 
+                    val documentAvailableCredentials = document.credentialsCount()
+
                     when (document) {
                         is IssuedDocument -> {
+                            val documentTotalCredentials = document.initialCredentialsCount()
+
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(userLocale)
 
@@ -310,15 +317,21 @@ class DocumentsInteractorImpl(
                                 allCategories = documentCategories
                             )
 
+                            val documentName = document.name
+
                             val documentSearchTags = buildList {
-                                add(document.name)
+                                add(documentName)
                                 if (!issuerName.isNullOrBlank()) {
                                     add(issuerName)
                                 }
                             }
 
-                            val documentHasExpired =
-                                documentHasExpired(documentExpirationDate = document.validUntil)
+                            val documentExpirationDate = document.getValidUntil().getOrNull()
+                            val documentHasExpired = if (documentExpirationDate != null) {
+                                documentHasExpired(documentExpirationDate = documentExpirationDate)
+                            } else {
+                                false
+                            }
 
                             val documentIssuanceState = when {
                                 documentIsRevoked -> DocumentUiIssuanceState.Revoked
@@ -329,9 +342,10 @@ class DocumentsInteractorImpl(
                             val supportingText = when {
                                 documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_revoked)
                                 documentHasExpired == true -> resourceProvider.getString(R.string.dashboard_document_has_expired)
+                                documentExpirationDate == null -> null
                                 else -> resourceProvider.getString(
                                     R.string.dashboard_document_has_not_expired,
-                                    document.validUntil.formatInstant()
+                                    documentExpirationDate.formatInstant()
                                 )
                             }
 
@@ -341,9 +355,26 @@ class DocumentsInteractorImpl(
                                     tint = ThemeColors.error
                                 )
                             } else {
-                                ListItemTrailingContentData.Icon(
-                                    iconData = AppIcons.KeyboardArrowRight
-                                )
+                                if (prefKeys.getShowBatchIssuanceCounter()) {
+                                    val documentCredentialsInfo = DocumentCredentialsInfo(
+                                        availableCredentials = documentAvailableCredentials,
+                                        totalCredentials = documentTotalCredentials,
+                                        title = resourceProvider.getString(
+                                            R.string.dashboard_document_credentials_info_text,
+                                            documentAvailableCredentials,
+                                            documentTotalCredentials
+                                        )
+                                    )
+
+                                    ListItemTrailingContentData.TextWithIcon(
+                                        text = documentCredentialsInfo.title,
+                                        iconData = AppIcons.KeyboardArrowRight
+                                    )
+                                } else {
+                                    ListItemTrailingContentData.Icon(
+                                        iconData = AppIcons.KeyboardArrowRight
+                                    )
+                                }
                             }
 
                             FilterableItem(
@@ -351,7 +382,7 @@ class DocumentsInteractorImpl(
                                     documentIssuanceState = documentIssuanceState,
                                     uiData = ListItemData(
                                         itemId = document.id,
-                                        mainContentData = ListItemMainContentData.Text(text = document.name),
+                                        mainContentData = ListItemMainContentData.Text(text = documentName),
                                         overlineText = issuerName,
                                         supportingText = supportingText,
                                         leadingContentData = ListItemLeadingContentData.AsyncImage(
@@ -366,9 +397,9 @@ class DocumentsInteractorImpl(
                                 attributes = DocumentsFilterableAttributes(
                                     searchTags = documentSearchTags,
                                     issuedDate = document.issuedAt,
-                                    expiryDate = document.validUntil,
+                                    expiryDate = documentExpirationDate,
                                     issuer = issuerName,
-                                    name = document.name,
+                                    name = documentName,
                                     category = documentCategory,
                                     isRevoked = documentIsRevoked
                                 )
@@ -387,8 +418,10 @@ class DocumentsInteractorImpl(
                                 allCategories = documentCategories
                             )
 
+                            val documentName = document.name
+
                             val documentSearchTags = buildList {
-                                add(document.name)
+                                add(documentName)
                                 if (!issuerName.isNullOrBlank()) {
                                     add(issuerName)
                                 }
@@ -399,7 +432,7 @@ class DocumentsInteractorImpl(
                                     documentIssuanceState = DocumentUiIssuanceState.Pending,
                                     uiData = ListItemData(
                                         itemId = document.id,
-                                        mainContentData = ListItemMainContentData.Text(text = document.name),
+                                        mainContentData = ListItemMainContentData.Text(text = documentName),
                                         overlineText = issuerName,
                                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
                                         leadingContentData = ListItemLeadingContentData.AsyncImage(
@@ -412,14 +445,14 @@ class DocumentsInteractorImpl(
                                         )
                                     ),
                                     documentIdentifier = documentIdentifier,
-                                    documentCategory = documentCategory
+                                    documentCategory = documentCategory,
                                 ),
                                 attributes = DocumentsFilterableAttributes(
                                     searchTags = documentSearchTags,
                                     issuedDate = null,
                                     expiryDate = null,
                                     issuer = issuerName,
-                                    name = document.name,
+                                    name = documentName,
                                     category = documentCategory,
                                     isRevoked = documentIsRevoked
                                 )

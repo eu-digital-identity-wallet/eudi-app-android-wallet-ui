@@ -192,6 +192,7 @@
     <string name="dashboard_document_deferred_pending">Pending</string>
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
     <string name="dashboard_document_revoked">Revoked</string>
+    <string name="dashboard_document_credentials_info_text">%d/%d</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
     <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the Authenticate in person or online option</string>
@@ -329,7 +330,6 @@
 
     <!-- Document Details -->
     <string name="document_details_revoked_document_message">This document has been revoked by the issuer. Contact the issuing service for more information.</string>
-    <string name="document_details_portrait_readable_identifier">Shown above</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
 
@@ -338,6 +338,10 @@
     <string name="document_details_bottom_sheet_delete_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
     <string name="document_details_bottom_sheet_delete_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
 
+    <string name="document_details_document_credentials_info_text">%d/%d instances remaining</string>
+    <string name="document_details_document_credentials_info_more_info_text">More info</string>
+    <string name="document_details_document_credentials_info_expanded_text_subtitle">For security reasons, this document can be shared a limited number of times before it needs to be re-issued by the issuing authority.</string>
+    <string name="document_details_document_credentials_info_expanded_button_hide_text">Hide</string>
     <string name="document_details_main_section_text">DOCUMENT DETAILS</string>
     <string name="document_details_issuer_section_text">ISSUER</string>
     <string name="document_details_secondary_button_text">Delete document</string>

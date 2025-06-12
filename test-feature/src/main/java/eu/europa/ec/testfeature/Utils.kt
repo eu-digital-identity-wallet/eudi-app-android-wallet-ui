@@ -39,7 +39,25 @@ object MockResourceProviderForStringCalls {
     /**
      * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToUiItem]
      */
-    fun mockTransformToUiItemCall(resourceProvider: ResourceProvider) {
+    fun mockTransformToUiItemCall(
+        resourceProvider: ResourceProvider,
+        availableCredentials: Int = mockedDocumentAvailableCredentials,
+        totalCredentials: Int = mockedDocumentTotalCredentials,
+    ) {
+        val mockedStrings = listOf(
+            R.string.document_details_document_credentials_info_more_info_text to "More info",
+            R.string.document_details_document_credentials_info_expanded_text_subtitle to "For security reasons, this document can be shared a limited number of times before it needs to be re-issued by the issuing authority.",
+            R.string.document_details_document_credentials_info_expanded_button_hide_text to "Hide",
+        )
+        mockResourceProviderStrings(resourceProvider, mockedStrings)
+        whenever(
+            resourceProvider.getString(
+                R.string.document_details_document_credentials_info_text,
+                availableCredentials,
+                totalCredentials
+            )
+        ).thenReturn("$availableCredentials/$totalCredentials instances remaining")
+
         mockTransformToDocumentDetailsUiCall(resourceProvider)
     }
 
@@ -47,11 +65,6 @@ object MockResourceProviderForStringCalls {
      * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsUi]
      */
     fun mockTransformToDocumentDetailsUiCall(resourceProvider: ResourceProvider) {
-        val mockedStrings = listOf(
-            R.string.document_details_portrait_readable_identifier to "Shown above",
-        )
-
-        mockResourceProviderStrings(resourceProvider, mockedStrings)
         mockGetKeyValueUiCall(resourceProvider)
     }
 
@@ -89,10 +102,8 @@ object MockResourceProviderForStringCalls {
         resourceProvider: ResourceProvider,
         notAvailableString: String
     ) {
-        val mockedStrings = listOf(
-            R.string.request_element_identifier_not_available to notAvailableString,
-        )
-        mockResourceProviderStrings(resourceProvider, mockedStrings)
+        whenever(resourceProvider.getString(R.string.request_element_identifier_not_available))
+            .thenReturn(notAvailableString)
 
         mockGetKeyValueUiCall(resourceProvider)
 
@@ -104,9 +115,15 @@ object MockResourceProviderForStringCalls {
         resourceProvider: ResourceProvider,
         name: String
     ) {
-        val mockedStrings = listOf(
-            R.string.issuance_success_header_issuer_default_name to name,
-        )
-        mockResourceProviderStrings(resourceProvider, mockedStrings)
+        whenever(resourceProvider.getString(R.string.issuance_success_header_issuer_default_name))
+            .thenReturn(name)
+    }
+
+    fun mockGetUiItemsCall(
+        resourceProvider: ResourceProvider,
+        supportingText: String,
+    ) {
+        whenever(resourceProvider.getString(R.string.document_success_collapsed_supporting_text))
+            .thenReturn(supportingText)
     }
 }

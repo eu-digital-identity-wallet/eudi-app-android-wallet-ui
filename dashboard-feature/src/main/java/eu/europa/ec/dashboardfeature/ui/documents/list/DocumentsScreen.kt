@@ -132,6 +132,7 @@ fun DocumentsScreen(
         isLoading = state.isLoading,
         navigatableAction = ScreenNavigateAction.NONE,
         onBack = { context.finish() },
+        contentErrorConfig = state.error,
         topBar = {
             TopBar(
                 onEventSend = { viewModel.setEvent(it) },

@@ -14,15 +14,22 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.document_details.domain
+package eu.europa.ec.commonfeature.model
 
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.DomainClaim
-import eu.europa.ec.eudi.wallet.document.DocumentId
+data class DocumentCredentialsInfo(
+    val availableCredentials: Int,
+    val totalCredentials: Int,
+    val title: String,
+    val collapsedInfo: CollapsedInfo? = null,
+    val expandedInfo: ExpandedInfo? = null,
+) {
+    data class CollapsedInfo(
+        val moreInfoText: String,
+    )
 
-data class DocumentDetailsDomain(
-    val docName: String,
-    val docId: DocumentId,
-    val documentIdentifier: DocumentIdentifier,
-    val documentClaims: List<DomainClaim>,
-)
+    data class ExpandedInfo(
+        val subtitle: String,
+        val updateNowButtonText: String?,
+        val hideButtonText: String,
+    )
+}

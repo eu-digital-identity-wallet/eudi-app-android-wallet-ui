@@ -77,6 +77,7 @@ object TestsData {
     const val mockedRouteArguments = "mockedRouteArguments"
     const val mockedTxCode = "mockedTxCode"
     const val mockedClaimIsRequired = false
+    const val mockedDocumentSuccessCollapsedSupportingText = "View details"
 
     const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
     const val mockedMdlNameSpace = "org.iso.18013.5.1"

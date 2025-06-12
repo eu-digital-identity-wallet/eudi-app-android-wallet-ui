@@ -31,11 +31,11 @@ import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemsCall
+import eu.europa.ec.testfeature.getMockedMdlWithBasicFields
+import eu.europa.ec.testfeature.getMockedPidWithBasicFields
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedMdlWithBasicFields
-import eu.europa.ec.testfeature.mockedPidWithBasicFields
 import eu.europa.ec.testfeature.mockedPlainFailureMessage
 import eu.europa.ec.testfeature.mockedVerifierIsTrusted
 import eu.europa.ec.testlogic.extension.expectNoEvents
@@ -317,6 +317,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 7, When getRequestDocuments is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetAllIssuedDocumentsCall(
                 response = listOf(mockedPidWithBasicFields)
             )
@@ -378,6 +379,7 @@ class TestProximityRequestInteractor {
     fun `Given Case 8, When getRequestDocuments is called, Then Case 8 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
             mockGetAllIssuedDocumentsCall(
                 response = listOf(mockedMdlWithBasicFields)
             )
@@ -438,6 +440,8 @@ class TestProximityRequestInteractor {
     fun `Given Case 9, When getRequestDocuments is called, Then Case 9 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetAllIssuedDocumentsCall(
                 response = listOf(
                     mockedMdlWithBasicFields,
@@ -508,6 +512,8 @@ class TestProximityRequestInteractor {
     fun `Given Case 10, When getRequestDocuments is called, Then Case 10 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
+            val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
             mockGetAllIssuedDocumentsCall(
                 response = listOf(
                     mockedPidWithBasicFields,

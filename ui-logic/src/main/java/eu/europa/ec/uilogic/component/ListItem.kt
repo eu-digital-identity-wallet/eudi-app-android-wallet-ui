@@ -19,10 +19,12 @@ package eu.europa.ec.uilogic.component
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -392,22 +394,22 @@ fun ListItem(
                         modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
                     )
 
-                    is ListItemTrailingContentData.Switch -> WrapSwitch(
-                        switchData = safeTrailingContentData.switchData,
-                        onCheckedChange = if (clickableAreas.contains(TRAILING_CONTENT)) {
-                            { onItemClick?.invoke(item) }
-                        } else null,
-                        modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
-                    )
-
-                    is ListItemTrailingContentData.TextWithIcon ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                    is ListItemTrailingContentData.TextWithIcon -> {
+                        Row(
+                            modifier = Modifier
+                                .padding(start = SIZE_MEDIUM.dp)
+                                .width(IntrinsicSize.Min),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             WrapText(
-                                modifier = Modifier.padding(start = SPACING_SMALL.dp),
+                                modifier = Modifier
+                                    .weight(1f, fill = false),
                                 text = safeTrailingContentData.text,
                                 textConfig = TextConfig(
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 2,
                                 )
                             )
 
@@ -424,6 +426,15 @@ fun ListItem(
                                 throttleClicks = false,
                             )
                         }
+                    }
+
+                    is ListItemTrailingContentData.Switch -> WrapSwitch(
+                        switchData = safeTrailingContentData.switchData,
+                        onCheckedChange = if (clickableAreas.contains(TRAILING_CONTENT)) {
+                            { onItemClick?.invoke(item) }
+                        } else null,
+                        modifier = Modifier.padding(start = SIZE_MEDIUM.dp),
+                    )
                 }
             }
         }
@@ -473,7 +484,7 @@ private fun ListItemPreview() {
                 onItemClick = {},
             )
 
-            // ListItem with trailing icon
+            // ListItem with icon for trailing content
             ListItem(
                 item = ListItemData(
                     itemId = "4",
@@ -486,10 +497,24 @@ private fun ListItemPreview() {
                 onItemClick = {},
             )
 
-            // ListItem with trailing enabled checkbox
+            // ListItem with text and icon for trailing content
             ListItem(
                 item = ListItemData(
                     itemId = "5",
+                    mainContentData = ListItemMainContentData.Text(text = "Item with trailing Icon and Text"),
+                    trailingContentData = ListItemTrailingContentData.TextWithIcon(
+                        text = "1/2",
+                        iconData = AppIcons.KeyboardArrowRight
+                    )
+                ),
+                modifier = modifier,
+                onItemClick = {},
+            )
+
+            // ListItem with trailing enabled checkbox
+            ListItem(
+                item = ListItemData(
+                    itemId = "6",
                     mainContentData = ListItemMainContentData.Text(text = "Item with Trailing Enabled Checkbox"),
                     trailingContentData = ListItemTrailingContentData.Checkbox(
                         checkboxData = CheckboxData(
@@ -504,7 +529,7 @@ private fun ListItemPreview() {
             // ListItem with trailing disabled checkbox
             ListItem(
                 item = ListItemData(
-                    itemId = "5",
+                    itemId = "7",
                     mainContentData = ListItemMainContentData.Text(text = "Item with Trailing Disabled Checkbox"),
                     trailingContentData = ListItemTrailingContentData.Checkbox(
                         checkboxData = CheckboxData(
@@ -520,7 +545,7 @@ private fun ListItemPreview() {
             // ListItem with trailing enabled radiobutton
             ListItem(
                 item = ListItemData(
-                    itemId = "6",
+                    itemId = "8",
                     mainContentData = ListItemMainContentData.Text(text = "Item with Trailing Enabled Radiobutton"),
                     trailingContentData = ListItemTrailingContentData.RadioButton(
                         radioButtonData = RadioButtonData(
@@ -535,7 +560,7 @@ private fun ListItemPreview() {
             // ListItem with trailing disabled radiobutton
             ListItem(
                 item = ListItemData(
-                    itemId = "7",
+                    itemId = "9",
                     mainContentData = ListItemMainContentData.Text(text = "Item with Trailing Disabled Radiobutton"),
                     trailingContentData = ListItemTrailingContentData.RadioButton(
                         radioButtonData = RadioButtonData(
@@ -551,7 +576,7 @@ private fun ListItemPreview() {
             // ListItem with trailing enabled switch
             ListItem(
                 item = ListItemData(
-                    itemId = "8",
+                    itemId = "10",
                     mainContentData = ListItemMainContentData.Text(text = "Item with Trailing Enabled Switch"),
                     trailingContentData = ListItemTrailingContentData.Switch(
                         switchData = SwitchData(
@@ -566,7 +591,7 @@ private fun ListItemPreview() {
             // ListItem with trailing disabled switch
             ListItem(
                 item = ListItemData(
-                    itemId = "9",
+                    itemId = "11",
                     mainContentData = ListItemMainContentData.Text(text = "Item with Trailing Disabled Switch"),
                     trailingContentData = ListItemTrailingContentData.Switch(
                         switchData = SwitchData(
@@ -582,7 +607,7 @@ private fun ListItemPreview() {
             // ListItem with all elements
             ListItem(
                 item = ListItemData(
-                    itemId = "10",
+                    itemId = "12",
                     mainContentData = ListItemMainContentData.Text(text = "Full Item Example"),
                     overlineText = "Overline Text",
                     supportingText = "Supporting Text",

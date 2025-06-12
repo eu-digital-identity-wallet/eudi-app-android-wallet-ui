@@ -84,11 +84,13 @@ fun provideDocumentsInteractor(
     resourceProvider: ResourceProvider,
     documentsController: WalletCoreDocumentsController,
     filterValidator: FilterValidator,
+    prefKeys: PrefKeys,
 ): DocumentsInteractor =
     DocumentsInteractorImpl(
         resourceProvider,
         documentsController,
         filterValidator,
+        prefKeys,
     )
 
 @Factory
@@ -113,12 +115,14 @@ fun provideDocumentSignInteractor(
 fun provideDocumentDetailsInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
-    uuidProvider: UuidProvider
+    uuidProvider: UuidProvider,
+    prefKeys: PrefKeys,
 ): DocumentDetailsInteractor =
     DocumentDetailsInteractorImpl(
         walletCoreDocumentsController,
         resourceProvider,
-        uuidProvider
+        uuidProvider,
+        prefKeys,
     )
 
 @Factory

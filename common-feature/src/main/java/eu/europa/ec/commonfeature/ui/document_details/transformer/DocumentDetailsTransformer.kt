@@ -18,6 +18,7 @@ package eu.europa.ec.commonfeature.ui.document_details.transformer
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.extension.toExpandableListItems
+import eu.europa.ec.commonfeature.model.DocumentCredentialsInfo
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
@@ -25,6 +26,7 @@ import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
+import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 object DocumentDetailsTransformer {
@@ -49,7 +51,7 @@ object DocumentDetailsTransformer {
             docName = document.name,
             docId = document.id,
             documentIdentifier = document.toDocumentIdentifier(),
-            documentClaims = domainClaims
+            documentClaims = domainClaims,
         )
     }
 
@@ -63,6 +65,32 @@ object DocumentDetailsTransformer {
             documentIdentifier = this.documentIdentifier,
             documentIssuanceState = DocumentUiIssuanceState.Issued,
             documentClaims = documentDetailsUi,
+        )
+    }
+
+    suspend fun createDocumentCredentialsInfo(
+        document: IssuedDocument,
+        resourceProvider: ResourceProvider,
+    ): DocumentCredentialsInfo {
+        val availableCredentials = document.credentialsCount()
+        val totalCredentials = document.initialCredentialsCount()
+
+        return DocumentCredentialsInfo(
+            availableCredentials = availableCredentials,
+            totalCredentials = totalCredentials,
+            title = resourceProvider.getString(
+                R.string.document_details_document_credentials_info_text,
+                availableCredentials,
+                totalCredentials
+            ),
+            collapsedInfo = DocumentCredentialsInfo.CollapsedInfo(
+                moreInfoText = resourceProvider.getString(R.string.document_details_document_credentials_info_more_info_text),
+            ),
+            expandedInfo = DocumentCredentialsInfo.ExpandedInfo(
+                subtitle = resourceProvider.getString(R.string.document_details_document_credentials_info_expanded_text_subtitle),
+                updateNowButtonText = null,
+                hideButtonText = resourceProvider.getString(R.string.document_details_document_credentials_info_expanded_button_hide_text),
+            )
         )
     }
 }

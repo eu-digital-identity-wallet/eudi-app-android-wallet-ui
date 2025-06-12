@@ -16,17 +16,17 @@
 
 package eu.europa.ec.testfeature
 
-import com.android.identity.document.NameSpacedData
-import com.android.identity.securearea.software.SoftwareSecureArea
-import com.android.identity.storage.EphemeralStorageEngine
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.UnsignedDocument
+import eu.europa.ec.eudi.wallet.document.format.DocumentData
+import eu.europa.ec.eudi.wallet.document.format.DocumentFormat
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
-import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
-import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData.Display
+import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.whenever
+import org.multipaz.document.NameSpacedData
 import java.net.URI
 import java.time.Instant
 import java.util.Locale
@@ -49,6 +49,8 @@ const val mockedMdlId = "000002"
 const val mockedSdJwtPidId = "000003"
 const val mockedPidDocName = "EU PID"
 const val mockedMdlDocName = "mDL"
+const val mockedDocumentAvailableCredentials = 3
+const val mockedDocumentTotalCredentials = 15
 const val mockedBookmarkId = "mockedBookmarkId"
 const val mockedVerifierIsTrusted = true
 const val mockedNotifyOnAuthenticationFailure = false
@@ -362,13 +364,14 @@ val mockedMdlBasicFields: Map<String, ByteArray> = mapOf(
 
 const val mockedPidDocType = "eu.europa.ec.eudi.pid.1"
 const val mockedPidNameSpace = "eu.europa.ec.eudi.pid.1"
+val mockedMsoMdocPidFormat = MsoMdocFormat(mockedPidDocType)
+val mockedSdJwtPidFormat = SdJwtVcFormat("urn:eudi:pid:1")
 const val mockedMdlDocType = "org.iso.18013.5.1.mDL"
 const val mockedMdlNameSpace = "org.iso.18013.5.1"
+val mockedMsoMdocMdlFormat = MsoMdocFormat(mockedMdlDocType)
 const val mockedDocDisplayLogo = "https://examplestate.com/public/pid.png"
 const val mockedIssuerLogo = "https://issuer.eudiw.dev/ic-logo.png"
 const val mockedIssuerIdentifier = "https://issuer.eudiw.dev"
-
-val secureArea = SoftwareSecureArea(EphemeralStorageEngine())
 
 fun createMockedNamespaceData(
     documentNamespace: String,
@@ -381,65 +384,185 @@ fun createMockedNamespaceData(
     return builder.build()
 }
 
-val mockedFullPid = IssuedDocument(
+suspend fun mockIssuedDocument(
+    format: DocumentFormat,
+    id: String,
+    name: String,
+    isCertified: Boolean,
+    createdAt: Instant,
+    issuedAt: Instant,
+    validFrom: Result<Instant>,
+    validUntil: Result<Instant>,
+    data: DocumentData,
+    issuerMetadata: IssuerMetadata? = null,
+    availableCredentials: Int,
+    totalCredentials: Int,
+): IssuedDocument {
+    val doc = mock<IssuedDocument>()
+
+    with(doc) {
+        whenever(this.format)
+            .thenReturn(format)
+
+        whenever(this.id)
+            .thenReturn(id)
+
+        whenever(this.name)
+            .thenReturn(name)
+
+        whenever(this.isCertified())
+            .thenReturn(isCertified)
+
+        whenever(this.createdAt)
+            .thenReturn(createdAt)
+
+        whenever(this.issuedAt)
+            .thenReturn(issuedAt)
+
+        whenever(this.getValidFrom())
+            .thenReturn(validFrom)
+
+        whenever(this.getValidUntil())
+            .thenReturn(validUntil)
+
+        whenever(this.data)
+            .thenReturn(data)
+
+        whenever(this.issuerMetadata)
+            .thenReturn(issuerMetadata)
+
+        whenever(this.credentialsCount())
+            .thenReturn(availableCredentials)
+
+        whenever(this.initialCredentialsCount())
+            .thenReturn(totalCredentials)
+    }
+
+    return doc
+}
+
+suspend fun getMockedFullPid() = mockIssuedDocument(
+    format = mockedMsoMdocPidFormat,
     id = mockedPidId,
     name = mockedPidDocName,
-    documentManagerId = "fabulas",
     isCertified = false,
-    keyAlias = "massa",
-    secureArea = secureArea,
     createdAt = Instant.parse(mockedDocumentCreationDate),
     issuedAt = Instant.parse(mockedDocumentCreationDate),
-    validFrom = Instant.now(),
-    validUntil = Instant.parse(mockedDocumentValidUntilDate),
-    issuerProvidedData = byteArrayOf(),
+    validFrom = Result.success(Instant.now()),
+    validUntil = Result.success(Instant.parse(mockedDocumentValidUntilDate)),
     data = MsoMdocData(
-        format = MsoMdocFormat(mockedPidNameSpace),
-        metadata = null,
+        format = mockedMsoMdocPidFormat,
+        issuerMetadata = null,
         nameSpacedData = createMockedNamespaceData(
             mockedPidNameSpace,
             mockedPidFields
         )
-    )
+    ),
+    availableCredentials = mockedDocumentAvailableCredentials,
+    totalCredentials = mockedDocumentTotalCredentials,
 )
 
-val mockedSdJwtFullPid = IssuedDocument(
+suspend fun getMockedSdJwtFullPid() = mockIssuedDocument(
+    format = mockedSdJwtPidFormat,
     id = mockedSdJwtPidId,
     name = mockedPidDocName,
-    documentManagerId = "fabulas",
     isCertified = false,
-    keyAlias = "massa",
-    secureArea = secureArea,
     createdAt = Instant.parse(mockedDocumentCreationDate),
     issuedAt = Instant.parse(mockedDocumentCreationDate),
-    validFrom = Instant.now(),
-    validUntil = Instant.parse(mockedDocumentValidUntilDate),
-    issuerProvidedData = byteArrayOf(),
+    validFrom = Result.success(Instant.now()),
+    validUntil = Result.success(Instant.parse(mockedDocumentValidUntilDate)),
     data = SdJwtVcData(
-        format = SdJwtVcFormat(mockedPidNameSpace),
-        metadata = null,
+        format = mockedSdJwtPidFormat,
+        issuerMetadata = null,
         sdJwtVc = mockedSdJwtFullPidFields,
-    )
+    ),
+    availableCredentials = mockedDocumentAvailableCredentials,
+    totalCredentials = mockedDocumentTotalCredentials,
 )
 
-val mockedUnsignedPid = UnsignedDocument(
-    id = mockedPidId,
-    name = mockedPidDocName,
-    createdAt = Instant.parse(mockedDocumentCreationDate),
-    format = MsoMdocFormat(mockedPidDocType),
-    documentManagerId = "viderer",
-    isCertified = false,
-    keyAlias = "movet",
-    secureArea = secureArea,
-    metadata = null
-)
+suspend fun getMockedMainPid() = getMockedFullPid()
 
-val mockedMainPid = mockedFullPid
+suspend fun IssuedDocument.copy(
+    format: DocumentFormat? = null,
+    id: String? = null,
+    name: String? = null,
+    isCertified: Boolean? = null,
+    createdAt: Instant? = null,
+    issuedAt: Instant? = null,
+    validFrom: Result<Instant>? = null,
+    validUntil: Result<Instant>? = null,
+    data: DocumentData? = null,
+    issuerMetadata: IssuerMetadata? = null,
+    availableCredentials: Int? = null,
+    totalCredentials: Int? = null,
+): IssuedDocument {
+    if (format != null) {
+        whenever(this.format)
+            .thenReturn(format)
+    }
 
-val mockedPidWithBasicFields = mockedFullPid.copy(
+    if (id != null) {
+        whenever(this.id)
+            .thenReturn(id)
+    }
+
+    if (name != null) {
+        whenever(this.name)
+            .thenReturn(name)
+    }
+
+    if (isCertified != null) {
+        whenever(this.isCertified())
+            .thenReturn(isCertified)
+    }
+
+    if (createdAt != null) {
+        whenever(this.createdAt)
+            .thenReturn(createdAt)
+    }
+
+    if (issuedAt != null) {
+        whenever(this.issuedAt)
+            .thenReturn(issuedAt)
+    }
+
+    if (validFrom != null) {
+        whenever(this.getValidFrom())
+            .thenReturn(validFrom)
+    }
+
+    if (validUntil != null) {
+        whenever(this.getValidUntil())
+            .thenReturn(validUntil)
+    }
+
+    if (data != null) {
+        whenever(this.data)
+            .thenReturn(data)
+    }
+
+    if (issuerMetadata != null) {
+        whenever(this.issuerMetadata)
+            .thenReturn(issuerMetadata)
+    }
+
+    if (availableCredentials != null) {
+        whenever(this.credentialsCount())
+            .thenReturn(availableCredentials)
+    }
+
+    if (totalCredentials != null) {
+        whenever(this.initialCredentialsCount())
+            .thenReturn(totalCredentials)
+    }
+
+    return this
+}
+
+suspend fun getMockedPidWithBasicFields() = getMockedFullPid().copy(
     data = MsoMdocData(
-        format = MsoMdocFormat(mockedPidNameSpace),
-        metadata = null,
+        format = mockedMsoMdocPidFormat,
+        issuerMetadata = null,
         nameSpacedData = createMockedNamespaceData(
             mockedPidNameSpace,
             mockedPidBasicFields
@@ -447,12 +570,12 @@ val mockedPidWithBasicFields = mockedFullPid.copy(
     )
 )
 
-val mockedDocumentMetadata = DocumentMetaData(
+val mockedDocumentMetadata = IssuerMetadata(
     documentConfigurationIdentifier = mockedPidDocType,
     display = listOf(
-        Display(
+        IssuerMetadata.Display(
             name = mockedPidDocName,
-            logo = DocumentMetaData.Logo(
+            logo = IssuerMetadata.Logo(
                 uri = URI.create(mockedDocDisplayLogo)
             )
         )
@@ -460,19 +583,20 @@ val mockedDocumentMetadata = DocumentMetaData(
     claims = emptyList(),
     credentialIssuerIdentifier = mockedIssuerIdentifier,
     issuerDisplay = listOf(
-        DocumentMetaData.IssuerDisplay(
+        IssuerMetadata.IssuerDisplay(
             name = "EUDIW Issuer",
-            logo = DocumentMetaData.Logo(
+            logo = IssuerMetadata.Logo(
                 uri = URI.create(mockedIssuerLogo)
             )
         )
     )
 )
 
-val mockedPidWithBasicFieldsAndMetadata = mockedFullPid.copy(
+suspend fun getMockedPidWithBasicFieldsAndMetadata() = getMockedFullPid().copy(
+    issuerMetadata = mockedDocumentMetadata,
     data = MsoMdocData(
-        format = MsoMdocFormat(mockedPidNameSpace),
-        metadata = mockedDocumentMetadata,
+        format = mockedMsoMdocPidFormat,
+        issuerMetadata = mockedDocumentMetadata,
         nameSpacedData = createMockedNamespaceData(
             mockedPidNameSpace,
             mockedPidBasicFields
@@ -480,23 +604,23 @@ val mockedPidWithBasicFieldsAndMetadata = mockedFullPid.copy(
     )
 )
 
-val mockedSdJwtPidWithBasicFields = mockedSdJwtFullPid.copy(
+suspend fun getMockedSdJwtPidWithBasicFields() = getMockedSdJwtFullPid().copy(
     data = SdJwtVcData(
-        format = SdJwtVcFormat(mockedPidNameSpace),
-        metadata = null,
+        format = mockedSdJwtPidFormat,
+        issuerMetadata = null,
         sdJwtVc = mockedSdJwtPidBasicFields,
     )
 )
 
-val mockedOldestPidWithBasicFields = mockedPidWithBasicFields.copy(
+suspend fun getMockedOldestPidWithBasicFields() = getMockedPidWithBasicFields().copy(
     id = mockedOldestPidId,
     createdAt = Instant.parse(mockedOldestDocumentCreationDate)
 )
 
-val mockedEmptyPid = mockedFullPid.copy(
+suspend fun getMockedEmptyPid() = getMockedFullPid().copy(
     data = MsoMdocData(
-        format = MsoMdocFormat(mockedPidNameSpace),
-        metadata = null,
+        format = mockedMsoMdocPidFormat,
+        issuerMetadata = null,
         nameSpacedData = createMockedNamespaceData(
             mockedPidNameSpace,
             emptyMap()
@@ -504,32 +628,31 @@ val mockedEmptyPid = mockedFullPid.copy(
     )
 )
 
-val mockedFullMdl = IssuedDocument(
+suspend fun getMockedFullMdl() = mockIssuedDocument(
+    format = mockedMsoMdocMdlFormat,
     id = mockedMdlId,
     name = mockedMdlDocName,
-    documentManagerId = "fabulas",
     isCertified = false,
-    keyAlias = "massa",
-    secureArea = secureArea,
     createdAt = Instant.parse(mockedDocumentCreationDate),
     issuedAt = Instant.parse(mockedDocumentCreationDate),
-    validFrom = Instant.now(),
-    validUntil = Instant.parse(mockedDocumentValidUntilDate),
-    issuerProvidedData = byteArrayOf(),
+    validFrom = Result.success(Instant.now()),
+    validUntil = Result.success(Instant.parse(mockedDocumentValidUntilDate)),
     data = MsoMdocData(
-        format = MsoMdocFormat(mockedMdlDocType),
-        metadata = null,
+        format = mockedMsoMdocMdlFormat,
+        issuerMetadata = null,
         nameSpacedData = createMockedNamespaceData(
             mockedMdlNameSpace,
             mockedMdlFields
         )
-    )
+    ),
+    availableCredentials = mockedDocumentAvailableCredentials,
+    totalCredentials = mockedDocumentTotalCredentials,
 )
 
-val mockedMdlWithBasicFields = mockedFullMdl.copy(
+suspend fun getMockedMdlWithBasicFields() = getMockedFullMdl().copy(
     data = MsoMdocData(
-        format = MsoMdocFormat(mockedMdlDocType),
-        metadata = null,
+        format = mockedMsoMdocMdlFormat,
+        issuerMetadata = null,
         nameSpacedData = createMockedNamespaceData(
             mockedMdlNameSpace,
             mockedMdlBasicFields
@@ -537,10 +660,10 @@ val mockedMdlWithBasicFields = mockedFullMdl.copy(
     )
 )
 
-val mockedMdlWithNoExpirationDate: IssuedDocument = mockedFullMdl.copy(
+suspend fun getMockedMdlWithNoExpirationDate(): IssuedDocument = getMockedFullMdl().copy(
     data = MsoMdocData(
-        format = MsoMdocFormat(mockedMdlDocType),
-        metadata = null,
+        format = mockedMsoMdocMdlFormat,
+        issuerMetadata = null,
         nameSpacedData = createMockedNamespaceData(
             mockedMdlNameSpace,
             mockedMdlFields
@@ -549,10 +672,10 @@ val mockedMdlWithNoExpirationDate: IssuedDocument = mockedFullMdl.copy(
     )
 )
 
-val mockedMdlWithNoUserNameAndNoUserImage: IssuedDocument = mockedFullMdl.copy(
+suspend fun getMockedMdlWithNoUserNameAndNoUserImage(): IssuedDocument = getMockedFullMdl().copy(
     data = MsoMdocData(
-        format = MsoMdocFormat(mockedMdlDocType),
-        metadata = null,
+        format = mockedMsoMdocMdlFormat,
+        issuerMetadata = null,
         nameSpacedData = createMockedNamespaceData(
             mockedMdlNameSpace,
             mockedMdlFields
@@ -562,6 +685,6 @@ val mockedMdlWithNoUserNameAndNoUserImage: IssuedDocument = mockedFullMdl.copy(
     )
 )
 
-val mockedFullDocuments: List<IssuedDocument> = listOf(
-    mockedFullPid, mockedFullMdl
+suspend fun getMockedFullDocuments(): List<IssuedDocument> = listOf(
+    getMockedFullPid(), getMockedFullMdl()
 )

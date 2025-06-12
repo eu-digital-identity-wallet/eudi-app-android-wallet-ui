@@ -65,11 +65,11 @@ import eu.europa.ec.issuancefeature.ui.offer.model.DocumentOfferItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
+import eu.europa.ec.testfeature.getMockedMainPid
 import eu.europa.ec.testfeature.mockedDefaultLocale
 import eu.europa.ec.testfeature.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedMainPid
 import eu.europa.ec.testfeature.mockedMdlDocName
 import eu.europa.ec.testfeature.mockedMdlDocType
 import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
@@ -163,6 +163,7 @@ class TestDocumentOfferInteractor {
             val mockedOffer = mockOffer(
                 issuerName = mockedIssuerName
             )
+            val mockedMainPid = getMockedMainPid()
             mockGetMainPidDocumentCall(
                 mainPid = mockedMainPid
             )
@@ -309,6 +310,8 @@ class TestDocumentOfferInteractor {
                 ),
                 txCodeSpec = mockedOfferTxCodeFourDigits
             )
+
+            val mockedMainPid = getMockedMainPid()
             mockGetMainPidDocumentCall(
                 mainPid = mockedMainPid
             )

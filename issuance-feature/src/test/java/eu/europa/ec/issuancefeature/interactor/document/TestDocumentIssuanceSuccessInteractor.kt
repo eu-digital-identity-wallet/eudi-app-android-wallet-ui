@@ -17,13 +17,15 @@
 package eu.europa.ec.issuancefeature.interactor.document
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.commonfeature.util.TestsData
+import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedBasicSdJwtPidUi
+import eu.europa.ec.commonfeature.util.TestsData.mockedDocumentSuccessCollapsedSupportingText
 import eu.europa.ec.commonfeature.util.TestsData.mockedErrorDescription
 import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
 import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
 import eu.europa.ec.commonfeature.util.TestsData.mockedRequestElementIdentifierNotAvailable
 import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessDescription
-import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessText
+import eu.europa.ec.commonfeature.util.TestsData.mockedUuid
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
@@ -31,15 +33,18 @@ import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
 import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorImpl
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockGetUiItemsCall
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockIssuerName
+import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToDocumentDetailsUiCall
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemsCall
+import eu.europa.ec.testfeature.getMockedMdlWithBasicFields
+import eu.europa.ec.testfeature.getMockedPidWithBasicFields
+import eu.europa.ec.testfeature.getMockedPidWithBasicFieldsAndMetadata
+import eu.europa.ec.testfeature.getMockedSdJwtPidWithBasicFields
 import eu.europa.ec.testfeature.mockedDefaultLocale
 import eu.europa.ec.testfeature.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.mockedIssuerLogo
-import eu.europa.ec.testfeature.mockedPidWithBasicFields
-import eu.europa.ec.testfeature.mockedPidWithBasicFieldsAndMetadata
 import eu.europa.ec.testfeature.mockedSdJwtPidId
-import eu.europa.ec.testfeature.mockedSdJwtPidWithBasicFields
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
@@ -121,8 +126,13 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockGenderValues()
-            mockSupportingText()
+            mockTransformToDocumentDetailsUiCall(resourceProvider)
+            mockGetUiItemsCall(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
+
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
 
             // When
@@ -137,12 +147,12 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemData(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentData.Text(text = mockedPidWithBasicFields.name),
-                                    supportingText = mockedSuccessText,
+                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
                                     trailingContentData = ListItemTrailingContentData.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = TestsData.mockedBasicPidUi.documentClaims,
+                                nestedItems = mockedBasicPidUi.documentClaims,
                                 isExpanded = false
                             )
                         ),
@@ -175,9 +185,14 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockItemId()
-            mockGenderValues()
-            mockSupportingText()
+            mockProvideUuid()
+            mockTransformToDocumentDetailsUiCall(resourceProvider)
+            mockGetUiItemsCall(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
+
+            val mockedSdJwtPidWithBasicFields = getMockedSdJwtPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedSdJwtPidWithBasicFields)
 
             // When
@@ -200,12 +215,12 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemData(
                                     itemId = mockedSdJwtPidId,
                                     mainContentData = ListItemMainContentData.Text(text = mockedSdJwtPidWithBasicFields.name),
-                                    supportingText = mockedSuccessText,
+                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
                                     trailingContentData = ListItemTrailingContentData.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = TestsData.mockedBasicSdJwtPidUi.documentClaims,
+                                nestedItems = mockedBasicSdJwtPidUi.documentClaims,
                                 isExpanded = false
                             )
                         )
@@ -231,8 +246,13 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockGenderValues()
-            mockSupportingText()
+            mockTransformToDocumentDetailsUiCall(resourceProvider)
+            mockGetUiItemsCall(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
+
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
             mockSdJwtGetDocumentByIdCall(docId = mockedSdJwtPidId, response = null)
 
@@ -248,12 +268,12 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemData(
                                     itemId = mockedPidWithBasicFields.id,
                                     mainContentData = ListItemMainContentData.Text(text = mockedPidWithBasicFields.name),
-                                    supportingText = mockedSuccessText,
+                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
                                     trailingContentData = ListItemTrailingContentData.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = TestsData.mockedBasicPidUi.documentClaims,
+                                nestedItems = mockedBasicPidUi.documentClaims,
                                 isExpanded = false
                             )
                         ),
@@ -285,14 +305,17 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = true)
-            mockGenderValues()
-            mockSupportingText()
+            mockTransformToDocumentDetailsUiCall(resourceProvider)
+            mockGetUiItemsCall(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
             mockGetDocumentByIdCall(response = null)
             mockSdJwtGetDocumentByIdCall(docId = mockedSdJwtPidId, response = null)
 
             // When
             interactor.getUiItems(
-                documentIds = listOf(mockedPidWithBasicFields.id, mockedSdJwtPidId)
+                documentIds = listOf(getMockedMdlWithBasicFields().id, mockedSdJwtPidId)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -325,8 +348,11 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = true)
-            mockGenderValues()
-            mockSupportingText()
+            mockTransformToDocumentDetailsUiCall(resourceProvider)
+            mockGetUiItemsCall(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
             mockGetDocumentByIdCall(response = null)
             mockSdJwtGetDocumentByIdCall(docId = mockedSdJwtPidId, response = null)
 
@@ -365,10 +391,17 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockGenderValues()
-            mockSupportingText()
-            mockItemId()
+            mockTransformToDocumentDetailsUiCall(resourceProvider)
+            mockGetUiItemsCall(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
+            mockProvideUuid()
+
+            val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+
+            val mockedSdJwtPidWithBasicFields = getMockedSdJwtPidWithBasicFields()
             mockSdJwtGetDocumentByIdCall(
                 docId = mockedSdJwtPidId,
                 response = mockedSdJwtPidWithBasicFields
@@ -394,24 +427,24 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemData(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentData.Text(text = mockedPidWithBasicFields.name),
-                                    supportingText = mockedSuccessText,
+                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
                                     trailingContentData = ListItemTrailingContentData.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = TestsData.mockedBasicPidUi.documentClaims,
+                                nestedItems = mockedBasicPidUi.documentClaims,
                                 isExpanded = false
                             ),
                             ExpandableListItem.NestedListItemData(
                                 header = ListItemData(
                                     itemId = mockedSdJwtPidId,
                                     mainContentData = ListItemMainContentData.Text(text = mockedSdJwtPidWithBasicFields.name),
-                                    supportingText = mockedSuccessText,
+                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
                                     trailingContentData = ListItemTrailingContentData.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = TestsData.mockedBasicSdJwtPidUi.documentClaims,
+                                nestedItems = mockedBasicSdJwtPidUi.documentClaims,
                                 isExpanded = false
                             )
                         )
@@ -467,8 +500,13 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockGenderValues()
-            mockSupportingText()
+            mockTransformToDocumentDetailsUiCall(resourceProvider)
+            mockGetUiItemsCall(
+                resourceProvider = resourceProvider,
+                supportingText = mockedDocumentSuccessCollapsedSupportingText,
+            )
+
+            val mockedPidWithBasicFieldsAndMetadata = getMockedPidWithBasicFieldsAndMetadata()
             mockGetDocumentByIdCall(response = mockedPidWithBasicFieldsAndMetadata)
 
             // When
@@ -483,12 +521,12 @@ class TestDocumentIssuanceSuccessInteractor {
                                 header = ListItemData(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentData.Text(text = mockedPidWithBasicFieldsAndMetadata.name),
-                                    supportingText = mockedSuccessText,
+                                    supportingText = mockedDocumentSuccessCollapsedSupportingText,
                                     trailingContentData = ListItemTrailingContentData.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = TestsData.mockedBasicPidUi.documentClaims,
+                                nestedItems = mockedBasicPidUi.documentClaims,
                                 isExpanded = false
                             )
                         ),
@@ -525,30 +563,9 @@ class TestDocumentIssuanceSuccessInteractor {
         }
     }
 
-    private fun mockItemId() {
+    private fun mockProvideUuid() {
         whenever(uuidProvider.provideUuid())
-            .thenReturn(TestsData.mockedUuid)
-    }
-
-    private fun mockSupportingText(
-        supportingText: String = mockedSuccessText
-    ) {
-        whenever(resourceProvider.getString(R.string.document_success_collapsed_supporting_text))
-            .thenReturn(supportingText)
-    }
-
-    private fun mockGenderValues(
-        notKnown: String = "Not known",
-        male: String = "Male",
-        female: String = "Female",
-        notApplicable: String = "Not applicable"
-    ) {
-        whenever(resourceProvider.getString(R.string.request_gender_not_known)).thenReturn(notKnown)
-        whenever(resourceProvider.getString(R.string.request_gender_male)).thenReturn(male)
-        whenever(resourceProvider.getString(R.string.request_gender_female)).thenReturn(female)
-        whenever(resourceProvider.getString(R.string.request_gender_not_applicable)).thenReturn(
-            notApplicable
-        )
+            .thenReturn(mockedUuid)
     }
 
     private fun mockGetDocumentByIdCall(response: IssuedDocument?) {
