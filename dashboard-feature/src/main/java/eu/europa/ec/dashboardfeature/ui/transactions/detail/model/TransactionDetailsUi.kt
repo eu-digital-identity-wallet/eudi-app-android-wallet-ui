@@ -14,18 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.dashboardfeature.ui.transactions.detail.model
 
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
 
 data class TransactionDetailsUi(
     val transactionId: String,
-    val transactionDetailsCardData: TransactionDetailsCardData,
-    val transactionDetailsDataShared: TransactionDetailsDataSharedHolder,
-    val transactionDetailsDataSigned: TransactionDetailsDataSignedHolder?,
+    val transactionDetailsCardUi: TransactionDetailsCardUi,
+    val transactionDetailsDataShared: TransactionDetailsDataSharedHolderUi,
+    val transactionDetailsDataSigned: TransactionDetailsDataSignedHolderUi?,
 )
 
-data class TransactionDetailsCardData(
+data class TransactionDetailsCardUi(
     val transactionTypeLabel: String,
     val transactionStatusLabel: String,
     val transactionIsCompleted: Boolean,
@@ -34,10 +34,10 @@ data class TransactionDetailsCardData(
     val relyingPartyIsVerified: Boolean?,
 )
 
-data class TransactionDetailsDataSharedHolder(
+data class TransactionDetailsDataSharedHolderUi(
     val dataSharedItems: List<ExpandableListItem.NestedListItemData>,
 )
 
-data class TransactionDetailsDataSignedHolder(
+data class TransactionDetailsDataSignedHolderUi(
     val dataSignedItems: List<ExpandableListItem.NestedListItemData>,
 )

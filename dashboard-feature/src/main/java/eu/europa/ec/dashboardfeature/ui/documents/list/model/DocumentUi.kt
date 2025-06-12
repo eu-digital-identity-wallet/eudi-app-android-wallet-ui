@@ -14,21 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.dashboardfeature.ui.documents.list.model
 
-import eu.europa.ec.businesslogic.util.toDisplayedDate
-import java.time.LocalDate
+import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
+import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
+import eu.europa.ec.corelogic.model.DocumentCategory
+import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.uilogic.component.ListItemData
 
-data class FilterDateRangeSelectionData(
-    val startDate: LocalDate? = null,
-    val endDate: LocalDate? = null
-) {
-    val displayedStartDate: String
-        get() = startDate.toDisplayedDate()
-
-    val displayedEndDate: String
-        get() = endDate.toDisplayedDate()
-
-    val isEmpty: Boolean
-        get() = startDate == null && endDate == null
-}
+data class DocumentUi(
+    val documentIssuanceState: DocumentUiIssuanceState,
+    val uiData: ListItemData,
+    val documentIdentifier: DocumentIdentifier,
+    val documentCategory: DocumentCategory,
+) : FilterableItemPayload

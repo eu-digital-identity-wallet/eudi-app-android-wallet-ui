@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.dashboardfeature.ui.documents.list.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
 import eu.europa.ec.corelogic.model.DocumentCategory

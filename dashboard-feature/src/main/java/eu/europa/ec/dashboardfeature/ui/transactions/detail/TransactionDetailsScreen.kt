@@ -43,10 +43,10 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsCardData
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSharedHolder
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSignedHolder
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsCardUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsDataSharedHolderUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsDataSignedHolderUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
@@ -132,7 +132,7 @@ private fun Content(
         state.transactionDetailsUi?.let { safeTransactionDetailsUi ->
             TransactionDetailsCard(
                 modifier = Modifier.fillMaxWidth(),
-                item = safeTransactionDetailsUi.transactionDetailsCardData
+                item = safeTransactionDetailsUi.transactionDetailsCardUi
             )
         }
 
@@ -202,7 +202,7 @@ private fun handleNavigationEffect(
 @Composable
 private fun TransactionDetailsCard(
     modifier: Modifier = Modifier,
-    item: TransactionDetailsCardData,
+    item: TransactionDetailsCardUi,
 ) {
     WrapCard(
         modifier = modifier,
@@ -383,7 +383,7 @@ private fun PreviewTransactionDetailsCompletedCard(
     @PreviewParameter(TextLengthPreviewProvider::class) text: String
 ) {
     PreviewTheme {
-        val transactionDetailsCardData = TransactionDetailsCardData(
+        val transactionDetailsCardUi = TransactionDetailsCardUi(
             transactionTypeLabel = "Data sharing",
             relyingPartyName = "RP name $text",
             transactionDate = "21 January 2025",
@@ -393,7 +393,7 @@ private fun PreviewTransactionDetailsCompletedCard(
         )
 
         TransactionDetailsCard(
-            item = transactionDetailsCardData
+            item = transactionDetailsCardUi
         )
     }
 }
@@ -404,7 +404,7 @@ private fun PreviewTransactionDetailsFailedCard(
     @PreviewParameter(TextLengthPreviewProvider::class) text: String
 ) {
     PreviewTheme {
-        val transactionDetailsCardData = TransactionDetailsCardData(
+        val transactionDetailsCardUi = TransactionDetailsCardUi(
             transactionTypeLabel = "Data sharing",
             relyingPartyName = "RP name $text",
             transactionDate = "21 January 2025",
@@ -414,7 +414,7 @@ private fun PreviewTransactionDetailsFailedCard(
         )
 
         TransactionDetailsCard(
-            item = transactionDetailsCardData
+            item = transactionDetailsCardUi
         )
     }
 }
@@ -451,14 +451,14 @@ private fun ContentPreview() {
             isExpanded = true
         )
     )
-    val mockedDataSharedList = TransactionDetailsDataSharedHolder(dataSharedItems = items)
-    val mockedDataSignedList = TransactionDetailsDataSignedHolder(dataSignedItems = items)
+    val mockedDataSharedList = TransactionDetailsDataSharedHolderUi(dataSharedItems = items)
+    val mockedDataSignedList = TransactionDetailsDataSignedHolderUi(dataSignedItems = items)
 
     val state = State(
         title = stringResource(R.string.transaction_details_screen_title),
         transactionDetailsUi = TransactionDetailsUi(
             transactionId = "id",
-            transactionDetailsCardData = TransactionDetailsCardData(
+            transactionDetailsCardUi = TransactionDetailsCardUi(
                 transactionTypeLabel = "Presentation",
                 transactionDate = "21 January 2025",
                 relyingPartyName = "Verisign",

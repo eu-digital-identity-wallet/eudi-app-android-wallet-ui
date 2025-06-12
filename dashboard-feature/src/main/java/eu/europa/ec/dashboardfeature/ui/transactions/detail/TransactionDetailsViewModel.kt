@@ -19,7 +19,7 @@ package eu.europa.ec.dashboardfeature.ui.transactions.detail
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractorPartialState
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons

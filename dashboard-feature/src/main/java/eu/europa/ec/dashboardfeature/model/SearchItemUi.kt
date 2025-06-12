@@ -16,15 +16,4 @@
 
 package eu.europa.ec.dashboardfeature.model
 
-import eu.europa.ec.uilogic.component.ListItemData
-
-data class SettingsItemUi(
-    val type: SettingsMenuItemType,
-    val data: ListItemData,
-)
-
-enum class SettingsMenuItemType {
-    SHOW_BATCH_ISSUANCE_COUNTER,
-    RETRIEVE_LOGS,
-    CHANGELOG,
-}
+data class SearchItemUi(val searchLabel: String)

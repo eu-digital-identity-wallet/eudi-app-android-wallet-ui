@@ -14,10 +14,21 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.dashboardfeature.ui.transactions.list.model
 
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.businesslogic.util.toDisplayedDate
+import java.time.LocalDate
 
-data class SignDocumentButtonUi(
-    val data: ListItemData
-)
+data class FilterDateRangeSelectionData(
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null
+) {
+    val displayedStartDate: String
+        get() = startDate.toDisplayedDate()
+
+    val displayedEndDate: String
+        get() = endDate.toDisplayedDate()
+
+    val isEmpty: Boolean
+        get() = startDate == null && endDate == null
+}

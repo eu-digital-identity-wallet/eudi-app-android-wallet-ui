@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import eu.europa.ec.dashboardfeature.model.SideMenuItemType
+import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockResourceProviderStrings
@@ -70,7 +70,7 @@ class TestDashboardInteractor {
 
         // 1. First item: CHANGE_PIN
         val firstItem = sideMenuItems[0]
-        assertEquals(SideMenuItemType.CHANGE_PIN, firstItem.type)
+        assertEquals(SideMenuTypeUi.CHANGE_PIN, firstItem.type)
         assertEquals(changePinIdString, firstItem.data.itemId)
         val mainContent1 = firstItem.data.mainContentData as ListItemMainContentData.Text
         assertEquals(changePinText, mainContent1.text)
@@ -81,7 +81,7 @@ class TestDashboardInteractor {
 
         // 2. Second item: SETTINGS
         val secondItem = sideMenuItems[1]
-        assertEquals(SideMenuItemType.SETTINGS, secondItem.type)
+        assertEquals(SideMenuTypeUi.SETTINGS, secondItem.type)
         assertEquals(settingsIdString, secondItem.data.itemId)
         val mainContent2 = secondItem.data.mainContentData as ListItemMainContentData.Text
         assertEquals(settingsText, mainContent2.text)

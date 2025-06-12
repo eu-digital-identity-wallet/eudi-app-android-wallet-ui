@@ -20,8 +20,8 @@ import android.content.Intent
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.dashboardfeature.interactor.SettingsInteractor
-import eu.europa.ec.dashboardfeature.model.SettingsItemUi
-import eu.europa.ec.dashboardfeature.model.SettingsMenuItemType
+import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsItemUi
+import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.mvi.MviViewModel

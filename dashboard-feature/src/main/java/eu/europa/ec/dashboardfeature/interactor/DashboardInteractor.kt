@@ -16,8 +16,8 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import eu.europa.ec.dashboardfeature.model.SideMenuItemType
-import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
+import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuItemUi
+import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -38,7 +38,7 @@ class DashboardInteractorImpl(
         return buildList {
             add(
                 SideMenuItemUi(
-                    type = SideMenuItemType.CHANGE_PIN,
+                    type = SideMenuTypeUi.CHANGE_PIN,
                     data = ListItemData(
                         itemId = resourceProvider.getString(R.string.dashboard_side_menu_option_change_pin_id),
                         mainContentData = ListItemMainContentData.Text(
@@ -56,7 +56,7 @@ class DashboardInteractorImpl(
 
             add(
                 SideMenuItemUi(
-                    type = SideMenuItemType.SETTINGS,
+                    type = SideMenuTypeUi.SETTINGS,
                     data = ListItemData(
                         itemId = resourceProvider.getString(R.string.dashboard_side_menu_option_settings_id),
                         mainContentData = ListItemMainContentData.Text(

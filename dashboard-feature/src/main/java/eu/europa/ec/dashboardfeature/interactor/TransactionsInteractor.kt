@@ -41,14 +41,14 @@ import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionDocumentNames
 import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
-import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
-import eu.europa.ec.dashboardfeature.model.TransactionUi
-import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
-import eu.europa.ec.dashboardfeature.model.TransactionUiStatus.Companion.toUiText
-import eu.europa.ec.dashboardfeature.model.TransactionUiType
-import eu.europa.ec.dashboardfeature.model.TransactionsFilterableAttributes
-import eu.europa.ec.dashboardfeature.model.toTransactionUiStatus
-import eu.europa.ec.dashboardfeature.model.toTransactionUiType
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionsFilterableAttributes
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi.Companion.toUiText
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionTypeUi
+import eu.europa.ec.dashboardfeature.ui.transactions.model.toTransactionStatusUi
+import eu.europa.ec.dashboardfeature.ui.transactions.model.toTransactionTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
@@ -237,7 +237,7 @@ class TransactionsInteractorImpl(
                 )
 
                 val transactionName = transaction.name
-                val transactionStatus = transaction.status.toTransactionUiStatus()
+                val transactionStatus = transaction.status.toTransactionStatusUi()
                 val transactionDocumentNames = transaction.getTransactionDocumentNames(
                     userLocale = resourceProvider.getLocale()
                 )
@@ -253,7 +253,7 @@ class TransactionsInteractorImpl(
                                 trailingContentData = trailingContentData
                             )
                         ),
-                        uiStatus = transaction.status.toTransactionUiStatus(),
+                        uiStatus = transaction.status.toTransactionStatusUi(),
                         transactionCategory = getTransactionCategory(dateTime = transaction.creationLocalDateTime),
                     ),
                     attributes = TransactionsFilterableAttributes(
@@ -264,7 +264,7 @@ class TransactionsInteractorImpl(
                             }
                         },
                         transactionStatus = transactionStatus,
-                        transactionType = transaction.toTransactionUiType(),
+                        transactionType = transaction.toTransactionTypeUi(),
                         creationLocalDateTime = transaction.creationLocalDateTime,
                         relyingPartyName = when (transaction) {
                             is TransactionLogData.IssuanceLog -> null // TODO Update this once Core supports Issuance transactions
@@ -393,10 +393,10 @@ class TransactionsInteractorImpl(
                 filterableAction = FilterMultipleAction<TransactionsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
                         TransactionFilterIds.FILTER_BY_STATUS_COMPLETE -> {
-                            attributes.transactionStatus == TransactionUiStatus.Completed
+                            attributes.transactionStatus == TransactionStatusUi.Completed
                         }
 
-                        TransactionFilterIds.FILTER_BY_STATUS_FAILED -> attributes.transactionStatus == TransactionUiStatus.Failed
+                        TransactionFilterIds.FILTER_BY_STATUS_FAILED -> attributes.transactionStatus == TransactionStatusUi.Failed
 
                         else -> true
                     }
@@ -452,15 +452,15 @@ class TransactionsInteractorImpl(
                 filterableAction = FilterMultipleAction<TransactionsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
                         TransactionFilterIds.FILTER_BY_TRANSACTION_TYPE_PRESENTATION -> {
-                            attributes.transactionType == TransactionUiType.PRESENTATION
+                            attributes.transactionType == TransactionTypeUi.PRESENTATION
                         }
 
                         TransactionFilterIds.FILTER_BY_TRANSACTION_TYPE_ISSUANCE -> {
-                            attributes.transactionType == TransactionUiType.ISSUANCE
+                            attributes.transactionType == TransactionTypeUi.ISSUANCE
                         }
 
                         TransactionFilterIds.FILTER_BY_TRANSACTION_TYPE_SIGNING -> {
-                            attributes.transactionType == TransactionUiType.SIGNING
+                            attributes.transactionType == TransactionTypeUi.SIGNING
                         }
 
                         else -> false

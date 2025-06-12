@@ -19,7 +19,7 @@ package eu.europa.ec.dashboardfeature.ui.sign
 import android.content.Context
 import android.net.Uri
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
-import eu.europa.ec.dashboardfeature.model.SignDocumentButtonUi
+import eu.europa.ec.dashboardfeature.ui.sign.model.SignDocumentButtonUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -60,7 +60,7 @@ class DocumentSignViewModel(
     override fun setInitialState(): State = State(
         title = resourceProvider.getString(R.string.document_sign_title),
         subtitle = resourceProvider.getString(R.string.document_sign_subtitle),
-        buttonUi = documentSignInteractor.getUiItem(),
+        buttonUi = documentSignInteractor.getItemUi(),
     )
 
     override fun handleEvents(event: Event) {

@@ -29,12 +29,12 @@ import eu.europa.ec.corelogic.model.ClaimPath.Companion.toClaimPath
 import eu.europa.ec.corelogic.model.DomainClaim
 import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsCardData
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSharedHolder
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsUi
-import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
-import eu.europa.ec.dashboardfeature.model.TransactionUiStatus.Companion.toUiText
-import eu.europa.ec.dashboardfeature.model.toTransactionUiStatus
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsCardUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsDataSharedHolderUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsUi
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi.Companion.toUiText
+import eu.europa.ec.dashboardfeature.ui.transactions.model.toTransactionStatusUi
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
@@ -98,7 +98,7 @@ class TransactionDetailsInteractorImpl(
 
                     val userLocale = resourceProvider.getLocale()
 
-                    val transactionUiStatus = transaction.status.toTransactionUiStatus()
+                    val transactionUiStatus = transaction.status.toTransactionStatusUi()
                     val transactionUiDate = transaction.creationLocalDateTime.formatLocalDateTime(
                         pattern = FULL_DATETIME_PATTERN
                     )
@@ -134,20 +134,20 @@ class TransactionDetailsInteractorImpl(
 
                     val transactionDetailsUi = TransactionDetailsUi(
                         transactionId = transactionId,
-                        transactionDetailsCardData = TransactionDetailsCardData(
+                        transactionDetailsCardUi = TransactionDetailsCardUi(
                             transactionTypeLabel = transaction.getTransactionTypeLabel(
                                 resourceProvider
                             ),
                             transactionStatusLabel = transactionUiStatus.toUiText(resourceProvider),
                             transactionIsCompleted = when (transactionUiStatus) {
-                                TransactionUiStatus.Completed -> true
-                                TransactionUiStatus.Failed -> false
+                                TransactionStatusUi.Completed -> true
+                                TransactionStatusUi.Failed -> false
                             },
                             transactionDate = transactionUiDate,
                             relyingPartyName = relyingPartyData?.name,
                             relyingPartyIsVerified = relyingPartyData?.isVerified
                         ),
-                        transactionDetailsDataShared = TransactionDetailsDataSharedHolder(
+                        transactionDetailsDataShared = TransactionDetailsDataSharedHolderUi(
                             dataSharedItems = dataShared ?: emptyList()
                         ),
                         transactionDetailsDataSigned = null //TODO change this once Core adds support for it

@@ -68,11 +68,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.corelogic.model.TransactionCategory
-import eu.europa.ec.dashboardfeature.model.FilterDateRangeSelectionData
-import eu.europa.ec.dashboardfeature.model.SearchItem
-import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
-import eu.europa.ec.dashboardfeature.model.TransactionUi
-import eu.europa.ec.dashboardfeature.model.TransactionUiStatus
+import eu.europa.ec.dashboardfeature.model.SearchItemUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.FilterDateRangeSelectionData
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
 import eu.europa.ec.eudi.rqesui.domain.util.safeLet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
@@ -242,10 +242,10 @@ private fun Content(
         contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
     ) {
         item {
-            val searchItem =
-                SearchItem(searchLabel = stringResource(R.string.transactions_screen_search_label))
+            val searchItemUi =
+                SearchItemUi(searchLabel = stringResource(R.string.transactions_screen_search_label))
             FiltersSearchBar(
-                placeholder = searchItem.searchLabel,
+                placeholder = searchItemUi.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.FiltersPressed) },
                 onClearClick = { onEventSend(Event.OnSearchQueryChanged("")) },
@@ -371,8 +371,8 @@ private fun TransactionCategory(
                 val transactionUi = transactionMap[item.itemId]
 
                 val overlineTextColor = when (transactionUi?.uiStatus) {
-                    TransactionUiStatus.Completed -> MaterialTheme.colorScheme.success
-                    TransactionUiStatus.Failed -> MaterialTheme.colorScheme.error
+                    TransactionStatusUi.Completed -> MaterialTheme.colorScheme.success
+                    TransactionStatusUi.Failed -> MaterialTheme.colorScheme.error
                     null -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
 

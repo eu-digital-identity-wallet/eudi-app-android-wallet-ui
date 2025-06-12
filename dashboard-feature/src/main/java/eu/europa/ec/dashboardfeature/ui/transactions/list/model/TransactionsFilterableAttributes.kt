@@ -14,17 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.dashboardfeature.ui.transactions.list.model
 
-import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.corelogic.model.DocumentCategory
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionTypeUi
+import java.time.LocalDateTime
 
-data class DocumentUi(
-    val documentIssuanceState: DocumentUiIssuanceState,
-    val uiData: ListItemData,
-    val documentIdentifier: DocumentIdentifier,
-    val documentCategory: DocumentCategory,
-) : FilterableItemPayload
+data class TransactionsFilterableAttributes(
+    override val searchTags: List<String>,
+    val transactionStatus: TransactionStatusUi,
+    val transactionType: TransactionTypeUi,
+    val creationLocalDateTime: LocalDateTime?,
+    val relyingPartyName: String?,
+) : FilterableAttributes

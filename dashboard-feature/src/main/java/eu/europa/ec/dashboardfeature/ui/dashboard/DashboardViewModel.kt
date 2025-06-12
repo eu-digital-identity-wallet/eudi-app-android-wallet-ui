@@ -26,8 +26,8 @@ import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.RevokedDocumentPayload
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
-import eu.europa.ec.dashboardfeature.model.SideMenuItemType
-import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
+import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuItemUi
+import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -75,7 +75,7 @@ sealed class Event : ViewEvent {
     sealed class SideMenu : Event() {
         data object Open : SideMenu()
         data object Close : SideMenu()
-        data class ItemClicked(val itemType: SideMenuItemType) : SideMenu()
+        data class ItemClicked(val itemType: SideMenuTypeUi) : SideMenu()
     }
 
     sealed class BottomSheet : Event() {
@@ -239,9 +239,9 @@ class DashboardViewModel(
         }
     }
 
-    private fun handleSideMenuItemClicked(itemType: SideMenuItemType) {
+    private fun handleSideMenuItemClicked(itemType: SideMenuTypeUi) {
         when (itemType) {
-            SideMenuItemType.CHANGE_PIN -> {
+            SideMenuTypeUi.CHANGE_PIN -> {
                 val nextScreenRoute = generateComposableNavigationLink(
                     screen = CommonScreens.QuickPin,
                     arguments = generateComposableArguments(
@@ -253,7 +253,7 @@ class DashboardViewModel(
                 setEffect { Effect.Navigation.SwitchScreen(screenRoute = nextScreenRoute) }
             }
 
-            SideMenuItemType.SETTINGS -> {
+            SideMenuTypeUi.SETTINGS -> {
                 hideSideMenu()
                 setEffect { Effect.Navigation.SwitchScreen(screenRoute = DashboardScreens.Settings.screenRoute) }
             }

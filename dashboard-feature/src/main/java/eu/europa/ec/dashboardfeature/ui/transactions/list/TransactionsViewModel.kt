@@ -25,9 +25,9 @@ import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorGetTransactionsPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
-import eu.europa.ec.dashboardfeature.model.FilterDateRangeSelectionData
-import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
-import eu.europa.ec.dashboardfeature.model.TransactionUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.FilterDateRangeSelectionData
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.DatePickerDialogConfig

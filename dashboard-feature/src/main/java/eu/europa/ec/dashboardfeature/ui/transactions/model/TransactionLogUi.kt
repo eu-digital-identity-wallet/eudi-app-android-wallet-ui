@@ -14,18 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.model
+package eu.europa.ec.dashboardfeature.ui.transactions.model
 
 import eu.europa.ec.corelogic.model.TransactionLogData
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
-enum class TransactionUiStatus {
+enum class TransactionStatusUi {
     Completed, Failed;
 
     companion object {
-        fun TransactionUiStatus.toUiText(resourceProvider: ResourceProvider): String {
+        fun TransactionStatusUi.toUiText(resourceProvider: ResourceProvider): String {
             return when (this) {
                 Completed -> resourceProvider.getString(R.string.transactions_filter_item_status_completed)
                 Failed -> resourceProvider.getString(R.string.transactions_filter_item_status_failed)
@@ -34,23 +34,23 @@ enum class TransactionUiStatus {
     }
 }
 
-enum class TransactionUiType {
+enum class TransactionTypeUi {
     PRESENTATION,
     ISSUANCE,
     SIGNING;
 }
 
-fun TransactionLog.Status.toTransactionUiStatus(): TransactionUiStatus {
+fun TransactionLog.Status.toTransactionStatusUi(): TransactionStatusUi {
     return when (this) {
-        TransactionLog.Status.Incomplete, TransactionLog.Status.Error -> TransactionUiStatus.Failed
-        TransactionLog.Status.Completed -> TransactionUiStatus.Completed
+        TransactionLog.Status.Incomplete, TransactionLog.Status.Error -> TransactionStatusUi.Failed
+        TransactionLog.Status.Completed -> TransactionStatusUi.Completed
     }
 }
 
-fun TransactionLogData.toTransactionUiType(): TransactionUiType {
+fun TransactionLogData.toTransactionTypeUi(): TransactionTypeUi {
     return when (this) {
-        is TransactionLogData.IssuanceLog -> TransactionUiType.ISSUANCE
-        is TransactionLogData.PresentationLog -> TransactionUiType.PRESENTATION
-        is TransactionLogData.SigningLog -> TransactionUiType.SIGNING
+        is TransactionLogData.IssuanceLog -> TransactionTypeUi.ISSUANCE
+        is TransactionLogData.PresentationLog -> TransactionTypeUi.PRESENTATION
+        is TransactionLogData.SigningLog -> TransactionTypeUi.SIGNING
     }
 }

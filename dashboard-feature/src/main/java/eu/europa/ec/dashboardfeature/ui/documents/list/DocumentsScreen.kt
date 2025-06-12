@@ -63,8 +63,8 @@ import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.util.CoreActions
-import eu.europa.ec.dashboardfeature.model.DocumentUi
-import eu.europa.ec.dashboardfeature.model.SearchItem
+import eu.europa.ec.dashboardfeature.model.SearchItemUi
+import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -264,10 +264,10 @@ private fun Content(
         contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
     ) {
         item {
-            val searchItem =
-                SearchItem(searchLabel = stringResource(R.string.documents_screen_search_label))
+            val searchItemUi =
+                SearchItemUi(searchLabel = stringResource(R.string.documents_screen_search_label))
             FiltersSearchBar(
-                placeholder = searchItem.searchLabel,
+                placeholder = searchItemUi.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.FiltersPressed) },
                 onClearClick = { onEventSend(Event.OnSearchQueryChanged("")) },

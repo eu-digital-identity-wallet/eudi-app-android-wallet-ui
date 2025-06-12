@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.sidemenu
+package eu.europa.ec.dashboardfeature.ui.dashboard.sidemenu
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,10 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.dashboardfeature.model.SideMenuItemType
-import eu.europa.ec.dashboardfeature.model.SideMenuItemUi
 import eu.europa.ec.dashboardfeature.ui.dashboard.Event
 import eu.europa.ec.dashboardfeature.ui.dashboard.State
+import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuItemUi
+import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
@@ -138,7 +138,7 @@ private fun SideMenuContentPreview() {
                 sideMenuTitle = stringResource(R.string.dashboard_side_menu_title),
                 sideMenuOptions = listOf(
                     SideMenuItemUi(
-                        type = SideMenuItemType.CHANGE_PIN,
+                        type = SideMenuTypeUi.CHANGE_PIN,
                         data = ListItemData(
                             itemId = stringResource(R.string.dashboard_side_menu_option_change_pin_id),
                             mainContentData = ListItemMainContentData.Text(
@@ -153,7 +153,7 @@ private fun SideMenuContentPreview() {
                         )
                     ),
                     SideMenuItemUi(
-                        type = SideMenuItemType.SETTINGS,
+                        type = SideMenuTypeUi.SETTINGS,
                         data = ListItemData(
                             itemId = stringResource(R.string.dashboard_side_menu_option_settings_id),
                             mainContentData = ListItemMainContentData.Text(
