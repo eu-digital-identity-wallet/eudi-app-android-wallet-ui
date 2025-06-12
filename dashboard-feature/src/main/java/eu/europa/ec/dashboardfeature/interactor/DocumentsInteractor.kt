@@ -300,12 +300,8 @@ class DocumentsInteractorImpl(
                     val documentIsRevoked =
                         walletCoreDocumentsController.isDocumentRevoked(document.id)
 
-                    val documentAvailableCredentials = document.credentialsCount()
-
                     when (document) {
                         is IssuedDocument -> {
-                            val documentTotalCredentials = document.initialCredentialsCount()
-
                             val localizedIssuerMetadata =
                                 document.localizedIssuerMetadata(userLocale)
 
@@ -356,6 +352,10 @@ class DocumentsInteractorImpl(
                                 )
                             } else {
                                 if (prefKeys.getShowBatchIssuanceCounter()) {
+                                    val documentAvailableCredentials = document.credentialsCount()
+                                    val documentTotalCredentials =
+                                        document.initialCredentialsCount()
+
                                     val documentCredentialsInfo = DocumentCredentialsInfo(
                                         availableCredentials = documentAvailableCredentials,
                                         totalCredentials = documentTotalCredentials,
