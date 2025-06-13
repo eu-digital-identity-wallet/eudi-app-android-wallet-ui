@@ -25,10 +25,10 @@ import eu.europa.ec.issuancefeature.util.mockedSdJwtPidClaims
 import eu.europa.ec.issuancefeature.util.mockedSuccessDescription
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockGetUiItemsCall
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockGetUiItemsStrings
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockIssuerName
-import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToDocumentDetailsUiCall
-import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsCall
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToDocumentDetailsDomainStrings
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
 import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
 import eu.europa.ec.testfeature.util.getMockedPidWithBasicFields
 import eu.europa.ec.testfeature.util.getMockedPidWithBasicFieldsAndMetadata
@@ -94,7 +94,7 @@ class TestDocumentIssuanceSuccessInteractor {
         whenever(resourceProvider.getLocale()).thenReturn(mockedDefaultLocale)
 
         mockIssuerName(resourceProvider = resourceProvider, name = mockedIssuerName)
-        mockTransformToUiItemsCall(
+        mockTransformToUiItemsStrings(
             resourceProvider = resourceProvider,
         )
     }
@@ -121,8 +121,8 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockTransformToDocumentDetailsUiCall(resourceProvider)
-            mockGetUiItemsCall(
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )
@@ -181,8 +181,8 @@ class TestDocumentIssuanceSuccessInteractor {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
             mockProvideUuid()
-            mockTransformToDocumentDetailsUiCall(resourceProvider)
-            mockGetUiItemsCall(
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )
@@ -241,8 +241,8 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockTransformToDocumentDetailsUiCall(resourceProvider)
-            mockGetUiItemsCall(
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )
@@ -300,8 +300,8 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = true)
-            mockTransformToDocumentDetailsUiCall(resourceProvider)
-            mockGetUiItemsCall(
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )
@@ -343,8 +343,8 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = true)
-            mockTransformToDocumentDetailsUiCall(resourceProvider)
-            mockGetUiItemsCall(
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )
@@ -386,8 +386,8 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockTransformToDocumentDetailsUiCall(resourceProvider)
-            mockGetUiItemsCall(
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )
@@ -495,8 +495,8 @@ class TestDocumentIssuanceSuccessInteractor {
         coroutineRule.runTest {
             // Given
             mockHeaderConfigDescription(isErrorCase = false)
-            mockTransformToDocumentDetailsUiCall(resourceProvider)
-            mockGetUiItemsCall(
+            mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+            mockGetUiItemsStrings(
                 resourceProvider = resourceProvider,
                 supportingText = mockedDocumentSuccessCollapsedSupportingText,
             )

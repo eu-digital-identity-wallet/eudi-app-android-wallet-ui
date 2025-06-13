@@ -26,7 +26,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsCall
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
 import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
 import eu.europa.ec.testfeature.util.getMockedPidWithBasicFields
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
@@ -321,7 +321,7 @@ class TestProximityRequestInteractor {
                 response = listOf(mockedPidWithBasicFields)
             )
             mockIsDocumentRevoked(isRevoked = false)
-            mockTransformToUiItemsCall(
+            mockTransformToUiItemsStrings(
                 resourceProvider = resourceProvider,
             )
 
@@ -381,7 +381,7 @@ class TestProximityRequestInteractor {
             mockGetAllIssuedDocumentsCall(
                 response = listOf(mockedMdlWithBasicFields)
             )
-            mockTransformToUiItemsCall(
+            mockTransformToUiItemsStrings(
                 resourceProvider = resourceProvider,
             )
             mockIsDocumentRevoked(isRevoked = false)
@@ -445,7 +445,7 @@ class TestProximityRequestInteractor {
                     mockedPidWithBasicFields
                 )
             )
-            mockTransformToUiItemsCall(
+            mockTransformToUiItemsStrings(
                 resourceProvider = resourceProvider,
             )
             mockIsDocumentRevoked(isRevoked = false)
@@ -516,7 +516,7 @@ class TestProximityRequestInteractor {
                     mockedMdlWithBasicFields
                 )
             )
-            mockTransformToUiItemsCall(
+            mockTransformToUiItemsStrings(
                 resourceProvider = resourceProvider,
             )
             mockIsDocumentRevoked(isRevoked = false)

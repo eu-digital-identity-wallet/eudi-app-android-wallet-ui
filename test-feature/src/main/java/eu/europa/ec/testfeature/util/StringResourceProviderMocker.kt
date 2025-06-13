@@ -36,13 +36,24 @@ object StringResourceProviderMocker {
         }
     }
 
-    /**
-     * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToUiItem]
-     */
-    fun mockTransformToUiItemCall(
+    fun mockGetDocumentDetailsStrings(
         resourceProvider: ResourceProvider,
-        availableCredentials: Int = mockedDocumentAvailableCredentials,
-        totalCredentials: Int = mockedDocumentTotalCredentials,
+        availableCredentials: Int,
+        totalCredentials: Int,
+    ) {
+        mockCreateDocumentCredentialsInfoStrings(
+            resourceProvider = resourceProvider,
+            availableCredentials = availableCredentials,
+            totalCredentials = totalCredentials
+        )
+
+        mockTransformToDocumentDetailsDomainStrings(resourceProvider)
+    }
+
+    fun mockCreateDocumentCredentialsInfoStrings(
+        resourceProvider: ResourceProvider,
+        availableCredentials: Int,
+        totalCredentials: Int,
     ) {
         val mockedStrings = listOf(
             R.string.document_details_document_credentials_info_more_info_text to "More info",
@@ -50,6 +61,7 @@ object StringResourceProviderMocker {
             R.string.document_details_document_credentials_info_expanded_button_hide_text to "Hide",
         )
         mockResourceProviderStrings(resourceProvider, mockedStrings)
+
         whenever(
             resourceProvider.getString(
                 R.string.document_details_document_credentials_info_text,
@@ -57,34 +69,23 @@ object StringResourceProviderMocker {
                 totalCredentials
             )
         ).thenReturn("$availableCredentials/$totalCredentials instances remaining")
-
-        mockTransformToDocumentDetailsUiCall(resourceProvider)
     }
 
-    /**
-     * Mock the call of [eu.europa.ec.commonfeature.ui.document_details.transformer.transformToDocumentDetailsUi]
-     */
-    fun mockTransformToDocumentDetailsUiCall(resourceProvider: ResourceProvider) {
-        mockGetKeyValueUiCall(resourceProvider)
+    fun mockTransformToDocumentDetailsDomainStrings(resourceProvider: ResourceProvider) {
+        mockCreateKeyValueStrings(resourceProvider)
     }
 
-    /**
-     * Mock the call of [eu.europa.ec.commonfeature.util.getKeyValueUi]
-     */
-    fun mockGetKeyValueUiCall(resourceProvider: ResourceProvider) {
+    fun mockCreateKeyValueStrings(resourceProvider: ResourceProvider) {
         val mockedStrings = listOf(
             R.string.document_details_boolean_item_true_readable_value to "yes",
             R.string.document_details_boolean_item_false_readable_value to "no",
         )
 
         mockResourceProviderStrings(resourceProvider, mockedStrings)
-        mockGetGenderValueCall(resourceProvider)
+        mockGetGenderValueStrings(resourceProvider)
     }
 
-    /**
-     * Mock the call of [eu.europa.ec.commonfeature.util.getGenderValue]
-     */
-    fun mockGetGenderValueCall(resourceProvider: ResourceProvider) {
+    fun mockGetGenderValueStrings(resourceProvider: ResourceProvider) {
         val mockedStrings = listOf(
             R.string.request_gender_male to "Male",
             R.string.request_gender_female to "Female",
@@ -95,13 +96,10 @@ object StringResourceProviderMocker {
         mockResourceProviderStrings(resourceProvider, mockedStrings)
     }
 
-    /**
-     * Mock the call of [eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer.transformToUiItems]
-     */
-    fun mockTransformToUiItemsCall(
+    fun mockTransformToUiItemsStrings(
         resourceProvider: ResourceProvider,
     ) {
-        mockGetKeyValueUiCall(resourceProvider)
+        mockCreateKeyValueStrings(resourceProvider)
 
         whenever(resourceProvider.getLocale())
             .thenReturn(mockedDefaultLocale)
@@ -115,7 +113,7 @@ object StringResourceProviderMocker {
             .thenReturn(name)
     }
 
-    fun mockGetUiItemsCall(
+    fun mockGetUiItemsStrings(
         resourceProvider: ResourceProvider,
         supportingText: String,
     ) {

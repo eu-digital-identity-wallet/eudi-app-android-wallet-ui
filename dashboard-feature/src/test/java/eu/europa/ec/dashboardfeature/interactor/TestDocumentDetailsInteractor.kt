@@ -122,12 +122,12 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 1, When getDocumentDetails is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            StringResourceProviderMocker.mockTransformToUiItemCall(resourceProvider)
+            mockGetDocumentDetailsStrings(resourceProvider)
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
-            val documentCredentialsInfo = getMockedDocumentCredentialsInfo(resourceProvider)
-
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+
+            val documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(resourceProvider)
             mockGetShowBatchIssuanceCounterCall(response = true)
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -144,7 +144,7 @@ class TestDocumentDetailsInteractor {
                         issuerName = null,
                         issuerLogo = null,
                         isRevoked = false,
-                        documentCredentialsInfoUi = documentCredentialsInfo,
+                        documentCredentialsInfoUi = documentCredentialsInfoUi,
                     ),
                     awaitItem()
                 )
@@ -164,12 +164,12 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 2, When getDocumentDetails is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            StringResourceProviderMocker.mockTransformToUiItemCall(resourceProvider)
+            mockGetDocumentDetailsStrings(resourceProvider)
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
-            val documentCredentialsInfo = getMockedDocumentCredentialsInfo(resourceProvider)
-
             mockGetDocumentByIdCall(response = mockedPidWithBasicFields)
+
+            val documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(resourceProvider)
             mockGetShowBatchIssuanceCounterCall(response = true)
             mockRetrieveBookmarkCall(response = true)
             mockIsDocumentRevoked(isRevoked = false)
@@ -186,7 +186,7 @@ class TestDocumentDetailsInteractor {
                         issuerName = null,
                         issuerLogo = null,
                         isRevoked = false,
-                        documentCredentialsInfoUi = documentCredentialsInfo,
+                        documentCredentialsInfoUi = documentCredentialsInfoUi,
                     ),
                     awaitItem()
                 )
@@ -206,12 +206,12 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 3, When getDocumentDetails is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            StringResourceProviderMocker.mockTransformToUiItemCall(resourceProvider)
+            mockGetDocumentDetailsStrings(resourceProvider)
 
             val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
-            val documentCredentialsInfo = getMockedDocumentCredentialsInfo(resourceProvider)
-
             mockGetDocumentByIdCall(response = mockedMdlWithBasicFields)
+
+            val documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(resourceProvider)
             mockGetShowBatchIssuanceCounterCall(response = true)
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -228,7 +228,7 @@ class TestDocumentDetailsInteractor {
                         issuerName = null,
                         issuerLogo = null,
                         isRevoked = false,
-                        documentCredentialsInfoUi = documentCredentialsInfo,
+                        documentCredentialsInfoUi = documentCredentialsInfoUi,
                     ),
                     awaitItem()
                 )
@@ -281,8 +281,6 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 5, When getDocumentDetails is called, Then Case 5 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            StringResourceProviderMocker.mockTransformToUiItemCall(resourceProvider)
-
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
 
             mockGetDocumentByIdCall(
@@ -808,7 +806,7 @@ class TestDocumentDetailsInteractor {
         whenever(walletCoreDocumentsController.isDocumentRevoked(any())).thenReturn(isRevoked)
     }
 
-    private fun getMockedDocumentCredentialsInfo(
+    private fun getMockedDocumentCredentialsInfoUi(
         resourceProvider: ResourceProvider,
         availableCredentials: Int = mockedDocumentAvailableCredentials,
         totalCredentials: Int = mockedDocumentTotalCredentials,
@@ -829,6 +827,18 @@ class TestDocumentDetailsInteractor {
                 updateNowButtonText = null,
                 hideButtonText = resourceProvider.getString(R.string.document_details_document_credentials_info_expanded_button_hide_text),
             )
+        )
+    }
+
+    private fun mockGetDocumentDetailsStrings(
+        resourceProvider: ResourceProvider,
+        availableCredentials: Int = mockedDocumentAvailableCredentials,
+        totalCredentials: Int = mockedDocumentTotalCredentials
+    ) {
+        StringResourceProviderMocker.mockGetDocumentDetailsStrings(
+            resourceProvider = resourceProvider,
+            availableCredentials = availableCredentials,
+            totalCredentials = totalCredentials,
         )
     }
     //endregion

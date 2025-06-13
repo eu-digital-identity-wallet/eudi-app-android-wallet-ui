@@ -26,7 +26,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsCall
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsStrings
 import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
 import eu.europa.ec.testfeature.util.getMockedPidWithBasicFields
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
@@ -248,7 +248,7 @@ class TestPresentationRequestInteractor {
                 )
             )
             mockIsDocumentRevoked(isRevoked = false)
-            mockTransformToUiItemsCall(
+            mockTransformToUiItemsStrings(
                 resourceProvider = resourceProvider,
             )
             mockWalletCorePresentationControllerEventEmission(
