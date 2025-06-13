@@ -19,7 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockResourceProviderStrings
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockResourceProviderStrings
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData

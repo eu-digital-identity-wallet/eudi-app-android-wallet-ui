@@ -24,8 +24,8 @@ import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.corelogic.model.AuthenticationData
-import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
-import eu.europa.ec.testfeature.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
+import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow

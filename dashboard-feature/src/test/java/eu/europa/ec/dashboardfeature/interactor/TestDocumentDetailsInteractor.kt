@@ -18,40 +18,40 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.commonfeature.model.DocumentCredentialsInfoUi
-import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
-import eu.europa.ec.commonfeature.util.TestsData.mockedBasicMdlDomain
-import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidDomain
-import eu.europa.ec.commonfeature.util.TestsData.mockedDocUiNamePid
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.ClaimPath
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
+import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
+import eu.europa.ec.dashboardfeature.util.mockedBasicMdlDomain
+import eu.europa.ec.dashboardfeature.util.mockedBasicPidDomain
+import eu.europa.ec.dashboardfeature.util.mockedBookmarkId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls
-import eu.europa.ec.testfeature.copy
-import eu.europa.ec.testfeature.createMockedNamespaceData
-import eu.europa.ec.testfeature.getMockedMdlWithBasicFields
-import eu.europa.ec.testfeature.getMockedOldestPidWithBasicFields
-import eu.europa.ec.testfeature.getMockedPidWithBasicFields
-import eu.europa.ec.testfeature.mockedBookmarkId
-import eu.europa.ec.testfeature.mockedDefaultLocale
-import eu.europa.ec.testfeature.mockedDocumentAvailableCredentials
-import eu.europa.ec.testfeature.mockedDocumentTotalCredentials
-import eu.europa.ec.testfeature.mockedExceptionWithMessage
-import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
-import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedMdlId
-import eu.europa.ec.testfeature.mockedOldestPidId
-import eu.europa.ec.testfeature.mockedPidId
-import eu.europa.ec.testfeature.mockedPidNameSpace
-import eu.europa.ec.testfeature.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker
+import eu.europa.ec.testfeature.util.copy
+import eu.europa.ec.testfeature.util.createMockedNamespaceData
+import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
+import eu.europa.ec.testfeature.util.getMockedOldestPidWithBasicFields
+import eu.europa.ec.testfeature.util.getMockedPidWithBasicFields
+import eu.europa.ec.testfeature.util.mockedDefaultLocale
+import eu.europa.ec.testfeature.util.mockedDocumentAvailableCredentials
+import eu.europa.ec.testfeature.util.mockedDocumentTotalCredentials
+import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
+import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
+import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedMdlId
+import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
+import eu.europa.ec.testfeature.util.mockedOldestPidId
+import eu.europa.ec.testfeature.util.mockedPidDocName
+import eu.europa.ec.testfeature.util.mockedPidId
+import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -122,7 +122,7 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 1, When getDocumentDetails is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            MockResourceProviderForStringCalls.mockTransformToUiItemCall(resourceProvider)
+            StringResourceProviderMocker.mockTransformToUiItemCall(resourceProvider)
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             val documentCredentialsInfo = getMockedDocumentCredentialsInfo(resourceProvider)
@@ -164,7 +164,7 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 2, When getDocumentDetails is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            MockResourceProviderForStringCalls.mockTransformToUiItemCall(resourceProvider)
+            StringResourceProviderMocker.mockTransformToUiItemCall(resourceProvider)
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
             val documentCredentialsInfo = getMockedDocumentCredentialsInfo(resourceProvider)
@@ -206,7 +206,7 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 3, When getDocumentDetails is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            MockResourceProviderForStringCalls.mockTransformToUiItemCall(resourceProvider)
+            StringResourceProviderMocker.mockTransformToUiItemCall(resourceProvider)
 
             val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
             val documentCredentialsInfo = getMockedDocumentCredentialsInfo(resourceProvider)
@@ -281,17 +281,17 @@ class TestDocumentDetailsInteractor {
     fun `Given Case 5, When getDocumentDetails is called, Then Case 5 Expected Result is returned`() {
         coroutineRule.runTest {
             // Given
-            MockResourceProviderForStringCalls.mockTransformToUiItemCall(resourceProvider)
+            StringResourceProviderMocker.mockTransformToUiItemCall(resourceProvider)
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
 
             mockGetDocumentByIdCall(
                 response = mockedPidWithBasicFields.copy(
                     data = MsoMdocData(
-                        format = MsoMdocFormat(mockedPidNameSpace),
+                        format = MsoMdocFormat(mockedMdocPidNameSpace),
                         issuerMetadata = null,
                         nameSpacedData = createMockedNamespaceData(
-                            mockedPidNameSpace, mapOf(
+                            mockedMdocPidNameSpace, mapOf(
                                 "no_data_item" to byteArrayOf(0)
                             )
                         )
@@ -310,7 +310,7 @@ class TestDocumentDetailsInteractor {
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
                         documentDetailsDomain = DocumentDetailsDomain(
-                            docName = mockedDocUiNamePid,
+                            docName = mockedPidDocName,
                             docId = mockedPidId,
                             documentIdentifier = DocumentIdentifier.MdocPid,
                             documentClaims = listOf(

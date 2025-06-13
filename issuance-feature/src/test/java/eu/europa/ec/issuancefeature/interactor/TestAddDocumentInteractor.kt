@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.interactor.document
+package eu.europa.ec.issuancefeature.interactor
 
 import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
@@ -23,34 +23,31 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
-import eu.europa.ec.commonfeature.util.TestsData.mockedAgeOptionItemUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePopToScreen
-import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePush
-import eu.europa.ec.commonfeature.util.TestsData.mockedMdlOptionItemUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedPhotoIdOptionItemUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
-import eu.europa.ec.commonfeature.util.TestsData.mockedPidOptionItemUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedPrimaryButtonText
-import eu.europa.ec.commonfeature.util.TestsData.mockedRouteArguments
-import eu.europa.ec.commonfeature.util.TestsData.mockedScopedDocuments
-import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessContentDescription
-import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessDescription
-import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessText
-import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
 import eu.europa.ec.corelogic.controller.FetchScopedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.issuancefeature.interactor.AddDocumentInteractor
-import eu.europa.ec.issuancefeature.interactor.AddDocumentInteractorImpl
-import eu.europa.ec.issuancefeature.interactor.AddDocumentInteractorPartialState
+import eu.europa.ec.issuancefeature.util.mockedAgeOptionItemUi
+import eu.europa.ec.issuancefeature.util.mockedConfigNavigationTypePopToScreen
+import eu.europa.ec.issuancefeature.util.mockedConfigNavigationTypePush
+import eu.europa.ec.issuancefeature.util.mockedMdlOptionItemUi
+import eu.europa.ec.issuancefeature.util.mockedPhotoIdOptionItemUi
+import eu.europa.ec.issuancefeature.util.mockedPidOptionItemUi
+import eu.europa.ec.issuancefeature.util.mockedPrimaryButtonText
+import eu.europa.ec.issuancefeature.util.mockedRouteArguments
+import eu.europa.ec.issuancefeature.util.mockedScopedDocuments
+import eu.europa.ec.issuancefeature.util.mockedSuccessContentDescription
+import eu.europa.ec.issuancefeature.util.mockedSuccessDescription
+import eu.europa.ec.issuancefeature.util.mockedSuccessText
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
-import eu.europa.ec.testfeature.mockedDefaultLocale
-import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
-import eu.europa.ec.testfeature.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedDefaultLocale
+import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
+import eu.europa.ec.testfeature.util.mockedPidId
+import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedUriPath1
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow

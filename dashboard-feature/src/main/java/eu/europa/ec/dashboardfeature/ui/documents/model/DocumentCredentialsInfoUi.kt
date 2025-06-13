@@ -14,20 +14,22 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.model
+package eu.europa.ec.dashboardfeature.ui.documents.model
 
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+data class DocumentCredentialsInfoUi(
+    val availableCredentials: Int,
+    val totalCredentials: Int,
+    val title: String,
+    val collapsedInfo: CollapsedInfo? = null,
+    val expandedInfo: ExpandedInfo? = null,
+) {
+    data class CollapsedInfo(
+        val moreInfoText: String,
+    )
 
-enum class DocumentUiIssuanceState {
-    Issued, Pending, Failed, Expired, Revoked
+    data class ExpandedInfo(
+        val subtitle: String,
+        val updateNowButtonText: String?,
+        val hideButtonText: String,
+    )
 }
-
-data class DocumentDetailsUi(
-    val documentId: DocumentId,
-    val documentName: String,
-    val documentIdentifier: DocumentIdentifier,
-    val documentIssuanceState: DocumentUiIssuanceState,
-    val documentClaims: List<ExpandableListItem>,
-)

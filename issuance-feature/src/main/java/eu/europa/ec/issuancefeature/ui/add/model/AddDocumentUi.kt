@@ -14,10 +14,10 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.model
+package eu.europa.ec.issuancefeature.ui.add.model
 
 import eu.europa.ec.uilogic.component.ListItemData
 
-data class DocumentOptionItemUi(
+data class AddDocumentUi(
     val itemData: ListItemData,
 )

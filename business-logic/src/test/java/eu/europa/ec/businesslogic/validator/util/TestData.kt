@@ -28,7 +28,7 @@ import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 
-val filterItemsSingle = listOf(
+internal val filterItemsSingle = listOf(
     FilterItem(
         id = "1",
         name = "PID",
@@ -53,20 +53,20 @@ val filterItemsSingle = listOf(
     )
 )
 
-val filterItemsMultipleSize3 = listOf(
+internal val filterItemsMultipleSize3 = listOf(
     FilterItem(id = "1", name = "PID", selected = false),
     FilterItem(id = "2", name = "mDL", selected = true),
     FilterItem(id = "3", name = "Age Verification", selected = true),
 )
 
-val filterItemsMultipleSize4 = listOf(
+internal val filterItemsMultipleSize4 = listOf(
     FilterItem(id = "1", name = "PID", selected = true),
     FilterItem(id = "2", name = "mDL", selected = true),
     FilterItem(id = "3", name = "Age Verification", selected = true),
     FilterItem(id = "4", name = "New Filter", selected = true),
 )
 
-val filterItemsMultiple = listOf(
+internal val filterItemsMultiple = listOf(
     FilterItem(id = "1", name = "PID", selected = false),
     FilterItem(id = "2", name = "mDL", selected = true),
     FilterItem(id = "3", name = "Age Verification", selected = true),
@@ -74,7 +74,7 @@ val filterItemsMultiple = listOf(
     FilterItem(id = "5", name = "NO OP", selected = false),
 )
 
-val filterItemsMultipleNoSelections = listOf(
+internal val filterItemsMultipleNoSelections = listOf(
     FilterItem(id = "1", name = "PID", selected = false),
     FilterItem(id = "2", name = "mDL", selected = false),
     FilterItem(id = "3", name = "Age Verification", selected = false),
@@ -82,7 +82,7 @@ val filterItemsMultipleNoSelections = listOf(
     FilterItem(id = "5", name = "NO OP", selected = false)
 )
 
-val filterItemsMultipleAllSelected = listOf(
+internal val filterItemsMultipleAllSelected = listOf(
     FilterItem(id = "1", name = "PID", selected = true),
     FilterItem(id = "2", name = "mDL", selected = true),
     FilterItem(id = "3", name = "Age Verification", selected = true),
@@ -90,13 +90,13 @@ val filterItemsMultipleAllSelected = listOf(
     FilterItem(id = "5", name = "NO OP", selected = true)
 )
 
-val singleSelectionGroup = FilterGroup.SingleSelectionFilterGroup(
+internal val singleSelectionGroup = FilterGroup.SingleSelectionFilterGroup(
     id = "single_filter",
     name = "Document Selection",
     filters = filterItemsSingle,
 )
 
-val multipleSelectionGroupSize3 = FilterGroup.MultipleSelectionFilterGroup(
+internal val multipleSelectionGroupSize3 = FilterGroup.MultipleSelectionFilterGroup(
     id = "multi_filter",
     name = "Multi Document Selection",
     filters = filterItemsMultipleSize3,
@@ -105,7 +105,7 @@ val multipleSelectionGroupSize3 = FilterGroup.MultipleSelectionFilterGroup(
     }
 )
 
-val multipleSelectionGroupSize4 = FilterGroup.MultipleSelectionFilterGroup(
+internal val multipleSelectionGroupSize4 = FilterGroup.MultipleSelectionFilterGroup(
     id = "multi_filter",
     name = "Multi Document Selection",
     filters = filterItemsMultipleSize4,
@@ -114,7 +114,7 @@ val multipleSelectionGroupSize4 = FilterGroup.MultipleSelectionFilterGroup(
     }
 )
 
-val multipleSelectionGroup = FilterGroup.MultipleSelectionFilterGroup(
+internal val multipleSelectionGroup = FilterGroup.MultipleSelectionFilterGroup(
     id = "multi_filter",
     name = "Multi Document Selection",
     filters = filterItemsMultiple,
@@ -123,7 +123,7 @@ val multipleSelectionGroup = FilterGroup.MultipleSelectionFilterGroup(
     }
 )
 
-val multipleSelectionGroupNoSelection = FilterGroup.MultipleSelectionFilterGroup(
+internal val multipleSelectionGroupNoSelection = FilterGroup.MultipleSelectionFilterGroup(
     id = "multi_filter_noselection",
     name = "Multi Document Selection",
     filters = filterItemsMultipleNoSelections,
@@ -132,7 +132,7 @@ val multipleSelectionGroupNoSelection = FilterGroup.MultipleSelectionFilterGroup
     }
 )
 
-val multipleSelectionGroupAllSelected = FilterGroup.MultipleSelectionFilterGroup(
+internal val multipleSelectionGroupAllSelected = FilterGroup.MultipleSelectionFilterGroup(
     id = "multi_filter_all",
     name = "Multi Document Selection All",
     filters = filterItemsMultipleAllSelected,
@@ -141,38 +141,37 @@ val multipleSelectionGroupAllSelected = FilterGroup.MultipleSelectionFilterGroup
     }
 )
 
-val filtersWithSingleSelection = Filters(
+internal val filtersWithSingleSelection = Filters(
     filterGroups = listOf(singleSelectionGroup),
     sortOrder = SortOrder.Ascending(isDefault = true)
 )
 
-val filtersWithMultipleSelectionSize3 = Filters(
+internal val filtersWithMultipleSelectionSize3 = Filters(
     filterGroups = listOf(multipleSelectionGroupSize3),
     sortOrder = SortOrder.Descending()
 )
 
-val filtersWithMultipleSelectionSize4 = Filters(
+internal val filtersWithMultipleSelectionSize4 = Filters(
     filterGroups = listOf(multipleSelectionGroupSize4),
     sortOrder = SortOrder.Descending()
 )
 
-val filtersWithMultipleSelection = Filters(
+internal val filtersWithMultipleSelection = Filters(
     filterGroups = listOf(multipleSelectionGroup),
     sortOrder = SortOrder.Descending()
 )
 
-val filtersWithMultipleSelectionNoSelection = Filters(
+internal val filtersWithMultipleSelectionNoSelection = Filters(
     filterGroups = listOf(multipleSelectionGroupNoSelection),
     sortOrder = SortOrder.Descending()
 )
 
-val filtersWithMultipleSelectionAllSelected = Filters(
+internal val filtersWithMultipleSelectionAllSelected = Filters(
     filterGroups = listOf(multipleSelectionGroupAllSelected),
     sortOrder = SortOrder.Ascending(isDefault = true)
 )
 
-
-val filterableList = FilterableList(
+internal val filterableList = FilterableList(
     items = listOf(
         FilterableItem(
             payload = TestPayload("Item 1"),
@@ -211,8 +210,12 @@ val filterableList = FilterableList(
     )
 )
 
-data class TestPayload(val name: String) : FilterableItemPayload
 
-data class TestAttributes(override val searchTags: List<String>, val name: String) :
-    FilterableAttributes
+internal data class TestPayload(
+    val name: String
+) : FilterableItemPayload
 
+internal data class TestAttributes(
+    override val searchTags: List<String>,
+    val name: String
+) : FilterableAttributes

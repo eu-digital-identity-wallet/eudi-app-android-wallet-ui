@@ -33,8 +33,6 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import eu.europa.ec.commonfeature.model.DocumentCredentialsInfoUi
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
@@ -45,9 +43,11 @@ import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentCategory
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes
+import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
@@ -330,9 +330,9 @@ class DocumentsInteractorImpl(
                             }
 
                             val documentIssuanceState = when {
-                                documentIsRevoked -> DocumentUiIssuanceState.Revoked
-                                documentHasExpired == true -> DocumentUiIssuanceState.Failed
-                                else -> DocumentUiIssuanceState.Issued
+                                documentIsRevoked -> DocumentIssuanceStateUi.Revoked
+                                documentHasExpired == true -> DocumentIssuanceStateUi.Failed
+                                else -> DocumentIssuanceStateUi.Issued
                             }
 
                             val supportingText = when {
@@ -429,7 +429,7 @@ class DocumentsInteractorImpl(
 
                             FilterableItem(
                                 payload = DocumentUi(
-                                    documentIssuanceState = DocumentUiIssuanceState.Pending,
+                                    documentIssuanceState = DocumentIssuanceStateUi.Pending,
                                     uiData = ListItemData(
                                         itemId = document.id,
                                         mainContentData = ListItemMainContentData.Text(text = documentName),

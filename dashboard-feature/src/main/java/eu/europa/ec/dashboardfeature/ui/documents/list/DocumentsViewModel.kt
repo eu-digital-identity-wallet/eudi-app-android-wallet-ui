@@ -22,7 +22,6 @@ import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DeferredDocumentData
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.FormatType
@@ -31,6 +30,7 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorFilterPartialS
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsBottomSheetContent.DeferredDocumentPressed
 import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsBottomSheetContent.Filters
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
@@ -344,7 +344,7 @@ class DocumentsViewModel(
                             val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
                             response.allDocuments.items.filter { document ->
                                 with(document.payload as DocumentUi) {
-                                    documentIssuanceState == DocumentUiIssuanceState.Pending
+                                    documentIssuanceState == DocumentIssuanceStateUi.Pending
                                 }
                             }.forEach { documentItem ->
                                 with(documentItem.payload as DocumentUi) {
@@ -389,7 +389,7 @@ class DocumentsViewModel(
             val data = filterableItem.payload as DocumentUi
             val failedUiItem = if (data.uiData.itemId in deferredFailedDocIds) {
                 data.copy(
-                    documentIssuanceState = DocumentUiIssuanceState.Failed,
+                    documentIssuanceState = DocumentIssuanceStateUi.Failed,
                     uiData = data.uiData.copy(
                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
                         trailingContentData = ListItemTrailingContentData.Icon(

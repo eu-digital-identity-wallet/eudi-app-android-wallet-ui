@@ -24,11 +24,11 @@ import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
-import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.FetchScopedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
+import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -49,7 +49,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class AddDocumentInteractorPartialState {
-    data class Success(val options: List<DocumentOptionItemUi>) :
+    data class Success(val options: List<AddDocumentUi>) :
         AddDocumentInteractorPartialState()
 
     data class Failure(val error: String) : AddDocumentInteractorPartialState()
@@ -101,7 +101,7 @@ class AddDocumentInteractorImpl(
                             .sortedBy { it.name.lowercase() }
                             .mapNotNull {
                                 if (flowType != IssuanceFlowUiConfig.NO_DOCUMENT || it.isPid) {
-                                    DocumentOptionItemUi(
+                                    AddDocumentUi(
                                         itemData = ListItemData(
                                             itemId = it.configurationId,
                                             mainContentData = ListItemMainContentData.Text(text = it.name),

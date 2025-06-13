@@ -14,15 +14,15 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.testfeature
+package eu.europa.ec.testfeature.util
 
 import androidx.annotation.VisibleForTesting
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.mockito.kotlin.whenever
 
-@VisibleForTesting(otherwise = VisibleForTesting.NONE)
-object MockResourceProviderForStringCalls {
+@VisibleForTesting(otherwise = VisibleForTesting.Companion.NONE)
+object StringResourceProviderMocker {
 
     /**
      * Mocks ResourceProvider.getString(...) for each (resId → returnValue) pair.
@@ -100,11 +100,7 @@ object MockResourceProviderForStringCalls {
      */
     fun mockTransformToUiItemsCall(
         resourceProvider: ResourceProvider,
-        notAvailableString: String
     ) {
-        whenever(resourceProvider.getString(R.string.request_element_identifier_not_available))
-            .thenReturn(notAvailableString)
-
         mockGetKeyValueUiCall(resourceProvider)
 
         whenever(resourceProvider.getLocale())

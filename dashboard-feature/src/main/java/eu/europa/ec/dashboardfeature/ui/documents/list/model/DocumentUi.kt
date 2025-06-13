@@ -17,13 +17,13 @@
 package eu.europa.ec.dashboardfeature.ui.documents.list.model
 
 import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.uilogic.component.ListItemData
 
 data class DocumentUi(
-    val documentIssuanceState: DocumentUiIssuanceState,
+    val documentIssuanceState: DocumentIssuanceStateUi,
     val uiData: ListItemData,
     val documentIdentifier: DocumentIdentifier,
     val documentCategory: DocumentCategory,

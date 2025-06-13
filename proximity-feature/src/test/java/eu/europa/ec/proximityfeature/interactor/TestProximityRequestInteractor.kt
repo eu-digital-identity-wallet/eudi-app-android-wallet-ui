@@ -20,24 +20,23 @@ import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
-import eu.europa.ec.commonfeature.util.TestsData.mockedRequestElementIdentifierNotAvailable
-import eu.europa.ec.commonfeature.util.TestsData.mockedValidMdlWithBasicFieldsRequestDocument
-import eu.europa.ec.commonfeature.util.TestsData.mockedValidPidWithBasicFieldsRequestDocument
-import eu.europa.ec.commonfeature.util.TestsData.mockedVerifierName
 import eu.europa.ec.corelogic.controller.PresentationControllerConfig
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemsCall
-import eu.europa.ec.testfeature.getMockedMdlWithBasicFields
-import eu.europa.ec.testfeature.getMockedPidWithBasicFields
-import eu.europa.ec.testfeature.mockedExceptionWithMessage
-import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
-import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedPlainFailureMessage
-import eu.europa.ec.testfeature.mockedVerifierIsTrusted
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsCall
+import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
+import eu.europa.ec.testfeature.util.getMockedPidWithBasicFields
+import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
+import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
+import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedValidMdlWithBasicFieldsRequestDocument
+import eu.europa.ec.testfeature.util.mockedValidPidWithBasicFieldsRequestDocument
+import eu.europa.ec.testfeature.util.mockedVerifierIsTrusted
+import eu.europa.ec.testfeature.util.mockedVerifierName
 import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -324,7 +323,6 @@ class TestProximityRequestInteractor {
             mockIsDocumentRevoked(isRevoked = false)
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
-                notAvailableString = mockedRequestElementIdentifierNotAvailable
             )
 
             mockWalletCorePresentationControllerEventEmission(
@@ -385,7 +383,6 @@ class TestProximityRequestInteractor {
             )
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
-                notAvailableString = mockedRequestElementIdentifierNotAvailable
             )
             mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(
@@ -450,7 +447,6 @@ class TestProximityRequestInteractor {
             )
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
-                notAvailableString = mockedRequestElementIdentifierNotAvailable
             )
             mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(
@@ -522,7 +518,6 @@ class TestProximityRequestInteractor {
             )
             mockTransformToUiItemsCall(
                 resourceProvider = resourceProvider,
-                notAvailableString = mockedRequestElementIdentifierNotAvailable
             )
             mockIsDocumentRevoked(isRevoked = false)
             mockWalletCorePresentationControllerEventEmission(

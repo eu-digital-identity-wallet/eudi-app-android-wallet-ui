@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.interactor.document
+package eu.europa.ec.issuancefeature.interactor
 
 import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
@@ -22,24 +22,6 @@ import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenti
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
-import eu.europa.ec.commonfeature.util.TestsData.mockedConfigNavigationTypePop
-import eu.europa.ec.commonfeature.util.TestsData.mockedInvalidCodeFormatMessage
-import eu.europa.ec.commonfeature.util.TestsData.mockedIssuanceErrorMessage
-import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
-import eu.europa.ec.commonfeature.util.TestsData.mockedOfferTxCodeFourDigits
-import eu.europa.ec.commonfeature.util.TestsData.mockedOfferedDocumentDocType
-import eu.europa.ec.commonfeature.util.TestsData.mockedOfferedDocumentName
-import eu.europa.ec.commonfeature.util.TestsData.mockedPendingMdlUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedPendingPidUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
-import eu.europa.ec.commonfeature.util.TestsData.mockedPrimaryButtonText
-import eu.europa.ec.commonfeature.util.TestsData.mockedRouteArguments
-import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessDescription
-import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessText
-import eu.europa.ec.commonfeature.util.TestsData.mockedTxCode
-import eu.europa.ec.commonfeature.util.TestsData.mockedTxCodeFourDigits
-import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
-import eu.europa.ec.commonfeature.util.TestsData.mockedWalletActivationErrorMessage
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -57,24 +39,37 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
-import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
-import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractorImpl
-import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
-import eu.europa.ec.issuancefeature.interactor.ResolveDocumentOfferInteractorPartialState
 import eu.europa.ec.issuancefeature.ui.offer.model.DocumentOfferUi
+import eu.europa.ec.issuancefeature.util.mockedConfigNavigationTypePop
+import eu.europa.ec.issuancefeature.util.mockedInvalidCodeFormatMessage
+import eu.europa.ec.issuancefeature.util.mockedIssuanceErrorMessage
+import eu.europa.ec.issuancefeature.util.mockedOfferTxCodeFourDigits
+import eu.europa.ec.issuancefeature.util.mockedOfferedDocumentDocType
+import eu.europa.ec.issuancefeature.util.mockedOfferedDocumentName
+import eu.europa.ec.issuancefeature.util.mockedPrimaryButtonText
+import eu.europa.ec.issuancefeature.util.mockedRouteArguments
+import eu.europa.ec.issuancefeature.util.mockedSuccessDescription
+import eu.europa.ec.issuancefeature.util.mockedSuccessText
+import eu.europa.ec.issuancefeature.util.mockedTxCode
+import eu.europa.ec.issuancefeature.util.mockedTxCodeFourDigits
+import eu.europa.ec.issuancefeature.util.mockedWalletActivationErrorMessage
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
-import eu.europa.ec.testfeature.getMockedMainPid
-import eu.europa.ec.testfeature.mockedDefaultLocale
-import eu.europa.ec.testfeature.mockedExceptionWithMessage
-import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
-import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedMdlDocName
-import eu.europa.ec.testfeature.mockedMdlDocType
-import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
-import eu.europa.ec.testfeature.mockedPidDocType
-import eu.europa.ec.testfeature.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.getMockedMainPid
+import eu.europa.ec.testfeature.util.mockedDefaultLocale
+import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
+import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
+import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedIssuerName
+import eu.europa.ec.testfeature.util.mockedMdlDocName
+import eu.europa.ec.testfeature.util.mockedMdlId
+import eu.europa.ec.testfeature.util.mockedMdocMdlDocType
+import eu.europa.ec.testfeature.util.mockedMdocPidDocType
+import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
+import eu.europa.ec.testfeature.util.mockedPidId
+import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
+import eu.europa.ec.testfeature.util.mockedUriPath1
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -301,7 +296,7 @@ class TestDocumentOfferInteractor {
                 offeredDocuments = listOf(
                     mockOfferedDocument(
                         display = listOf(
-                            eu.europa.ec.eudi.openid4vci.Display(
+                            Display(
                                 name = mockedOfferedDocumentName,
                                 locale = Locale("es")
                             )
@@ -360,7 +355,7 @@ class TestDocumentOfferInteractor {
                 offeredDocuments = listOf(
                     mockOfferedDocument(
                         name = mockedOfferedDocumentName,
-                        docType = mockedPidDocType
+                        docType = mockedMdocPidDocType
                     )
                 ),
                 txCodeSpec = mockedOfferTxCodeFourDigits
@@ -751,11 +746,11 @@ class TestDocumentOfferInteractor {
             // Given
             val mockSuccessfullyIssuedDocId = "0000"
 
-            val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
-            val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.formatType
+            val mockDeferredPendingDocId1 = mockedPidId
+            val mockDeferredPendingType1 = mockedMdocPidDocType
 
-            val mockDeferredPendingDocId2 = mockedPendingMdlUi.documentId
-            val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.formatType
+            val mockDeferredPendingDocId2 = mockedMdlId
+            val mockDeferredPendingType2 = mockedMdocMdlDocType
 
             val nonIssuedDeferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId1 to mockDeferredPendingType1,
@@ -817,7 +812,7 @@ class TestDocumentOfferInteractor {
             // Given
             val mockSuccessfullyIssuedDocId = "0000"
             val mockDeferredPendingDocName = mockedMdlDocName
-            val mockDeferredPendingType1 = mockedMdlDocType
+            val mockDeferredPendingType1 = mockedMdocMdlDocType
             val nonIssuedDeferredDocuments: Map<FormatType, DocumentId> = mapOf(
                 mockDeferredPendingType1 to mockDeferredPendingDocName
             )
@@ -1052,11 +1047,11 @@ class TestDocumentOfferInteractor {
     }
 
     private fun mockDeferredDocumentsMap(): Map<String, String> {
-        val mockDeferredPendingDocId1 = mockedPendingPidUi.documentId
-        val mockDeferredPendingType1 = mockedPendingPidUi.documentIdentifier.formatType
+        val mockDeferredPendingDocId1 = mockedPidId
+        val mockDeferredPendingType1 = mockedMdocPidDocType
 
-        val mockDeferredPendingDocId2 = mockedPendingMdlUi.documentId
-        val mockDeferredPendingType2 = mockedPendingMdlUi.documentIdentifier.formatType
+        val mockDeferredPendingDocId2 = mockedMdlId
+        val mockDeferredPendingType2 = mockedMdocMdlDocType
 
         return mapOf(
             mockDeferredPendingDocId1 to mockDeferredPendingType1,

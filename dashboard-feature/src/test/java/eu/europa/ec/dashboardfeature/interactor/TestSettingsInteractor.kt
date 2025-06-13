@@ -20,13 +20,13 @@ import android.net.Uri
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
-import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
-import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath2
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
+import eu.europa.ec.dashboardfeature.util.mockedChangeLogUrl
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockResourceProviderStrings
-import eu.europa.ec.testfeature.mockedChangeLogUrl
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockResourceProviderStrings
+import eu.europa.ec.testfeature.util.mockedUriPath1
+import eu.europa.ec.testfeature.util.mockedUriPath2
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemLeadingContentData
 import eu.europa.ec.uilogic.component.ListItemMainContentData

@@ -14,17 +14,17 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.document_details.transformer
+package eu.europa.ec.dashboardfeature.ui.documents.detail.transformer
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.extension.toExpandableListItems
-import eu.europa.ec.commonfeature.model.DocumentCredentialsInfoUi
-import eu.europa.ec.commonfeature.model.DocumentDetailsUi
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
+import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -63,7 +63,7 @@ object DocumentDetailsTransformer {
             documentId = this.docId,
             documentName = this.docName,
             documentIdentifier = this.documentIdentifier,
-            documentIssuanceState = DocumentUiIssuanceState.Issued,
+            documentIssuanceStateUi = DocumentIssuanceStateUi.Issued,
             documentClaims = documentDetailsUi,
         )
     }

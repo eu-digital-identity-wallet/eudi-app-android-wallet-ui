@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.commonfeature.ui.document_details.domain
+package eu.europa.ec.dashboardfeature.ui.documents.detail.model
 
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.DomainClaim

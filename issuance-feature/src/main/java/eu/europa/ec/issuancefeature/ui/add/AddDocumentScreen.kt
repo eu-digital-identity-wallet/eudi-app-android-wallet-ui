@@ -46,9 +46,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.util.CoreActions
+import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemData
@@ -313,14 +313,14 @@ private fun IssuanceAddDocumentScreenPreview() {
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
-                    DocumentOptionItemUi(
+                    AddDocumentUi(
                         itemData = ListItemData(
                             itemId = "configId1",
                             mainContentData = ListItemMainContentData.Text(text = "National ID"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     ),
-                    DocumentOptionItemUi(
+                    AddDocumentUi(
                         itemData = ListItemData(
                             itemId = "configId2",
                             mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
@@ -349,14 +349,14 @@ private fun DashboardAddDocumentScreenPreview() {
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
-                    DocumentOptionItemUi(
+                    AddDocumentUi(
                         itemData = ListItemData(
                             itemId = "configId1",
                             mainContentData = ListItemMainContentData.Text(text = "National ID"),
                             trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
                         )
                     ),
-                    DocumentOptionItemUi(
+                    AddDocumentUi(
                         itemData = ListItemData(
                             itemId = "configId2",
                             mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),

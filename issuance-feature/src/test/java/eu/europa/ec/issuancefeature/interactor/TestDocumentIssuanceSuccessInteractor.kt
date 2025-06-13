@@ -14,37 +14,33 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.interactor.document
+package eu.europa.ec.issuancefeature.interactor
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.commonfeature.util.TestsData.mockedBasicPidUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedBasicSdJwtPidUi
-import eu.europa.ec.commonfeature.util.TestsData.mockedDocumentSuccessCollapsedSupportingText
-import eu.europa.ec.commonfeature.util.TestsData.mockedErrorDescription
-import eu.europa.ec.commonfeature.util.TestsData.mockedIssuerName
-import eu.europa.ec.commonfeature.util.TestsData.mockedPidId
-import eu.europa.ec.commonfeature.util.TestsData.mockedRequestElementIdentifierNotAvailable
-import eu.europa.ec.commonfeature.util.TestsData.mockedSuccessDescription
-import eu.europa.ec.commonfeature.util.TestsData.mockedUuid
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractor
-import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorGetUiItemsPartialState
-import eu.europa.ec.issuancefeature.interactor.DocumentIssuanceSuccessInteractorImpl
+import eu.europa.ec.issuancefeature.util.mockedErrorDescription
+import eu.europa.ec.issuancefeature.util.mockedMdocPidClaims
+import eu.europa.ec.issuancefeature.util.mockedSdJwtPidClaims
+import eu.europa.ec.issuancefeature.util.mockedSuccessDescription
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockGetUiItemsCall
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockIssuerName
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToDocumentDetailsUiCall
-import eu.europa.ec.testfeature.MockResourceProviderForStringCalls.mockTransformToUiItemsCall
-import eu.europa.ec.testfeature.getMockedMdlWithBasicFields
-import eu.europa.ec.testfeature.getMockedPidWithBasicFields
-import eu.europa.ec.testfeature.getMockedPidWithBasicFieldsAndMetadata
-import eu.europa.ec.testfeature.getMockedSdJwtPidWithBasicFields
-import eu.europa.ec.testfeature.mockedDefaultLocale
-import eu.europa.ec.testfeature.mockedGenericErrorMessage
-import eu.europa.ec.testfeature.mockedIssuerLogo
-import eu.europa.ec.testfeature.mockedSdJwtPidId
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockGetUiItemsCall
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockIssuerName
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToDocumentDetailsUiCall
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockTransformToUiItemsCall
+import eu.europa.ec.testfeature.util.getMockedMdlWithBasicFields
+import eu.europa.ec.testfeature.util.getMockedPidWithBasicFields
+import eu.europa.ec.testfeature.util.getMockedPidWithBasicFieldsAndMetadata
+import eu.europa.ec.testfeature.util.getMockedSdJwtPidWithBasicFields
+import eu.europa.ec.testfeature.util.mockedDefaultLocale
+import eu.europa.ec.testfeature.util.mockedDocumentSuccessCollapsedSupportingText
+import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedIssuerLogo
+import eu.europa.ec.testfeature.util.mockedIssuerName
+import eu.europa.ec.testfeature.util.mockedPidId
+import eu.europa.ec.testfeature.util.mockedSdJwtPidId
+import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
@@ -100,7 +96,6 @@ class TestDocumentIssuanceSuccessInteractor {
         mockIssuerName(resourceProvider = resourceProvider, name = mockedIssuerName)
         mockTransformToUiItemsCall(
             resourceProvider = resourceProvider,
-            notAvailableString = mockedRequestElementIdentifierNotAvailable
         )
     }
 
@@ -152,7 +147,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = mockedBasicPidUi.documentClaims,
+                                nestedItems = mockedMdocPidClaims,
                                 isExpanded = false
                             )
                         ),
@@ -220,7 +215,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = mockedBasicSdJwtPidUi.documentClaims,
+                                nestedItems = mockedSdJwtPidClaims,
                                 isExpanded = false
                             )
                         )
@@ -273,7 +268,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = mockedBasicPidUi.documentClaims,
+                                nestedItems = mockedMdocPidClaims,
                                 isExpanded = false
                             )
                         ),
@@ -432,7 +427,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = mockedBasicPidUi.documentClaims,
+                                nestedItems = mockedMdocPidClaims,
                                 isExpanded = false
                             ),
                             ExpandableListItem.NestedListItemData(
@@ -444,7 +439,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = mockedBasicSdJwtPidUi.documentClaims,
+                                nestedItems = mockedSdJwtPidClaims,
                                 isExpanded = false
                             )
                         )
@@ -526,7 +521,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
-                                nestedItems = mockedBasicPidUi.documentClaims,
+                                nestedItems = mockedMdocPidClaims,
                                 isExpanded = false
                             )
                         ),
