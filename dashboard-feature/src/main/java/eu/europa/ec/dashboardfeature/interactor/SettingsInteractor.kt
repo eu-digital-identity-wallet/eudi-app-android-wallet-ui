@@ -25,10 +25,10 @@ import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.SwitchData
 
 interface SettingsInteractor {
@@ -60,12 +60,12 @@ class SettingsInteractorImpl(
             add(
                 SettingsItemUi(
                     type = SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER,
-                    data = ListItemData(
+                    data = ListItemDataUi(
                         itemId = resourceProvider.getString(R.string.settings_screen_option_show_batch_issuance_counter_id),
-                        mainContentData = ListItemMainContentData.Text(
+                        mainContentData = ListItemMainContentDataUi.Text(
                             text = resourceProvider.getString(R.string.settings_screen_option_show_batch_issuance_counter)
                         ),
-                        trailingContentData = ListItemTrailingContentData.Switch(
+                        trailingContentData = ListItemTrailingContentDataUi.Switch(
                             switchData = SwitchData(
                                 isChecked = getCurrentShowBatchIssuanceCounter(),
                                 enabled = true,
@@ -78,15 +78,15 @@ class SettingsInteractorImpl(
             add(
                 SettingsItemUi(
                     type = SettingsMenuItemType.RETRIEVE_LOGS,
-                    data = ListItemData(
+                    data = ListItemDataUi(
                         itemId = resourceProvider.getString(R.string.settings_screen_option_retrieve_logs_id),
-                        mainContentData = ListItemMainContentData.Text(
+                        mainContentData = ListItemMainContentDataUi.Text(
                             text = resourceProvider.getString(R.string.settings_screen_option_retrieve_logs)
                         ),
-                        leadingContentData = ListItemLeadingContentData.Icon(
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
                             iconData = AppIcons.OpenNew
                         ),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     )
@@ -97,15 +97,15 @@ class SettingsInteractorImpl(
                 add(
                     SettingsItemUi(
                         type = SettingsMenuItemType.CHANGELOG,
-                        data = ListItemData(
+                        data = ListItemDataUi(
                             itemId = resourceProvider.getString(R.string.settings_screen_option_changelog_id),
-                            mainContentData = ListItemMainContentData.Text(
+                            mainContentData = ListItemMainContentDataUi.Text(
                                 text = resourceProvider.getString(R.string.settings_screen_option_changelog)
                             ),
-                            leadingContentData = ListItemLeadingContentData.Icon(
+                            leadingContentData = ListItemLeadingContentDataUi.Icon(
                                 iconData = AppIcons.OpenInBrowser
                             ),
-                            trailingContentData = ListItemTrailingContentData.Icon(
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(
                                 iconData = AppIcons.KeyboardArrowRight
                             )
                         )

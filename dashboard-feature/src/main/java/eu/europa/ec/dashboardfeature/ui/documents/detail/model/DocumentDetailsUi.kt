@@ -18,7 +18,7 @@ package eu.europa.ec.dashboardfeature.ui.documents.detail.model
 
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.document.DocumentId
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 enum class DocumentIssuanceStateUi {
     Issued, Pending, Failed, Expired, Revoked
@@ -29,5 +29,5 @@ data class DocumentDetailsUi(
     val documentName: String,
     val documentIdentifier: DocumentIdentifier,
     val documentIssuanceStateUi: DocumentIssuanceStateUi,
-    val documentClaims: List<ExpandableListItem>,
+    val documentClaims: List<ExpandableListItemUi>,
 )

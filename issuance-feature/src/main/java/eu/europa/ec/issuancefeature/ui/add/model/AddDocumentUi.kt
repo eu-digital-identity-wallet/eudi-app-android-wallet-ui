@@ -16,8 +16,8 @@
 
 package eu.europa.ec.issuancefeature.ui.add.model
 
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemDataUi
 
 data class AddDocumentUi(
-    val itemData: ListItemData,
+    val itemData: ListItemDataUi,
 )

@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.transactions.detail.model
 
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 data class TransactionDetailsUi(
     val transactionId: String,
@@ -35,9 +35,9 @@ data class TransactionDetailsCardUi(
 )
 
 data class TransactionDetailsDataSharedHolderUi(
-    val dataSharedItems: List<ExpandableListItem.NestedListItemData>,
+    val dataSharedItems: List<ExpandableListItemUi.NestedListItemDataUi>,
 )
 
 data class TransactionDetailsDataSignedHolderUi(
-    val dataSignedItems: List<ExpandableListItem.NestedListItemData>,
+    val dataSignedItems: List<ExpandableListItemUi.NestedListItemDataUi>,
 )

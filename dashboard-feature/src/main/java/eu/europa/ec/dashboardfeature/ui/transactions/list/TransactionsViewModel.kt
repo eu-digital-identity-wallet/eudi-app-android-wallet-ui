@@ -35,7 +35,7 @@ import eu.europa.ec.uilogic.component.DatePickerDialogType
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -61,7 +61,7 @@ data class State(
     ),
 
     val transactionsUi: List<Pair<TransactionCategoryUi, List<TransactionUi>>> = emptyList(),
-    val filtersUi: List<ExpandableListItem.NestedListItemData> = emptyList(),
+    val filtersUi: List<ExpandableListItemUi.NestedListItemDataUi> = emptyList(),
     val shouldRevertFilterChanges: Boolean = true,
     val sortOrder: DualSelectorButtonData,
     val isDatePickerDialogVisible: Boolean = false,
@@ -121,7 +121,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class TransactionsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItem.SingleListItemData>) :
+    data class Filters(val filters: List<ExpandableListItemUi.SingleListItemDataUi>) :
         TransactionsBottomSheetContent()
 }
 

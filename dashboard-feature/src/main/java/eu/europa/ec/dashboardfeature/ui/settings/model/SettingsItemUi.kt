@@ -16,11 +16,11 @@
 
 package eu.europa.ec.dashboardfeature.ui.settings.model
 
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemDataUi
 
 data class SettingsItemUi(
     val type: SettingsMenuItemType,
-    val data: ListItemData,
+    val data: ListItemDataUi,
 )
 
 enum class SettingsMenuItemType {

@@ -21,9 +21,9 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockResourceProviderStrings
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
@@ -72,22 +72,23 @@ class TestDashboardInteractor {
         val firstItem = sideMenuItems[0]
         assertEquals(SideMenuTypeUi.CHANGE_PIN, firstItem.type)
         assertEquals(changePinIdString, firstItem.data.itemId)
-        val mainContent1 = firstItem.data.mainContentData as ListItemMainContentData.Text
+        val mainContent1 = firstItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(changePinText, mainContent1.text)
-        val leadingIcon1 = firstItem.data.leadingContentData as ListItemLeadingContentData.Icon
+        val leadingIcon1 = firstItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
         assertEquals(AppIcons.ChangePin, leadingIcon1.iconData)
-        val trailingIcon1 = firstItem.data.trailingContentData as ListItemTrailingContentData.Icon
+        val trailingIcon1 = firstItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
         assertEquals(AppIcons.KeyboardArrowRight, trailingIcon1.iconData)
 
         // 2. Second item: SETTINGS
         val secondItem = sideMenuItems[1]
         assertEquals(SideMenuTypeUi.SETTINGS, secondItem.type)
         assertEquals(settingsIdString, secondItem.data.itemId)
-        val mainContent2 = secondItem.data.mainContentData as ListItemMainContentData.Text
+        val mainContent2 = secondItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(settingsText, mainContent2.text)
-        val leadingIcon2 = secondItem.data.leadingContentData as ListItemLeadingContentData.Icon
+        val leadingIcon2 = secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
         assertEquals(AppIcons.Settings, leadingIcon2.iconData)
-        val trailingIcon2 = secondItem.data.trailingContentData as ListItemTrailingContentData.Icon
+        val trailingIcon2 =
+            secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
         assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
 
         // Verify that getString was called exactly once per resource ID

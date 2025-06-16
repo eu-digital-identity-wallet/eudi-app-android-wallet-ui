@@ -36,9 +36,9 @@ import androidx.navigation.NavController
 import eu.europa.ec.dashboardfeature.ui.sign.model.SignDocumentButtonUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -158,12 +158,12 @@ private fun DocumentSignScreenPreview() {
                 title = stringResource(R.string.document_sign_title),
                 subtitle = stringResource(R.string.document_sign_subtitle),
                 buttonUi = SignDocumentButtonUi(
-                    data = ListItemData(
+                    data = ListItemDataUi(
                         itemId = "0",
-                        mainContentData = ListItemMainContentData.Text(
+                        mainContentData = ListItemMainContentDataUi.Text(
                             text = stringResource(R.string.document_sign_select_document),
                         ),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.Add
                         ),
                     )

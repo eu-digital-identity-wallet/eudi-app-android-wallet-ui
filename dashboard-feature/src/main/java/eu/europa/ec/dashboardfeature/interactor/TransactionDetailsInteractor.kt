@@ -42,10 +42,10 @@ import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentedDocumen
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -104,7 +104,7 @@ class TransactionDetailsInteractorImpl(
                     )
 
                     val relyingPartyData: TransactionLog.RelyingParty?
-                    val dataShared: List<ExpandableListItem.NestedListItemData>?
+                    val dataShared: List<ExpandableListItemUi.NestedListItemDataUi>?
 
                     when (transaction) {
                         is TransactionLogData.IssuanceLog -> {
@@ -187,7 +187,7 @@ class TransactionDetailsInteractorImpl(
         userLocale: Locale,
         resourceProvider: ResourceProvider,
         uuidProvider: UuidProvider
-    ): List<ExpandableListItem.NestedListItemData> {
+    ): List<ExpandableListItemUi.NestedListItemDataUi> {
         return this.mapIndexed { index, presentedDocument ->
             val domainClaims: MutableList<DomainClaim> = mutableListOf()
 
@@ -215,10 +215,10 @@ class TransactionDetailsInteractorImpl(
 
             val uniqueId = itemIdentifierPrefix + index
 
-            ExpandableListItem.NestedListItemData(
-                header = ListItemData(
+            ExpandableListItemUi.NestedListItemDataUi(
+                header = ListItemDataUi(
                     itemId = uniqueId,
-                    mainContentData = ListItemMainContentData.Text(
+                    mainContentData = ListItemMainContentDataUi.Text(
                         text = presentedDocument.metadata.getLocalizedDocumentName(
                             userLocale = userLocale,
                             fallback = presentedDocument.metadata?.display?.firstOrNull()?.name
@@ -229,7 +229,7 @@ class TransactionDetailsInteractorImpl(
                         )
                     ),
                     supportingText = documentSupportingText,
-                    trailingContentData = ListItemTrailingContentData.Icon(
+                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = AppIcons.KeyboardArrowDown
                     )
                 ),

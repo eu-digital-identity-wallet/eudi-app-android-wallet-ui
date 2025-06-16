@@ -50,9 +50,9 @@ import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -66,7 +66,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapChip
@@ -290,7 +290,7 @@ private fun TransactionDetailsCard(
 private fun ExpandableDataSection(
     modifier: Modifier,
     sectionTitle: String,
-    dataItems: List<ExpandableListItem.NestedListItemData>,
+    dataItems: List<ExpandableListItemUi.NestedListItemDataUi>,
     onEventSend: (Event) -> Unit
 ) {
     if (dataItems.isNotEmpty()) {
@@ -423,28 +423,28 @@ private fun PreviewTransactionDetailsFailedCard(
 @Composable
 private fun ContentPreview() {
     val items = listOf(
-        ExpandableListItem.NestedListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.NestedListItemDataUi(
+            header = ListItemDataUi(
                 itemId = "0",
-                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
                 supportingText = "View Details",
-                trailingContentData = ListItemTrailingContentData.Icon(
+                trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowDown
                 ),
             ),
             nestedItems = listOf(
-                ExpandableListItem.SingleListItemData(
-                    ListItemData(
+                ExpandableListItemUi.SingleListItemDataUi(
+                    ListItemDataUi(
                         itemId = "1",
                         overlineText = "Family name",
-                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
                     )
                 ),
-                ExpandableListItem.SingleListItemData(
-                    ListItemData(
+                ExpandableListItemUi.SingleListItemDataUi(
+                    ListItemDataUi(
                         itemId = "2",
                         overlineText = "Given name",
-                        mainContentData = ListItemMainContentData.Text(text = "John"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "John"),
                     )
                 )
             ),

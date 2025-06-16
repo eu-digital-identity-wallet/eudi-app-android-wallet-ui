@@ -28,18 +28,18 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 sealed class ProximitySuccessInteractorGetUiItemsPartialState {
     data class Success(
-        val documentsUi: List<ExpandableListItem.NestedListItemData>,
+        val documentsUi: List<ExpandableListItemUi.NestedListItemDataUi>,
         val headerConfig: ContentHeaderConfig,
     ) : ProximitySuccessInteractorGetUiItemsPartialState()
 
@@ -66,7 +66,7 @@ class ProximitySuccessInteractorImpl(
     override fun getUiItems(): Flow<ProximitySuccessInteractorGetUiItemsPartialState> {
         return flow {
 
-            val documentsUi = mutableListOf<ExpandableListItem.NestedListItemData>()
+            val documentsUi = mutableListOf<ExpandableListItemUi.NestedListItemDataUi>()
 
             val verifierName = walletCorePresentationController.verifierName
 
@@ -94,12 +94,12 @@ class ProximitySuccessInteractorImpl(
                     }
 
                     if (disclosedClaimsUi.isNotEmpty()) {
-                        val disclosedDocumentUi = ExpandableListItem.NestedListItemData(
-                            header = ListItemData(
+                        val disclosedDocumentUi = ExpandableListItemUi.NestedListItemDataUi(
+                            header = ListItemDataUi(
                                 itemId = documentId,
-                                mainContentData = ListItemMainContentData.Text(text = document.name),
+                                mainContentData = ListItemMainContentDataUi.Text(text = document.name),
                                 supportingText = resourceProvider.getString(R.string.document_success_collapsed_supporting_text),
-                                trailingContentData = ListItemTrailingContentData.Icon(
+                                trailingContentData = ListItemTrailingContentDataUi.Icon(
                                     iconData = AppIcons.KeyboardArrowDown
                                 )
                             ),

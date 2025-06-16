@@ -24,9 +24,9 @@ import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 
 interface DocumentSignInteractor {
     fun launchRqesSdk(context: Context, uri: Uri)
@@ -46,12 +46,12 @@ class DocumentSignInteractorImpl(
 
     override fun getItemUi(): SignDocumentButtonUi {
         return SignDocumentButtonUi(
-            data = ListItemData(
+            data = ListItemDataUi(
                 itemId = resourceProvider.getString(R.string.document_sign_select_document_button_id),
-                mainContentData = ListItemMainContentData.Text(
+                mainContentData = ListItemMainContentDataUi.Text(
                     text = resourceProvider.getString(R.string.document_sign_select_document)
                 ),
-                trailingContentData = ListItemTrailingContentData.Icon(
+                trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.Add
                 ),
             )

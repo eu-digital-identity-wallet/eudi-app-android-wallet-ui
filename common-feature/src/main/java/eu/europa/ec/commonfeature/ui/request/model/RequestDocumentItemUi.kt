@@ -21,7 +21,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.format.DocumentFormat
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 sealed class DomainDocumentFormat {
     data object SdJwtVc : DomainDocumentFormat()
@@ -42,7 +42,7 @@ sealed class DomainDocumentFormat {
 
 data class RequestDocumentItemUi(
     val domainPayload: DocumentPayloadDomain,
-    val headerUi: ExpandableListItem.NestedListItemData,
+    val headerUi: ExpandableListItemUi.NestedListItemDataUi,
 )
 
 data class DocumentPayloadDomain(

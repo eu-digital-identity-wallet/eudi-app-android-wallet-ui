@@ -47,9 +47,9 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentHeader
@@ -65,7 +65,7 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
@@ -338,34 +338,34 @@ private fun ContentPreview() {
                                 ),
                             )
                         ),
-                        headerUi = ExpandableListItem.NestedListItemData(
-                            header = ListItemData(
+                        headerUi = ExpandableListItemUi.NestedListItemDataUi(
+                            header = ListItemDataUi(
                                 itemId = "000",
-                                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+                                mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
                                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
-                                trailingContentData = ListItemTrailingContentData.Icon(
+                                trailingContentData = ListItemTrailingContentDataUi.Icon(
                                     iconData = AppIcons.KeyboardArrowDown
                                 ),
                             ),
                             nestedItems = listOf(
-                                ExpandableListItem.SingleListItemData(
-                                    ListItemData(
+                                ExpandableListItemUi.SingleListItemDataUi(
+                                    ListItemDataUi(
                                         itemId = "00",
                                         overlineText = "Family name",
-                                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
-                                        trailingContentData = ListItemTrailingContentData.Checkbox(
+                                        mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
+                                        trailingContentData = ListItemTrailingContentDataUi.Checkbox(
                                             checkboxData = CheckboxData(
                                                 isChecked = true
                                             )
                                         )
                                     )
                                 ),
-                                ExpandableListItem.SingleListItemData(
-                                    ListItemData(
+                                ExpandableListItemUi.SingleListItemDataUi(
+                                    ListItemDataUi(
                                         itemId = "01",
                                         overlineText = "Given name",
-                                        mainContentData = ListItemMainContentData.Text(text = "John"),
-                                        trailingContentData = ListItemTrailingContentData.Checkbox(
+                                        mainContentData = ListItemMainContentDataUi.Text(text = "John"),
+                                        trailingContentData = ListItemTrailingContentDataUi.Checkbox(
                                             checkboxData = CheckboxData(
                                                 isChecked = true
                                             )

@@ -43,10 +43,10 @@ import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsItemUi
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -200,12 +200,12 @@ private fun SettingsScreenPreview() {
         val settingsItems = listOf(
             SettingsItemUi(
                 type = SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER,
-                data = ListItemData(
+                data = ListItemDataUi(
                     itemId = stringResource(R.string.settings_screen_option_show_batch_issuance_counter_id),
-                    mainContentData = ListItemMainContentData.Text(
+                    mainContentData = ListItemMainContentDataUi.Text(
                         text = stringResource(R.string.settings_screen_option_show_batch_issuance_counter)
                     ),
-                    trailingContentData = ListItemTrailingContentData.Switch(
+                    trailingContentData = ListItemTrailingContentDataUi.Switch(
                         switchData = SwitchData(
                             isChecked = true,
                             enabled = true,
@@ -215,15 +215,15 @@ private fun SettingsScreenPreview() {
             ),
             SettingsItemUi(
                 type = SettingsMenuItemType.RETRIEVE_LOGS,
-                data = ListItemData(
+                data = ListItemDataUi(
                     itemId = stringResource(R.string.settings_screen_option_retrieve_logs_id),
-                    mainContentData = ListItemMainContentData.Text(
+                    mainContentData = ListItemMainContentDataUi.Text(
                         text = stringResource(R.string.settings_screen_option_retrieve_logs)
                     ),
-                    leadingContentData = ListItemLeadingContentData.Icon(
+                    leadingContentData = ListItemLeadingContentDataUi.Icon(
                         iconData = AppIcons.OpenNew
                     ),
-                    trailingContentData = ListItemTrailingContentData.Icon(
+                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = AppIcons.KeyboardArrowRight
                     )
                 )

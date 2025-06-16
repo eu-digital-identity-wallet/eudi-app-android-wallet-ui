@@ -16,11 +16,11 @@
 
 package eu.europa.ec.dashboardfeature.ui.dashboard.model
 
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemDataUi
 
 data class SideMenuItemUi(
     val type: SideMenuTypeUi,
-    val data: ListItemData,
+    val data: ListItemDataUi,
 )
 
 enum class SideMenuTypeUi {

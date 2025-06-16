@@ -26,9 +26,9 @@ import eu.europa.ec.testfeature.util.mockedMdlDocName
 import eu.europa.ec.testfeature.util.mockedMdlId
 import eu.europa.ec.testfeature.util.mockedPidDocName
 import eu.europa.ec.testfeature.util.mockedPidId
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 internal const val mockedBookmarkId = "mockedBookmarkId"
 internal const val mockedChangeLogUrl = "https://example.com/changelog"
@@ -133,53 +133,53 @@ internal val mockedPendingMdlUi = mockedFullMdlUi.copy(
 
 internal val mockedBasicMdlUi = mockedFullMdlUi.copy(
     documentClaims = listOf(
-        ExpandableListItem.SingleListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.SingleListItemDataUi(
+            header = ListItemDataUi(
                 itemId = "",
                 overlineText = "expiry_date",
-                mainContentData = ListItemMainContentData.Text("30 Mar 2050")
+                mainContentData = ListItemMainContentDataUi.Text("30 Mar 2050")
             )
         ),
-        ExpandableListItem.SingleListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.SingleListItemDataUi(
+            header = ListItemDataUi(
                 itemId = "",
                 overlineText = "sex",
-                mainContentData = ListItemMainContentData.Text("male")
+                mainContentData = ListItemMainContentDataUi.Text("male")
             )
         ),
-        ExpandableListItem.SingleListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.SingleListItemDataUi(
+            header = ListItemDataUi(
                 itemId = "",
                 overlineText = "birth_place",
-                mainContentData = ListItemMainContentData.Text("SWEDEN")
+                mainContentData = ListItemMainContentDataUi.Text("SWEDEN")
             )
         ),
-        ExpandableListItem.SingleListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.SingleListItemDataUi(
+            header = ListItemDataUi(
                 itemId = "",
                 overlineText = "portrait",
-                mainContentData = ListItemMainContentData.Image("SE")
+                mainContentData = ListItemMainContentDataUi.Image("SE")
             )
         ),
-        ExpandableListItem.SingleListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.SingleListItemDataUi(
+            header = ListItemDataUi(
                 itemId = "",
                 overlineText = "given_name",
-                mainContentData = ListItemMainContentData.Text("JAN")
+                mainContentData = ListItemMainContentDataUi.Text("JAN")
             )
         ),
-        ExpandableListItem.SingleListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.SingleListItemDataUi(
+            header = ListItemDataUi(
                 itemId = "",
                 overlineText = "family_name",
-                mainContentData = ListItemMainContentData.Text("ANDERSSON")
+                mainContentData = ListItemMainContentDataUi.Text("ANDERSSON")
             )
         ),
-        ExpandableListItem.SingleListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.SingleListItemDataUi(
+            header = ListItemDataUi(
                 itemId = "",
                 overlineText = "signature_usual_mark",
-                mainContentData = ListItemMainContentData.Image("SE")
+                mainContentData = ListItemMainContentDataUi.Image("SE")
             )
         )
     )

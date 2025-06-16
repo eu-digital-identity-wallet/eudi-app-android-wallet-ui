@@ -28,9 +28,9 @@ import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockResourcePr
 import eu.europa.ec.testfeature.util.mockedUriPath1
 import eu.europa.ec.testfeature.util.mockedUriPath2
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
@@ -173,11 +173,11 @@ class TestSettingsInteractor {
         assertEquals(showBatchIssuanceCounterIdString, firstItem.data.itemId)
         // 2c. mainContentData.text
         val mainContent1 =
-            firstItem.data.mainContentData as ListItemMainContentData.Text
+            firstItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(showBatchIssuanceCounterText, mainContent1.text)
         // 2d. trailingContentData is a Switch, and its state is driven by prefKeys.getShowBatchIssuanceCounter()
         val trailingSwitch1 =
-            firstItem.data.trailingContentData as ListItemTrailingContentData.Switch
+            firstItem.data.trailingContentData as ListItemTrailingContentDataUi.Switch
         val switchData1 = trailingSwitch1.switchData
         assertEquals(true, switchData1.isChecked)
         assertEquals(true, switchData1.enabled)
@@ -190,15 +190,15 @@ class TestSettingsInteractor {
         assertEquals(retrieveLogsIdString, secondItem.data.itemId)
         // 3c. mainContentData.text
         val mainContent2 =
-            secondItem.data.mainContentData as ListItemMainContentData.Text
+            secondItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(retrieveLogsText, mainContent2.text)
         // 3d. leadingContentData is an icon with AppIcons.OpenNew
         val leadingIcon2 =
-            secondItem.data.leadingContentData as ListItemLeadingContentData.Icon
+            secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
         assertEquals(AppIcons.OpenNew, leadingIcon2.iconData)
         // 3e. trailingContentData is an icon with AppIcons.KeyboardArrowRight
         val trailingIcon2 =
-            secondItem.data.trailingContentData as ListItemTrailingContentData.Icon
+            secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
         assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
     }
 
@@ -227,10 +227,10 @@ class TestSettingsInteractor {
         assertEquals(SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER, firstItem.type)
         assertEquals(showBatchIssuanceCounterIdString, firstItem.data.itemId)
         val mainContent1 =
-            firstItem.data.mainContentData as ListItemMainContentData.Text
+            firstItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(showBatchIssuanceCounterText, mainContent1.text)
         val trailingSwitch1 =
-            firstItem.data.trailingContentData as ListItemTrailingContentData.Switch
+            firstItem.data.trailingContentData as ListItemTrailingContentDataUi.Switch
         val switchData1 = trailingSwitch1.switchData
         assertEquals(false, switchData1.isChecked)
         assertEquals(true, switchData1.enabled)
@@ -240,13 +240,13 @@ class TestSettingsInteractor {
         assertEquals(SettingsMenuItemType.RETRIEVE_LOGS, secondItem.type)
         assertEquals(retrieveLogsIdString, secondItem.data.itemId)
         val mainContent2 =
-            secondItem.data.mainContentData as ListItemMainContentData.Text
+            secondItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(retrieveLogsText, mainContent2.text)
         val leadingIcon2 =
-            secondItem.data.leadingContentData as ListItemLeadingContentData.Icon
+            secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
         assertEquals(AppIcons.OpenNew, leadingIcon2.iconData)
         val trailingIcon2 =
-            secondItem.data.trailingContentData as ListItemTrailingContentData.Icon
+            secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
         assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
 
         // 4. Third item: CHANGELOG
@@ -254,13 +254,13 @@ class TestSettingsInteractor {
         assertEquals(SettingsMenuItemType.CHANGELOG, thirdItem.type)
         assertEquals(changelogIdString, thirdItem.data.itemId)
         val mainContent3 =
-            thirdItem.data.mainContentData as ListItemMainContentData.Text
+            thirdItem.data.mainContentData as ListItemMainContentDataUi.Text
         assertEquals(changelogText, mainContent3.text)
         val leadingIcon3 =
-            thirdItem.data.leadingContentData as ListItemLeadingContentData.Icon
+            thirdItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
         assertEquals(AppIcons.OpenInBrowser, leadingIcon3.iconData)
         val trailingIcon3 =
-            thirdItem.data.trailingContentData as ListItemTrailingContentData.Icon
+            thirdItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
         assertEquals(AppIcons.KeyboardArrowRight, trailingIcon3.iconData)
     }
     //endregion

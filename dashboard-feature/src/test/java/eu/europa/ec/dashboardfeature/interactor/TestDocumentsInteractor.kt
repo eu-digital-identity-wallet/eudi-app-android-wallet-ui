@@ -49,8 +49,8 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.emptyFlow
 import org.junit.After
@@ -513,7 +513,7 @@ class TestDocumentsInteractor {
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterApplyResult)
                 assertEquals(state.documents.first().second.first().documentCategory.id, 1)
                 assertEquals(
-                    (state.documents.first().second.first().uiData.mainContentData as ListItemMainContentData.Text).text,
+                    (state.documents.first().second.first().uiData.mainContentData as ListItemMainContentDataUi.Text).text,
                     "test"
                 )
             }
@@ -536,7 +536,7 @@ class TestDocumentsInteractor {
                 assertTrue(state is DocumentInteractorFilterPartialState.FilterUpdateResult)
                 assertEquals(state.filters.size, mockFilters.filterGroups.size)
                 assertEquals(
-                    (state.filters.first().header.mainContentData as ListItemMainContentData.Text).text,
+                    (state.filters.first().header.mainContentData as ListItemMainContentDataUi.Text).text,
                     mockFilters.filterGroups.first().name
                 )
                 assertEquals(
@@ -572,9 +572,9 @@ class TestDocumentsInteractor {
     private val mockFilterableItem = FilterableItem(
         payload = DocumentUi(
             documentIssuanceState = DocumentIssuanceStateUi.Pending,
-            uiData = ListItemData(
+            uiData = ListItemDataUi(
                 itemId = "sumo",
-                mainContentData = ListItemMainContentData.Text("test"),
+                mainContentData = ListItemMainContentDataUi.Text("test"),
                 overlineText = null,
                 supportingText = null,
                 leadingContentData = null,

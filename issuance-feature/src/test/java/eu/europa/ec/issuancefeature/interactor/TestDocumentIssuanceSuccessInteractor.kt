@@ -45,12 +45,12 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.RelyingPartyData
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
@@ -113,7 +113,7 @@ class TestDocumentIssuanceSuccessInteractor {
 
     //  Case 1 Expected Result:
     // 	DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success is emitted, with:
-    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemData with document name and mapped claims,
+    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemDataUi with document name and mapped claims,
     // 	headerConfig: Includes the issuer’s name.
 
     @Test
@@ -138,12 +138,12 @@ class TestDocumentIssuanceSuccessInteractor {
                 assertEquals(
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         documentsUi = listOf(
-                            ExpandableListItem.NestedListItemData(
-                                header = ListItemData(
+                            ExpandableListItemUi.NestedListItemDataUi(
+                                header = ListItemDataUi(
                                     itemId = mockedPidId,
-                                    mainContentData = ListItemMainContentData.Text(text = mockedPidWithBasicFields.name),
+                                    mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
                                     supportingText = mockedDocumentSuccessCollapsedSupportingText,
-                                    trailingContentData = ListItemTrailingContentData.Icon(
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
@@ -173,7 +173,7 @@ class TestDocumentIssuanceSuccessInteractor {
 
     //  Case 2 Expected Result:
     // 	DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success is emitted, with:
-    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemData with document name and mapped claims
+    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemDataUi with document name and mapped claims
 
     @Test
     fun `Given Case 2, When getUiItems is called, Then Success state with full document UI is returned`() {
@@ -206,12 +206,12 @@ class TestDocumentIssuanceSuccessInteractor {
                             )
                         ),
                         documentsUi = listOf(
-                            ExpandableListItem.NestedListItemData(
-                                header = ListItemData(
+                            ExpandableListItemUi.NestedListItemDataUi(
+                                header = ListItemDataUi(
                                     itemId = mockedSdJwtPidId,
-                                    mainContentData = ListItemMainContentData.Text(text = mockedSdJwtPidWithBasicFields.name),
+                                    mainContentData = ListItemMainContentDataUi.Text(text = mockedSdJwtPidWithBasicFields.name),
                                     supportingText = mockedDocumentSuccessCollapsedSupportingText,
-                                    trailingContentData = ListItemTrailingContentData.Icon(
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
@@ -259,12 +259,12 @@ class TestDocumentIssuanceSuccessInteractor {
                 assertEquals(
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         documentsUi = listOf(
-                            ExpandableListItem.NestedListItemData(
-                                header = ListItemData(
+                            ExpandableListItemUi.NestedListItemDataUi(
+                                header = ListItemDataUi(
                                     itemId = mockedPidWithBasicFields.id,
-                                    mainContentData = ListItemMainContentData.Text(text = mockedPidWithBasicFields.name),
+                                    mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
                                     supportingText = mockedDocumentSuccessCollapsedSupportingText,
-                                    trailingContentData = ListItemTrailingContentData.Icon(
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
@@ -418,24 +418,24 @@ class TestDocumentIssuanceSuccessInteractor {
                             )
                         ),
                         documentsUi = listOf(
-                            ExpandableListItem.NestedListItemData(
-                                header = ListItemData(
+                            ExpandableListItemUi.NestedListItemDataUi(
+                                header = ListItemDataUi(
                                     itemId = mockedPidId,
-                                    mainContentData = ListItemMainContentData.Text(text = mockedPidWithBasicFields.name),
+                                    mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
                                     supportingText = mockedDocumentSuccessCollapsedSupportingText,
-                                    trailingContentData = ListItemTrailingContentData.Icon(
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
                                 nestedItems = mockedMdocPidClaims,
                                 isExpanded = false
                             ),
-                            ExpandableListItem.NestedListItemData(
-                                header = ListItemData(
+                            ExpandableListItemUi.NestedListItemDataUi(
+                                header = ListItemDataUi(
                                     itemId = mockedSdJwtPidId,
-                                    mainContentData = ListItemMainContentData.Text(text = mockedSdJwtPidWithBasicFields.name),
+                                    mainContentData = ListItemMainContentDataUi.Text(text = mockedSdJwtPidWithBasicFields.name),
                                     supportingText = mockedDocumentSuccessCollapsedSupportingText,
-                                    trailingContentData = ListItemTrailingContentData.Icon(
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),
@@ -487,7 +487,7 @@ class TestDocumentIssuanceSuccessInteractor {
 
     //  Case 8 Expected Result:
     // 	DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success is emitted, with:
-    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemData with document name and mapped claims,
+    // 	documentsUi: A list containing one ExpandableListItem.NestedListItemDataUi with document name and mapped claims,
     // 	headerConfig: Includes the issuer’s name and logo.
 
     @Test
@@ -512,12 +512,12 @@ class TestDocumentIssuanceSuccessInteractor {
                 assertEquals(
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         documentsUi = listOf(
-                            ExpandableListItem.NestedListItemData(
-                                header = ListItemData(
+                            ExpandableListItemUi.NestedListItemDataUi(
+                                header = ListItemDataUi(
                                     itemId = mockedPidId,
-                                    mainContentData = ListItemMainContentData.Text(text = mockedPidWithBasicFieldsAndMetadata.name),
+                                    mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFieldsAndMetadata.name),
                                     supportingText = mockedDocumentSuccessCollapsedSupportingText,
-                                    trailingContentData = ListItemTrailingContentData.Icon(
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowDown
                                     )
                                 ),

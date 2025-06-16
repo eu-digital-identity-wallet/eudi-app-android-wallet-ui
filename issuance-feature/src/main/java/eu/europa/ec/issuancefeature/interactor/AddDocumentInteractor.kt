@@ -33,9 +33,9 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.utils.PERCENTAGE_25
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
@@ -102,10 +102,10 @@ class AddDocumentInteractorImpl(
                             .mapNotNull {
                                 if (flowType != IssuanceFlowUiConfig.NO_DOCUMENT || it.isPid) {
                                     AddDocumentUi(
-                                        itemData = ListItemData(
+                                        itemData = ListItemDataUi(
                                             itemId = it.configurationId,
-                                            mainContentData = ListItemMainContentData.Text(text = it.name),
-                                            trailingContentData = ListItemTrailingContentData.Icon(
+                                            mainContentData = ListItemMainContentDataUi.Text(text = it.name),
+                                            trailingContentData = ListItemTrailingContentDataUi.Icon(
                                                 iconData = AppIcons.Add
                                             )
                                         )

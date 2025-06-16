@@ -68,9 +68,9 @@ import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IssuerDetailsCard
 import eu.europa.ec.uilogic.component.IssuerDetailsCardData
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -89,7 +89,7 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
@@ -683,34 +683,34 @@ private fun DocumentDetailsScreenPreview() {
                 documentName = "Mobile Driving License",
                 documentIdentifier = DocumentIdentifier.OTHER(formatType = "org.iso.18013.5.1.mDL"),
                 documentClaims = listOf(
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
+                    ExpandableListItemUi.SingleListItemDataUi(
+                        header = ListItemDataUi(
                             itemId = "1",
-                            mainContentData = ListItemMainContentData.Text(text = ""),
+                            mainContentData = ListItemMainContentDataUi.Text(text = ""),
                             overlineText = "A reproduction of the mDL holder’s portrait.",
-                            leadingContentData = ListItemLeadingContentData.UserImage(
+                            leadingContentData = ListItemLeadingContentDataUi.UserImage(
                                 userBase64Image = ""
                             ),
                         )
                     ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
+                    ExpandableListItemUi.SingleListItemDataUi(
+                        header = ListItemDataUi(
                             itemId = "2",
-                            mainContentData = ListItemMainContentData.Text(text = "GR"),
+                            mainContentData = ListItemMainContentDataUi.Text(text = "GR"),
                             overlineText = "Alpha-2 country code, as defined in ISO 3166-1 of the issuing authority’s country or territory.",
                         )
                     ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
+                    ExpandableListItemUi.SingleListItemDataUi(
+                        header = ListItemDataUi(
                             itemId = "3",
-                            mainContentData = ListItemMainContentData.Text(text = "12345678900"),
+                            mainContentData = ListItemMainContentDataUi.Text(text = "12345678900"),
                             overlineText = "An audit control number assigned by the issuing authority.",
                         )
                     ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
+                    ExpandableListItemUi.SingleListItemDataUi(
+                        header = ListItemDataUi(
                             itemId = "4",
-                            mainContentData = ListItemMainContentData.Text(text = "31 Dec 2040"),
+                            mainContentData = ListItemMainContentDataUi.Text(text = "31 Dec 2040"),
                             overlineText = "Date when mDL expires.",
                         )
                     )

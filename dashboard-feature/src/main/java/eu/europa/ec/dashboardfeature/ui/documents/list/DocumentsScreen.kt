@@ -72,8 +72,8 @@ import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersSearchBar
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.BroadcastAction
@@ -397,9 +397,9 @@ private fun NoResults(
 ) {
     Column(modifier = modifier) {
         WrapListItem(
-            item = ListItemData(
+            item = ListItemDataUi(
                 itemId = stringResource(R.string.documents_screen_search_no_results_id),
-                mainContentData = ListItemMainContentData.Text(text = stringResource(R.string.documents_screen_search_no_results)),
+                mainContentData = ListItemMainContentDataUi.Text(text = stringResource(R.string.documents_screen_search_no_results)),
             ),
             onItemClick = null,
             modifier = Modifier.fillMaxWidth(),
@@ -595,9 +595,9 @@ private fun DocumentsScreenPreview() {
             val documentsList = listOf(
                 DocumentUi(
                     documentIssuanceState = DocumentIssuanceStateUi.Issued,
-                    uiData = ListItemData(
+                    uiData = ListItemDataUi(
                         itemId = "id1",
-                        mainContentData = ListItemMainContentData.Text(text = "Document 1"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "Document 1"),
                         overlineText = issuerName,
                         supportingText = validUntil,
                         leadingContentData = null,
@@ -608,9 +608,9 @@ private fun DocumentsScreenPreview() {
                 ),
                 DocumentUi(
                     documentIssuanceState = DocumentIssuanceStateUi.Issued,
-                    uiData = ListItemData(
+                    uiData = ListItemDataUi(
                         itemId = "id2",
-                        mainContentData = ListItemMainContentData.Text(text = "Document 2"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "Document 2"),
                         overlineText = issuerName,
                         supportingText = validUntil,
                         leadingContentData = null,
@@ -621,9 +621,9 @@ private fun DocumentsScreenPreview() {
                 ),
                 DocumentUi(
                     documentIssuanceState = DocumentIssuanceStateUi.Issued,
-                    uiData = ListItemData(
+                    uiData = ListItemDataUi(
                         itemId = "id3",
-                        mainContentData = ListItemMainContentData.Text(text = "Document 3"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "Document 3"),
                         overlineText = issuerName,
                         supportingText = validUntil,
                         leadingContentData = null,
@@ -634,9 +634,9 @@ private fun DocumentsScreenPreview() {
                 ),
                 DocumentUi(
                     documentIssuanceState = DocumentIssuanceStateUi.Issued,
-                    uiData = ListItemData(
+                    uiData = ListItemDataUi(
                         itemId = "id4",
-                        mainContentData = ListItemMainContentData.Text(text = "Document 4"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "Document 4"),
                         overlineText = issuerName,
                         supportingText = validUntil,
                         leadingContentData = null,

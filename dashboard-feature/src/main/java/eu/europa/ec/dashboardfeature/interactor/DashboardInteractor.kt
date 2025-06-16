@@ -21,10 +21,10 @@ import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 
 interface DashboardInteractor {
     fun getSideMenuOptions(): List<SideMenuItemUi>
@@ -39,15 +39,15 @@ class DashboardInteractorImpl(
             add(
                 SideMenuItemUi(
                     type = SideMenuTypeUi.CHANGE_PIN,
-                    data = ListItemData(
+                    data = ListItemDataUi(
                         itemId = resourceProvider.getString(R.string.dashboard_side_menu_option_change_pin_id),
-                        mainContentData = ListItemMainContentData.Text(
+                        mainContentData = ListItemMainContentDataUi.Text(
                             text = resourceProvider.getString(R.string.dashboard_side_menu_option_change_pin)
                         ),
-                        leadingContentData = ListItemLeadingContentData.Icon(
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
                             iconData = AppIcons.ChangePin
                         ),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     )
@@ -57,15 +57,15 @@ class DashboardInteractorImpl(
             add(
                 SideMenuItemUi(
                     type = SideMenuTypeUi.SETTINGS,
-                    data = ListItemData(
+                    data = ListItemDataUi(
                         itemId = resourceProvider.getString(R.string.dashboard_side_menu_option_settings_id),
-                        mainContentData = ListItemMainContentData.Text(
+                        mainContentData = ListItemMainContentDataUi.Text(
                             text = resourceProvider.getString(R.string.dashboard_side_menu_option_settings)
                         ),
-                        leadingContentData = ListItemLeadingContentData.Icon(
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
                             iconData = AppIcons.Settings
                         ),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     )

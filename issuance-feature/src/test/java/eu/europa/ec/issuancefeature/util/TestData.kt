@@ -28,10 +28,10 @@ import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedSdJwtPidId
 import eu.europa.ec.testfeature.util.mockedUuid
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.DashboardScreens
@@ -54,34 +54,34 @@ internal const val mockedErrorDescription = "Error description"
 private const val mockedConfigIssuerId = "configurationId"
 
 internal val mockedPidOptionItemUi = AddDocumentUi(
-    itemData = ListItemData(
+    itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
-        mainContentData = ListItemMainContentData.Text(text = mockedPidDocName),
-        trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+        mainContentData = ListItemMainContentDataUi.Text(text = mockedPidDocName),
+        trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
     ),
 )
 
 internal val mockedMdlOptionItemUi = AddDocumentUi(
-    itemData = ListItemData(
+    itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
-        mainContentData = ListItemMainContentData.Text(text = mockedMdlDocName),
-        trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+        mainContentData = ListItemMainContentDataUi.Text(text = mockedMdlDocName),
+        trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
     ),
 )
 
 internal val mockedAgeOptionItemUi = AddDocumentUi(
-    itemData = ListItemData(
+    itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
-        mainContentData = ListItemMainContentData.Text(text = mockedAgeVerificationDocName),
-        trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+        mainContentData = ListItemMainContentDataUi.Text(text = mockedAgeVerificationDocName),
+        trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
     ),
 )
 
 internal val mockedPhotoIdOptionItemUi = AddDocumentUi(
-    itemData = ListItemData(
+    itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
-        mainContentData = ListItemMainContentData.Text(text = mockedPhotoIdDocName),
-        trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+        mainContentData = ListItemMainContentDataUi.Text(text = mockedPhotoIdDocName),
+        trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
     ),
 )
 
@@ -139,123 +139,123 @@ internal val mockedMdocPidClaims = listOf(
 )
 
 internal val mockedSdJwtPidClaims = listOf(
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,age_birth_year",
             overlineText = "age_birth_year",
-            mainContentData = ListItemMainContentData.Text("1985")
+            mainContentData = ListItemMainContentDataUi.Text("1985")
         )
     ),
-    ExpandableListItem.NestedListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.NestedListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,age_equal_or_over",
-            mainContentData = ListItemMainContentData.Text("age_equal_or_over"),
-            trailingContentData = ListItemTrailingContentData.Icon(
+            mainContentData = ListItemMainContentDataUi.Text("age_equal_or_over"),
+            trailingContentData = ListItemTrailingContentDataUi.Icon(
                 iconData = AppIcons.KeyboardArrowDown
             )
         ),
         nestedItems = listOf(
-            ExpandableListItem.SingleListItemData(
-                header = ListItemData(
+            ExpandableListItemUi.SingleListItemDataUi(
+                header = ListItemDataUi(
                     itemId = "$mockedSdJwtPidId,age_equal_or_over,18",
                     overlineText = "18",
-                    mainContentData = ListItemMainContentData.Text("true")
+                    mainContentData = ListItemMainContentDataUi.Text("true")
                 )
             ),
-            ExpandableListItem.SingleListItemData(
-                header = ListItemData(
+            ExpandableListItemUi.SingleListItemDataUi(
+                header = ListItemDataUi(
                     itemId = "$mockedSdJwtPidId,age_equal_or_over,65",
                     overlineText = "65",
-                    mainContentData = ListItemMainContentData.Text("unset")
+                    mainContentData = ListItemMainContentDataUi.Text("unset")
                 )
             )
         ),
         isExpanded = false
     ),
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,birth_date",
             overlineText = "birth_date",
-            mainContentData = ListItemMainContentData.Text("30 Mar 1985")
+            mainContentData = ListItemMainContentDataUi.Text("30 Mar 1985")
         )
     ),
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,exp",
             overlineText = "exp",
-            mainContentData = ListItemMainContentData.Text(text = "1755730800")
+            mainContentData = ListItemMainContentDataUi.Text(text = "1755730800")
         )
     ),
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,family_name",
             overlineText = "family_name",
-            mainContentData = ListItemMainContentData.Text("ANDERSSON")
+            mainContentData = ListItemMainContentDataUi.Text("ANDERSSON")
         )
     ),
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,given_name",
             overlineText = "given_name",
-            mainContentData = ListItemMainContentData.Text("JAN")
+            mainContentData = ListItemMainContentDataUi.Text("JAN")
         )
     ),
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,iat",
             overlineText = "iat",
-            mainContentData = ListItemMainContentData.Text(text = "1747954800")
+            mainContentData = ListItemMainContentDataUi.Text(text = "1747954800")
         )
     ),
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,issuing_authority",
             overlineText = "issuing_authority",
-            mainContentData = ListItemMainContentData.Text(text = "Test PID issuer")
+            mainContentData = ListItemMainContentDataUi.Text(text = "Test PID issuer")
         )
     ),
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,issuing_country",
             overlineText = "issuing_country",
-            mainContentData = ListItemMainContentData.Text("FC")
+            mainContentData = ListItemMainContentDataUi.Text("FC")
         )
     ),
-    ExpandableListItem.NestedListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.NestedListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,$mockedUuid",
             overlineText = null,
-            mainContentData = ListItemMainContentData.Text("nationalities"),
-            trailingContentData = ListItemTrailingContentData.Icon(
+            mainContentData = ListItemMainContentDataUi.Text("nationalities"),
+            trailingContentData = ListItemTrailingContentDataUi.Icon(
                 iconData = AppIcons.KeyboardArrowDown
             )
         ),
         nestedItems = listOf(
-            ExpandableListItem.SingleListItemData(
-                header = ListItemData(
+            ExpandableListItemUi.SingleListItemDataUi(
+                header = ListItemDataUi(
                     itemId = "$mockedSdJwtPidId,nationalities",
                     overlineText = "nationalities",
-                    mainContentData = ListItemMainContentData.Text("SE")
+                    mainContentData = ListItemMainContentDataUi.Text("SE")
                 )
             )
         ),
         isExpanded = false
     ),
-    ExpandableListItem.NestedListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.NestedListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,place_of_birth",
             overlineText = null,
-            mainContentData = ListItemMainContentData.Text("place_of_birth"),
-            trailingContentData = ListItemTrailingContentData.Icon(
+            mainContentData = ListItemMainContentDataUi.Text("place_of_birth"),
+            trailingContentData = ListItemTrailingContentDataUi.Icon(
                 iconData = AppIcons.KeyboardArrowDown
             )
         ),
         nestedItems = listOf(
-            ExpandableListItem.SingleListItemData(
-                header = ListItemData(
+            ExpandableListItemUi.SingleListItemDataUi(
+                header = ListItemDataUi(
                     itemId = "$mockedSdJwtPidId,place_of_birth,locality",
                     overlineText = "locality",
-                    mainContentData = ListItemMainContentData.Text("KATRINEHOLM")
+                    mainContentData = ListItemMainContentDataUi.Text("KATRINEHOLM")
                 )
             )
         ),
@@ -264,10 +264,10 @@ internal val mockedSdJwtPidClaims = listOf(
 )
 
 private fun createMdocClaimListItem(docId: String, claimIdentifier: String, value: String) =
-    ExpandableListItem.SingleListItemData(
-        header = ListItemData(
+    ExpandableListItemUi.SingleListItemDataUi(
+        header = ListItemDataUi(
             itemId = "$docId,$claimIdentifier",
             overlineText = claimIdentifier,
-            mainContentData = ListItemMainContentData.Text(value)
+            mainContentData = ListItemMainContentDataUi.Text(value)
         )
     )

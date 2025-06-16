@@ -52,11 +52,11 @@ import eu.europa.ec.dashboardfeature.ui.transactions.model.toTransactionTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -67,13 +67,13 @@ import java.time.LocalDateTime
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
         val transactions: List<Pair<TransactionCategoryUi, List<TransactionUi>>>,
-        val filters: List<ExpandableListItem.NestedListItemData>,
+        val filters: List<ExpandableListItemUi.NestedListItemDataUi>,
         val sortOrder: SortOrder,
         val allDefaultFiltersAreSelected: Boolean,
     ) : TransactionInteractorFilterPartialState()
 
     data class FilterUpdateResult(
-        val filters: List<ExpandableListItem.NestedListItemData>,
+        val filters: List<ExpandableListItemUi.NestedListItemDataUi>,
         val sortOrder: SortOrder,
     ) : TransactionInteractorFilterPartialState()
 }
@@ -166,24 +166,24 @@ class TransactionsInteractorImpl(
             }.toList()
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
-                ExpandableListItem.NestedListItemData(
+                ExpandableListItemUi.NestedListItemDataUi(
                     isExpanded = true,
-                    header = ListItemData(
+                    header = ListItemDataUi(
                         itemId = filterGroup.id,
-                        mainContentData = ListItemMainContentData.Text(filterGroup.name),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     ),
                     nestedItems = filterGroup.filters.map { filterItem ->
-                        ExpandableListItem.SingleListItemData(
-                            header = ListItemData(
+                        ExpandableListItemUi.SingleListItemDataUi(
+                            header = ListItemDataUi(
                                 itemId = filterItem.id,
-                                mainContentData = ListItemMainContentData.Text(filterItem.name),
+                                mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
                                 trailingContentData = when (filterGroup) {
                                     is FilterGroup.MultipleSelectionFilterGroup<*>,
                                     is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
-                                        ListItemTrailingContentData.Checkbox(
+                                        ListItemTrailingContentDataUi.Checkbox(
                                             checkboxData = CheckboxData(
                                                 isChecked = filterItem.selected,
                                                 enabled = true
@@ -193,7 +193,7 @@ class TransactionsInteractorImpl(
 
                                     is FilterGroup.SingleSelectionFilterGroup,
                                     is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
-                                        ListItemTrailingContentData.RadioButton(
+                                        ListItemTrailingContentDataUi.RadioButton(
                                             radioButtonData = RadioButtonData(
                                                 isSelected = filterItem.selected,
                                                 enabled = true
@@ -231,7 +231,7 @@ class TransactionsInteractorImpl(
             val transactions = walletCoreDocumentsController.getTransactionLogs()
             val filterableItems = transactions.map { transaction ->
 
-                val trailingContentData = ListItemTrailingContentData.TextWithIcon(
+                val trailingContentData = ListItemTrailingContentDataUi.TextWithIcon(
                     text = transaction.getTransactionTypeLabel(resourceProvider),
                     iconData = AppIcons.KeyboardArrowRight
                 )
@@ -244,10 +244,10 @@ class TransactionsInteractorImpl(
 
                 FilterableItem(
                     payload = TransactionUi(
-                        uiData = ExpandableListItem.SingleListItemData(
-                            header = ListItemData(
+                        uiData = ExpandableListItemUi.SingleListItemDataUi(
+                            header = ListItemDataUi(
                                 itemId = transaction.id,
-                                mainContentData = ListItemMainContentData.Text(text = transactionName),
+                                mainContentData = ListItemMainContentDataUi.Text(text = transactionName),
                                 overlineText = transactionStatus.toUiText(resourceProvider),
                                 supportingText = transaction.creationLocalDateTime.toFormattedDisplayableDate(),
                                 trailingContentData = trailingContentData

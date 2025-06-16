@@ -82,8 +82,8 @@ import eu.europa.ec.uilogic.component.DualSelectorButtonData
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersDatePickerDialog
 import eu.europa.ec.uilogic.component.FiltersSearchBar
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -97,7 +97,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
@@ -390,9 +390,9 @@ private fun NoResults(
 ) {
     Column(modifier = modifier) {
         WrapListItem(
-            item = ListItemData(
+            item = ListItemDataUi(
                 itemId = stringResource(R.string.transactions_screen_search_no_results_id),
-                mainContentData = ListItemMainContentData.Text(
+                mainContentData = ListItemMainContentDataUi.Text(
                     text = stringResource(R.string.transactions_screen_search_no_results)
                 ),
             ),
@@ -436,7 +436,7 @@ private fun TopBar(
 @Composable
 private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
-    filtersUi: List<ExpandableListItem.NestedListItemData>,
+    filtersUi: List<ExpandableListItemUi.NestedListItemDataUi>,
     snapshotFilterDateRangeData: FilterDateRangeSelectionUi,
     sortOrder: DualSelectorButtonData,
     onEventSent: (event: Event) -> Unit,

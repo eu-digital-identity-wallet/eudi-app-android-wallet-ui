@@ -41,10 +41,10 @@ import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
 import eu.europa.ec.uilogic.component.DualSelectorButtonData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -75,7 +75,7 @@ data class State(
     val isFromOnPause: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 
-    val filtersUi: List<ExpandableListItem.NestedListItemData> = emptyList(),
+    val filtersUi: List<ExpandableListItemUi.NestedListItemDataUi> = emptyList(),
     val sortOrder: DualSelectorButtonData,
     val isFilteringActive: Boolean,
 ) : ViewState
@@ -147,7 +147,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class DocumentsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItem.SingleListItemData>) :
+    data class Filters(val filters: List<ExpandableListItemUi.SingleListItemDataUi>) :
         DocumentsBottomSheetContent()
 
     data object AddDocument : DocumentsBottomSheetContent()
@@ -392,7 +392,7 @@ class DocumentsViewModel(
                     documentIssuanceState = DocumentIssuanceStateUi.Failed,
                     uiData = data.uiData.copy(
                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.ErrorFilled,
                             tint = ThemeColors.error
                         )

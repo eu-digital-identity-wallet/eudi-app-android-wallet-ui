@@ -56,12 +56,12 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.RadioButtonData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -76,13 +76,13 @@ import java.time.Instant
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
         val documents: List<Pair<DocumentCategory, List<DocumentUi>>>,
-        val filters: List<ExpandableListItem.NestedListItemData>,
+        val filters: List<ExpandableListItemUi.NestedListItemDataUi>,
         val sortOrder: DualSelectorButton,
         val allDefaultFiltersAreSelected: Boolean,
     ) : DocumentInteractorFilterPartialState()
 
     data class FilterUpdateResult(
-        val filters: List<ExpandableListItem.NestedListItemData>,
+        val filters: List<ExpandableListItemUi.NestedListItemDataUi>,
         val sortOrder: DualSelectorButton,
     ) : DocumentInteractorFilterPartialState()
 }
@@ -196,24 +196,24 @@ class DocumentsInteractorImpl(
             }.toList().sortedBy { it.first.order }
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
-                ExpandableListItem.NestedListItemData(
+                ExpandableListItemUi.NestedListItemDataUi(
                     isExpanded = true,
-                    header = ListItemData(
+                    header = ListItemDataUi(
                         itemId = filterGroup.id,
-                        mainContentData = ListItemMainContentData.Text(filterGroup.name),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     ),
                     nestedItems = filterGroup.filters.map { filterItem ->
-                        ExpandableListItem.SingleListItemData(
-                            header = ListItemData(
+                        ExpandableListItemUi.SingleListItemDataUi(
+                            header = ListItemDataUi(
                                 itemId = filterItem.id,
-                                mainContentData = ListItemMainContentData.Text(filterItem.name),
+                                mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
                                 trailingContentData = when (filterGroup) {
                                     is FilterGroup.MultipleSelectionFilterGroup<*>,
                                     is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
-                                        ListItemTrailingContentData.Checkbox(
+                                        ListItemTrailingContentDataUi.Checkbox(
                                             checkboxData = CheckboxData(
                                                 isChecked = filterItem.selected,
                                                 enabled = true
@@ -223,7 +223,7 @@ class DocumentsInteractorImpl(
 
                                     is FilterGroup.SingleSelectionFilterGroup,
                                     is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
-                                        ListItemTrailingContentData.RadioButton(
+                                        ListItemTrailingContentDataUi.RadioButton(
                                             radioButtonData = RadioButtonData(
                                                 isSelected = filterItem.selected,
                                                 enabled = true
@@ -346,7 +346,7 @@ class DocumentsInteractorImpl(
                             }
 
                             val trailingContentData = if (documentIsRevoked) {
-                                ListItemTrailingContentData.Icon(
+                                ListItemTrailingContentDataUi.Icon(
                                     iconData = AppIcons.ErrorFilled,
                                     tint = ThemeColors.error
                                 )
@@ -366,12 +366,12 @@ class DocumentsInteractorImpl(
                                         )
                                     )
 
-                                    ListItemTrailingContentData.TextWithIcon(
+                                    ListItemTrailingContentDataUi.TextWithIcon(
                                         text = documentCredentialsInfoUi.title,
                                         iconData = AppIcons.KeyboardArrowRight
                                     )
                                 } else {
-                                    ListItemTrailingContentData.Icon(
+                                    ListItemTrailingContentDataUi.Icon(
                                         iconData = AppIcons.KeyboardArrowRight
                                     )
                                 }
@@ -380,12 +380,12 @@ class DocumentsInteractorImpl(
                             FilterableItem(
                                 payload = DocumentUi(
                                     documentIssuanceState = documentIssuanceState,
-                                    uiData = ListItemData(
+                                    uiData = ListItemDataUi(
                                         itemId = document.id,
-                                        mainContentData = ListItemMainContentData.Text(text = documentName),
+                                        mainContentData = ListItemMainContentDataUi.Text(text = documentName),
                                         overlineText = issuerName,
                                         supportingText = supportingText,
-                                        leadingContentData = ListItemLeadingContentData.AsyncImage(
+                                        leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
                                             errorImage = AppIcons.Id,
                                         ),
@@ -430,16 +430,16 @@ class DocumentsInteractorImpl(
                             FilterableItem(
                                 payload = DocumentUi(
                                     documentIssuanceState = DocumentIssuanceStateUi.Pending,
-                                    uiData = ListItemData(
+                                    uiData = ListItemDataUi(
                                         itemId = document.id,
-                                        mainContentData = ListItemMainContentData.Text(text = documentName),
+                                        mainContentData = ListItemMainContentDataUi.Text(text = documentName),
                                         overlineText = issuerName,
                                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
-                                        leadingContentData = ListItemLeadingContentData.AsyncImage(
+                                        leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
                                             errorImage = AppIcons.Id,
                                         ),
-                                        trailingContentData = ListItemTrailingContentData.Icon(
+                                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                                             iconData = AppIcons.ClockTimer,
                                             tint = ThemeColors.warning,
                                         )

@@ -23,7 +23,7 @@ import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -157,7 +157,7 @@ internal class TransactionDetailsViewModel(
                     val newHeader = if (dataSharedItem.header.itemId == itemId) {
                         val newIsExpanded = !dataSharedItem.isExpanded
                         val newCollapsed = dataSharedItem.header.copy(
-                            trailingContentData = ListItemTrailingContentData.Icon(
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(
                                 iconData = if (newIsExpanded) {
                                     AppIcons.KeyboardArrowUp
                                 } else {

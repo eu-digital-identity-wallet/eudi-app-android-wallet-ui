@@ -20,11 +20,11 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItemPayload
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
-import eu.europa.ec.uilogic.component.ListItemData
+import eu.europa.ec.uilogic.component.ListItemDataUi
 
 data class DocumentUi(
     val documentIssuanceState: DocumentIssuanceStateUi,
-    val uiData: ListItemData,
+    val uiData: ListItemDataUi,
     val documentIdentifier: DocumentIdentifier,
     val documentCategory: DocumentCategory,
 ) : FilterableItemPayload
