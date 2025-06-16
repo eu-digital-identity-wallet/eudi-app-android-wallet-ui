@@ -27,7 +27,7 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.transformer.DocumentDetailsTransformer
-import eu.europa.ec.dashboardfeature.ui.documents.detail.transformer.DocumentDetailsTransformer.createDocumentCredentialsInfo
+import eu.europa.ec.dashboardfeature.ui.documents.detail.transformer.DocumentDetailsTransformer.createDocumentCredentialsInfoUi
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
@@ -119,7 +119,7 @@ class DocumentDetailsInteractorImpl(
                 val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
 
                 val documentCredentialsInfo = if (prefKeys.getShowBatchIssuanceCounter()) {
-                    createDocumentCredentialsInfo(
+                    createDocumentCredentialsInfoUi(
                         document = safeIssuedDocument,
                         resourceProvider = resourceProvider
                     )

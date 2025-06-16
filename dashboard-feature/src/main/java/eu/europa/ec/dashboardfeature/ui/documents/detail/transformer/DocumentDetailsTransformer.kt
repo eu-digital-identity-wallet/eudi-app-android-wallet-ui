@@ -68,7 +68,7 @@ object DocumentDetailsTransformer {
         )
     }
 
-    suspend fun createDocumentCredentialsInfo(
+    suspend fun createDocumentCredentialsInfoUi(
         document: IssuedDocument,
         resourceProvider: ResourceProvider,
     ): DocumentCredentialsInfoUi {
