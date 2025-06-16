@@ -16,7 +16,7 @@
 
 package eu.europa.ec.commonfeature.ui.request.model
 
-import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.format.DocumentFormat
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
@@ -49,5 +49,5 @@ data class DocumentPayloadDomain(
     val docName: String,
     val docId: DocumentId,
     val domainDocFormat: DomainDocumentFormat,
-    val docClaimsDomain: List<DomainClaim>,
+    val docClaimsDomain: List<ClaimDomain>,
 )

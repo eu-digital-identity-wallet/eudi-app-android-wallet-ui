@@ -38,7 +38,7 @@ import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
-import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentCategory
@@ -105,11 +105,11 @@ sealed class DocumentInteractorDeleteDocumentPartialState {
 
 sealed class DocumentInteractorRetryIssuingDeferredDocumentPartialState {
     data class Success(
-        val deferredDocumentData: DeferredDocumentData,
+        val deferredDocumentData: DeferredDocumentDataDomain,
     ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
 
     data class NotReady(
-        val deferredDocumentData: DeferredDocumentData,
+        val deferredDocumentData: DeferredDocumentDataDomain,
     ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
 
     data class Failure(
@@ -124,7 +124,7 @@ sealed class DocumentInteractorRetryIssuingDeferredDocumentPartialState {
 
 sealed class DocumentInteractorRetryIssuingDeferredDocumentsPartialState {
     data class Result(
-        val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
+        val successfullyIssuedDeferredDocuments: List<DeferredDocumentDataDomain>,
         val failedIssuedDeferredDocuments: List<DocumentId>,
     ) : DocumentInteractorRetryIssuingDeferredDocumentsPartialState()
 
@@ -479,7 +479,7 @@ class DocumentsInteractorImpl(
         dispatcher: CoroutineDispatcher,
     ): Flow<DocumentInteractorRetryIssuingDeferredDocumentsPartialState> = flow {
 
-        val successResults: MutableList<DeferredDocumentData> = mutableListOf()
+        val successResults: MutableList<DeferredDocumentDataDomain> = mutableListOf()
         val failedResults: MutableList<DocumentId> = mutableListOf()
 
         withContext(dispatcher) {

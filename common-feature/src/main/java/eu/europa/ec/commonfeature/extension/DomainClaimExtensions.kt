@@ -3,7 +3,7 @@ package eu.europa.ec.commonfeature.extension
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
-import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -19,9 +19,9 @@ fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListI
     }
 }
 
-fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListItemUi {
+fun ClaimDomain.toSelectiveExpandableListItems(docId: String): ExpandableListItemUi {
     return when (this) {
-        is DomainClaim.Group -> {
+        is ClaimDomain.Group -> {
             ExpandableListItemUi.NestedListItem(
                 header = ListItemDataUi(
                     itemId = path.toId(docId),
@@ -35,7 +35,7 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
             )
         }
 
-        is DomainClaim.Primitive -> {
+        is ClaimDomain.Primitive -> {
             ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
                     itemId = path.toId(docId),
@@ -54,9 +54,9 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
     }
 }
 
-fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItemUi {
+fun ClaimDomain.toExpandableListItems(docId: String): ExpandableListItemUi {
     return when (this) {
-        is DomainClaim.Group -> {
+        is ClaimDomain.Group -> {
             ExpandableListItemUi.NestedListItem(
                 header = ListItemDataUi(
                     itemId = path.toId(docId),
@@ -68,7 +68,7 @@ fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItemUi {
             )
         }
 
-        is DomainClaim.Primitive -> {
+        is ClaimDomain.Primitive -> {
             ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
                     itemId = path.toId(docId),

@@ -37,9 +37,9 @@ import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.TransactionLogData
-import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionDocumentNames
-import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain.Companion.getTransactionDocumentNames
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain.Companion.getTransactionTypeLabel
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionCategoryUi
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
 import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
@@ -267,9 +267,9 @@ class TransactionsInteractorImpl(
                         transactionType = transaction.toTransactionTypeUi(),
                         creationLocalDateTime = transaction.creationLocalDateTime,
                         relyingPartyName = when (transaction) {
-                            is TransactionLogData.IssuanceLog -> null // TODO Update this once Core supports Issuance transactions
-                            is TransactionLogData.PresentationLog -> transaction.relyingParty.name
-                            is TransactionLogData.SigningLog -> null
+                            is TransactionLogDataDomain.IssuanceLog -> null // TODO Update this once Core supports Issuance transactions
+                            is TransactionLogDataDomain.PresentationLog -> transaction.relyingParty.name
+                            is TransactionLogDataDomain.SigningLog -> null
                         }
                     )
                 )

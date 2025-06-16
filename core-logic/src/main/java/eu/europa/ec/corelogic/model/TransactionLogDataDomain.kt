@@ -24,7 +24,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Locale
 
-sealed interface TransactionLogData {
+sealed interface TransactionLogDataDomain {
 
     val id: String
     val name: String
@@ -40,7 +40,7 @@ sealed interface TransactionLogData {
         override val creationLocalDate: LocalDate,
         val relyingParty: TransactionLog.RelyingParty,
         val documents: List<PresentedDocument>,
-    ) : TransactionLogData
+    ) : TransactionLogDataDomain
 
     data class IssuanceLog(
         override val id: String,
@@ -48,7 +48,7 @@ sealed interface TransactionLogData {
         override val status: TransactionLog.Status,
         override val creationLocalDateTime: LocalDateTime,
         override val creationLocalDate: LocalDate,
-    ) : TransactionLogData
+    ) : TransactionLogDataDomain
 
     data class SigningLog(
         override val id: String,
@@ -56,10 +56,10 @@ sealed interface TransactionLogData {
         override val status: TransactionLog.Status,
         override val creationLocalDateTime: LocalDateTime,
         override val creationLocalDate: LocalDate,
-    ) : TransactionLogData
+    ) : TransactionLogDataDomain
 
     companion object {
-        fun TransactionLogData.getTransactionTypeLabel(resourceProvider: ResourceProvider): String {
+        fun TransactionLogDataDomain.getTransactionTypeLabel(resourceProvider: ResourceProvider): String {
             return when (this) {
                 is PresentationLog -> resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.transactions_screen_filters_filter_by_transaction_type_presentation)
                 is IssuanceLog -> resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.transactions_screen_filters_filter_by_transaction_type_issuance)
@@ -67,7 +67,7 @@ sealed interface TransactionLogData {
             }
         }
 
-        fun TransactionLogData.getTransactionDocumentNames(userLocale: Locale): List<String> {
+        fun TransactionLogDataDomain.getTransactionDocumentNames(userLocale: Locale): List<String> {
             return when (this) {
                 is IssuanceLog -> {
                     //TODO change this once Core supports more transaction types

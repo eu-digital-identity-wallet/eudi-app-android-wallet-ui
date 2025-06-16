@@ -16,7 +16,7 @@
 
 package eu.europa.ec.corelogic.model
 
-data class ClaimPath(val value: List<String>) {
+data class ClaimPathDomain(val value: List<String>) {
 
     companion object {
         const val PATH_SEPARATOR = ","
@@ -34,12 +34,12 @@ data class ClaimPath(val value: List<String>) {
                 .drop(1)
         }
 
-        fun List<String>.toClaimPath(): ClaimPath {
-            return ClaimPath(value = this)
+        fun List<String>.toClaimPathDomain(): ClaimPathDomain {
+            return ClaimPathDomain(value = this)
         }
 
         /**
-         * Checks whether this [ClaimPath] is a prefix of another [ClaimPath].
+         * Checks whether this [ClaimPathDomain] is a prefix of another [ClaimPathDomain].
          *
          * A prefix match means that all elements of this path must appear in the same order
          * and at the beginning of the [other] path. This allows partial matches useful in scenarios
@@ -53,10 +53,10 @@ data class ClaimPath(val value: List<String>) {
          * ClaimPath(listOf("name")).isPrefixOf(ClaimPath(listOf("name_birth"))) == false
          * ```
          *
-         * @param other The [ClaimPath] to compare against.
+         * @param other The [ClaimPathDomain] to compare against.
          * @return `true` if this path is a prefix of [other]; `false` otherwise.
          */
-        fun ClaimPath.isPrefixOf(other: ClaimPath): Boolean {
+        fun ClaimPathDomain.isPrefixOf(other: ClaimPathDomain): Boolean {
             return this.value.size <= other.value.size &&
                     this.value.zip(other.value).all { (a, b) -> a == b }
         }

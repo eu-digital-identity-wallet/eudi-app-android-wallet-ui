@@ -29,7 +29,7 @@ import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
@@ -268,7 +268,7 @@ class TestDocumentsInteractor {
                 mockDeferredPendingDocId1 to mockDeferredPendingType1,
                 mockDeferredPendingDocId2 to mockDeferredPendingType2
             )
-            val successData = DeferredDocumentData(
+            val successData = DeferredDocumentDataDomain(
                 documentId = mockDeferredPendingDocId1,
                 formatType = mockDeferredPendingType1,
                 docName = mockDeferredPendingName1
@@ -356,7 +356,7 @@ class TestDocumentsInteractor {
             val deferredDocuments: Map<DocumentId, FormatType> = mapOf(
                 mockDeferredPendingDocId to mockDeferredPendingType
             )
-            val successData = DeferredDocumentData(
+            val successData = DeferredDocumentDataDomain(
                 documentId = mockDeferredPendingDocId,
                 formatType = mockDeferredPendingType,
                 docName = mockDeferredPendingName

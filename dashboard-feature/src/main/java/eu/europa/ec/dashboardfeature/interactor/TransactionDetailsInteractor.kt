@@ -25,10 +25,10 @@ import eu.europa.ec.commonfeature.util.createKeyValue
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.getLocalizedDocumentName
 import eu.europa.ec.corelogic.extension.sortRecursivelyBy
-import eu.europa.ec.corelogic.model.ClaimPath.Companion.toClaimPath
-import eu.europa.ec.corelogic.model.DomainClaim
-import eu.europa.ec.corelogic.model.TransactionLogData
-import eu.europa.ec.corelogic.model.TransactionLogData.Companion.getTransactionTypeLabel
+import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimDomain
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain.Companion.getTransactionTypeLabel
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsCardUi
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsDataSharedHolderUi
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsUi
@@ -107,13 +107,13 @@ class TransactionDetailsInteractorImpl(
                     val dataShared: List<ExpandableListItemUi.NestedListItem>?
 
                     when (transaction) {
-                        is TransactionLogData.IssuanceLog -> {
+                        is TransactionLogDataDomain.IssuanceLog -> {
                             //TODO change this once Core supports more transaction types
                             relyingPartyData = null
                             dataShared = null
                         }
 
-                        is TransactionLogData.PresentationLog -> {
+                        is TransactionLogDataDomain.PresentationLog -> {
                             relyingPartyData = transaction.relyingParty
 
                             dataShared = transaction.documents.toGroupedNestedClaims(
@@ -125,7 +125,7 @@ class TransactionDetailsInteractorImpl(
                             )
                         }
 
-                        is TransactionLogData.SigningLog -> {
+                        is TransactionLogDataDomain.SigningLog -> {
                             //TODO change this once Core supports more transaction types
                             relyingPartyData = null
                             dataShared = null
@@ -189,7 +189,7 @@ class TransactionDetailsInteractorImpl(
         uuidProvider: UuidProvider
     ): List<ExpandableListItemUi.NestedListItem> {
         return this.mapIndexed { index, presentedDocument ->
-            val domainClaims: MutableList<DomainClaim> = mutableListOf()
+            val domainClaims: MutableList<ClaimDomain> = mutableListOf()
 
             presentedDocument.claims.forEach { presentedClaim ->
                 val elementIdentifier = when (presentedDocument.format) {
@@ -200,7 +200,7 @@ class TransactionDetailsInteractorImpl(
                 val itemPath = when (presentedDocument.format) {
                     is MsoMdocFormat -> listOf(elementIdentifier)
                     is SdJwtVcFormat -> presentedClaim.path
-                }.toClaimPath()
+                }.toClaimPathDomain()
 
                 createKeyValue(
                     item = presentedClaim.value!!,

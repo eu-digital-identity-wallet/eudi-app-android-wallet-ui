@@ -25,8 +25,8 @@ import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.extension.removeEmptyGroups
 import eu.europa.ec.corelogic.extension.sortRecursivelyBy
-import eu.europa.ec.corelogic.model.ClaimPath
-import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
@@ -109,32 +109,32 @@ fun createKeyValue(
     item: Any,
     groupKey: String,
     childKey: String = "",
-    disclosurePath: ClaimPath,
+    disclosurePath: ClaimPathDomain,
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
     claimMetaData: IssuerMetadata.Claim?,
-    allItems: MutableList<DomainClaim>,
+    allItems: MutableList<ClaimDomain>,
 ) {
 
     @OptIn(ExperimentalUuidApi::class)
     fun addFlatOrGroupedChildren(
-        allItems: MutableList<DomainClaim>,
-        children: List<DomainClaim>,
+        allItems: MutableList<ClaimDomain>,
+        children: List<ClaimDomain>,
         groupKey: String,
         displayTitle: String,
         predicate: () -> Boolean
     ) {
 
         val groupIsAlreadyPresent = children
-            .filterIsInstance<DomainClaim.Group>()
+            .filterIsInstance<ClaimDomain.Group>()
             .any { it.key == groupKey }
 
         if (predicate() && !groupIsAlreadyPresent) {
             allItems.add(
-                DomainClaim.Group(
+                ClaimDomain.Group(
                     key = groupKey,
                     displayTitle = displayTitle,
-                    path = ClaimPath(listOf(uuidProvider.provideUuid())),
+                    path = ClaimPathDomain(listOf(uuidProvider.provideUuid())),
                     items = children
                 )
             )
@@ -147,7 +147,7 @@ fun createKeyValue(
 
         is Map<*, *> -> {
 
-            val children: MutableList<DomainClaim> = mutableListOf()
+            val children: MutableList<ClaimDomain> = mutableListOf()
             val childKeys: MutableList<String> = mutableListOf()
 
             item.forEach { (key, value) ->
@@ -187,7 +187,7 @@ fun createKeyValue(
 
         is Collection<*> -> {
 
-            val children: MutableList<DomainClaim> = mutableListOf()
+            val children: MutableList<ClaimDomain> = mutableListOf()
 
             item.forEach { value ->
                 value?.let {
@@ -238,7 +238,7 @@ fun createKeyValue(
             }
 
             allItems.add(
-                DomainClaim.Primitive(
+                ClaimDomain.Primitive(
                     key = childKey.ifEmpty { groupKey },
                     displayTitle = childKey.ifEmpty {
                         getReadableNameFromIdentifier(
@@ -282,13 +282,13 @@ val IssuedDocument.docNamespace: NameSpace?
     }
 
 private fun insertPath(
-    tree: List<DomainClaim>,
-    path: ClaimPath,
-    disclosurePath: ClaimPath,
+    tree: List<ClaimDomain>,
+    path: ClaimPathDomain,
+    disclosurePath: ClaimPathDomain,
     claims: List<DocumentClaim>,
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
-): List<DomainClaim> {
+): List<ClaimDomain> {
     if (path.value.isEmpty()) return tree
 
     val userLocale = resourceProvider.getLocale()
@@ -302,7 +302,7 @@ private fun insertPath(
     return if (path.value.size == 1) {
         // Leaf node (Primitive or Nested Structure)
         if (existingNode == null && currentClaim != null) {
-            val accumulatedClaims: MutableList<DomainClaim> = mutableListOf()
+            val accumulatedClaims: MutableList<ClaimDomain> = mutableListOf()
             createKeyValue(
                 item = currentClaim.value!!,
                 groupKey = currentClaim.identifier,
@@ -320,12 +320,12 @@ private fun insertPath(
         // Group node (Intermediate)
         val childClaims =
             (claims.find { key == it.identifier } as? SdJwtVcClaim)?.children ?: claims
-        val updatedNode = if (existingNode is DomainClaim.Group) {
+        val updatedNode = if (existingNode is ClaimDomain.Group) {
             // Update existing group by inserting the next path segment into its items
             existingNode.copy(
                 items = insertPath(
                     tree = existingNode.items,
-                    path = ClaimPath(path.value.drop(1)),
+                    path = ClaimPathDomain(path.value.drop(1)),
                     disclosurePath = disclosurePath,
                     claims = childClaims,
                     resourceProvider = resourceProvider,
@@ -334,17 +334,17 @@ private fun insertPath(
             )
         } else {
             // Create a new group and insert the next path segment
-            DomainClaim.Group(
+            ClaimDomain.Group(
                 key = currentClaim?.identifier ?: key,
                 displayTitle = getReadableNameFromIdentifier(
                     claimMetaData = currentClaim?.issuerMetadata,
                     userLocale = userLocale,
                     fallback = currentClaim?.identifier ?: key
                 ),
-                path = ClaimPath(disclosurePath.value.take((disclosurePath.value.size - path.value.size) + 1)),
+                path = ClaimPathDomain(disclosurePath.value.take((disclosurePath.value.size - path.value.size) + 1)),
                 items = insertPath(
                     tree = emptyList(),
-                    path = ClaimPath(path.value.drop(1)),
+                    path = ClaimPathDomain(path.value.drop(1)),
                     disclosurePath = disclosurePath,
                     claims = childClaims,
                     resourceProvider = resourceProvider,
@@ -359,12 +359,12 @@ private fun insertPath(
 
 // Function to build the tree from a list of paths
 fun transformPathsToDomainClaims(
-    paths: List<ClaimPath>,
+    paths: List<ClaimPathDomain>,
     claims: List<DocumentClaim>,
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider
-): List<DomainClaim> {
-    return paths.fold<ClaimPath, List<DomainClaim>>(initial = emptyList()) { acc, path ->
+): List<ClaimDomain> {
+    return paths.fold<ClaimPathDomain, List<ClaimDomain>>(initial = emptyList()) { acc, path ->
         insertPath(
             tree = acc,
             path = path,

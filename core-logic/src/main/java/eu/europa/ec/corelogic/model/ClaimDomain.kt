@@ -18,23 +18,23 @@ package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 
-sealed class DomainClaim {
+sealed class ClaimDomain {
     abstract val key: ElementIdentifier
     abstract val displayTitle: String
-    abstract val path: ClaimPath
+    abstract val path: ClaimPathDomain
 
     data class Group(
         override val key: ElementIdentifier,
         override val displayTitle: String,
-        override val path: ClaimPath,
-        val items: List<DomainClaim>,
-    ) : DomainClaim()
+        override val path: ClaimPathDomain,
+        val items: List<ClaimDomain>,
+    ) : ClaimDomain()
 
     data class Primitive(
         override val key: ElementIdentifier,
         override val displayTitle: String,
-        override val path: ClaimPath,
+        override val path: ClaimPathDomain,
         val value: String,
         val isRequired: Boolean,
-    ) : DomainClaim()
+    ) : ClaimDomain()
 }

@@ -21,7 +21,7 @@ import android.content.Intent
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.RevokedDocumentPayload
+import eu.europa.ec.corelogic.model.RevokedDocumentDataDomain
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.corelogic.util.CoreActions.REVOCATION_IDS_DETAILS_EXTRA
 import eu.europa.ec.eudi.statium.Status
@@ -138,7 +138,7 @@ class RevocationWorkManager(
                 CoreActions.REVOCATION_IDS_EXTRA,
                 ArrayList(
                     revokedDocuments.map {
-                        RevokedDocumentPayload(name = it.name, id = it.id)
+                        RevokedDocumentDataDomain(name = it.name, id = it.id)
                     }
                 )
             )

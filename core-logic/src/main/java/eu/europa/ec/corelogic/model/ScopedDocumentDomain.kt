@@ -16,11 +16,4 @@
 
 package eu.europa.ec.corelogic.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
-@Parcelize
-data class RevokedDocumentPayload(
-    val name: String,
-    val id: String,
-) : Parcelable
+data class ScopedDocumentDomain(val name: String, val configurationId: String, val isPid: Boolean)

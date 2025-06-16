@@ -18,7 +18,7 @@ package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.eudi.wallet.document.DocumentId
 
-data class DeferredDocumentData(
+data class DeferredDocumentDataDomain(
     val documentId: DocumentId,
     val formatType: FormatType,
     val docName: String,

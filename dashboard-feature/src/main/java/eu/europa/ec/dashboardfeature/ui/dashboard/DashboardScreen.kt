@@ -42,7 +42,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import eu.europa.ec.businesslogic.extension.getParcelableArrayListExtra
-import eu.europa.ec.corelogic.model.RevokedDocumentPayload
+import eu.europa.ec.corelogic.model.RevokedDocumentDataDomain
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.component.BottomNavigationBar
 import eu.europa.ec.dashboardfeature.ui.component.BottomNavigationItem
@@ -209,7 +209,7 @@ internal fun DashboardScreen(
             CoreActions.REVOCATION_WORK_MESSAGE_ACTION
         )
     ) { intent ->
-        intent.getParcelableArrayListExtra<RevokedDocumentPayload>(
+        intent.getParcelableArrayListExtra<RevokedDocumentDataDomain>(
             action = CoreActions.REVOCATION_IDS_EXTRA
         )?.let {
             viewModel.setEvent(

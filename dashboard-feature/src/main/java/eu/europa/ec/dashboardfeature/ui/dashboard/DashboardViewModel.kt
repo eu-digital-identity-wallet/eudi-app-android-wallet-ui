@@ -24,7 +24,7 @@ import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
-import eu.europa.ec.corelogic.model.RevokedDocumentPayload
+import eu.europa.ec.corelogic.model.RevokedDocumentDataDomain
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuItemUi
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
@@ -68,7 +68,7 @@ sealed class Event : ViewEvent {
     data object Pop : Event()
 
     data class DocumentRevocationNotificationReceived(
-        val payload: List<RevokedDocumentPayload>
+        val payload: List<RevokedDocumentDataDomain>
     ) : Event()
 
     // side menu events
@@ -227,8 +227,8 @@ class DashboardViewModel(
         }
     }
 
-    private fun getDocumentRevocationBottomSheetOptions(revokedDocumentPayload: List<RevokedDocumentPayload>): List<ModalOptionUi<Event>> {
-        return revokedDocumentPayload.map {
+    private fun getDocumentRevocationBottomSheetOptions(revokedDocumentData: List<RevokedDocumentDataDomain>): List<ModalOptionUi<Event>> {
+        return revokedDocumentData.map {
             ModalOptionUi(
                 title = it.name,
                 trailingIcon = AppIcons.KeyboardArrowRight,

@@ -22,7 +22,7 @@ import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
-import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
@@ -153,7 +153,7 @@ sealed class DocumentsBottomSheetContent {
     data object AddDocument : DocumentsBottomSheetContent()
     data class DeferredDocumentPressed(val documentId: DocumentId) : DocumentsBottomSheetContent()
     data class DeferredDocumentsReady(
-        val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
+        val successfullyIssuedDeferredDocuments: List<DeferredDocumentDataDomain>,
         val options: List<ModalOptionUi<Event>>,
     ) : DocumentsBottomSheetContent()
 }
@@ -470,7 +470,7 @@ class DocumentsViewModel(
         }
     }
 
-    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentData>): List<ModalOptionUi<Event>> {
+    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentDataDomain>): List<ModalOptionUi<Event>> {
         return deferredDocumentsData.map {
             ModalOptionUi(
                 title = it.docName,

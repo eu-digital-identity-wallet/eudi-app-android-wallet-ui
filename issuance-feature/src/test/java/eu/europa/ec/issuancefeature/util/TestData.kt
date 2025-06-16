@@ -16,7 +16,7 @@
 
 package eu.europa.ec.issuancefeature.util
 
-import eu.europa.ec.corelogic.model.ScopedDocument
+import eu.europa.ec.corelogic.model.ScopedDocumentDomain
 import eu.europa.ec.eudi.openid4vci.TxCode
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
@@ -85,24 +85,24 @@ internal val mockedPhotoIdOptionItemUi = AddDocumentUi(
     ),
 )
 
-internal val mockedScopedDocuments: List<ScopedDocument>
+internal val mockedScopedDocuments: List<ScopedDocumentDomain>
     get() = listOf(
-        ScopedDocument(
+        ScopedDocumentDomain(
             name = mockedPidDocName,
             configurationId = mockedConfigIssuerId,
             isPid = true
         ),
-        ScopedDocument(
+        ScopedDocumentDomain(
             name = mockedMdlDocName,
             configurationId = mockedConfigIssuerId,
             isPid = false
         ),
-        ScopedDocument(
+        ScopedDocumentDomain(
             name = mockedAgeVerificationDocName,
             configurationId = mockedConfigIssuerId,
             isPid = false
         ),
-        ScopedDocument(
+        ScopedDocumentDomain(
             name = mockedPhotoIdDocName,
             configurationId = mockedConfigIssuerId,
             isPid = false

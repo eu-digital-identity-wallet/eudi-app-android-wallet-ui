@@ -41,8 +41,8 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.corelogic.model.ClaimPath
-import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -329,12 +329,12 @@ private fun ContentPreview() {
                             docId = "docId",
                             domainDocFormat = DomainDocumentFormat.MsoMdoc(namespace = "pid"),
                             docClaimsDomain = listOf(
-                                DomainClaim.Primitive(
+                                ClaimDomain.Primitive(
                                     key = "key",
                                     displayTitle = "title",
                                     value = "value",
                                     isRequired = false,
-                                    path = ClaimPath(value = listOf())
+                                    path = ClaimPathDomain(value = listOf())
                                 ),
                             )
                         ),

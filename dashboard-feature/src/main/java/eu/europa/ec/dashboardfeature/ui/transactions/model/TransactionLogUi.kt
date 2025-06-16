@@ -16,7 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.transactions.model
 
-import eu.europa.ec.corelogic.model.TransactionLogData
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -47,10 +47,10 @@ fun TransactionLog.Status.toTransactionStatusUi(): TransactionStatusUi {
     }
 }
 
-fun TransactionLogData.toTransactionTypeUi(): TransactionTypeUi {
+fun TransactionLogDataDomain.toTransactionTypeUi(): TransactionTypeUi {
     return when (this) {
-        is TransactionLogData.IssuanceLog -> TransactionTypeUi.ISSUANCE
-        is TransactionLogData.PresentationLog -> TransactionTypeUi.PRESENTATION
-        is TransactionLogData.SigningLog -> TransactionTypeUi.SIGNING
+        is TransactionLogDataDomain.IssuanceLog -> TransactionTypeUi.ISSUANCE
+        is TransactionLogDataDomain.PresentationLog -> TransactionTypeUi.PRESENTATION
+        is TransactionLogDataDomain.SigningLog -> TransactionTypeUi.SIGNING
     }
 }

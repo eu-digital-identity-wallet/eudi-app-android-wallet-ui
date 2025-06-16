@@ -21,9 +21,9 @@ import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
-import eu.europa.ec.corelogic.model.ClaimPath
+import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.dashboardfeature.util.mockedBasicMdlDomain
@@ -312,11 +312,11 @@ class TestDocumentDetailsInteractor {
                             docId = mockedPidId,
                             documentIdentifier = DocumentIdentifier.MdocPid,
                             documentClaims = listOf(
-                                DomainClaim.Primitive(
+                                ClaimDomain.Primitive(
                                     key = "no_data_item",
                                     value = "0",
                                     displayTitle = "no_data_item",
-                                    path = ClaimPath(value = listOf("no_data_item")),
+                                    path = ClaimPathDomain(value = listOf("no_data_item")),
                                     isRequired = false,
                                 ),
                             ),

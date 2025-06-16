@@ -25,8 +25,8 @@ import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.extension.toClaimPaths
-import eu.europa.ec.corelogic.model.ClaimPath
-import eu.europa.ec.corelogic.model.ClaimPath.Companion.isPrefixOf
+import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.isPrefixOf
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
@@ -159,14 +159,14 @@ object RequestTransformer {
 
                         is DomainDocumentFormat.SdJwtVc -> sdJwtItems.add(
                             SdJwtVcItem(
-                                path = ClaimPath.toSdJwtVcPath(selectedItemId)
+                                path = ClaimPathDomain.toSdJwtVcPath(selectedItemId)
                             )
                         )
 
                         is DomainDocumentFormat.MsoMdoc -> mDocItems.add(
                             MsoMdocItem(
                                 namespace = documentPayload.domainDocFormat.namespace,
-                                elementIdentifier = ClaimPath.toElementIdentifier(selectedItemId)
+                                elementIdentifier = ClaimPathDomain.toElementIdentifier(selectedItemId)
                             )
                         )
                     }

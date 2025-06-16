@@ -25,12 +25,12 @@ import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
 import eu.europa.ec.corelogic.extension.parseTransactionLog
 import eu.europa.ec.corelogic.extension.toCoreTransactionLog
 import eu.europa.ec.corelogic.extension.toTransactionLogData
-import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategories
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.model.FormatType
-import eu.europa.ec.corelogic.model.ScopedDocument
-import eu.europa.ec.corelogic.model.TransactionLogData
+import eu.europa.ec.corelogic.model.ScopedDocumentDomain
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
 import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.openid4vci.SdJwtVcCredential
@@ -116,17 +116,17 @@ sealed class ResolveDocumentOfferPartialState {
 }
 
 sealed class FetchScopedDocumentsPartialState {
-    data class Success(val documents: List<ScopedDocument>) : FetchScopedDocumentsPartialState()
+    data class Success(val documents: List<ScopedDocumentDomain>) : FetchScopedDocumentsPartialState()
     data class Failure(val errorMessage: String) : FetchScopedDocumentsPartialState()
 }
 
 sealed class IssueDeferredDocumentPartialState {
     data class Issued(
-        val deferredDocumentData: DeferredDocumentData,
+        val deferredDocumentData: DeferredDocumentDataDomain,
     ) : IssueDeferredDocumentPartialState()
 
     data class NotReady(
-        val deferredDocumentData: DeferredDocumentData,
+        val deferredDocumentData: DeferredDocumentDataDomain,
     ) : IssueDeferredDocumentPartialState()
 
     data class Failed(
@@ -189,9 +189,9 @@ interface WalletCoreDocumentsController {
 
     suspend fun resolveDocumentStatus(document: IssuedDocument): Result<Status>
 
-    suspend fun getTransactionLogs(): List<TransactionLogData>
+    suspend fun getTransactionLogs(): List<TransactionLogDataDomain>
 
-    suspend fun getTransactionLog(id: String): TransactionLogData?
+    suspend fun getTransactionLog(id: String): TransactionLogDataDomain?
 
     suspend fun isDocumentBookmarked(documentId: DocumentId): Boolean
 
@@ -245,7 +245,7 @@ class WalletCoreDocumentsControllerImpl(
                             else -> false
                         }
 
-                        ScopedDocument(
+                        ScopedDocumentDomain(
                             name = name,
                             configurationId = id.value,
                             isPid = isPid
@@ -492,7 +492,7 @@ class WalletCoreDocumentsControllerImpl(
                             is DeferredIssueResult.DocumentIssued -> {
                                 trySendBlocking(
                                     IssueDeferredDocumentPartialState.Issued(
-                                        DeferredDocumentData(
+                                        DeferredDocumentDataDomain(
                                             documentId = deferredIssuanceResult.documentId,
                                             formatType = deferredIssuanceResult.docType,
                                             docName = deferredIssuanceResult.name
@@ -504,7 +504,7 @@ class WalletCoreDocumentsControllerImpl(
                             is DeferredIssueResult.DocumentNotReady -> {
                                 trySendBlocking(
                                     IssueDeferredDocumentPartialState.NotReady(
-                                        DeferredDocumentData(
+                                        DeferredDocumentDataDomain(
                                             documentId = deferredIssuanceResult.documentId,
                                             formatType = deferredIssuanceResult.docType,
                                             docName = deferredIssuanceResult.name
@@ -546,7 +546,7 @@ class WalletCoreDocumentsControllerImpl(
         return walletCoreConfig.documentCategories
     }
 
-    override suspend fun getTransactionLogs(): List<TransactionLogData> =
+    override suspend fun getTransactionLogs(): List<TransactionLogDataDomain> =
         withContext(dispatcher) {
             transactionLogDao.retrieveAll()
                 .mapNotNull { transactionLog ->
@@ -557,7 +557,7 @@ class WalletCoreDocumentsControllerImpl(
                 }
         }
 
-    override suspend fun getTransactionLog(id: String): TransactionLogData? =
+    override suspend fun getTransactionLog(id: String): TransactionLogDataDomain? =
         withContext(dispatcher) {
             transactionLogDao.retrieve(id)
                 ?.toCoreTransactionLog()
