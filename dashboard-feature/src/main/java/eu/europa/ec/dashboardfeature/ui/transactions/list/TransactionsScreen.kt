@@ -78,7 +78,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DatePickerDialogType
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
+import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersDatePickerDialog
 import eu.europa.ec.uilogic.component.FiltersSearchBar
@@ -436,9 +436,9 @@ private fun TopBar(
 @Composable
 private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
-    filtersUi: List<ExpandableListItemUi.NestedListItemDataUi>,
+    filtersUi: List<ExpandableListItemUi.NestedListItem>,
     snapshotFilterDateRangeData: FilterDateRangeSelectionUi,
-    sortOrder: DualSelectorButtonData,
+    sortOrder: DualSelectorButtonDataUi,
     onEventSent: (event: Event) -> Unit,
 ) {
     when (sheetContent) {

@@ -18,7 +18,7 @@ package eu.europa.ec.commonfeature.ui.document_success
 
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
-import eu.europa.ec.uilogic.component.AppIconAndTextData
+import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -37,7 +37,7 @@ data class State(
     val isLoading: Boolean = false,
     val headerConfig: ContentHeaderConfig,
 
-    val items: List<ExpandableListItemUi.NestedListItemDataUi> = emptyList(),
+    val items: List<ExpandableListItemUi.NestedListItem> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -76,7 +76,7 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
         return State(
             headerConfig = ContentHeaderConfig(
-                appIconAndTextData = AppIconAndTextData(),
+                appIconAndTextData = AppIconAndTextDataUi(),
                 description = null,
             )
         )

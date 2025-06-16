@@ -10,7 +10,7 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListItemUi> {
@@ -22,7 +22,7 @@ fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListI
 fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListItemUi {
     return when (this) {
         is DomainClaim.Group -> {
-            ExpandableListItemUi.NestedListItemDataUi(
+            ExpandableListItemUi.NestedListItem(
                 header = ListItemDataUi(
                     itemId = path.toId(docId),
                     mainContentData = ListItemMainContentDataUi.Text(text = displayTitle),
@@ -36,14 +36,14 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
         }
 
         is DomainClaim.Primitive -> {
-            ExpandableListItemUi.SingleListItemDataUi(
+            ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
                     itemId = path.toId(docId),
                     mainContentData = calculateMainContent(key, value),
                     overlineText = calculateOverlineText(displayTitle),
                     leadingContentData = calculateLeadingContent(key, value),
                     trailingContentData = ListItemTrailingContentDataUi.Checkbox(
-                        checkboxData = CheckboxData(
+                        checkboxData = CheckboxDataUi(
                             isChecked = true,
                             enabled = !isRequired
                         )
@@ -57,7 +57,7 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
 fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItemUi {
     return when (this) {
         is DomainClaim.Group -> {
-            ExpandableListItemUi.NestedListItemDataUi(
+            ExpandableListItemUi.NestedListItem(
                 header = ListItemDataUi(
                     itemId = path.toId(docId),
                     mainContentData = ListItemMainContentDataUi.Text(text = displayTitle),
@@ -69,7 +69,7 @@ fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItemUi {
         }
 
         is DomainClaim.Primitive -> {
-            ExpandableListItemUi.SingleListItemDataUi(
+            ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
                     itemId = path.toId(docId),
                     mainContentData = calculateMainContent(key, value),

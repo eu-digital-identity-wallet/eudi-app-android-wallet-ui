@@ -30,12 +30,12 @@ import androidx.compose.ui.Modifier
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.HSpacer
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
 
 @Composable
 fun CheckboxWithContent(
-    checkboxData: CheckboxData,
+    checkboxData: CheckboxDataUi,
     modifier: Modifier = Modifier,
     checkboxModifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit
@@ -62,7 +62,7 @@ private fun CheckboxWithContentPreview() {
     var isChecked by remember {
         mutableStateOf(true)
     }
-    val checkBoxData = CheckboxData(
+    val checkBoxData = CheckboxDataUi(
         isChecked = isChecked,
         onCheckedChange = {
             isChecked = it

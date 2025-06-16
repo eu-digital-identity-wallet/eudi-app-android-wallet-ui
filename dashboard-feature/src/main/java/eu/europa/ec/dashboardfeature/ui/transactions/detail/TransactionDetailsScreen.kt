@@ -290,7 +290,7 @@ private fun TransactionDetailsCard(
 private fun ExpandableDataSection(
     modifier: Modifier,
     sectionTitle: String,
-    dataItems: List<ExpandableListItemUi.NestedListItemDataUi>,
+    dataItems: List<ExpandableListItemUi.NestedListItem>,
     onEventSend: (Event) -> Unit
 ) {
     if (dataItems.isNotEmpty()) {
@@ -423,7 +423,7 @@ private fun PreviewTransactionDetailsFailedCard(
 @Composable
 private fun ContentPreview() {
     val items = listOf(
-        ExpandableListItemUi.NestedListItemDataUi(
+        ExpandableListItemUi.NestedListItem(
             header = ListItemDataUi(
                 itemId = "0",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
@@ -433,14 +433,14 @@ private fun ContentPreview() {
                 ),
             ),
             nestedItems = listOf(
-                ExpandableListItemUi.SingleListItemDataUi(
+                ExpandableListItemUi.SingleListItem(
                     ListItemDataUi(
                         itemId = "1",
                         overlineText = "Family name",
                         mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
                     )
                 ),
-                ExpandableListItemUi.SingleListItemDataUi(
+                ExpandableListItemUi.SingleListItem(
                     ListItemDataUi(
                         itemId = "2",
                         overlineText = "Given name",

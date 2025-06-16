@@ -42,7 +42,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -264,7 +264,7 @@ private fun ContentPreview() {
             headerConfig = ContentHeaderConfig(
                 description = stringResource(R.string.issuance_document_offer_description),
                 mainText = stringResource(R.string.issuance_document_offer_header_main_text),
-                relyingPartyData = RelyingPartyData(
+                relyingPartyData = RelyingPartyDataUi(
                     isVerified = true,
                     name = stringResource(R.string.issuance_document_offer_relying_party_default_name),
                     description = stringResource(R.string.issuance_document_offer_relying_party_description)

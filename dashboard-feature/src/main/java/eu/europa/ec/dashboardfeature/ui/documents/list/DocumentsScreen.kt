@@ -69,7 +69,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
+import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersSearchBar
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -88,7 +88,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
@@ -504,7 +504,7 @@ private fun DocumentsSheetContent(
 
         is DocumentsBottomSheetContent.AddDocument -> {
             BottomSheetWithTwoBigIcons(
-                textData = BottomSheetTextData(
+                textData = BottomSheetTextDataUi(
                     title = stringResource(R.string.documents_screen_add_document_title),
                     message = stringResource(R.string.documents_screen_add_document_description)
                 ),
@@ -526,7 +526,7 @@ private fun DocumentsSheetContent(
 
         is DocumentsBottomSheetContent.DeferredDocumentPressed -> {
             DialogBottomSheet(
-                textData = BottomSheetTextData(
+                textData = BottomSheetTextDataUi(
                     title = stringResource(
                         id = R.string.dashboard_bottom_sheet_deferred_document_pressed_title
                     ),
@@ -555,7 +555,7 @@ private fun DocumentsSheetContent(
 
         is DocumentsBottomSheetContent.DeferredDocumentsReady -> {
             BottomSheetWithOptionsList(
-                textData = BottomSheetTextData(
+                textData = BottomSheetTextDataUi(
                     title = stringResource(
                         id = R.string.dashboard_bottom_sheet_deferred_documents_ready_title
                     ),
@@ -650,7 +650,7 @@ private fun DocumentsScreenPreview() {
                 state = State(
                     isLoading = false,
                     isFilteringActive = false,
-                    sortOrder = DualSelectorButtonData(
+                    sortOrder = DualSelectorButtonDataUi(
                         first = "first",
                         second = "second",
                         selectedButton = DualSelectorButton.FIRST,

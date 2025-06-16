@@ -33,7 +33,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.DatePickerDialogConfig
 import eu.europa.ec.uilogic.component.DatePickerDialogType
 import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
+import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.mvi.MviViewModel
@@ -61,9 +61,9 @@ data class State(
     ),
 
     val transactionsUi: List<Pair<TransactionCategoryUi, List<TransactionUi>>> = emptyList(),
-    val filtersUi: List<ExpandableListItemUi.NestedListItemDataUi> = emptyList(),
+    val filtersUi: List<ExpandableListItemUi.NestedListItem> = emptyList(),
     val shouldRevertFilterChanges: Boolean = true,
-    val sortOrder: DualSelectorButtonData,
+    val sortOrder: DualSelectorButtonDataUi,
     val isDatePickerDialogVisible: Boolean = false,
     val datePickerDialogConfig: DatePickerDialogConfig = DatePickerDialogConfig(
         type = DatePickerDialogType.SelectStartDate
@@ -121,7 +121,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class TransactionsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItemUi.SingleListItemDataUi>) :
+    data class Filters(val filters: List<ExpandableListItemUi.SingleListItem>) :
         TransactionsBottomSheetContent()
 }
 
@@ -133,7 +133,7 @@ class TransactionsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortOrder = DualSelectorButtonData(
+            sortOrder = DualSelectorButtonDataUi(
                 first = resourceProvider.getString(R.string.transactions_screen_filters_descending),
                 second = resourceProvider.getString(R.string.transactions_screen_filters_ascending),
                 selectedButton = DualSelectorButton.FIRST,

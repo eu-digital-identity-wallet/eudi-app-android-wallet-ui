@@ -104,7 +104,7 @@ object RequestTransformer {
         return documentsDomain.map {
             RequestDocumentItemUi(
                 domainPayload = it,
-                headerUi = ExpandableListItemUi.NestedListItemDataUi(
+                headerUi = ExpandableListItemUi.NestedListItem(
                     header = ListItemDataUi(
                         itemId = it.docId,
                         mainContentData = ListItemMainContentDataUi.Text(text = it.docName),
@@ -122,9 +122,9 @@ object RequestTransformer {
 
     fun createDisclosedDocuments(items: List<RequestDocumentItemUi>): DisclosedDocuments {
         // Collect all selected expanded items from the list
-        fun ExpandableListItemUi.collectSingles(): List<ExpandableListItemUi.SingleListItemDataUi> =
+        fun ExpandableListItemUi.collectSingles(): List<ExpandableListItemUi.SingleListItem> =
             when (this) {
-                is ExpandableListItemUi.SingleListItemDataUi -> {
+                is ExpandableListItemUi.SingleListItem -> {
                     val isSelected =
                         header.trailingContentData is ListItemTrailingContentDataUi.Checkbox &&
                                 (header.trailingContentData as ListItemTrailingContentDataUi.Checkbox)
@@ -132,7 +132,7 @@ object RequestTransformer {
                     if (isSelected) listOf(this) else emptyList()
                 }
 
-                is ExpandableListItemUi.NestedListItemDataUi -> nestedItems.flatMap { it.collectSingles() }
+                is ExpandableListItemUi.NestedListItem -> nestedItems.flatMap { it.collectSingles() }
             }
 
         val groupedByDocument = items.map { document ->

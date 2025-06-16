@@ -133,49 +133,49 @@ internal val mockedPendingMdlUi = mockedFullMdlUi.copy(
 
 internal val mockedBasicMdlUi = mockedFullMdlUi.copy(
     documentClaims = listOf(
-        ExpandableListItemUi.SingleListItemDataUi(
+        ExpandableListItemUi.SingleListItem(
             header = ListItemDataUi(
                 itemId = "",
                 overlineText = "expiry_date",
                 mainContentData = ListItemMainContentDataUi.Text("30 Mar 2050")
             )
         ),
-        ExpandableListItemUi.SingleListItemDataUi(
+        ExpandableListItemUi.SingleListItem(
             header = ListItemDataUi(
                 itemId = "",
                 overlineText = "sex",
                 mainContentData = ListItemMainContentDataUi.Text("male")
             )
         ),
-        ExpandableListItemUi.SingleListItemDataUi(
+        ExpandableListItemUi.SingleListItem(
             header = ListItemDataUi(
                 itemId = "",
                 overlineText = "birth_place",
                 mainContentData = ListItemMainContentDataUi.Text("SWEDEN")
             )
         ),
-        ExpandableListItemUi.SingleListItemDataUi(
+        ExpandableListItemUi.SingleListItem(
             header = ListItemDataUi(
                 itemId = "",
                 overlineText = "portrait",
                 mainContentData = ListItemMainContentDataUi.Image("SE")
             )
         ),
-        ExpandableListItemUi.SingleListItemDataUi(
+        ExpandableListItemUi.SingleListItem(
             header = ListItemDataUi(
                 itemId = "",
                 overlineText = "given_name",
                 mainContentData = ListItemMainContentDataUi.Text("JAN")
             )
         ),
-        ExpandableListItemUi.SingleListItemDataUi(
+        ExpandableListItemUi.SingleListItem(
             header = ListItemDataUi(
                 itemId = "",
                 overlineText = "family_name",
                 mainContentData = ListItemMainContentDataUi.Text("ANDERSSON")
             )
         ),
-        ExpandableListItemUi.SingleListItemDataUi(
+        ExpandableListItemUi.SingleListItem(
             header = ListItemDataUi(
                 itemId = "",
                 overlineText = "signature_usual_mark",

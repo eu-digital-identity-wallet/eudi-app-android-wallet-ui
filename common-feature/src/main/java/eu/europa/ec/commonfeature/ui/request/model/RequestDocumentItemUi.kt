@@ -42,7 +42,7 @@ sealed class DomainDocumentFormat {
 
 data class RequestDocumentItemUi(
     val domainPayload: DocumentPayloadDomain,
-    val headerUi: ExpandableListItemUi.NestedListItemDataUi,
+    val headerUi: ExpandableListItemUi.NestedListItem,
 )
 
 data class DocumentPayloadDomain(

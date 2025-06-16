@@ -48,7 +48,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import junit.framework.TestCase.assertEquals
@@ -138,7 +138,7 @@ class TestDocumentIssuanceSuccessInteractor {
                 assertEquals(
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         documentsUi = listOf(
-                            ExpandableListItemUi.NestedListItemDataUi(
+                            ExpandableListItemUi.NestedListItem(
                                 header = ListItemDataUi(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
@@ -153,7 +153,7 @@ class TestDocumentIssuanceSuccessInteractor {
                         ),
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
-                            relyingPartyData = RelyingPartyData(
+                            relyingPartyData = RelyingPartyDataUi(
                                 name = mockedIssuerName,
                                 logo = null,
                                 isVerified = false
@@ -199,14 +199,14 @@ class TestDocumentIssuanceSuccessInteractor {
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
-                            relyingPartyData = RelyingPartyData(
+                            relyingPartyData = RelyingPartyDataUi(
                                 name = mockedIssuerName,
                                 logo = null,
                                 isVerified = false
                             )
                         ),
                         documentsUi = listOf(
-                            ExpandableListItemUi.NestedListItemDataUi(
+                            ExpandableListItemUi.NestedListItem(
                                 header = ListItemDataUi(
                                     itemId = mockedSdJwtPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedSdJwtPidWithBasicFields.name),
@@ -259,7 +259,7 @@ class TestDocumentIssuanceSuccessInteractor {
                 assertEquals(
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         documentsUi = listOf(
-                            ExpandableListItemUi.NestedListItemDataUi(
+                            ExpandableListItemUi.NestedListItem(
                                 header = ListItemDataUi(
                                     itemId = mockedPidWithBasicFields.id,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
@@ -274,7 +274,7 @@ class TestDocumentIssuanceSuccessInteractor {
                         ),
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
-                            relyingPartyData = RelyingPartyData(
+                            relyingPartyData = RelyingPartyDataUi(
                                 name = mockedIssuerName,
                                 logo = null,
                                 isVerified = false
@@ -318,7 +318,7 @@ class TestDocumentIssuanceSuccessInteractor {
                         documentsUi = listOf(),
                         headerConfig = ContentHeaderConfig(
                             description = mockedErrorDescription,
-                            relyingPartyData = RelyingPartyData(
+                            relyingPartyData = RelyingPartyDataUi(
                                 name = mockedIssuerName,
                                 logo = null,
                                 isVerified = false
@@ -361,7 +361,7 @@ class TestDocumentIssuanceSuccessInteractor {
                         documentsUi = listOf(),
                         headerConfig = ContentHeaderConfig(
                             description = mockedErrorDescription,
-                            relyingPartyData = RelyingPartyData(
+                            relyingPartyData = RelyingPartyDataUi(
                                 name = mockedIssuerName,
                                 logo = null,
                                 isVerified = false
@@ -411,14 +411,14 @@ class TestDocumentIssuanceSuccessInteractor {
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
-                            relyingPartyData = RelyingPartyData(
+                            relyingPartyData = RelyingPartyDataUi(
                                 name = mockedIssuerName,
                                 logo = null,
                                 isVerified = false
                             )
                         ),
                         documentsUi = listOf(
-                            ExpandableListItemUi.NestedListItemDataUi(
+                            ExpandableListItemUi.NestedListItem(
                                 header = ListItemDataUi(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFields.name),
@@ -430,7 +430,7 @@ class TestDocumentIssuanceSuccessInteractor {
                                 nestedItems = mockedMdocPidClaims,
                                 isExpanded = false
                             ),
-                            ExpandableListItemUi.NestedListItemDataUi(
+                            ExpandableListItemUi.NestedListItem(
                                 header = ListItemDataUi(
                                     itemId = mockedSdJwtPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedSdJwtPidWithBasicFields.name),
@@ -512,7 +512,7 @@ class TestDocumentIssuanceSuccessInteractor {
                 assertEquals(
                     DocumentIssuanceSuccessInteractorGetUiItemsPartialState.Success(
                         documentsUi = listOf(
-                            ExpandableListItemUi.NestedListItemDataUi(
+                            ExpandableListItemUi.NestedListItem(
                                 header = ListItemDataUi(
                                     itemId = mockedPidId,
                                     mainContentData = ListItemMainContentDataUi.Text(text = mockedPidWithBasicFieldsAndMetadata.name),
@@ -527,7 +527,7 @@ class TestDocumentIssuanceSuccessInteractor {
                         ),
                         headerConfig = ContentHeaderConfig(
                             description = mockedSuccessDescription,
-                            relyingPartyData = RelyingPartyData(
+                            relyingPartyData = RelyingPartyDataUi(
                                 name = mockedIssuerName,
                                 logo = URI.create(mockedIssuerLogo),
                                 isVerified = false

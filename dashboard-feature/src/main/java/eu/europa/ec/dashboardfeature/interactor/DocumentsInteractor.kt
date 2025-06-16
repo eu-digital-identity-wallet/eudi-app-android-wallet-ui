@@ -60,9 +60,9 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
-import eu.europa.ec.uilogic.component.wrap.RadioButtonData
+import eu.europa.ec.uilogic.component.wrap.RadioButtonDataUi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -76,13 +76,13 @@ import java.time.Instant
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
         val documents: List<Pair<DocumentCategory, List<DocumentUi>>>,
-        val filters: List<ExpandableListItemUi.NestedListItemDataUi>,
+        val filters: List<ExpandableListItemUi.NestedListItem>,
         val sortOrder: DualSelectorButton,
         val allDefaultFiltersAreSelected: Boolean,
     ) : DocumentInteractorFilterPartialState()
 
     data class FilterUpdateResult(
-        val filters: List<ExpandableListItemUi.NestedListItemDataUi>,
+        val filters: List<ExpandableListItemUi.NestedListItem>,
         val sortOrder: DualSelectorButton,
     ) : DocumentInteractorFilterPartialState()
 }
@@ -196,7 +196,7 @@ class DocumentsInteractorImpl(
             }.toList().sortedBy { it.first.order }
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
-                ExpandableListItemUi.NestedListItemDataUi(
+                ExpandableListItemUi.NestedListItem(
                     isExpanded = true,
                     header = ListItemDataUi(
                         itemId = filterGroup.id,
@@ -206,7 +206,7 @@ class DocumentsInteractorImpl(
                         )
                     ),
                     nestedItems = filterGroup.filters.map { filterItem ->
-                        ExpandableListItemUi.SingleListItemDataUi(
+                        ExpandableListItemUi.SingleListItem(
                             header = ListItemDataUi(
                                 itemId = filterItem.id,
                                 mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
@@ -214,7 +214,7 @@ class DocumentsInteractorImpl(
                                     is FilterGroup.MultipleSelectionFilterGroup<*>,
                                     is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
                                         ListItemTrailingContentDataUi.Checkbox(
-                                            checkboxData = CheckboxData(
+                                            checkboxData = CheckboxDataUi(
                                                 isChecked = filterItem.selected,
                                                 enabled = true
                                             )
@@ -224,7 +224,7 @@ class DocumentsInteractorImpl(
                                     is FilterGroup.SingleSelectionFilterGroup,
                                     is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
                                         ListItemTrailingContentDataUi.RadioButton(
-                                            radioButtonData = RadioButtonData(
+                                            radioButtonData = RadioButtonDataUi(
                                                 isSelected = filterItem.selected,
                                                 enabled = true
                                             )

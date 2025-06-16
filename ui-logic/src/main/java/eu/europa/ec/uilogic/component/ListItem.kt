@@ -51,9 +51,9 @@ import eu.europa.ec.uilogic.component.utils.ICON_SIZE_40
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.RadioButtonData
-import eu.europa.ec.uilogic.component.wrap.SwitchData
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
+import eu.europa.ec.uilogic.component.wrap.RadioButtonDataUi
+import eu.europa.ec.uilogic.component.wrap.SwitchDataUi
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapAsyncImage
 import eu.europa.ec.uilogic.component.wrap.WrapCheckbox
@@ -127,7 +127,7 @@ sealed class ListItemLeadingContentDataUi {
 
     data class Icon(
         override val size: Int = DEFAULT_ICON_SIZE,
-        val iconData: IconData,
+        val iconData: IconDataUi,
         val tint: Color? = null,
     ) : ListItemLeadingContentDataUi()
 
@@ -139,8 +139,8 @@ sealed class ListItemLeadingContentDataUi {
     data class AsyncImage(
         override val size: Int = ICON_SIZE_40,
         val imageUrl: String,
-        val errorImage: IconData? = null,
-        val placeholderImage: IconData? = null,
+        val errorImage: IconDataUi? = null,
+        val placeholderImage: IconDataUi? = null,
     ) : ListItemLeadingContentDataUi()
 }
 
@@ -159,15 +159,15 @@ sealed class ListItemLeadingContentDataUi {
  *  - [TextWithIcon]: Represents text and an icon to be displayed as trailing content.
  */
 sealed class ListItemTrailingContentDataUi {
-    data class Icon(val iconData: IconData, val tint: Color? = null) :
+    data class Icon(val iconData: IconDataUi, val tint: Color? = null) :
         ListItemTrailingContentDataUi()
 
-    data class Checkbox(val checkboxData: CheckboxData) : ListItemTrailingContentDataUi()
-    data class RadioButton(val radioButtonData: RadioButtonData) : ListItemTrailingContentDataUi()
-    data class Switch(val switchData: SwitchData) : ListItemTrailingContentDataUi()
+    data class Checkbox(val checkboxData: CheckboxDataUi) : ListItemTrailingContentDataUi()
+    data class RadioButton(val radioButtonData: RadioButtonDataUi) : ListItemTrailingContentDataUi()
+    data class Switch(val switchData: SwitchDataUi) : ListItemTrailingContentDataUi()
     data class TextWithIcon(
         val text: String,
-        val iconData: IconData,
+        val iconData: IconDataUi,
         val tint: Color? = null
     ) : ListItemTrailingContentDataUi()
 }
@@ -519,7 +519,7 @@ private fun ListItemPreview() {
                     itemId = "6",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Item with Trailing Enabled Checkbox"),
                     trailingContentData = ListItemTrailingContentDataUi.Checkbox(
-                        checkboxData = CheckboxData(
+                        checkboxData = CheckboxDataUi(
                             isChecked = true,
                         )
                     )
@@ -534,7 +534,7 @@ private fun ListItemPreview() {
                     itemId = "7",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Item with Trailing Disabled Checkbox"),
                     trailingContentData = ListItemTrailingContentDataUi.Checkbox(
-                        checkboxData = CheckboxData(
+                        checkboxData = CheckboxDataUi(
                             isChecked = true,
                             enabled = false,
                         )
@@ -550,7 +550,7 @@ private fun ListItemPreview() {
                     itemId = "8",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Item with Trailing Enabled Radiobutton"),
                     trailingContentData = ListItemTrailingContentDataUi.RadioButton(
-                        radioButtonData = RadioButtonData(
+                        radioButtonData = RadioButtonDataUi(
                             isSelected = true,
                         )
                     )
@@ -565,7 +565,7 @@ private fun ListItemPreview() {
                     itemId = "9",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Item with Trailing Disabled Radiobutton"),
                     trailingContentData = ListItemTrailingContentDataUi.RadioButton(
-                        radioButtonData = RadioButtonData(
+                        radioButtonData = RadioButtonDataUi(
                             isSelected = true,
                             enabled = false,
                         )
@@ -581,7 +581,7 @@ private fun ListItemPreview() {
                     itemId = "10",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Item with Trailing Enabled Switch"),
                     trailingContentData = ListItemTrailingContentDataUi.Switch(
-                        switchData = SwitchData(
+                        switchData = SwitchDataUi(
                             isChecked = true,
                         )
                     )
@@ -596,7 +596,7 @@ private fun ListItemPreview() {
                     itemId = "11",
                     mainContentData = ListItemMainContentDataUi.Text(text = "Item with Trailing Disabled Switch"),
                     trailingContentData = ListItemTrailingContentDataUi.Switch(
-                        switchData = SwitchData(
+                        switchData = SwitchDataUi(
                             isChecked = true,
                             enabled = false,
                         )

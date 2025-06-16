@@ -47,14 +47,14 @@ enum class DualSelectorButton {
     SECOND
 }
 
-data class DualSelectorButtonData(
+data class DualSelectorButtonDataUi(
     val first: String,
     val second: String,
     val selectedButton: DualSelectorButton,
 )
 
 @Composable
-fun DualSelectorButtons(data: DualSelectorButtonData, onClick: (DualSelectorButton) -> Unit) {
+fun DualSelectorButtons(data: DualSelectorButtonDataUi, onClick: (DualSelectorButton) -> Unit) {
 
     Row(
         modifier = Modifier
@@ -154,7 +154,7 @@ fun RoundedBorderText(
 private fun DualSelectorButtonsPreview() {
     PreviewTheme {
         DualSelectorButtons(
-            DualSelectorButtonData(
+            DualSelectorButtonDataUi(
                 first = "offendit",
                 second = "principes",
                 selectedButton = DualSelectorButton.SECOND

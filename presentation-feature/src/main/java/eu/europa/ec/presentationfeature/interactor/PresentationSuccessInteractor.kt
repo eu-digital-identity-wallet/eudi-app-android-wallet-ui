@@ -31,7 +31,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +40,7 @@ import java.net.URI
 
 sealed class PresentationSuccessInteractorGetUiItemsPartialState {
     data class Success(
-        val documentsUi: List<ExpandableListItemUi.NestedListItemDataUi>,
+        val documentsUi: List<ExpandableListItemUi.NestedListItem>,
         val headerConfig: ContentHeaderConfig,
     ) : PresentationSuccessInteractorGetUiItemsPartialState()
 
@@ -73,7 +73,7 @@ class PresentationSuccessInteractorImpl(
     override fun getUiItems(): Flow<PresentationSuccessInteractorGetUiItemsPartialState> {
         return flow {
 
-            val documentsUi = mutableListOf<ExpandableListItemUi.NestedListItemDataUi>()
+            val documentsUi = mutableListOf<ExpandableListItemUi.NestedListItem>()
 
             val verifierName = walletCorePresentationController.verifierName
 
@@ -101,7 +101,7 @@ class PresentationSuccessInteractorImpl(
                     }
 
                     if (disclosedClaimsUi.isNotEmpty()) {
-                        val disclosedDocumentUi = ExpandableListItemUi.NestedListItemDataUi(
+                        val disclosedDocumentUi = ExpandableListItemUi.NestedListItem(
                             header = ListItemDataUi(
                                 itemId = documentId,
                                 mainContentData = ListItemMainContentDataUi.Text(text = document.name),
@@ -127,7 +127,7 @@ class PresentationSuccessInteractorImpl(
             }
             val headerConfig = ContentHeaderConfig(
                 description = headerConfigDescription,
-                relyingPartyData = RelyingPartyData(
+                relyingPartyData = RelyingPartyDataUi(
                     name = verifierName.ifEmptyOrNull(
                         default = resourceProvider.getString(R.string.document_success_relying_party_default_name)
                     ),

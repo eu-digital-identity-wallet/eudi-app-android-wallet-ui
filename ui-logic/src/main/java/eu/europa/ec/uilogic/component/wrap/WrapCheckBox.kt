@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.Dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 
-data class CheckboxData(
+data class CheckboxDataUi(
     val isChecked: Boolean,
     val enabled: Boolean = true,
     val onCheckedChange: ((Boolean) -> Unit)? = null,
@@ -39,7 +39,7 @@ data class CheckboxData(
 
 @Composable
 fun WrapCheckbox(
-    checkboxData: CheckboxData,
+    checkboxData: CheckboxDataUi,
     modifier: Modifier = Modifier,
 ) {
     // This is needed, otherwise M3 adds unwanted space around CheckBoxes.
@@ -65,7 +65,7 @@ private fun WrapCheckBoxPreview() {
         mutableStateOf(true)
     }
 
-    val checkBoxData = CheckboxData(
+    val checkBoxData = CheckboxDataUi(
         isChecked = isChecked,
         enabled = true,
         onCheckedChange = {

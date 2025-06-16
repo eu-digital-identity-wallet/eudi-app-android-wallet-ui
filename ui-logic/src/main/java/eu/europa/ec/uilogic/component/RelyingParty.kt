@@ -44,14 +44,14 @@ import java.net.URI
 /**
  * Data class representing information about a Relying Party.
  *
- * @property logo An optional [IconData] representing the logo of the Relying Party.
+ * @property logo An optional [IconDataUi] representing the logo of the Relying Party.
  * @property isVerified A boolean indicating whether the Relying Party is verified.
  * @property name The name of the Relying Party.
  * @property nameTextConfig Optional [TextConfig] for styling the name text.
  * @property description An optional description of the Relying Party.
  * @property descriptionTextConfig Optional [TextConfig] for styling the description text.
  */
-data class RelyingPartyData(
+data class RelyingPartyDataUi(
     val logo: URI? = null,
     val isVerified: Boolean,
     val name: String,
@@ -63,7 +63,7 @@ data class RelyingPartyData(
 @Composable
 fun RelyingParty(
     modifier: Modifier = Modifier,
-    relyingPartyData: RelyingPartyData,
+    relyingPartyData: RelyingPartyDataUi,
 ) {
     val commonTextAlign = TextAlign.Center
 
@@ -125,7 +125,7 @@ private fun RelyingPartyPreview(
 ) {
     PreviewTheme {
         RelyingParty(
-            relyingPartyData = RelyingPartyData(
+            relyingPartyData = RelyingPartyDataUi(
                 isVerified = true,
                 name = "Relying Party Name: $text",
                 description = "Relying Party Description: $text",

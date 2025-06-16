@@ -51,7 +51,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.divider
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.IconDataUi
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -102,7 +102,7 @@ private val bottomSheetDefaultTextColor: Color
  * @property negativeButtonText The text for the negative button (e.g., "Cancel", "Dismiss"). Can be null if no negative button is needed.
  * @property isNegativeButtonWarning A flag indicating if the negative button should be styled as a warning (e.g., red color). Defaults to false.
  */
-data class BottomSheetTextData(
+data class BottomSheetTextDataUi(
     val title: String,
     val message: String,
     val positiveButtonText: String? = null,
@@ -179,8 +179,8 @@ fun GenericBottomSheet(
  */
 @Composable
 fun DialogBottomSheet(
-    textData: BottomSheetTextData,
-    leadingIcon: IconData? = null,
+    textData: BottomSheetTextDataUi,
+    leadingIcon: IconDataUi? = null,
     leadingIconTint: Color? = null,
     onPositiveClick: () -> Unit = {},
     onNegativeClick: () -> Unit = {},
@@ -251,8 +251,8 @@ fun DialogBottomSheet(
  */
 @Composable
 fun SimpleBottomSheet(
-    textData: BottomSheetTextData,
-    leadingIcon: IconData? = null,
+    textData: BottomSheetTextDataUi,
+    leadingIcon: IconDataUi? = null,
     leadingIconTint: Color? = null,
 ) {
     BaseBottomSheet(
@@ -264,8 +264,8 @@ fun SimpleBottomSheet(
 
 @Composable
 private fun BaseBottomSheet(
-    textData: BottomSheetTextData,
-    leadingIcon: IconData? = null,
+    textData: BottomSheetTextDataUi,
+    leadingIcon: IconDataUi? = null,
     leadingIconTint: Color? = null,
     bodyContent: @Composable (() -> Unit)? = null,
     sheetBackgroundColor: Color = bottomSheetDefaultBackgroundColor,
@@ -313,7 +313,7 @@ private fun BaseBottomSheet(
 
 @Composable
 fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
-    textData: BottomSheetTextData,
+    textData: BottomSheetTextDataUi,
     options: List<ModalOptionUi<T>>,
     onEventSent: (T) -> Unit,
 ) {
@@ -384,7 +384,7 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
 
 @Composable
 fun <T : ViewEvent> BottomSheetWithOptionsList(
-    textData: BottomSheetTextData,
+    textData: BottomSheetTextDataUi,
     options: List<ModalOptionUi<T>>,
     onEventSent: (T) -> Unit,
 ) {
@@ -508,7 +508,7 @@ private fun BottomSheetDefaultHandlePreview() {
 private fun SimpleBottomSheetPreview() {
     PreviewTheme {
         SimpleBottomSheet(
-            textData = BottomSheetTextData(
+            textData = BottomSheetTextDataUi(
                 title = "Title",
                 message = "Message",
             )
@@ -521,7 +521,7 @@ private fun SimpleBottomSheetPreview() {
 private fun SimpleBottomSheetWithLeadingIconPreview() {
     PreviewTheme {
         SimpleBottomSheet(
-            textData = BottomSheetTextData(
+            textData = BottomSheetTextDataUi(
                 title = "Title",
                 message = "Message",
             ),
@@ -536,7 +536,7 @@ private fun SimpleBottomSheetWithLeadingIconPreview() {
 private fun DialogBottomSheetPreview() {
     PreviewTheme {
         DialogBottomSheet(
-            textData = BottomSheetTextData(
+            textData = BottomSheetTextDataUi(
                 title = "Title",
                 message = "Message",
                 positiveButtonText = "OK",
@@ -553,7 +553,7 @@ private data object DummyEventForPreview : ViewEvent
 private fun BottomSheetWithOptionsListPreview() {
     PreviewTheme {
         BottomSheetWithOptionsList(
-            textData = BottomSheetTextData(
+            textData = BottomSheetTextDataUi(
                 title = "Title",
                 message = "Message"
             ),
@@ -605,7 +605,7 @@ private fun BottomSheetWithOptionsListPreview() {
 private fun BottomSheetWithTwoBigIconsEvenTextPreview() {
     PreviewTheme {
         BottomSheetWithTwoBigIcons(
-            textData = BottomSheetTextData(
+            textData = BottomSheetTextDataUi(
                 title = "Title",
                 message = "Message"
             ),
@@ -639,7 +639,7 @@ private fun BottomSheetWithTwoBigIconsEvenTextPreview() {
 private fun BottomSheetWithTwoBigIconsUnevenTextPreview() {
     PreviewTheme {
         BottomSheetWithTwoBigIcons(
-            textData = BottomSheetTextData(
+            textData = BottomSheetTextDataUi(
                 title = "Title",
                 message = "Message"
             ),

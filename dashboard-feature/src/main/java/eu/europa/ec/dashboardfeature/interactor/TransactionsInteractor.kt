@@ -55,9 +55,9 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
-import eu.europa.ec.uilogic.component.wrap.RadioButtonData
+import eu.europa.ec.uilogic.component.wrap.RadioButtonDataUi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -67,13 +67,13 @@ import java.time.LocalDateTime
 sealed class TransactionInteractorFilterPartialState {
     data class FilterApplyResult(
         val transactions: List<Pair<TransactionCategoryUi, List<TransactionUi>>>,
-        val filters: List<ExpandableListItemUi.NestedListItemDataUi>,
+        val filters: List<ExpandableListItemUi.NestedListItem>,
         val sortOrder: SortOrder,
         val allDefaultFiltersAreSelected: Boolean,
     ) : TransactionInteractorFilterPartialState()
 
     data class FilterUpdateResult(
-        val filters: List<ExpandableListItemUi.NestedListItemDataUi>,
+        val filters: List<ExpandableListItemUi.NestedListItem>,
         val sortOrder: SortOrder,
     ) : TransactionInteractorFilterPartialState()
 }
@@ -166,7 +166,7 @@ class TransactionsInteractorImpl(
             }.toList()
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
-                ExpandableListItemUi.NestedListItemDataUi(
+                ExpandableListItemUi.NestedListItem(
                     isExpanded = true,
                     header = ListItemDataUi(
                         itemId = filterGroup.id,
@@ -176,7 +176,7 @@ class TransactionsInteractorImpl(
                         )
                     ),
                     nestedItems = filterGroup.filters.map { filterItem ->
-                        ExpandableListItemUi.SingleListItemDataUi(
+                        ExpandableListItemUi.SingleListItem(
                             header = ListItemDataUi(
                                 itemId = filterItem.id,
                                 mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
@@ -184,7 +184,7 @@ class TransactionsInteractorImpl(
                                     is FilterGroup.MultipleSelectionFilterGroup<*>,
                                     is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
                                         ListItemTrailingContentDataUi.Checkbox(
-                                            checkboxData = CheckboxData(
+                                            checkboxData = CheckboxDataUi(
                                                 isChecked = filterItem.selected,
                                                 enabled = true
                                             )
@@ -194,7 +194,7 @@ class TransactionsInteractorImpl(
                                     is FilterGroup.SingleSelectionFilterGroup,
                                     is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
                                         ListItemTrailingContentDataUi.RadioButton(
-                                            radioButtonData = RadioButtonData(
+                                            radioButtonData = RadioButtonDataUi(
                                                 isSelected = filterItem.selected,
                                                 enabled = true
                                             )
@@ -244,7 +244,7 @@ class TransactionsInteractorImpl(
 
                 FilterableItem(
                     payload = TransactionUi(
-                        uiData = ExpandableListItemUi.SingleListItemDataUi(
+                        uiData = ExpandableListItemUi.SingleListItem(
                             header = ListItemDataUi(
                                 itemId = transaction.id,
                                 mainContentData = ListItemMainContentDataUi.Text(text = transactionName),

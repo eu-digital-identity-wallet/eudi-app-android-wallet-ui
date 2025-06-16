@@ -31,7 +31,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import kotlinx.coroutines.flow.Flow
@@ -40,7 +40,7 @@ import java.net.URI
 
 sealed class DocumentIssuanceSuccessInteractorGetUiItemsPartialState {
     data class Success(
-        val documentsUi: List<ExpandableListItemUi.NestedListItemDataUi>,
+        val documentsUi: List<ExpandableListItemUi.NestedListItem>,
         val headerConfig: ContentHeaderConfig,
     ) : DocumentIssuanceSuccessInteractorGetUiItemsPartialState()
 
@@ -65,7 +65,7 @@ class DocumentIssuanceSuccessInteractorImpl(
     override fun getUiItems(documentIds: List<DocumentId>): Flow<DocumentIssuanceSuccessInteractorGetUiItemsPartialState> {
         return flow {
 
-            val documentsUi = mutableListOf<ExpandableListItemUi.NestedListItemDataUi>()
+            val documentsUi = mutableListOf<ExpandableListItemUi.NestedListItem>()
 
             var issuerName =
                 resourceProvider.getString(R.string.issuance_success_header_issuer_default_name)
@@ -104,7 +104,7 @@ class DocumentIssuanceSuccessInteractorImpl(
                         selectedDomainClaim.toExpandableListItems(docId = documentId)
                     }
 
-                    val documentUi = ExpandableListItemUi.NestedListItemDataUi(
+                    val documentUi = ExpandableListItemUi.NestedListItem(
                         header = ListItemDataUi(
                             itemId = documentId,
                             mainContentData = ListItemMainContentDataUi.Text(text = document.name),
@@ -129,7 +129,7 @@ class DocumentIssuanceSuccessInteractorImpl(
             }
             val headerConfig = ContentHeaderConfig(
                 description = headerConfigDescription,
-                relyingPartyData = RelyingPartyData(
+                relyingPartyData = RelyingPartyDataUi(
                     logo = issuerLogo,
                     name = issuerName,
                     isVerified = issuerIsTrusted,

@@ -54,7 +54,7 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.wrap.SwitchData
+import eu.europa.ec.uilogic.component.wrap.SwitchDataUi
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.extension.openIntentChooser
 import eu.europa.ec.uilogic.extension.openUrl
@@ -206,7 +206,7 @@ private fun SettingsScreenPreview() {
                         text = stringResource(R.string.settings_screen_option_show_batch_issuance_counter)
                     ),
                     trailingContentData = ListItemTrailingContentDataUi.Switch(
-                        switchData = SwitchData(
+                        switchData = SwitchDataUi(
                             isChecked = true,
                             enabled = true,
                         )

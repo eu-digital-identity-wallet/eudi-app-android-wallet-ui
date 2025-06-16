@@ -27,15 +27,15 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 
-data class AppIconAndTextData(
-    val appIcon: IconData = AppIcons.LogoPlain,
-    val appText: IconData = AppIcons.LogoText,
+data class AppIconAndTextDataUi(
+    val appIcon: IconDataUi = AppIcons.LogoPlain,
+    val appText: IconDataUi = AppIcons.LogoText,
 )
 
 @Composable
 fun AppIconAndText(
     modifier: Modifier = Modifier,
-    appIconAndTextData: AppIconAndTextData
+    appIconAndTextData: AppIconAndTextDataUi
 ) {
     Row(
         modifier = modifier,
@@ -55,7 +55,7 @@ fun AppIconAndText(
 private fun AppIconAndTextPreview() {
     PreviewTheme {
         AppIconAndText(
-            appIconAndTextData = AppIconAndTextData(
+            appIconAndTextData = AppIconAndTextDataUi(
                 appIcon = AppIcons.LogoPlain,
                 appText = AppIcons.LogoText,
             )

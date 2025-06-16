@@ -276,11 +276,11 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
     private fun List<ExpandableListItemUi>.hasAnySingleSelected(): Boolean {
         return this.any { expandableItem ->
             when (expandableItem) {
-                is ExpandableListItemUi.NestedListItemDataUi -> {
+                is ExpandableListItemUi.NestedListItem -> {
                     expandableItem.nestedItems.hasAnySingleSelected()
                 }
 
-                is ExpandableListItemUi.SingleListItemDataUi -> {
+                is ExpandableListItemUi.SingleListItem -> {
                     val trailingContentData = expandableItem.header.trailingContentData
                     trailingContentData is ListItemTrailingContentDataUi.Checkbox && trailingContentData.checkboxData.isChecked
                 }

@@ -35,9 +35,9 @@ data class TransactionDetailsCardUi(
 )
 
 data class TransactionDetailsDataSharedHolderUi(
-    val dataSharedItems: List<ExpandableListItemUi.NestedListItemDataUi>,
+    val dataSharedItems: List<ExpandableListItemUi.NestedListItem>,
 )
 
 data class TransactionDetailsDataSignedHolderUi(
-    val dataSignedItems: List<ExpandableListItemUi.NestedListItemDataUi>,
+    val dataSignedItems: List<ExpandableListItemUi.NestedListItem>,
 )

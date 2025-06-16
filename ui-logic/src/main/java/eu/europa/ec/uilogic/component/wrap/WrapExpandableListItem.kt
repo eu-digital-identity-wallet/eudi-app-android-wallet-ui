@@ -42,11 +42,11 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 sealed class ExpandableListItemUi {
     abstract val header: ListItemDataUi
 
-    data class SingleListItemDataUi(
+    data class SingleListItem(
         override val header: ListItemDataUi,
     ) : ExpandableListItemUi()
 
-    data class NestedListItemDataUi(
+    data class NestedListItem(
         override val header: ListItemDataUi,
         val nestedItems: List<ExpandableListItemUi>,
         val isExpanded: Boolean,
@@ -98,7 +98,7 @@ fun WrapExpandableListItem(
         cardExpandedContent = {
             data.forEachIndexed { index, listItem ->
                 when (listItem) {
-                    is ExpandableListItemUi.SingleListItemDataUi -> {
+                    is ExpandableListItemUi.SingleListItem -> {
                         WrapListItem(
                             modifier = Modifier.fillMaxWidth(),
                             item = listItem.header,
@@ -112,7 +112,7 @@ fun WrapExpandableListItem(
                         )
                     }
 
-                    is ExpandableListItemUi.NestedListItemDataUi -> {
+                    is ExpandableListItemUi.NestedListItem -> {
                         WrapExpandableListItem(
                             modifier = Modifier.fillMaxWidth(),
                             header = listItem.header,
@@ -144,7 +144,7 @@ fun WrapExpandableListItem(
 @Composable
 private fun WrapExpandableListItemPreview() {
     PreviewTheme {
-        val data = ExpandableListItemUi.NestedListItemDataUi(
+        val data = ExpandableListItemUi.NestedListItem(
             header = ListItemDataUi(
                 itemId = "0",
                 mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
@@ -155,14 +155,14 @@ private fun WrapExpandableListItemPreview() {
             ),
             isExpanded = true,
             nestedItems = listOf(
-                ExpandableListItemUi.SingleListItemDataUi(
+                ExpandableListItemUi.SingleListItem(
                     ListItemDataUi(
                         itemId = "1",
                         overlineText = "Family name",
                         mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
                     )
                 ),
-                ExpandableListItemUi.SingleListItemDataUi(
+                ExpandableListItemUi.SingleListItem(
                     ListItemDataUi(
                         itemId = "1",
                         overlineText = "Given Name",

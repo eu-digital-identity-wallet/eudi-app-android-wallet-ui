@@ -65,7 +65,7 @@ fun WrapListItems(
                 .fillMaxWidth()
 
             when (item) {
-                is ExpandableListItemUi.NestedListItemDataUi -> {
+                is ExpandableListItemUi.NestedListItem -> {
                     WrapExpandableListItem(
                         modifier = itemModifier,
                         header = item.header,
@@ -80,7 +80,7 @@ fun WrapListItems(
                     )
                 }
 
-                is ExpandableListItemUi.SingleListItemDataUi -> {
+                is ExpandableListItemUi.SingleListItem -> {
                     val defaultOverlineTextStyle = MaterialTheme.typography.labelMedium.copy(
                         MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -141,7 +141,7 @@ private fun WrapListItemsPreview(
                 supportingText = "Supporting text $text",
                 leadingContentData = ListItemLeadingContentDataUi.Icon(iconData = AppIcons.Sign),
                 trailingContentData = ListItemTrailingContentDataUi.Checkbox(
-                    checkboxData = CheckboxData(
+                    checkboxData = CheckboxDataUi(
                         isChecked = true,
                         enabled = true,
                     ),
@@ -160,7 +160,7 @@ private fun WrapListItemsPreview(
                 mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 supportingText = "Supporting text $text",
                 trailingContentData = ListItemTrailingContentDataUi.Checkbox(
-                    checkboxData = CheckboxData(
+                    checkboxData = CheckboxDataUi(
                         isChecked = true,
                         enabled = true,
                     ),
@@ -169,7 +169,7 @@ private fun WrapListItemsPreview(
         )
 
         WrapListItems(
-            items = items.map { ExpandableListItemUi.SingleListItemDataUi(it) },
+            items = items.map { ExpandableListItemUi.SingleListItem(it) },
             onItemClick = {},
             onExpandedChange = {},
         )

@@ -35,7 +35,7 @@ import eu.europa.ec.issuancefeature.ui.offer.transformer.DocumentOfferTransforme
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.ListItemDataUi
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -272,7 +272,7 @@ class DocumentOfferViewModel(
         return ContentHeaderConfig(
             description = resourceProvider.getString(R.string.issuance_document_offer_description),
             mainText = resourceProvider.getString(R.string.issuance_document_offer_header_main_text),
-            relyingPartyData = RelyingPartyData(
+            relyingPartyData = RelyingPartyDataUi(
                 isVerified = false,
                 name = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name),
                 description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
@@ -283,8 +283,8 @@ class DocumentOfferViewModel(
     private fun getHeaderConfigIssuerData(
         issuerName: String,
         issuerLogo: URI?,
-    ): RelyingPartyData {
-        return RelyingPartyData(
+    ): RelyingPartyDataUi {
+        return RelyingPartyDataUi(
             logo = issuerLogo,
             isVerified = false,
             name = issuerName,

@@ -29,7 +29,7 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.wrap.SwitchData
+import eu.europa.ec.uilogic.component.wrap.SwitchDataUi
 
 interface SettingsInteractor {
     fun getAppVersion(): String
@@ -66,7 +66,7 @@ class SettingsInteractorImpl(
                             text = resourceProvider.getString(R.string.settings_screen_option_show_batch_issuance_counter)
                         ),
                         trailingContentData = ListItemTrailingContentDataUi.Switch(
-                            switchData = SwitchData(
+                            switchData = SwitchDataUi(
                                 isChecked = getCurrentShowBatchIssuanceCounter(),
                                 enabled = true,
                             )

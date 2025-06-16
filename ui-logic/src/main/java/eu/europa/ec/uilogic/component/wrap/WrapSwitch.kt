@@ -28,14 +28,14 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_SMALL
 
-data class SwitchData(
+data class SwitchDataUi(
     val isChecked: Boolean,
     val enabled: Boolean = true,
 )
 
 @Composable
 fun WrapSwitch(
-    switchData: SwitchData,
+    switchData: SwitchDataUi,
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     colors: SwitchColors = SwitchDefaults.colors(),
@@ -57,28 +57,28 @@ private fun WrapSwitchPreview() {
             verticalArrangement = Arrangement.spacedBy(SPACING_EXTRA_SMALL.dp)
         ) {
             WrapSwitch(
-                switchData = SwitchData(
+                switchData = SwitchDataUi(
                     enabled = true,
                     isChecked = true,
                 ),
                 onCheckedChange = {},
             )
             WrapSwitch(
-                switchData = SwitchData(
+                switchData = SwitchDataUi(
                     enabled = true,
                     isChecked = false,
                 ),
                 onCheckedChange = {},
             )
             WrapSwitch(
-                switchData = SwitchData(
+                switchData = SwitchDataUi(
                     enabled = false,
                     isChecked = true,
                 ),
                 onCheckedChange = {},
             )
             WrapSwitch(
-                switchData = SwitchData(
+                switchData = SwitchDataUi(
                     enabled = false,
                     isChecked = false,
                 ),

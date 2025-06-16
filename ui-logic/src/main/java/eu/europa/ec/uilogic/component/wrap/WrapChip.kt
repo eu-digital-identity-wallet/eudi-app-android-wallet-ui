@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.IconDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
@@ -43,8 +43,8 @@ fun WrapChip(
     selected: Boolean = false,
     enabled: Boolean = true,
     onClick: () -> Unit = {},
-    leadingIcon: IconData? = null,
-    trailingIcon: IconData? = null,
+    leadingIcon: IconDataUi? = null,
+    trailingIcon: IconDataUi? = null,
     shape: Shape = RoundedCornerShape(SIZE_SMALL.dp),
     colors: SelectableChipColors? = null,
     border: BorderStroke? = InputChipDefaults.inputChipBorder(

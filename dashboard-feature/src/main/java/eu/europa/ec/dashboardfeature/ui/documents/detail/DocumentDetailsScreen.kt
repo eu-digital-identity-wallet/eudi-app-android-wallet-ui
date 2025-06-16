@@ -67,7 +67,7 @@ import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IssuerDetailsCard
-import eu.europa.ec.uilogic.component.IssuerDetailsCardData
+import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
@@ -76,7 +76,7 @@ import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.content.ToolbarAction
+import eu.europa.ec.uilogic.component.content.ToolbarActionUi
 import eu.europa.ec.uilogic.component.content.ToolbarConfig
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -85,7 +85,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
@@ -124,13 +124,13 @@ fun DocumentDetailsScreen(
     val toolbarConfig = ToolbarConfig(
         actions = if (state.error == null) {
             listOf(
-                ToolbarAction(
+                ToolbarActionUi(
                     icon = if (state.isDocumentBookmarked) AppIcons.BookmarkFilled else AppIcons.Bookmark,
                     onClick = { viewModel.setEvent(Event.BookmarkPressed) },
                     enabled = !state.isLoading,
                     throttleClicks = true,
                 ),
-                ToolbarAction(
+                ToolbarActionUi(
                     icon = if (state.hideSensitiveContent) AppIcons.VisibilityOff else AppIcons.Visibility,
                     onClick = { viewModel.setEvent(Event.ChangeContentVisibility) },
                     enabled = !state.isLoading,
@@ -365,7 +365,7 @@ private fun SheetContent(
     when (sheetContent) {
         is DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation ->
             DialogBottomSheet(
-                textData = BottomSheetTextData(
+                textData = BottomSheetTextDataUi(
                     title = stringResource(
                         id = R.string.document_details_bottom_sheet_delete_title
                     ),
@@ -425,7 +425,7 @@ private fun IssuerDetails(
         )
         IssuerDetailsCard(
             modifier = Modifier.fillMaxWidth(),
-            item = IssuerDetailsCardData(
+            item = IssuerDetailsCardDataUi(
                 issuerName = issuerName,
                 issuerLogo = issuerLogo,
                 issuerIsVerified = false,
@@ -683,7 +683,7 @@ private fun DocumentDetailsScreenPreview() {
                 documentName = "Mobile Driving License",
                 documentIdentifier = DocumentIdentifier.OTHER(formatType = "org.iso.18013.5.1.mDL"),
                 documentClaims = listOf(
-                    ExpandableListItemUi.SingleListItemDataUi(
+                    ExpandableListItemUi.SingleListItem(
                         header = ListItemDataUi(
                             itemId = "1",
                             mainContentData = ListItemMainContentDataUi.Text(text = ""),
@@ -693,21 +693,21 @@ private fun DocumentDetailsScreenPreview() {
                             ),
                         )
                     ),
-                    ExpandableListItemUi.SingleListItemDataUi(
+                    ExpandableListItemUi.SingleListItem(
                         header = ListItemDataUi(
                             itemId = "2",
                             mainContentData = ListItemMainContentDataUi.Text(text = "GR"),
                             overlineText = "Alpha-2 country code, as defined in ISO 3166-1 of the issuing authority’s country or territory.",
                         )
                     ),
-                    ExpandableListItemUi.SingleListItemDataUi(
+                    ExpandableListItemUi.SingleListItem(
                         header = ListItemDataUi(
                             itemId = "3",
                             mainContentData = ListItemMainContentDataUi.Text(text = "12345678900"),
                             overlineText = "An audit control number assigned by the issuing authority.",
                         )
                     ),
-                    ExpandableListItemUi.SingleListItemDataUi(
+                    ExpandableListItemUi.SingleListItem(
                         header = ListItemDataUi(
                             itemId = "4",
                             mainContentData = ListItemMainContentDataUi.Text(text = "31 Dec 2040"),

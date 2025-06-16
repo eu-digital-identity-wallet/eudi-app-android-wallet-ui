@@ -40,7 +40,7 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
+import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -75,8 +75,8 @@ data class State(
     val isFromOnPause: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 
-    val filtersUi: List<ExpandableListItemUi.NestedListItemDataUi> = emptyList(),
-    val sortOrder: DualSelectorButtonData,
+    val filtersUi: List<ExpandableListItemUi.NestedListItem> = emptyList(),
+    val sortOrder: DualSelectorButtonDataUi,
     val isFilteringActive: Boolean,
 ) : ViewState
 
@@ -147,7 +147,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class DocumentsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItemUi.SingleListItemDataUi>) :
+    data class Filters(val filters: List<ExpandableListItemUi.SingleListItem>) :
         DocumentsBottomSheetContent()
 
     data object AddDocument : DocumentsBottomSheetContent()
@@ -171,7 +171,7 @@ class DocumentsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortOrder = DualSelectorButtonData(
+            sortOrder = DualSelectorButtonDataUi(
                 first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
                 second = resourceProvider.getString(R.string.documents_screen_filters_descending),
                 selectedButton = DualSelectorButton.FIRST,

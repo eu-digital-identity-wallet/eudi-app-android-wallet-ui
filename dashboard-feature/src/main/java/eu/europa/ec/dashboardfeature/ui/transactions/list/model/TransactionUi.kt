@@ -21,7 +21,7 @@ import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 data class TransactionUi(
-    val uiData: ExpandableListItemUi.SingleListItemDataUi,
+    val uiData: ExpandableListItemUi.SingleListItem,
     val uiStatus: TransactionStatusUi,
     val transactionCategoryUi: TransactionCategoryUi,
 ) : FilterableItemPayload

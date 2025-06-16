@@ -29,7 +29,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -110,15 +110,15 @@ sealed class DocumentDetailsBottomSheetContent {
     data object DeleteDocumentConfirmation : DocumentDetailsBottomSheetContent()
 
     data class BookmarkStoredInfo(
-        val bottomSheetTextData: BottomSheetTextData
+        val bottomSheetTextData: BottomSheetTextDataUi
     ) : DocumentDetailsBottomSheetContent()
 
     data class BookmarkRemovedInfo(
-        val bottomSheetTextData: BottomSheetTextData
+        val bottomSheetTextData: BottomSheetTextDataUi
     ) : DocumentDetailsBottomSheetContent()
 
     data class TrustedRelyingPartyInfo(
-        val bottomSheetTextData: BottomSheetTextData
+        val bottomSheetTextData: BottomSheetTextDataUi
     ) : DocumentDetailsBottomSheetContent()
 }
 
@@ -391,22 +391,22 @@ class DocumentDetailsViewModel(
         }
     }
 
-    private fun getBookmarkStoredBottomSheetTextData(): BottomSheetTextData {
-        return BottomSheetTextData(
+    private fun getBookmarkStoredBottomSheetTextData(): BottomSheetTextDataUi {
+        return BottomSheetTextDataUi(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_message)
         )
     }
 
-    private fun getBookmarkRemovedBottomSheetTextData(): BottomSheetTextData {
-        return BottomSheetTextData(
+    private fun getBookmarkRemovedBottomSheetTextData(): BottomSheetTextDataUi {
+        return BottomSheetTextDataUi(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_removed_info_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_removed_info_message)
         )
     }
 
-    private fun getTrustedRelyingPartyBottomSheetTextData(): BottomSheetTextData {
-        return BottomSheetTextData(
+    private fun getTrustedRelyingPartyBottomSheetTextData(): BottomSheetTextDataUi {
+        return BottomSheetTextDataUi(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_subtitle)
         )

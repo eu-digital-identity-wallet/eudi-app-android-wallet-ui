@@ -23,9 +23,9 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 /**
  * Recursively traverses an [ExpandableListItemUi] and toggles the `isChecked` state of a checkbox if the item with the given [id] is found.
  *
- * If the current item is a [ExpandableListItemUi.NestedListItemDataUi], it recursively calls this method on its `nestedItems`.
+ * If the current item is a [ExpandableListItemUi.NestedListItem], it recursively calls this method on its `nestedItems`.
  *
- * If the current item is a [ExpandableListItemUi.SingleListItemDataUi] and its header's `itemId` matches the provided [id],
+ * If the current item is a [ExpandableListItemUi.SingleListItem] and its header's `itemId` matches the provided [id],
  * and if the `trailingContentData` is a [ListItemTrailingContentDataUi.Checkbox], then the `isChecked` property of the checkbox data is toggled.
  *
  * If the [id] is not found or if it is found in a `SingleListItemDataUi` that does not have a checkbox as trailing content, the original item is returned.
@@ -35,7 +35,7 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
  */
 fun ExpandableListItemUi.toggleCheckboxState(id: String): ExpandableListItemUi {
     return when (this) {
-        is ExpandableListItemUi.NestedListItemDataUi -> {
+        is ExpandableListItemUi.NestedListItem -> {
             this.copy(
                 nestedItems = nestedItems.map {
                     it.toggleCheckboxState(id)
@@ -43,7 +43,7 @@ fun ExpandableListItemUi.toggleCheckboxState(id: String): ExpandableListItemUi {
             )
         }
 
-        is ExpandableListItemUi.SingleListItemDataUi -> {
+        is ExpandableListItemUi.SingleListItem -> {
             if (this.header.itemId == id && this.header.trailingContentData is ListItemTrailingContentDataUi.Checkbox) {
                 val currentItem =
                     this.header.trailingContentData as ListItemTrailingContentDataUi.Checkbox
@@ -67,11 +67,11 @@ fun ExpandableListItemUi.toggleCheckboxState(id: String): ExpandableListItemUi {
 /**
  * Recursively traverses a list of [ExpandableListItemUi] and toggles the expanded state of the item with the given [id].
  *
- * If an [ExpandableListItemUi.NestedListItemDataUi] has a header with a matching [id], its `isExpanded` property is toggled,
+ * If an [ExpandableListItemUi.NestedListItem] has a header with a matching [id], its `isExpanded` property is toggled,
  * and its `trailingContentData` icon is updated to reflect the new expanded state (up arrow for expanded, down arrow for collapsed).
- * If a [ExpandableListItemUi.NestedListItemDataUi] does not match, it will call this same method on its `nestedItems` to keep traversing.
+ * If a [ExpandableListItemUi.NestedListItem] does not match, it will call this same method on its `nestedItems` to keep traversing.
  *
- * If an [ExpandableListItemUi.SingleListItemDataUi] is encountered, it is returned as-is.
+ * If an [ExpandableListItemUi.SingleListItem] is encountered, it is returned as-is.
  *
  * @param id The ID of the item whose expanded state should be toggled.
  * @return A new list of [ExpandableListItemUi] with the specified item's expanded state toggled, and the arrow updated.
@@ -80,7 +80,7 @@ fun ExpandableListItemUi.toggleCheckboxState(id: String): ExpandableListItemUi {
 fun List<ExpandableListItemUi>.toggleExpansionState(id: String): List<ExpandableListItemUi> {
     return this.map { nestedItem ->
         when (nestedItem) {
-            is ExpandableListItemUi.NestedListItemDataUi -> {
+            is ExpandableListItemUi.NestedListItem -> {
                 if (nestedItem.header.itemId == id && nestedItem.header.trailingContentData is ListItemTrailingContentDataUi.Icon) {
                     val currentTrailingContent =
                         nestedItem.header.trailingContentData as ListItemTrailingContentDataUi.Icon
@@ -107,7 +107,7 @@ fun List<ExpandableListItemUi>.toggleExpansionState(id: String): List<Expandable
                 }
             }
 
-            is ExpandableListItemUi.SingleListItemDataUi -> {
+            is ExpandableListItemUi.SingleListItem -> {
                 nestedItem
             }
         }

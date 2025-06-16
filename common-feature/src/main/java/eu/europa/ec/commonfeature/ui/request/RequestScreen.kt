@@ -50,7 +50,7 @@ import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -61,10 +61,10 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
@@ -295,7 +295,7 @@ private fun SheetContent(
     when (sheetContent) {
         RequestBottomSheetContent.WARNING -> {
             SimpleBottomSheet(
-                textData = BottomSheetTextData(
+                textData = BottomSheetTextDataUi(
                     title = stringResource(id = R.string.request_bottom_sheet_warning_title),
                     message = stringResource(id = R.string.request_bottom_sheet_warning_subtitle),
                 ),
@@ -316,7 +316,7 @@ private fun ContentPreview() {
                 headerConfig = ContentHeaderConfig(
                     description = stringResource(R.string.request_header_description),
                     mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyData(
+                    relyingPartyData = RelyingPartyDataUi(
                         isVerified = true,
                         name = stringResource(R.string.request_relying_party_default_name),
                         description = stringResource(R.string.request_relying_party_description)
@@ -338,7 +338,7 @@ private fun ContentPreview() {
                                 ),
                             )
                         ),
-                        headerUi = ExpandableListItemUi.NestedListItemDataUi(
+                        headerUi = ExpandableListItemUi.NestedListItem(
                             header = ListItemDataUi(
                                 itemId = "000",
                                 mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
@@ -348,25 +348,25 @@ private fun ContentPreview() {
                                 ),
                             ),
                             nestedItems = listOf(
-                                ExpandableListItemUi.SingleListItemDataUi(
+                                ExpandableListItemUi.SingleListItem(
                                     ListItemDataUi(
                                         itemId = "00",
                                         overlineText = "Family name",
                                         mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
                                         trailingContentData = ListItemTrailingContentDataUi.Checkbox(
-                                            checkboxData = CheckboxData(
+                                            checkboxData = CheckboxDataUi(
                                                 isChecked = true
                                             )
                                         )
                                     )
                                 ),
-                                ExpandableListItemUi.SingleListItemDataUi(
+                                ExpandableListItemUi.SingleListItem(
                                     ListItemDataUi(
                                         itemId = "01",
                                         overlineText = "Given name",
                                         mainContentData = ListItemMainContentDataUi.Text(text = "John"),
                                         trailingContentData = ListItemTrailingContentDataUi.Checkbox(
-                                            checkboxData = CheckboxData(
+                                            checkboxData = CheckboxDataUi(
                                                 isChecked = true
                                             )
                                         )
@@ -399,7 +399,7 @@ private fun ContentNoDataPreview() {
                 headerConfig = ContentHeaderConfig(
                     description = stringResource(R.string.request_header_description),
                     mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyData(
+                    relyingPartyData = RelyingPartyDataUi(
                         isVerified = true,
                         name = stringResource(R.string.request_relying_party_default_name),
                         description = stringResource(R.string.request_relying_party_description)

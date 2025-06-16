@@ -104,7 +104,7 @@ class TransactionDetailsInteractorImpl(
                     )
 
                     val relyingPartyData: TransactionLog.RelyingParty?
-                    val dataShared: List<ExpandableListItemUi.NestedListItemDataUi>?
+                    val dataShared: List<ExpandableListItemUi.NestedListItem>?
 
                     when (transaction) {
                         is TransactionLogData.IssuanceLog -> {
@@ -187,7 +187,7 @@ class TransactionDetailsInteractorImpl(
         userLocale: Locale,
         resourceProvider: ResourceProvider,
         uuidProvider: UuidProvider
-    ): List<ExpandableListItemUi.NestedListItemDataUi> {
+    ): List<ExpandableListItemUi.NestedListItem> {
         return this.mapIndexed { index, presentedDocument ->
             val domainClaims: MutableList<DomainClaim> = mutableListOf()
 
@@ -215,7 +215,7 @@ class TransactionDetailsInteractorImpl(
 
             val uniqueId = itemIdentifierPrefix + index
 
-            ExpandableListItemUi.NestedListItemDataUi(
+            ExpandableListItemUi.NestedListItem(
                 header = ListItemDataUi(
                     itemId = uniqueId,
                     mainContentData = ListItemMainContentDataUi.Text(

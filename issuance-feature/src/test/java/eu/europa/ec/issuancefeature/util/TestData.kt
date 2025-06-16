@@ -139,14 +139,14 @@ internal val mockedMdocPidClaims = listOf(
 )
 
 internal val mockedSdJwtPidClaims = listOf(
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,age_birth_year",
             overlineText = "age_birth_year",
             mainContentData = ListItemMainContentDataUi.Text("1985")
         )
     ),
-    ExpandableListItemUi.NestedListItemDataUi(
+    ExpandableListItemUi.NestedListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,age_equal_or_over",
             mainContentData = ListItemMainContentDataUi.Text("age_equal_or_over"),
@@ -155,14 +155,14 @@ internal val mockedSdJwtPidClaims = listOf(
             )
         ),
         nestedItems = listOf(
-            ExpandableListItemUi.SingleListItemDataUi(
+            ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
                     itemId = "$mockedSdJwtPidId,age_equal_or_over,18",
                     overlineText = "18",
                     mainContentData = ListItemMainContentDataUi.Text("true")
                 )
             ),
-            ExpandableListItemUi.SingleListItemDataUi(
+            ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
                     itemId = "$mockedSdJwtPidId,age_equal_or_over,65",
                     overlineText = "65",
@@ -172,56 +172,56 @@ internal val mockedSdJwtPidClaims = listOf(
         ),
         isExpanded = false
     ),
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,birth_date",
             overlineText = "birth_date",
             mainContentData = ListItemMainContentDataUi.Text("30 Mar 1985")
         )
     ),
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,exp",
             overlineText = "exp",
             mainContentData = ListItemMainContentDataUi.Text(text = "1755730800")
         )
     ),
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,family_name",
             overlineText = "family_name",
             mainContentData = ListItemMainContentDataUi.Text("ANDERSSON")
         )
     ),
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,given_name",
             overlineText = "given_name",
             mainContentData = ListItemMainContentDataUi.Text("JAN")
         )
     ),
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,iat",
             overlineText = "iat",
             mainContentData = ListItemMainContentDataUi.Text(text = "1747954800")
         )
     ),
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,issuing_authority",
             overlineText = "issuing_authority",
             mainContentData = ListItemMainContentDataUi.Text(text = "Test PID issuer")
         )
     ),
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,issuing_country",
             overlineText = "issuing_country",
             mainContentData = ListItemMainContentDataUi.Text("FC")
         )
     ),
-    ExpandableListItemUi.NestedListItemDataUi(
+    ExpandableListItemUi.NestedListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,$mockedUuid",
             overlineText = null,
@@ -231,7 +231,7 @@ internal val mockedSdJwtPidClaims = listOf(
             )
         ),
         nestedItems = listOf(
-            ExpandableListItemUi.SingleListItemDataUi(
+            ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
                     itemId = "$mockedSdJwtPidId,nationalities",
                     overlineText = "nationalities",
@@ -241,7 +241,7 @@ internal val mockedSdJwtPidClaims = listOf(
         ),
         isExpanded = false
     ),
-    ExpandableListItemUi.NestedListItemDataUi(
+    ExpandableListItemUi.NestedListItem(
         header = ListItemDataUi(
             itemId = "$mockedSdJwtPidId,place_of_birth",
             overlineText = null,
@@ -251,7 +251,7 @@ internal val mockedSdJwtPidClaims = listOf(
             )
         ),
         nestedItems = listOf(
-            ExpandableListItemUi.SingleListItemDataUi(
+            ExpandableListItemUi.SingleListItem(
                 header = ListItemDataUi(
                     itemId = "$mockedSdJwtPidId,place_of_birth,locality",
                     overlineText = "locality",
@@ -264,7 +264,7 @@ internal val mockedSdJwtPidClaims = listOf(
 )
 
 private fun createMdocClaimListItem(docId: String, claimIdentifier: String, value: String) =
-    ExpandableListItemUi.SingleListItemDataUi(
+    ExpandableListItemUi.SingleListItem(
         header = ListItemDataUi(
             itemId = "$docId,$claimIdentifier",
             overlineText = claimIdentifier,
