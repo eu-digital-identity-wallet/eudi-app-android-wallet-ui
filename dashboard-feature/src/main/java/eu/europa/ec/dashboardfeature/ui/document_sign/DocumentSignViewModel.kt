@@ -14,12 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.sign
+package eu.europa.ec.dashboardfeature.ui.document_sign
 
 import android.content.Context
 import android.net.Uri
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
-import eu.europa.ec.dashboardfeature.ui.sign.model.SignDocumentButtonUi
+import eu.europa.ec.dashboardfeature.ui.document_sign.model.DocumentSignButtonUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -34,7 +34,7 @@ data class State(
     val error: ContentErrorConfig? = null,
     val title: String,
     val subtitle: String,
-    val buttonUi: SignDocumentButtonUi
+    val buttonUi: DocumentSignButtonUi
 ) : ViewState
 
 sealed class Event : ViewEvent {

@@ -319,7 +319,7 @@
     <string name="document_sign_title">Sign Document</string>
     <string name="document_sign_subtitle">Select a document from your device to sign electronically.</string>
     <string name="document_sign_select_document">Select document</string>
-    <string name="document_sign_select_document_button_id">signDocumentButtonId</string>
+    <string name="document_sign_select_document_button_id">documentSignButtonId</string>
 
     <!-- Qr Scan -->
     <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>

@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.sign
+package eu.europa.ec.dashboardfeature.ui.document_sign
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,7 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.dashboardfeature.ui.sign.model.SignDocumentButtonUi
+import eu.europa.ec.dashboardfeature.ui.document_sign.model.DocumentSignButtonUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -135,7 +135,7 @@ private fun Content(
 @Composable
 private fun SignButton(
     modifier: Modifier = Modifier,
-    buttonUi: SignDocumentButtonUi,
+    buttonUi: DocumentSignButtonUi,
     onEventSend: (Event) -> Unit,
 ) {
     WrapListItem(
@@ -157,7 +157,7 @@ private fun DocumentSignScreenPreview() {
             state = State(
                 title = stringResource(R.string.document_sign_title),
                 subtitle = stringResource(R.string.document_sign_subtitle),
-                buttonUi = SignDocumentButtonUi(
+                buttonUi = DocumentSignButtonUi(
                     data = ListItemDataUi(
                         itemId = "0",
                         mainContentData = ListItemMainContentDataUi.Text(
