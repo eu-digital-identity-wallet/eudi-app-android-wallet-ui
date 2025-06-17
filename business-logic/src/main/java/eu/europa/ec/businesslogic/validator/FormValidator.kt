@@ -18,7 +18,6 @@ package eu.europa.ec.businesslogic.validator
 
 import android.net.Uri
 import android.util.Patterns
-import androidx.core.net.toUri
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.util.safeLet
@@ -205,7 +204,7 @@ class FormValidatorImpl(
     ): Boolean {
         if (value.isEmpty()) return false
         return try {
-            val uri = Uri.decode(value).toUri()
+            val uri = Uri.parse(Uri.decode(value))
 
             if (shouldValidateSchema && uri.scheme.isNullOrEmpty()) {
                 return false
@@ -221,7 +220,7 @@ class FormValidatorImpl(
             }
 
             true
-        } catch (_: Exception) {
+        } catch (e: Exception) {
             false
         }
     }

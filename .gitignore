@@ -44,13 +44,10 @@ captures/
 # Sign key
 sign
 
-# fastlane
+#fastlane
 .env.demo
 .env.dev
 fastlane/report.xml
 
 # Kotlin
 .kotlin/*
-
-# extensions
-*.apk

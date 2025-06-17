@@ -16,7 +16,7 @@
 
 package project.convention.logic.kover
 
-import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
+import kotlinx.kover.gradle.plugin.dsl.KoverReportExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
@@ -24,13 +24,11 @@ fun Project.excludeFromKoverReport(
     excludedClasses: List<String>,
     excludedPackages: List<String>,
 ) {
-    configure<KoverProjectExtension> {
-        reports {
-            filters {
-                excludes {
-                    classes(excludedClasses)
-                    packages(excludedPackages)
-                }
+    configure<KoverReportExtension> {
+        filters {
+            excludes {
+                classes(excludedClasses)
+                packages(excludedPackages)
             }
         }
     }

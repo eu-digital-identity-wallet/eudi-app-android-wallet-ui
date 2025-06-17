@@ -16,12 +16,36 @@
 
 package eu.europa.ec.storagelogic.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import eu.europa.ec.storagelogic.model.type.StoredObject
+import io.realm.kotlin.types.RealmObject
+import io.realm.kotlin.types.annotations.PrimaryKey
 
-@Entity(tableName = "transactionLogs")
-data class TransactionLog(
+internal class RealmTransactionLog : RealmObject {
     @PrimaryKey
+    var identifier: String = ""
+    var value: String = ""
+}
+
+data class TransactionLog(
     val identifier: String,
     val value: String
-)
+) : StoredObject
+
+internal fun TransactionLog.toRealm() = RealmTransactionLog().apply {
+    identifier = this@toRealm.identifier
+    value = this@toRealm.value
+}
+
+internal fun RealmTransactionLog?.toTransactionLog() = this?.let {
+    TransactionLog(
+        it.identifier,
+        it.value
+    )
+}
+
+internal fun List<RealmTransactionLog>.toTransactionLogs() = this.map {
+    TransactionLog(
+        it.identifier,
+        it.value
+    )
+}

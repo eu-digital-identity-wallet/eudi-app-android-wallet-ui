@@ -43,7 +43,6 @@ dependencies {
     compileOnly(libs.owasp.dependencycheck.gradlePlugin)
     compileOnly(libs.kotlinx.kover.gradlePlugin)
     compileOnly(libs.baselineprofile.gradlePlugin)
-    compileOnly(libs.androidx.room.gradlePlugin)
 }
 
 gradlePlugin {
@@ -116,9 +115,9 @@ gradlePlugin {
             id = "project.rqes.sdk"
             implementationClass = "EudiRqesPlugin"
         }
-        register("androidxRoom") {
-            id = "project.androidx.room"
-            implementationClass = "RoomPlugin"
+        register("kotlinRealm") {
+            id = "project.kotlin.realm"
+            implementationClass = "RealmPlugin"
         }
         register("eudiStorage") {
             id = "project.wallet.storage"

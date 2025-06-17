@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
+import java.time.Instant
 
 sealed interface FilterValidatorPartialState {
     val updatedFilters: Filters
@@ -75,8 +75,8 @@ interface FilterValidator {
     fun updateDateFilter(
         filterGroupId: String,
         filterId: String,
-        lowerLimit: LocalDateTime,
-        upperLimit: LocalDateTime
+        lowerLimit: Instant,
+        upperLimit: Instant
     )
 
     fun updateSortOrder(sortOrder: SortOrder)
@@ -187,8 +187,8 @@ class FilterValidatorImpl(
     private fun updateFilterInGroup(
         group: FilterGroup,
         filterId: String,
-        lowerLimit: LocalDateTime,
-        upperLimit: LocalDateTime,
+        lowerLimit: Instant,
+        upperLimit: Instant,
     ): FilterGroup {
         return when (group) {
             is FilterGroup.MultipleSelectionFilterGroup<*> -> {
@@ -252,8 +252,8 @@ class FilterValidatorImpl(
     override fun updateDateFilter(
         filterGroupId: String,
         filterId: String,
-        lowerLimit: LocalDateTime,
-        upperLimit: LocalDateTime
+        lowerLimit: Instant,
+        upperLimit: Instant
     ) {
         scope.launch {
             val filtersToUpdate = if (snapshotFilters.isEmpty) appliedFilters else snapshotFilters

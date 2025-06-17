@@ -580,6 +580,7 @@ class DocumentsInteractorImpl(
                         filterGroup.copy(
                             filters = buildList {
                                 addAll(filterGroup.filters)
+                                addAll(addRevokedDocumentFilter(documents))
                             }
                         )
                     }
@@ -709,13 +710,7 @@ class DocumentsInteractorImpl(
                         name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_expired),
                         selected = false,
                         isDefault = false,
-                    ),
-                    FilterItem(
-                        id = DocumentFilterIds.FILTER_BY_STATE_REVOKED,
-                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_revoked),
-                        selected = false,
-                        isDefault = false,
-                    ),
+                    )
                 ),
                 filterableAction = FilterMultipleAction<DocumentsFilterableAttributes> { attributes, filter ->
                     when (filter.id) {
@@ -744,6 +739,23 @@ class DocumentsInteractorImpl(
                         name = resourceProvider.getString(category.stringResId),
                         selected = true,
                         isDefault = true
+                    )
+                }
+            }
+    }
+
+    private fun addRevokedDocumentFilter(
+        documents: FilterableList
+    ): List<FilterItem> {
+        return documents.items
+            .distinctBy { (it.attributes as DocumentsFilterableAttributes).isRevoked }
+            .map { filterableItem ->
+                with(filterableItem.attributes as DocumentsFilterableAttributes) {
+                    FilterItem(
+                        id = DocumentFilterIds.FILTER_BY_STATE_REVOKED,
+                        name = resourceProvider.getString(R.string.documents_screen_filters_filter_by_state_revoked),
+                        selected = true,
+                        isDefault = true,
                     )
                 }
             }

@@ -29,7 +29,9 @@ import java.util.Locale
 fun Offer.getIssuerName(locale: Locale): String {
     return issuerMetadata.display.getLocalizedString(
         userLocale = locale,
-        localeExtractor = { it.locale },
+        localeExtractor = {
+            it.locale?.let { Locale(it) }
+        },
         stringExtractor = { it.name },
         fallback = issuerMetadata.credentialIssuerIdentifier.value.value.host
     )
@@ -38,7 +40,9 @@ fun Offer.getIssuerName(locale: Locale): String {
 fun Offer.getIssuerLogo(locale: Locale): URI? {
     return issuerMetadata.display.getLocalizedValue(
         userLocale = locale,
-        localeExtractor = { it.locale },
+        localeExtractor = {
+            it.locale?.let { Locale(it) }
+        },
         valueExtractor = { it.logo?.uri },
         fallback = null
     )

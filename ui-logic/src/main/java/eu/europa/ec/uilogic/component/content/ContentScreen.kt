@@ -16,7 +16,6 @@
 
 package eu.europa.ec.uilogic.component.content
 
-import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,7 +45,6 @@ import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.zIndex
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconData
-import eu.europa.ec.uilogic.component.SystemBroadcastReceiver
 import eu.europa.ec.uilogic.component.loader.LoadingIndicator
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -77,8 +75,6 @@ enum class ScreenNavigateAction {
     BACKABLE, CANCELABLE, NONE
 }
 
-data class BroadcastAction(val intentFilters: List<String>, val callback: (Intent?) -> Unit)
-
 @Composable
 fun ContentScreen(
     isLoading: Boolean = false,
@@ -92,7 +88,6 @@ fun ContentScreen(
     fabPosition: FabPosition = FabPosition.End,
     snackbarHost: @Composable () -> Unit = {},
     contentErrorConfig: ContentErrorConfig? = null,
-    broadcastAction: BroadcastAction? = null,
     bodyContent: @Composable (PaddingValues) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -165,14 +160,6 @@ fun ContentScreen(
         contentErrorConfig?.let {
             contentErrorConfig.onCancel()
         } ?: onBack?.invoke()
-    }
-
-    broadcastAction?.let {
-        SystemBroadcastReceiver(
-            intentFilters = it.intentFilters
-        ) { intent ->
-            it.callback(intent)
-        }
     }
 }
 

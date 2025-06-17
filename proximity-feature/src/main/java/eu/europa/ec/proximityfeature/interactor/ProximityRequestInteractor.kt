@@ -17,7 +17,6 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
@@ -54,7 +53,6 @@ interface ProximityRequestInteractor {
 
 class ProximityRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val uuidProvider: UuidProvider,
     private val walletCorePresentationController: WalletCorePresentationController,
     private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : ProximityRequestInteractor {
@@ -79,8 +77,7 @@ class ProximityRequestInteractorImpl(
                         val documentsDomain = RequestTransformer.transformToDomainItems(
                             storageDocuments = walletCoreDocumentsController.getAllIssuedDocuments(),
                             requestDocuments = response.requestData,
-                            resourceProvider = resourceProvider,
-                            uuidProvider = uuidProvider
+                            resourceProvider = resourceProvider
                         ).getOrThrow()
                             .filterNot {
                                 walletCoreDocumentsController.isDocumentRevoked(it.docId)

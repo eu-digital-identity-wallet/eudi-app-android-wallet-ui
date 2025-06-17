@@ -27,6 +27,7 @@ import org.gradle.api.Project
  *
  * Note: this could be improved by checking other potential sourceSets based on buildTypes and flavors.
  */
+@Suppress("UnstableApiUsage")
 internal fun LibraryAndroidComponentsExtension.disableUnnecessaryAndroidTests(
     project: Project,
 ) = beforeVariants {
