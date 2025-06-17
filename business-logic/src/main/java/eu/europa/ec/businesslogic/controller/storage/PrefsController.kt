@@ -19,6 +19,7 @@ package eu.europa.ec.businesslogic.controller.storage
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import eu.europa.ec.businesslogic.extension.decodeFromPemBase64String
 import eu.europa.ec.businesslogic.extension.shuffle
 import eu.europa.ec.businesslogic.extension.unShuffle
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -309,6 +310,8 @@ class PrefsControllerImpl(
 interface PrefKeys {
     fun getBiometricAlias(): String
     fun setBiometricAlias(value: String)
+    fun getStorageKey(): ByteArray?
+    fun setStorageKey(key: String)
 }
 
 class PrefKeysImpl(
@@ -329,5 +332,33 @@ class PrefKeysImpl(
      */
     override fun setBiometricAlias(value: String) {
         prefsController.setString("BiometricAlias", value)
+    }
+
+    /**
+     * Sets the storage key used for persisting data.
+     *
+     * This function updates the stored storage key in the preferences controller.
+     * Subsequent data persistence operations will use this new key.
+     *
+     * @param key The new storage key to be used.
+     */
+    override fun setStorageKey(key: String) {
+        prefsController.setString("StorageKey", key)
+    }
+
+    /**
+     * Retrieves the storage key from persistent storage.
+     *
+     * The storage key is used for encrypting and decrypting data that needs to be
+     * persistently stored. It is retrieved from the `prefsController` using the
+     * key "StorageKey". If a non-empty key is found, it is assumed to be a PEM-encoded
+     * base64 string and is decoded into a byte array. If no key is found or the retrieved
+     * key is empty, `null` is returned.
+     *
+     * @return The storage key as a byte array, or `null` if no key is found or the key is empty.
+     */
+    override fun getStorageKey(): ByteArray? {
+        val key = prefsController.getString("StorageKey", "")
+        return if (key.isNotEmpty()) key.decodeFromPemBase64String() else null
     }
 }

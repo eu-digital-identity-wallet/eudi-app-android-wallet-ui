@@ -389,35 +389,6 @@ private fun ContentPreview() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@ThemeModePreviews
-@Composable
-private fun ContentNoDataPreview() {
-    PreviewTheme {
-        Content(
-            state = State(
-                headerConfig = ContentHeaderConfig(
-                    description = stringResource(R.string.request_header_description),
-                    mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyData(
-                        isVerified = true,
-                        name = stringResource(R.string.request_relying_party_default_name),
-                        description = stringResource(R.string.request_relying_party_description)
-                    )
-                ),
-                items = emptyList(),
-                noItems = true,
-            ),
-            effectFlow = Channel<Effect>().receiveAsFlow(),
-            onEventSend = {},
-            onNavigationRequested = {},
-            paddingValues = PaddingValues(SPACING_MEDIUM.dp),
-            coroutineScope = rememberCoroutineScope(),
-            modalBottomSheetState = rememberModalBottomSheetState()
-        )
-    }
-}
-
 @ThemeModePreviews
 @Composable
 private fun SheetContentWarningPreview() {

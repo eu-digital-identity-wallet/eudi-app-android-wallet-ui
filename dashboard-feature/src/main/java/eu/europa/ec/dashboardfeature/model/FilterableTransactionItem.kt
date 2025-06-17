@@ -19,12 +19,12 @@ package eu.europa.ec.dashboardfeature.model
 import eu.europa.ec.businesslogic.validator.model.FilterableAttributes
 import eu.europa.ec.commonfeature.model.TransactionUiStatus
 import eu.europa.ec.commonfeature.model.TransactionUiType
-import java.time.LocalDateTime
+import java.time.Instant
 
 data class TransactionsFilterableAttributes(
     override val searchTags: List<String>,
     val transactionStatus: TransactionUiStatus,
     val transactionType: TransactionUiType,
-    val creationLocalDateTime: LocalDateTime?,
+    val creationDate: Instant?,
     val relyingPartyName: String?,
 ) : FilterableAttributes

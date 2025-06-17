@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.component
 
+import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -222,8 +223,10 @@ fun ListItem(
         color = MaterialTheme.colorScheme.onSurface
     )
 
-    val blurModifier = remember(hideSensitiveContent) {
-        if (hideSensitiveContent) {
+    // API check
+    val supportsBlur = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val blurModifier = remember(supportsBlur, hideSensitiveContent) {
+        if (supportsBlur && hideSensitiveContent) {
             Modifier.blur(10.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
         } else {
             Modifier
@@ -262,32 +265,34 @@ fun ListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Leading Content
-            leadingContentData?.let { safeLeadingContentData ->
-                val leadingContentModifier = Modifier
-                    .padding(end = SIZE_MEDIUM.dp)
-                    .size(safeLeadingContentData.size.dp)
-                    .then(blurModifier)
+            if (!hideSensitiveContent || supportsBlur) {
+                leadingContentData?.let { safeLeadingContentData ->
+                    val leadingContentModifier = Modifier
+                        .padding(end = SIZE_MEDIUM.dp)
+                        .size(safeLeadingContentData.size.dp)
+                        .then(blurModifier)
 
-                when (safeLeadingContentData) {
-                    is ListItemLeadingContentData.Icon -> WrapIcon(
-                        modifier = leadingContentModifier,
-                        iconData = safeLeadingContentData.iconData,
-                        customTint = safeLeadingContentData.tint
-                            ?: MaterialTheme.colorScheme.primary,
-                    )
+                    when (safeLeadingContentData) {
+                        is ListItemLeadingContentData.Icon -> WrapIcon(
+                            modifier = leadingContentModifier,
+                            iconData = safeLeadingContentData.iconData,
+                            customTint = safeLeadingContentData.tint
+                                ?: MaterialTheme.colorScheme.primary,
+                        )
 
-                    is ListItemLeadingContentData.UserImage -> ImageOrPlaceholder(
-                        modifier = leadingContentModifier,
-                        base64Image = safeLeadingContentData.userBase64Image,
-                    )
+                        is ListItemLeadingContentData.UserImage -> ImageOrPlaceholder(
+                            modifier = leadingContentModifier,
+                            base64Image = safeLeadingContentData.userBase64Image,
+                        )
 
-                    is ListItemLeadingContentData.AsyncImage -> WrapAsyncImage(
-                        modifier = leadingContentModifier,
-                        source = safeLeadingContentData.imageUrl,
-                        error = safeLeadingContentData.errorImage,
-                        placeholder = safeLeadingContentData.placeholderImage,
-                        contentDescription = stringResource(R.string.content_description_issuer_logo_icon)
-                    )
+                        is ListItemLeadingContentData.AsyncImage -> WrapAsyncImage(
+                            modifier = leadingContentModifier,
+                            source = safeLeadingContentData.imageUrl,
+                            error = safeLeadingContentData.errorImage,
+                            placeholder = safeLeadingContentData.placeholderImage,
+                            contentDescription = stringResource(R.string.content_description_issuer_logo_icon)
+                        )
+                    }
                 }
             }
 
@@ -302,34 +307,36 @@ fun ListItem(
                 overlineText?.let { safeOverlineText ->
                     Text(
                         text = safeOverlineText,
-                        style = overlineTextStyle,
+                        style = if (hideSensitiveContent && !supportsBlur) mainTextStyle else overlineTextStyle,
                     )
                 }
 
                 // Main Content
-                when (mainContentData) {
-                    is ListItemMainContentData.Image -> ImageOrPlaceholder(
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .padding(top = SPACING_SMALL.dp)
-                            .then(blurModifier),
-                        base64Image = mainContentData.base64Image,
-                        contentScale = ContentScale.Fit,
-                    )
+                if (!hideSensitiveContent || supportsBlur) {
+                    when (mainContentData) {
+                        is ListItemMainContentData.Image -> ImageOrPlaceholder(
+                            modifier = Modifier
+                                .wrapContentWidth()
+                                .padding(top = SPACING_SMALL.dp)
+                                .then(blurModifier),
+                            base64Image = mainContentData.base64Image,
+                            contentScale = ContentScale.Fit,
+                        )
 
-                    is ListItemMainContentData.Text -> Text(
-                        modifier = blurModifier,
-                        text = mainContentData.text,
-                        style = mainTextStyle,
-                        overflow = textOverflow,
-                    )
+                        is ListItemMainContentData.Text -> Text(
+                            modifier = blurModifier,
+                            text = mainContentData.text,
+                            style = mainTextStyle,
+                            overflow = textOverflow,
+                        )
 
-                    is ListItemMainContentData.Actionable<*> -> Text(
-                        modifier = blurModifier,
-                        text = mainContentData.text,
-                        style = mainTextStyle,
-                        overflow = textOverflow,
-                    )
+                        is ListItemMainContentData.Actionable<*> -> Text(
+                            modifier = blurModifier,
+                            text = mainContentData.text,
+                            style = mainTextStyle,
+                            overflow = textOverflow,
+                        )
+                    }
                 }
 
                 // Supporting Text

@@ -49,6 +49,7 @@ class AndroidTestConventionPlugin : Plugin<Project> {
                 add("api", libs.findLibrary("turbine").get())
                 add("api", libs.findLibrary("mockito-core").get())
                 add("api", libs.findLibrary("mockito-kotlin").get())
+                add("api", libs.findLibrary("mockito-inline").get())
                 add("api", libs.findLibrary("robolectric").get())
             }
         }

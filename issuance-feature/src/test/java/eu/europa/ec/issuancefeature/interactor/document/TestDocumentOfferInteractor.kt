@@ -49,7 +49,7 @@ import eu.europa.ec.eudi.openid4vci.CredentialConfigurationIdentifier
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerEndpoint
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerId
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadata
-import eu.europa.ec.eudi.openid4vci.Display
+import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadata.Display
 import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.openid4vci.TxCode
 import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
@@ -57,11 +57,7 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.issue.openid4vci.Offer
-import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
-import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractorImpl
-import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
-import eu.europa.ec.issuancefeature.interactor.ResolveDocumentOfferInteractorPartialState
-import eu.europa.ec.issuancefeature.ui.offer.model.DocumentOfferItemUi
+import eu.europa.ec.issuancefeature.ui.document.offer.model.DocumentOfferItemUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
@@ -1102,7 +1098,7 @@ class TestDocumentOfferInteractor {
             display = listOf(
                 Display(
                     name = issuerName,
-                    locale = mockedDefaultLocale
+                    locale = mockedDefaultLocale.language
                 )
             )
         )
@@ -1111,8 +1107,8 @@ class TestDocumentOfferInteractor {
     private fun mockOfferedDocument(
         name: String = mockedOfferedDocumentName,
         docType: String = mockedOfferedDocumentDocType,
-        display: List<Display> = listOf(
-            Display(
+        display: List<eu.europa.ec.eudi.openid4vci.Display> = listOf(
+            eu.europa.ec.eudi.openid4vci.Display(
                 name = name,
                 locale = mockedDefaultLocale
             )

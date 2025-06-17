@@ -18,7 +18,6 @@ package eu.europa.ec.corelogic.di
 
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.log.LogController
-import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfigImpl
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -29,9 +28,9 @@ import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.storagelogic.dao.BookmarkDao
-import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
-import eu.europa.ec.storagelogic.dao.TransactionLogDao
+import eu.europa.ec.storagelogic.controller.BookmarkStorageController
+import eu.europa.ec.storagelogic.controller.RevokedDocumentsStorageController
+import eu.europa.ec.storagelogic.controller.TransactionLogStorageController
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -67,11 +66,9 @@ fun provideWalletCoreLogController(logController: LogController): WalletCoreLogC
 
 @Single
 fun provideWalletCoreTransactionLogController(
-    transactionLogDao: TransactionLogDao,
-    uuidProvider: UuidProvider
+    transactionLogStorageController: TransactionLogStorageController
 ): WalletCoreTransactionLogController = WalletCoreTransactionLogControllerImpl(
-    transactionLogDao = transactionLogDao,
-    uuidProvider = uuidProvider
+    transactionLogStorageController = transactionLogStorageController
 )
 
 @Factory
@@ -79,17 +76,17 @@ fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
     eudiWallet: EudiWallet,
     walletCoreConfig: WalletCoreConfig,
-    bookmarkDao: BookmarkDao,
-    transactionLogDao: TransactionLogDao,
-    revokedDocumentDao: RevokedDocumentDao
+    transactionLogStorageController: TransactionLogStorageController,
+    bookmarkStorageController: BookmarkStorageController,
+    revokedDocumentsStorageController: RevokedDocumentsStorageController
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
         resourceProvider,
         eudiWallet,
         walletCoreConfig,
-        bookmarkDao,
-        transactionLogDao,
-        revokedDocumentDao
+        transactionLogStorageController,
+        bookmarkStorageController,
+        revokedDocumentsStorageController
     )
 
 /**

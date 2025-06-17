@@ -27,21 +27,21 @@ import androidx.core.content.ContextCompat
 
 @Composable
 fun SystemBroadcastReceiver(
-    intentFilters: List<String>,
-    onTrigger: (intent: Intent?) -> Unit
+    actions: List<String>,
+    onEvent: (intent: Intent?) -> Unit
 ) {
     val context = LocalContext.current
 
     // If either context or Action changes, unregister and register again
-    DisposableEffect(context, intentFilters) {
+    DisposableEffect(context, actions) {
         val intentFilter = IntentFilter().apply {
-            intentFilters.forEach {
+            actions.forEach {
                 addAction(it)
             }
         }
         val broadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                onTrigger(intent)
+                onEvent(intent)
             }
         }
 

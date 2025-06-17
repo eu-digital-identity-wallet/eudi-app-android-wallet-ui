@@ -18,8 +18,7 @@ package eu.europa.ec.presentationfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.commonfeature.extension.toExpandableListItems
+import eu.europa.ec.commonfeature.extensions.toExpandableListItems
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
@@ -60,7 +59,6 @@ class PresentationSuccessInteractorImpl(
     private val walletCorePresentationController: WalletCorePresentationController,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
-    private val uuidProvider: UuidProvider
 ) : PresentationSuccessInteractor {
 
     private val genericErrorMsg
@@ -92,8 +90,8 @@ class PresentationSuccessInteractorImpl(
                     val disclosedClaims = transformPathsToDomainClaims(
                         paths = disclosedClaimPaths,
                         claims = document.data.claims,
+                        metadata = document.metadata,
                         resourceProvider = resourceProvider,
-                        uuidProvider = uuidProvider
                     )
 
                     val disclosedClaimsUi = disclosedClaims.map { disclosedClaim ->

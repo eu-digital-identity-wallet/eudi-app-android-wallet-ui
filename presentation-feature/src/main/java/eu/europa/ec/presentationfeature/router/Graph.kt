@@ -30,6 +30,7 @@ import eu.europa.ec.presentationfeature.ui.request.PresentationRequestScreen
 import eu.europa.ec.presentationfeature.ui.success.PresentationSuccessScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.PresentationScreens
+import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -55,7 +56,7 @@ fun NavGraphBuilder.presentationGraph(navController: NavController) {
         ) {
             PresentationRequestScreen(
                 navController,
-                koinViewModel(
+                getViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(RequestUriConfig.serializedKeyName).orEmpty()

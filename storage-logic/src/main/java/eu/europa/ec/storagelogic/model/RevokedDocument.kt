@@ -16,11 +16,31 @@
 
 package eu.europa.ec.storagelogic.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import eu.europa.ec.storagelogic.model.type.StoredObject
+import io.realm.kotlin.types.RealmObject
+import io.realm.kotlin.types.annotations.PrimaryKey
 
-@Entity(tableName = "revokedDocuments")
-data class RevokedDocument(
+internal class RealmRevokedDocument : RealmObject {
     @PrimaryKey
+    var identifier: String = ""
+}
+
+data class RevokedDocument(
     val identifier: String
-)
+) : StoredObject
+
+internal fun RevokedDocument.toRealm() = RealmRevokedDocument().apply {
+    identifier = this@toRealm.identifier
+}
+
+internal fun RealmRevokedDocument?.toRevokedDocument() = this?.let {
+    RevokedDocument(
+        it.identifier
+    )
+}
+
+internal fun List<RealmRevokedDocument>.toRevokedDocuments() = this.map {
+    RevokedDocument(
+        it.identifier
+    )
+}

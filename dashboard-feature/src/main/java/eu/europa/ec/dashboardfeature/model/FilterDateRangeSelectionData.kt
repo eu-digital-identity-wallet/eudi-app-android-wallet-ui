@@ -17,18 +17,14 @@
 package eu.europa.ec.dashboardfeature.model
 
 import eu.europa.ec.businesslogic.util.toDisplayedDate
-import java.time.LocalDate
 
 data class FilterDateRangeSelectionData(
-    val startDate: LocalDate? = null,
-    val endDate: LocalDate? = null
+    val startDate: Long? = null,
+    val endDate: Long? = null
 ) {
     val displayedStartDate: String
-        get() = startDate.toDisplayedDate()
+        get() = startDate?.toDisplayedDate().orEmpty()
 
     val displayedEndDate: String
-        get() = endDate.toDisplayedDate()
-
-    val isEmpty: Boolean
-        get() = startDate == null && endDate == null
+        get() = endDate?.toDisplayedDate().orEmpty()
 }

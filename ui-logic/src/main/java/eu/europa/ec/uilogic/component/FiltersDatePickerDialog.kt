@@ -37,8 +37,7 @@ enum class DatePickerDialogType {
 data class DatePickerDialogConfig(
     val type: DatePickerDialogType,
     val lowerLimit: LocalDate? = LocalDate.MIN,
-    val upperLimit: LocalDate? = LocalDate.MAX,
-    val selectedUtcDateMillis: Long? = null
+    val upperLimit: LocalDate? = LocalDate.MAX
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,10 +59,7 @@ fun FiltersDatePickerDialog(
         }
     }
 
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = datePickerDialogConfig.selectedUtcDateMillis,
-        selectableDates = customSelectableDates
-    )
+    val datePickerState = rememberDatePickerState(selectableDates = customSelectableDates)
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
