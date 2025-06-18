@@ -37,7 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.uilogic.component.AppIconAndText
-import eu.europa.ec.uilogic.component.AppIconAndTextData
+import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -100,7 +100,7 @@ private fun Content(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = SPACING_LARGE.dp),
-            appIconAndTextData = AppIconAndTextData(),
+            appIconAndTextData = AppIconAndTextDataUi(),
         )
 
         Column(

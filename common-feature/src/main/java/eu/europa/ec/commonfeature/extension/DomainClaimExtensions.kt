@@ -3,30 +3,30 @@ package eu.europa.ec.commonfeature.extension
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
-import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
-fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListItem> {
+fun DocumentPayloadDomain.toSelectiveExpandableListItems(): List<ExpandableListItemUi> {
     return this.docClaimsDomain.map { claim ->
         claim.toSelectiveExpandableListItems(docId)
     }
 }
 
-fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListItem {
+fun ClaimDomain.toSelectiveExpandableListItems(docId: String): ExpandableListItemUi {
     return when (this) {
-        is DomainClaim.Group -> {
-            ExpandableListItem.NestedListItemData(
-                header = ListItemData(
+        is ClaimDomain.Group -> {
+            ExpandableListItemUi.NestedListItem(
+                header = ListItemDataUi(
                     itemId = path.toId(docId),
-                    mainContentData = ListItemMainContentData.Text(text = displayTitle),
-                    trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowDown)
+                    mainContentData = ListItemMainContentDataUi.Text(text = displayTitle),
+                    trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown)
                 ),
                 nestedItems = items.map {
                     it.toSelectiveExpandableListItems(docId)
@@ -35,15 +35,15 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
             )
         }
 
-        is DomainClaim.Primitive -> {
-            ExpandableListItem.SingleListItemData(
-                header = ListItemData(
+        is ClaimDomain.Primitive -> {
+            ExpandableListItemUi.SingleListItem(
+                header = ListItemDataUi(
                     itemId = path.toId(docId),
                     mainContentData = calculateMainContent(key, value),
                     overlineText = calculateOverlineText(displayTitle),
                     leadingContentData = calculateLeadingContent(key, value),
-                    trailingContentData = ListItemTrailingContentData.Checkbox(
-                        checkboxData = CheckboxData(
+                    trailingContentData = ListItemTrailingContentDataUi.Checkbox(
+                        checkboxData = CheckboxDataUi(
                             isChecked = true,
                             enabled = !isRequired
                         )
@@ -54,23 +54,23 @@ fun DomainClaim.toSelectiveExpandableListItems(docId: String): ExpandableListIte
     }
 }
 
-fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItem {
+fun ClaimDomain.toExpandableListItems(docId: String): ExpandableListItemUi {
     return when (this) {
-        is DomainClaim.Group -> {
-            ExpandableListItem.NestedListItemData(
-                header = ListItemData(
+        is ClaimDomain.Group -> {
+            ExpandableListItemUi.NestedListItem(
+                header = ListItemDataUi(
                     itemId = path.toId(docId),
-                    mainContentData = ListItemMainContentData.Text(text = displayTitle),
-                    trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.KeyboardArrowDown)
+                    mainContentData = ListItemMainContentDataUi.Text(text = displayTitle),
+                    trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.KeyboardArrowDown)
                 ),
                 nestedItems = items.map { it.toExpandableListItems(docId = docId) },
                 isExpanded = false
             )
         }
 
-        is DomainClaim.Primitive -> {
-            ExpandableListItem.SingleListItemData(
-                header = ListItemData(
+        is ClaimDomain.Primitive -> {
+            ExpandableListItemUi.SingleListItem(
+                header = ListItemDataUi(
                     itemId = path.toId(docId),
                     mainContentData = calculateMainContent(key, value),
                     overlineText = calculateOverlineText(displayTitle),
@@ -84,18 +84,18 @@ fun DomainClaim.toExpandableListItems(docId: String): ExpandableListItem {
 private fun calculateMainContent(
     key: ElementIdentifier,
     value: String,
-): ListItemMainContentData {
+): ListItemMainContentDataUi {
     return when {
         keyIsPortrait(key = key) -> {
-            ListItemMainContentData.Text(text = "")
+            ListItemMainContentDataUi.Text(text = "")
         }
 
         keyIsSignature(key = key) -> {
-            ListItemMainContentData.Image(base64Image = value)
+            ListItemMainContentDataUi.Image(base64Image = value)
         }
 
         else -> {
-            ListItemMainContentData.Text(text = value)
+            ListItemMainContentDataUi.Text(text = value)
         }
     }
 }
@@ -103,9 +103,9 @@ private fun calculateMainContent(
 private fun calculateLeadingContent(
     key: ElementIdentifier,
     value: String,
-): ListItemLeadingContentData? {
+): ListItemLeadingContentDataUi? {
     return if (keyIsPortrait(key = key)) {
-        ListItemLeadingContentData.UserImage(userBase64Image = value)
+        ListItemLeadingContentDataUi.UserImage(userBase64Image = value)
     } else {
         null
     }

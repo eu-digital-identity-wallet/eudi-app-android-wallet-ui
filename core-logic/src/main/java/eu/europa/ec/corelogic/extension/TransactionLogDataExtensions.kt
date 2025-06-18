@@ -18,13 +18,13 @@ package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.businesslogic.util.toLocalDate
 import eu.europa.ec.businesslogic.util.toLocalDateTime
-import eu.europa.ec.corelogic.model.TransactionLogData
-import eu.europa.ec.corelogic.model.TransactionLogData.PresentationLog
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain
+import eu.europa.ec.corelogic.model.TransactionLogDataDomain.PresentationLog
 import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentationTransactionLog
 
 // TODO RETURN PROPER OBJECTS ONCE READY FROM CORE ISSUANCE,SIGNING
 @Throws(IllegalArgumentException::class)
-internal fun Any.toTransactionLogData(id: String): TransactionLogData = when (this) {
+internal fun Any.toTransactionLogData(id: String): TransactionLogDataDomain = when (this) {
     is PresentationTransactionLog -> PresentationLog(
         id = id,
         name = relyingParty.name,

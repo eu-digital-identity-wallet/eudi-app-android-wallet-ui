@@ -20,9 +20,9 @@ import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
 import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.testfeature.mockedExceptionWithMessage
-import eu.europa.ec.testfeature.mockedExceptionWithNoMessage
-import eu.europa.ec.testfeature.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
+import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
+import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule

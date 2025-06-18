@@ -25,11 +25,11 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.IconDataUi
 
 @Composable
 fun WrapImage(
-    iconData: IconData,
+    iconData: IconDataUi,
     modifier: Modifier = Modifier,
     colorFilter: ColorFilter? = null,
     contentScale: ContentScale? = null,

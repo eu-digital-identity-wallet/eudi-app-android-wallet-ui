@@ -31,10 +31,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -43,9 +43,9 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 @Composable
 fun WrapListItems(
     modifier: Modifier = Modifier,
-    items: List<ExpandableListItem>,
-    onExpandedChange: ((item: ListItemData) -> Unit)?,
-    onItemClick: ((item: ListItemData) -> Unit)?,
+    items: List<ExpandableListItemUi>,
+    onExpandedChange: ((item: ListItemDataUi) -> Unit)?,
+    onItemClick: ((item: ListItemDataUi) -> Unit)?,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
     clickableAreas: List<ClickableArea>? = null,
@@ -53,7 +53,7 @@ fun WrapListItems(
     addDivider: Boolean = true,
     shape: Shape? = null,
     colors: CardColors? = null,
-    overlineTextStyle: (@Composable (item: ListItemData) -> TextStyle)? = null,
+    overlineTextStyle: (@Composable (item: ListItemDataUi) -> TextStyle)? = null,
 ) {
     WrapCard(
         modifier = modifier,
@@ -65,7 +65,7 @@ fun WrapListItems(
                 .fillMaxWidth()
 
             when (item) {
-                is ExpandableListItem.NestedListItemData -> {
+                is ExpandableListItemUi.NestedListItem -> {
                     WrapExpandableListItem(
                         modifier = itemModifier,
                         header = item.header,
@@ -80,7 +80,7 @@ fun WrapListItems(
                     )
                 }
 
-                is ExpandableListItem.SingleListItemData -> {
+                is ExpandableListItemUi.SingleListItem -> {
                     val defaultOverlineTextStyle = MaterialTheme.typography.labelMedium.copy(
                         MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -114,53 +114,53 @@ private fun WrapListItemsPreview(
 ) {
     PreviewTheme {
         val items = listOf(
-            ListItemData(
+            ListItemDataUi(
                 itemId = "1",
-                mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
             ),
-            ListItemData(
+            ListItemDataUi(
                 itemId = "2",
-                mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 overlineText = "",
                 supportingText = "",
             ),
-            ListItemData(
+            ListItemDataUi(
                 itemId = "3",
-                mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 overlineText = "Overline text $text",
                 supportingText = "Supporting text $text",
-                leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
-                trailingContentData = ListItemTrailingContentData.Icon(
+                leadingContentData = ListItemLeadingContentDataUi.Icon(iconData = AppIcons.Sign),
+                trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowRight,
                 ),
             ),
-            ListItemData(
+            ListItemDataUi(
                 itemId = "4",
-                mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 overlineText = "Overline text $text",
                 supportingText = "Supporting text $text",
-                leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
+                leadingContentData = ListItemLeadingContentDataUi.Icon(iconData = AppIcons.Sign),
+                trailingContentData = ListItemTrailingContentDataUi.Checkbox(
+                    checkboxData = CheckboxDataUi(
                         isChecked = true,
                         enabled = true,
                     ),
                 ),
             ),
-            ListItemData(
+            ListItemDataUi(
                 itemId = "5",
-                mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 supportingText = "Supporting text $text",
-                trailingContentData = ListItemTrailingContentData.Icon(
+                trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowRight,
                 ),
             ),
-            ListItemData(
+            ListItemDataUi(
                 itemId = "6",
-                mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 supportingText = "Supporting text $text",
-                trailingContentData = ListItemTrailingContentData.Checkbox(
-                    checkboxData = CheckboxData(
+                trailingContentData = ListItemTrailingContentDataUi.Checkbox(
+                    checkboxData = CheckboxDataUi(
                         isChecked = true,
                         enabled = true,
                     ),
@@ -169,7 +169,7 @@ private fun WrapListItemsPreview(
         )
 
         WrapListItems(
-            items = items.map { ExpandableListItem.SingleListItemData(it) },
+            items = items.map { ExpandableListItemUi.SingleListItem(it) },
             onItemClick = {},
             onExpandedChange = {},
         )

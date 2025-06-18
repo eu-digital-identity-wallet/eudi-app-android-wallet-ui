@@ -53,7 +53,7 @@ import java.net.URI
  * @property issuerLogo The icon representing the issuer's logo.
  * @property issuerIsVerified Indicates whether the issuer is verified.
  */
-data class IssuerDetailsCardData(
+data class IssuerDetailsCardDataUi(
     val issuerName: String?,
     val issuerLogo: URI?,
     val issuerIsVerified: Boolean,
@@ -73,7 +73,7 @@ data class IssuerDetailsCardData(
  */
 @Composable
 fun IssuerDetailsCard(
-    item: IssuerDetailsCardData,
+    item: IssuerDetailsCardDataUi,
     modifier: Modifier = Modifier,
     shape: Shape = RoundedCornerShape(12.dp),
     colors: CardColors? = null,
@@ -143,7 +143,7 @@ fun IssuerDetailsCard(
 private fun IssuerDetailsCardPreview() {
     PreviewTheme {
         Column(modifier = Modifier.fillMaxWidth()) {
-            val issuerDetails = IssuerDetailsCardData(
+            val issuerDetails = IssuerDetailsCardDataUi(
                 issuerName = "Hellenic Government",
                 issuerLogo = null,
                 issuerIsVerified = false,

@@ -46,14 +46,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentOptionItemUi
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.util.CoreActions
+import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -246,11 +246,11 @@ private fun MainContent(
                         item = option.itemData,
                         mainContentVerticalPadding = SPACING_LARGE.dp,
                         mainContentTextStyle = MaterialTheme.typography.titleMedium,
-                        onItemClick = { optionListItemData ->
+                        onItemClick = { optionListItemDataUi ->
                             onEventSend(
                                 Event.IssueDocument(
                                     issuanceMethod = IssuanceMethod.OPENID4VCI,
-                                    configId = optionListItemData.itemId,
+                                    configId = optionListItemDataUi.itemId,
                                     context = context
                                 )
                             )
@@ -313,18 +313,18 @@ private fun IssuanceAddDocumentScreenPreview() {
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
-                    DocumentOptionItemUi(
-                        itemData = ListItemData(
+                    AddDocumentUi(
+                        itemData = ListItemDataUi(
                             itemId = "configId1",
-                            mainContentData = ListItemMainContentData.Text(text = "National ID"),
-                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                            mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
                         )
                     ),
-                    DocumentOptionItemUi(
-                        itemData = ListItemData(
+                    AddDocumentUi(
+                        itemData = ListItemDataUi(
                             itemId = "configId2",
-                            mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
-                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                            mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
                         )
                     )
                 )
@@ -349,18 +349,18 @@ private fun DashboardAddDocumentScreenPreview() {
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
-                    DocumentOptionItemUi(
-                        itemData = ListItemData(
+                    AddDocumentUi(
+                        itemData = ListItemDataUi(
                             itemId = "configId1",
-                            mainContentData = ListItemMainContentData.Text(text = "National ID"),
-                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                            mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
                         )
                     ),
-                    DocumentOptionItemUi(
-                        itemData = ListItemData(
+                    AddDocumentUi(
+                        itemData = ListItemDataUi(
                             itemId = "configId2",
-                            mainContentData = ListItemMainContentData.Text(text = "Driving Licence"),
-                            trailingContentData = ListItemTrailingContentData.Icon(iconData = AppIcons.Add)
+                            mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
+                            trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
                         )
                     )
                 )

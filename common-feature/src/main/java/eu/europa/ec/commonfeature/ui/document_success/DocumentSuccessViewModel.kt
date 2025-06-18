@@ -18,11 +18,11 @@ package eu.europa.ec.commonfeature.ui.document_success
 
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
-import eu.europa.ec.uilogic.component.AppIconAndTextData
+import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.toggleExpansionState
@@ -37,7 +37,7 @@ data class State(
     val isLoading: Boolean = false,
     val headerConfig: ContentHeaderConfig,
 
-    val items: List<ExpandableListItem.NestedListItemData> = emptyList(),
+    val items: List<ExpandableListItemUi.NestedListItem> = emptyList(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -76,7 +76,7 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State {
         return State(
             headerConfig = ContentHeaderConfig(
-                appIconAndTextData = AppIconAndTextData(),
+                appIconAndTextData = AppIconAndTextDataUi(),
                 description = null,
             )
         )
@@ -101,7 +101,7 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
             val newHeader = if (successDocument.header.itemId == id) {
                 val newIsExpanded = !successDocument.isExpanded
                 val newCollapsed = successDocument.header.copy(
-                    trailingContentData = ListItemTrailingContentData.Icon(
+                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = if (newIsExpanded) {
                             AppIcons.KeyboardArrowUp
                         } else {

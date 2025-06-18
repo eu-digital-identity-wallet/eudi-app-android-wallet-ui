@@ -43,16 +43,16 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsCardData
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSharedHolder
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsDataSignedHolder
-import eu.europa.ec.dashboardfeature.model.TransactionDetailsUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsCardUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsDataSharedHolderUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsDataSignedHolderUi
+import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
@@ -66,7 +66,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapChip
@@ -132,7 +132,7 @@ private fun Content(
         state.transactionDetailsUi?.let { safeTransactionDetailsUi ->
             TransactionDetailsCard(
                 modifier = Modifier.fillMaxWidth(),
-                item = safeTransactionDetailsUi.transactionDetailsCardData
+                item = safeTransactionDetailsUi.transactionDetailsCardUi
             )
         }
 
@@ -202,7 +202,7 @@ private fun handleNavigationEffect(
 @Composable
 private fun TransactionDetailsCard(
     modifier: Modifier = Modifier,
-    item: TransactionDetailsCardData,
+    item: TransactionDetailsCardUi,
 ) {
     WrapCard(
         modifier = modifier,
@@ -290,7 +290,7 @@ private fun TransactionDetailsCard(
 private fun ExpandableDataSection(
     modifier: Modifier,
     sectionTitle: String,
-    dataItems: List<ExpandableListItem.NestedListItemData>,
+    dataItems: List<ExpandableListItemUi.NestedListItem>,
     onEventSend: (Event) -> Unit
 ) {
     if (dataItems.isNotEmpty()) {
@@ -383,7 +383,7 @@ private fun PreviewTransactionDetailsCompletedCard(
     @PreviewParameter(TextLengthPreviewProvider::class) text: String
 ) {
     PreviewTheme {
-        val transactionDetailsCardData = TransactionDetailsCardData(
+        val transactionDetailsCardUi = TransactionDetailsCardUi(
             transactionTypeLabel = "Data sharing",
             relyingPartyName = "RP name $text",
             transactionDate = "21 January 2025",
@@ -393,7 +393,7 @@ private fun PreviewTransactionDetailsCompletedCard(
         )
 
         TransactionDetailsCard(
-            item = transactionDetailsCardData
+            item = transactionDetailsCardUi
         )
     }
 }
@@ -404,7 +404,7 @@ private fun PreviewTransactionDetailsFailedCard(
     @PreviewParameter(TextLengthPreviewProvider::class) text: String
 ) {
     PreviewTheme {
-        val transactionDetailsCardData = TransactionDetailsCardData(
+        val transactionDetailsCardUi = TransactionDetailsCardUi(
             transactionTypeLabel = "Data sharing",
             relyingPartyName = "RP name $text",
             transactionDate = "21 January 2025",
@@ -414,7 +414,7 @@ private fun PreviewTransactionDetailsFailedCard(
         )
 
         TransactionDetailsCard(
-            item = transactionDetailsCardData
+            item = transactionDetailsCardUi
         )
     }
 }
@@ -423,42 +423,42 @@ private fun PreviewTransactionDetailsFailedCard(
 @Composable
 private fun ContentPreview() {
     val items = listOf(
-        ExpandableListItem.NestedListItemData(
-            header = ListItemData(
+        ExpandableListItemUi.NestedListItem(
+            header = ListItemDataUi(
                 itemId = "0",
-                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
                 supportingText = "View Details",
-                trailingContentData = ListItemTrailingContentData.Icon(
+                trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowDown
                 ),
             ),
             nestedItems = listOf(
-                ExpandableListItem.SingleListItemData(
-                    ListItemData(
+                ExpandableListItemUi.SingleListItem(
+                    ListItemDataUi(
                         itemId = "1",
                         overlineText = "Family name",
-                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
                     )
                 ),
-                ExpandableListItem.SingleListItemData(
-                    ListItemData(
+                ExpandableListItemUi.SingleListItem(
+                    ListItemDataUi(
                         itemId = "2",
                         overlineText = "Given name",
-                        mainContentData = ListItemMainContentData.Text(text = "John"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "John"),
                     )
                 )
             ),
             isExpanded = true
         )
     )
-    val mockedDataSharedList = TransactionDetailsDataSharedHolder(dataSharedItems = items)
-    val mockedDataSignedList = TransactionDetailsDataSignedHolder(dataSignedItems = items)
+    val mockedDataSharedList = TransactionDetailsDataSharedHolderUi(dataSharedItems = items)
+    val mockedDataSignedList = TransactionDetailsDataSignedHolderUi(dataSignedItems = items)
 
     val state = State(
         title = stringResource(R.string.transaction_details_screen_title),
         transactionDetailsUi = TransactionDetailsUi(
             transactionId = "id",
-            transactionDetailsCardData = TransactionDetailsCardData(
+            transactionDetailsCardUi = TransactionDetailsCardUi(
                 transactionTypeLabel = "Presentation",
                 transactionDate = "21 January 2025",
                 relyingPartyName = "Verisign",

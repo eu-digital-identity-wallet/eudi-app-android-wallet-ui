@@ -59,7 +59,7 @@ private val secondaryFabContentColor: Color
  * @param text  Composable that is used for the text of the fab content.
  * @param icon  Composable that is used for the icon of the fab content.
  */
-data class FabData(
+data class FabDataUi(
     val text: @Composable () -> Unit = {},
     val icon: @Composable () -> Unit = {},
     val onClick: () -> Unit,
@@ -67,7 +67,7 @@ data class FabData(
 
 @Composable
 fun WrapPrimaryFab(
-    data: FabData,
+    data: FabDataUi,
     modifier: Modifier = Modifier,
     shape: Shape = fabShape,
     containerColor: Color = primaryFabContainerColor,
@@ -85,7 +85,7 @@ fun WrapPrimaryFab(
 
 @Composable
 fun WrapSecondaryFab(
-    data: FabData,
+    data: FabDataUi,
     modifier: Modifier = Modifier,
     shape: Shape = fabShape,
     containerColor: Color = secondaryFabContainerColor,
@@ -102,7 +102,7 @@ fun WrapSecondaryFab(
 
 @Composable
 fun WrapPrimaryExtendedFab(
-    data: FabData,
+    data: FabDataUi,
     modifier: Modifier = Modifier,
     shape: Shape = fabShape,
     containerColor: Color = primaryFabContainerColor,
@@ -121,7 +121,7 @@ fun WrapPrimaryExtendedFab(
 
 @Composable
 fun WrapSecondaryExtendedFab(
-    data: FabData,
+    data: FabDataUi,
     modifier: Modifier = Modifier,
     shape: Shape = fabShape,
     containerColor: Color = secondaryFabContainerColor,
@@ -141,7 +141,7 @@ fun WrapSecondaryExtendedFab(
 private fun WrapPrimaryFabPreview() {
     PreviewTheme {
         WrapPrimaryFab(
-            data = FabData(
+            data = FabDataUi(
                 icon = { WrapIcon(iconData = AppIcons.Add) },
                 onClick = {}
             )

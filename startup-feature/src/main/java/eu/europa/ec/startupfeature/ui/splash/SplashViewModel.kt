@@ -17,7 +17,7 @@
 package eu.europa.ec.startupfeature.ui.splash
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
+import eu.europa.ec.startupfeature.interactor.SplashInteractor
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect

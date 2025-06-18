@@ -36,7 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.IconDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.DEFAULT_ACTION_CARD_HEIGHT
@@ -46,7 +46,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 
 data class ActionCardConfig(
     val title: String,
-    val icon: IconData,
+    val icon: IconDataUi,
     val primaryButtonText: String,
     val secondaryButtonText: String,
 )

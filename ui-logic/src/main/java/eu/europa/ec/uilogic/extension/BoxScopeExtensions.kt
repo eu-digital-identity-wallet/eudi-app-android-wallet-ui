@@ -30,7 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.IconDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_EXTRA_SMALL
@@ -38,7 +38,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 @Composable
 fun BoxScope.IconWarningIndicator(
-    iconData: IconData = AppIcons.Warning,
+    iconData: IconDataUi = AppIcons.Warning,
     customTint: Color = MaterialTheme.colorScheme.warning,
     backgroundColor: Color,
 ) {

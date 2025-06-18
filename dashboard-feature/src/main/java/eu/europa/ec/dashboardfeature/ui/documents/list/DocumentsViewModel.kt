@@ -22,8 +22,7 @@ import eu.europa.ec.businesslogic.validator.model.SortOrder
 import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
-import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorDeleteDocumentPartialState
@@ -31,20 +30,21 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorFilterPartialS
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorGetDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentInteractorRetryIssuingDeferredDocumentsPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
-import eu.europa.ec.dashboardfeature.model.DocumentUi
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsBottomSheetContent.DeferredDocumentPressed
 import eu.europa.ec.dashboardfeature.ui.documents.list.DocumentsBottomSheetContent.Filters
+import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -75,8 +75,8 @@ data class State(
     val isFromOnPause: Boolean = true,
     val shouldRevertFilterChanges: Boolean = true,
 
-    val filtersUi: List<ExpandableListItem.NestedListItemData> = emptyList(),
-    val sortOrder: DualSelectorButtonData,
+    val filtersUi: List<ExpandableListItemUi.NestedListItem> = emptyList(),
+    val sortOrder: DualSelectorButtonDataUi,
     val isFilteringActive: Boolean,
 ) : ViewState
 
@@ -147,13 +147,13 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class DocumentsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItem.SingleListItemData>) :
+    data class Filters(val filters: List<ExpandableListItemUi.SingleListItem>) :
         DocumentsBottomSheetContent()
 
     data object AddDocument : DocumentsBottomSheetContent()
     data class DeferredDocumentPressed(val documentId: DocumentId) : DocumentsBottomSheetContent()
     data class DeferredDocumentsReady(
-        val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
+        val successfullyIssuedDeferredDocuments: List<DeferredDocumentDataDomain>,
         val options: List<ModalOptionUi<Event>>,
     ) : DocumentsBottomSheetContent()
 }
@@ -171,7 +171,7 @@ class DocumentsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortOrder = DualSelectorButtonData(
+            sortOrder = DualSelectorButtonDataUi(
                 first = resourceProvider.getString(R.string.documents_screen_filters_ascending),
                 second = resourceProvider.getString(R.string.documents_screen_filters_descending),
                 selectedButton = DualSelectorButton.FIRST,
@@ -344,7 +344,7 @@ class DocumentsViewModel(
                             val deferredDocs: MutableMap<DocumentId, FormatType> = mutableMapOf()
                             response.allDocuments.items.filter { document ->
                                 with(document.payload as DocumentUi) {
-                                    documentIssuanceState == DocumentUiIssuanceState.Pending
+                                    documentIssuanceState == DocumentIssuanceStateUi.Pending
                                 }
                             }.forEach { documentItem ->
                                 with(documentItem.payload as DocumentUi) {
@@ -389,10 +389,10 @@ class DocumentsViewModel(
             val data = filterableItem.payload as DocumentUi
             val failedUiItem = if (data.uiData.itemId in deferredFailedDocIds) {
                 data.copy(
-                    documentIssuanceState = DocumentUiIssuanceState.Failed,
+                    documentIssuanceState = DocumentIssuanceStateUi.Failed,
                     uiData = data.uiData.copy(
                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_failed),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.ErrorFilled,
                             tint = ThemeColors.error
                         )
@@ -470,7 +470,7 @@ class DocumentsViewModel(
         }
     }
 
-    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentData>): List<ModalOptionUi<Event>> {
+    private fun getBottomSheetOptions(deferredDocumentsData: List<DeferredDocumentDataDomain>): List<ModalOptionUi<Event>> {
         return deferredDocumentsData.map {
             ModalOptionUi(
                 title = it.docName,
