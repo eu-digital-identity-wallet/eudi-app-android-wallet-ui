@@ -387,6 +387,7 @@ class DocumentsInteractorImpl(
                                         supportingText = supportingText,
                                         leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
+                                            contentDescription = resourceProvider.getString(R.string.content_description_issuer_logo_icon),
                                             errorImage = AppIcons.Id,
                                         ),
                                         trailingContentData = trailingContentData
@@ -437,6 +438,7 @@ class DocumentsInteractorImpl(
                                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
                                         leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
+                                            contentDescription = resourceProvider.getString(R.string.content_description_issuer_logo_icon),
                                             errorImage = AppIcons.Id,
                                         ),
                                         trailingContentData = ListItemTrailingContentDataUi.Icon(

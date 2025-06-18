@@ -34,12 +34,10 @@ import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -135,6 +133,7 @@ sealed class ListItemLeadingContentDataUi {
     data class AsyncImage(
         override val size: Int = ICON_SIZE_40,
         val imageUrl: String,
+        val contentDescription: String?,
         val errorImage: IconDataUi? = null,
         val placeholderImage: IconDataUi? = null,
     ) : ListItemLeadingContentDataUi()
@@ -298,7 +297,7 @@ fun ListItem(
                         source = safeLeadingContentData.imageUrl,
                         error = safeLeadingContentData.errorImage,
                         placeholder = safeLeadingContentData.placeholderImage,
-                        contentDescription = stringResource(R.string.content_description_issuer_logo_icon)
+                        contentDescription = safeLeadingContentData.contentDescription
                     )
                 }
             }
