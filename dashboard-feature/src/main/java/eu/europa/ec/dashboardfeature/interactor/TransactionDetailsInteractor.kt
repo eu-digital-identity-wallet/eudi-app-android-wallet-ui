@@ -25,8 +25,8 @@ import eu.europa.ec.commonfeature.util.createKeyValue
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.getLocalizedDocumentName
 import eu.europa.ec.corelogic.extension.sortRecursivelyBy
-import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimDomain
+import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
 import eu.europa.ec.corelogic.model.TransactionLogDataDomain
 import eu.europa.ec.corelogic.model.TransactionLogDataDomain.Companion.getTransactionTypeLabel
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsCardUi

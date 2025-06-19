@@ -116,7 +116,9 @@ sealed class ResolveDocumentOfferPartialState {
 }
 
 sealed class FetchScopedDocumentsPartialState {
-    data class Success(val documents: List<ScopedDocumentDomain>) : FetchScopedDocumentsPartialState()
+    data class Success(val documents: List<ScopedDocumentDomain>) :
+        FetchScopedDocumentsPartialState()
+
     data class Failure(val errorMessage: String) : FetchScopedDocumentsPartialState()
 }
 

@@ -25,8 +25,8 @@ import eu.europa.ec.businesslogic.util.toDateFormatted
 import eu.europa.ec.corelogic.extension.getLocalizedClaimName
 import eu.europa.ec.corelogic.extension.removeEmptyGroups
 import eu.europa.ec.corelogic.extension.sortRecursivelyBy
-import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimDomain
+import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim

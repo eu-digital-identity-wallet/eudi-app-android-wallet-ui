@@ -166,7 +166,9 @@ object RequestTransformer {
                         is DomainDocumentFormat.MsoMdoc -> mDocItems.add(
                             MsoMdocItem(
                                 namespace = documentPayload.domainDocFormat.namespace,
-                                elementIdentifier = ClaimPathDomain.toElementIdentifier(selectedItemId)
+                                elementIdentifier = ClaimPathDomain.toElementIdentifier(
+                                    selectedItemId
+                                )
                             )
                         )
                     }
