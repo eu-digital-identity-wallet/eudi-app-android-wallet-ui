@@ -183,6 +183,7 @@ The released software is an initial development release version:
 -  Users of the software must perform sufficient engineering and additional testing to properly evaluate their application and determine whether any of the open-sourced components are suitable for use in that application.
 -  We strongly recommend not putting this version of the software into production use.
 -  Only the latest version of the software will be supported
+-  This project is tested with BrowserStack.
 
 ## Package structure
 
