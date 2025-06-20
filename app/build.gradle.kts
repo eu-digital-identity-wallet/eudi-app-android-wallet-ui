@@ -31,17 +31,6 @@ android {
     val hasReleaseSigningConfig = propsFile.isFile
 
     signingConfigs {
-        /*create("release") {
-
-            storeFile = file("${rootProject.projectDir}/sign")
-
-            keyAlias = getProperty("androidKeyAlias") ?: System.getenv("ANDROID_KEY_ALIAS")
-            keyPassword = getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
-            storePassword =
-                getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
-
-            enableV2Signing = true
-        }*/
 
         if (hasReleaseSigningConfig) {
             val props = Properties().apply {
@@ -52,6 +41,18 @@ android {
                 storePassword = props.getProperty("storePassword")
                 keyPassword = props.getProperty("keyPassword")
                 keyAlias = props.getProperty("keyAlias")
+                enableV2Signing = true
+            }
+        }else {
+            create("release") {
+
+                storeFile = file("${rootProject.projectDir}/sign")
+
+                keyAlias = getProperty("androidKeyAlias") ?: System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
+                storePassword =
+                    getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
+
                 enableV2Signing = true
             }
         }
