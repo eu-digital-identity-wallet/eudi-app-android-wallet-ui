@@ -16,16 +16,16 @@
 
 package eu.europa.ec.corelogic.extension
 
-import eu.europa.ec.corelogic.model.ClaimPath
-import eu.europa.ec.corelogic.model.ClaimPath.Companion.toClaimPath
+import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 
-fun DocItem.toClaimPath(): ClaimPath {
+fun DocItem.toClaimPath(): ClaimPathDomain {
     return when (this) {
         is MsoMdocItem -> listOf(this.elementIdentifier)
         is SdJwtVcItem -> this.path
         else -> emptyList()
-    }.toClaimPath()
+    }.toClaimPathDomain()
 }

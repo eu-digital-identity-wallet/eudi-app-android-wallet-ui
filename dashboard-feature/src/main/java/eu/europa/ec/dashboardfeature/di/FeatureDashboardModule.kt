@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.corelogic.config.WalletCoreConfig
@@ -32,6 +33,8 @@ import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.SettingsInteractor
+import eu.europa.ec.dashboardfeature.interactor.SettingsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
@@ -47,11 +50,22 @@ class FeatureDashboardModule
 
 @Factory
 fun provideDashboardInteractor(
+    resourceProvider: ResourceProvider,
+): DashboardInteractor = DashboardInteractorImpl(
+    resourceProvider,
+)
+
+@Factory
+fun provideSettingsInteractor(
     configLogic: ConfigLogic,
     logController: LogController,
-): DashboardInteractor = DashboardInteractorImpl(
+    resourceProvider: ResourceProvider,
+    prefKeys: PrefKeys,
+): SettingsInteractor = SettingsInteractorImpl(
     configLogic,
-    logController
+    logController,
+    resourceProvider,
+    prefKeys,
 )
 
 @Factory
@@ -70,11 +84,13 @@ fun provideDocumentsInteractor(
     resourceProvider: ResourceProvider,
     documentsController: WalletCoreDocumentsController,
     filterValidator: FilterValidator,
+    prefKeys: PrefKeys,
 ): DocumentsInteractor =
     DocumentsInteractorImpl(
         resourceProvider,
         documentsController,
         filterValidator,
+        prefKeys,
     )
 
 @Factory
@@ -99,12 +115,14 @@ fun provideDocumentSignInteractor(
 fun provideDocumentDetailsInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
     resourceProvider: ResourceProvider,
-    uuidProvider: UuidProvider
+    uuidProvider: UuidProvider,
+    prefKeys: PrefKeys,
 ): DocumentDetailsInteractor =
     DocumentDetailsInteractorImpl(
         walletCoreDocumentsController,
         resourceProvider,
-        uuidProvider
+        uuidProvider,
+        prefKeys,
     )
 
 @Factory

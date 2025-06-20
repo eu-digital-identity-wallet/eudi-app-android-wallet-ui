@@ -52,7 +52,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIconAndText
-import eu.europa.ec.uilogic.component.AppIconAndTextData
+import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ModalOptionUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -64,7 +64,7 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.ActionCardConfig
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithTwoBigIcons
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
@@ -84,7 +84,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
-typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Show
+typealias OpenSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Open
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,13 +168,13 @@ private fun TopBar(
             iconData = AppIcons.Menu,
             customTint = MaterialTheme.colorScheme.onSurface,
         ) {
-            onEventSent(ShowSideMenuEvent)
+            onEventSent(OpenSideMenuEvent)
         }
 
         // wallet logo
         AppIconAndText(
             modifier = Modifier.align(Alignment.Center),
-            appIconAndTextData = AppIconAndTextData()
+            appIconAndTextData = AppIconAndTextDataUi()
         )
     }
 }
@@ -311,7 +311,7 @@ private fun HomeScreenSheetContent(
                 sheetState = modalBottomSheetState
             ) {
                 BottomSheetWithTwoBigIcons(
-                    textData = BottomSheetTextData(
+                    textData = BottomSheetTextDataUi(
                         title = stringResource(R.string.home_screen_authenticate),
                         message = stringResource(R.string.home_screen_authenticate_description)
                     ),
@@ -342,7 +342,7 @@ private fun HomeScreenSheetContent(
                 sheetState = modalBottomSheetState
             ) {
                 BottomSheetWithTwoBigIcons(
-                    textData = BottomSheetTextData(
+                    textData = BottomSheetTextDataUi(
                         title = stringResource(R.string.home_screen_sign_document),
                         message = stringResource(R.string.home_screen_sign_document_description)
                     ),
@@ -445,7 +445,7 @@ private fun HomeScreenSheetContent(
 
         is HomeScreenBottomSheetContent.Bluetooth -> {
             DialogBottomSheet(
-                textData = BottomSheetTextData(
+                textData = BottomSheetTextDataUi(
                     title = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_title),
                     message = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_subtitle),
                     positiveButtonText = stringResource(id = R.string.dashboard_bottom_sheet_bluetooth_primary_button_text),

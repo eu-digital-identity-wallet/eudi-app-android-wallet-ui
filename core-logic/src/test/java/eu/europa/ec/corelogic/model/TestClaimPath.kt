@@ -17,7 +17,7 @@
 package eu.europa.ec.corelogic.model
 
 import eu.europa.ec.corelogic.extension.toClaimPath
-import eu.europa.ec.corelogic.model.ClaimPath.Companion.isPrefixOf
+import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.isPrefixOf
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 import org.junit.Assert.assertFalse

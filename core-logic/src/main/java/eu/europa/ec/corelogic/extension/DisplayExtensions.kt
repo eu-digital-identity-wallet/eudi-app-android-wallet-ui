@@ -18,14 +18,14 @@ package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.businesslogic.extension.getLocalizedString
 import eu.europa.ec.eudi.openid4vci.Display
-import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
+import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
 
 import java.util.Locale
 
 /**
  * Retrieves the localized claim name from a list of claim displays.
  *
- * This function searches through a list of [DocumentMetaData.Claim.Display] objects
+ * This function searches through a list of [IssuerMetadata.Claim.Display] objects
  * to find the name that best matches the user's locale. If an exact
  * match is not found, it falls back to the provided [fallback] string.
  *
@@ -36,7 +36,7 @@ import java.util.Locale
  *
  * @see getLocalizedString
  */
-fun List<DocumentMetaData.Claim.Display>?.getLocalizedClaimName(
+fun List<IssuerMetadata.Claim.Display>?.getLocalizedClaimName(
     userLocale: Locale,
     fallback: String,
 ): String {
@@ -77,18 +77,18 @@ fun List<Display>.getLocalizedDisplayName(
  * Retrieves the localized display name of a document based on the user's locale.
  *
  * This function attempts to find a localized version of the document's name
- * within the [DocumentMetaData.display] property of the [DocumentMetaData] object. If a localized
+ * within the [IssuerMetadata.display] property of the [IssuerMetadata] object. If a localized
  * version matching the user's locale is found, it is returned. If no matching
  * localized version is found, a fallback string is returned instead.
  *
  * @param userLocale The user's locale, used to find a matching localized name.
  * @param fallback The string to return if no matching localized name is found.
  * @return The localized document name, or the fallback string if no matching localized name is available.
- * If [DocumentMetaData] or its display is null, it will return the [fallback].
+ * If [IssuerMetadata] or its display is null, it will return the [fallback].
  *
  * @see getLocalizedString
  */
-fun DocumentMetaData?.getLocalizedDocumentName(
+fun IssuerMetadata?.getLocalizedDocumentName(
     userLocale: Locale,
     fallback: String,
 ): String {

@@ -18,11 +18,11 @@ package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.businesslogic.extension.getLocalizedValue
 import eu.europa.ec.eudi.wallet.document.Document
-import eu.europa.ec.eudi.wallet.document.metadata.DocumentMetaData
+import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
 import java.util.Locale
 
-fun Document.localizedIssuerMetadata(locale: Locale): DocumentMetaData.IssuerDisplay? {
-    return metadata?.issuerDisplay.getLocalizedValue(
+fun Document.localizedIssuerMetadata(locale: Locale): IssuerMetadata.IssuerDisplay? {
+    return issuerMetadata?.issuerDisplay.getLocalizedValue(
         userLocale = locale,
         fallback = null,
         localeExtractor = { it.locale },

@@ -41,16 +41,16 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.corelogic.model.ClaimPath
-import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.corelogic.model.ClaimDomain
+import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ErrorInfo
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
@@ -61,11 +61,11 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
@@ -295,7 +295,7 @@ private fun SheetContent(
     when (sheetContent) {
         RequestBottomSheetContent.WARNING -> {
             SimpleBottomSheet(
-                textData = BottomSheetTextData(
+                textData = BottomSheetTextDataUi(
                     title = stringResource(id = R.string.request_bottom_sheet_warning_title),
                     message = stringResource(id = R.string.request_bottom_sheet_warning_subtitle),
                 ),
@@ -316,7 +316,7 @@ private fun ContentPreview() {
                 headerConfig = ContentHeaderConfig(
                     description = stringResource(R.string.request_header_description),
                     mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyData(
+                    relyingPartyData = RelyingPartyDataUi(
                         isVerified = true,
                         name = stringResource(R.string.request_relying_party_default_name),
                         description = stringResource(R.string.request_relying_party_description)
@@ -329,44 +329,44 @@ private fun ContentPreview() {
                             docId = "docId",
                             domainDocFormat = DomainDocumentFormat.MsoMdoc(namespace = "pid"),
                             docClaimsDomain = listOf(
-                                DomainClaim.Primitive(
+                                ClaimDomain.Primitive(
                                     key = "key",
                                     displayTitle = "title",
                                     value = "value",
                                     isRequired = false,
-                                    path = ClaimPath(value = listOf())
+                                    path = ClaimPathDomain(value = listOf())
                                 ),
                             )
                         ),
-                        headerUi = ExpandableListItem.NestedListItemData(
-                            header = ListItemData(
+                        headerUi = ExpandableListItemUi.NestedListItem(
+                            header = ListItemDataUi(
                                 itemId = "000",
-                                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+                                mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
                                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
-                                trailingContentData = ListItemTrailingContentData.Icon(
+                                trailingContentData = ListItemTrailingContentDataUi.Icon(
                                     iconData = AppIcons.KeyboardArrowDown
                                 ),
                             ),
                             nestedItems = listOf(
-                                ExpandableListItem.SingleListItemData(
-                                    ListItemData(
+                                ExpandableListItemUi.SingleListItem(
+                                    ListItemDataUi(
                                         itemId = "00",
                                         overlineText = "Family name",
-                                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
-                                        trailingContentData = ListItemTrailingContentData.Checkbox(
-                                            checkboxData = CheckboxData(
+                                        mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
+                                        trailingContentData = ListItemTrailingContentDataUi.Checkbox(
+                                            checkboxData = CheckboxDataUi(
                                                 isChecked = true
                                             )
                                         )
                                     )
                                 ),
-                                ExpandableListItem.SingleListItemData(
-                                    ListItemData(
+                                ExpandableListItemUi.SingleListItem(
+                                    ListItemDataUi(
                                         itemId = "01",
                                         overlineText = "Given name",
-                                        mainContentData = ListItemMainContentData.Text(text = "John"),
-                                        trailingContentData = ListItemTrailingContentData.Checkbox(
-                                            checkboxData = CheckboxData(
+                                        mainContentData = ListItemMainContentDataUi.Text(text = "John"),
+                                        trailingContentData = ListItemTrailingContentDataUi.Checkbox(
+                                            checkboxData = CheckboxDataUi(
                                                 isChecked = true
                                             )
                                         )
@@ -399,7 +399,7 @@ private fun ContentNoDataPreview() {
                 headerConfig = ContentHeaderConfig(
                     description = stringResource(R.string.request_header_description),
                     mainText = stringResource(R.string.request_header_main_text),
-                    relyingPartyData = RelyingPartyData(
+                    relyingPartyData = RelyingPartyDataUi(
                         isVerified = true,
                         name = stringResource(R.string.request_relying_party_default_name),
                         description = stringResource(R.string.request_relying_party_description)

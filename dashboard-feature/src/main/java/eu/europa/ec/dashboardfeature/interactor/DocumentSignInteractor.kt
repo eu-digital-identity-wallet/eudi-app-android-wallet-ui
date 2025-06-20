@@ -18,19 +18,19 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import android.content.Context
 import android.net.Uri
-import eu.europa.ec.dashboardfeature.model.SignDocumentButtonUi
+import eu.europa.ec.dashboardfeature.ui.document_sign.model.DocumentSignButtonUi
 import eu.europa.ec.eudi.rqesui.infrastructure.DocumentUri
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 
 interface DocumentSignInteractor {
     fun launchRqesSdk(context: Context, uri: Uri)
-    fun getUiItem(): SignDocumentButtonUi
+    fun getItemUi(): DocumentSignButtonUi
 }
 
 class DocumentSignInteractorImpl(
@@ -44,14 +44,14 @@ class DocumentSignInteractorImpl(
         )
     }
 
-    override fun getUiItem(): SignDocumentButtonUi {
-        return SignDocumentButtonUi(
-            data = ListItemData(
+    override fun getItemUi(): DocumentSignButtonUi {
+        return DocumentSignButtonUi(
+            data = ListItemDataUi(
                 itemId = resourceProvider.getString(R.string.document_sign_select_document_button_id),
-                mainContentData = ListItemMainContentData.Text(
+                mainContentData = ListItemMainContentDataUi.Text(
                     text = resourceProvider.getString(R.string.document_sign_select_document)
                 ),
-                trailingContentData = ListItemTrailingContentData.Icon(
+                trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.Add
                 ),
             )

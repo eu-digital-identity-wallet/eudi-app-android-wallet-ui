@@ -19,10 +19,10 @@ package eu.europa.ec.commonfeature.ui.request
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.toggleCheckboxState
 import eu.europa.ec.uilogic.extension.toggleExpansionState
@@ -195,7 +195,7 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
             val newHeader = if (requestDocument.headerUi.header.itemId == id) {
                 val newIsExpanded = !requestDocument.headerUi.isExpanded
                 val newCollapsed = requestDocument.headerUi.header.copy(
-                    trailingContentData = ListItemTrailingContentData.Icon(
+                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = if (newIsExpanded) {
                             AppIcons.KeyboardArrowUp
                         } else {
@@ -273,16 +273,16 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
         return hasAtLeastOneFieldSelected
     }
 
-    private fun List<ExpandableListItem>.hasAnySingleSelected(): Boolean {
+    private fun List<ExpandableListItemUi>.hasAnySingleSelected(): Boolean {
         return this.any { expandableItem ->
             when (expandableItem) {
-                is ExpandableListItem.NestedListItemData -> {
+                is ExpandableListItemUi.NestedListItem -> {
                     expandableItem.nestedItems.hasAnySingleSelected()
                 }
 
-                is ExpandableListItem.SingleListItemData -> {
+                is ExpandableListItemUi.SingleListItem -> {
                     val trailingContentData = expandableItem.header.trailingContentData
-                    trailingContentData is ListItemTrailingContentData.Checkbox && trailingContentData.checkboxData.isChecked
+                    trailingContentData is ListItemTrailingContentDataUi.Checkbox && trailingContentData.checkboxData.isChecked
                 }
             }
         }

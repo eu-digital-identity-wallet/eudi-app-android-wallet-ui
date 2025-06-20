@@ -38,7 +38,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.IconDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
@@ -50,13 +50,13 @@ import eu.europa.ec.uilogic.extension.throttledClickable
  * Reusable Wrapper Composable to be used instead of plain Icon.
  * If you need control over its enabled/disabled state and/or want it to be clickable consider using [WrapIconButton] instead.
  * @param modifier the [Modifier] to be applied to the Composable.
- * @param iconData The actual data ([IconData]) the Icon has, like its resourceId and its contentDescriptionId.
+ * @param iconData The actual data ([IconDataUi]) the Icon has, like its resourceId and its contentDescriptionId.
  * @param customTint Nullable Color value to be applied as its tint. If null, it will use its default tint Color.
  * @param enabled Whether the icon should be displayed as enabled or disabled. This affects the alpha value of the tint color.
  */
 @Composable
 fun WrapIcon(
-    iconData: IconData,
+    iconData: IconDataUi,
     modifier: Modifier = Modifier,
     customTint: Color? = null,
     enabled: Boolean = true,
@@ -93,7 +93,7 @@ fun WrapIcon(
  * Reusable Wrapper Composable to be used instead of plain IconButton.
  * @param modifier the [Modifier] to be applied to this icon button.
  * DO NOT set the size from the [modifier], instead, use the [size] parameter.
- * @param iconData The actual data ([IconData]) the Icon has, like its resourceId and its contentDescriptionId.
+ * @param iconData The actual data ([IconDataUi]) the Icon has, like its resourceId and its contentDescriptionId.
  * @param customTint Nullable Color value to be applied as its tint. If null, it will use its default tint Color. Default value is null.
  * @param enabled controls the enabled state of this icon button. When `false`, this component will
  * not respond to user input, and it will appear visually disabled and disabled to accessibility
@@ -112,7 +112,7 @@ fun WrapIcon(
 @Composable
 fun WrapIconButton(
     modifier: Modifier = Modifier,
-    iconData: IconData,
+    iconData: IconDataUi,
     customTint: Color? = null,
     enabled: Boolean = true,
     size: Dp = DEFAULT_ICON_SIZE.dp,

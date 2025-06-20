@@ -19,8 +19,8 @@ package eu.europa.ec.startupfeature.di
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.startupfeature.interactor.splash.SplashInteractor
-import eu.europa.ec.startupfeature.interactor.splash.SplashInteractorImpl
+import eu.europa.ec.startupfeature.interactor.SplashInteractor
+import eu.europa.ec.startupfeature.interactor.SplashInteractorImpl
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory

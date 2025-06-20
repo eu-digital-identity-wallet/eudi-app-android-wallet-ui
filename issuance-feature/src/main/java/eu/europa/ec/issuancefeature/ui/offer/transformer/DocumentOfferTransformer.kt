@@ -16,16 +16,16 @@
 
 package eu.europa.ec.issuancefeature.ui.offer.transformer
 
-import eu.europa.ec.issuancefeature.ui.offer.model.DocumentOfferItemUi
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.issuancefeature.ui.offer.model.DocumentOfferUi
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 
 internal object DocumentOfferTransformer {
-    fun List<DocumentOfferItemUi>.toListItemDataList(): List<ListItemData> {
+    fun List<DocumentOfferUi>.toListItemDataUiList(): List<ListItemDataUi> {
         return this.mapIndexed { index, item ->
-            ListItemData(
+            ListItemDataUi(
                 itemId = index.toString(),
-                mainContentData = ListItemMainContentData.Text(text = item.title)
+                mainContentData = ListItemMainContentDataUi.Text(text = item.title)
             )
         }
     }

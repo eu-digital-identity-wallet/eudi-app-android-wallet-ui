@@ -280,7 +280,7 @@ class HomeViewModel(
     private fun navigateToDocumentSign() {
         setEffect {
             Effect.Navigation.SwitchScreen(
-                screenRoute = DashboardScreens.SignDocument.screenRoute
+                screenRoute = DashboardScreens.DocumentSign.screenRoute
             )
         }
     }

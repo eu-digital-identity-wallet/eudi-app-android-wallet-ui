@@ -25,7 +25,7 @@ import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.svg.SvgDecoder
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.IconDataUi
 
 @Composable
 fun WrapAsyncImage(
@@ -33,9 +33,9 @@ fun WrapAsyncImage(
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
     contentScale: ContentScale = ContentScale.Fit,
-    placeholder: IconData? = null,
-    error: IconData? = null,
-    fallback: IconData? = null,
+    placeholder: IconDataUi? = null,
+    error: IconDataUi? = null,
+    fallback: IconDataUi? = null,
 ) {
     val context = LocalContext.current
     val imageLoader = ImageLoader.Builder(context)

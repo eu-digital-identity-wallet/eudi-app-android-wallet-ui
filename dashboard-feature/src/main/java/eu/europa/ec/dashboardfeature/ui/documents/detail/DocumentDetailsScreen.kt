@@ -16,15 +16,26 @@
 
 package eu.europa.ec.dashboardfeature.ui.documents.detail
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -35,44 +46,50 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.DocumentDetailsUi
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.util.CoreActions
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
+import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IssuerDetailsCard
-import eu.europa.ec.uilogic.component.IssuerDetailsCardData
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.BroadcastAction
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ContentTitle
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
-import eu.europa.ec.uilogic.component.content.ToolbarAction
+import eu.europa.ec.uilogic.component.content.ToolbarActionUi
 import eu.europa.ec.uilogic.component.content.ToolbarConfig
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.LifecycleEffect
+import eu.europa.ec.uilogic.component.utils.SPACING_EXTRA_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
@@ -80,6 +97,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapText
+import eu.europa.ec.uilogic.extension.clickableNoRipple
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -106,13 +124,13 @@ fun DocumentDetailsScreen(
     val toolbarConfig = ToolbarConfig(
         actions = if (state.error == null) {
             listOf(
-                ToolbarAction(
+                ToolbarActionUi(
                     icon = if (state.isDocumentBookmarked) AppIcons.BookmarkFilled else AppIcons.Bookmark,
                     onClick = { viewModel.setEvent(Event.BookmarkPressed) },
                     enabled = !state.isLoading,
                     throttleClicks = true,
                 ),
-                ToolbarAction(
+                ToolbarActionUi(
                     icon = if (state.hideSensitiveContent) AppIcons.VisibilityOff else AppIcons.Visibility,
                     onClick = { viewModel.setEvent(Event.ChangeContentVisibility) },
                     enabled = !state.isLoading,
@@ -232,7 +250,9 @@ private fun Content(
                 )
             }
 
-            if (state.isRevoked) {
+            AnimatedVisibility(
+                visible = state.isRevoked
+            ) {
                 WrapCard(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -266,7 +286,22 @@ private fun Content(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
             ) {
+                state.documentCredentialsInfoUi?.let { safeDocumentCredentialsInfo ->
+                    ExpandableDocumentCredentialsSection(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = SPACING_SMALL.dp),
+                        documentCredentialsInfoUi = safeDocumentCredentialsInfo,
+                        isExpanded = state.documentCredentialsInfoIsExpanded,
+                        onExpandedStateChanged = {
+                            onEventSend(Event.ToggleExpansionStateOfDocumentCredentialsSection)
+                        }
+                    )
+                    VSpacer.ExtraLarge()
+                }
+
                 DocumentDetails(
+                    modifier = Modifier.fillMaxWidth(),
                     onEventSend = onEventSend,
                     sectionTitle = state.documentDetailsSectionTitle,
                     documentDetailsUi = safeDocumentDetailsUi,
@@ -277,6 +312,7 @@ private fun Content(
                     VSpacer.ExtraLarge()
 
                     IssuerDetails(
+                        modifier = Modifier.fillMaxWidth(),
                         sectionTitle = state.documentIssuerSectionTitle,
                         issuerName = state.issuerName,
                         issuerLogo = state.issuerLogo,
@@ -329,7 +365,7 @@ private fun SheetContent(
     when (sheetContent) {
         is DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation ->
             DialogBottomSheet(
-                textData = BottomSheetTextData(
+                textData = BottomSheetTextDataUi(
                     title = stringResource(
                         id = R.string.document_details_bottom_sheet_delete_title
                     ),
@@ -374,12 +410,13 @@ private fun SheetContent(
 
 @Composable
 private fun IssuerDetails(
+    modifier: Modifier = Modifier,
     sectionTitle: String,
     issuerName: String?,
     issuerLogo: URI?,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         SectionTitle(
@@ -388,7 +425,7 @@ private fun IssuerDetails(
         )
         IssuerDetailsCard(
             modifier = Modifier.fillMaxWidth(),
-            item = IssuerDetailsCardData(
+            item = IssuerDetailsCardDataUi(
                 issuerName = issuerName,
                 issuerLogo = issuerLogo,
                 issuerIsVerified = false,
@@ -398,15 +435,174 @@ private fun IssuerDetails(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ExpandableDocumentCredentialsSection(
+    modifier: Modifier = Modifier,
+    documentCredentialsInfoUi: DocumentCredentialsInfoUi,
+    isExpanded: Boolean,
+    onExpandedStateChanged: () -> Unit,
+) {
+    SharedTransitionLayout {
+        AnimatedContent(
+            targetState = isExpanded,
+            modifier = modifier,
+        ) { providedIsExpanded: Boolean ->
+            if (providedIsExpanded) {
+                documentCredentialsInfoUi.expandedInfo?.let { safeExpandedInfo ->
+                    ExpandedDocumentCredentials(
+                        modifier = Modifier.fillMaxWidth(),
+                        title = documentCredentialsInfoUi.title,
+                        expandedInfo = safeExpandedInfo,
+                        onHideClicked = onExpandedStateChanged,
+                        animatedVisibilityScope = this@AnimatedContent,
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                    )
+                }
+            } else {
+                documentCredentialsInfoUi.collapsedInfo?.let { safeCollapsedInfo ->
+                    CollapsedDocumentCredentials(
+                        modifier = Modifier.fillMaxWidth(),
+                        title = documentCredentialsInfoUi.title,
+                        collapsedInfo = safeCollapsedInfo,
+                        onMoreInfoClicked = onExpandedStateChanged,
+                        animatedVisibilityScope = this@AnimatedContent,
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ExpandedDocumentCredentials(
+    modifier: Modifier,
+    title: String,
+    expandedInfo: DocumentCredentialsInfoUi.ExpandedInfo,
+    onHideClicked: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+) {
+    with(sharedTransitionScope) {
+        WrapCard(
+            modifier = modifier
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState(key = SHARED_BOUNDS_KEY),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                ),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(all = SPACING_MEDIUM.dp),
+                verticalArrangement = Arrangement.spacedBy(SPACING_EXTRA_LARGE.dp)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.success,
+                    )
+                    Text(
+                        text = expandedInfo.subtitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    WrapButton(
+                        modifier = Modifier.wrapContentWidth(),
+                        buttonConfig = ButtonConfig(
+                            type = ButtonType.PRIMARY,
+                            onClick = onHideClicked,
+                            buttonColors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = MaterialTheme.colorScheme.primary
+                            ),
+                        )
+                    ) {
+                        Text(
+                            text = expandedInfo.hideButtonText,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun CollapsedDocumentCredentials(
+    modifier: Modifier,
+    title: String,
+    collapsedInfo: DocumentCredentialsInfoUi.CollapsedInfo,
+    onMoreInfoClicked: () -> Unit,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+) {
+    with(sharedTransitionScope) {
+        Row(
+            modifier = modifier
+                .sharedBounds(
+                    sharedContentState = rememberSharedContentState(key = SHARED_BOUNDS_KEY),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                ),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            WrapCard {
+                Text(
+                    modifier = Modifier
+                        .padding(
+                            vertical = SPACING_SMALL.dp,
+                            horizontal = SPACING_MEDIUM.dp
+                        ),
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.success,
+                )
+            }
+
+            Text(
+                modifier = Modifier.clickableNoRipple(
+                    onClick = onMoreInfoClicked
+                ),
+                text = collapsedInfo.moreInfoText,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline,
+            )
+        }
+    }
+}
+
 @Composable
 private fun DocumentDetails(
+    modifier: Modifier = Modifier,
     onEventSend: (Event) -> Unit,
     sectionTitle: String,
     documentDetailsUi: DocumentDetailsUi,
     hideSensitiveContent: Boolean,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
         SectionTitle(
@@ -452,54 +648,74 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
     }
 }
 
+private const val SHARED_BOUNDS_KEY = "bounds"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @ThemeModePreviews
 @Composable
 private fun DocumentDetailsScreenPreview() {
     PreviewTheme {
+        val availableCredentials = 3
+        val totalCredentials = 15
         val state = State(
+            documentCredentialsInfoUi = DocumentCredentialsInfoUi(
+                availableCredentials = availableCredentials,
+                totalCredentials = totalCredentials,
+                title = stringResource(
+                    R.string.document_details_document_credentials_info_text,
+                    availableCredentials,
+                    totalCredentials
+                ),
+                collapsedInfo = DocumentCredentialsInfoUi.CollapsedInfo(
+                    moreInfoText = stringResource(R.string.document_details_document_credentials_info_more_info_text),
+                ),
+                expandedInfo = DocumentCredentialsInfoUi.ExpandedInfo(
+                    subtitle = stringResource(R.string.document_details_document_credentials_info_expanded_text_subtitle),
+                    updateNowButtonText = null,
+                    hideButtonText = stringResource(R.string.document_details_document_credentials_info_expanded_button_hide_text),
+                ),
+            ),
+            documentCredentialsInfoIsExpanded = false,
             documentDetailsSectionTitle = stringResource(R.string.document_details_main_section_text),
             documentIssuerSectionTitle = stringResource(R.string.document_details_issuer_section_text),
             documentDetailsUi = DocumentDetailsUi(
                 documentId = "1",
                 documentName = "Mobile Driving License",
                 documentIdentifier = DocumentIdentifier.OTHER(formatType = "org.iso.18013.5.1.mDL"),
-                documentExpirationDateFormatted = "10 Feb 2025",
-                documentHasExpired = false,
                 documentClaims = listOf(
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
+                    ExpandableListItemUi.SingleListItem(
+                        header = ListItemDataUi(
                             itemId = "1",
-                            mainContentData = ListItemMainContentData.Text(text = ""),
+                            mainContentData = ListItemMainContentDataUi.Text(text = ""),
                             overlineText = "A reproduction of the mDL holder’s portrait.",
-                            leadingContentData = ListItemLeadingContentData.UserImage(
+                            leadingContentData = ListItemLeadingContentDataUi.UserImage(
                                 userBase64Image = ""
                             ),
                         )
                     ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
+                    ExpandableListItemUi.SingleListItem(
+                        header = ListItemDataUi(
                             itemId = "2",
-                            mainContentData = ListItemMainContentData.Text(text = "GR"),
+                            mainContentData = ListItemMainContentDataUi.Text(text = "GR"),
                             overlineText = "Alpha-2 country code, as defined in ISO 3166-1 of the issuing authority’s country or territory.",
                         )
                     ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
+                    ExpandableListItemUi.SingleListItem(
+                        header = ListItemDataUi(
                             itemId = "3",
-                            mainContentData = ListItemMainContentData.Text(text = "12345678900"),
+                            mainContentData = ListItemMainContentDataUi.Text(text = "12345678900"),
                             overlineText = "An audit control number assigned by the issuing authority.",
                         )
                     ),
-                    ExpandableListItem.SingleListItemData(
-                        header = ListItemData(
+                    ExpandableListItemUi.SingleListItem(
+                        header = ListItemDataUi(
                             itemId = "4",
-                            mainContentData = ListItemMainContentData.Text(text = "31 Dec 2040"),
+                            mainContentData = ListItemMainContentDataUi.Text(text = "31 Dec 2040"),
                             overlineText = "Date when mDL expires.",
                         )
                     )
                 ),
-                documentIssuanceState = DocumentUiIssuanceState.Issued,
+                documentIssuanceStateUi = DocumentIssuanceStateUi.Issued,
             ),
             issuerName = "Digital Credentials Issuer",
             hideSensitiveContent = false,
@@ -515,5 +731,52 @@ private fun DocumentDetailsScreenPreview() {
             coroutineScope = rememberCoroutineScope(),
             modalBottomSheetState = rememberModalBottomSheetState(),
         )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun ExpandableDocumentCredentialsSectionPreview() {
+    PreviewTheme {
+        val availableCredentials = 3
+        val totalCredentials = 15
+        val documentCredentialsInfoUi = DocumentCredentialsInfoUi(
+            availableCredentials = availableCredentials,
+            totalCredentials = totalCredentials,
+            title = stringResource(
+                R.string.document_details_document_credentials_info_text,
+                availableCredentials,
+                totalCredentials
+            ),
+            collapsedInfo = DocumentCredentialsInfoUi.CollapsedInfo(
+                moreInfoText = stringResource(R.string.document_details_document_credentials_info_more_info_text),
+            ),
+            expandedInfo = DocumentCredentialsInfoUi.ExpandedInfo(
+                subtitle = stringResource(R.string.document_details_document_credentials_info_expanded_text_subtitle),
+                updateNowButtonText = null,
+                hideButtonText = stringResource(R.string.document_details_document_credentials_info_expanded_button_hide_text),
+            ),
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(all = SPACING_MEDIUM.dp),
+            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+        ) {
+            ExpandableDocumentCredentialsSection(
+                modifier = Modifier.fillMaxWidth(),
+                documentCredentialsInfoUi = documentCredentialsInfoUi,
+                isExpanded = false,
+                onExpandedStateChanged = {},
+            )
+
+            ExpandableDocumentCredentialsSection(
+                modifier = Modifier.fillMaxWidth(),
+                documentCredentialsInfoUi = documentCredentialsInfoUi,
+                isExpanded = true,
+                onExpandedStateChanged = {},
+            )
+        }
     }
 }

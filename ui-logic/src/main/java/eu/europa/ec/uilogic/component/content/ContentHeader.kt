@@ -28,10 +28,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIconAndText
-import eu.europa.ec.uilogic.component.AppIconAndTextData
+import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.RelyingParty
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -54,12 +54,12 @@ import eu.europa.ec.uilogic.component.wrap.WrapText
  * @property relyingPartyData Data for displaying information about the relying party, if applicable.
  */
 data class ContentHeaderConfig(
-    val appIconAndTextData: AppIconAndTextData = AppIconAndTextData(),
+    val appIconAndTextData: AppIconAndTextDataUi = AppIconAndTextDataUi(),
     val description: String?,
     val descriptionTextConfig: TextConfig? = null,
     val mainText: String? = null,
     val mainTextConfig: TextConfig? = null,
-    val relyingPartyData: RelyingPartyData? = null,
+    val relyingPartyData: RelyingPartyDataUi? = null,
 )
 
 /**
@@ -143,13 +143,13 @@ private fun ContentHeaderPreview(
     PreviewTheme {
         ContentHeader(
             config = ContentHeaderConfig(
-                appIconAndTextData = AppIconAndTextData(
+                appIconAndTextData = AppIconAndTextDataUi(
                     appIcon = AppIcons.LogoPlain,
                     appText = AppIcons.LogoText,
                 ),
                 description = "Description: $text",
                 mainText = "Title: $text",
-                relyingPartyData = RelyingPartyData(
+                relyingPartyData = RelyingPartyDataUi(
                     isVerified = true,
                     name = "Relying Party Name: $text",
                     description = "Relying Party Description: $text",

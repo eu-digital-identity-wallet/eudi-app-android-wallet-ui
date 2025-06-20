@@ -67,23 +67,23 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.model.TransactionUiStatus
-import eu.europa.ec.corelogic.model.TransactionCategory
-import eu.europa.ec.dashboardfeature.model.FilterDateRangeSelectionData
-import eu.europa.ec.dashboardfeature.model.SearchItem
-import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
-import eu.europa.ec.dashboardfeature.model.TransactionUi
+import eu.europa.ec.dashboardfeature.model.SearchItemUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.FilterDateRangeSelectionUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionCategoryUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
+import eu.europa.ec.dashboardfeature.ui.transactions.model.TransactionStatusUi
 import eu.europa.ec.eudi.rqesui.domain.util.safeLet
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DatePickerDialogType
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
+import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
 import eu.europa.ec.uilogic.component.DualSelectorButtons
 import eu.europa.ec.uilogic.component.FiltersDatePickerDialog
 import eu.europa.ec.uilogic.component.FiltersSearchBar
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.SectionTitle
 import eu.europa.ec.uilogic.component.content.ContentScreen
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
@@ -97,7 +97,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.GenericBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableCard
@@ -115,7 +115,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 typealias DashboardEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event
-typealias ShowSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Show
+typealias OpenSideMenuEvent = eu.europa.ec.dashboardfeature.ui.dashboard.Event.SideMenu.Open
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -171,7 +171,7 @@ fun TransactionsScreen(
                 TransactionsSheetContent(
                     sheetContent = state.sheetContent,
                     filtersUi = state.filtersUi,
-                    snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionData,
+                    snapshotFilterDateRangeData = state.snapshotFilterDateRangeSelectionUi,
                     sortOrder = state.sortOrder,
                     onEventSent = {
                         viewModel.setEvent(it)
@@ -242,10 +242,10 @@ private fun Content(
         contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
     ) {
         item {
-            val searchItem =
-                SearchItem(searchLabel = stringResource(R.string.transactions_screen_search_label))
+            val searchItemUi =
+                SearchItemUi(searchLabel = stringResource(R.string.transactions_screen_search_label))
             FiltersSearchBar(
-                placeholder = searchItem.searchLabel,
+                placeholder = searchItemUi.searchLabel,
                 onValueChange = { onEventSend(Event.OnSearchQueryChanged(it)) },
                 onFilterClick = { onEventSend(Event.FiltersPressed) },
                 onClearClick = { onEventSend(Event.OnSearchQueryChanged("")) },
@@ -338,7 +338,7 @@ private fun handleNavigationEffect(
 @Composable
 private fun TransactionCategory(
     modifier: Modifier = Modifier,
-    category: TransactionCategory,
+    category: TransactionCategoryUi,
     transactions: List<TransactionUi>,
     onEventSend: (Event) -> Unit,
 ) {
@@ -371,8 +371,8 @@ private fun TransactionCategory(
                 val transactionUi = transactionMap[item.itemId]
 
                 val overlineTextColor = when (transactionUi?.uiStatus) {
-                    TransactionUiStatus.Completed -> MaterialTheme.colorScheme.success
-                    TransactionUiStatus.Failed -> MaterialTheme.colorScheme.error
+                    TransactionStatusUi.Completed -> MaterialTheme.colorScheme.success
+                    TransactionStatusUi.Failed -> MaterialTheme.colorScheme.error
                     null -> MaterialTheme.colorScheme.onSurfaceVariant
                 }
 
@@ -390,9 +390,9 @@ private fun NoResults(
 ) {
     Column(modifier = modifier) {
         WrapListItem(
-            item = ListItemData(
+            item = ListItemDataUi(
                 itemId = stringResource(R.string.transactions_screen_search_no_results_id),
-                mainContentData = ListItemMainContentData.Text(
+                mainContentData = ListItemMainContentDataUi.Text(
                     text = stringResource(R.string.transactions_screen_search_no_results)
                 ),
             ),
@@ -420,7 +420,7 @@ private fun TopBar(
             iconData = AppIcons.Menu,
             customTint = MaterialTheme.colorScheme.onSurface,
         ) {
-            onDashboardEventSent(ShowSideMenuEvent)
+            onDashboardEventSent(OpenSideMenuEvent)
         }
 
         Text(
@@ -436,9 +436,9 @@ private fun TopBar(
 @Composable
 private fun TransactionsSheetContent(
     sheetContent: TransactionsBottomSheetContent,
-    filtersUi: List<ExpandableListItem.NestedListItemData>,
-    snapshotFilterDateRangeData: FilterDateRangeSelectionData,
-    sortOrder: DualSelectorButtonData,
+    filtersUi: List<ExpandableListItemUi.NestedListItem>,
+    snapshotFilterDateRangeData: FilterDateRangeSelectionUi,
+    sortOrder: DualSelectorButtonDataUi,
     onEventSent: (event: Event) -> Unit,
 ) {
     when (sheetContent) {

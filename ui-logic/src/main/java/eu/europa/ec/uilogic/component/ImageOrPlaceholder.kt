@@ -30,7 +30,7 @@ fun ImageOrPlaceholder(
     modifier: Modifier,
     base64Image: String,
     contentScale: ContentScale? = null,
-    fallbackIcon: IconData = AppIcons.User,
+    fallbackIcon: IconDataUi = AppIcons.User,
 ) {
     if (base64Image.isNotBlank()) {
         WrapImage(

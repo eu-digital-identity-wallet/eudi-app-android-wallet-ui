@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.isBeyondNextDays
 import eu.europa.ec.businesslogic.extension.isExpired
 import eu.europa.ec.businesslogic.extension.isValid
@@ -32,20 +33,21 @@ import eu.europa.ec.businesslogic.validator.model.FilterableItem
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.Filters
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.util.documentHasExpired
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.IssueDeferredDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
-import eu.europa.ec.corelogic.model.DeferredDocumentData
+import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
 import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.corelogic.model.toDocumentCategory
 import eu.europa.ec.corelogic.model.toDocumentIdentifier
-import eu.europa.ec.dashboardfeature.model.DocumentFilterIds
-import eu.europa.ec.dashboardfeature.model.DocumentUi
-import eu.europa.ec.dashboardfeature.model.DocumentsFilterableAttributes
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
+import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentFilterIds
+import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
+import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentsFilterableAttributes
+import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.UnsignedDocument
@@ -54,13 +56,13 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.wrap.CheckboxData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
-import eu.europa.ec.uilogic.component.wrap.RadioButtonData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
+import eu.europa.ec.uilogic.component.wrap.RadioButtonDataUi
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -74,13 +76,13 @@ import java.time.Instant
 sealed class DocumentInteractorFilterPartialState {
     data class FilterApplyResult(
         val documents: List<Pair<DocumentCategory, List<DocumentUi>>>,
-        val filters: List<ExpandableListItem.NestedListItemData>,
+        val filters: List<ExpandableListItemUi.NestedListItem>,
         val sortOrder: DualSelectorButton,
         val allDefaultFiltersAreSelected: Boolean,
     ) : DocumentInteractorFilterPartialState()
 
     data class FilterUpdateResult(
-        val filters: List<ExpandableListItem.NestedListItemData>,
+        val filters: List<ExpandableListItemUi.NestedListItem>,
         val sortOrder: DualSelectorButton,
     ) : DocumentInteractorFilterPartialState()
 }
@@ -103,11 +105,11 @@ sealed class DocumentInteractorDeleteDocumentPartialState {
 
 sealed class DocumentInteractorRetryIssuingDeferredDocumentPartialState {
     data class Success(
-        val deferredDocumentData: DeferredDocumentData,
+        val deferredDocumentData: DeferredDocumentDataDomain,
     ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
 
     data class NotReady(
-        val deferredDocumentData: DeferredDocumentData,
+        val deferredDocumentData: DeferredDocumentDataDomain,
     ) : DocumentInteractorRetryIssuingDeferredDocumentPartialState()
 
     data class Failure(
@@ -122,7 +124,7 @@ sealed class DocumentInteractorRetryIssuingDeferredDocumentPartialState {
 
 sealed class DocumentInteractorRetryIssuingDeferredDocumentsPartialState {
     data class Result(
-        val successfullyIssuedDeferredDocuments: List<DeferredDocumentData>,
+        val successfullyIssuedDeferredDocuments: List<DeferredDocumentDataDomain>,
         val failedIssuedDeferredDocuments: List<DocumentId>,
     ) : DocumentInteractorRetryIssuingDeferredDocumentsPartialState()
 
@@ -167,6 +169,7 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filterValidator: FilterValidator,
+    private val prefKeys: PrefKeys,
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -193,25 +196,25 @@ class DocumentsInteractorImpl(
             }.toList().sortedBy { it.first.order }
 
             val filtersUi = result.updatedFilters.filterGroups.map { filterGroup ->
-                ExpandableListItem.NestedListItemData(
+                ExpandableListItemUi.NestedListItem(
                     isExpanded = true,
-                    header = ListItemData(
+                    header = ListItemDataUi(
                         itemId = filterGroup.id,
-                        mainContentData = ListItemMainContentData.Text(filterGroup.name),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        mainContentData = ListItemMainContentDataUi.Text(filterGroup.name),
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.KeyboardArrowRight
                         )
                     ),
                     nestedItems = filterGroup.filters.map { filterItem ->
-                        ExpandableListItem.SingleListItemData(
-                            header = ListItemData(
+                        ExpandableListItemUi.SingleListItem(
+                            header = ListItemDataUi(
                                 itemId = filterItem.id,
-                                mainContentData = ListItemMainContentData.Text(filterItem.name),
+                                mainContentData = ListItemMainContentDataUi.Text(filterItem.name),
                                 trailingContentData = when (filterGroup) {
                                     is FilterGroup.MultipleSelectionFilterGroup<*>,
                                     is FilterGroup.ReversibleMultipleSelectionFilterGroup<*> -> {
-                                        ListItemTrailingContentData.Checkbox(
-                                            checkboxData = CheckboxData(
+                                        ListItemTrailingContentDataUi.Checkbox(
+                                            checkboxData = CheckboxDataUi(
                                                 isChecked = filterItem.selected,
                                                 enabled = true
                                             )
@@ -220,8 +223,8 @@ class DocumentsInteractorImpl(
 
                                     is FilterGroup.SingleSelectionFilterGroup,
                                     is FilterGroup.ReversibleSingleSelectionFilterGroup -> {
-                                        ListItemTrailingContentData.RadioButton(
-                                            radioButtonData = RadioButtonData(
+                                        ListItemTrailingContentDataUi.RadioButton(
+                                            radioButtonData = RadioButtonDataUi(
                                                 isSelected = filterItem.selected,
                                                 enabled = true
                                             )
@@ -310,52 +313,81 @@ class DocumentsInteractorImpl(
                                 allCategories = documentCategories
                             )
 
+                            val documentName = document.name
+
                             val documentSearchTags = buildList {
-                                add(document.name)
+                                add(documentName)
                                 if (!issuerName.isNullOrBlank()) {
                                     add(issuerName)
                                 }
                             }
 
-                            val documentHasExpired =
-                                documentHasExpired(documentExpirationDate = document.validUntil)
+                            val documentExpirationDate = document.getValidUntil().getOrNull()
+                            val documentHasExpired = if (documentExpirationDate != null) {
+                                documentHasExpired(documentExpirationDate = documentExpirationDate)
+                            } else {
+                                false
+                            }
 
                             val documentIssuanceState = when {
-                                documentIsRevoked -> DocumentUiIssuanceState.Revoked
-                                documentHasExpired == true -> DocumentUiIssuanceState.Failed
-                                else -> DocumentUiIssuanceState.Issued
+                                documentIsRevoked -> DocumentIssuanceStateUi.Revoked
+                                documentHasExpired == true -> DocumentIssuanceStateUi.Failed
+                                else -> DocumentIssuanceStateUi.Issued
                             }
 
                             val supportingText = when {
                                 documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_revoked)
                                 documentHasExpired == true -> resourceProvider.getString(R.string.dashboard_document_has_expired)
+                                documentExpirationDate == null -> null
                                 else -> resourceProvider.getString(
                                     R.string.dashboard_document_has_not_expired,
-                                    document.validUntil.formatInstant()
+                                    documentExpirationDate.formatInstant()
                                 )
                             }
 
                             val trailingContentData = if (documentIsRevoked) {
-                                ListItemTrailingContentData.Icon(
+                                ListItemTrailingContentDataUi.Icon(
                                     iconData = AppIcons.ErrorFilled,
                                     tint = ThemeColors.error
                                 )
                             } else {
-                                ListItemTrailingContentData.Icon(
-                                    iconData = AppIcons.KeyboardArrowRight
-                                )
+                                if (prefKeys.getShowBatchIssuanceCounter()) {
+                                    val documentAvailableCredentials = document.credentialsCount()
+                                    val documentTotalCredentials =
+                                        document.initialCredentialsCount()
+
+                                    val documentCredentialsInfoUi = DocumentCredentialsInfoUi(
+                                        availableCredentials = documentAvailableCredentials,
+                                        totalCredentials = documentTotalCredentials,
+                                        title = resourceProvider.getString(
+                                            R.string.dashboard_document_credentials_info_text,
+                                            documentAvailableCredentials,
+                                            documentTotalCredentials
+                                        )
+                                    )
+
+                                    ListItemTrailingContentDataUi.TextWithIcon(
+                                        text = documentCredentialsInfoUi.title,
+                                        iconData = AppIcons.KeyboardArrowRight
+                                    )
+                                } else {
+                                    ListItemTrailingContentDataUi.Icon(
+                                        iconData = AppIcons.KeyboardArrowRight
+                                    )
+                                }
                             }
 
                             FilterableItem(
                                 payload = DocumentUi(
                                     documentIssuanceState = documentIssuanceState,
-                                    uiData = ListItemData(
+                                    uiData = ListItemDataUi(
                                         itemId = document.id,
-                                        mainContentData = ListItemMainContentData.Text(text = document.name),
+                                        mainContentData = ListItemMainContentDataUi.Text(text = documentName),
                                         overlineText = issuerName,
                                         supportingText = supportingText,
-                                        leadingContentData = ListItemLeadingContentData.AsyncImage(
+                                        leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
+                                            contentDescription = resourceProvider.getString(R.string.content_description_issuer_logo_icon),
                                             errorImage = AppIcons.Id,
                                         ),
                                         trailingContentData = trailingContentData
@@ -366,9 +398,9 @@ class DocumentsInteractorImpl(
                                 attributes = DocumentsFilterableAttributes(
                                     searchTags = documentSearchTags,
                                     issuedDate = document.issuedAt,
-                                    expiryDate = document.validUntil,
+                                    expiryDate = documentExpirationDate,
                                     issuer = issuerName,
-                                    name = document.name,
+                                    name = documentName,
                                     category = documentCategory,
                                     isRevoked = documentIsRevoked
                                 )
@@ -387,8 +419,10 @@ class DocumentsInteractorImpl(
                                 allCategories = documentCategories
                             )
 
+                            val documentName = document.name
+
                             val documentSearchTags = buildList {
-                                add(document.name)
+                                add(documentName)
                                 if (!issuerName.isNullOrBlank()) {
                                     add(issuerName)
                                 }
@@ -396,30 +430,31 @@ class DocumentsInteractorImpl(
 
                             FilterableItem(
                                 payload = DocumentUi(
-                                    documentIssuanceState = DocumentUiIssuanceState.Pending,
-                                    uiData = ListItemData(
+                                    documentIssuanceState = DocumentIssuanceStateUi.Pending,
+                                    uiData = ListItemDataUi(
                                         itemId = document.id,
-                                        mainContentData = ListItemMainContentData.Text(text = document.name),
+                                        mainContentData = ListItemMainContentDataUi.Text(text = documentName),
                                         overlineText = issuerName,
                                         supportingText = resourceProvider.getString(R.string.dashboard_document_deferred_pending),
-                                        leadingContentData = ListItemLeadingContentData.AsyncImage(
+                                        leadingContentData = ListItemLeadingContentDataUi.AsyncImage(
                                             imageUrl = localizedIssuerMetadata?.logo?.uri.toString(),
+                                            contentDescription = resourceProvider.getString(R.string.content_description_issuer_logo_icon),
                                             errorImage = AppIcons.Id,
                                         ),
-                                        trailingContentData = ListItemTrailingContentData.Icon(
+                                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                                             iconData = AppIcons.ClockTimer,
                                             tint = ThemeColors.warning,
                                         )
                                     ),
                                     documentIdentifier = documentIdentifier,
-                                    documentCategory = documentCategory
+                                    documentCategory = documentCategory,
                                 ),
                                 attributes = DocumentsFilterableAttributes(
                                     searchTags = documentSearchTags,
                                     issuedDate = null,
                                     expiryDate = null,
                                     issuer = issuerName,
-                                    name = document.name,
+                                    name = documentName,
                                     category = documentCategory,
                                     isRevoked = documentIsRevoked
                                 )
@@ -446,7 +481,7 @@ class DocumentsInteractorImpl(
         dispatcher: CoroutineDispatcher,
     ): Flow<DocumentInteractorRetryIssuingDeferredDocumentsPartialState> = flow {
 
-        val successResults: MutableList<DeferredDocumentData> = mutableListOf()
+        val successResults: MutableList<DeferredDocumentDataDomain> = mutableListOf()
         val failedResults: MutableList<DocumentId> = mutableListOf()
 
         withContext(dispatcher) {

@@ -31,11 +31,11 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.ResolveDocumentOfferInteractorPartialState
-import eu.europa.ec.issuancefeature.ui.offer.transformer.DocumentOfferTransformer.toListItemDataList
+import eu.europa.ec.issuancefeature.ui.offer.transformer.DocumentOfferTransformer.toListItemDataUiList
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.RelyingPartyData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.RelyingPartyDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -65,7 +65,7 @@ data class State(
     val isInitialised: Boolean = false,
     val notifyOnAuthenticationFailure: Boolean = false,
 
-    val documents: List<ListItemData> = emptyList(),
+    val documents: List<ListItemDataUi> = emptyList(),
     val noDocument: Boolean = false,
     val txCodeLength: Int? = null,
 ) : ViewState
@@ -230,7 +230,7 @@ class DocumentOfferViewModel(
                             copy(
                                 isLoading = false,
                                 error = null,
-                                documents = response.documents.toListItemDataList(),
+                                documents = response.documents.toListItemDataUiList(),
                                 isInitialised = true,
                                 noDocument = false,
                                 txCodeLength = response.txCodeLength,
@@ -272,7 +272,7 @@ class DocumentOfferViewModel(
         return ContentHeaderConfig(
             description = resourceProvider.getString(R.string.issuance_document_offer_description),
             mainText = resourceProvider.getString(R.string.issuance_document_offer_header_main_text),
-            relyingPartyData = RelyingPartyData(
+            relyingPartyData = RelyingPartyDataUi(
                 isVerified = false,
                 name = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name),
                 description = resourceProvider.getString(R.string.issuance_document_offer_relying_party_description)
@@ -283,8 +283,8 @@ class DocumentOfferViewModel(
     private fun getHeaderConfigIssuerData(
         issuerName: String,
         issuerLogo: URI?,
-    ): RelyingPartyData {
-        return RelyingPartyData(
+    ): RelyingPartyDataUi {
+        return RelyingPartyDataUi(
             logo = issuerLogo,
             isVerified = false,
             name = issuerName,

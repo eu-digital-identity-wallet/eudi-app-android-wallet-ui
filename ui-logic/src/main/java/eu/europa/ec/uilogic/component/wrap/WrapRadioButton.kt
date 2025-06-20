@@ -47,7 +47,7 @@ import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
  * governing permissions and limitations under the Licence.
  */
 
-data class RadioButtonData(
+data class RadioButtonDataUi(
     val isSelected: Boolean,
     val enabled: Boolean = true,
     val onCheckedChange: (() -> Unit)? = null,
@@ -55,7 +55,7 @@ data class RadioButtonData(
 
 @Composable
 fun WrapRadioButton(
-    radioButtonData: RadioButtonData,
+    radioButtonData: RadioButtonDataUi,
     modifier: Modifier = Modifier,
 ) {
     // This is needed, otherwise M3 adds unwanted space around CheckBoxes.
@@ -81,7 +81,7 @@ private fun WrapRadioButtonPreview() {
         mutableStateOf(true)
     }
 
-    val radioButtonData = RadioButtonData(
+    val radioButtonData = RadioButtonDataUi(
         isSelected = isChecked,
         enabled = true,
         onCheckedChange = {

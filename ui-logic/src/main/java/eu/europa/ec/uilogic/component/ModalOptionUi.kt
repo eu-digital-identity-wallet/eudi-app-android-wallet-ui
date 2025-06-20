@@ -21,9 +21,9 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 
 data class ModalOptionUi<T : ViewEvent>(
     val title: String,
-    val leadingIcon: IconData? = null,
+    val leadingIcon: IconDataUi? = null,
     val leadingIconTint: Color? = null,
-    val trailingIcon: IconData? = null,
+    val trailingIcon: IconDataUi? = null,
     val trailingIconTint: Color? = null,
     val enabled: Boolean = true,
     val event: T,

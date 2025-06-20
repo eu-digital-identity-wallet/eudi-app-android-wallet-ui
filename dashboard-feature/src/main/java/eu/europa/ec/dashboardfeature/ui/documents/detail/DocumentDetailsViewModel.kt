@@ -17,18 +17,19 @@
 package eu.europa.ec.dashboardfeature.ui.documents.detail
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.commonfeature.model.DocumentDetailsUi
-import eu.europa.ec.commonfeature.ui.document_details.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorDeleteBookmarkPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorDeleteDocumentPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorStoreBookmarkPartialState
+import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
+import eu.europa.ec.dashboardfeature.ui.documents.detail.transformer.DocumentDetailsTransformer.transformToDocumentDetailsUi
+import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.BottomSheetTextData
+import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.extension.toggleExpansionState
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
@@ -51,6 +52,8 @@ data class State(
     val title: String? = null,
     val issuerName: String? = null,
     val issuerLogo: URI? = null,
+    val documentCredentialsInfoUi: DocumentCredentialsInfoUi? = null,
+    val documentCredentialsInfoIsExpanded: Boolean,
     val documentDetailsSectionTitle: String,
     val documentIssuerSectionTitle: String,
 
@@ -83,6 +86,7 @@ sealed class Event : ViewEvent {
     data object OnBookmarkRemoved : Event()
     data object IssuerCardPressed : Event()
     data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
+    data object ToggleExpansionStateOfDocumentCredentialsSection : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -106,15 +110,15 @@ sealed class DocumentDetailsBottomSheetContent {
     data object DeleteDocumentConfirmation : DocumentDetailsBottomSheetContent()
 
     data class BookmarkStoredInfo(
-        val bottomSheetTextData: BottomSheetTextData
+        val bottomSheetTextData: BottomSheetTextDataUi
     ) : DocumentDetailsBottomSheetContent()
 
     data class BookmarkRemovedInfo(
-        val bottomSheetTextData: BottomSheetTextData
+        val bottomSheetTextData: BottomSheetTextDataUi
     ) : DocumentDetailsBottomSheetContent()
 
     data class TrustedRelyingPartyInfo(
-        val bottomSheetTextData: BottomSheetTextData
+        val bottomSheetTextData: BottomSheetTextDataUi
     ) : DocumentDetailsBottomSheetContent()
 }
 
@@ -125,6 +129,7 @@ class DocumentDetailsViewModel(
     @InjectedParam private val documentId: DocumentId,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
+        documentCredentialsInfoIsExpanded = false,
         documentDetailsSectionTitle = resourceProvider.getString(R.string.document_details_main_section_text),
         documentIssuerSectionTitle = resourceProvider.getString(R.string.document_details_issuer_section_text),
     )
@@ -206,6 +211,8 @@ class DocumentDetailsViewModel(
                     )
                 }
             }
+
+            is Event.ToggleExpansionStateOfDocumentCredentialsSection -> toggleExpansionStateOfDocumentCredentialsSection()
         }
     }
 
@@ -231,6 +238,7 @@ class DocumentDetailsViewModel(
                                 isLoading = false,
                                 error = null,
                                 documentDetailsUi = documentDetailsUi,
+                                documentCredentialsInfoUi = response.documentCredentialsInfoUi,
                                 title = documentDetailsUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
                                 isRevoked = response.isRevoked,
@@ -383,24 +391,32 @@ class DocumentDetailsViewModel(
         }
     }
 
-    private fun getBookmarkStoredBottomSheetTextData(): BottomSheetTextData {
-        return BottomSheetTextData(
+    private fun getBookmarkStoredBottomSheetTextData(): BottomSheetTextDataUi {
+        return BottomSheetTextDataUi(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_info_message)
         )
     }
 
-    private fun getBookmarkRemovedBottomSheetTextData(): BottomSheetTextData {
-        return BottomSheetTextData(
+    private fun getBookmarkRemovedBottomSheetTextData(): BottomSheetTextDataUi {
+        return BottomSheetTextDataUi(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_removed_info_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_bookmark_removed_info_message)
         )
     }
 
-    private fun getTrustedRelyingPartyBottomSheetTextData(): BottomSheetTextData {
-        return BottomSheetTextData(
+    private fun getTrustedRelyingPartyBottomSheetTextData(): BottomSheetTextDataUi {
+        return BottomSheetTextDataUi(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_subtitle)
         )
+    }
+
+    private fun toggleExpansionStateOfDocumentCredentialsSection() {
+        setState {
+            copy(
+                documentCredentialsInfoIsExpanded = !documentCredentialsInfoIsExpanded
+            )
+        }
     }
 }

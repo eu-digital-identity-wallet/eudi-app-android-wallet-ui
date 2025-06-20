@@ -32,10 +32,10 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
 import eu.europa.ec.uilogic.component.ListItem
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemLeadingContentData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.TextLengthPreviewProvider
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -44,8 +44,8 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 @Composable
 fun WrapListItem(
     modifier: Modifier = Modifier,
-    item: ListItemData,
-    onItemClick: ((item: ListItemData) -> Unit)?,
+    item: ListItemDataUi,
+    onItemClick: ((item: ListItemDataUi) -> Unit)?,
     throttleClicks: Boolean = true,
     hideSensitiveContent: Boolean = false,
     mainContentVerticalPadding: Dp? = null,
@@ -89,17 +89,17 @@ private fun WrapListItemPreview(
         ) {
             WrapListItem(
                 modifier = Modifier.fillMaxWidth(),
-                item = ListItemData(
+                item = ListItemDataUi(
                     itemId = "1",
-                    mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                    mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                 ),
                 onItemClick = {},
             )
             WrapListItem(
                 modifier = Modifier.fillMaxWidth(),
-                item = ListItemData(
+                item = ListItemDataUi(
                     itemId = "2",
-                    mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                    mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                     overlineText = "",
                     supportingText = "",
                 ),
@@ -107,13 +107,13 @@ private fun WrapListItemPreview(
             )
             WrapListItem(
                 modifier = Modifier.fillMaxWidth(),
-                item = ListItemData(
+                item = ListItemDataUi(
                     itemId = "3",
-                    mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                    mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                     overlineText = "Overline text $text",
                     supportingText = "Supporting text $text",
-                    leadingContentData = ListItemLeadingContentData.Icon(iconData = AppIcons.Sign),
-                    trailingContentData = ListItemTrailingContentData.Icon(
+                    leadingContentData = ListItemLeadingContentDataUi.Icon(iconData = AppIcons.Sign),
+                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = AppIcons.KeyboardArrowRight,
                     ),
                 ),
@@ -121,11 +121,11 @@ private fun WrapListItemPreview(
             )
             WrapListItem(
                 modifier = Modifier.fillMaxWidth(),
-                item = ListItemData(
+                item = ListItemDataUi(
                     itemId = "4",
-                    mainContentData = ListItemMainContentData.Text(text = "Main text $text"),
+                    mainContentData = ListItemMainContentDataUi.Text(text = "Main text $text"),
                     supportingText = "Supporting text $text",
-                    trailingContentData = ListItemTrailingContentData.Icon(
+                    trailingContentData = ListItemTrailingContentDataUi.Icon(
                         iconData = AppIcons.KeyboardArrowRight,
                     ),
                 ),

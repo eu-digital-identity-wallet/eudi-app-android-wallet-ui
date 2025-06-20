@@ -16,23 +16,23 @@
 
 package eu.europa.ec.corelogic.extension
 
-import eu.europa.ec.corelogic.model.DomainClaim
+import eu.europa.ec.corelogic.model.ClaimDomain
 
 /**
- * Recursively removes empty groups from a list of [DomainClaim].
+ * Recursively removes empty groups from a list of [ClaimDomain].
  *
- * This function traverses the list of [DomainClaim] and filters out any [DomainClaim.Group]
+ * This function traverses the list of [ClaimDomain] and filters out any [ClaimDomain.Group]
  * that, after recursively filtering its items, becomes empty.
  *
- * @receiver The list of [DomainClaim] to filter.
- * @return A new list of [DomainClaim] with empty groups removed.
+ * @receiver The list of [ClaimDomain] to filter.
+ * @return A new list of [ClaimDomain] with empty groups removed.
  *         Groups are considered empty if, after recursively filtering their items,
  *         they contain no items. Non-group claims are always kept.
  */
-fun List<DomainClaim>.removeEmptyGroups(): List<DomainClaim> {
+fun List<ClaimDomain>.removeEmptyGroups(): List<ClaimDomain> {
     return this.mapNotNull { claim ->
         when (claim) {
-            is DomainClaim.Group -> {
+            is ClaimDomain.Group -> {
                 val filteredItems =
                     claim.items.removeEmptyGroups() // Recursively filter child groups
                 if (filteredItems.isNotEmpty()) {
@@ -42,31 +42,31 @@ fun List<DomainClaim>.removeEmptyGroups(): List<DomainClaim> {
                 }
             }
 
-            is DomainClaim.Primitive -> claim // Keep non-group claims (Primitive)
+            is ClaimDomain.Primitive -> claim // Keep non-group claims (Primitive)
         }
     }
 }
 
 /**
- * Recursively sorts a list of [DomainClaim] based on the provided [selector].
+ * Recursively sorts a list of [ClaimDomain] based on the provided [selector].
  *
- * This function sorts the list of [DomainClaim] by applying the [selector] to each element.
- * For [DomainClaim.Group] elements, it recursively sorts the `items` within the group
- * before sorting the list at the current level. [DomainClaim.Primitive] elements are left unchanged.
+ * This function sorts the list of [ClaimDomain] by applying the [selector] to each element.
+ * For [ClaimDomain.Group] elements, it recursively sorts the `items` within the group
+ * before sorting the list at the current level. [ClaimDomain.Primitive] elements are left unchanged.
  *
- * @param selector A function that extracts a [Comparable] value from a [DomainClaim] for sorting purposes.
- * @return A new list of [DomainClaim] sorted recursively according to the [selector].
+ * @param selector A function that extracts a [Comparable] value from a [ClaimDomain] for sorting purposes.
+ * @return A new list of [ClaimDomain] sorted recursively according to the [selector].
  */
-fun <T : Comparable<T>> List<DomainClaim>.sortRecursivelyBy(
-    selector: (DomainClaim) -> T
-): List<DomainClaim> {
+fun <T : Comparable<T>> List<ClaimDomain>.sortRecursivelyBy(
+    selector: (ClaimDomain) -> T
+): List<ClaimDomain> {
     return this.map { claim ->
         when (claim) {
-            is DomainClaim.Group -> claim.copy(
+            is ClaimDomain.Group -> claim.copy(
                 items = claim.items.sortRecursivelyBy(selector) // Recursively sort children
             )
 
-            is DomainClaim.Primitive -> claim // Primitives stay unchanged
+            is ClaimDomain.Primitive -> claim // Primitives stay unchanged
         }
     }.sortedBy(selector) // Apply sorting at the current level
 }

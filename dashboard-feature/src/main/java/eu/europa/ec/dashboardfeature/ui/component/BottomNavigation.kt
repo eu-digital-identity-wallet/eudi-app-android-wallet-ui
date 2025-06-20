@@ -32,7 +32,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.IconData
+import eu.europa.ec.uilogic.component.IconDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
@@ -40,7 +40,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 sealed class BottomNavigationItem(
     val route: String,
     @StringRes val titleRes: Int,
-    val icon: IconData,
+    val icon: IconDataUi,
 ) {
     data object Home : BottomNavigationItem(
         route = "HOME",

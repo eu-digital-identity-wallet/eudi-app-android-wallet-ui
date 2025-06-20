@@ -25,8 +25,8 @@ import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.extension.toClaimPaths
-import eu.europa.ec.corelogic.model.ClaimPath
-import eu.europa.ec.corelogic.model.ClaimPath.Companion.isPrefixOf
+import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.isPrefixOf
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
@@ -36,10 +36,10 @@ import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.AppIcons
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 object RequestTransformer {
 
@@ -104,12 +104,12 @@ object RequestTransformer {
         return documentsDomain.map {
             RequestDocumentItemUi(
                 domainPayload = it,
-                headerUi = ExpandableListItem.NestedListItemData(
-                    header = ListItemData(
+                headerUi = ExpandableListItemUi.NestedListItem(
+                    header = ListItemDataUi(
                         itemId = it.docId,
-                        mainContentData = ListItemMainContentData.Text(text = it.docName),
+                        mainContentData = ListItemMainContentDataUi.Text(text = it.docName),
                         supportingText = resourceProvider.getString(R.string.request_collapsed_supporting_text),
-                        trailingContentData = ListItemTrailingContentData.Icon(
+                        trailingContentData = ListItemTrailingContentDataUi.Icon(
                             iconData = AppIcons.KeyboardArrowDown
                         )
                     ),
@@ -122,24 +122,24 @@ object RequestTransformer {
 
     fun createDisclosedDocuments(items: List<RequestDocumentItemUi>): DisclosedDocuments {
         // Collect all selected expanded items from the list
-        fun ExpandableListItem.collectSingles(): List<ExpandableListItem.SingleListItemData> =
+        fun ExpandableListItemUi.collectSingles(): List<ExpandableListItemUi.SingleListItem> =
             when (this) {
-                is ExpandableListItem.SingleListItemData -> {
+                is ExpandableListItemUi.SingleListItem -> {
                     val isSelected =
-                        header.trailingContentData is ListItemTrailingContentData.Checkbox &&
-                                (header.trailingContentData as ListItemTrailingContentData.Checkbox)
+                        header.trailingContentData is ListItemTrailingContentDataUi.Checkbox &&
+                                (header.trailingContentData as ListItemTrailingContentDataUi.Checkbox)
                                     .checkboxData.isChecked
                     if (isSelected) listOf(this) else emptyList()
                 }
 
-                is ExpandableListItem.NestedListItemData -> nestedItems.flatMap { it.collectSingles() }
+                is ExpandableListItemUi.NestedListItem -> nestedItems.flatMap { it.collectSingles() }
             }
 
         val groupedByDocument = items.map { document ->
             document.domainPayload to document.headerUi.nestedItems.flatMap { uiItem ->
                 uiItem.collectSingles()
-                    .distinctBy { listItemData ->
-                        listItemData.header.itemId // Distinct by item ID to prevent duplicate sending of the same group
+                    .distinctBy { listItemDataUi ->
+                        listItemDataUi.header.itemId // Distinct by item ID to prevent duplicate sending of the same group
                     }
             }
         }
@@ -159,14 +159,16 @@ object RequestTransformer {
 
                         is DomainDocumentFormat.SdJwtVc -> sdJwtItems.add(
                             SdJwtVcItem(
-                                path = ClaimPath.toSdJwtVcPath(selectedItemId)
+                                path = ClaimPathDomain.toSdJwtVcPath(selectedItemId)
                             )
                         )
 
                         is DomainDocumentFormat.MsoMdoc -> mDocItems.add(
                             MsoMdocItem(
                                 namespace = documentPayload.domainDocFormat.namespace,
-                                elementIdentifier = ClaimPath.toElementIdentifier(selectedItemId)
+                                elementIdentifier = ClaimPathDomain.toElementIdentifier(
+                                    selectedItemId
+                                )
                             )
                         )
                     }

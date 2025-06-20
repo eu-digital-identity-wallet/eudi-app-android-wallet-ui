@@ -16,33 +16,27 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import android.net.Uri
-import eu.europa.ec.businesslogic.config.ConfigLogic
-import eu.europa.ec.businesslogic.controller.log.LogController
-import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath1
-import eu.europa.ec.commonfeature.util.TestsData.mockedUriPath2
-import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
+import eu.europa.ec.resourceslogic.R
+import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.testfeature.util.StringResourceProviderMocker.mockResourceProviderStrings
+import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 class TestDashboardInteractor {
 
-    @get:Rule
-    val coroutineRule = CoroutineTestRule()
-
     @Mock
-    private lateinit var configLogic: ConfigLogic
-
-    @Mock
-    private lateinit var logController: LogController
+    private lateinit var resourceProvider: ResourceProvider
 
     private lateinit var interactor: DashboardInteractor
 
@@ -53,8 +47,7 @@ class TestDashboardInteractor {
         closeable = MockitoAnnotations.openMocks(this)
 
         interactor = DashboardInteractorImpl(
-            configLogic = configLogic,
-            logController = logController
+            resourceProvider = resourceProvider,
         )
     }
 
@@ -63,39 +56,71 @@ class TestDashboardInteractor {
         closeable.close()
     }
 
-    //region getAppVersion
+    //region getSideMenuOptions
     @Test
-    fun `Given an App Version, When getAppVersion is called, Then it returns the Apps Version`() {
-        // Given
-        val expectedAppVersion = "2024.01.1"
-        whenever(configLogic.appVersion)
-            .thenReturn(expectedAppVersion)
+    fun `When getSideMenuOptions is called, Then it returns two items with correct data`() {
+        // Arrange
+        mockStringsNeededForGetSideMenuOptions(resourceProvider)
 
         // When
-        val actualAppVersion = interactor.getAppVersion()
+        val sideMenuItems = interactor.getSideMenuOptions()
 
         // Then
-        assertEquals(expectedAppVersion, actualAppVersion)
-        verify(configLogic, times(1))
-            .appVersion
+        assertEquals(2, sideMenuItems.size)
+
+        // 1. First item: CHANGE_PIN
+        val firstItem = sideMenuItems[0]
+        assertEquals(SideMenuTypeUi.CHANGE_PIN, firstItem.type)
+        assertEquals(changePinIdString, firstItem.data.itemId)
+        val mainContent1 = firstItem.data.mainContentData as ListItemMainContentDataUi.Text
+        assertEquals(changePinText, mainContent1.text)
+        val leadingIcon1 = firstItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
+        assertEquals(AppIcons.ChangePin, leadingIcon1.iconData)
+        val trailingIcon1 = firstItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
+        assertEquals(AppIcons.KeyboardArrowRight, trailingIcon1.iconData)
+
+        // 2. Second item: SETTINGS
+        val secondItem = sideMenuItems[1]
+        assertEquals(SideMenuTypeUi.SETTINGS, secondItem.type)
+        assertEquals(settingsIdString, secondItem.data.itemId)
+        val mainContent2 = secondItem.data.mainContentData as ListItemMainContentDataUi.Text
+        assertEquals(settingsText, mainContent2.text)
+        val leadingIcon2 = secondItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
+        assertEquals(AppIcons.Settings, leadingIcon2.iconData)
+        val trailingIcon2 =
+            secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
+        assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
+
+        // Verify that getString was called exactly once per resource ID
+        verify(resourceProvider, times(1))
+            .getString(R.string.dashboard_side_menu_option_change_pin_id)
+        verify(resourceProvider, times(1))
+            .getString(R.string.dashboard_side_menu_option_change_pin)
+        verify(resourceProvider, times(1))
+            .getString(R.string.dashboard_side_menu_option_settings_id)
+        verify(resourceProvider, times(1))
+            .getString(R.string.dashboard_side_menu_option_settings)
     }
     //endregion
 
-    //region retrieveLogFileUris
-    @Test
-    fun `Given a list of logs via logController, When retrieveLogFileUris is called, Then expected logs are returned`() {
-        // Given
-        val mockedArrayList = arrayListOf(
-            Uri.parse(mockedUriPath1),
-            Uri.parse(mockedUriPath2)
+    //region Mock Calls
+    private fun mockStringsNeededForGetSideMenuOptions(resourcesProvider: ResourceProvider) {
+        mockResourceProviderStrings(
+            resourcesProvider,
+            listOf(
+                R.string.dashboard_side_menu_option_change_pin_id to changePinIdString,
+                R.string.dashboard_side_menu_option_change_pin to changePinText,
+                R.string.dashboard_side_menu_option_settings_id to settingsIdString,
+                R.string.dashboard_side_menu_option_settings to settingsText,
+            )
         )
-        whenever(logController.retrieveLogFileUris()).thenReturn(mockedArrayList)
-
-        // When
-        val expectedLogFileUris = interactor.retrieveLogFileUris()
-
-        // Then
-        assertEquals(mockedArrayList, expectedLogFileUris)
     }
+    //endregion
+
+    //region Mocked objects needed for tests.
+    private val changePinIdString = "changePinId"
+    private val changePinText = "Change PIN"
+    private val settingsIdString = "settingsId"
+    private val settingsText = "Settings"
     //endregion
 }

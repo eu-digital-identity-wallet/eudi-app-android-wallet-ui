@@ -116,6 +116,7 @@
     <string name="content_description_check_icon">Check</string>
     <string name="content_description_open_in_browser_icon">Open in browser</string>
     <string name="content_description_date_range_icon">Select filter date range</string>
+    <string name="content_description_settings_icon">Settings</string>
 
     <!-- Biometric prompt -->
     <string name="biometric_prompt_title">Biometric authentication</string>
@@ -178,7 +179,6 @@
     <string name="request_gender_female">Female</string>
     <string name="request_gender_not_known">Not known</string>
     <string name="request_gender_not_applicable">Not applicable</string>
-    <string name="request_element_identifier_not_available">Not available</string>
 
     <!-- Loading Screen -->
     <string name="loading_header_description">Please wait…</string>
@@ -191,6 +191,7 @@
     <string name="dashboard_document_deferred_pending">Pending</string>
     <string name="dashboard_document_deferred_failed">Issuance failed</string>
     <string name="dashboard_document_revoked">Revoked</string>
+    <string name="dashboard_document_credentials_info_text">%d/%d</string>
 
     <string name="dashboard_bottom_sheet_bluetooth_title">Enable bluetooth?</string>
     <string name="dashboard_bottom_sheet_bluetooth_subtitle">Enable bluetooth to share your information using the Authenticate in person or online option</string>
@@ -208,16 +209,22 @@
     <string name="dashboard_bottom_sheet_revoked_document_dialog_title">Revoked documents</string>
     <string name="dashboard_bottom_sheet_revoked_document_dialog_subtitle">The following documents have been revoked.</string>
 
-    <string name="dashboard_intent_chooser_logs_share_title">Share logs</string>
-
     <!-- Dashboard Side Menu -->
     <string name="dashboard_side_menu_title">My EU Wallet</string>
-    <string name="dashboard_side_menu_change_pin">Change PIN</string>
-    <string name="dashboard_side_menu_change_pin_id">changePinId</string>
-    <string name="dashboard_side_menu_retrieve_logs">Retrieve logs</string>
-    <string name="dashboard_side_menu_retrieve_logs_id">retrieveLogsId</string>
-    <string name="dashboard_side_menu_changelog">Changelog</string>
-    <string name="dashboard_side_menu_changelog_id">changelogId</string>
+    <string name="dashboard_side_menu_option_change_pin">Change PIN</string>
+    <string name="dashboard_side_menu_option_change_pin_id">changePinId</string>
+    <string name="dashboard_side_menu_option_settings">Settings</string>
+    <string name="dashboard_side_menu_option_settings_id">settingsId</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_screen_title">Settings</string>
+    <string name="settings_screen_option_show_batch_issuance_counter">Batch issuance counter</string>
+    <string name="settings_screen_option_show_batch_issuance_counter_id">batchIssuanceCounterId</string>
+    <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
+    <string name="settings_screen_option_retrieve_logs_id">retrieveLogsId</string>
+    <string name="settings_screen_option_changelog">Changelog</string>
+    <string name="settings_screen_option_changelog_id">changelogId</string>
+    <string name="settings_intent_chooser_logs_share_title">Share logs</string>
 
     <!-- Home Screen -->
     <string name="home_screen_title">Home</string>
@@ -312,7 +319,7 @@
     <string name="document_sign_title">Sign Document</string>
     <string name="document_sign_subtitle">Select a document from your device to sign electronically.</string>
     <string name="document_sign_select_document">Select document</string>
-    <string name="document_sign_select_document_button_id">signDocumentButtonId</string>
+    <string name="document_sign_select_document_button_id">documentSignButtonId</string>
 
     <!-- Qr Scan -->
     <string name="qr_scan_permission_not_granted">Camera permission not provided\nOpen App Settings</string>
@@ -322,7 +329,6 @@
 
     <!-- Document Details -->
     <string name="document_details_revoked_document_message">This document has been revoked by the issuer. Contact the issuing service for more information.</string>
-    <string name="document_details_portrait_readable_identifier">Shown above</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
 
@@ -331,6 +337,10 @@
     <string name="document_details_bottom_sheet_delete_primary_button_text">@string/generic_bottom_sheet_delete_primary_button_text</string>
     <string name="document_details_bottom_sheet_delete_secondary_button_text">@string/generic_bottom_sheet_delete_secondary_button_text</string>
 
+    <string name="document_details_document_credentials_info_text">%d/%d instances remaining</string>
+    <string name="document_details_document_credentials_info_more_info_text">More info</string>
+    <string name="document_details_document_credentials_info_expanded_text_subtitle">For security reasons, this document can be shared a limited number of times before it needs to be re-issued by the issuing authority.</string>
+    <string name="document_details_document_credentials_info_expanded_button_hide_text">Hide</string>
     <string name="document_details_main_section_text">DOCUMENT DETAILS</string>
     <string name="document_details_issuer_section_text">ISSUER</string>
     <string name="document_details_secondary_button_text">Delete document</string>

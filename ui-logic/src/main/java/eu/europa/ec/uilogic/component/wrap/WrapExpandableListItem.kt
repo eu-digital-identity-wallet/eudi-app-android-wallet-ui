@@ -32,36 +32,36 @@ import androidx.compose.ui.unit.dp
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ClickableArea
-import eu.europa.ec.uilogic.component.ListItemData
-import eu.europa.ec.uilogic.component.ListItemMainContentData
-import eu.europa.ec.uilogic.component.ListItemTrailingContentData
+import eu.europa.ec.uilogic.component.ListItemDataUi
+import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
+import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 
-sealed class ExpandableListItem {
-    abstract val header: ListItemData
+sealed class ExpandableListItemUi {
+    abstract val header: ListItemDataUi
 
-    data class SingleListItemData(
-        override val header: ListItemData,
-    ) : ExpandableListItem()
+    data class SingleListItem(
+        override val header: ListItemDataUi,
+    ) : ExpandableListItemUi()
 
-    data class NestedListItemData(
-        override val header: ListItemData,
-        val nestedItems: List<ExpandableListItem>,
+    data class NestedListItem(
+        override val header: ListItemDataUi,
+        val nestedItems: List<ExpandableListItemUi>,
         val isExpanded: Boolean,
-    ) : ExpandableListItem()
+    ) : ExpandableListItemUi()
 }
 
 @Composable
 fun WrapExpandableListItem(
     modifier: Modifier = Modifier,
-    header: ListItemData,
-    data: List<ExpandableListItem>,
-    onItemClick: ((item: ListItemData) -> Unit)?,
+    header: ListItemDataUi,
+    data: List<ExpandableListItemUi>,
+    onItemClick: ((item: ListItemDataUi) -> Unit)?,
     hideSensitiveContent: Boolean = false,
     isExpanded: Boolean,
-    onExpandedChange: ((item: ListItemData) -> Unit)?,
+    onExpandedChange: ((item: ListItemDataUi) -> Unit)?,
     throttleClicks: Boolean = true,
     collapsedMainContentVerticalPadding: Dp? = null,
     collapsedClickableAreas: List<ClickableArea>? = null,
@@ -98,7 +98,7 @@ fun WrapExpandableListItem(
         cardExpandedContent = {
             data.forEachIndexed { index, listItem ->
                 when (listItem) {
-                    is ExpandableListItem.SingleListItemData -> {
+                    is ExpandableListItemUi.SingleListItem -> {
                         WrapListItem(
                             modifier = Modifier.fillMaxWidth(),
                             item = listItem.header,
@@ -112,7 +112,7 @@ fun WrapExpandableListItem(
                         )
                     }
 
-                    is ExpandableListItem.NestedListItemData -> {
+                    is ExpandableListItemUi.NestedListItem -> {
                         WrapExpandableListItem(
                             modifier = Modifier.fillMaxWidth(),
                             header = listItem.header,
@@ -144,29 +144,29 @@ fun WrapExpandableListItem(
 @Composable
 private fun WrapExpandableListItemPreview() {
     PreviewTheme {
-        val data = ExpandableListItem.NestedListItemData(
-            header = ListItemData(
+        val data = ExpandableListItemUi.NestedListItem(
+            header = ListItemDataUi(
                 itemId = "0",
-                mainContentData = ListItemMainContentData.Text(text = "Digital ID"),
+                mainContentData = ListItemMainContentDataUi.Text(text = "Digital ID"),
                 supportingText = stringResource(R.string.request_collapsed_supporting_text),
-                trailingContentData = ListItemTrailingContentData.Icon(
+                trailingContentData = ListItemTrailingContentDataUi.Icon(
                     iconData = AppIcons.KeyboardArrowDown
                 ),
             ),
             isExpanded = true,
             nestedItems = listOf(
-                ExpandableListItem.SingleListItemData(
-                    ListItemData(
+                ExpandableListItemUi.SingleListItem(
+                    ListItemDataUi(
                         itemId = "1",
                         overlineText = "Family name",
-                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
                     )
                 ),
-                ExpandableListItem.SingleListItemData(
-                    ListItemData(
+                ExpandableListItemUi.SingleListItem(
+                    ListItemDataUi(
                         itemId = "1",
                         overlineText = "Given Name",
-                        mainContentData = ListItemMainContentData.Text(text = "Doe"),
+                        mainContentData = ListItemMainContentDataUi.Text(text = "Doe"),
                     )
                 ),
             )

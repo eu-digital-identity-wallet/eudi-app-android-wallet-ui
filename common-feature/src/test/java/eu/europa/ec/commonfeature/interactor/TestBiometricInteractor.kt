@@ -20,7 +20,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthe
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
-import eu.europa.ec.testfeature.mockedNotifyOnAuthenticationFailure
+import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.base.getMockedContext
 import eu.europa.ec.testlogic.extension.runFlowTest

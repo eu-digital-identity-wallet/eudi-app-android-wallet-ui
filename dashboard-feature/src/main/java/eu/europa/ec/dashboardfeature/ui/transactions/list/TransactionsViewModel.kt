@@ -21,21 +21,21 @@ import eu.europa.ec.businesslogic.util.localDateToUtcMillis
 import eu.europa.ec.businesslogic.util.toLocalDateTime
 import eu.europa.ec.businesslogic.util.utcMillisToLocalDate
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import eu.europa.ec.corelogic.model.TransactionCategory
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorFilterPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionInteractorGetTransactionsPartialState
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
-import eu.europa.ec.dashboardfeature.model.FilterDateRangeSelectionData
-import eu.europa.ec.dashboardfeature.model.TransactionFilterIds
-import eu.europa.ec.dashboardfeature.model.TransactionUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.FilterDateRangeSelectionUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionCategoryUi
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionFilterIds
+import eu.europa.ec.dashboardfeature.ui.transactions.list.model.TransactionUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.uilogic.component.DatePickerDialogConfig
 import eu.europa.ec.uilogic.component.DatePickerDialogType
 import eu.europa.ec.uilogic.component.DualSelectorButton
-import eu.europa.ec.uilogic.component.DualSelectorButtonData
+import eu.europa.ec.uilogic.component.DualSelectorButtonDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
-import eu.europa.ec.uilogic.component.wrap.ExpandableListItem
+import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.mvi.MviViewModel
 import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
@@ -60,20 +60,20 @@ data class State(
         filters = emptyList()
     ),
 
-    val transactionsUi: List<Pair<TransactionCategory, List<TransactionUi>>> = emptyList(),
-    val filtersUi: List<ExpandableListItem.NestedListItemData> = emptyList(),
+    val transactionsUi: List<Pair<TransactionCategoryUi, List<TransactionUi>>> = emptyList(),
+    val filtersUi: List<ExpandableListItemUi.NestedListItem> = emptyList(),
     val shouldRevertFilterChanges: Boolean = true,
-    val sortOrder: DualSelectorButtonData,
+    val sortOrder: DualSelectorButtonDataUi,
     val isDatePickerDialogVisible: Boolean = false,
     val datePickerDialogConfig: DatePickerDialogConfig = DatePickerDialogConfig(
         type = DatePickerDialogType.SelectStartDate
     ),
     // persisted selected date range applied for filtering
-    val filterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
+    val filterDateRangeSelectionUi: FilterDateRangeSelectionUi = FilterDateRangeSelectionUi(),
     // temporary date range data while filter bottom sheet is open to collect date picker dialog selections
-    val snapshotFilterDateRangeSelectionData: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
+    val snapshotFilterDateRangeSelectionUi: FilterDateRangeSelectionUi = FilterDateRangeSelectionUi(),
     // defines the overall date picker boundaries based on the fetched documents.
-    val datePickerLimits: FilterDateRangeSelectionData = FilterDateRangeSelectionData(),
+    val datePickerLimits: FilterDateRangeSelectionUi = FilterDateRangeSelectionUi(),
 ) : ViewState
 
 sealed class Event : ViewEvent {
@@ -121,7 +121,7 @@ sealed class Effect : ViewSideEffect {
 }
 
 sealed class TransactionsBottomSheetContent {
-    data class Filters(val filters: List<ExpandableListItem.SingleListItemData>) :
+    data class Filters(val filters: List<ExpandableListItemUi.SingleListItem>) :
         TransactionsBottomSheetContent()
 }
 
@@ -133,7 +133,7 @@ class TransactionsViewModel(
     override fun setInitialState(): State {
         return State(
             isLoading = true,
-            sortOrder = DualSelectorButtonData(
+            sortOrder = DualSelectorButtonDataUi(
                 first = resourceProvider.getString(R.string.transactions_screen_filters_descending),
                 second = resourceProvider.getString(R.string.transactions_screen_filters_ascending),
                 selectedButton = DualSelectorButton.FIRST,
@@ -204,7 +204,7 @@ class TransactionsViewModel(
                     Safely handles nullable dates using listOfNotNull(...).minOrNull() and maxOrNull().
                 */
                 val viewStateValue = viewState.value
-                val snapshotData = viewStateValue.snapshotFilterDateRangeSelectionData
+                val snapshotData = viewStateValue.snapshotFilterDateRangeSelectionUi
                 val limits = viewStateValue.datePickerLimits
 
                 val startLowerLimit = limits.startDate
@@ -251,7 +251,7 @@ class TransactionsViewModel(
 
             is Event.OnStartDateSelected -> {
                 val datePickerSelectionData =
-                    viewState.value.snapshotFilterDateRangeSelectionData.copy(
+                    viewState.value.snapshotFilterDateRangeSelectionUi.copy(
                         startDate = utcMillisToLocalDate(
                             utcMillis = event.selectedDateUtcMillis
                         )
@@ -259,7 +259,7 @@ class TransactionsViewModel(
 
                 setState {
                     copy(
-                        snapshotFilterDateRangeSelectionData = datePickerSelectionData
+                        snapshotFilterDateRangeSelectionUi = datePickerSelectionData
                     )
                 }
 
@@ -271,7 +271,7 @@ class TransactionsViewModel(
 
             is Event.OnEndDateSelected -> {
                 val datePickerSelectionData =
-                    viewState.value.snapshotFilterDateRangeSelectionData.copy(
+                    viewState.value.snapshotFilterDateRangeSelectionUi.copy(
                         endDate = utcMillisToLocalDate(
                             utcMillis = event.selectedDateUtcMillis
                         )
@@ -279,7 +279,7 @@ class TransactionsViewModel(
 
                 setState {
                     copy(
-                        snapshotFilterDateRangeSelectionData = datePickerSelectionData
+                        snapshotFilterDateRangeSelectionUi = datePickerSelectionData
                     )
                 }
 
@@ -302,11 +302,11 @@ class TransactionsViewModel(
         setState {
             copy(
                 shouldRevertFilterChanges = false,
-                filterDateRangeSelectionData = filterDateRangeSelectionData.copy(
-                    startDate = snapshotFilterDateRangeSelectionData.startDate,
-                    endDate = snapshotFilterDateRangeSelectionData.endDate
+                filterDateRangeSelectionUi = filterDateRangeSelectionUi.copy(
+                    startDate = snapshotFilterDateRangeSelectionUi.startDate,
+                    endDate = snapshotFilterDateRangeSelectionUi.endDate
                 ),
-                snapshotFilterDateRangeSelectionData = FilterDateRangeSelectionData()
+                snapshotFilterDateRangeSelectionUi = FilterDateRangeSelectionUi()
                 // reset snapshot to default date range (with null long values)
             )
         }
@@ -343,7 +343,7 @@ class TransactionsViewModel(
             setState {
                 copy(
                     shouldRevertFilterChanges = true,
-                    snapshotFilterDateRangeSelectionData = FilterDateRangeSelectionData()
+                    snapshotFilterDateRangeSelectionUi = FilterDateRangeSelectionUi()
                 )
             }
         }
@@ -356,8 +356,8 @@ class TransactionsViewModel(
     private fun resetFilters() {
         setState {
             copy(
-                filterDateRangeSelectionData = datePickerLimits,
-                snapshotFilterDateRangeSelectionData = FilterDateRangeSelectionData()
+                filterDateRangeSelectionUi = datePickerLimits,
+                snapshotFilterDateRangeSelectionUi = FilterDateRangeSelectionUi()
             )
         }
         interactor.resetFilters()
@@ -379,10 +379,10 @@ class TransactionsViewModel(
         setState {
             copy(
                 sheetContent = sheetContent,
-                snapshotFilterDateRangeSelectionData = if (filterDateRangeSelectionData.isEmpty) {
+                snapshotFilterDateRangeSelectionUi = if (filterDateRangeSelectionUi.isEmpty) {
                     datePickerLimits
                 } else {
-                    filterDateRangeSelectionData
+                    filterDateRangeSelectionUi
                 }
             )
         }
@@ -445,7 +445,7 @@ class TransactionsViewModel(
                         interactor.applyFilters()
 
                         val oldDatePickerAllowedLimits = viewState.value.datePickerLimits
-                        val newDatePickerAllowedLimits = FilterDateRangeSelectionData(
+                        val newDatePickerAllowedLimits = FilterDateRangeSelectionUi(
                             startDate = response.availableDates?.first,
                             endDate = response.availableDates?.second
                         )
@@ -457,9 +457,9 @@ class TransactionsViewModel(
                                 error = null,
                                 isFromOnPause = false,
                                 datePickerLimits = newDatePickerAllowedLimits,
-                                filterDateRangeSelectionData = resolveUpdatedFilterDateRange(
+                                filterDateRangeSelectionUi = resolveUpdatedFilterDateRange(
                                     hasNewLimits = hasNewLimits,
-                                    currentFilterDateRangeSelectionData = filterDateRangeSelectionData,
+                                    currentFilterDateRangeSelectionUi = filterDateRangeSelectionUi,
                                     oldLimits = oldDatePickerAllowedLimits,
                                     newLimits = newDatePickerAllowedLimits
                                 )
@@ -488,16 +488,16 @@ class TransactionsViewModel(
 
     private fun resolveUpdatedFilterDateRange(
         hasNewLimits: Boolean,
-        currentFilterDateRangeSelectionData: FilterDateRangeSelectionData,
-        oldLimits: FilterDateRangeSelectionData,
-        newLimits: FilterDateRangeSelectionData
-    ): FilterDateRangeSelectionData {
+        currentFilterDateRangeSelectionUi: FilterDateRangeSelectionUi,
+        oldLimits: FilterDateRangeSelectionUi,
+        newLimits: FilterDateRangeSelectionUi
+    ): FilterDateRangeSelectionUi {
         return when {
-            hasNewLimits && currentFilterDateRangeSelectionData.isEmpty -> newLimits
-            hasNewLimits && currentFilterDateRangeSelectionData == oldLimits -> newLimits
-            hasNewLimits -> currentFilterDateRangeSelectionData
-            !currentFilterDateRangeSelectionData.isEmpty -> currentFilterDateRangeSelectionData
-            else -> FilterDateRangeSelectionData(startDate = null, endDate = null)
+            hasNewLimits && currentFilterDateRangeSelectionUi.isEmpty -> newLimits
+            hasNewLimits && currentFilterDateRangeSelectionUi == oldLimits -> newLimits
+            hasNewLimits -> currentFilterDateRangeSelectionUi
+            !currentFilterDateRangeSelectionUi.isEmpty -> currentFilterDateRangeSelectionUi
+            else -> FilterDateRangeSelectionUi(startDate = null, endDate = null)
         }
     }
 
@@ -507,8 +507,8 @@ class TransactionsViewModel(
                 when (result) {
                     is TransactionInteractorFilterPartialState.FilterApplyResult -> {
                         val isDefaultFilterDateRangeSelected = with(viewState.value) {
-                            (!datePickerLimits.isEmpty && filterDateRangeSelectionData == datePickerLimits)
-                                    || (datePickerLimits.isEmpty && filterDateRangeSelectionData.isEmpty)
+                            (!datePickerLimits.isEmpty && filterDateRangeSelectionUi == datePickerLimits)
+                                    || (datePickerLimits.isEmpty && filterDateRangeSelectionUi.isEmpty)
                         }
                         setState {
                             copy(
