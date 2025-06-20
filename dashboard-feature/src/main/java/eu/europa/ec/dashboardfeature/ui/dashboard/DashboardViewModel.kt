@@ -46,7 +46,6 @@ import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
-import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
@@ -200,7 +199,7 @@ class DashboardViewModel(
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.DocumentDetails,
+                    screen = DashboardScreens.DocumentDetails,
                     arguments = generateComposableArguments(
                         mapOf(
                             "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,

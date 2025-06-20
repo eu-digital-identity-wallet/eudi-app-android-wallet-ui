@@ -34,7 +34,7 @@ import eu.europa.ec.commonfeature.ui.qr_scan.QrScanScreen
 import eu.europa.ec.commonfeature.ui.success.SuccessScreen
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
@@ -58,7 +58,7 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
         ) {
             BiometricScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(BiometricUiConfig.serializedKeyName).orEmpty()
@@ -84,7 +84,7 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
         ) {
             SuccessScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(SuccessUIConfig.serializedKeyName).orEmpty()
@@ -109,7 +109,7 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
         ) {
             PinScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             PinFlow.valueOf(
@@ -137,7 +137,7 @@ fun NavGraphBuilder.featureCommonGraph(navController: NavController) {
         ) {
             QrScanScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(QrScanUiConfig.serializedKeyName).orEmpty()

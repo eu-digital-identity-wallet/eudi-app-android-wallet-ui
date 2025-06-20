@@ -18,17 +18,22 @@ package eu.europa.ec.dashboardfeature.di
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
+import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentSignInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractor
 import eu.europa.ec.dashboardfeature.interactor.HomeInteractorImpl
+import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractor
+import eu.europa.ec.dashboardfeature.interactor.TransactionDetailsInteractorImpl
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -89,3 +94,27 @@ fun provideDocumentSignInteractor(
 ): DocumentSignInteractor = DocumentSignInteractorImpl(
     resourceProvider,
 )
+
+@Factory
+fun provideDocumentDetailsInteractor(
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    resourceProvider: ResourceProvider,
+    uuidProvider: UuidProvider
+): DocumentDetailsInteractor =
+    DocumentDetailsInteractorImpl(
+        walletCoreDocumentsController,
+        resourceProvider,
+        uuidProvider
+    )
+
+@Factory
+fun provideTransactionDetailsInteractor(
+    walletCoreDocumentsController: WalletCoreDocumentsController,
+    resourceProvider: ResourceProvider,
+    uuidProvider: UuidProvider
+): TransactionDetailsInteractor =
+    TransactionDetailsInteractorImpl(
+        walletCoreDocumentsController,
+        resourceProvider,
+        uuidProvider
+    )

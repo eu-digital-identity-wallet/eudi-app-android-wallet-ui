@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.ALPHA_DISABLED
 import eu.europa.ec.uilogic.component.utils.SIZE_100
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 
@@ -84,13 +85,25 @@ private fun WrapPrimaryButton(
     buttonConfig: ButtonConfig,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val colors = if (buttonConfig.isWarning) {
-        ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.error
-        )
+    val (containerColor, contentColor) = if (buttonConfig.isWarning) {
+        MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.onError
     } else {
-        buttonConfig.buttonColors ?: ButtonDefaults.buttonColors()
+        MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.onPrimary
     }
+
+    val disabledContentColor = contentColor.copy(
+        alpha = ALPHA_DISABLED
+    )
+    val disabledContainerColor = containerColor.copy(
+        alpha = ALPHA_DISABLED
+    )
+
+    val colors = buttonConfig.buttonColors ?: ButtonDefaults.buttonColors(
+        containerColor = containerColor,
+        disabledContainerColor = disabledContainerColor,
+        contentColor = contentColor,
+        disabledContentColor = disabledContentColor,
+    )
 
     Button(
         modifier = modifier,
@@ -109,25 +122,23 @@ private fun WrapSecondaryButton(
     buttonConfig: ButtonConfig,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val borderColor = if (!buttonConfig.enabled) {
-        MaterialTheme.colorScheme.onSurface.copy(
-            alpha = 0.12f
-        )
+    val (contentColor, borderColor) = if (buttonConfig.isWarning) {
+        MaterialTheme.colorScheme.error to MaterialTheme.colorScheme.error
     } else {
-        if (buttonConfig.isWarning) {
-            MaterialTheme.colorScheme.error
-        } else {
-            MaterialTheme.colorScheme.primary
-        }
+        MaterialTheme.colorScheme.primary to MaterialTheme.colorScheme.primary
     }
 
-    val colors = if (buttonConfig.isWarning) {
-        ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.error
-        )
-    } else {
-        buttonConfig.buttonColors ?: ButtonDefaults.outlinedButtonColors()
-    }
+    val disabledContentColor = contentColor.copy(
+        alpha = ALPHA_DISABLED
+    )
+    val disabledBorderColor = borderColor.copy(
+        alpha = ALPHA_DISABLED
+    )
+
+    val colors = buttonConfig.buttonColors ?: ButtonDefaults.outlinedButtonColors(
+        contentColor = contentColor,
+        disabledContentColor = disabledContentColor,
+    )
 
     OutlinedButton(
         modifier = modifier,
@@ -137,7 +148,11 @@ private fun WrapSecondaryButton(
         colors = colors,
         border = BorderStroke(
             width = 1.dp,
-            color = borderColor,
+            color = if (buttonConfig.enabled) {
+                borderColor
+            } else {
+                disabledBorderColor
+            },
         ),
         contentPadding = buttonConfig.contentPadding,
         content = content

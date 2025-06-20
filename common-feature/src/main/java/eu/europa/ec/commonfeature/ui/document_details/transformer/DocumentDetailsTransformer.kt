@@ -16,8 +16,9 @@
 
 package eu.europa.ec.commonfeature.ui.document_details.transformer
 
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.util.formatInstant
-import eu.europa.ec.commonfeature.extensions.toExpandableListItems
+import eu.europa.ec.commonfeature.extension.toExpandableListItems
 import eu.europa.ec.commonfeature.model.DocumentDetailsUi
 import eu.europa.ec.commonfeature.model.DocumentUiIssuanceState
 import eu.europa.ec.commonfeature.ui.document_details.domain.DocumentDetailsDomain
@@ -32,7 +33,8 @@ object DocumentDetailsTransformer {
 
     fun transformToDocumentDetailsDomain(
         document: IssuedDocument,
-        resourceProvider: ResourceProvider
+        resourceProvider: ResourceProvider,
+        uuidProvider: UuidProvider
     ): Result<DocumentDetailsDomain> = runCatching {
         val claimsPaths = document.data.claims.flatMap { claim ->
             claim.toClaimPaths()
@@ -41,8 +43,8 @@ object DocumentDetailsTransformer {
         val domainClaims = transformPathsToDomainClaims(
             paths = claimsPaths,
             claims = document.data.claims,
-            metadata = document.metadata,
             resourceProvider = resourceProvider,
+            uuidProvider = uuidProvider
         )
 
         val docHasExpired = documentHasExpired(document.validUntil)

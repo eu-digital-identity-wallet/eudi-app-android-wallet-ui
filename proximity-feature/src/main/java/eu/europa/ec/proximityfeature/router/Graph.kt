@@ -31,7 +31,6 @@ import eu.europa.ec.proximityfeature.ui.qr.ProximityQRScreen
 import eu.europa.ec.proximityfeature.ui.success.ProximitySuccessScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.ProximityScreens
-import org.koin.androidx.compose.getViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -57,7 +56,7 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
         ) {
             ProximityQRScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(RequestUriConfig.serializedKeyName).orEmpty()
@@ -84,7 +83,7 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
         ) {
             ProximityRequestScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(RequestUriConfig.serializedKeyName).orEmpty()

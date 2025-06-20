@@ -16,23 +16,28 @@
 
 package eu.europa.ec.corelogic.model
 
+import eu.europa.ec.corelogic.extension.getLocalizedDocumentName
 import eu.europa.ec.eudi.wallet.transactionLogging.TransactionLog
 import eu.europa.ec.eudi.wallet.transactionLogging.presentation.PresentedDocument
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
-import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.Locale
 
 sealed interface TransactionLogData {
 
     val id: String
     val name: String
     val status: TransactionLog.Status
-    val creationDate: Instant
+    val creationLocalDateTime: LocalDateTime
+    val creationLocalDate: LocalDate
 
     data class PresentationLog(
         override val id: String,
         override val name: String,
         override val status: TransactionLog.Status,
-        override val creationDate: Instant,
+        override val creationLocalDateTime: LocalDateTime,
+        override val creationLocalDate: LocalDate,
         val relyingParty: TransactionLog.RelyingParty,
         val documents: List<PresentedDocument>,
     ) : TransactionLogData
@@ -41,14 +46,16 @@ sealed interface TransactionLogData {
         override val id: String,
         override val name: String,
         override val status: TransactionLog.Status,
-        override val creationDate: Instant,
+        override val creationLocalDateTime: LocalDateTime,
+        override val creationLocalDate: LocalDate,
     ) : TransactionLogData
 
     data class SigningLog(
         override val id: String,
         override val name: String,
         override val status: TransactionLog.Status,
-        override val creationDate: Instant,
+        override val creationLocalDateTime: LocalDateTime,
+        override val creationLocalDate: LocalDate,
     ) : TransactionLogData
 
     companion object {
@@ -57,6 +64,34 @@ sealed interface TransactionLogData {
                 is PresentationLog -> resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.transactions_screen_filters_filter_by_transaction_type_presentation)
                 is IssuanceLog -> resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.transactions_screen_filters_filter_by_transaction_type_issuance)
                 is SigningLog -> resourceProvider.getString(eu.europa.ec.resourceslogic.R.string.transactions_screen_filters_filter_by_transaction_type_signing)
+            }
+        }
+
+        fun TransactionLogData.getTransactionDocumentNames(userLocale: Locale): List<String> {
+            return when (this) {
+                is IssuanceLog -> {
+                    //TODO change this once Core supports more transaction types
+                    emptyList()
+                }
+
+                is PresentationLog -> {
+                    this.documents.mapNotNull { document ->
+                        document.metadata.getLocalizedDocumentName(
+                            userLocale = userLocale,
+                            fallback = ""
+                        ).takeIf { it.isNotBlank() }
+                    }.flatMap { documentName ->
+                        listOf(
+                            documentName,
+                            documentName.replace(regex = "\\s".toRegex(), replacement = "")
+                        )
+                    }
+                }
+
+                is SigningLog -> {
+                    //TODO change this once Core supports more transaction types
+                    emptyList()
+                }
             }
         }
     }

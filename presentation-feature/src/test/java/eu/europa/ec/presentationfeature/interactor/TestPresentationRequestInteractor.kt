@@ -16,6 +16,7 @@
 
 package eu.europa.ec.presentationfeature.interactor
 
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
@@ -72,6 +73,9 @@ class TestPresentationRequestInteractor {
     @Mock
     private lateinit var walletCoreDocumentsController: WalletCoreDocumentsController
 
+    @Mock
+    private lateinit var uuidProvider: UuidProvider
+
     private lateinit var interactor: PresentationRequestInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -83,7 +87,8 @@ class TestPresentationRequestInteractor {
         interactor = PresentationRequestInteractorImpl(
             resourceProvider = resourceProvider,
             walletCorePresentationController = walletCorePresentationController,
-            walletCoreDocumentsController = walletCoreDocumentsController
+            walletCoreDocumentsController = walletCoreDocumentsController,
+            uuidProvider = uuidProvider
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
@@ -268,7 +273,8 @@ class TestPresentationRequestInteractor {
                             mockedValidPidWithBasicFieldsRequestDocument,
                             mockedValidMdlWithBasicFieldsRequestDocument
                         ),
-                        resourceProvider = resourceProvider
+                        resourceProvider = resourceProvider,
+                        uuidProvider = uuidProvider
                     )
 
                     val expectedResult = PresentationRequestInteractorPartialState.Success(

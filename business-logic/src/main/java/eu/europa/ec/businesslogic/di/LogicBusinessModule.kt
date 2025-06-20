@@ -29,6 +29,8 @@ import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.controller.storage.PrefKeysImpl
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
 import eu.europa.ec.businesslogic.controller.storage.PrefsControllerImpl
+import eu.europa.ec.businesslogic.provider.UuidProvider
+import eu.europa.ec.businesslogic.provider.UuidProviderImpl
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorImpl
 import eu.europa.ec.businesslogic.validator.FormValidator
@@ -62,8 +64,9 @@ fun providePrefKeys(prefsController: PrefsController): PrefKeys =
 fun provideKeystoreController(
     prefKeys: PrefKeys,
     logController: LogController,
+    uuidProvider: UuidProvider
 ): KeystoreController =
-    KeystoreControllerImpl(prefKeys, logController)
+    KeystoreControllerImpl(prefKeys, logController, uuidProvider)
 
 @Factory
 fun provideCryptoController(keystoreController: KeystoreController): CryptoController =
@@ -75,3 +78,8 @@ fun provideFormValidator(logController: LogController): FormValidator =
 
 @Factory
 fun provideFiltersValidator(): FilterValidator = FilterValidatorImpl()
+
+@Single
+fun provideUuidProvider(): UuidProvider {
+    return UuidProviderImpl()
+}

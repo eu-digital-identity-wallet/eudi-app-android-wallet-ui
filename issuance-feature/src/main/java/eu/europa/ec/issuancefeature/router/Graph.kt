@@ -28,15 +28,13 @@ import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.issuancefeature.BuildConfig
-import eu.europa.ec.issuancefeature.ui.document.add.AddDocumentScreen
-import eu.europa.ec.issuancefeature.ui.document.code.DocumentOfferCodeScreen
-import eu.europa.ec.issuancefeature.ui.document.details.DocumentDetailsScreen
-import eu.europa.ec.issuancefeature.ui.document.offer.DocumentOfferScreen
-import eu.europa.ec.issuancefeature.ui.document.success.DocumentIssuanceSuccessScreen
-import eu.europa.ec.issuancefeature.ui.transaction.details.TransactionDetailsScreen
+import eu.europa.ec.issuancefeature.ui.add.AddDocumentScreen
+import eu.europa.ec.issuancefeature.ui.code.DocumentOfferCodeScreen
+import eu.europa.ec.issuancefeature.ui.offer.DocumentOfferScreen
+import eu.europa.ec.issuancefeature.ui.success.DocumentIssuanceSuccessScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
-import org.koin.androidx.compose.getViewModel
+import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
@@ -61,66 +59,12 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             AddDocumentScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             IssuanceFlowUiConfig.fromString(
                                 it.arguments?.getString("flowType").orEmpty()
                             ),
-                        )
-                    }
-                )
-            )
-        }
-
-        // Document Details
-        composable(
-            route = IssuanceScreens.DocumentDetails.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + IssuanceScreens.DocumentDetails.screenRoute
-                }
-            ),
-            arguments = listOf(
-                navArgument("documentId") {
-                    type = NavType.StringType
-                },
-            )
-        ) {
-            DocumentDetailsScreen(
-                navController,
-                getViewModel(
-                    parameters = {
-                        parametersOf(
-                            it.arguments?.getString("documentId").orEmpty(),
-                        )
-                    }
-                )
-            )
-        }
-
-        // Transaction Details
-        composable(
-            route = IssuanceScreens.TransactionDetails.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + IssuanceScreens.TransactionDetails.screenRoute
-                }
-            ),
-            arguments = listOf(
-                navArgument("transactionId") {
-                    type = NavType.StringType
-                },
-            )
-        ) {
-            TransactionDetailsScreen(
-                navController,
-                getViewModel(
-                    parameters = {
-                        parametersOf(
-                            it.arguments?.getString("transactionId").orEmpty(),
                         )
                     }
                 )
@@ -144,7 +88,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             DocumentOfferScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(OfferUiConfig.serializedKeyName).orEmpty()
@@ -171,7 +115,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             DocumentOfferCodeScreen(
                 navController = navController,
-                viewModel = getViewModel(
+                viewModel = koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(OfferCodeUiConfig.serializedKeyName).orEmpty()
@@ -198,7 +142,7 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             DocumentIssuanceSuccessScreen(
                 navController,
-                getViewModel(
+                koinViewModel(
                     parameters = {
                         parametersOf(
                             it.arguments?.getString(IssuanceSuccessUiConfig.serializedKeyName)
