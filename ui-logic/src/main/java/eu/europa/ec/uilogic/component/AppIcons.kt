@@ -39,8 +39,8 @@ import eu.europa.ec.resourceslogic.R
  */
 @Stable
 data class IconDataUi(
-    @DrawableRes val resourceId: Int?,
-    @StringRes val contentDescriptionId: Int,
+    @param:DrawableRes val resourceId: Int?,
+    @param:StringRes val contentDescriptionId: Int,
     val imageVector: ImageVector? = null,
 ) {
     init {

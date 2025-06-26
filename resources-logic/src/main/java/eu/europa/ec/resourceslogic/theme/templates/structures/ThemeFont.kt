@@ -22,7 +22,7 @@ import eu.europa.ec.resourceslogic.theme.templates.structures.ThemeFontStyle.Com
 import eu.europa.ec.resourceslogic.theme.templates.structures.ThemeFontWeight.Companion.toFontWeight
 
 data class ThemeFont(
-    @FontRes val res: Int,
+    @param:FontRes val res: Int,
     val weight: ThemeFontWeight,
     val style: ThemeFontStyle
 ) {

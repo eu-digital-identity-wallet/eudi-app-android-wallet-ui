@@ -39,7 +39,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 sealed class BottomNavigationItem(
     val route: String,
-    @StringRes val titleRes: Int,
+    @param:StringRes val titleRes: Int,
     val icon: IconDataUi,
 ) {
     data object Home : BottomNavigationItem(
