@@ -83,19 +83,19 @@ class KeystoreControllerImpl(
         val builder = KeyGenParameterSpec.Builder(
             alias,
             KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-        )
-            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-            .setUserAuthenticationRequired(true)
-            .setInvalidatedByBiometricEnrollment(true)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            builder.setUserAuthenticationParameters(
-                0,
-                KeyProperties.AUTH_DEVICE_CREDENTIAL or KeyProperties.AUTH_BIOMETRIC_STRONG
-            )
-        } else {
-            builder.setUserAuthenticationValidityDurationSeconds(-1)
+        ).apply {
+            setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            setUserAuthenticationRequired(true)
+            setInvalidatedByBiometricEnrollment(true)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                setUserAuthenticationParameters(
+                    0,
+                    KeyProperties.AUTH_DEVICE_CREDENTIAL or KeyProperties.AUTH_BIOMETRIC_STRONG
+                )
+            } else {
+                setUserAuthenticationValidityDurationSeconds(-1)
+            }
         }
 
         keyGenerator.init(
