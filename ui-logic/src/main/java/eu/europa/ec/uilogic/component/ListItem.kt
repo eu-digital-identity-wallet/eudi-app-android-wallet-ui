@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.component
 
+import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
@@ -38,6 +38,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.skydoves.cloudy.cloudy
 import eu.europa.ec.uilogic.component.ClickableArea.ENTIRE_ROW
 import eu.europa.ec.uilogic.component.ClickableArea.TRAILING_CONTENT
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
@@ -229,12 +230,12 @@ fun ListItem(
         color = MaterialTheme.colorScheme.onSurface
     )
 
-    val blurModifier = remember(hideSensitiveContent) {
-        if (hideSensitiveContent) {
-            Modifier.blur(10.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
-        } else {
-            Modifier
-        }
+    val blurModifier = if (hideSensitiveContent && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        Modifier.blur(10.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+    } else if (hideSensitiveContent) {
+        Modifier.cloudy(radius = 20)
+    } else {
+        Modifier
     }
 
     // Determines the appropriate click handling for a list item's row based on its trailing content.

@@ -51,6 +51,8 @@ internal fun Project.configureAndroidCompose(
 
             add("implementation", libs.findLibrary("accompanist-permissions").get())
 
+            add("implementation", libs.findLibrary("compose-cloudy").get())
+
             add("implementation", libs.findLibrary("androidx.constraintlayout.compose").get())
             add("implementation", libs.findLibrary("androidx.compose.ui.tooling.preview").get())
             add("debugImplementation", libs.findLibrary("androidx.compose.ui.tooling").get())

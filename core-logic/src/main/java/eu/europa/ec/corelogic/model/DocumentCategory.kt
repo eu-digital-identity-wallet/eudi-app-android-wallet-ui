@@ -53,7 +53,7 @@ value class DocumentCategories(
  * @property order An integer representing the desired display order of the category. Categories with lower order values are displayed first.
  */
 sealed class DocumentCategory(
-    @StringRes val stringResId: Int,
+    @param:StringRes val stringResId: Int,
     val id: Int,
     val order: Int,
 ) {

@@ -37,7 +37,6 @@ import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
-import org.koin.androidx.compose.KoinAndroidContext
 import org.koin.core.annotation.KoinExperimentalAPI
 
 open class EudiComponentActivity : FragmentActivity() {
@@ -63,13 +62,11 @@ open class EudiComponentActivity : FragmentActivity() {
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.surface
             ) {
-                KoinAndroidContext {
-                    routerHost.StartFlow {
-                        builder(it)
-                    }
-                    flowStarted = true
-                    handleDeepLink(intent, coldBoot = true)
+                routerHost.StartFlow {
+                    builder(it)
                 }
+                flowStarted = true
+                handleDeepLink(intent, coldBoot = true)
             }
         }
     }

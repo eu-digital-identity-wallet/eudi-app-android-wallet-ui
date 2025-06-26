@@ -16,6 +16,8 @@
 package eu.europa.ec.resourceslogic.theme
 
 import android.app.Activity
+import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -45,6 +47,12 @@ class ThemeManager {
     lateinit var set: ThemeSet
         private set
 
+    /**
+     * Defines if dynamic theming is supported. Notice that Dynamic color is available on Android 12+.
+     */
+    @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.S)
+    val dynamicThemeSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
     @Composable
     fun Theme(
         darkTheme: Boolean = isSystemInDarkTheme(),
@@ -56,7 +64,7 @@ class ThemeManager {
         val darkColorScheme = set.darkColors
 
         val colorScheme = when {
-            !disableDynamicTheming -> {
+            !disableDynamicTheming && dynamicThemeSupported -> {
                 when {
                     darkTheme -> dynamicDarkColorScheme(LocalContext.current)
                     else -> dynamicLightColorScheme(LocalContext.current)

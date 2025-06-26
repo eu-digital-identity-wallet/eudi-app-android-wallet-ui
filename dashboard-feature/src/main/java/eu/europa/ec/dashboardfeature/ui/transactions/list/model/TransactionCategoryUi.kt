@@ -28,7 +28,7 @@ import eu.europa.ec.resourceslogic.R
 import java.time.LocalDateTime
 
 sealed class TransactionCategoryUi(
-    @StringRes val stringResId: Int,
+    @param:StringRes val stringResId: Int,
     val id: Int,
     val order: Int,
     val dateRange: ClosedRange<LocalDateTime>? = null,

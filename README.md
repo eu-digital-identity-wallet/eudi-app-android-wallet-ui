@@ -97,7 +97,7 @@ Proximity
 
 ### Minimum device requirements
 
-- API level 31.
+- API level 29 (Android 10) or higher.
 
 ### Prerequisites
 
