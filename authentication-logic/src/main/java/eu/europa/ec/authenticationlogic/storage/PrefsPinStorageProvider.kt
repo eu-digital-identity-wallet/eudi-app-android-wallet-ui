@@ -82,18 +82,15 @@ class PrefsPinStorageProvider(
             "PinIv", ""
         ).ifEmpty { return "" }
 
-        val encryptedBytes = decodeFromBase64(encryptedBase64)
-        val ivBytes = decodeFromBase64(ivBase64)
-
         val cipher = cryptoController.getCipher(
             encrypt = false,
-            ivBytes = ivBytes,
+            ivBytes = decodeFromBase64(ivBase64),
             userAuthenticationRequired = false
         )
 
         val decryptedBytes = cryptoController.encryptDecrypt(
             cipher = cipher,
-            byteArray = encryptedBytes
+            byteArray = decodeFromBase64(encryptedBase64)
         )
 
         return decryptedBytes.toString(Charsets.UTF_8)
