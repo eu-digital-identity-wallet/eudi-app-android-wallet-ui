@@ -34,7 +34,7 @@ class PrefsBiometryStorageProvider(
                 prefsController.getString("BiometricAuthentication", ""),
                 BiometricAuthentication::class.java
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
