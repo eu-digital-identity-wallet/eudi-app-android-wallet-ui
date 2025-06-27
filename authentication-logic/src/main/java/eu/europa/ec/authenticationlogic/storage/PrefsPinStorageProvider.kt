@@ -17,19 +17,85 @@
 package eu.europa.ec.authenticationlogic.storage
 
 import eu.europa.ec.authenticationlogic.provider.PinStorageProvider
+import eu.europa.ec.businesslogic.controller.crypto.CryptoController
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
+import eu.europa.ec.businesslogic.extension.decodeFromBase64
+import eu.europa.ec.businesslogic.extension.encodeToBase64String
 
 class PrefsPinStorageProvider(
-    private val prefsController: PrefsController
+    private val prefsController: PrefsController,
+    private val cryptoController: CryptoController
 ) : PinStorageProvider {
 
-    override fun retrievePin(): String {
-        return prefsController.getString("DevicePin", "")
-    }
+    /**
+     * Retrieves the stored PIN after decrypting it.
+     *
+     * @return The decrypted PIN as a String. Returns an empty string if no PIN is stored or if decryption fails.
+     */
+    override fun retrievePin(): String = decryptedAndLoad()
 
+    /**
+     * Stores the given PIN in an encrypted format.
+     * This method encrypts the provided PIN using cryptographic functions
+     * and stores the encrypted data along with its initialization vector (IV)
+     * in the preferences.
+     *
+     * @param pin The PIN to be stored.
+     */
     override fun setPin(pin: String) {
-        prefsController.setString("DevicePin", pin)
+        encryptAndStore(pin)
     }
 
+    /**
+     * Checks if the provided PIN is valid.
+     *
+     * @param pin The PIN to validate.
+     * @return True if the provided PIN matches the stored PIN, false otherwise.
+     */
     override fun isPinValid(pin: String): Boolean = retrievePin() == pin
+
+    private fun encryptAndStore(pin: String) {
+
+        val cipher = cryptoController.getCipher(
+            encrypt = true,
+            userAuthenticationRequired = false
+        )
+
+        val encryptedBytes = cryptoController.encryptDecrypt(
+            cipher = cipher,
+            byteArray = pin.toByteArray(Charsets.UTF_8)
+        )
+
+        val ivBytes = cipher?.iv ?: return
+
+        prefsController.setString("PinEnc", encryptedBytes.encodeToBase64String())
+        prefsController.setString("PinIv", ivBytes.encodeToBase64String())
+    }
+
+    private fun decryptedAndLoad(): String {
+
+        val encryptedBase64 = prefsController.getString(
+            "PinEnc", ""
+        ).ifEmpty { return "" }
+
+        val ivBase64 = prefsController.getString(
+            "PinIv", ""
+        ).ifEmpty { return "" }
+
+        val encryptedBytes = decodeFromBase64(encryptedBase64)
+        val ivBytes = decodeFromBase64(ivBase64)
+
+        val cipher = cryptoController.getCipher(
+            encrypt = false,
+            ivBytes = ivBytes,
+            userAuthenticationRequired = false
+        )
+
+        val decryptedBytes = cryptoController.encryptDecrypt(
+            cipher = cipher,
+            byteArray = encryptedBytes
+        )
+
+        return decryptedBytes.toString(Charsets.UTF_8)
+    }
 }
