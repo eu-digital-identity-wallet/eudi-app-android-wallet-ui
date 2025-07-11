@@ -140,7 +140,6 @@ fun HomeScreen(
             HomeScreenSheetContent(
                 sheetContent = state.sheetContent,
                 onEventSent = { event -> viewModel.setEvent(event) },
-                modalBottomSheetState = bottomSheetState
             )
         }
     }
@@ -300,71 +299,56 @@ private fun handleNavigationEffect(
 private fun HomeScreenSheetContent(
     sheetContent: HomeScreenBottomSheetContent,
     onEventSent: (event: Event) -> Unit,
-    modalBottomSheetState: SheetState
 ) {
     when (sheetContent) {
         is HomeScreenBottomSheetContent.Authenticate -> {
-            WrapModalBottomSheet(
-                onDismissRequest = {
-                    onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
-                },
-                sheetState = modalBottomSheetState
-            ) {
-                BottomSheetWithTwoBigIcons(
-                    textData = BottomSheetTextDataUi(
-                        title = stringResource(R.string.home_screen_authenticate),
-                        message = stringResource(R.string.home_screen_authenticate_description)
+            BottomSheetWithTwoBigIcons(
+                textData = BottomSheetTextDataUi(
+                    title = stringResource(R.string.home_screen_authenticate),
+                    message = stringResource(R.string.home_screen_authenticate_description)
+                ),
+                options = listOf(
+                    ModalOptionUi(
+                        title = stringResource(R.string.home_screen_authenticate_option_in_person),
+                        leadingIcon = AppIcons.PresentDocumentInPerson,
+                        event = Event.BottomSheet.Authenticate.OpenAuthenticateInPerson,
                     ),
-                    options = listOf(
-                        ModalOptionUi(
-                            title = stringResource(R.string.home_screen_authenticate_option_in_person),
-                            leadingIcon = AppIcons.PresentDocumentInPerson,
-                            event = Event.BottomSheet.Authenticate.OpenAuthenticateInPerson,
-                        ),
-                        ModalOptionUi(
-                            title = stringResource(R.string.home_screen_add_document_option_online),
-                            leadingIcon = AppIcons.PresentDocumentOnline,
-                            event = Event.BottomSheet.Authenticate.OpenAuthenticateOnLine,
-                        )
-                    ),
-                    onEventSent = { event ->
-                        onEventSent(event)
-                    }
-                )
-            }
+                    ModalOptionUi(
+                        title = stringResource(R.string.home_screen_add_document_option_online),
+                        leadingIcon = AppIcons.PresentDocumentOnline,
+                        event = Event.BottomSheet.Authenticate.OpenAuthenticateOnLine,
+                    )
+                ),
+                onEventSent = { event ->
+                    onEventSent(event)
+                }
+            )
         }
 
         is HomeScreenBottomSheetContent.Sign -> {
-            WrapModalBottomSheet(
-                onDismissRequest = {
-                    onEventSent(Event.BottomSheet.UpdateBottomSheetState(isOpen = false))
-                },
-                sheetState = modalBottomSheetState
-            ) {
-                BottomSheetWithTwoBigIcons(
-                    textData = BottomSheetTextDataUi(
-                        title = stringResource(R.string.home_screen_sign_document),
-                        message = stringResource(R.string.home_screen_sign_document_description)
+            BottomSheetWithTwoBigIcons(
+                textData = BottomSheetTextDataUi(
+                    title = stringResource(R.string.home_screen_sign_document),
+                    message = stringResource(R.string.home_screen_sign_document_description)
+                ),
+                options = listOf(
+                    ModalOptionUi(
+                        title = stringResource(R.string.home_screen_sign_document_option_from_device),
+                        leadingIcon = AppIcons.SignDocumentFromDevice,
+                        leadingIconTint = MaterialTheme.colorScheme.primary,
+                        event = Event.BottomSheet.SignDocument.OpenFromDevice,
                     ),
-                    options = listOf(
-                        ModalOptionUi(
-                            title = stringResource(R.string.home_screen_sign_document_option_from_device),
-                            leadingIcon = AppIcons.SignDocumentFromDevice,
-                            leadingIconTint = MaterialTheme.colorScheme.primary,
-                            event = Event.BottomSheet.SignDocument.OpenFromDevice,
-                        ),
-                        ModalOptionUi(
-                            title = stringResource(R.string.home_screen_sign_document_option_scan_qr),
-                            leadingIcon = AppIcons.SignDocumentFromQr,
-                            leadingIconTint = MaterialTheme.colorScheme.primary,
-                            event = Event.BottomSheet.SignDocument.OpenScanQR,
-                        )
-                    ),
-                    onEventSent = { event ->
-                        onEventSent(event)
-                    }
-                )
-            }
+                    ModalOptionUi(
+                        title = stringResource(R.string.home_screen_sign_document_option_scan_qr),
+                        leadingIcon = AppIcons.SignDocumentFromQr,
+                        leadingIconTint = MaterialTheme.colorScheme.primary,
+                        event = Event.BottomSheet.SignDocument.OpenScanQR,
+                    )
+                ),
+                onEventSent = { event ->
+                    onEventSent(event)
+                }
+            )
         }
 
         is HomeScreenBottomSheetContent.LearnMoreAboutAuthenticate -> {
