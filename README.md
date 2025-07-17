@@ -8,13 +8,13 @@ the [EUDI Wallet Reference Implementation project description](https://github.co
 ## Table of contents
 
 * [Overview](#overview)
-* [Disclaimer](#disclaimer)
 * [Important things to know](#important-things-to-know)
-* [How to contribute](#how-to-contribute)
-* [Demo videos](#demo-videos)
 * [How to use the application](#how-to-use-the-application)
 * [How to build - Quick start guide](#how-to-build---quick-start-guide)
 * [Application configuration](#application-configuration)
+* [Demo videos](#demo-videos)
+* [Disclaimer](#disclaimer)
+* [How to contribute](#how-to-contribute)
 * [License](#license)
 
 ## Overview
@@ -59,7 +59,7 @@ To support development and testing, one can access a test/demo service for remot
 
   - [Verifier restful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
  
-To support proximity, an Android Proximity Verifier is available as an app that can request PID and mDL with reader authentication available [here](https://install.appcenter.ms/orgs/eu-digital-identity-wallet/apps/mdoc-verifier-testing/distribution_groups/eudi%20verifier%20(testing)%20public)
+To support proximity, an Android Proximity Verifier is available as an app that can request PID and mDL with reader authentication available [here](wiki/verifier_proximity.md)
 
 The issuer, verifier service, and verifier app authentication are based on the EUDIW development [IACA](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
 
@@ -73,25 +73,6 @@ If you're planning to use this application in production, we recommend reviewing
 - Ensure the application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
     - [OWASP MASVS](https://mas.owasp.org/MASVS/)
     - [Play Integrity API](https://developer.android.com/google/play/integrity)
-
-## How to contribute
-
-We welcome contributions to this project. To ensure that the process is smooth for everyone
-involved, follow the guidelines found in [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Demo videos
-
-Issuance
-
-[Issuance](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/60732c14-653a-46d5-a87a-8973f8823d0f)
-
-Presentation
-
-[Presentation](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/21050222-2c07-4bcd-983b-4f6d4cf20248)
-
-Proximity
-
-[Proximity](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/c92f1818-e64c-463d-98c5-4f9f87c61760)
 
 ## How to use the application
 
@@ -171,20 +152,6 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 
 You can find instructions on how to configure the application [here](wiki/configuration.md)
 
-## Disclaimer
-
-The released software is an initial development release version: 
--  The initial development release is an early endeavor reflecting the efforts of a short time-boxed period, and by no means can be considered as the final product.  
--  The initial development release may be changed substantially over time and might introduce new features but also may change or remove existing ones, potentially breaking compatibility with your existing code.
--  The initial development release is limited in functional scope.
--  The initial development release may contain errors or design flaws and other problems that could cause system or other failures and data loss.
--  The initial development release has reduced security, privacy, availability, and reliability standards relative to future releases. This could make the software slower, less reliable, or more vulnerable to attacks than mature software.
--  The initial development release is not yet comprehensively documented. 
--  Users of the software must perform sufficient engineering and additional testing to properly evaluate their application and determine whether any of the open-sourced components are suitable for use in that application.
--  We strongly recommend not putting this version of the software into production use.
--  Only the latest version of the software will be supported
--  This project is tested with BrowserStack.
-
 ## Package structure
 
 *assembly-logic*: App dependencies.
@@ -261,6 +228,38 @@ graph TD;
   business-logic --> authentication-logic
 ```
 
+## Demo videos
+
+Issuance
+
+[Issuance](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/60732c14-653a-46d5-a87a-8973f8823d0f)
+
+Presentation
+
+[Presentation](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/21050222-2c07-4bcd-983b-4f6d4cf20248)
+
+Proximity
+
+[Proximity](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/c92f1818-e64c-463d-98c5-4f9f87c61760)
+
+## Disclaimer
+
+The released software is an initial development release version: 
+-  The initial development release is an early endeavor reflecting the efforts of a short time-boxed period, and by no means can be considered as the final product.  
+-  The initial development release may be changed substantially over time and might introduce new features but also may change or remove existing ones, potentially breaking compatibility with your existing code.
+-  The initial development release is limited in functional scope.
+-  The initial development release may contain errors or design flaws and other problems that could cause system or other failures and data loss.
+-  The initial development release has reduced security, privacy, availability, and reliability standards relative to future releases. This could make the software slower, less reliable, or more vulnerable to attacks than mature software.
+-  The initial development release is not yet comprehensively documented. 
+-  Users of the software must perform sufficient engineering and additional testing to properly evaluate their application and determine whether any of the open-sourced components are suitable for use in that application.
+-  We strongly recommend not putting this version of the software into production use.
+-  Only the latest version of the software will be supported
+-  This project is tested with BrowserStack.
+
+## How to contribute
+
+We welcome contributions to this project. To ensure that the process is smooth for everyone
+involved, follow the guidelines found in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
