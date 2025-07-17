@@ -72,7 +72,6 @@ If you're planning to use this application in production, we recommend reviewing
 - Ensure the Pin storage configuration matches your security requirements or provide your own by following this guide [Pin Storage Configuration](wiki/configuration.md#pin-storage-configuration)
 - Ensure the application meets the OWASP MASVS industry standard. Please refer to the following links for further information on the controls you must implement to ensure maximum compliance:
     - [OWASP MASVS](https://mas.owasp.org/MASVS/)
-    - [Play Integrity API](https://developer.android.com/google/play/integrity)
 
 ## How to use the application
 
