@@ -33,7 +33,7 @@ class RQESConfigImpl(val context: Context) : EudiRQESUiConfig {
             QtspData(
                 name = "Wallet-Centric",
                 endpoint = "https://walletcentric.signer.eudiw.dev/csc/v2".toUriOrEmpty(),
-                tsaUrl = null,
+                tsaUrl = "https://timestamp.sectigo.com/qualified",
                 clientId = "wallet-client",
                 clientSecret = "somesecret2",
                 authFlowRedirectionURI = URI.create(BuildConfig.RQES_DEEPLINK),
