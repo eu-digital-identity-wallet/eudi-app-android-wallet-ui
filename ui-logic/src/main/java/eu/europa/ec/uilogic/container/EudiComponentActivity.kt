@@ -27,6 +27,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import eu.europa.ec.corelogic.config.certificate.CertificateHandler
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.RouterHost
@@ -94,6 +95,7 @@ open class EudiComponentActivity : FragmentActivity() {
     }
 
     private fun handleDeepLink(intent: Intent?, coldBoot: Boolean = false) {
+        CertificateHandler(this).handleNewCertificateUrl(intent)
         hasDeepLink(intent?.data)?.let {
             if (it.type == DeepLinkType.ISSUANCE && !coldBoot) {
                 handleDeepLinkAction(
