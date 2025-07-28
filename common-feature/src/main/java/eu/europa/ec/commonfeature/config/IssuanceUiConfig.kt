@@ -18,35 +18,27 @@ package eu.europa.ec.commonfeature.config
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.uilogic.serializer.UiSerializable
 import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
-sealed interface QrScanFlow {
-    data object Presentation : QrScanFlow
-    data class Issuance(val issuanceFlowType: IssuanceFlowType) : QrScanFlow
-    data object Signature : QrScanFlow
+sealed interface IssuanceFlowType {
+    data object NoDocument : IssuanceFlowType
+    data class ExtraDocument(val formatType: FormatType?) : IssuanceFlowType
 }
 
-data class QrScanUiConfig(
-    val title: String,
-    val subTitle: String,
-    val qrScanFlow: QrScanFlow
+data class IssuanceUiConfig(
+    val flowType: IssuanceFlowType,
 ) : UiSerializable {
 
     companion object Parser : UiSerializableParser {
-        override val serializedKeyName = "qrScanConfig"
+        override val serializedKeyName = "issuanceConfig"
         override fun provideParser(): Gson {
-            return GsonBuilder()
-                .registerTypeAdapter(
-                    QrScanFlow::class.java,
-                    SerializableTypeAdapter<QrScanFlow>()
-                )
-                .registerTypeAdapter(
-                    IssuanceFlowType::class.java,
-                    SerializableTypeAdapter<IssuanceFlowType>()
-                )
-                .create()
+            return GsonBuilder().registerTypeAdapter(
+                IssuanceFlowType::class.java,
+                SerializableTypeAdapter<IssuanceFlowType>()
+            ).create()
         }
     }
 }

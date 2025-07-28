@@ -20,7 +20,7 @@ import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.FetchScopedDocumentsPartialState
@@ -43,7 +43,10 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.testfeature.util.mockedDefaultLocale
+import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
+import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.mockedMdocPidFormat
 import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
@@ -121,24 +124,24 @@ class TestAddDocumentInteractor {
     //region getAddDocumentOption
 
     // Case 1:
-    // 1. flowType == IssuanceFlowUiConfig.NO_DOCUMENT
+    // 1. flowType == IssuanceFlowType.NoDocument
+    // 2. walletCoreDocumentsController.getScopedDocuments() returns a non-empty list
 
     // Case 1 Expected Result:
     // AddDocumentInteractorPartialState.Success state, with the following options:
-    // 1. a PID option, available to add.
-    // 2. an mDL option, unavailable to add.
+    // 1. a PID
     @Test
     fun `Given Case 1, When getAddDocumentOption is called, Then Case 1 Expected Result is returned`() {
         coroutineRule.runTest {
-
-            // When
-            whenever(walletCoreDocumentsController.getScopedDocuments(any())).thenReturn(
-                FetchScopedDocumentsPartialState.Success(mockedScopedDocuments)
+            // Given
+            val expectedResponse = FetchScopedDocumentsPartialState.Success(
+                documents = mockedScopedDocuments
             )
+            mockGetScopedDocumentsResponse(expectedResponse)
 
             // When
             interactor.getAddDocumentOption(
-                flowType = IssuanceFlowUiConfig.NO_DOCUMENT
+                flowType = IssuanceFlowType.NoDocument
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -154,23 +157,29 @@ class TestAddDocumentInteractor {
     }
 
     // Case 2:
-    // 2. flowType == IssuanceFlowUiConfig.EXTRA_DOCUMENT
+    // 1. flowType == IssuanceFlowType.ExtraDocument with formatType == null
+    // 2. walletCoreDocumentsController.getScopedDocuments() returns a non-empty list
 
     // Case 2 Expected Result:
     // AddDocumentInteractorPartialState.Success state, with the following options:
-    // 1. a PID option, available to add.
-    // 2. an mDL option, available to add.
+    // 1. an Age Verification,
+    // 2. a PID,
+    // 3. an mDL,
+    // 4. a Photo ID
     @Test
     fun `Given Case 2, When getAddDocumentOption is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
-            // When
-
-            whenever(walletCoreDocumentsController.getScopedDocuments(any())).thenReturn(
-                FetchScopedDocumentsPartialState.Success(mockedScopedDocuments)
+            // Given
+            val expectedResponse = FetchScopedDocumentsPartialState.Success(
+                documents = mockedScopedDocuments
             )
+            mockGetScopedDocumentsResponse(expectedResponse)
 
+            // When
             interactor.getAddDocumentOption(
-                flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
+                flowType = IssuanceFlowType.ExtraDocument(
+                    formatType = null
+                )
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -181,6 +190,198 @@ class TestAddDocumentInteractor {
                             mockedMdlOptionItemUi,
                             mockedPhotoIdOptionItemUi
                         )
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 3:
+    // 1. flowType == IssuanceFlowType.ExtraDocument with formatType == PID format type
+    // 2. walletCoreDocumentsController.getScopedDocuments() returns an empty list
+
+    // Case 3 Expected Result:
+    // AddDocumentInteractorPartialState.NoOptions state.
+    @Test
+    fun `Given Case 3, When getAddDocumentOption is called, Then Case 3 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val expectedResponse = FetchScopedDocumentsPartialState.Success(
+                documents = emptyList()
+            )
+            mockGetScopedDocumentsResponse(expectedResponse)
+
+            val noDocumentsMsg = mockNoDocumentsString()
+
+            // When
+            interactor.getAddDocumentOption(
+                flowType = IssuanceFlowType.ExtraDocument(
+                    formatType = mockedMdocPidFormat.docType
+                )
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorPartialState.NoOptions(
+                        errorMsg = noDocumentsMsg
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 4:
+    // 1. flowType == IssuanceFlowType.ExtraDocument with a non-matching formatType ("NO_MATCHES_FORMAT_TYPE")
+    // 2. walletCoreDocumentsController.getScopedDocuments() returns a non-empty list
+
+    // Case 4 Expected Result:
+    // AddDocumentInteractorPartialState.NoOptions state.
+    @Test
+    fun `Given Case 4, When getAddDocumentOption is called, Then Case 4 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val expectedResponse = FetchScopedDocumentsPartialState.Success(
+                documents = mockedScopedDocuments
+            )
+            mockGetScopedDocumentsResponse(expectedResponse)
+
+            val noDocumentsMsg = mockNoDocumentsString()
+
+            // When
+            interactor.getAddDocumentOption(
+                flowType = IssuanceFlowType.ExtraDocument(
+                    formatType = "NO_MATCHES_FORMAT_TYPE"
+                )
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorPartialState.NoOptions(
+                        errorMsg = noDocumentsMsg
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 5:
+    // 1. flowType == IssuanceFlowType.NoDocument
+    // 2. walletCoreDocumentsController.getScopedDocuments() returns only non-PID documents
+
+    // Case 5 Expected Result:
+    // AddDocumentInteractorPartialState.NoOptions state.
+    @Test
+    fun `Given Case 5, When getAddDocumentOption is called, Then Case 5 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val expectedResponse = FetchScopedDocumentsPartialState.Success(
+                documents = mockedScopedDocuments
+                    .filterNot {
+                        it.isPid
+                    }
+            )
+            mockGetScopedDocumentsResponse(expectedResponse)
+
+            val noDocumentsMsg = mockNoDocumentsString()
+
+            // When
+            interactor.getAddDocumentOption(
+                flowType = IssuanceFlowType.NoDocument
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorPartialState.NoOptions(
+                        errorMsg = noDocumentsMsg
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 6:
+    // 1. flowType == IssuanceFlowType.NoDocument
+    // 2. walletCoreDocumentsController.getScopedDocuments() returns
+    //    FetchScopedDocumentsPartialState.Failure with an error message.
+
+    // Case 6 Expected Result:
+    // AddDocumentInteractorPartialState.Failure with the same error message.
+    @Test
+    fun `Given Case 6, When getAddDocumentOption is called, Then Case 6 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            val expectedResponse = FetchScopedDocumentsPartialState.Failure(
+                errorMessage = mockedPlainFailureMessage
+            )
+            mockGetScopedDocumentsResponse(expectedResponse)
+
+            // When
+            interactor.getAddDocumentOption(
+                flowType = IssuanceFlowType.NoDocument
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorPartialState.Failure(
+                        error = mockedPlainFailureMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 7:
+    // 1. flowType == IssuanceFlowType.NoDocument
+    // 2. walletCoreDocumentsController.getScopedDocuments() throws an exception with no error message.
+
+    // Case 7 Expected Result:
+    // AddDocumentInteractorPartialState.Failure with the generic error message.
+    @Test
+    fun `Given Case 7, When getAddDocumentOption is called, Then Case 7 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.getScopedDocuments(any())
+            ).thenThrow(mockedExceptionWithNoMessage)
+
+            // When
+            interactor.getAddDocumentOption(
+                flowType = IssuanceFlowType.NoDocument
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorPartialState.Failure(
+                        error = mockedGenericErrorMessage
+                    ),
+                    awaitItem()
+                )
+            }
+        }
+    }
+
+    // Case 8:
+    // 1. flowType == IssuanceFlowType.NoDocument
+    // 2. walletCoreDocumentsController.getScopedDocuments() throws an exception with an error message.
+
+    // Case 8 Expected Result:
+    // AddDocumentInteractorPartialState.Failure with the exception's error message.
+    @Test
+    fun `Given Case 8, When getAddDocumentOption is called, Then Case 8 Expected Result is returned`() {
+        coroutineRule.runTest {
+            // Given
+            whenever(
+                walletCoreDocumentsController.getScopedDocuments(any())
+            ).thenThrow(mockedExceptionWithMessage)
+
+            // When
+            interactor.getAddDocumentOption(
+                flowType = IssuanceFlowType.NoDocument
+            ).runFlowTest {
+                // Then
+                assertEquals(
+                    AddDocumentInteractorPartialState.Failure(
+                        error = mockedExceptionWithMessage.localizedMessage!!
                     ),
                     awaitItem()
                 )
@@ -343,7 +544,7 @@ class TestAddDocumentInteractor {
             )
         ).thenReturn(mockedRouteArguments)
 
-        val flowType = IssuanceFlowUiConfig.NO_DOCUMENT
+        val flowType = IssuanceFlowType.NoDocument
 
         // When
         val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
@@ -381,7 +582,9 @@ class TestAddDocumentInteractor {
             )
         ).thenReturn(mockedRouteArguments)
 
-        val flowType = IssuanceFlowUiConfig.EXTRA_DOCUMENT
+        val flowType = IssuanceFlowType.ExtraDocument(
+            formatType = null
+        )
 
         // When
         val result = interactor.buildGenericSuccessRouteForDeferred(flowType = flowType)
@@ -408,12 +611,28 @@ class TestAddDocumentInteractor {
     //endregion
 
     //region helper functions
+    private suspend fun mockGetScopedDocumentsResponse(response: FetchScopedDocumentsPartialState) {
+        whenever(
+            walletCoreDocumentsController.getScopedDocuments(any())
+        ).thenReturn(response)
+    }
+
     private fun mockBiometricsAvailabilityResponse(response: BiometricsAvailability) {
         whenever(deviceAuthenticationInteractor.getBiometricsAvailability(listener = any()))
             .thenAnswer {
                 val bioAvailability = it.getArgument<(BiometricsAvailability) -> Unit>(0)
                 bioAvailability(response)
             }
+    }
+
+    private fun mockNoDocumentsString(): String {
+        val noDocumentsMsg = "No available documents"
+
+        whenever(
+            resourceProvider.getString(R.string.issuance_add_document_no_options)
+        ).thenReturn(noDocumentsMsg)
+
+        return noDocumentsMsg
     }
 
     private fun mockDocumentIssuanceStrings() {

@@ -46,11 +46,14 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.config.IssuanceFlowType
+import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
+import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
@@ -231,32 +234,56 @@ private fun MainContent(
             subtitle = state.subtitle
         )
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
-            contentPadding = PaddingValues(
-                top = SPACING_MEDIUM.dp,
-                bottom = paddingValues.calculateBottomPadding()
-            ),
-        ) {
-            state.options.forEach { option ->
-                item {
-                    WrapListItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        item = option.itemData,
-                        mainContentVerticalPadding = SPACING_LARGE.dp,
-                        mainContentTextStyle = MaterialTheme.typography.titleMedium,
-                        onItemClick = { optionListItemDataUi ->
-                            onEventSend(
-                                Event.IssueDocument(
-                                    issuanceMethod = IssuanceMethod.OPENID4VCI,
-                                    configId = optionListItemDataUi.itemId,
-                                    context = context
-                                )
-                            )
-                        }
+        if (state.noOptions) {
+            ErrorInfo(
+                modifier = Modifier.fillMaxSize(),
+                informativeText = stringResource(R.string.issuance_add_document_no_options)
+            )
+        } else {
+            Options(
+                options = state.options,
+                paddingValues = paddingValues,
+                modifier = Modifier.fillMaxSize(),
+                onOptionClicked = { itemId ->
+                    onEventSend(
+                        Event.IssueDocument(
+                            issuanceMethod = IssuanceMethod.OPENID4VCI,
+                            configId = itemId,
+                            context = context
+                        )
                     )
                 }
+            )
+        }
+    }
+}
+
+@Composable
+private fun Options(
+    options: List<AddDocumentUi>,
+    paddingValues: PaddingValues,
+    modifier: Modifier = Modifier,
+    onOptionClicked: (itemId: String) -> Unit,
+) {
+    LazyColumn(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
+        contentPadding = PaddingValues(
+            top = SPACING_MEDIUM.dp,
+            bottom = paddingValues.calculateBottomPadding()
+        ),
+    ) {
+        options.forEach { option ->
+            item {
+                WrapListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    item = option.itemData,
+                    mainContentVerticalPadding = SPACING_LARGE.dp,
+                    mainContentTextStyle = MaterialTheme.typography.titleMedium,
+                    onItemClick = { optionListItemDataUi ->
+                        onOptionClicked(optionListItemDataUi.itemId)
+                    }
+                )
             }
         }
     }
@@ -308,6 +335,9 @@ private fun IssuanceAddDocumentScreenPreview() {
     PreviewTheme {
         Content(
             state = State(
+                issuanceConfig = IssuanceUiConfig(
+                    flowType = IssuanceFlowType.NoDocument
+                ),
                 showFooterScanner = true,
                 navigatableAction = ScreenNavigateAction.NONE,
                 title = stringResource(R.string.issuance_add_document_title),
@@ -344,6 +374,11 @@ private fun DashboardAddDocumentScreenPreview() {
     PreviewTheme {
         Content(
             state = State(
+                issuanceConfig = IssuanceUiConfig(
+                    flowType = IssuanceFlowType.ExtraDocument(
+                        formatType = null
+                    )
+                ),
                 showFooterScanner = false,
                 navigatableAction = ScreenNavigateAction.BACKABLE,
                 title = stringResource(R.string.issuance_add_document_title),

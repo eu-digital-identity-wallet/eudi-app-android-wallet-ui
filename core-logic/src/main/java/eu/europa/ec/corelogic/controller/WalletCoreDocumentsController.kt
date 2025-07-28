@@ -36,6 +36,7 @@ import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.openid4vci.SdJwtVcCredential
 import eu.europa.ec.eudi.statium.Status
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings
 import eu.europa.ec.eudi.wallet.document.DeferredDocument
 import eu.europa.ec.eudi.wallet.document.Document
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultCreateDocumentSettings
@@ -200,6 +201,8 @@ interface WalletCoreDocumentsController {
     suspend fun storeBookmark(bookmarkId: DocumentId)
 
     suspend fun deleteBookmark(bookmarkId: DocumentId)
+
+    suspend fun isDocumentLowOnCredentials(document: IssuedDocument): Boolean
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -247,9 +250,16 @@ class WalletCoreDocumentsControllerImpl(
                             else -> false
                         }
 
+                        val formatType = when (config) {
+                            is MsoMdocCredential -> config.docType
+                            is SdJwtVcCredential -> config.type
+                            else -> null
+                        }
+
                         ScopedDocumentDomain(
                             name = name,
                             configurationId = id.value,
+                            formatType = formatType,
                             isPid = isPid
                         )
                     }
@@ -575,6 +585,13 @@ class WalletCoreDocumentsControllerImpl(
 
     override suspend fun deleteBookmark(bookmarkId: DocumentId) =
         bookmarkDao.delete(bookmarkId)
+
+    override suspend fun isDocumentLowOnCredentials(document: IssuedDocument): Boolean {
+        val documentRemainingCredentials = document.credentialsCount()
+
+        return document.credentialPolicy == CreateDocumentSettings.CredentialPolicy.OneTimeUse
+                && documentRemainingCredentials <= 1
+    }
 
     override suspend fun getRevokedDocumentIds(): List<String> =
         revokedDocumentDao.retrieveAll().map { it.identifier }

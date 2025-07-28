@@ -22,6 +22,10 @@ import eu.europa.ec.eudi.openid4vci.TxCodeInputMode
 import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
 import eu.europa.ec.testfeature.util.mockedAgeVerificationDocName
 import eu.europa.ec.testfeature.util.mockedMdlDocName
+import eu.europa.ec.testfeature.util.mockedMdocAgeVerificationFormat
+import eu.europa.ec.testfeature.util.mockedMdocMdlFormat
+import eu.europa.ec.testfeature.util.mockedMdocPhotoIdFormat
+import eu.europa.ec.testfeature.util.mockedMdocPidFormat
 import eu.europa.ec.testfeature.util.mockedPhotoIdDocName
 import eu.europa.ec.testfeature.util.mockedPidDocName
 import eu.europa.ec.testfeature.util.mockedPidId
@@ -90,22 +94,26 @@ internal val mockedScopedDocuments: List<ScopedDocumentDomain>
         ScopedDocumentDomain(
             name = mockedPidDocName,
             configurationId = mockedConfigIssuerId,
-            isPid = true
+            isPid = true,
+            formatType = mockedMdocPidFormat.docType
         ),
         ScopedDocumentDomain(
             name = mockedMdlDocName,
             configurationId = mockedConfigIssuerId,
-            isPid = false
+            isPid = false,
+            formatType = mockedMdocMdlFormat.docType
         ),
         ScopedDocumentDomain(
             name = mockedAgeVerificationDocName,
             configurationId = mockedConfigIssuerId,
-            isPid = false
+            isPid = false,
+            formatType = mockedMdocAgeVerificationFormat.docType
         ),
         ScopedDocumentDomain(
             name = mockedPhotoIdDocName,
             configurationId = mockedConfigIssuerId,
-            isPid = false
+            isPid = false,
+            formatType = mockedMdocPhotoIdFormat.docType
         )
     ).sortedBy { it.name.lowercase() }
 

@@ -80,16 +80,6 @@ class SettingsViewModel(
 
     private fun handleSettingsMenuItemClicked(itemType: SettingsMenuItemType) {
         when (itemType) {
-            SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER -> {
-                settingsInteractor.toggleShowBatchIssuanceCounter()
-
-                setState {
-                    copy(
-                        settingsItems = settingsInteractor.getSettingsItemsUi(changelogUrl = viewState.value.changelogUrl)
-                    )
-                }
-            }
-
             SettingsMenuItemType.RETRIEVE_LOGS -> {
                 val logs = settingsInteractor.retrieveLogFileUris()
                 if (logs.isNotEmpty()) {

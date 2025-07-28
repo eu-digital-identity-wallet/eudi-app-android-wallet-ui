@@ -54,7 +54,6 @@ import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
-import eu.europa.ec.uilogic.component.wrap.SwitchDataUi
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.extension.openIntentChooser
 import eu.europa.ec.uilogic.extension.openUrl
@@ -198,21 +197,6 @@ private fun SettingsScreenPreview() {
         val context = LocalContext.current
 
         val settingsItems = listOf(
-            SettingsItemUi(
-                type = SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER,
-                data = ListItemDataUi(
-                    itemId = stringResource(R.string.settings_screen_option_show_batch_issuance_counter_id),
-                    mainContentData = ListItemMainContentDataUi.Text(
-                        text = stringResource(R.string.settings_screen_option_show_batch_issuance_counter)
-                    ),
-                    trailingContentData = ListItemTrailingContentDataUi.Switch(
-                        switchData = SwitchDataUi(
-                            isChecked = true,
-                            enabled = true,
-                        )
-                    )
-                )
-            ),
             SettingsItemUi(
                 type = SettingsMenuItemType.RETRIEVE_LOGS,
                 data = ListItemDataUi(

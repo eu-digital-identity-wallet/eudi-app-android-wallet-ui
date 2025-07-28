@@ -16,7 +16,6 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
@@ -78,9 +77,6 @@ class TestDocumentsInteractor {
     @Mock
     private lateinit var filterValidator: FilterValidator
 
-    @Mock
-    private lateinit var prefKeys: PrefKeys
-
     private lateinit var interactor: DocumentsInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -96,7 +92,6 @@ class TestDocumentsInteractor {
             resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
             filterValidator = filterValidator,
-            prefKeys = prefKeys,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)

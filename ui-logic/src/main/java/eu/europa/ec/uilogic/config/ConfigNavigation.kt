@@ -28,7 +28,7 @@ sealed interface NavigationType {
     data object Finish : NavigationType
     data class PushScreen(
         val screen: Screen,
-        val arguments: Map<String, String> = emptyMap(),
+        val arguments: Map<String, String?> = emptyMap(),
         val popUpToScreen: Screen? = null
     ) : NavigationType
 

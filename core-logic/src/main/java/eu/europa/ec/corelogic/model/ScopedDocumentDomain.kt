@@ -16,4 +16,9 @@
 
 package eu.europa.ec.corelogic.model
 
-data class ScopedDocumentDomain(val name: String, val configurationId: String, val isPid: Boolean)
+data class ScopedDocumentDomain(
+    val name: String,
+    val configurationId: String,
+    val formatType: FormatType?,
+    val isPid: Boolean
+)
