@@ -101,8 +101,8 @@ sealed class Effect : ViewSideEffect {
         data object Pop : Navigation()
         data class SwitchScreen(
             val screenRoute: String,
-            val popUpToScreenRoute: String,
-            val inclusive: Boolean
+            val popUpToScreenRoute: String?,
+            val inclusive: Boolean?
         ) : Navigation()
     }
 
@@ -436,7 +436,7 @@ class DocumentDetailsViewModel(
     }
 
     private fun goToAddDocumentScreen(documentFormatType: FormatType) {
-        val screenRoute = generateComposableNavigationLink(
+        val addDocumentScreenRoute = generateComposableNavigationLink(
             screen = IssuanceScreens.AddDocument,
             arguments = generateComposableArguments(
                 mapOf(
@@ -454,9 +454,9 @@ class DocumentDetailsViewModel(
 
         setEffect {
             Effect.Navigation.SwitchScreen(
-                screenRoute = screenRoute,
-                popUpToScreenRoute = DashboardScreens.Dashboard.screenRoute,
-                inclusive = false
+                screenRoute = addDocumentScreenRoute,
+                popUpToScreenRoute = null,
+                inclusive = null
             )
         }
     }

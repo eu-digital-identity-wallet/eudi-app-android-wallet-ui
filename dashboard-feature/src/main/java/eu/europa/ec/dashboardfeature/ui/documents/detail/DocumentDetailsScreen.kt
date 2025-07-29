@@ -210,8 +210,10 @@ private fun handleNavigationEffect(
     when (navigationEffect) {
         is Effect.Navigation.SwitchScreen -> {
             navController.navigate(navigationEffect.screenRoute) {
-                popUpTo(navigationEffect.popUpToScreenRoute) {
-                    inclusive = navigationEffect.inclusive
+                navigationEffect.popUpToScreenRoute?.let { safePopUpToScreenRoute ->
+                    popUpTo(safePopUpToScreenRoute) {
+                        inclusive = navigationEffect.inclusive == true
+                    }
                 }
             }
         }
