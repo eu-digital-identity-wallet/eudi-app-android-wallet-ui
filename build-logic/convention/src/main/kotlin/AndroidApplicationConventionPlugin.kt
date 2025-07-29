@@ -50,6 +50,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             dependencies {
                 add("implementation", libs.findLibrary("androidx-profileinstaller").get())
+                add("debugImplementation", libs.findLibrary("hyperion-core").get())
+                add("debugImplementation", libs.findLibrary("hyperion-timber").get())
             }
         }
     }
