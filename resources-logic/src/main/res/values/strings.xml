@@ -225,6 +225,9 @@
     <string name="settings_screen_option_changelog">Changelog</string>
     <string name="settings_screen_option_changelog_id">changelogId</string>
     <string name="settings_intent_chooser_logs_share_title">Share logs</string>
+    <string name="dashboard_side_menu_enable_certificates">Enable certificate check</string>
+    <string name="dashboard_side_menu_enable_certificates_id">enableCertificatesId</string>
+    <string name="dashboard_side_menu_enable_certificates_description">Requires a manual force restart of the application to take effect</string>
 
     <!-- Home Screen -->
     <string name="home_screen_title">Home</string>

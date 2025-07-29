@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.corelogic.extension.getCertificateCheckState
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuItemUi
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
@@ -25,6 +26,7 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
+import eu.europa.ec.uilogic.component.wrap.CheckboxDataUi
 
 interface DashboardInteractor {
     fun getSideMenuOptions(): List<SideMenuItemUi>
@@ -71,6 +73,28 @@ class DashboardInteractorImpl(
                     )
                 )
             )
+
+            add(
+                SideMenuItemUi(
+                    type = SideMenuTypeUi.ENABLE_CERTIFICATE,
+                    data = ListItemDataUi(
+                        itemId = resourceProvider.getString(R.string.dashboard_side_menu_enable_certificates_id),
+                        mainContentData = ListItemMainContentDataUi.Text(
+                            text = resourceProvider.getString(R.string.dashboard_side_menu_enable_certificates)
+                        ),
+                        supportingText = resourceProvider.getString(R.string.dashboard_side_menu_enable_certificates_description),
+                        leadingContentData = ListItemLeadingContentDataUi.Icon(
+                            iconData = AppIcons.Certified
+                        ),
+                        trailingContentData = ListItemTrailingContentDataUi.Checkbox(
+                            checkboxData = CheckboxDataUi(
+                                isChecked = resourceProvider.provideContext().getCertificateCheckState(),
+                            )
+                        )
+                    )
+                )
+            )
+
         }
     }
 }

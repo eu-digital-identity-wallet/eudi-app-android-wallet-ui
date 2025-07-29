@@ -14,17 +14,23 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.dashboard.model
+package eu.europa.ec.corelogic.extension
 
-import eu.europa.ec.uilogic.component.ListItemDataUi
+import android.content.Context
+import androidx.core.content.edit
 
-data class SideMenuItemUi(
-    val type: SideMenuTypeUi,
-    val data: ListItemDataUi,
-)
+fun Context.getCertificateCheckState(): Boolean {
+    return this.getSharedPreferences(
+        "CertificatePrefs",
+        Context.MODE_PRIVATE
+    ).getBoolean("certificate_check_enabled", true)
+}
 
-enum class SideMenuTypeUi {
-    CHANGE_PIN,
-    SETTINGS,
-    ENABLE_CERTIFICATE
+fun Context.updateCertificateCheck(newState: Boolean) {
+    this.getSharedPreferences(
+        "CertificatePrefs",
+        Context.MODE_PRIVATE
+    ).edit {
+        putBoolean("certificate_check_enabled", newState)
+    }
 }

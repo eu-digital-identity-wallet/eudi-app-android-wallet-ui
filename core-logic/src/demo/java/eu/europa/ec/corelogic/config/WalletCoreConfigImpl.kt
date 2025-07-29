@@ -18,6 +18,7 @@ package eu.europa.ec.corelogic.config
 
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
+import eu.europa.ec.corelogic.extension.getCertificateCheckState
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
@@ -79,17 +80,19 @@ internal class WalletCoreConfigImpl(
                         withUseDPoPIfSupported(true)
                     }
 
-                    configureReaderTrustStore(
-                        context,
-                        R.raw.pidissuerca02_cz,
-                        R.raw.pidissuerca02_ee,
-                        R.raw.pidissuerca02_eu,
-                        R.raw.pidissuerca02_lu,
-                        R.raw.pidissuerca02_nl,
-                        R.raw.pidissuerca02_pt,
-                        R.raw.pidissuerca02_ut,
-                        R.raw.dc4eu
-                    )
+                    if (context.getCertificateCheckState()) {
+                        configureReaderTrustStore(
+                            context,
+                            R.raw.pidissuerca02_cz,
+                            R.raw.pidissuerca02_ee,
+                            R.raw.pidissuerca02_eu,
+                            R.raw.pidissuerca02_lu,
+                            R.raw.pidissuerca02_nl,
+                            R.raw.pidissuerca02_pt,
+                            R.raw.pidissuerca02_ut,
+                            R.raw.dc4eu
+                        )
+                    }
                 }
             }
             return _config!!

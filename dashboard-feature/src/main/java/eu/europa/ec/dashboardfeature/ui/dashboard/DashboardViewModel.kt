@@ -24,6 +24,8 @@ import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.model.PinFlow
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.extension.getCertificateCheckState
+import eu.europa.ec.corelogic.extension.updateCertificateCheck
 import eu.europa.ec.corelogic.model.RevokedDocumentDataDomain
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuItemUi
@@ -256,6 +258,18 @@ class DashboardViewModel(
             SideMenuTypeUi.SETTINGS -> {
                 hideSideMenu()
                 setEffect { Effect.Navigation.SwitchScreen(screenRoute = DashboardScreens.Settings.screenRoute) }
+
+            }
+
+            SideMenuTypeUi.ENABLE_CERTIFICATE -> {
+                val currentState = resourceProvider.provideContext().getCertificateCheckState()
+                resourceProvider.provideContext().updateCertificateCheck(!currentState)
+                setState {
+                    copy(
+                        sideMenuOptions = dashboardInteractor.getSideMenuOptions()
+                    )
+                }
+
             }
         }
     }

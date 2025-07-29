@@ -16,6 +16,8 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import android.content.Context
+import android.content.SharedPreferences
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuTypeUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -29,9 +31,12 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class TestDashboardInteractor {
 
@@ -58,15 +63,16 @@ class TestDashboardInteractor {
 
     //region getSideMenuOptions
     @Test
-    fun `When getSideMenuOptions is called, Then it returns two items with correct data`() {
+    fun `When getSideMenuOptions is called, Then it returns three items with correct data`() {
         // Arrange
         mockStringsNeededForGetSideMenuOptions(resourceProvider)
+        mockCertificatePreference(resourceProvider)
 
         // When
         val sideMenuItems = interactor.getSideMenuOptions()
 
         // Then
-        assertEquals(2, sideMenuItems.size)
+        assertEquals(3, sideMenuItems.size)
 
         // 1. First item: CHANGE_PIN
         val firstItem = sideMenuItems[0]
@@ -91,6 +97,15 @@ class TestDashboardInteractor {
             secondItem.data.trailingContentData as ListItemTrailingContentDataUi.Icon
         assertEquals(AppIcons.KeyboardArrowRight, trailingIcon2.iconData)
 
+        // 3. Third item: ENABLE CERTIFICATE
+        val thirdItem = sideMenuItems[2]
+        assertEquals(SideMenuTypeUi.ENABLE_CERTIFICATE, thirdItem.type)
+        assertEquals(certificateIdString, thirdItem.data.itemId)
+        val mainContent3 = thirdItem.data.mainContentData as ListItemMainContentDataUi.Text
+        assertEquals(certificateText, mainContent3.text)
+        val leadingIcon3 = thirdItem.data.leadingContentData as ListItemLeadingContentDataUi.Icon
+        assertEquals(AppIcons.Certified, leadingIcon3.iconData)
+
         // Verify that getString was called exactly once per resource ID
         verify(resourceProvider, times(1))
             .getString(R.string.dashboard_side_menu_option_change_pin_id)
@@ -100,6 +115,10 @@ class TestDashboardInteractor {
             .getString(R.string.dashboard_side_menu_option_settings_id)
         verify(resourceProvider, times(1))
             .getString(R.string.dashboard_side_menu_option_settings)
+        verify(resourceProvider, times(1))
+            .getString(R.string.dashboard_side_menu_enable_certificates_id)
+        verify(resourceProvider, times(1))
+            .getString(R.string.dashboard_side_menu_enable_certificates)
     }
     //endregion
 
@@ -112,8 +131,19 @@ class TestDashboardInteractor {
                 R.string.dashboard_side_menu_option_change_pin to changePinText,
                 R.string.dashboard_side_menu_option_settings_id to settingsIdString,
                 R.string.dashboard_side_menu_option_settings to settingsText,
+                R.string.dashboard_side_menu_enable_certificates to certificateText,
+                R.string.dashboard_side_menu_enable_certificates_id to certificateIdString
             )
         )
+    }
+
+    private fun mockCertificatePreference(resourceProvider: ResourceProvider) {
+        val mockContext: Context = mock()
+        val mockPrefs: SharedPreferences = mock()
+
+        whenever(resourceProvider.provideContext()).thenReturn(mockContext)
+        whenever(mockContext.getSharedPreferences(any(), any())).thenReturn(mockPrefs)
+        whenever(mockPrefs.getBoolean(any(), any())).thenReturn(true)
     }
     //endregion
 
@@ -122,5 +152,7 @@ class TestDashboardInteractor {
     private val changePinText = "Change PIN"
     private val settingsIdString = "settingsId"
     private val settingsText = "Settings"
+    private val certificateIdString = "enableCertificatesId"
+    private val certificateText = "Enable certificate check"
     //endregion
 }
