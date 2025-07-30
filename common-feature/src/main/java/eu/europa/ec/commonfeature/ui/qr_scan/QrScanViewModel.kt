@@ -297,9 +297,7 @@ class QrScanViewModel(
 
             is IssuanceFlowType.ExtraDocument -> {
                 ConfigNavigation(
-                    navigationType = NavigationType.PopTo(
-                        screen = DashboardScreens.Dashboard
-                    )
+                    navigationType = NavigationType.Pop
                 )
             }
         }
