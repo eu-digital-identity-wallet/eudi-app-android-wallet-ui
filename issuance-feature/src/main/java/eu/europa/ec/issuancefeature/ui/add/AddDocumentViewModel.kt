@@ -219,6 +219,9 @@ class AddDocumentViewModel(
                                 error = null,
                                 options = response.options,
                                 noOptions = false,
+                                showFooterScanner = shouldShowFooterScanner(
+                                    flowType = viewState.value.issuanceConfig.flowType
+                                ),
                                 isInitialised = true,
                                 isLoading = false
                             )
@@ -243,6 +246,7 @@ class AddDocumentViewModel(
                                 },
                                 options = emptyList(),
                                 noOptions = false,
+                                showFooterScanner = false,
                                 isInitialised = true,
                                 isLoading = false
                             )
@@ -258,6 +262,7 @@ class AddDocumentViewModel(
                                 error = null,
                                 options = emptyList(),
                                 noOptions = true,
+                                showFooterScanner = true,
                                 isInitialised = true,
                                 isLoading = false
                             )
