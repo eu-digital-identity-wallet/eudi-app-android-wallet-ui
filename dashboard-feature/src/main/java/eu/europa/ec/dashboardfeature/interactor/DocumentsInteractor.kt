@@ -16,7 +16,6 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.isBeyondNextDays
 import eu.europa.ec.businesslogic.extension.isExpired
 import eu.europa.ec.businesslogic.extension.isValid
@@ -169,7 +168,6 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filterValidator: FilterValidator,
-    private val prefKeys: PrefKeys,
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -331,13 +329,13 @@ class DocumentsInteractorImpl(
 
                             val documentIssuanceState = when {
                                 documentIsRevoked -> DocumentIssuanceStateUi.Revoked
-                                documentHasExpired == true -> DocumentIssuanceStateUi.Failed
+                                documentHasExpired -> DocumentIssuanceStateUi.Failed
                                 else -> DocumentIssuanceStateUi.Issued
                             }
 
                             val supportingText = when {
                                 documentIsRevoked -> resourceProvider.getString(R.string.dashboard_document_revoked)
-                                documentHasExpired == true -> resourceProvider.getString(R.string.dashboard_document_has_expired)
+                                documentHasExpired -> resourceProvider.getString(R.string.dashboard_document_has_expired)
                                 documentExpirationDate == null -> null
                                 else -> resourceProvider.getString(
                                     R.string.dashboard_document_has_not_expired,
@@ -351,27 +349,32 @@ class DocumentsInteractorImpl(
                                     tint = ThemeColors.error
                                 )
                             } else {
-                                if (prefKeys.getShowBatchIssuanceCounter()) {
-                                    val documentAvailableCredentials = document.credentialsCount()
-                                    val documentTotalCredentials =
-                                        document.initialCredentialsCount()
+                                val documentAvailableCredentials = document.credentialsCount()
+                                val documentTotalCredentials = document.initialCredentialsCount()
 
-                                    val documentCredentialsInfoUi = DocumentCredentialsInfoUi(
-                                        availableCredentials = documentAvailableCredentials,
-                                        totalCredentials = documentTotalCredentials,
-                                        title = resourceProvider.getString(
-                                            R.string.dashboard_document_credentials_info_text,
-                                            documentAvailableCredentials,
-                                            documentTotalCredentials
-                                        )
-                                    )
+                                val documentCredentialsInfoUi = DocumentCredentialsInfoUi(
+                                    availableCredentials = documentAvailableCredentials,
+                                    totalCredentials = documentTotalCredentials,
+                                    title = resourceProvider.getString(
+                                        R.string.dashboard_document_credentials_info_text,
+                                        documentAvailableCredentials,
+                                        documentTotalCredentials
+                                    ),
+                                    isExpanded = false,
+                                )
 
+                                val documentLowOnCredentials = walletCoreDocumentsController
+                                    .isDocumentLowOnCredentials(document)
+
+                                if (documentLowOnCredentials) {
                                     ListItemTrailingContentDataUi.TextWithIcon(
                                         text = documentCredentialsInfoUi.title,
-                                        iconData = AppIcons.KeyboardArrowRight
+                                        iconData = AppIcons.ErrorFilled,
+                                        tint = ThemeColors.warning
                                     )
                                 } else {
-                                    ListItemTrailingContentDataUi.Icon(
+                                    ListItemTrailingContentDataUi.TextWithIcon(
+                                        text = documentCredentialsInfoUi.title,
                                         iconData = AppIcons.KeyboardArrowRight
                                     )
                                 }

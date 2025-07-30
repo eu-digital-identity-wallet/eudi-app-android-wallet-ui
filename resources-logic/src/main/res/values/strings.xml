@@ -218,8 +218,6 @@
 
     <!-- Settings Screen -->
     <string name="settings_screen_title">Settings</string>
-    <string name="settings_screen_option_show_batch_issuance_counter">Batch issuance counter</string>
-    <string name="settings_screen_option_show_batch_issuance_counter_id">batchIssuanceCounterId</string>
     <string name="settings_screen_option_retrieve_logs">Retrieve logs</string>
     <string name="settings_screen_option_retrieve_logs_id">retrieveLogsId</string>
     <string name="settings_screen_option_changelog">Changelog</string>
@@ -340,6 +338,7 @@
     <string name="document_details_document_credentials_info_text">%d/%d instances remaining</string>
     <string name="document_details_document_credentials_info_more_info_text">More info</string>
     <string name="document_details_document_credentials_info_expanded_text_subtitle">For security reasons, this document can be shared a limited number of times before it needs to be re-issued by the issuing authority.</string>
+    <string name="document_details_document_credentials_info_expanded_button_update_now_text">Issue new</string>
     <string name="document_details_document_credentials_info_expanded_button_hide_text">Hide</string>
     <string name="document_details_main_section_text">DOCUMENT DETAILS</string>
     <string name="document_details_issuer_section_text">ISSUER</string>
@@ -384,6 +383,7 @@
     <!-- Issuance Add Document Screen -->
     <string name="issuance_add_document_title">Add document from list</string>
     <string name="issuance_add_document_subtitle">Choose a digital document from the list below to add to your wallet.</string>
+    <string name="issuance_add_document_no_options">No available documents</string>
     <string name="issuance_add_document_scan_qr_footer_text">@string/generic_or</string>
     <string name="issuance_add_document_scan_qr_footer_button_text">@string/generic_scan_qr</string>
     <string name="issuance_add_document_deferred_success_text">@string/generic_deferred_success_text</string>

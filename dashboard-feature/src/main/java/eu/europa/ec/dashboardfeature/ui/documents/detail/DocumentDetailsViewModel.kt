@@ -17,6 +17,9 @@
 package eu.europa.ec.dashboardfeature.ui.documents.detail
 
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.commonfeature.config.IssuanceFlowType
+import eu.europa.ec.commonfeature.config.IssuanceUiConfig
+import eu.europa.ec.corelogic.model.FormatType
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractor
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorDeleteBookmarkPartialState
 import eu.europa.ec.dashboardfeature.interactor.DocumentDetailsInteractorDeleteDocumentPartialState
@@ -36,7 +39,11 @@ import eu.europa.ec.uilogic.mvi.ViewEvent
 import eu.europa.ec.uilogic.mvi.ViewSideEffect
 import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.DashboardScreens
+import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.StartupScreens
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
+import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
@@ -53,7 +60,6 @@ data class State(
     val issuerName: String? = null,
     val issuerLogo: URI? = null,
     val documentCredentialsInfoUi: DocumentCredentialsInfoUi? = null,
-    val documentCredentialsInfoIsExpanded: Boolean,
     val documentDetailsSectionTitle: String,
     val documentIssuerSectionTitle: String,
 
@@ -87,6 +93,7 @@ sealed class Event : ViewEvent {
     data object IssuerCardPressed : Event()
     data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
     data object ToggleExpansionStateOfDocumentCredentialsSection : Event()
+    data object DocumentCredentialsSectionPrimaryButtonPressed : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -94,8 +101,8 @@ sealed class Effect : ViewSideEffect {
         data object Pop : Navigation()
         data class SwitchScreen(
             val screenRoute: String,
-            val popUpToScreenRoute: String,
-            val inclusive: Boolean
+            val popUpToScreenRoute: String?,
+            val inclusive: Boolean?
         ) : Navigation()
     }
 
@@ -125,11 +132,11 @@ sealed class DocumentDetailsBottomSheetContent {
 @KoinViewModel
 class DocumentDetailsViewModel(
     private val documentDetailsInteractor: DocumentDetailsInteractor,
+    private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
     @InjectedParam private val documentId: DocumentId,
 ) : MviViewModel<Event, State, Effect>() {
     override fun setInitialState(): State = State(
-        documentCredentialsInfoIsExpanded = false,
         documentDetailsSectionTitle = resourceProvider.getString(R.string.document_details_main_section_text),
         documentIssuerSectionTitle = resourceProvider.getString(R.string.document_details_issuer_section_text),
     )
@@ -213,6 +220,12 @@ class DocumentDetailsViewModel(
             }
 
             is Event.ToggleExpansionStateOfDocumentCredentialsSection -> toggleExpansionStateOfDocumentCredentialsSection()
+
+            is Event.DocumentCredentialsSectionPrimaryButtonPressed -> {
+                viewState.value.documentDetailsUi?.let { safeDocumentDetailsUi ->
+                    goToAddDocumentScreen(documentFormatType = safeDocumentDetailsUi.documentIdentifier.formatType)
+                }
+            }
         }
     }
 
@@ -415,7 +428,35 @@ class DocumentDetailsViewModel(
     private fun toggleExpansionStateOfDocumentCredentialsSection() {
         setState {
             copy(
-                documentCredentialsInfoIsExpanded = !documentCredentialsInfoIsExpanded
+                documentCredentialsInfoUi = documentCredentialsInfoUi?.copy(
+                    isExpanded = !documentCredentialsInfoUi.isExpanded
+                )
+            )
+        }
+    }
+
+    private fun goToAddDocumentScreen(documentFormatType: FormatType) {
+        val addDocumentScreenRoute = generateComposableNavigationLink(
+            screen = IssuanceScreens.AddDocument,
+            arguments = generateComposableArguments(
+                mapOf(
+                    IssuanceUiConfig.serializedKeyName to uiSerializer.toBase64(
+                        model = IssuanceUiConfig(
+                            flowType = IssuanceFlowType.ExtraDocument(
+                                formatType = documentFormatType
+                            )
+                        ),
+                        parser = IssuanceUiConfig.Parser
+                    )
+                )
+            )
+        )
+
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = addDocumentScreenRoute,
+                popUpToScreenRoute = null,
+                inclusive = null
             )
         }
     }

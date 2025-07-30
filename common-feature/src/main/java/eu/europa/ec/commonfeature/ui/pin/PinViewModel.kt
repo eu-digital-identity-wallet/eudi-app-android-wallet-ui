@@ -20,7 +20,8 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.Form
 import eu.europa.ec.businesslogic.validator.FormValidationResult
 import eu.europa.ec.businesslogic.validator.Rule
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowType
+import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
@@ -352,7 +353,14 @@ class PinViewModel(
         val navigationAfterCreate = ConfigNavigation(
             navigationType = NavigationType.PushScreen(
                 screen = IssuanceScreens.AddDocument,
-                arguments = mapOf("flowType" to IssuanceFlowUiConfig.NO_DOCUMENT.name),
+                arguments = mapOf(
+                    IssuanceUiConfig.serializedKeyName to uiSerializer.toBase64(
+                        model = IssuanceUiConfig(
+                            flowType = IssuanceFlowType.NoDocument
+                        ),
+                        parser = IssuanceUiConfig.Parser
+                    )
+                ),
                 popUpToScreen = CommonScreens.QuickPin
             ),
         )

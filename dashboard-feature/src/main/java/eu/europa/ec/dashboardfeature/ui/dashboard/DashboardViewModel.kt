@@ -18,7 +18,6 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Intent
 import android.net.Uri
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
@@ -192,7 +191,6 @@ class DashboardViewModel(
                     screen = DashboardScreens.DocumentDetails,
                     arguments = generateComposableArguments(
                         mapOf(
-                            "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
                             "documentId" to docId
                         )
                     )

@@ -309,9 +309,6 @@ class PrefsControllerImpl(
 interface PrefKeys {
     fun getCryptoAlias(): String
     fun setCryptoAlias(value: String)
-
-    fun getShowBatchIssuanceCounter(): Boolean
-    fun setShowBatchIssuanceCounter(value: Boolean)
 }
 
 class PrefKeysImpl(
@@ -340,24 +337,5 @@ class PrefKeysImpl(
      */
     override fun setCryptoAlias(value: String) {
         prefsController.setString("CryptoAlias", value)
-    }
-
-    /**
-     * Retrieves the preference for showing the batch issuance counter.
-     *
-     * @return `true` if the batch issuance counter should be shown, `false` otherwise.
-     *         Defaults to `false` if the preference is not set.
-     */
-    override fun getShowBatchIssuanceCounter(): Boolean {
-        return prefsController.getBool("ShowBatchIssuanceCounter", false)
-    }
-
-    /**
-     * Sets the preference for showing the batch issuance counter.
-     *
-     * @param value `true` to show the counter, `false` to hide it.
-     */
-    override fun setShowBatchIssuanceCounter(value: Boolean) {
-        prefsController.setBool("ShowBatchIssuanceCounter", value)
     }
 }

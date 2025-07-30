@@ -19,7 +19,6 @@ package eu.europa.ec.dashboardfeature.interactor
 import android.net.Uri
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
-import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsItemUi
 import eu.europa.ec.dashboardfeature.ui.settings.model.SettingsMenuItemType
 import eu.europa.ec.resourceslogic.R
@@ -29,22 +28,18 @@ import eu.europa.ec.uilogic.component.ListItemDataUi
 import eu.europa.ec.uilogic.component.ListItemLeadingContentDataUi
 import eu.europa.ec.uilogic.component.ListItemMainContentDataUi
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
-import eu.europa.ec.uilogic.component.wrap.SwitchDataUi
 
 interface SettingsInteractor {
     fun getAppVersion(): String
     fun getChangelogUrl(): String?
     fun retrieveLogFileUris(): ArrayList<Uri>
     fun getSettingsItemsUi(changelogUrl: String?): List<SettingsItemUi>
-    fun getShowBatchIssuanceCounter(): Boolean
-    fun toggleShowBatchIssuanceCounter()
 }
 
 class SettingsInteractorImpl(
     private val configLogic: ConfigLogic,
     private val logController: LogController,
     private val resourceProvider: ResourceProvider,
-    private val prefKeys: PrefKeys,
 ) : SettingsInteractor {
 
     override fun getAppVersion(): String = configLogic.appVersion
@@ -56,25 +51,7 @@ class SettingsInteractorImpl(
     }
 
     override fun getSettingsItemsUi(changelogUrl: String?): List<SettingsItemUi> {
-        return buildList<SettingsItemUi> {
-            add(
-                SettingsItemUi(
-                    type = SettingsMenuItemType.SHOW_BATCH_ISSUANCE_COUNTER,
-                    data = ListItemDataUi(
-                        itemId = resourceProvider.getString(R.string.settings_screen_option_show_batch_issuance_counter_id),
-                        mainContentData = ListItemMainContentDataUi.Text(
-                            text = resourceProvider.getString(R.string.settings_screen_option_show_batch_issuance_counter)
-                        ),
-                        trailingContentData = ListItemTrailingContentDataUi.Switch(
-                            switchData = SwitchDataUi(
-                                isChecked = getCurrentShowBatchIssuanceCounter(),
-                                enabled = true,
-                            )
-                        )
-                    )
-                )
-            )
-
+        return buildList {
             add(
                 SettingsItemUi(
                     type = SettingsMenuItemType.RETRIEVE_LOGS,
@@ -113,19 +90,5 @@ class SettingsInteractorImpl(
                 )
             }
         }
-    }
-
-    override fun getShowBatchIssuanceCounter(): Boolean {
-        return getCurrentShowBatchIssuanceCounter()
-    }
-
-    override fun toggleShowBatchIssuanceCounter() {
-        prefKeys.setShowBatchIssuanceCounter(
-            value = !getCurrentShowBatchIssuanceCounter()
-        )
-    }
-
-    private fun getCurrentShowBatchIssuanceCounter(): Boolean {
-        return prefKeys.getShowBatchIssuanceCounter()
     }
 }

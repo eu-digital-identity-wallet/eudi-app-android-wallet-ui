@@ -24,7 +24,6 @@ data class SettingsItemUi(
 )
 
 enum class SettingsMenuItemType {
-    SHOW_BATCH_ISSUANCE_COUNTER,
     RETRIEVE_LOGS,
     CHANGELOG,
 }

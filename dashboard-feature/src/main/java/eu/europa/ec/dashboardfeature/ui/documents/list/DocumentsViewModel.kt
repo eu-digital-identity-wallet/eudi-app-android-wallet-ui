@@ -19,7 +19,8 @@ package eu.europa.ec.dashboardfeature.ui.documents.list
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.businesslogic.validator.model.FilterableList
 import eu.europa.ec.businesslogic.validator.model.SortOrder
-import eu.europa.ec.commonfeature.config.IssuanceFlowUiConfig
+import eu.europa.ec.commonfeature.config.IssuanceFlowType
+import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.corelogic.model.DeferredDocumentDataDomain
@@ -547,7 +548,6 @@ class DocumentsViewModel(
                     screen = DashboardScreens.DocumentDetails,
                     arguments = generateComposableArguments(
                         mapOf(
-                            "detailsType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT,
                             "documentId" to docId
                         )
                     )
@@ -557,14 +557,24 @@ class DocumentsViewModel(
     }
 
     private fun goToAddDocument() {
-        setEffect {
-            Effect.Navigation.SwitchScreen(
-                screenRoute = generateComposableNavigationLink(
-                    screen = IssuanceScreens.AddDocument,
-                    arguments = generateComposableArguments(
-                        mapOf("flowType" to IssuanceFlowUiConfig.EXTRA_DOCUMENT)
+        val addDocumentScreenRoute = generateComposableNavigationLink(
+            screen = IssuanceScreens.AddDocument,
+            arguments = generateComposableArguments(
+                mapOf(
+                    IssuanceUiConfig.serializedKeyName to uiSerializer.toBase64(
+                        model = IssuanceUiConfig(
+                            flowType = IssuanceFlowType.ExtraDocument(
+                                formatType = null
+                            )
+                        ),
+                        parser = IssuanceUiConfig.Parser
                     )
                 )
+            )
+        )
+        setEffect {
+            Effect.Navigation.SwitchScreen(
+                screenRoute = addDocumentScreenRoute
             )
         }
     }
@@ -580,7 +590,11 @@ class DocumentsViewModel(
                                 QrScanUiConfig(
                                     title = resourceProvider.getString(R.string.issuance_qr_scan_title),
                                     subTitle = resourceProvider.getString(R.string.issuance_qr_scan_subtitle),
-                                    qrScanFlow = QrScanFlow.Issuance(IssuanceFlowUiConfig.EXTRA_DOCUMENT)
+                                    qrScanFlow = QrScanFlow.Issuance(
+                                        issuanceFlowType = IssuanceFlowType.ExtraDocument(
+                                            formatType = null
+                                        )
+                                    )
                                 ),
                                 QrScanUiConfig.Parser
                             )
