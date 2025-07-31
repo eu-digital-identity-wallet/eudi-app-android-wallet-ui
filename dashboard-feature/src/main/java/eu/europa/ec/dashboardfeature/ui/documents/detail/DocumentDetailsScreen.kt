@@ -500,10 +500,7 @@ private fun ExpandedDocumentCredentials(
                     enter = fadeIn(),
                     exit = fadeOut(),
                     resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                ),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceDim,
-            )
+                )
         ) {
             Column(
                 modifier = Modifier
