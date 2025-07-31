@@ -16,10 +16,13 @@
 
 package eu.europa.ec.uilogic.navigation.helper
 
+import android.R
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.content.edit
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.extension.toUri
@@ -235,5 +238,24 @@ private fun notify(context: Context, action: String, bundle: Bundle? = null) {
         intent.action = action
         bundle?.let { intent.putExtras(it) }
         context.sendBroadcast(intent)
+    }
+}
+
+@SuppressLint("MutatingSharedPrefs")
+fun Intent.addIssuer(context: Context) {
+    this.extras?.getString("android.intent.extra.TEXT")?.let { url ->
+        if (url.contains("issuer", ignoreCase = false)) {
+            val ISSUER_CRUD_PREFS = "IssuerCrudPrefs"
+            val selectedIssuerKey = "selected_issuer"
+            val issuerSetKey = "issuer_set"
+            val separator = ":!:"
+            val sharedPrefs = context.getSharedPreferences(ISSUER_CRUD_PREFS, Context.MODE_PRIVATE)
+            val stringSet = sharedPrefs.getStringSet(issuerSetKey, null) ?: hashSetOf<String>()
+            stringSet.add("$url$separator$url")
+            sharedPrefs.edit() {
+                putStringSet(issuerSetKey, stringSet)
+                putString(selectedIssuerKey, url)
+            }
+        }
     }
 }

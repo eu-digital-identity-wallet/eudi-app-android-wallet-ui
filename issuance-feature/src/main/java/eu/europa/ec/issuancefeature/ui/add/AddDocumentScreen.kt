@@ -29,8 +29,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +45,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,6 +53,7 @@ import androidx.navigation.NavController
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
+import eu.europa.ec.issuancefeature.BuildConfig
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -112,32 +117,39 @@ fun AddDocumentScreen(
             }
         )
     ) { paddingValues ->
-        Content(
-            state = state,
-            effectFlow = viewModel.effect,
-            onEventSend = { viewModel.setEvent(it) },
-            onNavigationRequested = { navigationEffect ->
-                when (navigationEffect) {
-                    is Effect.Navigation.Pop -> navController.popBackStack()
-                    is Effect.Navigation.SwitchScreen -> {
-                        navController.navigate(navigationEffect.screenRoute) {
-                            popUpTo(IssuanceScreens.AddDocument.screenRoute) {
-                                inclusive = navigationEffect.inclusive
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            TopBarWithChangeIssuer {
+                navController.navigate((BuildConfig.DEEPLINK + IssuanceScreens.ChangeIssuer.screenRoute).toUri())
+            }
+            Content(
+                state = state,
+                effectFlow = viewModel.effect,
+                onEventSend = { viewModel.setEvent(it) },
+                onNavigationRequested = { navigationEffect ->
+                    when (navigationEffect) {
+                        is Effect.Navigation.Pop -> navController.popBackStack()
+                        is Effect.Navigation.SwitchScreen -> {
+                            navController.navigate(navigationEffect.screenRoute) {
+                                popUpTo(IssuanceScreens.AddDocument.screenRoute) {
+                                    inclusive = navigationEffect.inclusive
+                                }
                             }
                         }
-                    }
 
-                    is Effect.Navigation.Finish -> context.finish()
-                    is Effect.Navigation.OpenDeepLinkAction -> handleDeepLinkAction(
-                        navController,
-                        navigationEffect.deepLinkUri,
-                        navigationEffect.arguments
-                    )
-                }
-            },
-            paddingValues = paddingValues,
-            context = context,
-        )
+                        is Effect.Navigation.Finish -> context.finish()
+                        is Effect.Navigation.OpenDeepLinkAction -> handleDeepLinkAction(
+                            navController,
+                            navigationEffect.deepLinkUri,
+                            navigationEffect.arguments
+                        )
+                    }
+                },
+                paddingValues = paddingValues,
+                context = context
+            )
+        }
     }
 
     LifecycleEffect(
@@ -153,6 +165,28 @@ fun AddDocumentScreen(
     ) {
         viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopBarWithChangeIssuer(
+    modifier: Modifier = Modifier,
+    onIssuerChangeClick: () -> Unit
+) {
+    TopAppBar(
+        title = {},
+        actions = {
+            TextButton(
+                onClick = onIssuerChangeClick,
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Change issuer")
+            }
+        },
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -175,7 +209,7 @@ private fun Content(
                 .weight(1f)
                 .padding(
                     paddingValues = PaddingValues(
-                        top = paddingValues.calculateTopPadding(),
+                        top = 0.dp,
                         bottom = 0.dp,
                         start = paddingValues.calculateStartPadding(layoutDirection),
                         end = paddingValues.calculateEndPadding(layoutDirection)

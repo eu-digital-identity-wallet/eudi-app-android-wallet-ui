@@ -32,6 +32,7 @@ import eu.europa.ec.issuancefeature.ui.add.AddDocumentScreen
 import eu.europa.ec.issuancefeature.ui.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.offer.DocumentOfferScreen
 import eu.europa.ec.issuancefeature.ui.success.DocumentIssuanceSuccessScreen
+import eu.europa.ec.issuancefeature.ui.add.issuer.IssuerScreen
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import org.koin.androidx.compose.koinViewModel
@@ -42,6 +43,21 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         startDestination = IssuanceScreens.AddDocument.screenRoute,
         route = ModuleRoute.IssuanceModule.route
     ) {
+        // Change Issuer
+        composable(
+            route = IssuanceScreens.ChangeIssuer.screenRoute,
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern =
+                        BuildConfig.DEEPLINK + IssuanceScreens.ChangeIssuer.screenRoute
+                }
+            ),
+        ) {
+            IssuerScreen(
+                navController,
+            )
+        }
+
         // Add Document
         composable(
             route = IssuanceScreens.AddDocument.screenRoute,
