@@ -123,7 +123,7 @@ class RQESConfigImpl : EudiRQESUiConfig {
             QtspData(
                 name = "your_name",
                 endpoint = "your_endpoint".toUri(),
-                tsaUrl = null,
+                tsaUrl = "your_tsaUrl",
                 clientId = "your_clientid",
                 clientSecret = "your_secret",
                 authFlowRedirectionURI = URI.create("your_uri"),
