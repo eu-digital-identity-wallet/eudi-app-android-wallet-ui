@@ -231,15 +231,15 @@ graph TD;
 
 Issuance
 
-[Issuance](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/60732c14-653a-46d5-a87a-8973f8823d0f)
+[Issuance](https://github.com/user-attachments/assets/eeecc356-8b96-4c86-8347-7a9dd5e5251d)
 
 Presentation
 
-[Presentation](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/21050222-2c07-4bcd-983b-4f6d4cf20248)
+[Presentation](https://github.com/user-attachments/assets/2ffc230f-f3fd-4efb-95aa-5a536a3f86ac)
 
 Proximity
 
-[Proximity](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/assets/129499766/c92f1818-e64c-463d-98c5-4f9f87c61760)
+[Proximity](https://github.com/user-attachments/assets/63da7498-1b83-4949-a058-ab086584d1c8)
 
 ## Disclaimer
 
