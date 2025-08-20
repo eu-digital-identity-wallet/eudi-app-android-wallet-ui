@@ -151,7 +151,7 @@ private fun Content(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = SPACING_SMALL.dp),
+                .padding(vertical = SPACING_SMALL.dp),
             verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
         ) {
             state.items.forEach { successItem ->
