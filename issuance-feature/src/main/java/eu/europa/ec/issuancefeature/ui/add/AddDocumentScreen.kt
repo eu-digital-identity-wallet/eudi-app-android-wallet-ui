@@ -21,10 +21,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -179,14 +182,19 @@ private fun Content(
                 .padding(
                     paddingValues = PaddingValues(
                         top = paddingValues.calculateTopPadding(),
-                        bottom = 0.dp,
                         start = paddingValues.calculateStartPadding(layoutDirection),
                         end = paddingValues.calculateEndPadding(layoutDirection)
                     )
+                )
+                .then(
+                    if (!state.showFooterScanner) {
+                        Modifier.navigationBarsPadding()
+                    } else {
+                        Modifier
+                    }
                 ),
             state = state,
             onEventSend = onEventSend,
-            paddingValues = paddingValues,
             context = context,
         )
 
@@ -222,7 +230,6 @@ private fun MainContent(
     modifier: Modifier = Modifier,
     state: State,
     onEventSend: (Event) -> Unit,
-    paddingValues: PaddingValues,
     context: Context,
 ) {
     Column(
@@ -240,9 +247,11 @@ private fun MainContent(
                 informativeText = stringResource(R.string.issuance_add_document_no_options)
             )
         } else {
+
+            VSpacer.Medium()
+
             Options(
                 options = state.options,
-                paddingValues = paddingValues,
                 modifier = Modifier.fillMaxSize(),
                 onOptionClicked = { itemId ->
                     onEventSend(
@@ -261,19 +270,14 @@ private fun MainContent(
 @Composable
 private fun Options(
     options: List<AddDocumentUi>,
-    paddingValues: PaddingValues,
     modifier: Modifier = Modifier,
     onOptionClicked: (itemId: String) -> Unit,
 ) {
     LazyColumn(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp),
-        contentPadding = PaddingValues(
-            top = SPACING_MEDIUM.dp,
-            bottom = paddingValues.calculateBottomPadding()
-        ),
+        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
     ) {
-        options.forEach { option ->
+        options.forEachIndexed { index, option ->
             item {
                 WrapListItem(
                     modifier = Modifier.fillMaxWidth(),
@@ -284,6 +288,11 @@ private fun Options(
                         onOptionClicked(optionListItemDataUi.itemId)
                     }
                 )
+            }
+            if (index == options.lastIndex) {
+                item {
+                    Spacer(modifier = Modifier.height(SPACING_MEDIUM.dp))
+                }
             }
         }
     }

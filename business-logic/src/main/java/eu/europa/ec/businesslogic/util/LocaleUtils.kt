@@ -28,10 +28,6 @@ object LocaleUtils {
      *  @return [Locale] object
      */
     fun getLocaleFromSelectedLanguage(selectedLanguage: String): Locale {
-        val (langFirstPart, langSecondPart) = selectedLanguage.split("-")
-        return Locale(
-            langFirstPart,
-            langSecondPart
-        )
+        return Locale.forLanguageTag(selectedLanguage)
     }
 }

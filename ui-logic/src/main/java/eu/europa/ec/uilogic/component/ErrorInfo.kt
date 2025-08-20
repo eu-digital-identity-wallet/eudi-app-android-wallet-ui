@@ -25,13 +25,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SIZE_SMALL
+import eu.europa.ec.uilogic.component.utils.screenWidthInDp
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
 
 @Composable
@@ -41,8 +41,8 @@ fun ErrorInfo(
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     isIconEnabled: Boolean = false,
 ) {
-    val screenWidth = LocalConfiguration.current.screenWidthDp
-    val errorIconSize = (screenWidth / 6).dp
+
+    val errorIconSize = screenWidthInDp(true) / 6
 
     Column(
         modifier = modifier,
@@ -51,8 +51,7 @@ fun ErrorInfo(
     ) {
         WrapIcon(
             iconData = AppIcons.Error,
-            modifier = Modifier
-                .size(errorIconSize),
+            modifier = Modifier.size(errorIconSize),
             customTint = contentColor,
             enabled = isIconEnabled,
         )

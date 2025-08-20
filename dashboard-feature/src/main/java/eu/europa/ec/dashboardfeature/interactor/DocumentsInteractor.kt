@@ -68,6 +68,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.lastOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -507,7 +508,7 @@ class DocumentsInteractorImpl(
                     is DocumentInteractorRetryIssuingDeferredDocumentPartialState.NotReady -> {}
 
                     is DocumentInteractorRetryIssuingDeferredDocumentPartialState.Expired -> {
-                        deleteDocument(result.documentId)
+                        deleteDocument(result.documentId).lastOrNull()
                     }
                 }
             }

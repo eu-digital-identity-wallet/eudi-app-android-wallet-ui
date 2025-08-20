@@ -89,7 +89,7 @@ fun PinScreen(
         onBack = { viewModel.setEvent(state.onBackEvent) },
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
-                stickyBottomModifier = Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues),
                 stickyBottomConfig = StickyBottomConfig(
