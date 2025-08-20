@@ -83,7 +83,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-                    targetSdk = 34
+                    targetSdk = 36
 
                     addConfigField("DEEPLINK", "$walletScheme://")
                     addConfigField("EUDI_OPENID4VP_SCHEME", eudiOpenId4VpScheme)

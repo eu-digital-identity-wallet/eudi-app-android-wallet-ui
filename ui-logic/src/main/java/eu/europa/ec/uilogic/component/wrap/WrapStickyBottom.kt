@@ -48,7 +48,7 @@ data class StickyBottomConfig(
 
 @Composable
 fun WrapStickyBottomContent(
-    stickyBottomModifier: Modifier = Modifier,
+    modifier: Modifier = Modifier,
     stickyBottomConfig: StickyBottomConfig,
     content: @Composable () -> Unit,
 ) {
@@ -67,7 +67,7 @@ fun WrapStickyBottomContent(
                 }
 
                 Row(
-                    modifier = stickyBottomModifier,
+                    modifier = modifier,
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
@@ -83,7 +83,7 @@ fun WrapStickyBottomContent(
 
         is StickyBottomType.TwoButtons -> {
             Row(
-                modifier = stickyBottomModifier,
+                modifier = modifier,
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {

@@ -51,9 +51,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -209,8 +209,7 @@ private fun TopBar(
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                horizontal = SPACING_SMALL.dp,
-                vertical = SPACING_MEDIUM.dp
+                all = SPACING_SMALL.dp
             )
     ) {
         WrapIconButton(
@@ -256,12 +255,11 @@ private fun Content(
             .padding(
                 paddingValues = PaddingValues(
                     top = paddingValues.calculateTopPadding(),
-                    bottom = 0.dp,
-                    start = paddingValues.calculateStartPadding(LayoutDirection.Ltr),
-                    end = paddingValues.calculateEndPadding(LayoutDirection.Ltr)
+                    start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
+                    end = paddingValues.calculateEndPadding(LocalLayoutDirection.current)
                 )
             ),
-        contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding()),
+        contentPadding = PaddingValues(bottom = SPACING_MEDIUM.dp),
     ) {
         item {
             val searchItemUi =

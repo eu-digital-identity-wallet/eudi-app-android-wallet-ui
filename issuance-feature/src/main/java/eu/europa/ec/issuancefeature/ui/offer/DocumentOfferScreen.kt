@@ -88,7 +88,7 @@ fun DocumentOfferScreen(
         onBack = { viewModel.setEvent(Event.BackButtonPressed) },
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
-                stickyBottomModifier = Modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .padding(paddingValues),
                 stickyBottomConfig = StickyBottomConfig(

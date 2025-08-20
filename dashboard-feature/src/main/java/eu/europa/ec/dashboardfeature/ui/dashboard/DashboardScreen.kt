@@ -95,7 +95,7 @@ internal fun DashboardScreen(
         NavHost(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(bottom = padding.calculateBottomPadding()),
             navController = bottomNavigationController,
             startDestination = BottomNavigationItem.Home.route
         ) {

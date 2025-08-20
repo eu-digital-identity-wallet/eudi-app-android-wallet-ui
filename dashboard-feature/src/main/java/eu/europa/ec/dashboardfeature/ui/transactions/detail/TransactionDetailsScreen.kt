@@ -17,6 +17,7 @@
 package eu.europa.ec.dashboardfeature.ui.transactions.detail
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
@@ -114,58 +116,61 @@ private fun Content(
     onNavigationRequested: (Effect.Navigation) -> Unit,
     paddingValues: PaddingValues,
 ) {
-    Column(
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
             .padding(
                 paddingValues = PaddingValues(
                     top = paddingValues.calculateTopPadding(),
-                    bottom = 0.dp,
                     start = paddingValues.calculateStartPadding(LocalLayoutDirection.current),
                     end = paddingValues.calculateEndPadding(LocalLayoutDirection.current)
                 )
             )
+            .navigationBarsPadding()
     ) {
-        ContentTitle(title = state.title)
-
-        state.transactionDetailsUi?.let { safeTransactionDetailsUi ->
-            TransactionDetailsCard(
-                modifier = Modifier.fillMaxWidth(),
-                item = safeTransactionDetailsUi.transactionDetailsCardUi
-            )
-        }
-
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = SPACING_LARGE.dp),
-            verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-
-            state.transactionDetailsUi?.transactionDetailsDataShared?.let { safeTransactionDetailsDataShared ->
-                ExpandableDataSection(
-                    modifier = Modifier.fillMaxWidth(),
-                    sectionTitle = stringResource(R.string.transaction_details_data_shared_section_title),
-                    dataItems = safeTransactionDetailsDataShared.dataSharedItems,
-                    onEventSend = onEventSend,
-                )
-            }
-
-            state.transactionDetailsUi?.transactionDetailsDataSigned?.dataSignedItems?.let { safeDataSignedItems ->
-                ExpandableDataSection(
-                    modifier = Modifier.fillMaxWidth(),
-                    sectionTitle = stringResource(R.string.transaction_details_data_signed_section_title),
-                    dataItems = safeDataSignedItems,
-                    onEventSend = onEventSend,
-                )
-            }
+            ContentTitle(title = state.title)
 
             state.transactionDetailsUi?.let { safeTransactionDetailsUi ->
-                if (safeTransactionDetailsUi.transactionDetailsDataShared.dataSharedItems.isNotEmpty()
-                    || safeTransactionDetailsUi.transactionDetailsDataSigned?.dataSignedItems?.isNotEmpty() == true
-                ) {
-                    ButtonsSection(onEventSend = onEventSend)
+                TransactionDetailsCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    item = safeTransactionDetailsUi.transactionDetailsCardUi
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = SPACING_MEDIUM.dp),
+                verticalArrangement = Arrangement.spacedBy(SPACING_LARGE.dp)
+            ) {
+
+                state.transactionDetailsUi?.transactionDetailsDataShared?.let { safeTransactionDetailsDataShared ->
+                    ExpandableDataSection(
+                        modifier = Modifier.fillMaxWidth(),
+                        sectionTitle = stringResource(R.string.transaction_details_data_shared_section_title),
+                        dataItems = safeTransactionDetailsDataShared.dataSharedItems,
+                        onEventSend = onEventSend,
+                    )
+                }
+
+                state.transactionDetailsUi?.transactionDetailsDataSigned?.dataSignedItems?.let { safeDataSignedItems ->
+                    ExpandableDataSection(
+                        modifier = Modifier.fillMaxWidth(),
+                        sectionTitle = stringResource(R.string.transaction_details_data_signed_section_title),
+                        dataItems = safeDataSignedItems,
+                        onEventSend = onEventSend,
+                    )
+                }
+
+                state.transactionDetailsUi?.let { safeTransactionDetailsUi ->
+                    if (safeTransactionDetailsUi.transactionDetailsDataShared.dataSharedItems.isNotEmpty()
+                        || safeTransactionDetailsUi.transactionDetailsDataSigned?.dataSignedItems?.isNotEmpty() == true
+                    ) {
+                        ButtonsSection(onEventSend = onEventSend)
+                    }
                 }
             }
         }
