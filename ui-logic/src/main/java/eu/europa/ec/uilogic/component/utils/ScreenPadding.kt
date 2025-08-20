@@ -30,13 +30,18 @@ enum class TopSpacing {
 }
 
 internal fun screenPaddings(
+    hasStickyBottom: Boolean,
     append: PaddingValues? = null,
     topSpacing: TopSpacing = TopSpacing.WithToolbar
 ) = PaddingValues(
     start = HORIZONTAL_SCREEN_PADDING.dp,
     top = calculateTopSpacing(topSpacing).dp + (append?.calculateTopPadding() ?: 0.dp),
     end = HORIZONTAL_SCREEN_PADDING.dp,
-    bottom = BOTTOM_SCREEN_PADDING.dp + (append?.calculateBottomPadding() ?: 0.dp)
+    bottom = if (!hasStickyBottom) {
+        BOTTOM_SCREEN_PADDING.dp + (append?.calculateBottomPadding() ?: 0.dp)
+    } else {
+        0.dp
+    }
 )
 
 internal fun stickyBottomPaddings(

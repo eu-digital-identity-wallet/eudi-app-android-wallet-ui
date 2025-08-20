@@ -202,7 +202,7 @@ private fun Content(
         DisplayRequestItems(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = SPACING_SMALL.dp),
+                .padding(vertical = SPACING_SMALL.dp),
             requestDocuments = state.items,
             noData = state.noItems,
             onEventSend = onEventSend,
