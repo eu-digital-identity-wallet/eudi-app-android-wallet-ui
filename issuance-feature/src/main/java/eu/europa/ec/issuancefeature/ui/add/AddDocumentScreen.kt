@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -185,13 +184,6 @@ private fun Content(
                         start = paddingValues.calculateStartPadding(layoutDirection),
                         end = paddingValues.calculateEndPadding(layoutDirection)
                     )
-                )
-                .then(
-                    if (!state.showFooterScanner) {
-                        Modifier.navigationBarsPadding()
-                    } else {
-                        Modifier
-                    }
                 ),
             state = state,
             onEventSend = onEventSend,
@@ -253,6 +245,7 @@ private fun MainContent(
             Options(
                 options = state.options,
                 modifier = Modifier.fillMaxSize(),
+                footerIsShown = state.showFooterScanner,
                 onOptionClicked = { itemId ->
                     onEventSend(
                         Event.IssueDocument(
@@ -270,6 +263,7 @@ private fun MainContent(
 @Composable
 private fun Options(
     options: List<AddDocumentUi>,
+    footerIsShown: Boolean,
     modifier: Modifier = Modifier,
     onOptionClicked: (itemId: String) -> Unit,
 ) {
@@ -291,7 +285,17 @@ private fun Options(
             }
             if (index == options.lastIndex) {
                 item {
-                    Spacer(modifier = Modifier.height(SPACING_MEDIUM.dp))
+                    Spacer(
+                        modifier = Modifier
+                            .padding(bottom = SPACING_MEDIUM.dp)
+                            .then(
+                                if (!footerIsShown) {
+                                    Modifier.navigationBarsPadding()
+                                } else {
+                                    Modifier
+                                }
+                            )
+                    )
                 }
             }
         }

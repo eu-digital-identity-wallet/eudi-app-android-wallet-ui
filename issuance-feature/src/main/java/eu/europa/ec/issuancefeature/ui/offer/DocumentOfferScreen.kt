@@ -173,9 +173,7 @@ private fun Content(
         } else {
             // Screen Main Content
             MainContent(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = SPACING_SMALL.dp),
+                modifier = Modifier.fillMaxSize(),
                 documents = state.documents,
             )
         }

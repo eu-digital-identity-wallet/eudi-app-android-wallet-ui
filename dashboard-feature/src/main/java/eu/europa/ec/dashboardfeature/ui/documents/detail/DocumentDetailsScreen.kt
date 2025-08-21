@@ -244,7 +244,6 @@ private fun Content(
                         end = paddingValues.calculateStartPadding(LocalLayoutDirection.current)
                     )
                 )
-                .navigationBarsPadding()
         ) {
 
             // Screen title
@@ -654,6 +653,7 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
             .padding(
                 vertical = SPACING_MEDIUM.dp
             )
+            .navigationBarsPadding()
     ) {
         WrapButton(
             modifier = Modifier.fillMaxWidth(),
