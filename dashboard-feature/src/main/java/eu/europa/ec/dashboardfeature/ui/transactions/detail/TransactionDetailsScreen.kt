@@ -125,11 +125,11 @@ private fun Content(
                     end = paddingValues.calculateEndPadding(LocalLayoutDirection.current)
                 )
             )
-            .navigationBarsPadding()
     ) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
         ) {
             ContentTitle(title = state.title)
 
