@@ -14,6 +14,7 @@
 # update_fastlane
 
 require "date"
+require 'fileutils'
 
 default_platform(:android)
 
@@ -114,19 +115,40 @@ platform :android do
 
   desc "Rename apk before release"
   lane :prepare_binary do |values|
-    appVersion = values[:appVersion]
-    buildType = values[:buildType]
+    app_version = values[:appVersion]
+    build_type  = values[:buildType]
 
-    defaultApkName = "app-#{buildType}-release.apk"
-    newApkName = "#{appVersion}.apk"
+    project_root = File.expand_path("..", __dir__)
+    base_dir = File.join(
+      project_root, 
+      "app", 
+      "build", 
+      "outputs", 
+      "apk", 
+      build_type, 
+      "release"
+    )
 
-    defaultApkPath = "app/build/outputs/apk/#{buildType}/release/#{defaultApkName}"
-    newApkPath = "app/build/outputs/apk/#{buildType}/release/#{newApkName}"
+    default_apk_name = "app-#{build_type}-release.apk"
+    new_apk_name = "#{app_version}.apk"
 
-    sh("cd .. && mv #{defaultApkPath} #{newApkPath}")
+    default_apk_path = File.join(base_dir, default_apk_name)
+    new_apk_path = File.join(base_dir, new_apk_name)
 
-    puts "New Apk Path For Upload: #{newApkPath}"
-    newApkPath
+    unless File.exist?(default_apk_path)
+      raise "APK not found at: #{default_apk_path}"
+    end
+
+    begin
+      FileUtils.rm_f(new_apk_path)
+      FileUtils.mv(default_apk_path, new_apk_path)
+    rescue => e
+      raise "Failed to rename APK: #{e.message}"
+    end
+
+    puts "Renamed #{default_apk_name} -> #{new_apk_name}"
+    puts "New APK Path For Upload: #{new_apk_path}"
+    new_apk_path
   end
 
   desc "Release to github"
