@@ -143,7 +143,7 @@ fun ContentScreen(
         snackbarHost = snackbarHost,
     ) { padding ->
 
-        val forcedBottomPadding = remember(padding) {
+        val screenPaddingsIgnoringSticky = remember(padding) {
             screenPaddings(
                 hasStickyBottom = false,
                 append = padding
@@ -157,7 +157,7 @@ fun ContentScreen(
             if (contentErrorConfig != null) {
                 ContentError(
                     config = contentErrorConfig,
-                    paddingValues = forcedBottomPadding
+                    paddingValues = screenPaddingsIgnoringSticky
                 )
             } else {
                 Column(modifier = Modifier.fillMaxSize()) {
@@ -181,7 +181,7 @@ fun ContentScreen(
                         ) {
                             stickyBottomContent(
                                 stickyBottomPaddings(
-                                    contentScreenPaddings = forcedBottomPadding,
+                                    contentScreenPaddings = screenPaddingsIgnoringSticky,
                                     layoutDirection = LocalLayoutDirection.current
                                 )
                             )

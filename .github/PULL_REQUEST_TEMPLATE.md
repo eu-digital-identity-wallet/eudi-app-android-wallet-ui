@@ -1,6 +1,3 @@
-# Description of changes
-Add a description of the change here
-
 ## Type of change
 
 Please delete options that are not relevant.
