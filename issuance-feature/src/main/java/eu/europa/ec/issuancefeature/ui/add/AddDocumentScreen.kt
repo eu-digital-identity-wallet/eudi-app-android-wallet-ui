@@ -77,6 +77,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.paddingFrom
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.channels.Channel
@@ -178,13 +179,7 @@ private fun Content(
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
-                .padding(
-                    paddingValues = PaddingValues(
-                        top = paddingValues.calculateTopPadding(),
-                        start = paddingValues.calculateStartPadding(layoutDirection),
-                        end = paddingValues.calculateEndPadding(layoutDirection)
-                    )
-                ),
+                .paddingFrom(paddingValues, bottom = false),
             state = state,
             onEventSend = onEventSend,
             context = context,
