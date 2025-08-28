@@ -30,7 +30,7 @@ platform :android do
     clean_build_artifacts
   end
 
-  desc "Build Wallet and upload it to appcenter"
+  desc "Build & Deploy Wallet"
   lane :deploy do
 
     git_pull
@@ -89,13 +89,13 @@ platform :android do
     end
 
     if ENV['GITHUB_RELEASE_REPO'] && ENV['GITHUB_RELEASE_TOKEN']
-      walletApkPath = prepare_binary(
+      apkPath = prepare_binary(
         appVersion: fullVersion,
         buildType: ENV["APP_BUILD_TYPE"]
       )
 
       extraAttachments = ENV['GITHUB_EXTRA_ATTACHMENTS']
-      attachments = [walletApkPath]
+      attachments = [apkPath]
     
       if extraAttachments && !extraAttachments.strip.empty?
         extraPaths = extraAttachments.split(',').map(&:strip)
