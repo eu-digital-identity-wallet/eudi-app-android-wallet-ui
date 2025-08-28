@@ -15,6 +15,10 @@
  */
 
 pluginManagement {
+    val toolChainResolverVersion: String by extra
+    plugins {
+        id("org.gradle.toolchains.foojay-resolver-convention") version toolChainResolverVersion
+    }
     includeBuild("build-logic")
     repositories {
         google()
@@ -22,6 +26,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -36,6 +41,10 @@ dependencyResolutionManagement {
         }
         mavenLocal()
     }
+}
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention")
 }
 
 rootProject.name = "EUDI Wallet"
