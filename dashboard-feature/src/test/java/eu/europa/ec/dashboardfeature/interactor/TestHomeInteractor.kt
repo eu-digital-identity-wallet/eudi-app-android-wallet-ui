@@ -19,6 +19,7 @@ package eu.europa.ec.dashboardfeature.interactor
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.os.Build
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -42,7 +43,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowBluetoothAdapter
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
+@Config(application = TestApplication::class, sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM])
 class TestHomeInteractor {
 
     @get:Rule

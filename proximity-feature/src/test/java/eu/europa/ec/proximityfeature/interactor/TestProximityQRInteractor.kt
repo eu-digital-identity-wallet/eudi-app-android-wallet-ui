@@ -16,6 +16,7 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
+import android.os.Build
 import androidx.activity.ComponentActivity
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
@@ -55,7 +56,7 @@ import org.robolectric.annotation.Config
 import java.net.URI
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
+@Config(application = TestApplication::class, sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM])
 class TestProximityQRInteractor {
 
     @get:Rule

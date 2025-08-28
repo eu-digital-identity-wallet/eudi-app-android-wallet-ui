@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.interactor
 
+import android.os.Build
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
@@ -35,7 +36,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
+@Config(application = TestApplication::class, sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM])
 class TestDeviceAuthenticationInteractor {
 
     @Mock

@@ -16,6 +16,7 @@
 
 package eu.europa.ec.commonfeature.interactor
 
+import android.os.Build
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthenticationController
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
@@ -42,7 +43,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
+@Config(application = TestApplication::class, sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM])
 class TestBiometricInteractor {
 
     @get:Rule
