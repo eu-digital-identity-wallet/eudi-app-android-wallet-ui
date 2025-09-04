@@ -93,6 +93,6 @@ class PrefsPinStorageProvider(
             byteArray = decodeFromBase64(encryptedBase64)
         )
 
-        return decryptedBytes.toString(Charsets.UTF_8)
+        return String(decryptedBytes, Charsets.UTF_8)
     }
 }
