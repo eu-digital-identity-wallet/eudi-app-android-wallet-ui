@@ -39,6 +39,7 @@ import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.uilogic.component.AppIconAndText
 import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ImePaddingConfig
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -67,6 +68,7 @@ fun DocumentOfferCodeScreen(
         isLoading = state.isLoading,
         contentErrorConfig = state.error,
         navigatableAction = ScreenNavigateAction.BACKABLE,
+        imePaddingConfig = ImePaddingConfig.ONLY_CONTENT,
         onBack = { viewModel.setEvent(Event.Pop) },
     ) { paddingValues ->
         Content(

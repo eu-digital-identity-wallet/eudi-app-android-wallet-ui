@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -80,6 +81,10 @@ enum class ScreenNavigateAction {
     BACKABLE, CANCELABLE, NONE
 }
 
+enum class ImePaddingConfig {
+    NO_PADDING, WITH_BOTTOM_BAR, ONLY_CONTENT
+}
+
 data class BroadcastAction(val intentFilters: List<String>, val callback: (Intent?) -> Unit)
 
 @Composable
@@ -96,6 +101,7 @@ fun ContentScreen(
     snackbarHost: @Composable () -> Unit = {},
     contentErrorConfig: ContentErrorConfig? = null,
     broadcastAction: BroadcastAction? = null,
+    imePaddingConfig: ImePaddingConfig = ImePaddingConfig.NO_PADDING,
     bodyContent: @Composable (PaddingValues) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -133,6 +139,13 @@ fun ContentScreen(
                     modifier = Modifier
                         .wrapContentSize()
                         .navigationBarsPadding()
+                        .then(
+                            if (imePaddingConfig == ImePaddingConfig.WITH_BOTTOM_BAR) {
+                                Modifier.imePadding()
+                            } else {
+                                Modifier
+                            }
+                        )
                 ) {
                     bottomBar()
                 }
@@ -160,7 +173,17 @@ fun ContentScreen(
                     paddingValues = screenPaddingsIgnoringSticky
                 )
             } else {
-                Column(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (imePaddingConfig == ImePaddingConfig.ONLY_CONTENT) {
+                                Modifier.imePadding()
+                            } else {
+                                Modifier
+                            }
+                        )
+                ) {
 
                     Box(modifier = Modifier.weight(1f)) {
                         bodyContent(

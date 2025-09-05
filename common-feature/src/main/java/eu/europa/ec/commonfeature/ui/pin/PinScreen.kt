@@ -45,6 +45,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIconAndText
 import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ImePaddingConfig
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
@@ -87,6 +88,7 @@ fun PinScreen(
         isLoading = state.isLoading,
         navigatableAction = state.action,
         onBack = { viewModel.setEvent(state.onBackEvent) },
+        imePaddingConfig = ImePaddingConfig.ONLY_CONTENT,
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 modifier = Modifier

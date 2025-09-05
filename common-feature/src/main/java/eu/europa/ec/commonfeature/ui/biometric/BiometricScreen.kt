@@ -46,6 +46,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ImePaddingConfig
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -89,7 +90,8 @@ fun BiometricScreen(
         onBack = {
             viewModel.setEvent(Event.OnNavigateBack)
         },
-        contentErrorConfig = state.error
+        contentErrorConfig = state.error,
+        imePaddingConfig = ImePaddingConfig.ONLY_CONTENT
     ) {
         Body(
             state = state,
