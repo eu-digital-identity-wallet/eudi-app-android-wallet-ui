@@ -86,7 +86,7 @@ internal fun DashboardScreen(
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
+        skipPartiallyExpanded = true
     )
 
     Scaffold(
