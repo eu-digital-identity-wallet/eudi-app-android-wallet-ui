@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.DropdownMenu
@@ -138,7 +139,6 @@ fun ContentScreen(
                 Box(
                     modifier = Modifier
                         .wrapContentSize()
-                        .navigationBarsPadding()
                         .then(
                             if (imePaddingConfig == ImePaddingConfig.WITH_BOTTOM_BAR) {
                                 Modifier.imePadding()
@@ -170,7 +170,9 @@ fun ContentScreen(
             if (contentErrorConfig != null) {
                 ContentError(
                     config = contentErrorConfig,
-                    paddingValues = screenPaddingsIgnoringSticky
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(screenPaddingsIgnoringSticky)
                 )
             } else {
                 Column(
@@ -199,6 +201,7 @@ fun ContentScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .navigationBarsPadding()
                                 .zIndex(Z_STICKY),
                             contentAlignment = Alignment.Center
                         ) {

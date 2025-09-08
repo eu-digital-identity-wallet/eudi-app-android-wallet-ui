@@ -177,7 +177,7 @@ private fun Content(
     ) {
         MainContent(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
                 .weight(1f)
                 .paddingFrom(paddingValues, bottom = false),
             state = state,

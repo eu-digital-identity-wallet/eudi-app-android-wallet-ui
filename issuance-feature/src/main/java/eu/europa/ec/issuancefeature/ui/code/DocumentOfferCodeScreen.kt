@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,6 +51,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.extension.paddingFrom
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -96,7 +99,8 @@ private fun Content(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues)
+            .paddingFrom(paddingValues, bottom = false)
+            .verticalScroll(rememberScrollState())
     ) {
         AppIconAndText(
             modifier = Modifier
@@ -126,25 +130,20 @@ private fun Content(
             )
         }
 
-        Column(
+        CodeFieldLayout(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = SPACING_LARGE.dp),
-            verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
-        ) {
-            CodeFieldLayout(
-                modifier = Modifier.fillMaxWidth(),
-                state = state,
-                onPinInput = { quickPin ->
-                    onEventSend(
-                        Event.OnPinChange(
-                            code = quickPin,
-                            context = context
-                        )
+            state = state,
+            onPinInput = { quickPin ->
+                onEventSend(
+                    Event.OnPinChange(
+                        code = quickPin,
+                        context = context
                     )
-                }
-            )
-        }
+                )
+            }
+        )
     }
 
     LaunchedEffect(Unit) {
