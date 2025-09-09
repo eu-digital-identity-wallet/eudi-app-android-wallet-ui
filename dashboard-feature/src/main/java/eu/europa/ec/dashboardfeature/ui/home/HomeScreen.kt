@@ -96,7 +96,7 @@ fun HomeScreen(
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
+        skipPartiallyExpanded = true
     )
 
     ContentScreen(

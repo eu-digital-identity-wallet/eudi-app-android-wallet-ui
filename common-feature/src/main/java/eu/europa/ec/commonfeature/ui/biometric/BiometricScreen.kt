@@ -22,7 +22,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +49,7 @@ import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.component.content.ContentScreen
+import eu.europa.ec.uilogic.component.content.ImePaddingConfig
 import eu.europa.ec.uilogic.component.content.ScreenNavigateAction
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
@@ -60,6 +64,7 @@ import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.extension.finish
+import eu.europa.ec.uilogic.extension.paddingFrom
 import eu.europa.ec.uilogic.extension.resetBackStack
 import eu.europa.ec.uilogic.extension.setBackStackFlowCancelled
 import eu.europa.ec.uilogic.extension.setBackStackFlowSuccess
@@ -89,7 +94,8 @@ fun BiometricScreen(
         onBack = {
             viewModel.setEvent(Event.OnNavigateBack)
         },
-        contentErrorConfig = state.error
+        contentErrorConfig = state.error,
+        imePaddingConfig = ImePaddingConfig.ONLY_CONTENT
     ) {
         Body(
             state = state,
@@ -180,13 +186,13 @@ private fun Body(
     Column(
         Modifier
             .fillMaxSize()
-            .padding(padding),
-        verticalArrangement = Arrangement.Center
+            .paddingFrom(padding, bottom = false)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
         ) {
             MainContent(
                 state = state,
@@ -194,14 +200,16 @@ private fun Body(
             )
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-        ) {
-            if (state.userBiometricsAreEnabled) {
+        if (state.userBiometricsAreEnabled) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(bottom = 5.dp),
+                horizontalArrangement = Arrangement.End,
+            ) {
                 WrapIconButton(
                     iconData = AppIcons.TouchId,
-                    modifier = Modifier.padding(bottom = 5.dp),
                     onClick = {
                         onEventSent(
                             Event.OnBiometricsClicked(
@@ -213,25 +221,25 @@ private fun Body(
                 )
             }
         }
+    }
 
-        LaunchedEffect(Unit) {
-            effectFlow.onEach { effect ->
-                when (effect) {
-                    is Effect.Navigation -> {
-                        onNavigationRequested(effect)
-                    }
-
-                    is Effect.InitializeBiometricAuthOnCreate -> {
-                        onEventSent(
-                            Event.OnBiometricsClicked(
-                                context = context,
-                                shouldThrowErrorIfNotAvailable = false,
-                            )
-                        )
-                    }
+    LaunchedEffect(Unit) {
+        effectFlow.onEach { effect ->
+            when (effect) {
+                is Effect.Navigation -> {
+                    onNavigationRequested(effect)
                 }
-            }.collect()
-        }
+
+                is Effect.InitializeBiometricAuthOnCreate -> {
+                    onEventSent(
+                        Event.OnBiometricsClicked(
+                            context = context,
+                            shouldThrowErrorIfNotAvailable = false,
+                        )
+                    )
+                }
+            }
+        }.collect()
     }
 }
 

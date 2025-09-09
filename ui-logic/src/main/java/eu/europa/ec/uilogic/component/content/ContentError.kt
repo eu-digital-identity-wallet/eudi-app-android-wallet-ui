@@ -17,9 +17,7 @@
 package eu.europa.ec.uilogic.component.content
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -36,12 +34,11 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 
 @Composable
-internal fun ContentError(config: ContentErrorConfig, paddingValues: PaddingValues) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
-    ) {
+internal fun ContentError(
+    config: ContentErrorConfig,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
         ContentTitle(
             title = config.errorTitle ?: stringResource(
                 id = R.string.generic_error_message
@@ -79,16 +76,30 @@ data class ContentErrorConfig(
     val onRetry: (() -> Unit)? = null
 )
 
-/**
- * Preview composable of [ContentError].
- */
 @ThemeModePreviews
 @Composable
-private fun PreviewContentErrorScreen() {
+private fun PreviewContentErrorWithRetry() {
     PreviewTheme {
         ContentError(
-            config = ContentErrorConfig(onCancel = {}),
-            paddingValues = PaddingValues(SIZE_MEDIUM.dp)
+            config = ContentErrorConfig(
+                onCancel = {},
+                onRetry = {},
+            ),
+            modifier = Modifier.padding(SIZE_MEDIUM.dp)
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun PreviewContentErrorWithoutRetry() {
+    PreviewTheme {
+        ContentError(
+            config = ContentErrorConfig(
+                onCancel = {},
+                onRetry = null,
+            ),
+            modifier = Modifier.padding(SIZE_MEDIUM.dp)
         )
     }
 }
