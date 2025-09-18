@@ -21,8 +21,6 @@ import eu.europa.ec.corelogic.BuildConfig
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
-import eu.europa.ec.eudi.wallet.transfer.openId4vp.EncryptionAlgorithm
-import eu.europa.ec.eudi.wallet.transfer.openId4vp.EncryptionMethod
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.resourceslogic.R
 
@@ -48,16 +46,11 @@ internal class WalletCoreConfigImpl(
                         useStrongBoxForKeys = true
                     )
                     configureOpenId4Vp {
-                        withEncryptionAlgorithms(listOf(EncryptionAlgorithm.ECDH_ES))
-                        withEncryptionMethods(
-                            listOf(
-                                EncryptionMethod.A128CBC_HS256,
-                                EncryptionMethod.A256GCM
-                            )
-                        )
-
                         withClientIdSchemes(
-                            listOf(ClientIdScheme.X509SanDns)
+                            listOf(
+                                ClientIdScheme.X509SanDns,
+                                ClientIdScheme.X509Hash
+                            )
                         )
                         withSchemes(
                             listOf(
@@ -67,7 +60,7 @@ internal class WalletCoreConfigImpl(
                             )
                         )
                         withFormats(
-                            Format.MsoMdoc, Format.SdJwtVc.ES256
+                            Format.MsoMdoc.ES256, Format.SdJwtVc.ES256
                         )
                     }
 

@@ -32,7 +32,7 @@ class RQESConfigImpl(val context: Context) : EudiRQESUiConfig {
         get() = listOf(
             QtspData(
                 name = "Wallet-Centric",
-                endpoint = "https://walletcentric.signer.eudiw.dev/csc/v2".toUriOrEmpty(),
+                endpoint = "https://walletcentric.signer.dev.eudiw.dev/csc/v2".toUriOrEmpty(),
                 tsaUrl = "https://timestamp.sectigo.com/qualified",
                 clientId = "wallet-client",
                 clientSecret = "somesecret2",
