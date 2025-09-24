@@ -35,7 +35,7 @@ The EUDIW project provides, through this repository, an Android app. Please refe
 
 The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.com/eu-digital-identity-wallet/eudi-lib-android-wallet-core) and a list of available libraries to facilitate remote presentation, proximity, and issuing test/demo functionality following the specification of the [ARF](https://github.com/eu-digital-identity-wallet/eudi-doc-architecture-and-reference-framework), including:
  
-- OpenID4VP - draft 24 (remote presentation), presentation exchange v2.0, DCQL
+- OpenID4VP - v1 (remote presentation), DCQL
  
 - ISO18013-5 (proximity presentation),
  

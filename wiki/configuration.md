@@ -27,11 +27,11 @@ interface WalletCoreConfig {
 You can configure the *EudiWalletConfig* per flavor. You can find both implementations inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
 
 ```Kotlin
-    private companion object {
-        const val VCI_ISSUER_URL = "https://issuer.eudiw.dev"
-        const val VCI_CLIENT_ID = "wallet-demo"
-        const val AUTHENTICATION_REQUIRED = false
-    }
+private companion object {
+   const val VCI_ISSUER_URL = "https://issuer.eudiw.dev"
+   const val VCI_CLIENT_ID = "wallet-demo"
+   const val AUTHENTICATION_REQUIRED = false
+}
 ```
 
 2. Trusted certificates
@@ -63,7 +63,7 @@ const val OPENID4VP_VERIFIER_API_URI = "your_verifier_url"
 const val OPENID4VP_VERIFIER_LEGAL_NAME = "your_verifier_legal_name"
 const val OPENID4VP_VERIFIER_CLIENT_ID = "your_verifier_client_id"
 
-.openId4VpConfig {
+configureOpenId4Vp {
     withClientIdSchemes(
         listOf(
             ClientIdScheme.Preregistered(
@@ -277,15 +277,15 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
 In the case of an additive change regarding OpenID4VP, you also need to update the *EudiWalletConfig* for each flavor inside the core-logic module.
 
 ```Kotlin
-.openId4VpConfig {
-    withScheme(
-        listOf(
-                BuildConfig.OPENID4VP_SCHEME,
-                BuildConfig.EUDI_OPENID4VP_SCHEME,
-                BuildConfig.MDOC_OPENID4VP_SCHEME,
-                BuildConfig.YOUR_OWN_OPENID4VP_SCHEME
-            )
-    )
+configureOpenId4Vp {
+   withSchemes(
+      listOf(
+         BuildConfig.OPENID4VP_SCHEME,
+         BuildConfig.EUDI_OPENID4VP_SCHEME,
+         BuildConfig.MDOC_OPENID4VP_SCHEME,
+         BuildConfig.YOUR_OWN_OPENID4VP_SCHEME
+      )
+   )
 }
 ```
 
