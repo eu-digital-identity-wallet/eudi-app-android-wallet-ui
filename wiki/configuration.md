@@ -27,11 +27,11 @@ interface WalletCoreConfig {
 You can configure the *EudiWalletConfig* per flavor. You can find both implementations inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
 
 ```Kotlin
-    private companion object {
-        const val VCI_ISSUER_URL = "https://issuer.eudiw.dev"
-        const val VCI_CLIENT_ID = "wallet-demo"
-        const val AUTHENTICATION_REQUIRED = false
-    }
+private companion object {
+   const val VCI_ISSUER_URL = "https://issuer.eudiw.dev"
+   const val VCI_CLIENT_ID = "wallet-demo"
+   const val AUTHENTICATION_REQUIRED = false
+}
 ```
 
 2. Trusted certificates
