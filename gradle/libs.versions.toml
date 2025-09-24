@@ -63,7 +63,7 @@ sonar = "6.3.1.5724"
 baselineprofile = "1.4.1"
 timber = "5.0.1"
 treessence = "1.1.2"
-rqesUiSDK = "0.3.2.4-SNAPSHOT"
+rqesUiSDK = "0.3.2"
 androidxRoom = "2.8.0"
 cloudy = "0.2.7"
 
