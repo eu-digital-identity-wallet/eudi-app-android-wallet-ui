@@ -58,8 +58,8 @@ To support development and testing, one can access a test/demo service for remot
   - [Web verifier source](https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
 
   - [Verifier restful backend service source](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
- 
-To support proximity, an Android Proximity Verifier is available as an app that can request PID and mDL with reader authentication available [here](wiki/verifier_proximity.md)
+
+To support proximity, the EUDI Verifier App is available and can request PID and mDL, with reader authentication enabled. [Download here](https://github.com/eu-digital-identity-wallet/eudi-app-multiplatform-verifier-ui)
 
 The issuer, verifier service, and verifier app authentication are based on the EUDIW development [IACA](https://github.com/niscy-eudiw/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
 
