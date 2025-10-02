@@ -40,6 +40,9 @@ internal class WalletCoreConfigImpl(
         get() {
             if (_config == null) {
                 _config = EudiWalletConfig {
+                    configureLogging(
+                        level = logLevel
+                    )
                     configureDocumentKeyCreation(
                         userAuthenticationRequired = AUTHENTICATION_REQUIRED,
                         userAuthenticationTimeout = 30_000L,

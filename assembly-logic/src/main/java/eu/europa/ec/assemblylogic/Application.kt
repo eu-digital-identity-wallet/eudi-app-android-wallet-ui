@@ -28,6 +28,7 @@ import eu.europa.ec.corelogic.worker.RevocationWorkManager
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import org.koin.android.ext.android.inject
 import org.koin.core.KoinApplication
+import org.multipaz.context.initializeApplication
 
 class Application : Application() {
 
@@ -37,6 +38,10 @@ class Application : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // Initialize multipaz application context
+        initializeApplication(this)
+
         initializeKoin().initializeRqes()
         initializeReporting()
         initializeRevocationWorkManager()

@@ -30,6 +30,11 @@ moduleConfig {
     module = LibraryModule.IssuanceFeature
 }
 
+dependencies {
+    implementation(libs.ktor.android)
+    implementation(libs.ktor.client.okhttp)
+}
+
 excludeFromKoverReport(
     excludedClasses = KoverExclusionRules.IssuanceFeature.classes,
     excludedPackages = KoverExclusionRules.IssuanceFeature.packages,

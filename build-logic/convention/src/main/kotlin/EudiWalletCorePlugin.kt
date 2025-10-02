@@ -27,7 +27,8 @@ class EudiWalletCorePlugin : Plugin<Project> {
                 apply("project.wallet.storage")
             }
             dependencies {
-                add("api", libs.findLibrary("eudi.wallet.core").get())
+                // Use Maven coordinates which will be substituted by the composite build
+                add("api", "eu.europa.ec.eudi:eudi-lib-android-wallet-core")
             }
         }
     }

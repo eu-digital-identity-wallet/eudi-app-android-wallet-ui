@@ -1,7 +1,7 @@
 [versions]
 accompanist = "0.37.3"
 androidDesugarJdkLibs = "2.1.5"
-androidGradlePlugin = "8.13.0"
+androidGradlePlugin = "8.12.1"
 androidxActivity = "1.11.0"
 androidxAppCompat = "1.7.1"
 androidxBrowser = "1.9.0"
@@ -141,6 +141,7 @@ mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mo
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 ktor-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 slf4j = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }

@@ -27,17 +27,20 @@ import eu.europa.ec.corelogic.controller.WalletCoreLogController
 import eu.europa.ec.corelogic.controller.WalletCoreLogControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
+import eu.europa.ec.corelogic.util.CloudSecureAreaWrapper
 import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
+import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Single
 import org.koin.mp.KoinPlatform
+import kotlin.time.ExperimentalTime
 
 const val PRESENTATION_SCOPE_ID = "presentation_scope_id"
 
@@ -45,6 +48,7 @@ const val PRESENTATION_SCOPE_ID = "presentation_scope_id"
 @ComponentScan("eu.europa.ec.corelogic")
 class LogicCoreModule
 
+@OptIn(ExperimentalTime::class)
 @Single
 fun provideEudiWallet(
     context: Context,
@@ -54,6 +58,15 @@ fun provideEudiWallet(
 ): EudiWallet = EudiWallet(context, walletCoreConfig.config) {
     withLogger(walletCoreLogController)
     withTransactionLogger(walletCoreTransactionLogController)
+    withSecureAreas(
+        listOf(
+            CloudSecureAreaWrapper.create(
+                identifier = "CloudSecureArea",
+                serverUrl = "https://signer.potential.setcce.com/sca/",
+                httpClientEngineFactory = OkHttp
+            )
+        )
+    )
 }
 
 @Single

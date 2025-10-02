@@ -47,7 +47,15 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention")
 }
 
-rootProject.name = "EUDI Wallet"
+rootProject.name = "EUDI-Wallet"
+
+// Include local wallet core repository as composite build
+includeBuild("/Users/aljazkajtna/Work/Setcce/eudi-lib-android-wallet-core") {
+    dependencySubstitution {
+        substitute(module("eu.europa.ec.eudi:eudi-lib-android-wallet-core")).using(project(":wallet-core"))
+    }
+}
+
 include(":app")
 include(":business-logic")
 include(":ui-logic")
