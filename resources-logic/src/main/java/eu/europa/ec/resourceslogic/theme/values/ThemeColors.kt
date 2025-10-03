@@ -132,7 +132,7 @@ class ThemeColors {
         private const val eudiw_theme_dark_surfaceContainerHighest: Long = 0xFF353535
         private const val eudiw_theme_dark_surfaceTint: Long = eudiw_theme_dark_surface
 
-        // NEW — Dark theme fixed accent roles (same values as light).
+        // Dark theme fixed accent roles (same values as light).
         private const val eudiw_theme_dark_primaryFixed: Long = 0xFFD4DEF7
         private const val eudiw_theme_dark_primaryFixedDim: Long = 0xFFA8BEF0
         private const val eudiw_theme_dark_onPrimaryFixed: Long = 0xFF08122B
