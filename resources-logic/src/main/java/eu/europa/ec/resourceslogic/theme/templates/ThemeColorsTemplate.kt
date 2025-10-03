@@ -60,6 +60,18 @@ data class ThemeColorsTemplate(
     val surfaceContainerHighest: Long,
     val surfaceContainerLow: Long,
     val surfaceContainerLowest: Long,
+    val primaryFixed: Long,
+    val primaryFixedDim: Long,
+    val onPrimaryFixed: Long,
+    val onPrimaryFixedVariant: Long,
+    val secondaryFixed: Long,
+    val secondaryFixedDim: Long,
+    val onSecondaryFixed: Long,
+    val onSecondaryFixedVariant: Long,
+    val tertiaryFixed: Long,
+    val tertiaryFixedDim: Long,
+    val onTertiaryFixed: Long,
+    val onTertiaryFixedVariant: Long
 ) {
     companion object {
         fun ThemeColorsTemplate.toColorScheme(): ColorScheme = ColorScheme(
@@ -98,7 +110,19 @@ data class ThemeColorsTemplate(
             surfaceContainerHigh = Color(surfaceContainerHigh),
             surfaceContainerHighest = Color(surfaceContainerHighest),
             surfaceContainerLow = Color(surfaceContainerLow),
-            surfaceContainerLowest = Color(surfaceContainerLowest)
+            surfaceContainerLowest = Color(surfaceContainerLowest),
+            primaryFixed = Color(primaryFixed),
+            primaryFixedDim = Color(primaryFixedDim),
+            onPrimaryFixed = Color(onPrimaryFixed),
+            onPrimaryFixedVariant = Color(onPrimaryFixedVariant),
+            secondaryFixed = Color(secondaryFixed),
+            secondaryFixedDim = Color(secondaryFixedDim),
+            onSecondaryFixed = Color(onSecondaryFixed),
+            onSecondaryFixedVariant = Color(onSecondaryFixedVariant),
+            tertiaryFixed = Color(tertiaryFixed),
+            tertiaryFixedDim = Color(tertiaryFixed),
+            onTertiaryFixed = Color(onTertiaryFixed),
+            onTertiaryFixedVariant = Color(onTertiaryFixedVariant)
         )
     }
 }
