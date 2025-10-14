@@ -72,7 +72,7 @@ data class State(
 
     val title: String = "",
     val subtitle: String = "",
-    val options: List<AddDocumentUi> = emptyList(),
+    val options: List<Pair<String, List<AddDocumentUi>>> = emptyList(),
     val noOptions: Boolean = false,
     val showFooterScanner: Boolean,
 ) : ViewState
@@ -88,6 +88,7 @@ sealed class Event : ViewEvent {
     data object DismissError : Event()
     data class IssueDocument(
         val issuanceMethod: IssuanceMethod,
+        val issuerId: String,
         val configId: String,
         val context: Context
     ) : Event()
@@ -149,6 +150,7 @@ class AddDocumentViewModel(
                 issueDocument(
                     issuanceMethod = event.issuanceMethod,
                     configId = event.configId,
+                    issuerId = event.issuerId,
                     context = event.context
                 )
             }
@@ -275,6 +277,7 @@ class AddDocumentViewModel(
 
     private fun issueDocument(
         issuanceMethod: IssuanceMethod,
+        issuerId: String,
         configId: String,
         context: Context
     ) {
@@ -290,6 +293,7 @@ class AddDocumentViewModel(
 
             addDocumentInteractor.issueDocument(
                 issuanceMethod = issuanceMethod,
+                issuerId = issuerId,
                 configId = configId
             ).collect { response ->
                 when (response) {

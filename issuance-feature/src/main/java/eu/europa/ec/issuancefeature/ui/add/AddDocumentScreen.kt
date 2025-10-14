@@ -26,9 +26,12 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,9 +76,11 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.VSpacer
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
+import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapImage
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
+import eu.europa.ec.uilogic.component.wrap.WrapText
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.paddingFrom
@@ -241,10 +247,11 @@ private fun MainContent(
                 options = state.options,
                 modifier = Modifier.fillMaxSize(),
                 footerIsShown = state.showFooterScanner,
-                onOptionClicked = { itemId ->
+                onOptionClicked = { itemId, issuerId ->
                     onEventSend(
                         Event.IssueDocument(
                             issuanceMethod = IssuanceMethod.OPENID4VCI,
+                            issuerId = issuerId,
                             configId = itemId,
                             context = context
                         )
@@ -257,45 +264,66 @@ private fun MainContent(
 
 @Composable
 private fun Options(
-    options: List<AddDocumentUi>,
+    options: List<Pair<String, List<AddDocumentUi>>>,
     footerIsShown: Boolean,
     modifier: Modifier = Modifier,
-    onOptionClicked: (itemId: String) -> Unit,
+    onOptionClicked: (itemId: String, issuerId: String) -> Unit,
 ) {
+
+    val listState = remember(options) { LazyListState() }
+
     LazyColumn(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
+        state = listState,
+        modifier = modifier
     ) {
-        options.forEachIndexed { index, option ->
-            item {
-                WrapListItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    item = option.itemData,
-                    mainContentVerticalPadding = SPACING_LARGE.dp,
-                    mainContentTextStyle = MaterialTheme.typography.titleMedium,
-                    onItemClick = { optionListItemDataUi ->
-                        onOptionClicked(optionListItemDataUi.itemId)
-                    }
+        options.forEachIndexed { sectionIndex, (issuerId, items) ->
+
+            stickyHeader(key = "hdr-$issuerId") {
+                WrapText(
+                    modifier = modifier
+                        .background(MaterialTheme.colorScheme.background)
+                        .padding(bottom = SPACING_MEDIUM.dp),
+                    text = issuerId,
+                    textConfig = TextConfig(
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 )
             }
-            if (index == options.lastIndex) {
-                item {
-                    Spacer(
-                        modifier = Modifier
-                            .padding(bottom = SPACING_MEDIUM.dp)
-                            .then(
-                                if (!footerIsShown) {
-                                    Modifier.navigationBarsPadding()
-                                } else {
-                                    Modifier
-                                }
-                            )
-                    )
+
+            itemsIndexed(
+                items = items,
+                key = { _, item -> "$issuerId-${item.itemData.itemId}" }
+            ) { index, item ->
+                WrapListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    item = item.itemData,
+                    mainContentVerticalPadding = SPACING_LARGE.dp,
+                    mainContentTextStyle = MaterialTheme.typography.titleMedium,
+                    onItemClick = { clicked ->
+                        onOptionClicked(clicked.itemId, issuerId)
+                    }
+                )
+                if (index < items.lastIndex) {
+                    Spacer(Modifier.height(SPACING_MEDIUM.dp))
                 }
             }
+
+            if (sectionIndex != options.lastIndex) {
+                item(key = "sep-$issuerId") { Spacer(Modifier.height(SPACING_MEDIUM.dp)) }
+            }
+        }
+
+        item(key = "footer-spacer") {
+            Spacer(
+                modifier = Modifier
+                    .padding(bottom = SPACING_MEDIUM.dp)
+                    .then(if (!footerIsShown) Modifier.navigationBarsPadding() else Modifier)
+            )
         }
     }
 }
+
 
 @Composable
 private fun Footer(
@@ -351,18 +379,34 @@ private fun IssuanceAddDocumentScreenPreview() {
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
-                    AddDocumentUi(
-                        itemData = ListItemDataUi(
-                            itemId = "configId1",
-                            mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
-                            trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
+                    Pair(
+                        "issuer1",
+                        listOf(
+                            AddDocumentUi(
+                                issuerCredentialId = "issuer1",
+                                itemData = ListItemDataUi(
+                                    itemId = "configId1",
+                                    mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                        iconData = AppIcons.Add
+                                    )
+                                )
+                            )
                         )
                     ),
-                    AddDocumentUi(
-                        itemData = ListItemDataUi(
-                            itemId = "configId2",
-                            mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
-                            trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
+                    Pair(
+                        "issuer2",
+                        listOf(
+                            AddDocumentUi(
+                                issuerCredentialId = "issuer2",
+                                itemData = ListItemDataUi(
+                                    itemId = "configId2",
+                                    mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                        iconData = AppIcons.Add
+                                    )
+                                )
+                            )
                         )
                     )
                 )
@@ -392,18 +436,34 @@ private fun DashboardAddDocumentScreenPreview() {
                 title = stringResource(R.string.issuance_add_document_title),
                 subtitle = stringResource(R.string.issuance_add_document_subtitle),
                 options = listOf(
-                    AddDocumentUi(
-                        itemData = ListItemDataUi(
-                            itemId = "configId1",
-                            mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
-                            trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
+                    Pair(
+                        "issuer1",
+                        listOf(
+                            AddDocumentUi(
+                                issuerCredentialId = "issuer1",
+                                itemData = ListItemDataUi(
+                                    itemId = "configId1",
+                                    mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                        iconData = AppIcons.Add
+                                    )
+                                )
+                            )
                         )
                     ),
-                    AddDocumentUi(
-                        itemData = ListItemDataUi(
-                            itemId = "configId2",
-                            mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
-                            trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
+                    Pair(
+                        "issuer2",
+                        listOf(
+                            AddDocumentUi(
+                                issuerCredentialId = "issuer2",
+                                itemData = ListItemDataUi(
+                                    itemId = "configId2",
+                                    mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
+                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                        iconData = AppIcons.Add
+                                    )
+                                )
+                            )
                         )
                     )
                 )

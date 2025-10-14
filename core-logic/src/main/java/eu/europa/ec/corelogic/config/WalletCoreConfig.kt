@@ -21,6 +21,7 @@ import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
+import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import java.time.Duration
 
 interface WalletCoreConfig {
@@ -32,6 +33,11 @@ interface WalletCoreConfig {
      * and storage locations.
      */
     val config: EudiWalletConfig
+
+    /**
+     * List of Configurations for Verifiable Credentials Issuance (VCI).
+     */
+    val vciConfig: List<OpenId4VciManager.Config>
 
     /**
      * Returns a predefined set of document categories and their associated identifiers.
