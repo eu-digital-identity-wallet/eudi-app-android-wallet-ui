@@ -54,10 +54,12 @@ internal const val mockedTxCode = "mockedTxCode"
 internal const val mockedSuccessText = "Success text"
 internal const val mockedSuccessDescription = "Success description"
 internal const val mockedErrorDescription = "Error description"
+internal const val mockedIssuerId = "issuerId"
 
 private const val mockedConfigIssuerId = "configurationId"
 
 internal val mockedPidOptionItemUi = AddDocumentUi(
+    issuerCredentialId = mockedIssuerId,
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedPidDocName),
@@ -66,6 +68,7 @@ internal val mockedPidOptionItemUi = AddDocumentUi(
 )
 
 internal val mockedMdlOptionItemUi = AddDocumentUi(
+    issuerCredentialId = mockedIssuerId,
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedMdlDocName),
@@ -74,6 +77,7 @@ internal val mockedMdlOptionItemUi = AddDocumentUi(
 )
 
 internal val mockedAgeOptionItemUi = AddDocumentUi(
+    issuerCredentialId = mockedIssuerId,
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedAgeVerificationDocName),
@@ -82,6 +86,7 @@ internal val mockedAgeOptionItemUi = AddDocumentUi(
 )
 
 internal val mockedPhotoIdOptionItemUi = AddDocumentUi(
+    issuerCredentialId = mockedIssuerId,
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedPhotoIdDocName),
@@ -94,24 +99,28 @@ internal val mockedScopedDocuments: List<ScopedDocumentDomain>
         ScopedDocumentDomain(
             name = mockedPidDocName,
             configurationId = mockedConfigIssuerId,
+            credentialIssuerId = mockedIssuerId,
             isPid = true,
             formatType = mockedMdocPidFormat.docType
         ),
         ScopedDocumentDomain(
             name = mockedMdlDocName,
             configurationId = mockedConfigIssuerId,
+            credentialIssuerId = mockedIssuerId,
             isPid = false,
             formatType = mockedMdocMdlFormat.docType
         ),
         ScopedDocumentDomain(
             name = mockedAgeVerificationDocName,
             configurationId = mockedConfigIssuerId,
+            credentialIssuerId = mockedIssuerId,
             isPid = false,
             formatType = mockedMdocAgeVerificationFormat.docType
         ),
         ScopedDocumentDomain(
             name = mockedPhotoIdDocName,
             configurationId = mockedConfigIssuerId,
+            credentialIssuerId = mockedIssuerId,
             isPid = false,
             formatType = mockedMdocPhotoIdFormat.docType
         )

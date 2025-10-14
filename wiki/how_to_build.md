@@ -38,11 +38,16 @@ depending on the flavor of your choice).
 
 These are the contents of the ConfigWalletCoreImpl file (dev flavor), and you don't need to change anything:
 ```Kotlin
-private companion object {
-        const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
-        const val VCI_CLIENT_ID = "wallet-dev"
-        const val AUTHENTICATION_REQUIRED = false
-}
+override val vciConfig: List<OpenId4VciManager.Config>
+    get() = listOf(
+       OpenId4VciManager.Config.Builder()
+      .withIssuerUrl(issuerUrl = "https://dev.issuer.eudiw.dev")
+      .withClientId(clientId = "wallet-dev")
+      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+      .withUseDPoPIfSupported(true)
+      .build()
+)
 ```
 
 ### Running with local services
@@ -56,28 +61,43 @@ you can follow these Repositories for further instructions:
 After this, and assuming you are now running everything locally,
 you need to change the contents of the ConfigWalletCoreImpl file, from:
 ```Kotlin
-private companion object {
-        const val VCI_ISSUER_URL = "https://dev.issuer.eudiw.dev"
-        const val VCI_CLIENT_ID = "wallet-dev"
-        const val AUTHENTICATION_REQUIRED = false
-}
+override val vciConfig: List<OpenId4VciManager.Config>
+    get() = listOf(
+       OpenId4VciManager.Config.Builder()
+      .withIssuerUrl(issuerUrl = "https://dev.issuer.eudiw.dev")
+      .withClientId(clientId = "wallet-dev")
+      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+      .withUseDPoPIfSupported(true)
+      .build()
+)
 ```
 with this:
 ```Kotlin
-private companion object {
-        const val VCI_ISSUER_URL = "local_IP_address_of_issuer"
-        const val VCI_CLIENT_ID = "wallet-dev"
-        const val AUTHENTICATION_REQUIRED = false
-}
+override val vciConfig: List<OpenId4VciManager.Config>
+    get() = listOf(
+       OpenId4VciManager.Config.Builder()
+      .withIssuerUrl(issuerUrl = "local_IP_address_of_issuer")
+      .withClientId(clientId = "wallet-dev")
+      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+      .withUseDPoPIfSupported(true)
+      .build()
+)
 ```
 
 for example:
 ```Kotlin
-private companion object {
-        const val VCI_ISSUER_URL = "https://10.0.2.2"
-        const val VCI_CLIENT_ID = "wallet-dev"
-        const val AUTHENTICATION_REQUIRED = false
-}
+override val vciConfig: List<OpenId4VciManager.Config>
+    get() = listOf(
+       OpenId4VciManager.Config.Builder()
+      .withIssuerUrl(issuerUrl = "https://10.0.2.2")
+      .withClientId(clientId = "wallet-dev")
+      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+      .withUseDPoPIfSupported(true)
+      .build()
+)
 ```
 ## Why 10.0.2.2?
 
