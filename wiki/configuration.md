@@ -16,22 +16,27 @@ The application allows the configuration of:
 
 1. Issuing API
 
-Via the *WalletCoreConfig* interface inside the business-logic module.
+Via the *WalletCoreConfig* interface inside the core-logic module.
 
 ```Kotlin
-interface WalletCoreConfig {
-    val config: EudiWalletConfig
+interface WalletCoreConfig { 
+    val vciConfig: List<OpenId4VciManager.Config>
 }
 ```
 
-You can configure the *EudiWalletConfig* per flavor. You can find both implementations inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+You can configure the *vciConfig* per flavor. You can find both implementations inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
 
 ```Kotlin
-private companion object {
-   const val VCI_ISSUER_URL = "https://issuer.eudiw.dev"
-   const val VCI_CLIENT_ID = "wallet-demo"
-   const val AUTHENTICATION_REQUIRED = false
-}
+override val vciConfig: List<OpenId4VciManager.Config>
+    get() = listOf(
+       OpenId4VciManager.Config.Builder()
+      .withIssuerUrl(issuerUrl = "https://issuer.eudiw.dev")
+      .withClientId(clientId = "wallet-dev")
+      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+      .withUseDPoPIfSupported(true)
+      .build()
+)
 ```
 
 2. Trusted certificates
@@ -291,7 +296,7 @@ configureOpenId4Vp {
 
 ## Scoped Issuance Document Configuration
 
-The credential configuration is derived directly from the issuer's metadata. The issuer URL is configured per flavor via the *configureOpenId4Vci* method inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl.
+The credential configuration is derived directly from the issuer's metadata. The issuer URL is configured per flavor via the *vciConfig* property inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl.
 If you want to add or adjust the displayed scoped documents, you must modify the issuer's metadata, and the wallet will automatically resolve your changes.
 
 ## How to work with self-signed certificates
