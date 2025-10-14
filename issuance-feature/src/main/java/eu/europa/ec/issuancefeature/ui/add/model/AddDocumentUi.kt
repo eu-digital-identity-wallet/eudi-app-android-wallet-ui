@@ -19,6 +19,6 @@ package eu.europa.ec.issuancefeature.ui.add.model
 import eu.europa.ec.uilogic.component.ListItemDataUi
 
 data class AddDocumentUi(
-    val issuerCredentialId: String,
+    val credentialIssuerId: String,
     val itemData: ListItemDataUi,
 )

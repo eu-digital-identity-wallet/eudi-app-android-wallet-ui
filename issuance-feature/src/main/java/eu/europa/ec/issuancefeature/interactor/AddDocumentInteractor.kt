@@ -122,7 +122,7 @@ class AddDocumentInteractorImpl(
                                 ))
                             .map { doc ->
                                 AddDocumentUi(
-                                    issuerCredentialId = doc.credentialIssuerId,
+                                    credentialIssuerId = doc.credentialIssuerId,
                                     itemData = ListItemDataUi(
                                         itemId = doc.configurationId,
                                         mainContentData = ListItemMainContentDataUi.Text(text = doc.name),
@@ -132,7 +132,7 @@ class AddDocumentInteractorImpl(
                                     )
                                 )
                             }
-                            .groupBy { it.issuerCredentialId }
+                            .groupBy { it.credentialIssuerId }
                             .entries
                             .map { (issuer, items) -> issuer to items }
 

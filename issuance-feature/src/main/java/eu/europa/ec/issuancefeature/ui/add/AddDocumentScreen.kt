@@ -383,7 +383,7 @@ private fun IssuanceAddDocumentScreenPreview() {
                         "issuer1",
                         listOf(
                             AddDocumentUi(
-                                issuerCredentialId = "issuer1",
+                                credentialIssuerId = "issuer1",
                                 itemData = ListItemDataUi(
                                     itemId = "configId1",
                                     mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
@@ -398,7 +398,7 @@ private fun IssuanceAddDocumentScreenPreview() {
                         "issuer2",
                         listOf(
                             AddDocumentUi(
-                                issuerCredentialId = "issuer2",
+                                credentialIssuerId = "issuer2",
                                 itemData = ListItemDataUi(
                                     itemId = "configId2",
                                     mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
@@ -440,7 +440,7 @@ private fun DashboardAddDocumentScreenPreview() {
                         "issuer1",
                         listOf(
                             AddDocumentUi(
-                                issuerCredentialId = "issuer1",
+                                credentialIssuerId = "issuer1",
                                 itemData = ListItemDataUi(
                                     itemId = "configId1",
                                     mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
@@ -455,7 +455,7 @@ private fun DashboardAddDocumentScreenPreview() {
                         "issuer2",
                         listOf(
                             AddDocumentUi(
-                                issuerCredentialId = "issuer2",
+                                credentialIssuerId = "issuer2",
                                 itemData = ListItemDataUi(
                                     itemId = "configId2",
                                     mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
