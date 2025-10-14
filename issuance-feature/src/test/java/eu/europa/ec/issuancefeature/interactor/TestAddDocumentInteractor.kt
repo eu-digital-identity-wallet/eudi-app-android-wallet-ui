@@ -30,6 +30,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.issuancefeature.util.mockedAgeOptionItemUi
 import eu.europa.ec.issuancefeature.util.mockedConfigNavigationTypePopToScreen
 import eu.europa.ec.issuancefeature.util.mockedConfigNavigationTypePush
+import eu.europa.ec.issuancefeature.util.mockedIssuerId
 import eu.europa.ec.issuancefeature.util.mockedMdlOptionItemUi
 import eu.europa.ec.issuancefeature.util.mockedPhotoIdOptionItemUi
 import eu.europa.ec.issuancefeature.util.mockedPidOptionItemUi
@@ -147,7 +148,7 @@ class TestAddDocumentInteractor {
                 assertEquals(
                     AddDocumentInteractorPartialState.Success(
                         options = listOf(
-                            mockedPidOptionItemUi
+                            Pair(mockedIssuerId, listOf(mockedPidOptionItemUi))
                         )
                     ),
                     awaitItem()
@@ -185,10 +186,15 @@ class TestAddDocumentInteractor {
                 assertEquals(
                     AddDocumentInteractorPartialState.Success(
                         options = listOf(
-                            mockedAgeOptionItemUi,
-                            mockedPidOptionItemUi,
-                            mockedMdlOptionItemUi,
-                            mockedPhotoIdOptionItemUi
+                            Pair(
+                                mockedIssuerId,
+                                listOf(
+                                    mockedAgeOptionItemUi,
+                                    mockedPidOptionItemUi,
+                                    mockedMdlOptionItemUi,
+                                    mockedPhotoIdOptionItemUi
+                                )
+                            )
                         )
                     ),
                     awaitItem()
@@ -396,26 +402,32 @@ class TestAddDocumentInteractor {
             // Given
             val mockedIssuanceMethod = IssuanceMethod.OPENID4VCI
             val mockedConfigId = "id"
+            val mockedIssuerId = "issuerId"
 
             whenever(
                 walletCoreDocumentsController.issueDocument(
                     issuanceMethod = mockedIssuanceMethod,
-                    configId = mockedConfigId
+                    configId = mockedConfigId,
+                    issuerId = mockedIssuerId
                 )
             ).thenReturn(IssueDocumentPartialState.Success(mockedPidId).toFlow())
 
             // When
             interactor.issueDocument(
                 issuanceMethod = mockedIssuanceMethod,
-                configId = mockedConfigId
+                configId = mockedConfigId,
+                issuerId = mockedIssuerId
             ).runFlowTest {
+
                 awaitItem()
 
                 // Then
+                @Suppress("UnusedFlow")
                 verify(walletCoreDocumentsController, times(1))
                     .issueDocument(
                         issuanceMethod = mockedIssuanceMethod,
-                        configId = mockedConfigId
+                        configId = mockedConfigId,
+                        issuerId = mockedIssuerId
                     )
             }
         }
