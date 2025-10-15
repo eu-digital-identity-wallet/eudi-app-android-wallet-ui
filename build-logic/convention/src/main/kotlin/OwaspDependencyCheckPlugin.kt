@@ -27,8 +27,8 @@ class OwaspDependencyCheckPlugin : Plugin<Project> {
                 apply("org.owasp.dependencycheck")
             }
             extensions.configure<DependencyCheckExtension> {
-                formats = listOf("XML", "HTML")
-                nvd.apiKey = target.getProperty("NVD_API_KEY") ?: System.getenv("NVD_API_KEY")
+                formats.set(listOf("XML", "HTML"))
+                nvd.apiKey.set(target.getProperty("NVD_API_KEY") ?: System.getenv("NVD_API_KEY"))
             }
         }
     }
