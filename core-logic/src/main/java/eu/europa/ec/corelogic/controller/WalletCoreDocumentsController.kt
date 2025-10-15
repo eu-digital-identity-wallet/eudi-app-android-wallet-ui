@@ -16,6 +16,7 @@
 
 package eu.europa.ec.corelogic.controller
 
+import androidx.core.net.toUri
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -67,6 +68,8 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.net.URLDecoder
 import java.util.Locale
 
 enum class IssuanceMethod {
@@ -484,7 +487,11 @@ class WalletCoreDocumentsControllerImpl(
     override fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState> =
         callbackFlow {
 
-            val manager = openId4VciManagers.values.firstOrNull()
+            val issuerId = extractCredentialIssuerFromOfferUri(offerUri).getOrNull()
+
+            val manager = issuerId?.let { id -> openId4VciManagers[id] }
+                ?: openId4VciManagers.values.firstOrNull()
+
             require(manager != null) { genericErrorMessage }
 
             manager.resolveDocumentOffer(offerUri) { result ->
@@ -774,5 +781,12 @@ class WalletCoreDocumentsControllerImpl(
         }
 
         return listener
+    }
+
+    private fun extractCredentialIssuerFromOfferUri(offerUri: String): Result<String> = runCatching {
+        val credentialOffer = offerUri.toUri().getQueryParameter("credential_offer")
+        val decoded = URLDecoder.decode(credentialOffer, "UTF-8")
+        val json = JSONObject(decoded)
+        json.getString("credential_issuer")
     }
 }
