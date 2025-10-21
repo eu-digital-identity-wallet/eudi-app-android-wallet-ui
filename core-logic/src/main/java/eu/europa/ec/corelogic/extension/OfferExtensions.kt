@@ -52,7 +52,7 @@ val Offer.OfferedDocument.documentIdentifier: DocumentIdentifier?
     }
 
 fun Offer.OfferedDocument.getName(locale: Locale): String? {
-    return configuration.display.getLocalizedValue(
+    return configuration.credentialMetadata?.display.getLocalizedValue(
         userLocale = locale,
         localeExtractor = { it.locale },
         valueExtractor = { it.name },

@@ -61,7 +61,7 @@ fun List<IssuerMetadata.Claim.Display>?.getLocalizedClaimName(
  *
  * @see getLocalizedString
  */
-fun List<Display>.getLocalizedDisplayName(
+fun List<Display>?.getLocalizedDisplayName(
     userLocale: Locale,
     fallback: String,
 ): String {

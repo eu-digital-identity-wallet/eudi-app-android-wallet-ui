@@ -19,6 +19,7 @@ package eu.europa.ec.corelogic.controller
 import androidx.core.net.toUri
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.extension.documentIdentifier
@@ -251,7 +252,7 @@ class WalletCoreDocumentsControllerImpl(
                     metadata.flatMap { (issuer, meta) ->
                         meta.credentialConfigurationsSupported.map { (id, config) ->
 
-                            val name = config.display.getLocalizedDisplayName(
+                            val name = config.credentialMetadata?.display?.getLocalizedDisplayName(
                                 userLocale = locale,
                                 fallback = id.value
                             )
@@ -269,7 +270,7 @@ class WalletCoreDocumentsControllerImpl(
                             }
 
                             ScopedDocumentDomain(
-                                name = name,
+                                name = name.ifEmptyOrNull(id.value),
                                 configurationId = id.value,
                                 credentialIssuerId = issuer,
                                 formatType = formatType,
@@ -783,10 +784,11 @@ class WalletCoreDocumentsControllerImpl(
         return listener
     }
 
-    private fun extractCredentialIssuerFromOfferUri(offerUri: String): Result<String> = runCatching {
-        val credentialOffer = offerUri.toUri().getQueryParameter("credential_offer")
-        val decoded = URLDecoder.decode(credentialOffer, "UTF-8")
-        val json = JSONObject(decoded)
-        json.getString("credential_issuer")
-    }
+    private fun extractCredentialIssuerFromOfferUri(offerUri: String): Result<String> =
+        runCatching {
+            val credentialOffer = offerUri.toUri().getQueryParameter("credential_offer")
+            val decoded = URLDecoder.decode(credentialOffer, "UTF-8")
+            val json = JSONObject(decoded)
+            json.getString("credential_issuer")
+        }
 }

@@ -23,6 +23,7 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
 import eu.europa.ec.resourceslogic.R
+import kotlin.time.Duration.Companion.seconds
 
 internal class WalletCoreConfigImpl(
     private val context: Context
@@ -36,7 +37,7 @@ internal class WalletCoreConfigImpl(
                 _config = EudiWalletConfig {
                     configureDocumentKeyCreation(
                         userAuthenticationRequired = false,
-                        userAuthenticationTimeout = 30_000L,
+                        userAuthenticationTimeout = 30.seconds,
                         useStrongBoxForKeys = true
                     )
                     configureOpenId4Vp {
@@ -81,14 +82,14 @@ internal class WalletCoreConfigImpl(
                 .withClientId(clientId = "wallet-dev")
                 .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                 .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-                .withUseDPoPIfSupported(true)
+                .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
                 .build(),
             OpenId4VciManager.Config.Builder()
                 .withIssuerUrl(issuerUrl = "https://issuer-backend.eudiw.dev")
                 .withClientId(clientId = "wallet-dev")
                 .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                 .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-                .withUseDPoPIfSupported(true)
+                .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
                 .build()
         )
 }
