@@ -45,7 +45,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .withClientId(clientId = "wallet-dev")
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withUseDPoPIfSupported(true)
+      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
       .build()
 )
 ```
@@ -68,7 +68,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .withClientId(clientId = "wallet-dev")
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withUseDPoPIfSupported(true)
+      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
       .build()
 )
 ```
@@ -81,7 +81,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .withClientId(clientId = "wallet-dev")
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withUseDPoPIfSupported(true)
+      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
       .build()
 )
 ```
@@ -95,7 +95,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .withClientId(clientId = "wallet-dev")
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withUseDPoPIfSupported(true)
+      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
       .build()
 )
 ```

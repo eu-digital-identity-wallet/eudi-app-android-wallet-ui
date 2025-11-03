@@ -251,7 +251,7 @@ class WalletCoreDocumentsControllerImpl(
                     metadata.flatMap { (issuer, meta) ->
                         meta.credentialConfigurationsSupported.map { (id, config) ->
 
-                            val name = config.display.getLocalizedDisplayName(
+                            val name: String = config.credentialMetadata.getLocalizedDisplayName(
                                 userLocale = locale,
                                 fallback = id.value
                             )
@@ -372,7 +372,14 @@ class WalletCoreDocumentsControllerImpl(
         callbackFlow {
             resolveDocumentOffer(offerUri).collect {
                 when (it) {
-                    is ResolveDocumentOfferPartialState.Failure -> throw Throwable(it.errorMessage)
+                    is ResolveDocumentOfferPartialState.Failure -> {
+                        trySendBlocking(
+                            IssueDocumentsPartialState.Failure(
+                                errorMessage = it.errorMessage
+                            )
+                        )
+                    }
+
                     is ResolveDocumentOfferPartialState.Success -> {
 
                         val issuerId = it
@@ -496,9 +503,13 @@ class WalletCoreDocumentsControllerImpl(
 
             manager.resolveDocumentOffer(offerUri) { result ->
                 when (result) {
-                    is OfferResult.Failure -> throw Throwable(
-                        result.cause.localizedMessage ?: genericErrorMessage
-                    )
+                    is OfferResult.Failure -> {
+                        trySendBlocking(
+                            ResolveDocumentOfferPartialState.Failure(
+                                result.cause.localizedMessage ?: genericErrorMessage
+                            )
+                        )
+                    }
 
                     is OfferResult.Success -> {
                         trySendBlocking(
@@ -783,10 +794,11 @@ class WalletCoreDocumentsControllerImpl(
         return listener
     }
 
-    private fun extractCredentialIssuerFromOfferUri(offerUri: String): Result<String> = runCatching {
-        val credentialOffer = offerUri.toUri().getQueryParameter("credential_offer")
-        val decoded = URLDecoder.decode(credentialOffer, "UTF-8")
-        val json = JSONObject(decoded)
-        json.getString("credential_issuer")
-    }
+    private fun extractCredentialIssuerFromOfferUri(offerUri: String): Result<String> =
+        runCatching {
+            val credentialOffer = offerUri.toUri().getQueryParameter("credential_offer")
+            val decoded = URLDecoder.decode(credentialOffer, "UTF-8")
+            val json = JSONObject(decoded)
+            json.getString("credential_issuer")
+        }
 }

@@ -31,6 +31,7 @@ import eu.europa.ec.eudi.openid4vci.CredentialConfigurationIdentifier
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerEndpoint
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerId
 import eu.europa.ec.eudi.openid4vci.CredentialIssuerMetadata
+import eu.europa.ec.eudi.openid4vci.CredentialMetadata
 import eu.europa.ec.eudi.openid4vci.Display
 import eu.europa.ec.eudi.openid4vci.MsoMdocCredential
 import eu.europa.ec.eudi.openid4vci.TxCode
@@ -1094,7 +1095,8 @@ class TestDocumentOfferInteractor {
             credentialConfigurationsSupported = mapOf(
                 CredentialConfigurationIdentifier("identifier") to MsoMdocCredential(
                     docType = docType,
-                    isoPolicy = null
+                    isoPolicy = null,
+                    credentialMetadata = null
                 )
             ),
             display = listOf(
@@ -1122,7 +1124,7 @@ class TestDocumentOfferInteractor {
                 MsoMdocCredential(
                     docType = mockedOfferedDocumentDocType,
                     isoPolicy = null,
-                    display = display
+                    credentialMetadata = CredentialMetadata(display = display)
                 )
             )
         }

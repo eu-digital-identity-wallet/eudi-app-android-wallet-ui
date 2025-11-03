@@ -17,9 +17,8 @@
 package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.businesslogic.extension.getLocalizedString
-import eu.europa.ec.eudi.openid4vci.Display
+import eu.europa.ec.eudi.openid4vci.CredentialMetadata
 import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
-
 import java.util.Locale
 
 /**
@@ -49,23 +48,25 @@ fun List<IssuerMetadata.Claim.Display>?.getLocalizedClaimName(
 }
 
 /**
- * Retrieves the localized display name from a list of [Display] objects based on the user's locale.
+ * Retrieves the localized display name of a document based on the user's locale.
  *
- * This function searches through a list of [Display] objects to find a display name that matches
- * the provided [userLocale]. If a matching locale is found, the corresponding name is returned.
- * If no matching locale is found, the provided [fallback] string is returned.
+ * This function attempts to find a localized version of the document's name
+ * within the [CredentialMetadata.display] property of the [CredentialMetadata] object. If a localized
+ * version matching the user's locale is found, it is returned. If no matching
+ * localized version is found, a fallback string is returned instead.
  *
- * @param userLocale The user's locale to match against.
- * @param fallback The fallback string to use if no match is found.
- * @return The localized display name if found, otherwise the [fallback] string.
+ * @param userLocale The user's locale, used to find a matching localized name.
+ * @param fallback The string to return if no matching localized name is found.
+ * @return The localized document name, or the fallback string if no matching localized name is available.
+ * If [CredentialMetadata] or its display is null, it will return the [fallback].
  *
  * @see getLocalizedString
  */
-fun List<Display>.getLocalizedDisplayName(
+fun CredentialMetadata?.getLocalizedDisplayName(
     userLocale: Locale,
     fallback: String,
 ): String {
-    return this.getLocalizedString(
+    return this?.display.getLocalizedString(
         userLocale = userLocale,
         localeExtractor = { it.locale },
         stringExtractor = { it.name },
