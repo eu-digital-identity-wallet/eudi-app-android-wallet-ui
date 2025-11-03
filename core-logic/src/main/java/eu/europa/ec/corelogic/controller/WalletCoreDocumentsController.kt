@@ -372,7 +372,14 @@ class WalletCoreDocumentsControllerImpl(
         callbackFlow {
             resolveDocumentOffer(offerUri).collect {
                 when (it) {
-                    is ResolveDocumentOfferPartialState.Failure -> throw Throwable(it.errorMessage)
+                    is ResolveDocumentOfferPartialState.Failure -> {
+                        trySendBlocking(
+                            IssueDocumentsPartialState.Failure(
+                                errorMessage = it.errorMessage
+                            )
+                        )
+                    }
+
                     is ResolveDocumentOfferPartialState.Success -> {
 
                         val issuerId = it
@@ -496,9 +503,13 @@ class WalletCoreDocumentsControllerImpl(
 
             manager.resolveDocumentOffer(offerUri) { result ->
                 when (result) {
-                    is OfferResult.Failure -> throw Throwable(
-                        result.cause.localizedMessage ?: genericErrorMessage
-                    )
+                    is OfferResult.Failure -> {
+                        trySendBlocking(
+                            ResolveDocumentOfferPartialState.Failure(
+                                result.cause.localizedMessage ?: genericErrorMessage
+                            )
+                        )
+                    }
 
                     is OfferResult.Success -> {
                         trySendBlocking(
