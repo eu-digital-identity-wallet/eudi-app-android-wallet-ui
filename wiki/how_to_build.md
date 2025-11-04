@@ -41,7 +41,7 @@ These are the contents of the ConfigWalletCoreImpl file (dev flavor), and you do
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
-      .withIssuerUrl(issuerUrl = "https://dev.issuer.eudiw.dev")
+      .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
       .withClientId(clientId = "wallet-dev")
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
@@ -64,7 +64,7 @@ you need to change the contents of the ConfigWalletCoreImpl file, from:
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
-      .withIssuerUrl(issuerUrl = "https://dev.issuer.eudiw.dev")
+      .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
       .withClientId(clientId = "wallet-dev")
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
