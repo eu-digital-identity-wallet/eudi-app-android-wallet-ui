@@ -43,7 +43,7 @@ The app consumes the SDK called EUDIW Wallet core [Wallet core](https://github.c
  
 - Issuer functionality, to support development and testing, one can access an OID4VCI test/demo service for issuing at: 
 
-  - [EUDI Issuer](https://ec.issuer.eudiw.dev/)
+  - [EUDI Issuer](https://issuer.eudiw.dev/)
 
   - [OpenID4VCI PID and mDL Issuer (python)](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py)
  
@@ -102,7 +102,7 @@ You will also need to download the EUDI Verifier app. More information can be fo
 ### Issuance flow (Credential Offer - Issuer-initiated)
 
 1. Go to the "Dashboard" screen, navigate to the "Documents" tab, and tap the "+" icon (top-right of the screen). Select "Scan QR".
-2. Scan the QR code from the issuer's website [EUDI Issuer](https://ec.issuer.eudiw.dev/credential_offer)
+2. Scan the QR code from the issuer's website [EUDI Issuer](https://issuer.eudiw.dev/credential_offer)
 3. Review the documents included in the credential offer and tap "Add".
 4. In the web view that appears, select "Country Selection", then "FormEU", and tap "Submit".
 5. Fill in the form. Any data will suffice, but selecting a birth date over 18 is recommended, as it is required for certain app functionalities (e.g., RQES).
