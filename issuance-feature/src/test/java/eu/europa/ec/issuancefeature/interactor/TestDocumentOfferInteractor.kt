@@ -299,7 +299,7 @@ class TestDocumentOfferInteractor {
                         display = listOf(
                             Display(
                                 name = mockedOfferedDocumentName,
-                                locale = Locale("es")
+                                locale = Locale.forLanguageTag("es")
                             )
                         )
                     )
