@@ -305,6 +305,7 @@ class DocumentsInteractorImpl(
                                 document.localizedIssuerMetadata(userLocale)
 
                             val issuerName = localizedIssuerMetadata?.name
+                                ?: resourceProvider.getString(R.string.documents_screen_filters_unknown_issuer)
 
                             val documentIdentifier = document.toDocumentIdentifier()
 
@@ -316,7 +317,7 @@ class DocumentsInteractorImpl(
 
                             val documentSearchTags = buildList {
                                 add(documentName)
-                                if (!issuerName.isNullOrBlank()) {
+                                if (issuerName.isNotBlank()) {
                                     add(issuerName)
                                 }
                             }
@@ -416,6 +417,7 @@ class DocumentsInteractorImpl(
                                 document.localizedIssuerMetadata(userLocale)
 
                             val issuerName = localizedIssuerMetadata?.name
+                                ?: resourceProvider.getString(R.string.documents_screen_filters_unknown_issuer)
 
                             val documentIdentifier = document.toDocumentIdentifier()
 
@@ -427,7 +429,7 @@ class DocumentsInteractorImpl(
 
                             val documentSearchTags = buildList {
                                 add(documentName)
-                                if (!issuerName.isNullOrBlank()) {
+                                if (issuerName.isNotBlank()) {
                                     add(issuerName)
                                 }
                             }
@@ -791,18 +793,14 @@ class DocumentsInteractorImpl(
     private fun addIssuerFilter(documents: FilterableList): List<FilterItem> {
         return documents.items
             .distinctBy { (it.attributes as DocumentsFilterableAttributes).issuer }
-            .mapNotNull { filterableItem ->
+            .map { filterableItem ->
                 with(filterableItem.attributes as DocumentsFilterableAttributes) {
-                    if (issuer != null) {
-                        FilterItem(
-                            id = issuer,
-                            name = issuer,
-                            selected = true,
-                            isDefault = true,
-                        )
-                    } else {
-                        null
-                    }
+                    FilterItem(
+                        id = issuer,
+                        name = issuer,
+                        selected = true,
+                        isDefault = true,
+                    )
                 }
             }
     }

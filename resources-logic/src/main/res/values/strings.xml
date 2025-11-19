@@ -279,6 +279,7 @@
     <string name="documents_screen_filters_filter_by_expiry_period_4">Before today (expired)</string>
     <string name="documents_screen_filters_apply">@string/generic_filters_apply</string>
     <string name="documents_screen_filters_reset">@string/generic_filters_reset</string>
+    <string name="documents_screen_filters_unknown_issuer">Unknown</string>
 
     <!-- Transactions Screen -->
     <string name="transactions_screen_title">Transactions</string>

@@ -25,7 +25,7 @@ data class DocumentsFilterableAttributes(
     val name: String,
     val expiryDate: Instant?,
     val issuedDate: Instant?,
-    val issuer: String?,
+    val issuer: String,
     val category: DocumentCategory,
     val isRevoked: Boolean,
 ) : FilterableAttributes
