@@ -40,7 +40,7 @@ class UiSerializerImpl : UiSerializer {
     ): String? {
         return try {
             parser.provideParser().toJson(model).encodeToBase64()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -55,7 +55,7 @@ class UiSerializerImpl : UiSerializer {
                 payload?.decodeFromBase64(),
                 model
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }

@@ -33,7 +33,7 @@ class SerializableTypeAdapter<T : Any> : JsonSerializer<T>, JsonDeserializer<T>,
     private val CLASSNAME = "CLASSNAME"
     private val DATA = "DATA"
 
-    @Throws(JsonParseException::class, RuntimeException::class)
+    @Throws(RuntimeException::class)
     override fun serialize(
         src: T?,
         typeOfSrc: Type?,
@@ -42,7 +42,7 @@ class SerializableTypeAdapter<T : Any> : JsonSerializer<T>, JsonDeserializer<T>,
         if (src != null && context != null) {
             return JsonObject().apply {
                 addProperty(CLASSNAME, src::class.java.name)
-                add(DATA, context.serialize(src))
+                add(DATA, context.serialize(src, src::class.java))
             }
         }
         throw RuntimeException("SerializableTypeAdapter:: Failed to serialize: ${src?.javaClass?.name}")

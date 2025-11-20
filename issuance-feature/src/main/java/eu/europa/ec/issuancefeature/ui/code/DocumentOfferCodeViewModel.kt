@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
+import eu.europa.ec.commonfeature.di.CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
@@ -38,6 +39,7 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.ScopeId
 
 private typealias PinCode = String
 
@@ -70,7 +72,7 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class DocumentOfferCodeViewModel(
-    private val documentOfferInteractor: DocumentOfferInteractor,
+    @ScopeId(name = CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID) private val documentOfferInteractor: DocumentOfferInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
     @InjectedParam private val offerCodeSerializedConfig: String
@@ -103,15 +105,24 @@ class DocumentOfferCodeViewModel(
             is Event.OnPinChange -> {
                 if (event.code.isPinValid()) {
                     issueDocuments(
-                        event.context,
-                        event.code
+                        context = event.context,
+                        offerUri = viewState.value.offerCodeUiConfig.offerUri,
+                        issuerName = viewState.value.offerCodeUiConfig.issuerName,
+                        onSuccessNavigation = viewState.value.offerCodeUiConfig.onSuccessNavigation,
+                        pinCode = event.code
                     )
                 }
             }
         }
     }
 
-    private fun issueDocuments(context: Context, pinCode: PinCode) {
+    private fun issueDocuments(
+        context: Context,
+        offerUri: String,
+        issuerName: String,
+        onSuccessNavigation: ConfigNavigation,
+        pinCode: PinCode
+    ) {
         viewModelScope.launch {
 
             setState {
@@ -122,9 +133,9 @@ class DocumentOfferCodeViewModel(
             }
 
             documentOfferInteractor.issueDocuments(
-                offerUri = viewState.value.offerCodeUiConfig.offerURI,
-                issuerName = viewState.value.offerCodeUiConfig.issuerName,
-                navigation = viewState.value.offerCodeUiConfig.onSuccessNavigation,
+                offerUri = offerUri,
+                issuerName = issuerName,
+                navigation = onSuccessNavigation,
                 txCode = pinCode
             ).collect { response ->
                 when (response) {
@@ -139,6 +150,7 @@ class DocumentOfferCodeViewModel(
                     }
 
                     is IssueDocumentsInteractorPartialState.Success -> {
+
                         setState {
                             copy(
                                 isLoading = false,

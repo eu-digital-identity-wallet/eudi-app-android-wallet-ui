@@ -519,6 +519,7 @@ class TestDocumentOfferInteractor {
         coroutineRule.runTest {
             // Given
             mockWalletDocumentsControllerIssueByUriEventEmission(
+                offerUri = mockedUriPath1,
                 event = IssueDocumentsPartialState.Failure(
                     errorMessage = mockedPlainFailureMessage
                 )
@@ -556,6 +557,7 @@ class TestDocumentOfferInteractor {
                 errorMessage = mockedPlainFailureMessage
             )
             mockWalletDocumentsControllerIssueByUriEventEmission(
+                offerUri = mockedUriPath1,
                 event = failureResponse,
                 txCode = null
             )
@@ -591,6 +593,7 @@ class TestDocumentOfferInteractor {
                 .thenReturn(mockedIssuanceErrorMessage)
 
             mockWalletDocumentsControllerIssueByUriEventEmission(
+                offerUri = mockedUriPath1,
                 event = IssueDocumentsPartialState.UserAuthRequired(
                     crypto = biometricCrypto,
                     resultHandler = resultHandler
@@ -627,6 +630,7 @@ class TestDocumentOfferInteractor {
         coroutineRule.runTest {
             // Given
             mockWalletDocumentsControllerIssueByUriEventEmission(
+                offerUri = mockedUriPath1,
                 event = IssueDocumentsPartialState.Success(
                     documentIds = listOf(mockedPidId)
                 )
@@ -672,6 +676,7 @@ class TestDocumentOfferInteractor {
 
             mockIssuanceDocumentOfferDeferredSuccessStrings()
             mockWalletDocumentsControllerIssueByUriEventEmission(
+                offerUri = mockedUriPath1,
                 event = IssueDocumentsPartialState.DeferredSuccess(
                     deferredDocuments = mockDeferredDocumentsMap()
                 )
@@ -759,6 +764,7 @@ class TestDocumentOfferInteractor {
             )
 
             mockWalletDocumentsControllerIssueByUriEventEmission(
+                offerUri = mockedUriPath1,
                 event = IssueDocumentsPartialState.PartialSuccess(
                     documentIds = listOf(mockSuccessfullyIssuedDocId),
                     nonIssuedDocuments = nonIssuedDeferredDocuments
@@ -785,6 +791,7 @@ class TestDocumentOfferInteractor {
                 )
             ).thenReturn(mockedRouteArguments)
 
+            // When
             interactor.issueDocuments(
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
@@ -819,6 +826,7 @@ class TestDocumentOfferInteractor {
             )
 
             mockWalletDocumentsControllerIssueByUriEventEmission(
+                offerUri = mockedUriPath1,
                 event = IssueDocumentsPartialState.PartialSuccess(
                     documentIds = listOf(mockSuccessfullyIssuedDocId),
                     nonIssuedDocuments = nonIssuedDeferredDocuments
@@ -858,14 +866,18 @@ class TestDocumentOfferInteractor {
     fun `Given Case 8, When issueDocuments is called, Then Case 8 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName
+            )
             whenever(
-                walletCoreDocumentsController.issueDocumentsByOfferUri(
-                    offerUri = mockedUriPath1,
+                walletCoreDocumentsController.issueDocumentsByOffer(
+                    offer = mockedOffer,
                     txCode = mockedTxCode
                 )
             ).thenThrow(mockedExceptionWithMessage)
 
             // When
+            interactor.credentialOffers[mockedUriPath1] = mockedOffer
             interactor.issueDocuments(
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
@@ -890,9 +902,12 @@ class TestDocumentOfferInteractor {
     fun `Given Case 9, When issueDocuments is called, Then Case 9 Expected Result is returned`() =
         coroutineRule.runTest {
             // Given
+            val mockedOffer = mockOffer(
+                issuerName = mockedIssuerName
+            )
             whenever(
-                walletCoreDocumentsController.issueDocumentsByOfferUri(
-                    offerUri = mockedUriPath1,
+                walletCoreDocumentsController.issueDocumentsByOffer(
+                    offer = mockedOffer,
                     txCode = mockedTxCode
                 )
             ).thenThrow(mockedExceptionWithNoMessage)
@@ -1028,12 +1043,17 @@ class TestDocumentOfferInteractor {
     }
 
     private fun mockWalletDocumentsControllerIssueByUriEventEmission(
+        offerUri: String,
         event: IssueDocumentsPartialState,
         txCode: String? = mockedTxCode
     ) {
+        val mockedOffer = mockOffer(
+            issuerName = mockedIssuerName
+        )
+        interactor.credentialOffers[offerUri] = mockedOffer
         whenever(
-            walletCoreDocumentsController.issueDocumentsByOfferUri(
-                offerUri = mockedUriPath1,
+            walletCoreDocumentsController.issueDocumentsByOffer(
+                offer = mockedOffer,
                 txCode = txCode
             )
         ).thenReturn(event.toFlow())

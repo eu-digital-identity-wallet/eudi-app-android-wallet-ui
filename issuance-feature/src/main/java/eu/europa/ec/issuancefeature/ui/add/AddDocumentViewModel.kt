@@ -28,6 +28,7 @@ import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.commonfeature.di.getOrCreateCredentialOfferScope
 import eu.europa.ec.corelogic.controller.IssuanceMethod
 import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
@@ -468,6 +469,7 @@ class AddDocumentViewModel(
     private fun handleDeepLink(uri: Uri, action: DeepLinkAction) {
         when (action.type) {
             DeepLinkType.CREDENTIAL_OFFER -> {
+                getOrCreateCredentialOfferScope()
                 setEffect {
                     Effect.Navigation.OpenDeepLinkAction(
                         deepLinkUri = uri,
@@ -475,7 +477,7 @@ class AddDocumentViewModel(
                             mapOf(
                                 OfferUiConfig.serializedKeyName to uiSerializer.toBase64(
                                     OfferUiConfig(
-                                        offerURI = action.link.toString(),
+                                        offerUri = action.link.toString(),
                                         onSuccessNavigation = ConfigNavigation(
                                             navigationType = NavigationType.PushScreen(
                                                 screen = DashboardScreens.Dashboard,

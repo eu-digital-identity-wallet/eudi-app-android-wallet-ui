@@ -37,7 +37,7 @@ fun JSONArray.toList(): List<Any> {
 fun JSONObject.getStringFromJsonOrEmpty(key: String): String {
     return try {
         this.getString(key)
-    } catch (e: JSONException) {
+    } catch (_: JSONException) {
         ""
     }
 }

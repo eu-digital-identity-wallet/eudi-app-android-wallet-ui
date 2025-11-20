@@ -271,7 +271,7 @@ private fun ContentPreview() {
                 )
             ),
             offerUiConfig = OfferUiConfig(
-                offerURI = "",
+                offerUri = "",
                 onSuccessNavigation = ConfigNavigation(
                     navigationType = NavigationType.PushScreen(
                         screen = DashboardScreens.Dashboard,

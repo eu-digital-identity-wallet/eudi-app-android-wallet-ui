@@ -25,7 +25,7 @@ import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
 data class OfferUiConfig(
-    val offerURI: String,
+    val offerUri: String,
     val onSuccessNavigation: ConfigNavigation,
     val onCancelNavigation: ConfigNavigation,
 ) : UiSerializable {
@@ -33,10 +33,12 @@ data class OfferUiConfig(
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "offerConfig"
         override fun provideParser(): Gson {
-            return GsonBuilder().registerTypeAdapter(
-                NavigationType::class.java,
-                SerializableTypeAdapter<NavigationType>()
-            ).create()
+            return GsonBuilder()
+                .registerTypeAdapter(
+                    NavigationType::class.java,
+                    SerializableTypeAdapter<NavigationType>()
+                )
+                .create()
         }
     }
 }
