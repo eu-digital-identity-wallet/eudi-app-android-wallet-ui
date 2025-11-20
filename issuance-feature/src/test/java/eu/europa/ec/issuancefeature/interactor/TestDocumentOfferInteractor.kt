@@ -507,7 +507,7 @@ class TestDocumentOfferInteractor {
     //region issueDocuments
 
     // Case 1:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer emits
     // IssueDocumentsPartialState.Failure with:
     // mockedPlainFailureMessage as the error message
 
@@ -541,10 +541,10 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 2:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer emits
     // IssueDocumentsPartialState.Failure with:
     // mockedPlainFailureMessage as the error message
-    // 2. The controller issueDocumentsByOfferUri is called with a mocked offerUri and null txCode
+    // 2. The controller issueDocumentsByOffer is called with a mocked offerUri and null txCode
 
     // Case 2 Expected Result:
     // IssueDocumentsInteractorPartialState.Failure state, with:
@@ -577,7 +577,7 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 3:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer emits
     // IssueDocumentsPartialState.UserAuthRequired with:
     // biometricCrypto object and resultHandler as DeviceAuthenticationResult
     // 2. required arguments are mocked
@@ -618,7 +618,7 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 4:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer emits
     // IssueDocumentsPartialState.Success with:
     // 1. some documentIds.
 
@@ -653,7 +653,7 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 5:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer emits
     // IssueDocumentsPartialState.DeferredSuccess with:
     // mocked deferred documents
     // 2. required strings are mocked
@@ -733,7 +733,7 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 6:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer emits
     //    IssueDocumentsPartialState.PartialSuccess with:
     //    - successfully issued documentIds.
     //    - nonIssuedDocuments map containing mockDeferredPendingDocId1 to mockDeferredPendingType1
@@ -808,7 +808,7 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 7:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri emits IssueDocumentsPartialState.PartialSuccess
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer emits IssueDocumentsPartialState.PartialSuccess
     // 2. The interactor is called with the given offerUri, issuerName, navigation and txCode.
 
     // Case 7 Expected Result:
@@ -857,7 +857,7 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 8:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri throws an exception with a message.
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer throws an exception with a message.
 
     // Case 8 Expected Result:
     // IssueDocumentsInteractorPartialState.Failure state, with:
@@ -893,7 +893,7 @@ class TestDocumentOfferInteractor {
         }
 
     // Case 9:
-    // 1. walletCoreDocumentsController.issueDocumentsByOfferUri() throws an exception with no message.
+    // 1. walletCoreDocumentsController.issueDocumentsByOffer() throws an exception with no message.
 
     // Case 9 Expected Result:
     // IssueDocumentsInteractorPartialState.Failure state, with:
@@ -912,6 +912,30 @@ class TestDocumentOfferInteractor {
                 )
             ).thenThrow(mockedExceptionWithNoMessage)
 
+            // When
+            interactor.issueDocuments(
+                offerUri = mockedUriPath1,
+                issuerName = mockedIssuerName,
+                navigation = mockedConfigNavigationTypePop,
+                txCode = mockedTxCode
+            ).runFlowTest {
+                val expectedResult = IssueDocumentsInteractorPartialState.Failure(
+                    errorMessage = mockedGenericErrorMessage
+                )
+                // Then
+                assertEquals(expectedResult, awaitItem())
+            }
+        }
+
+    // Case 10:
+    // 1. Interactor's credential offer cache is empty.
+
+    // Case 10 Expected Result:
+    // IssueDocumentsInteractorPartialState.Failure state, with:
+    // - the generic error message.
+    @Test
+    fun `Given Case 10, When issueDocuments is called, Then Case 8 Expected Result is returned`() =
+        coroutineRule.runTest {
             // When
             interactor.issueDocuments(
                 offerUri = mockedUriPath1,
