@@ -26,6 +26,8 @@ import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
+import eu.europa.ec.commonfeature.di.CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID
+import eu.europa.ec.commonfeature.di.getOrCreateCredentialOfferScope
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
@@ -54,6 +56,7 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.ScopeId
 import java.net.URI
 
 data class State(
@@ -104,7 +107,7 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class DocumentOfferViewModel(
-    private val documentOfferInteractor: DocumentOfferInteractor,
+    @ScopeId(name = CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID) private val documentOfferInteractor: DocumentOfferInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
     @InjectedParam private val offerSerializedConfig: String,
@@ -128,7 +131,7 @@ class DocumentOfferViewModel(
             is Event.Init -> {
                 if (viewState.value.documents.isEmpty()) {
                     resolveDocumentOffer(
-                        offerUri = viewState.value.offerUiConfig.offerURI,
+                        offerUri = viewState.value.offerUiConfig.offerUri,
                         deepLink = event.deepLink
                     )
                 } else {
@@ -148,7 +151,7 @@ class DocumentOfferViewModel(
             is Event.StickyButtonPressed -> {
                 issueDocuments(
                     context = event.context,
-                    offerUri = viewState.value.offerUiConfig.offerURI,
+                    offerUri = viewState.value.offerUiConfig.offerUri,
                     issuerName = viewState.value.headerConfig.relyingPartyData?.name.ifEmptyOrNull(
                         default = resourceProvider.getString(R.string.issuance_document_offer_relying_party_default_name)
                     ),
@@ -303,10 +306,10 @@ class DocumentOfferViewModel(
 
             txCodeLength?.let {
                 navigateToOfferCodeScreen(
-                    offerUri,
-                    issuerName,
-                    txCodeLength,
-                    onSuccessNavigation
+                    offerUri = offerUri,
+                    issuerName = issuerName,
+                    txCodeLength = txCodeLength,
+                    onSuccessNavigation = onSuccessNavigation
                 )
                 return@launch
             }
@@ -372,6 +375,11 @@ class DocumentOfferViewModel(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        getOrCreateCredentialOfferScope().close()
+        super.onCleared()
     }
 
     private fun goToDocumentIssuanceSuccessScreen(
@@ -450,10 +458,10 @@ class DocumentOfferViewModel(
                 screenRoute = generateComposableNavigationLink(
                     IssuanceScreens.DocumentOfferCode,
                     getNavigateOfferCodeScreenArguments(
-                        offerUri,
-                        issuerName,
-                        txCodeLength,
-                        onSuccessNavigation
+                        offerUri = offerUri,
+                        issuerName = issuerName,
+                        txCodeLength = txCodeLength,
+                        onSuccessNavigation = onSuccessNavigation
                     )
                 ),
                 shouldPopToSelf = false
@@ -471,7 +479,7 @@ class DocumentOfferViewModel(
             mapOf(
                 OfferCodeUiConfig.serializedKeyName to uiSerializer.toBase64(
                     OfferCodeUiConfig(
-                        offerURI = offerUri,
+                        offerUri = offerUri,
                         txCodeLength = txCodeLength,
                         issuerName = issuerName,
                         onSuccessNavigation = onSuccessNavigation

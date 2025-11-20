@@ -170,8 +170,8 @@ interface WalletCoreDocumentsController {
         issuerId: String
     ): Flow<IssueDocumentPartialState>
 
-    fun issueDocumentsByOfferUri(
-        offerUri: String,
+    fun issueDocumentsByOffer(
+        offer: Offer,
         txCode: String? = null,
     ): Flow<IssueDocumentsPartialState>
 
@@ -365,42 +365,27 @@ class WalletCoreDocumentsControllerImpl(
         IssueDocumentPartialState.Failure(errorMessage = documentErrorMessage)
     }
 
-    override fun issueDocumentsByOfferUri(
-        offerUri: String,
+    override fun issueDocumentsByOffer(
+        offer: Offer,
         txCode: String?,
     ): Flow<IssueDocumentsPartialState> =
         callbackFlow {
-            resolveDocumentOffer(offerUri).collect {
-                when (it) {
-                    is ResolveDocumentOfferPartialState.Failure -> {
-                        trySendBlocking(
-                            IssueDocumentsPartialState.Failure(
-                                errorMessage = it.errorMessage
-                            )
-                        )
-                    }
 
-                    is ResolveDocumentOfferPartialState.Success -> {
+            val issuerId = offer
+                .credentialOffer
+                .credentialIssuerIdentifier
+                .toString()
 
-                        val issuerId = it
-                            .offer
-                            .credentialOffer
-                            .credentialIssuerIdentifier
-                            .toString()
+            val manager = openId4VciManagers[issuerId]
+                ?: openId4VciManagers.values.firstOrNull()
 
-                        val manager = openId4VciManagers[issuerId]
-                            ?: openId4VciManagers.values.firstOrNull()
+            require(manager != null) { documentErrorMessage }
 
-                        require(manager != null) { documentErrorMessage }
-
-                        manager.issueDocumentByOffer(
-                            offer = it.offer,
-                            onIssueEvent = issuanceCallback(),
-                            txCode = txCode,
-                        )
-                    }
-                }
-            }
+            manager.issueDocumentByOffer(
+                offer = offer,
+                onIssueEvent = issuanceCallback(),
+                txCode = txCode,
+            )
             awaitClose()
         }.safeAsync {
             IssueDocumentsPartialState.Failure(

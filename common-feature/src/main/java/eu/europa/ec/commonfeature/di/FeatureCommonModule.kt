@@ -33,6 +33,10 @@ import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
+import org.koin.core.annotation.Scope
+import org.koin.mp.KoinPlatform
+
+const val CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID = "credential_offer_scope_id"
 
 @Module
 @ComponentScan("eu.europa.ec.commonfeature")
@@ -73,3 +77,10 @@ fun provideQrScanInteractor(
 ): QrScanInteractor {
     return QrScanInteractorImpl(formValidator)
 }
+
+@Scope
+class CredentialOfferIssuanceScope
+
+fun getOrCreateCredentialOfferScope(): org.koin.core.scope.Scope =
+    KoinPlatform.getKoin()
+        .getOrCreateScope<CredentialOfferIssuanceScope>(CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID)
