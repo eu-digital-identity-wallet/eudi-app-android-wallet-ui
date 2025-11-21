@@ -29,6 +29,7 @@ androidxBiometric = "1.2.0-alpha05"
 androidxAppAuth = "1.0.0"
 coil = "3.3.0"
 constraintlayoutVersion = "1.1.1"
+dependencyGraphPlugin = "0.4"
 gmsPlugin = "4.4.4"
 junit4 = "4.13.2"
 kotlin = "2.2.21"
@@ -173,6 +174,7 @@ androidx-room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plug
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
+dependencyGraph = { id = "com.gitlab.stfs.gradle.dependency-graph-plugin", version.ref = "dependencyGraphPlugin"}
 gms = { id = "com.google.gms.google-services", version.ref = "gmsPlugin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
