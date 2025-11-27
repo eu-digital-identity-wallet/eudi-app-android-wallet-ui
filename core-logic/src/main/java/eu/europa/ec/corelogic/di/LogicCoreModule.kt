@@ -21,15 +21,16 @@ import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfigImpl
-import eu.europa.ec.corelogic.controller.WalletCoreAttestationController
-import eu.europa.ec.corelogic.controller.WalletCoreAttestationControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreLogController
 import eu.europa.ec.corelogic.controller.WalletCoreLogControllerImpl
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogController
 import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
+import eu.europa.ec.corelogic.provider.WalletCoreAttestationProvider
+import eu.europa.ec.corelogic.provider.WalletCoreAttestationProviderImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.networklogic.api.ApiService
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
@@ -80,11 +81,11 @@ fun provideWalletCoreTransactionLogController(
 )
 
 @Single
-fun provideWalletCoreAttestationController(
-    httpClient: HttpClient,
+fun provideWalletCoreAttestationProvider(
+    apiService: ApiService,
     walletCoreConfig: WalletCoreConfig
-): WalletCoreAttestationController =
-    WalletCoreAttestationControllerImpl(walletCoreConfig, httpClient)
+): WalletCoreAttestationProvider =
+    WalletCoreAttestationProviderImpl(walletCoreConfig, apiService)
 
 @Factory
 fun provideWalletCoreDocumentsController(

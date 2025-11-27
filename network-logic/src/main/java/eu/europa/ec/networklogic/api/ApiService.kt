@@ -14,10 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.corelogic.controller
+package eu.europa.ec.networklogic.api
 
-import eu.europa.ec.corelogic.config.WalletCoreConfig
-import eu.europa.ec.eudi.openid4vci.Nonce
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -32,34 +30,35 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
-import org.multipaz.securearea.KeyInfo
 
-interface WalletCoreAttestationController {
+interface ApiService {
 
     suspend fun getWalletAttestation(
-        keyInfo: KeyInfo
+        baseUrl: String,
+        keyInfo: JsonObject
     ): Result<String>
 
     suspend fun getKeyAttestation(
-        keys: List<KeyInfo>,
-        nonce: Nonce?
+        baseUrl: String,
+        keys: List<JsonObject>,
+        nonce: String?
     ): Result<String>
 }
 
-class WalletCoreAttestationControllerImpl(
-    private val walletCoreConfig: WalletCoreConfig,
+class ApiServiceImpl(
     private val httpClient: HttpClient
-) : WalletCoreAttestationController {
+) : ApiService {
 
     override suspend fun getWalletAttestation(
-        keyInfo: KeyInfo
+        baseUrl: String,
+        keyInfo: JsonObject
     ): Result<String> = runCatching {
         httpClient.use { client ->
-            client.post("${walletCoreConfig.walletProviderHost}/wallet-instance-attestation/jwk") {
+            client.post("$baseUrl/wallet-instance-attestation/jwk") {
                 contentType(ContentType.Application.Json)
                 setBody(
                     buildJsonObject {
-                        put("jwk", keyInfo.publicKey.toJwk())
+                        put("jwk", keyInfo)
                     }
                 )
             }.bodyAsText()
@@ -70,18 +69,19 @@ class WalletCoreAttestationControllerImpl(
     }
 
     override suspend fun getKeyAttestation(
-        keys: List<KeyInfo>,
-        nonce: Nonce?
+        baseUrl: String,
+        keys: List<JsonObject>,
+        nonce: String?
     ): Result<String> = runCatching {
         httpClient.use { client ->
-            client.post("${walletCoreConfig.walletProviderHost}/wallet-unit-attestation/jwk-set") {
+            client.post("$baseUrl/wallet-unit-attestation/jwk-set") {
                 contentType(ContentType.Application.Json)
                 setBody(
                     buildJsonObject {
-                        put("nonce", JsonPrimitive(nonce?.value.orEmpty()))
+                        put("nonce", JsonPrimitive(nonce.orEmpty()))
                         putJsonObject("jwkSet") {
                             putJsonArray("keys") {
-                                keys.forEach { keyInfo -> add(keyInfo.publicKey.toJwk()) }
+                                keys.forEach { keyInfo -> add(keyInfo) }
                             }
                         }
                     }
