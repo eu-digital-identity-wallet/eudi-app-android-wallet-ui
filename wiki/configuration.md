@@ -163,8 +163,14 @@ val mdocOpenid4VpHost = "*"
 val openId4VpScheme = "openid4vp"
 val openid4VpHost = "*"
 
+val haipOpenId4VpScheme = "haip-vp"
+val haipOpenid4VpHost = "*"
+
 val credentialOfferScheme = "openid-credential-offer"
 val credentialOfferHost = "*"
+
+val credentialOfferHaipScheme = "haip-vci"
+val credentialOfferHaipHost = "*"
 
 val rqesScheme = "rqes"
 val rqesHost = "oauth"
@@ -186,8 +192,14 @@ val mdocOpenid4VpHost = "*"
 val openId4VpScheme = "openid4vp"
 val openid4VpHost = "*"
 
+val haipOpenId4VpScheme = "haip-vp"
+val haipOpenid4VpHost = "*"
+
 val credentialOfferScheme = "custom-my-offer"
 val credentialOfferHost = "*"
+
+val credentialOfferHaipScheme = "haip-vci"
+val credentialOfferHaipHost = "*"
 ```
 
 In case of an additive change, e.g., adding an extra credential offer schema, you must adjust the following.
@@ -198,6 +210,9 @@ AndroidLibraryConventionPlugin:
 val credentialOfferScheme = "openid-credential-offer"
 val credentialOfferHost = "*"
 
+val credentialOfferHaipScheme = "haip-vci"
+val credentialOfferHaipHost = "*"
+
 val myOwnCredentialOfferScheme = "custom-my-offer"
 val myOwnCredentialOfferHost = "*"
 ```
@@ -206,12 +221,15 @@ val myOwnCredentialOfferHost = "*"
 // Manifest placeholders used for OpenId4VCI
 manifestPlaceholders["credentialOfferHost"] = credentialOfferHost
 manifestPlaceholders["credentialOfferScheme"] = credentialOfferScheme
+manifestPlaceholders["credentialOfferHaipHost"] = credentialOfferHaipHost
+manifestPlaceholders["credentialOfferHaipScheme"] = credentialOfferHaipScheme
 manifestPlaceholders["myOwnCredentialOfferHost"] = myOwnCredentialOfferHost
 manifestPlaceholders["myOwnCredentialOfferScheme"] = myOwnCredentialOfferScheme
 ```
 
 ```Kotlin
 addConfigField("CREDENTIAL_OFFER_SCHEME", credentialOfferScheme)
+addConfigField("CREDENTIAL_OFFER_HAIP_SCHEME", credentialOfferHaipScheme)
 addConfigField("MY_OWN_CREDENTIAL_OFFER_SCHEME", myOwnCredentialOfferScheme)
 ```
 
@@ -224,11 +242,23 @@ Android Manifest (inside assembly-logic module):
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
 
-        <data
-            android:host="${credentialOfferHost}"
-            android:scheme="${credentialOfferScheme}" />
+    <data
+        android:host="${credentialOfferHost}"
+        android:scheme="${credentialOfferScheme}" />
 
-    </intent-filter>
+</intent-filter>
+
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    
+    <data
+        android:host="${credentialOfferHaipHost}"
+        android:scheme="${credentialOfferHaipScheme}" />
+
+</intent-filter>
 
 <intent-filter>
     <action android:name="android.intent.action.VIEW" />
@@ -236,9 +266,9 @@ Android Manifest (inside assembly-logic module):
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
 
-        <data
-            android:host="${myOwnCredentialOfferHost}"
-            android:scheme="${myOwnCredentialOfferScheme}" />
+    <data
+        android:host="${myOwnCredentialOfferHost}"
+        android:scheme="${myOwnCredentialOfferScheme}" />
 
 </intent-filter>
 ```
@@ -252,12 +282,14 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
         schemas = listOf(
             BuildConfig.OPENID4VP_SCHEME,
             BuildConfig.EUDI_OPENID4VP_SCHEME,
-            BuildConfig.MDOC_OPENID4VP_SCHEME
+            BuildConfig.MDOC_OPENID4VP_SCHEME,
+            BuildConfig.HAIP_OPENID4VP_SCHEME
         )
     ),
     CREDENTIAL_OFFER(
         schemas = listOf(
             BuildConfig.CREDENTIAL_OFFER_SCHEME,
+            BuildConfig.CREDENTIAL_OFFER_HAIP_SCHEME,
             BuildConfig.MY_OWN_CREDENTIAL_OFFER_SCHEME
         )
     ),
@@ -287,7 +319,8 @@ configureOpenId4Vp {
       listOf(
          BuildConfig.OPENID4VP_SCHEME,
          BuildConfig.EUDI_OPENID4VP_SCHEME,
-         BuildConfig.MDOC_OPENID4VP_SCHEME,
+         BuildConfig.MDOC_OPENID4VP_SCHEME, 
+         BuildConfig.HAIP_OPENID4VP_SCHEME,
          BuildConfig.YOUR_OWN_OPENID4VP_SCHEME
       )
    )

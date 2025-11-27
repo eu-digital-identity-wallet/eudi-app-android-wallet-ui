@@ -51,7 +51,8 @@ internal class WalletCoreConfigImpl(
                             listOf(
                                 BuildConfig.OPENID4VP_SCHEME,
                                 BuildConfig.EUDI_OPENID4VP_SCHEME,
-                                BuildConfig.MDOC_OPENID4VP_SCHEME
+                                BuildConfig.MDOC_OPENID4VP_SCHEME,
+                                BuildConfig.HAIP_OPENID4VP_SCHEME
                             )
                         )
                         withFormats(
@@ -94,5 +95,5 @@ internal class WalletCoreConfigImpl(
         )
 
     override val walletProviderHost: String
-        get() = "https://dev.wallet-provider.eudiw.dev
+        get() = "https://dev.wallet-provider.eudiw.dev"
 }
