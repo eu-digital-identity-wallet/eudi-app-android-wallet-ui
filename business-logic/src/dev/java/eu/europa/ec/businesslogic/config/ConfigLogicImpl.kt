@@ -23,19 +23,9 @@ class ConfigLogicImpl(val context: Context) : ConfigLogic {
     override val appFlavor: AppFlavor
         get() = AppFlavor.DEV
 
-    override val environmentConfig: EnvironmentConfig
-        get() = DevEnvironmentConfig()
-
     override val rqesConfig: EudiRQESUiConfig
         get() = RQESConfigImpl(context)
 
     override val changelogUrl: String?
         get() = null
-}
-
-private class DevEnvironmentConfig : EnvironmentConfig() {
-    override fun getServerHost(): String = when (environment) {
-        ServerConfig.Debug -> ""
-        ServerConfig.Release -> ""
-    }
 }

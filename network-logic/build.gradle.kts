@@ -20,6 +20,7 @@ import project.convention.logic.kover.excludeFromKoverReport
 
 plugins {
     id("project.android.library")
+    id("project.ktor")
 }
 
 android {
@@ -32,12 +33,6 @@ moduleConfig {
 
 dependencies {
     implementation(project(LibraryModule.BusinessLogic.path))
-
-    api(libs.retrofit.core)
-    implementation(libs.retrofit.gson)
-    implementation(libs.okhttp.logging)
-    implementation(libs.okhttp.mockwebserver)
-
     testImplementation(project(LibraryModule.TestLogic.path))
 }
 

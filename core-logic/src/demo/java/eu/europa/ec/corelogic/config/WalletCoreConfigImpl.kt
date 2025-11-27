@@ -92,4 +92,7 @@ internal class WalletCoreConfigImpl(
                 .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
                 .build()
         )
+
+    override val walletProviderHost: String
+        get() = "https://dev.wallet-provider.eudiw.dev
 }
