@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.networklogic.api
+package eu.europa.ec.networklogic.repository
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
@@ -31,7 +31,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 
-interface ApiService {
+interface WalletAttestationRepository {
 
     suspend fun getWalletAttestation(
         baseUrl: String,
@@ -45,15 +45,20 @@ interface ApiService {
     ): Result<String>
 }
 
-class ApiServiceImpl(
+class WalletAttestationRepositoryImpl(
     private val httpClient: HttpClient
-) : ApiService {
+) : WalletAttestationRepository {
+
+    private companion object {
+        const val WALLET_INSTANCE_ATTESTATION_PATH = "/wallet-instance-attestation/jwk"
+        const val WALLET_UNIT_ATTESTATION_PATH = "/wallet-unit-attestation/jwk-set"
+    }
 
     override suspend fun getWalletAttestation(
         baseUrl: String,
         keyInfo: JsonObject
     ): Result<String> = runCatching {
-        httpClient.post("$baseUrl/wallet-instance-attestation/jwk") {
+        httpClient.post(baseUrl + WALLET_INSTANCE_ATTESTATION_PATH) {
             contentType(ContentType.Application.Json)
             setBody(
                 buildJsonObject {
@@ -71,7 +76,7 @@ class ApiServiceImpl(
         keys: List<JsonObject>,
         nonce: String?
     ): Result<String> = runCatching {
-        httpClient.post("$baseUrl/wallet-unit-attestation/jwk-set") {
+        httpClient.post(baseUrl + WALLET_UNIT_ATTESTATION_PATH) {
             contentType(ContentType.Application.Json)
             setBody(
                 buildJsonObject {

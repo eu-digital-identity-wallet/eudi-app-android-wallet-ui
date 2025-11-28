@@ -16,8 +16,8 @@
 
 package eu.europa.ec.networklogic.di
 
-import eu.europa.ec.networklogic.api.ApiService
-import eu.europa.ec.networklogic.api.ApiServiceImpl
+import eu.europa.ec.networklogic.repository.WalletAttestationRepository
+import eu.europa.ec.networklogic.repository.WalletAttestationRepositoryImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -54,4 +54,5 @@ fun provideHttpClient(json: Json): HttpClient {
 }
 
 @Single
-fun provideApiService(httpClient: HttpClient): ApiService = ApiServiceImpl(httpClient)
+fun provideWalletAttestationRepository(httpClient: HttpClient): WalletAttestationRepository =
+    WalletAttestationRepositoryImpl(httpClient)

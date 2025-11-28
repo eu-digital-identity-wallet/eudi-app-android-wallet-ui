@@ -30,7 +30,7 @@ import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProvider
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProviderImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
-import eu.europa.ec.networklogic.api.ApiService
+import eu.europa.ec.networklogic.repository.WalletAttestationRepository
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
@@ -87,10 +87,13 @@ fun provideWalletCoreTransactionLogController(
 
 @Single
 fun provideWalletCoreAttestationProvider(
-    apiService: ApiService,
+    walletAttestationRepository: WalletAttestationRepository,
     walletCoreConfig: WalletCoreConfig
 ): WalletCoreAttestationProvider =
-    WalletCoreAttestationProviderImpl(walletCoreConfig, apiService)
+    WalletCoreAttestationProviderImpl(
+        walletCoreConfig = walletCoreConfig,
+        walletAttestationRepository = walletAttestationRepository
+    )
 
 @Factory
 fun provideWalletCoreDocumentsController(
