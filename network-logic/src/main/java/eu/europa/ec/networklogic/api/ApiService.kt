@@ -53,19 +53,17 @@ class ApiServiceImpl(
         baseUrl: String,
         keyInfo: JsonObject
     ): Result<String> = runCatching {
-        httpClient.use { client ->
-            client.post("$baseUrl/wallet-instance-attestation/jwk") {
-                contentType(ContentType.Application.Json)
-                setBody(
-                    buildJsonObject {
-                        put("jwk", keyInfo)
-                    }
-                )
-            }.bodyAsText()
-                .let { Json.decodeFromString<JsonObject>(it) }
-                .let { it.jsonObject["walletInstanceAttestation"]?.jsonPrimitive?.content }
-                ?: throw IllegalStateException("No attestation response")
-        }
+        httpClient.post("$baseUrl/wallet-instance-attestation/jwk") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                buildJsonObject {
+                    put("jwk", keyInfo)
+                }
+            )
+        }.bodyAsText()
+            .let { Json.decodeFromString<JsonObject>(it) }
+            .let { it.jsonObject["walletInstanceAttestation"]?.jsonPrimitive?.content }
+            ?: throw IllegalStateException("No attestation response")
     }
 
     override suspend fun getKeyAttestation(
@@ -73,23 +71,21 @@ class ApiServiceImpl(
         keys: List<JsonObject>,
         nonce: String?
     ): Result<String> = runCatching {
-        httpClient.use { client ->
-            client.post("$baseUrl/wallet-unit-attestation/jwk-set") {
-                contentType(ContentType.Application.Json)
-                setBody(
-                    buildJsonObject {
-                        put("nonce", JsonPrimitive(nonce.orEmpty()))
-                        putJsonObject("jwkSet") {
-                            putJsonArray("keys") {
-                                keys.forEach { keyInfo -> add(keyInfo) }
-                            }
+        httpClient.post("$baseUrl/wallet-unit-attestation/jwk-set") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                buildJsonObject {
+                    put("nonce", JsonPrimitive(nonce.orEmpty()))
+                    putJsonObject("jwkSet") {
+                        putJsonArray("keys") {
+                            keys.forEach { keyInfo -> add(keyInfo) }
                         }
                     }
-                )
-            }.bodyAsText()
-                .let { Json.decodeFromString<JsonObject>(it) }
-                .let { it.jsonObject["walletUnitAttestation"]?.jsonPrimitive?.content }
-                ?: throw IllegalStateException("No attestation response")
-        }
+                }
+            )
+        }.bodyAsText()
+            .let { Json.decodeFromString<JsonObject>(it) }
+            .let { it.jsonObject["walletUnitAttestation"]?.jsonPrimitive?.content }
+            ?: throw IllegalStateException("No attestation response")
     }
 }

@@ -18,20 +18,11 @@ package eu.europa.ec.corelogic.provider
 
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.eudi.openid4vci.Nonce
+import eu.europa.ec.eudi.wallet.provider.WalletAttestationsProvider
 import eu.europa.ec.networklogic.api.ApiService
 import org.multipaz.securearea.KeyInfo
 
-interface WalletCoreAttestationProvider {
-
-    suspend fun getWalletAttestation(
-        keyInfo: KeyInfo
-    ): Result<String>
-
-    suspend fun getKeyAttestation(
-        keys: List<KeyInfo>,
-        nonce: Nonce?
-    ): Result<String>
-}
+interface WalletCoreAttestationProvider : WalletAttestationsProvider
 
 class WalletCoreAttestationProviderImpl(
     private val walletCoreConfig: WalletCoreConfig,
