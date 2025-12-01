@@ -12,20 +12,32 @@
 
 ## General configuration
 
-The application allows the configuration of:
-
-1. Issuing API
-
-Via the *WalletCoreConfig* interface inside the core-logic module.
-
+All core network and trust settings are centralized in the `WalletCoreConfig` interface inside the *
+*core-logic** module:
 ```Kotlin
-interface WalletCoreConfig { 
+interface WalletCoreConfig {
+    // 1. Issuing API
     val vciConfig: List<OpenId4VciManager.Config>
+
+    // 2. Wallet Provider Host
+    val walletProviderHost: String
+
+    // 3. Trusted certificates
+    val config: EudiWalletConfig
 }
 ```
 
-You can configure the *vciConfig* per flavor. You can find both implementations inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+You configure these properties **per flavor** by providing a `WalletCoreConfigImpl` for each build
+variant:
 
+* `core-logic/src/demo/config/WalletCoreConfigImpl.kt`
+* `core-logic/src/dev/config/WalletCoreConfigImpl.kt`
+
+Each flavor can use different issuer URLs, wallet provider hosts, and trust stores.
+
+1. Issuing API
+
+The Issuing API is configured via the `vciConfig` property:
 ```Kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
@@ -39,27 +51,31 @@ override val vciConfig: List<OpenId4VciManager.Config>
 )
 ```
 
-2. Trusted certificates
+Adjust the configuration per flavor in the corresponding `WalletCoreConfigImpl`.
 
-Via the *WalletCoreConfig* interface.
+2. Wallet Provider Host
 
+The Wallet Provider Host is configured via the `walletProviderHost` property:
 ```Kotlin
-interface WalletCoreConfig {
-    val config: EudiWalletConfig
-}
+override val walletProviderHost: String
+    get() = "https://wallet-provider.eudiw.dev"
 ```
 
-Same as the Verifier and Issuing APIs, you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+Again, set a different value per flavor in the corresponding `WalletCoreConfigImpl`.
 
+3. Trusted certificates
+
+Trusted certificates are configured via the `config` property:
 ```Kotlin
 _config = EudiWalletConfig {
    configureReaderTrustStore(context, R.raw.eudi_pid_issuer_ut)
 }
 ```
-
 The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
 
-3. Preregistered Client Scheme
+Configure `EudiWalletConfig` per flavor inside the appropriate `WalletCoreConfigImpl`.
+
+4. Preregistered Client Scheme
 
 If you plan to use the *ClientIdScheme.Preregistered* for OpenId4VP configuration, please add the following to the configuration files.
 
@@ -85,7 +101,7 @@ configureOpenId4Vp {
 }
 ```
 
-4. RQES
+5. RQES
 
 Via the *ConfigLogic* interface inside the business-logic module.
 
@@ -336,80 +352,64 @@ If you want to add or adjust the displayed scoped documents, you must modify the
 
 This section describes configuring the application to interact with services utilizing self-signed certificates.
 
-1. Open the build.gradle.kts file of the "core-logic" module.
-2. In the 'dependencies' block, add the following two:
-    ```Gradle
-    implementation(libs.ktor.android)
-    implementation(libs.ktor.logging)
-    ```
-3. Now, you need to create a new kotlin file *ProvideKtorHttpClient* and place it into the *src\main\java\eu\europa\ec\corelogic\config* package.
-4. Copy and paste the following into your newly created *ProvideKtorHttpClient* kotlin file.
+*To enable support for self-signed certificates, you must customize the existing Ktor `HttpClient`
+used by the application.*
+
+1. Open the `NetworkModule.kt` file of the `network-logic` module.
+2. Add the following imports:
     ```Kotlin
     import android.annotation.SuppressLint
-    import io.ktor.client.HttpClient
-    import io.ktor.client.engine.android.Android
-    import io.ktor.client.plugins.logging.Logging
     import java.security.SecureRandom
     import javax.net.ssl.HostnameVerifier
     import javax.net.ssl.SSLContext
     import javax.net.ssl.TrustManager
     import javax.net.ssl.X509TrustManager
     import javax.security.cert.CertificateException
-    
-    object ProvideKtorHttpClient {
-
-        @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
-        fun client(): HttpClient {
-            val trustAllCerts = arrayOf<TrustManager>(
-                object : X509TrustManager {
-                    @Throws(CertificateException::class)
-                    override fun checkClientTrusted(
-                        chain: Array<java.security.cert.X509Certificate>,
-                        authType: String
-                    ) {
-                    }
-
-                    @Throws(CertificateException::class)
-                    override fun checkServerTrusted(
-                        chain: Array<java.security.cert.X509Certificate>,
-                        authType: String
-                    ) {
-                    }
-
-                    override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
-                        return arrayOf()
-                    }
+    ```
+3. Replace the `provideHttpClient` function with the following:
+    ```Kotlin
+    @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
+    @Single
+    fun provideHttpClient(json: Json): HttpClient {
+        val trustAllCerts = arrayOf<TrustManager>(
+            object : X509TrustManager {
+                @Throws(CertificateException::class)
+                override fun checkClientTrusted(
+                    chain: Array<java.security.cert.X509Certificate>,
+                    authType: String
+                ) {
                 }
-            )
-
-            return HttpClient(Android) {
-                install(Logging)
-                engine {
-                    requestConfig
-                    sslManager = { httpsURLConnection ->
-                        httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
-                            init(null, trustAllCerts, SecureRandom())
-                        }.socketFactory
-                        httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
-                    }
+    
+                @Throws(CertificateException::class)
+                override fun checkServerTrusted(
+                    chain: Array<java.security.cert.X509Certificate>,
+                    authType: String
+                ) {
+                }
+    
+                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
+                    return arrayOf()
                 }
             }
-        }
-
-    }
-    ```
-5. Finally, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
-    ```Kotlin
-    @Single
-    fun provideEudiWallet(
-    context: Context,
-    walletCoreConfig: WalletCoreConfig,
-    walletCoreLogController: WalletCoreLogController
-    ): EudiWallet = EudiWallet(context, walletCoreConfig.config) {
-        withLogger(walletCoreLogController)
-        // Custom HttpClient
-        withKtorHttpClientFactory {
-            ProvideKtorHttpClient.client()
+        )
+    
+        return HttpClient(Android) {
+            install(Logging)
+            install(ContentNegotiation) {
+                json(
+                    json = json,
+                    contentType = ContentType.Application.Json
+                )
+            }
+            engine {
+                requestConfig
+                sslManager = { httpsURLConnection ->
+                    httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
+                        init(null, trustAllCerts, SecureRandom())
+                    }.socketFactory
+                    httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
+                }
+            }
         }
     }
     ```

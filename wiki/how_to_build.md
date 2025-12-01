@@ -108,84 +108,68 @@ So if you’re running the issuer locally on your host, the emulator can access 
 
 This section describes configuring the application to interact with services utilizing self-signed certificates.
 
-1. Open the build.gradle.kts file of the "core-logic" module.
-2. In the 'dependencies' block, add the following two:
-    ```Gradle
-    implementation(libs.ktor.android)
-    implementation(libs.ktor.logging)
-    ```
-3. Now, you need to create a new kotlin file *ProvideKtorHttpClient* and place it into the *src\main\java\eu\europa\ec\corelogic\config* package.
-4. Copy and paste the following into your newly created *ProvideKtorHttpClient* kotlin file.
+*To enable support for self-signed certificates, you must customize the existing Ktor `HttpClient`
+used by the application.*
+
+1. Open the `NetworkModule.kt` file of the `network-logic` module.
+2. Add the following imports:
     ```Kotlin
     import android.annotation.SuppressLint
-    import io.ktor.client.HttpClient
-    import io.ktor.client.engine.android.Android
-    import io.ktor.client.plugins.logging.Logging
     import java.security.SecureRandom
     import javax.net.ssl.HostnameVerifier
     import javax.net.ssl.SSLContext
     import javax.net.ssl.TrustManager
     import javax.net.ssl.X509TrustManager
     import javax.security.cert.CertificateException
-    
-    object ProvideKtorHttpClient {
-
-        @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
-        fun client(): HttpClient {
-            val trustAllCerts = arrayOf<TrustManager>(
-                object : X509TrustManager {
-                    @Throws(CertificateException::class)
-                    override fun checkClientTrusted(
-                        chain: Array<java.security.cert.X509Certificate>,
-                        authType: String
-                    ) {
-                    }
-
-                    @Throws(CertificateException::class)
-                    override fun checkServerTrusted(
-                        chain: Array<java.security.cert.X509Certificate>,
-                        authType: String
-                    ) {
-                    }
-
-                    override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
-                        return arrayOf()
-                    }
+    ```
+3. Replace the `provideHttpClient` function with the following:
+    ```Kotlin
+    @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
+    @Single
+    fun provideHttpClient(json: Json): HttpClient {
+        val trustAllCerts = arrayOf<TrustManager>(
+            object : X509TrustManager {
+                @Throws(CertificateException::class)
+                override fun checkClientTrusted(
+                    chain: Array<java.security.cert.X509Certificate>,
+                    authType: String
+                ) {
                 }
-            )
-
-            return HttpClient(Android) {
-                install(Logging)
-                engine {
-                    requestConfig
-                    sslManager = { httpsURLConnection ->
-                        httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
-                            init(null, trustAllCerts, SecureRandom())
-                        }.socketFactory
-                        httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
-                    }
+    
+                @Throws(CertificateException::class)
+                override fun checkServerTrusted(
+                    chain: Array<java.security.cert.X509Certificate>,
+                    authType: String
+                ) {
+                }
+    
+                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
+                    return arrayOf()
+                }
+            }
+        )
+    
+        return HttpClient(Android) {
+            install(Logging)
+            install(ContentNegotiation) {
+                json(
+                    json = json,
+                    contentType = ContentType.Application.Json
+                )
+            }
+            engine {
+                requestConfig
+                sslManager = { httpsURLConnection ->
+                    httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
+                        init(null, trustAllCerts, SecureRandom())
+                    }.socketFactory
+                    httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
                 }
             }
         }
-
     }
     ```
-5. Also, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
-    ```Kotlin
-    @Single
-    fun provideEudiWallet(
-    context: Context,
-    walletCoreConfig: WalletCoreConfig,
-    walletCoreLogController: WalletCoreLogController
-    ): EudiWallet = EudiWallet(context, walletCoreConfig.config) {
-        withLogger(walletCoreLogController)
-        // Custom HttpClient
-        withKtorHttpClientFactory {
-            ProvideKtorHttpClient.client()
-        }
-    }
-    ```
-6. Finally, you need to use the preregistered clientId scheme instead of X509.
+4. Finally, you need to use the preregistered clientId scheme instead of X509.
    
    Change this:
    ```Kotlin
