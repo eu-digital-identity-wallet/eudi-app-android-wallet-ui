@@ -37,7 +37,8 @@ The app is configured to use some configuration in the two ***ConfigWalletCoreIm
 depending on the flavor of your choice).
 
 These are the contents of the ConfigWalletCoreImpl file (dev flavor), and you don't need to change anything:
-```Kotlin
+
+```kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
@@ -60,7 +61,8 @@ you can follow these Repositories for further instructions:
 
 After this, and assuming you are now running everything locally,
 you need to change the contents of the ConfigWalletCoreImpl file, from:
-```Kotlin
+
+```kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
@@ -72,8 +74,10 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .build()
 )
 ```
+
 with this:
-```Kotlin
+
+```kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
@@ -87,7 +91,8 @@ override val vciConfig: List<OpenId4VciManager.Config>
 ```
 
 for example:
-```Kotlin
+
+```kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
@@ -99,6 +104,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .build()
 )
 ```
+
 ## Why 10.0.2.2?
 
 When using the Android emulator, 10.0.2.2 is a special alias that routes to localhost on your development machine.
@@ -113,7 +119,8 @@ used by the application.*
 
 1. Open the `NetworkModule.kt` file of the `network-logic` module.
 2. Add the following imports:
-    ```Kotlin
+
+    ```kotlin
     import android.annotation.SuppressLint
     import java.security.SecureRandom
     import javax.net.ssl.HostnameVerifier
@@ -122,8 +129,10 @@ used by the application.*
     import javax.net.ssl.X509TrustManager
     import javax.security.cert.CertificateException
     ```
+
 3. Replace the `provideHttpClient` function with the following:
-    ```Kotlin
+
+    ```kotlin
     @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
     @Single
     fun provideHttpClient(json: Json): HttpClient {
@@ -169,17 +178,20 @@ used by the application.*
         }
     }
     ```
+
 4. Finally, you need to use the preregistered clientId scheme instead of X509.
    
    Change this:
-   ```Kotlin
+
+   ```kotlin
    withClientIdSchemes(
     listOf(ClientIdScheme.X509SanDns)
    )
     ```
    
    into something like this:
-   ```Kotlin
+
+   ```kotlin
    withClientIdSchemes(
     listOf(
         ClientIdScheme.Preregistered(
