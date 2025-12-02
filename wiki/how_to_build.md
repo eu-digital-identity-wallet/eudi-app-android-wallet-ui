@@ -42,7 +42,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
       .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
-      .withClientId(clientId = "wallet-dev")
+      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
       .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
@@ -65,7 +65,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
       .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
-      .withClientId(clientId = "wallet-dev")
+      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
       .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
@@ -78,7 +78,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
       .withIssuerUrl(issuerUrl = "local_IP_address_of_issuer")
-      .withClientId(clientId = "wallet-dev")
+      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
       .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
@@ -92,7 +92,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
       .withIssuerUrl(issuerUrl = "https://10.0.2.2")
-      .withClientId(clientId = "wallet-dev")
+      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
       .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
