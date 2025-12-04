@@ -152,8 +152,30 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
+                    android:host="${haipOpenid4vpHost}"
+                    android:scheme="${haipOpenid4vpScheme}" />
+
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
                     android:host="${credentialOfferHost}"
                     android:scheme="${credentialOfferScheme}" />
+
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="${credentialOfferHaipHost}"
+                    android:scheme="${credentialOfferHaipScheme}" />
 
             </intent-filter>
             <intent-filter>

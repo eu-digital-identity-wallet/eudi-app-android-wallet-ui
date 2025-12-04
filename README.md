@@ -198,30 +198,30 @@ graph TD;
   common-feature --> proximity-feature
   common-feature --> issuance-feature
 
-  business-logic -->common-feature
-  ui-logic -->common-feature
-  network-logic -->common-feature
-  resources-logic -->common-feature
-  analytics-logic -->common-feature 
-  authentication-logic -->common-feature 
-  core-logic -->common-feature
-  storage-logic -->common-feature 
+  business-logic --> common-feature
+  ui-logic --> common-feature
+  network-logic --> common-feature
+  resources-logic --> common-feature
+  analytics-logic --> common-feature 
+  authentication-logic --> common-feature 
+  core-logic --> common-feature
+  storage-logic --> common-feature 
 
-  business-logic -->core-logic
-  resources-logic -->core-logic
-  authentication-logic -->core-logic
+  business-logic --> core-logic
+  resources-logic --> core-logic
+  authentication-logic --> core-logic
 
-  business-logic -->ui-logic
-  resources-logic -->ui-logic
-  analytics-logic -->ui-logic
+  business-logic --> ui-logic
+  resources-logic --> ui-logic
+  analytics-logic --> ui-logic
 
-  business-logic -->network-logic
+  business-logic --> network-logic
   
-  business-logic -->storage-logic
+  business-logic --> storage-logic
 
-  resources-logic -->storage-logic
+  resources-logic --> storage-logic
 
-  resources-logic -->business-logic
+  resources-logic --> business-logic
 
   resources-logic --> authentication-logic
   business-logic --> authentication-logic

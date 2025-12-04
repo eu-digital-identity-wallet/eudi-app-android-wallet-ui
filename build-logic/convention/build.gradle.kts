@@ -124,5 +124,9 @@ gradlePlugin {
             id = "project.wallet.storage"
             implementationClass = "EudiWalletStoragePlugin"
         }
+        register("ktor") {
+            id = "project.ktor"
+            implementationClass = "KtorPlugin"
+        }
     }
 }

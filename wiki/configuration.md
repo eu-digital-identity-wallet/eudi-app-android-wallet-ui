@@ -12,140 +12,165 @@
 
 ## General configuration
 
-The application allows the configuration of:
+All core network and trust settings are centralized in the `WalletCoreConfig` interface inside the
+**core-logic** module:
 
-1. Issuing API
-
-Via the *WalletCoreConfig* interface inside the core-logic module.
-
-```Kotlin
-interface WalletCoreConfig { 
-    val vciConfig: List<OpenId4VciManager.Config>
-}
-```
-
-You can configure the *vciConfig* per flavor. You can find both implementations inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
-
-```Kotlin
-override val vciConfig: List<OpenId4VciManager.Config>
-    get() = listOf(
-       OpenId4VciManager.Config.Builder()
-      .withIssuerUrl(issuerUrl = "https://issuer.eudiw.dev")
-      .withClientId(clientId = "wallet-dev")
-      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
-      .build()
-)
-```
-
-2. Trusted certificates
-
-Via the *WalletCoreConfig* interface.
-
-```Kotlin
+```kotlin
 interface WalletCoreConfig {
+    // 1. Issuing API
+    val vciConfig: List<OpenId4VciManager.Config>
+
+    // 2. Wallet Provider Host
+    val walletProviderHost: String
+
+    // 3. Trusted certificates
     val config: EudiWalletConfig
 }
 ```
 
-Same as the Verifier and Issuing APIs, you can configure the Trusted certificates for the *EudiWalletConfig* per flavor inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl
+You configure these properties **per flavor** by providing a `WalletCoreConfigImpl` for each build
+variant:
 
-```Kotlin
-_config = EudiWalletConfig {
-   configureReaderTrustStore(context, R.raw.eudi_pid_issuer_ut)
-}
-```
+* `core-logic/src/demo/config/WalletCoreConfigImpl.kt`
+* `core-logic/src/dev/config/WalletCoreConfigImpl.kt`
 
-The application's IACA certificates are located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
+Each flavor can use different issuer URLs, wallet provider hosts, and trust stores.
 
-3. Preregistered Client Scheme
+1. Issuing API
 
-If you plan to use the *ClientIdScheme.Preregistered* for OpenId4VP configuration, please add the following to the configuration files.
+   The Issuing API is configured via the `vciConfig` property:
 
-```Kotlin
-const val OPENID4VP_VERIFIER_API_URI = "your_verifier_url"
-const val OPENID4VP_VERIFIER_LEGAL_NAME = "your_verifier_legal_name"
-const val OPENID4VP_VERIFIER_CLIENT_ID = "your_verifier_client_id"
+    ```kotlin
+    override val vciConfig: List<OpenId4VciManager.Config>
+        get() = listOf(
+           OpenId4VciManager.Config.Builder()
+          .withIssuerUrl(issuerUrl = "https://issuer.eudiw.dev")
+          .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+          .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+          .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+          .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
+          .build()
+    )
+    ```
 
-configureOpenId4Vp {
-    withClientIdSchemes(
-        listOf(
-            ClientIdScheme.Preregistered(
-                listOf(
-                    PreregisteredVerifier(
-                        clientId = OPENID4VP_VERIFIER_CLIENT_ID,
-                        verifierApi = OPENID4VP_VERIFIER_API_URI,
-                        legalName = OPENID4VP_VERIFIER_LEGAL_NAME
+   Adjust the configuration per flavor in the corresponding `WalletCoreConfigImpl`.
+
+2. Wallet Provider Host
+
+   The Wallet Provider Host is configured via the `walletProviderHost` property:
+
+    ```kotlin
+    override val walletProviderHost: String
+        get() = "https://wallet-provider.eudiw.dev"
+    ```
+
+   Again, set a different value per flavor in the corresponding `WalletCoreConfigImpl`.
+
+3. Trusted certificates
+
+   Trusted certificates are configured via the `config` property:
+
+    ```kotlin
+    _config = EudiWalletConfig {
+       configureReaderTrustStore(context, R.raw.eudi_pid_issuer_ut)
+    }
+    ```
+
+   The application's IACA certificates are
+   located [here](https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/tree/main/resources-logic/src/main/res/raw)
+
+   Configure `EudiWalletConfig` per flavor inside the appropriate `WalletCoreConfigImpl`.
+
+4. Preregistered Client Scheme
+
+   If you plan to use the *ClientIdScheme.Preregistered* for OpenId4VP configuration, please add the
+   following to the configuration files.
+
+    ```kotlin
+    const val OPENID4VP_VERIFIER_API_URI = "your_verifier_url"
+    const val OPENID4VP_VERIFIER_LEGAL_NAME = "your_verifier_legal_name"
+    const val OPENID4VP_VERIFIER_CLIENT_ID = "your_verifier_client_id"
+    
+    configureOpenId4Vp {
+        withClientIdSchemes(
+            listOf(
+                ClientIdScheme.Preregistered(
+                    listOf(
+                        PreregisteredVerifier(
+                            clientId = OPENID4VP_VERIFIER_CLIENT_ID,
+                            verifierApi = OPENID4VP_VERIFIER_API_URI,
+                            legalName = OPENID4VP_VERIFIER_LEGAL_NAME
+                        )
                     )
                 )
             )
         )
-    )
-}
-```
+    }
+    ```
 
-4. RQES
+5. RQES
 
-Via the *ConfigLogic* interface inside the business-logic module.
+   Via the *ConfigLogic* interface inside the business-logic module.
 
-```Kotlin
-interface ConfigLogic {
-    /**
-     * RQES Config.
-     */
-    val rqesConfig: EudiRQESUiConfig
-}
-```
+    ```kotlin
+    interface ConfigLogic {
+        /**
+         * RQES Config.
+         */
+        val rqesConfig: EudiRQESUiConfig
+    }
+    ```
 
-You can configure the *RQESConfig*, which implements the EudiRQESUiConfig interface from the RQESUi SDK, per flavor. Both implementations are inside the business-logic module at src/demo/config/RQESConfigImpl and src/dev/config/RQESConfigImpl.
+   You can configure the *RQESConfig*, which implements the EudiRQESUiConfig interface from the
+   RQESUi SDK, per flavor. Both implementations are inside the business-logic module at
+   src/demo/config/RQESConfigImpl and src/dev/config/RQESConfigImpl.
 
-```Kotlin
-class RQESConfigImpl : EudiRQESUiConfig {
+    ```kotlin
+    class RQESConfigImpl : EudiRQESUiConfig {
+    
+        // Optional. Default English translations will be used if not set.
+        override val translations: Map<String, Map<LocalizableKey, String>> get()
+    
+        // Optional. Default theme will be used if not set.
+        override val themeManager: ThemeManager get()
+    
+        override val qtsps: List<QtspData> get()
+    
+        // Optional. Default is false.
+        override val printLogs: Boolean get()
+    
+        override val documentRetrievalConfig: DocumentRetrievalConfig get()
+    }
+    ```
 
-    // Optional. Default English translations will be used if not set.
-    override val translations: Map<String, Map<LocalizableKey, String>> get()
+   Example:
 
-    // Optional. Default theme will be used if not set.
-    override val themeManager: ThemeManager get()
-
-    override val qtsps: List<QtspData> get()
-
-    // Optional. Default is false.
-    override val printLogs: Boolean get()
-
-    override val documentRetrievalConfig: DocumentRetrievalConfig get()
-}
-```
-
-Example:
-
-```Kotlin
-class RQESConfigImpl : EudiRQESUiConfig {
-
-    override val qtsps: List<QtspData>
-        get() = listOf(
-            QtspData(
-                name = "your_name",
-                endpoint = "your_endpoint".toUri(),
-                tsaUrl = "your_tsaUrl",
-                clientId = "your_clientid",
-                clientSecret = "your_secret",
-                authFlowRedirectionURI = URI.create("your_uri"),
-                hashAlgorithm = HashAlgorithmOID.SHA_256,
+    ```kotlin
+    class RQESConfigImpl : EudiRQESUiConfig {
+    
+        override val qtsps: List<QtspData>
+            get() = listOf(
+                QtspData(
+                    name = "your_name",
+                    endpoint = "your_endpoint".toUri(),
+                    tsaUrl = "your_tsaUrl",
+                    clientId = "your_clientid",
+                    clientSecret = "your_secret",
+                    authFlowRedirectionURI = URI.create("your_uri"),
+                    hashAlgorithm = HashAlgorithmOID.SHA_256,
+                )
             )
-        )
-
-    override val printLogs: Boolean get() = BuildConfig.DEBUG
-
-    override val documentRetrievalConfig: DocumentRetrievalConfig
-        get() = DocumentRetrievalConfig.X509Certificates(
-            context = context,
-            certificates = listOf(R.raw.my_certificate),
-            shouldLog = should_log_option
-        )
-}
-```
+    
+        override val printLogs: Boolean get() = BuildConfig.DEBUG
+    
+        override val documentRetrievalConfig: DocumentRetrievalConfig
+            get() = DocumentRetrievalConfig.X509Certificates(
+                context = context,
+                certificates = listOf(R.raw.my_certificate),
+                shouldLog = should_log_option
+            )
+    }
+    ```
 
 ## DeepLink Schemas configuration
 
@@ -153,7 +178,7 @@ According to the specifications, issuance, presentation, and RQES require deep-l
 
 If you want to adjust any schema, you can alter the *AndroidLibraryConventionPlugin* inside the build-logic module.
 
-```Kotlin
+```kotlin
 val eudiOpenId4VpScheme = "eudi-openid4vp"
 val eudiOpenid4VpHost = "*"
 
@@ -163,8 +188,14 @@ val mdocOpenid4VpHost = "*"
 val openId4VpScheme = "openid4vp"
 val openid4VpHost = "*"
 
+val haipOpenId4VpScheme = "haip-vp"
+val haipOpenid4VpHost = "*"
+
 val credentialOfferScheme = "openid-credential-offer"
 val credentialOfferHost = "*"
+
+val credentialOfferHaipScheme = "haip-vci"
+val credentialOfferHaipHost = "*"
 
 val rqesScheme = "rqes"
 val rqesHost = "oauth"
@@ -176,7 +207,7 @@ val rqesDocRetrievalHost = "*"
 
 Let's assume you want to change the credential offer schema to custom-my-offer:// the *AndroidLibraryConventionPlugin* should look like this:
 
-```Kotlin
+```kotlin
 val eudiOpenId4VpScheme = "eudi-openid4vp"
 val eudiOpenid4VpHost = "*"
 
@@ -186,49 +217,73 @@ val mdocOpenid4VpHost = "*"
 val openId4VpScheme = "openid4vp"
 val openid4VpHost = "*"
 
+val haipOpenId4VpScheme = "haip-vp"
+val haipOpenid4VpHost = "*"
+
 val credentialOfferScheme = "custom-my-offer"
 val credentialOfferHost = "*"
+
+val credentialOfferHaipScheme = "haip-vci"
+val credentialOfferHaipHost = "*"
 ```
 
 In case of an additive change, e.g., adding an extra credential offer schema, you must adjust the following.
 
 AndroidLibraryConventionPlugin:
 
-```Kotlin
+```kotlin
 val credentialOfferScheme = "openid-credential-offer"
 val credentialOfferHost = "*"
+
+val credentialOfferHaipScheme = "haip-vci"
+val credentialOfferHaipHost = "*"
 
 val myOwnCredentialOfferScheme = "custom-my-offer"
 val myOwnCredentialOfferHost = "*"
 ```
 
-```Kotlin
+```kotlin
 // Manifest placeholders used for OpenId4VCI
 manifestPlaceholders["credentialOfferHost"] = credentialOfferHost
 manifestPlaceholders["credentialOfferScheme"] = credentialOfferScheme
+manifestPlaceholders["credentialOfferHaipHost"] = credentialOfferHaipHost
+manifestPlaceholders["credentialOfferHaipScheme"] = credentialOfferHaipScheme
 manifestPlaceholders["myOwnCredentialOfferHost"] = myOwnCredentialOfferHost
 manifestPlaceholders["myOwnCredentialOfferScheme"] = myOwnCredentialOfferScheme
 ```
 
-```Kotlin
+```kotlin
 addConfigField("CREDENTIAL_OFFER_SCHEME", credentialOfferScheme)
+addConfigField("CREDENTIAL_OFFER_HAIP_SCHEME", credentialOfferHaipScheme)
 addConfigField("MY_OWN_CREDENTIAL_OFFER_SCHEME", myOwnCredentialOfferScheme)
 ```
 
 Android Manifest (inside assembly-logic module):
 
-```Xml
+```xml
 <intent-filter>
     <action android:name="android.intent.action.VIEW" />
 
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
 
-        <data
-            android:host="${credentialOfferHost}"
-            android:scheme="${credentialOfferScheme}" />
+    <data
+        android:host="${credentialOfferHost}"
+        android:scheme="${credentialOfferScheme}" />
 
-    </intent-filter>
+</intent-filter>
+
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    
+    <data
+        android:host="${credentialOfferHaipHost}"
+        android:scheme="${credentialOfferHaipScheme}" />
+
+</intent-filter>
 
 <intent-filter>
     <action android:name="android.intent.action.VIEW" />
@@ -236,28 +291,30 @@ Android Manifest (inside assembly-logic module):
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
 
-        <data
-            android:host="${myOwnCredentialOfferHost}"
-            android:scheme="${myOwnCredentialOfferScheme}" />
+    <data
+        android:host="${myOwnCredentialOfferHost}"
+        android:scheme="${myOwnCredentialOfferScheme}" />
 
 </intent-filter>
 ```
 
 DeepLinkType (DeepLinkHelper Object inside ui-logic module):
 
-```Kotlin
+```kotlin
 enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
 
     OPENID4VP(
         schemas = listOf(
             BuildConfig.OPENID4VP_SCHEME,
             BuildConfig.EUDI_OPENID4VP_SCHEME,
-            BuildConfig.MDOC_OPENID4VP_SCHEME
+            BuildConfig.MDOC_OPENID4VP_SCHEME,
+            BuildConfig.HAIP_OPENID4VP_SCHEME
         )
     ),
     CREDENTIAL_OFFER(
         schemas = listOf(
             BuildConfig.CREDENTIAL_OFFER_SCHEME,
+            BuildConfig.CREDENTIAL_OFFER_HAIP_SCHEME,
             BuildConfig.MY_OWN_CREDENTIAL_OFFER_SCHEME
         )
     ),
@@ -281,13 +338,14 @@ enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
 
 In the case of an additive change regarding OpenID4VP, you also need to update the *EudiWalletConfig* for each flavor inside the core-logic module.
 
-```Kotlin
+```kotlin
 configureOpenId4Vp {
    withSchemes(
       listOf(
          BuildConfig.OPENID4VP_SCHEME,
          BuildConfig.EUDI_OPENID4VP_SCHEME,
-         BuildConfig.MDOC_OPENID4VP_SCHEME,
+         BuildConfig.MDOC_OPENID4VP_SCHEME, 
+         BuildConfig.HAIP_OPENID4VP_SCHEME,
          BuildConfig.YOUR_OWN_OPENID4VP_SCHEME
       )
    )
@@ -303,80 +361,67 @@ If you want to add or adjust the displayed scoped documents, you must modify the
 
 This section describes configuring the application to interact with services utilizing self-signed certificates.
 
-1. Open the build.gradle.kts file of the "core-logic" module.
-2. In the 'dependencies' block, add the following two:
-    ```Gradle
-    implementation(libs.ktor.android)
-    implementation(libs.ktor.logging)
-    ```
-3. Now, you need to create a new kotlin file *ProvideKtorHttpClient* and place it into the *src\main\java\eu\europa\ec\corelogic\config* package.
-4. Copy and paste the following into your newly created *ProvideKtorHttpClient* kotlin file.
-    ```Kotlin
+*To enable support for self-signed certificates, you must customize the existing Ktor `HttpClient`
+used by the application.*
+
+1. Open the `NetworkModule.kt` file of the `network-logic` module.
+2. Add the following imports:
+
+    ```kotlin
     import android.annotation.SuppressLint
-    import io.ktor.client.HttpClient
-    import io.ktor.client.engine.android.Android
-    import io.ktor.client.plugins.logging.Logging
     import java.security.SecureRandom
     import javax.net.ssl.HostnameVerifier
     import javax.net.ssl.SSLContext
     import javax.net.ssl.TrustManager
     import javax.net.ssl.X509TrustManager
     import javax.security.cert.CertificateException
-    
-    object ProvideKtorHttpClient {
+    ```
 
-        @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
-        fun client(): HttpClient {
-            val trustAllCerts = arrayOf<TrustManager>(
-                object : X509TrustManager {
-                    @Throws(CertificateException::class)
-                    override fun checkClientTrusted(
-                        chain: Array<java.security.cert.X509Certificate>,
-                        authType: String
-                    ) {
-                    }
+3. Replace the `provideHttpClient` function with the following:
 
-                    @Throws(CertificateException::class)
-                    override fun checkServerTrusted(
-                        chain: Array<java.security.cert.X509Certificate>,
-                        authType: String
-                    ) {
-                    }
-
-                    override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
-                        return arrayOf()
-                    }
+    ```kotlin
+    @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
+    @Single
+    fun provideHttpClient(json: Json): HttpClient {
+        val trustAllCerts = arrayOf<TrustManager>(
+            object : X509TrustManager {
+                @Throws(CertificateException::class)
+                override fun checkClientTrusted(
+                    chain: Array<java.security.cert.X509Certificate>,
+                    authType: String
+                ) {
                 }
-            )
-
-            return HttpClient(Android) {
-                install(Logging)
-                engine {
-                    requestConfig
-                    sslManager = { httpsURLConnection ->
-                        httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
-                            init(null, trustAllCerts, SecureRandom())
-                        }.socketFactory
-                        httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
-                    }
+    
+                @Throws(CertificateException::class)
+                override fun checkServerTrusted(
+                    chain: Array<java.security.cert.X509Certificate>,
+                    authType: String
+                ) {
+                }
+    
+                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
+                    return arrayOf()
                 }
             }
-        }
-
-    }
-    ```
-5. Finally, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
-    ```Kotlin
-    @Single
-    fun provideEudiWallet(
-    context: Context,
-    walletCoreConfig: WalletCoreConfig,
-    walletCoreLogController: WalletCoreLogController
-    ): EudiWallet = EudiWallet(context, walletCoreConfig.config) {
-        withLogger(walletCoreLogController)
-        // Custom HttpClient
-        withKtorHttpClientFactory {
-            ProvideKtorHttpClient.client()
+        )
+    
+        return HttpClient(Android) {
+            install(Logging)
+            install(ContentNegotiation) {
+                json(
+                    json = json,
+                    contentType = ContentType.Application.Json
+                )
+            }
+            engine {
+                requestConfig
+                sslManager = { httpsURLConnection ->
+                    httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
+                        init(null, trustAllCerts, SecureRandom())
+                    }.socketFactory
+                    httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
+                }
+            }
         }
     }
     ```
@@ -403,7 +448,7 @@ The application allows the configuration of the PIN storage. You can configure t
 
 Via the *StorageConfig* inside the authentication-logic module.
 
-```Kotlin
+```kotlin
 interface StorageConfig {
     val pinStorageProvider: PinStorageProvider
     val biometryStorageProvider: BiometryStorageProvider
@@ -414,7 +459,8 @@ You can provide your storage implementation by implementing the *PinStorageProvi
 The project utilizes Koin for Dependency Injection (DI), thus requiring adjustment of the *LogicAuthenticationModule* graph to provide the configuration.
 
 Implementation Example:
-```Kotlin
+
+```kotlin
 class PrefsPinStorageProvider(
     private val prefsController: PrefsController,
     private val cryptoController: CryptoController
@@ -431,7 +477,8 @@ class PrefsPinStorageProvider(
 ```
 
 Config Example:
-```Kotlin
+
+```kotlin
 class StorageConfigImpl(
     private val pinImpl: PinStorageProvider,
     private val biometryImpl: BiometryStorageProvider
@@ -444,7 +491,8 @@ class StorageConfigImpl(
 ```
 
 Config Construction via Koin DI Example:
-```Kotlin
+
+```kotlin
 @Single
 fun provideStorageConfig(
     prefsController: PrefsController,
@@ -465,7 +513,7 @@ The application allows the configuration of multiple analytics providers. You ca
 
 Via the *AnalyticsConfig* inside the analytics-logic module.
 
-```Kotlin
+```kotlin
 interface AnalyticsConfig {
     val analyticsProviders: Map<String, AnalyticsProvider>
         get() = emptyMap()
@@ -477,7 +525,8 @@ You will also need the provider's token/key, thus requiring a Map<String, Analyt
 The project utilizes Koin for Dependency Injection (DI), thus requiring adjustment of the *LogicAnalyticsModule* graph to provide the configuration.
 
 Implementation Example:
-```Kotlin
+
+```kotlin
 object AppCenterAnalyticsProvider : AnalyticsProvider {
     override fun initialize(context: Application, key: String) {
         AppCenter.start(
@@ -500,7 +549,8 @@ object AppCenterAnalyticsProvider : AnalyticsProvider {
 ```
 
 Config Example:
-```Kotlin
+
+```kotlin
 class AnalyticsConfigImpl : AnalyticsConfig {
     override val analyticsProviders: Map<String, AnalyticsProvider>
         get() = mapOf("YOUR_OWN_KEY" to AppCenterAnalyticsProvider)
@@ -508,7 +558,8 @@ class AnalyticsConfigImpl : AnalyticsConfig {
 ```
 
 Config Construction via Koin DI Example:
-```Kotlin
+
+```kotlin
 @Single
 fun provideAnalyticsConfig(): AnalyticsConfig = AnalyticsConfigImpl()
 ```

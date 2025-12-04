@@ -37,12 +37,13 @@ The app is configured to use some configuration in the two ***ConfigWalletCoreIm
 depending on the flavor of your choice).
 
 These are the contents of the ConfigWalletCoreImpl file (dev flavor), and you don't need to change anything:
-```Kotlin
+
+```kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
       .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
-      .withClientId(clientId = "wallet-dev")
+      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
       .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
@@ -60,25 +61,28 @@ you can follow these Repositories for further instructions:
 
 After this, and assuming you are now running everything locally,
 you need to change the contents of the ConfigWalletCoreImpl file, from:
-```Kotlin
+
+```kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
       .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
-      .withClientId(clientId = "wallet-dev")
+      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
       .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
       .build()
 )
 ```
+
 with this:
-```Kotlin
+
+```kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
       .withIssuerUrl(issuerUrl = "local_IP_address_of_issuer")
-      .withClientId(clientId = "wallet-dev")
+      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
       .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
@@ -87,18 +91,20 @@ override val vciConfig: List<OpenId4VciManager.Config>
 ```
 
 for example:
-```Kotlin
+
+```kotlin
 override val vciConfig: List<OpenId4VciManager.Config>
     get() = listOf(
        OpenId4VciManager.Config.Builder()
       .withIssuerUrl(issuerUrl = "https://10.0.2.2")
-      .withClientId(clientId = "wallet-dev")
+      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
       .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
       .build()
 )
 ```
+
 ## Why 10.0.2.2?
 
 When using the Android emulator, 10.0.2.2 is a special alias that routes to localhost on your development machine.
@@ -108,94 +114,84 @@ So if you’re running the issuer locally on your host, the emulator can access 
 
 This section describes configuring the application to interact with services utilizing self-signed certificates.
 
-1. Open the build.gradle.kts file of the "core-logic" module.
-2. In the 'dependencies' block, add the following two:
-    ```Gradle
-    implementation(libs.ktor.android)
-    implementation(libs.ktor.logging)
-    ```
-3. Now, you need to create a new kotlin file *ProvideKtorHttpClient* and place it into the *src\main\java\eu\europa\ec\corelogic\config* package.
-4. Copy and paste the following into your newly created *ProvideKtorHttpClient* kotlin file.
-    ```Kotlin
+*To enable support for self-signed certificates, you must customize the existing Ktor `HttpClient`
+used by the application.*
+
+1. Open the `NetworkModule.kt` file of the `network-logic` module.
+2. Add the following imports:
+
+    ```kotlin
     import android.annotation.SuppressLint
-    import io.ktor.client.HttpClient
-    import io.ktor.client.engine.android.Android
-    import io.ktor.client.plugins.logging.Logging
     import java.security.SecureRandom
     import javax.net.ssl.HostnameVerifier
     import javax.net.ssl.SSLContext
     import javax.net.ssl.TrustManager
     import javax.net.ssl.X509TrustManager
     import javax.security.cert.CertificateException
-    
-    object ProvideKtorHttpClient {
+    ```
 
-        @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
-        fun client(): HttpClient {
-            val trustAllCerts = arrayOf<TrustManager>(
-                object : X509TrustManager {
-                    @Throws(CertificateException::class)
-                    override fun checkClientTrusted(
-                        chain: Array<java.security.cert.X509Certificate>,
-                        authType: String
-                    ) {
-                    }
+3. Replace the `provideHttpClient` function with the following:
 
-                    @Throws(CertificateException::class)
-                    override fun checkServerTrusted(
-                        chain: Array<java.security.cert.X509Certificate>,
-                        authType: String
-                    ) {
-                    }
-
-                    override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
-                        return arrayOf()
-                    }
+    ```kotlin
+    @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
+    @Single
+    fun provideHttpClient(json: Json): HttpClient {
+        val trustAllCerts = arrayOf<TrustManager>(
+            object : X509TrustManager {
+                @Throws(CertificateException::class)
+                override fun checkClientTrusted(
+                    chain: Array<java.security.cert.X509Certificate>,
+                    authType: String
+                ) {
                 }
-            )
-
-            return HttpClient(Android) {
-                install(Logging)
-                engine {
-                    requestConfig
-                    sslManager = { httpsURLConnection ->
-                        httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
-                            init(null, trustAllCerts, SecureRandom())
-                        }.socketFactory
-                        httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
-                    }
+    
+                @Throws(CertificateException::class)
+                override fun checkServerTrusted(
+                    chain: Array<java.security.cert.X509Certificate>,
+                    authType: String
+                ) {
+                }
+    
+                override fun getAcceptedIssuers(): Array<java.security.cert.X509Certificate> {
+                    return arrayOf()
+                }
+            }
+        )
+    
+        return HttpClient(Android) {
+            install(Logging)
+            install(ContentNegotiation) {
+                json(
+                    json = json,
+                    contentType = ContentType.Application.Json
+                )
+            }
+            engine {
+                requestConfig
+                sslManager = { httpsURLConnection ->
+                    httpsURLConnection.sslSocketFactory = SSLContext.getInstance("TLS").apply {
+                        init(null, trustAllCerts, SecureRandom())
+                    }.socketFactory
+                    httpsURLConnection.hostnameVerifier = HostnameVerifier { _, _ -> true }
                 }
             }
         }
+    }
+    ```
 
-    }
-    ```
-5. Also, add this custom HttpClient to the EudiWallet provider function *provideEudiWallet* located in *LogicCoreModule.kt*
-    ```Kotlin
-    @Single
-    fun provideEudiWallet(
-    context: Context,
-    walletCoreConfig: WalletCoreConfig,
-    walletCoreLogController: WalletCoreLogController
-    ): EudiWallet = EudiWallet(context, walletCoreConfig.config) {
-        withLogger(walletCoreLogController)
-        // Custom HttpClient
-        withKtorHttpClientFactory {
-            ProvideKtorHttpClient.client()
-        }
-    }
-    ```
-6. Finally, you need to use the preregistered clientId scheme instead of X509.
+4. Finally, you need to use the preregistered clientId scheme instead of X509.
    
    Change this:
-   ```Kotlin
+
+   ```kotlin
    withClientIdSchemes(
     listOf(ClientIdScheme.X509SanDns)
    )
     ```
    
    into something like this:
-   ```Kotlin
+
+   ```kotlin
    withClientIdSchemes(
     listOf(
         ClientIdScheme.Preregistered(

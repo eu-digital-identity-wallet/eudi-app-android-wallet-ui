@@ -23,19 +23,9 @@ class ConfigLogicImpl(val context: Context) : ConfigLogic {
     override val appFlavor: AppFlavor
         get() = AppFlavor.DEMO
 
-    override val environmentConfig: EnvironmentConfig
-        get() = DemoEnvironmentConfig()
-
     override val rqesConfig: EudiRQESUiConfig
         get() = RQESConfigImpl(context)
 
     override val changelogUrl: String?
         get() = "https://github.com/eu-digital-identity-wallet/eudi-app-android-wallet-ui/releases"
-}
-
-private class DemoEnvironmentConfig : EnvironmentConfig() {
-    override fun getServerHost(): String = when (environment) {
-        ServerConfig.Debug -> ""
-        ServerConfig.Release -> ""
-    }
 }

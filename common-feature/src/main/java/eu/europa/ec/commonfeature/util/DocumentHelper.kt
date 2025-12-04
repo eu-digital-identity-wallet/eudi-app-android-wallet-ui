@@ -187,10 +187,15 @@ fun createKeyValue(
 
         is Collection<*> -> {
 
-            val children: MutableList<ClaimDomain> = mutableListOf()
+            val groupedChildren: MutableList<ClaimDomain> = mutableListOf()
+            val isMultiElement = item.size > 1
+            val isRecordLevel = childKey.isEmpty()
 
-            item.forEach { value ->
+            item.forEachIndexed { index, value ->
                 value?.let {
+
+                    val entryChildren: MutableList<ClaimDomain> = mutableListOf()
+
                     createKeyValue(
                         item = it,
                         groupKey = groupKey,
@@ -198,14 +203,43 @@ fun createKeyValue(
                         resourceProvider = resourceProvider,
                         uuidProvider = uuidProvider,
                         claimMetaData = claimMetaData,
-                        allItems = children
+                        allItems = entryChildren
                     )
+
+                    val shouldCreateSubGroup = isMultiElement
+                            && isRecordLevel
+                            && entryChildren.size > 1
+                            && entryChildren.none { child ->
+                        child is ClaimDomain.Group && child.key == groupKey
+                    }
+
+                    if (shouldCreateSubGroup) {
+
+                        val position = index + 1
+
+                        groupedChildren.add(
+                            ClaimDomain.Group(
+                                key = "$groupKey-$position",
+                                displayTitle = "${
+                                    getReadableNameFromIdentifier(
+                                        claimMetaData = claimMetaData,
+                                        userLocale = resourceProvider.getLocale(),
+                                        fallback = groupKey
+                                    )
+                                } $position",
+                                path = ClaimPathDomain(listOf(uuidProvider.provideUuid())),
+                                items = entryChildren
+                            )
+                        )
+                    } else {
+                        groupedChildren.addAll(entryChildren)
+                    }
                 }
             }
 
             addFlatOrGroupedChildren(
                 allItems = allItems,
-                children = children,
+                children = groupedChildren,
                 groupKey = groupKey,
                 displayTitle = getReadableNameFromIdentifier(
                     claimMetaData = claimMetaData,
@@ -230,8 +264,10 @@ fun createKeyValue(
                 keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64()
                 date != null -> date
                 item is Boolean -> resourceProvider.getString(
-                    if (item) R.string.document_details_boolean_item_true_readable_value
-                    else R.string.document_details_boolean_item_false_readable_value
+                    resId = if (item)
+                        R.string.document_details_boolean_item_true_readable_value
+                    else
+                        R.string.document_details_boolean_item_false_readable_value
                 )
 
                 else -> item.toString()
