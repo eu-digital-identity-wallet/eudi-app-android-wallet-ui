@@ -16,11 +16,16 @@
 
 package eu.europa.ec.networklogic.di
 
+import eu.europa.ec.businesslogic.config.AppBuildType
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.networklogic.repository.WalletAttestationRepository
 import eu.europa.ec.networklogic.repository.WalletAttestationRepositoryImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.DEFAULT
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.serialization.kotlinx.json.json
@@ -41,9 +46,17 @@ fun provideJson(): Json = Json {
 }
 
 @Single
-fun provideHttpClient(json: Json): HttpClient {
+fun provideHttpClient(json: Json, configLogic: ConfigLogic): HttpClient {
     return HttpClient(Android) {
-        install(Logging)
+
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = when (configLogic.appBuildType) {
+                AppBuildType.DEBUG -> LogLevel.BODY
+                AppBuildType.RELEASE -> LogLevel.NONE
+            }
+        }
+
         install(ContentNegotiation) {
             json(
                 json = json,
