@@ -46,7 +46,7 @@ fun ExpandableListItemUi.toggleCheckboxState(id: String): ExpandableListItemUi {
         is ExpandableListItemUi.SingleListItem -> {
             if (this.header.itemId == id && this.header.trailingContentData is ListItemTrailingContentDataUi.Checkbox) {
                 val currentItem =
-                    this.header.trailingContentData as ListItemTrailingContentDataUi.Checkbox
+                    this.header.trailingContentData
 
                 this.copy(
                     header = this.header.copy(
@@ -83,7 +83,7 @@ fun List<ExpandableListItemUi>.toggleExpansionState(id: String): List<Expandable
             is ExpandableListItemUi.NestedListItem -> {
                 if (nestedItem.header.itemId == id && nestedItem.header.trailingContentData is ListItemTrailingContentDataUi.Icon) {
                     val currentTrailingContent =
-                        nestedItem.header.trailingContentData as ListItemTrailingContentDataUi.Icon
+                        nestedItem.header.trailingContentData
 
                     val newIsExpanded = !nestedItem.isExpanded
                     val newCollapsed = nestedItem.header.copy(
