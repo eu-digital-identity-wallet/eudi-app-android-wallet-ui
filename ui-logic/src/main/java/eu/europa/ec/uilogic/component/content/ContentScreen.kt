@@ -156,12 +156,11 @@ fun ContentScreen(
         snackbarHost = snackbarHost,
     ) { padding ->
 
-        val screenPaddingsIgnoringSticky = remember(padding) {
-            screenPaddings(
-                hasStickyBottom = false,
-                append = padding
-            )
-        }
+        val screenPaddingsIgnoringSticky = screenPaddings(
+            hasStickyBottom = false,
+            append = padding,
+            topSpacing = topSpacing
+        )
 
         Box(
             modifier = Modifier.fillMaxSize()
