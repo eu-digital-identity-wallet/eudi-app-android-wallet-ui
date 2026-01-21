@@ -66,8 +66,10 @@ import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.extension.optionalTestTag
 import eu.europa.ec.uilogic.extension.throttledClickable
 import eu.europa.ec.uilogic.mvi.ViewEvent
+import eu.europa.ec.uilogic.util.TestTag
 
 private val defaultBottomSheetPadding: PaddingValues = PaddingValues(
     start = SPACING_LARGE.dp,
@@ -183,7 +185,9 @@ fun DialogBottomSheet(
     leadingIcon: IconDataUi? = null,
     leadingIconTint: Color? = null,
     onPositiveClick: () -> Unit = {},
+    positiveButtonTestTag: String? = null,
     onNegativeClick: () -> Unit = {},
+    negativeButtonTestTag: String? = null,
 ) {
     BaseBottomSheet(
         textData = textData,
@@ -196,7 +200,9 @@ fun DialogBottomSheet(
             ) {
                 textData.negativeButtonText?.let { safeNegativeButtonText ->
                     WrapButton(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .optionalTestTag(negativeButtonTestTag)
+                            .weight(1f),
                         buttonConfig = ButtonConfig(
                             type = ButtonType.SECONDARY,
                             onClick = onNegativeClick,
@@ -215,7 +221,9 @@ fun DialogBottomSheet(
 
                 textData.positiveButtonText?.let { safePositiveButtonText ->
                     WrapButton(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .optionalTestTag(positiveButtonTestTag)
+                            .weight(1f),
                         buttonConfig = ButtonConfig(
                             type = ButtonType.PRIMARY,
                             onClick = onPositiveClick,
@@ -316,6 +324,7 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
     textData: BottomSheetTextDataUi,
     options: List<ModalOptionUi<T>>,
     onEventSent: (T) -> Unit,
+    hostTab: String? = null,
 ) {
     if (options.size == 2) {
         BaseBottomSheet(
@@ -359,7 +368,16 @@ fun <T : ViewEvent> BottomSheetWithTwoBigIcons(
                                 )
                             }
                             WrapButton(
-                                modifier = Modifier.wrapContentWidth(),
+                                modifier = Modifier
+                                    .optionalTestTag(
+                                        hostTab?.let { safeHostTab ->
+                                            TestTag.buttonInBottomSheetWithTwoBigIcons(
+                                                hostTab = safeHostTab,
+                                                index = index
+                                            )
+                                        }
+                                    )
+                                    .wrapContentWidth(),
                                 buttonConfig = ButtonConfig(
                                     type = ButtonType.PRIMARY,
                                     onClick = { onEventSent(item.event) },

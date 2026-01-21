@@ -30,6 +30,7 @@ import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.VSpacer
+import eu.europa.ec.uilogic.extension.optionalTestTag
 
 @Composable
 fun ContentTitle(
@@ -43,13 +44,17 @@ fun ContentTitle(
         color = MaterialTheme.colorScheme.onSurface
     ),
     subTitleMaxLines: Int = Int.MAX_VALUE,
+    titleTestTag: String? = null,
+    subtitleTestTag: String? = null,
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Top
     ) {
         Text(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .optionalTestTag(titleTestTag)
+                .fillMaxWidth(),
             text = title,
             style = titleStyle,
         )
@@ -57,7 +62,9 @@ fun ContentTitle(
 
         subtitle?.let { safeSubtitle ->
             Text(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .optionalTestTag(subtitleTestTag)
+                    .fillMaxWidth(),
                 text = safeSubtitle,
                 style = subtitleStyle,
                 maxLines = subTitleMaxLines,

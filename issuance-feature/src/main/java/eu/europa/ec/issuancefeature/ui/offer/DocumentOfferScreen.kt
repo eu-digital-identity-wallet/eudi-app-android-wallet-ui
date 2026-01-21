@@ -30,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -38,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.corelogic.util.CoreActions
+import eu.europa.ec.issuancefeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.ErrorInfo
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -89,6 +91,7 @@ fun DocumentOfferScreen(
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 modifier = Modifier
+                    .testTag(TestTag.DocumentOfferScreen.BUTTON)
                     .fillMaxWidth()
                     .padding(paddingValues),
                 stickyBottomConfig = StickyBottomConfig(
@@ -163,6 +166,7 @@ private fun Content(
         ContentHeader(
             modifier = Modifier.fillMaxWidth(),
             config = state.headerConfig,
+            descriptionTestTag = TestTag.DocumentOfferScreen.CONTENT_HEADER_DESCRIPTION,
         )
 
         if (state.noDocument) {

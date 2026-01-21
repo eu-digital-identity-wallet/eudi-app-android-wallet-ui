@@ -34,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,6 +42,7 @@ import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.commonfeature.util.TestTag
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.resourceslogic.R
@@ -102,6 +104,7 @@ fun RequestScreen(
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 modifier = Modifier
+                    .testTag(TestTag.RequestScreen.BUTTON)
                     .fillMaxWidth()
                     .padding(paddingValues),
                 stickyBottomConfig = StickyBottomConfig(
@@ -196,6 +199,7 @@ private fun Content(
         ContentHeader(
             modifier = Modifier.fillMaxWidth(),
             config = state.headerConfig,
+            descriptionTestTag = TestTag.RequestScreen.CONTENT_HEADER_DESCRIPTION,
         )
 
         // Screen Main Content.
@@ -252,9 +256,11 @@ private fun DisplayRequestItems(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
             ) {
-                requestDocuments.forEach { requestDocument ->
+                requestDocuments.forEachIndexed { index, requestDocument ->
                     WrapExpandableListItem(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .testTag(TestTag.RequestScreen.requestedDocument(index = index))
+                            .fillMaxWidth(),
                         header = requestDocument.headerUi.header,
                         data = requestDocument.headerUi.nestedItems,
                         onItemClick = { item ->

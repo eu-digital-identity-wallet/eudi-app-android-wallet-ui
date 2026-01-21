@@ -14,12 +14,18 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.add.model
+package eu.europa.ec.issuancefeature.util
 
-import eu.europa.ec.uilogic.component.ListItemDataUi
+object TestTag {
 
-data class AddDocumentUi(
-    val credentialIssuerId: String,
-    val configurationId: String,
-    val itemData: ListItemDataUi,
-)
+    object AddDocumentScreen {
+        const val SUBTITLE = "add_document_screen_subtitle"
+        fun optionItem(issuerId: String, configId: String) =
+            "add_document_screen_attestation_${issuerId}_$configId"
+    }
+
+    object DocumentOfferScreen {
+        const val CONTENT_HEADER_DESCRIPTION = "document_offer_screen_content_header_description"
+        const val BUTTON = "document_offer_screen_button"
+    }
+}

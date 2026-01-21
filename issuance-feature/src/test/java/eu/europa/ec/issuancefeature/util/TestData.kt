@@ -60,6 +60,7 @@ private const val mockedConfigIssuerId = "configurationId"
 
 internal val mockedPidOptionItemUi = AddDocumentUi(
     credentialIssuerId = mockedIssuerId,
+    configurationId = mockedConfigIssuerId,
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedPidDocName),
@@ -69,6 +70,7 @@ internal val mockedPidOptionItemUi = AddDocumentUi(
 
 internal val mockedMdlOptionItemUi = AddDocumentUi(
     credentialIssuerId = mockedIssuerId,
+    configurationId = mockedConfigIssuerId,
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedMdlDocName),
@@ -78,6 +80,7 @@ internal val mockedMdlOptionItemUi = AddDocumentUi(
 
 internal val mockedAgeOptionItemUi = AddDocumentUi(
     credentialIssuerId = mockedIssuerId,
+    configurationId = mockedConfigIssuerId,
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedAgeVerificationDocName),
@@ -87,6 +90,7 @@ internal val mockedAgeOptionItemUi = AddDocumentUi(
 
 internal val mockedPhotoIdOptionItemUi = AddDocumentUi(
     credentialIssuerId = mockedIssuerId,
+    configurationId = mockedConfigIssuerId,
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedPhotoIdDocName),

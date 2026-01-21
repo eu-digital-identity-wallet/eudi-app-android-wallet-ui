@@ -24,12 +24,15 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.IconDataUi
@@ -77,6 +80,11 @@ fun BottomNavigationBar(navController: NavController) {
     ) {
         navItems.forEach { screen ->
             NavigationBarItem(
+                modifier = Modifier.testTag(
+                    TestTag.DashboardScreen.bottomNavigationItem(
+                        navItem = screen.route.lowercase()
+                    )
+                ),
                 icon = {
                     WrapIcon(
                         iconData = screen.icon,

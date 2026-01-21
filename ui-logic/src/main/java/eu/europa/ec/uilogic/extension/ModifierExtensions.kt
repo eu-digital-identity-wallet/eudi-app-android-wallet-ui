@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.debugInspectorInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -188,5 +189,15 @@ fun Modifier.paddingFrom(
             end = if (end) pv.calculateEndPadding(layoutDirection) else 0.dp,
             bottom = if (bottom) pv.calculateBottomPadding() else 0.dp
         )
+    )
+}
+
+fun Modifier.optionalTestTag(testTag: String?): Modifier {
+    return this.then(
+        if (testTag != null) {
+            Modifier.testTag(testTag)
+        } else {
+            Modifier
+        }
     )
 }

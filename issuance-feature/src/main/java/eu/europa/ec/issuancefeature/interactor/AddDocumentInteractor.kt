@@ -123,6 +123,7 @@ class AddDocumentInteractorImpl(
                             .map { doc ->
                                 AddDocumentUi(
                                     credentialIssuerId = doc.credentialIssuerId,
+                                    configurationId = doc.configurationId,
                                     itemData = ListItemDataUi(
                                         itemId = doc.configurationId,
                                         mainContentData = ListItemMainContentDataUi.Text(text = doc.name),
