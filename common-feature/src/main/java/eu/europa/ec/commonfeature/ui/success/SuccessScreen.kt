@@ -33,12 +33,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
+import eu.europa.ec.commonfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.ThemeColors
 import eu.europa.ec.resourceslogic.theme.values.success
@@ -220,7 +222,9 @@ private fun Button(
                     type = ButtonType.PRIMARY,
                     onClick = { onEventSent(Event.ButtonClicked(config)) },
                 ),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .testTag(TestTag.SuccessScreen.PRIMARY_BUTTON)
+                    .fillMaxWidth(),
             ) {
                 ButtonRow(text = config.text)
             }
@@ -232,7 +236,9 @@ private fun Button(
                     type = ButtonType.SECONDARY,
                     onClick = { onEventSent(Event.ButtonClicked(config)) },
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .testTag(TestTag.SuccessScreen.SECONDARY_BUTTON)
+                    .fillMaxWidth(),
             ) {
                 ButtonRow(text = config.text)
             }

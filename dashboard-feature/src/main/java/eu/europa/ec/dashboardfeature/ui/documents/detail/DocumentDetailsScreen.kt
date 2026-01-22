@@ -49,6 +49,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -61,6 +62,7 @@ import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoUi
+import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.success
 import eu.europa.ec.resourceslogic.theme.values.warning
@@ -377,7 +379,9 @@ private fun SheetContent(
                 leadingIcon = AppIcons.Delete,
                 leadingIconTint = MaterialTheme.colorScheme.error,
                 onPositiveClick = { onEventSent(Event.BottomSheet.Delete.PrimaryButtonPressed) },
-                onNegativeClick = { onEventSent(Event.BottomSheet.Delete.SecondaryButtonPressed) }
+                positiveButtonTestTag = TestTag.DocumentDetailsScreen.BOTTOM_SHEET_DELETE_DOCUMENT_POSITIVE_BUTTON,
+                onNegativeClick = { onEventSent(Event.BottomSheet.Delete.SecondaryButtonPressed) },
+                negativeButtonTestTag = TestTag.DocumentDetailsScreen.BOTTOM_SHEET_DELETE_DOCUMENT_NEGATIVE_BUTTON,
             )
 
         is DocumentDetailsBottomSheetContent.BookmarkStoredInfo -> {
@@ -649,7 +653,9 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
             .navigationBarsPadding()
     ) {
         WrapButton(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .testTag(TestTag.DocumentDetailsScreen.DELETE_BUTTON)
+                .fillMaxWidth(),
             buttonConfig = ButtonConfig(
                 type = ButtonType.SECONDARY,
                 onClick = { onEventSend(Event.SecondaryButtonPressed) },

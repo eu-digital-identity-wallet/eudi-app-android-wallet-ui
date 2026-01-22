@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,8 +61,10 @@ import eu.europa.ec.corelogic.model.DocumentCategory
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.dashboardfeature.model.SearchItemUi
+import eu.europa.ec.dashboardfeature.ui.component.BottomNavigationItem
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.dashboardfeature.ui.documents.list.model.DocumentUi
+import eu.europa.ec.dashboardfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -229,7 +232,9 @@ private fun TopBar(
         )
 
         WrapIconButton(
-            modifier = Modifier.align(Alignment.CenterEnd),
+            modifier = Modifier
+                .testTag(TestTag.DocumentsScreen.PLUS_BUTTON)
+                .align(Alignment.CenterEnd),
             iconData = AppIcons.Add,
             customTint = MaterialTheme.colorScheme.onSurfaceVariant,
         ) {
@@ -525,7 +530,8 @@ private fun DocumentsSheetContent(
                         event = Event.BottomSheet.AddDocument.ScanQr,
                     )
                 ),
-                onEventSent = onEventSent
+                onEventSent = onEventSent,
+                hostTab = BottomNavigationItem.Documents.route.lowercase(),
             )
         }
 

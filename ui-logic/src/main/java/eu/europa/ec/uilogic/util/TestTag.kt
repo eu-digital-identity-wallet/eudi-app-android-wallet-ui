@@ -14,12 +14,12 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.issuancefeature.ui.add.model
+package eu.europa.ec.uilogic.util
 
-import eu.europa.ec.uilogic.component.ListItemDataUi
+object TestTag {
 
-data class AddDocumentUi(
-    val credentialIssuerId: String,
-    val configurationId: String,
-    val itemData: ListItemDataUi,
-)
+    fun pinTextField(index: Int) = "pin_text_field_$index"
+
+    fun buttonInBottomSheetWithTwoBigIcons(hostTab: String, index: Int) =
+        "${hostTab}_tab_bottom_sheet_button_${index}"
+}

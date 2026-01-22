@@ -32,10 +32,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.commonfeature.util.TestTag
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.uilogic.component.content.ContentHeader
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -67,6 +69,7 @@ fun DocumentSuccessScreen(
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 modifier = Modifier
+                    .testTag(TestTag.DocumentSuccessScreen.BUTTON)
                     .fillMaxWidth()
                     .padding(paddingValues),
                 stickyBottomConfig = StickyBottomConfig(
@@ -146,6 +149,7 @@ private fun Content(
         ContentHeader(
             modifier = Modifier.fillMaxWidth(),
             config = state.headerConfig,
+            descriptionTestTag = TestTag.DocumentSuccessScreen.CONTENT_HEADER_DESCRIPTION,
         )
 
         Column(
@@ -154,9 +158,11 @@ private fun Content(
                 .padding(vertical = SPACING_SMALL.dp),
             verticalArrangement = Arrangement.spacedBy(SPACING_MEDIUM.dp)
         ) {
-            state.items.forEach { successItem ->
+            state.items.forEachIndexed { index, successItem ->
                 WrapExpandableListItem(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .testTag(TestTag.DocumentSuccessScreen.successDocument(index = index))
+                        .fillMaxWidth(),
                     header = successItem.header,
                     data = successItem.nestedItems,
                     onItemClick = null,

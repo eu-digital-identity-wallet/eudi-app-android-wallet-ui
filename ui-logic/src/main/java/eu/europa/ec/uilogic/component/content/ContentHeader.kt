@@ -40,6 +40,7 @@ import eu.europa.ec.uilogic.component.utils.SPACING_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapText
+import eu.europa.ec.uilogic.extension.optionalTestTag
 
 /**
  * Data class representing the configuration for a content header.
@@ -75,6 +76,7 @@ data class ContentHeaderConfig(
 fun ContentHeader(
     modifier: Modifier = Modifier,
     config: ContentHeaderConfig,
+    descriptionTestTag: String? = null,
 ) {
     val commonTextAlign = TextAlign.Center
 
@@ -96,6 +98,7 @@ fun ContentHeader(
                 WrapText(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .optionalTestTag(descriptionTestTag)
                         .padding(vertical = SPACING_SMALL.dp),
                     text = safeDescription,
                     textConfig = descriptionTextConfig ?: TextConfig(
