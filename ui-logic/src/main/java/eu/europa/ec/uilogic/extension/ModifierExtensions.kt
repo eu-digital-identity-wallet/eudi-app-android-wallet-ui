@@ -46,6 +46,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.channels.BufferOverflow
@@ -200,4 +202,11 @@ fun Modifier.optionalTestTag(testTag: String?): Modifier {
             Modifier
         }
     )
+}
+
+fun Modifier.exposeTestTagsAsResourceId(): Modifier {
+    return this
+        .semantics {
+            this.testTagsAsResourceId = true
+        }
 }
