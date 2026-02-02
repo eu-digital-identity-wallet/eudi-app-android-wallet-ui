@@ -70,7 +70,8 @@ internal class WalletCoreConfigImpl(
                         R.raw.pidissuerca02_pt,
                         R.raw.pidissuerca02_ut,
                         R.raw.dc4eu,
-                        R.raw.r45_staging
+                        R.raw.r45_staging,
+                        R.raw.test_pid_issuer
                     )
                 }
             }
@@ -80,18 +81,10 @@ internal class WalletCoreConfigImpl(
     override val vciConfig: List<OpenId4VciManager.Config>
         get() = listOf(
             OpenId4VciManager.Config.Builder()
-                .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
-                .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+                .withIssuerUrl(issuerUrl = "https://issuer.theaustraliahack.com/draft13")
+                .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.None(clientId = "eudi-wallet-test"))
                 .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                 .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-                .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
-                .build(),
-            OpenId4VciManager.Config.Builder()
-                .withIssuerUrl(issuerUrl = "https://dev.issuer-backend.eudiw.dev")
-                .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-                .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-                .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-                .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
                 .build()
         )
 
