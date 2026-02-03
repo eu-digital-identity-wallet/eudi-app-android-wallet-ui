@@ -23,7 +23,6 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.secrets) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.org.jetbrains.kotlin.android) apply false
     alias(libs.plugins.owasp.dependencycheck) apply false
     alias(libs.plugins.kotlinx.kover) apply false
     alias(libs.plugins.sonar) apply false

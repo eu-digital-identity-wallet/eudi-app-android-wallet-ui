@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import com.android.build.api.dsl.LibraryExtension
 import project.convention.logic.config.LibraryModule
 import project.convention.logic.kover.KoverExclusionRules
 import project.convention.logic.kover.excludeFromKoverReport
@@ -23,7 +24,7 @@ plugins {
     id("project.wallet.core")
 }
 
-android {
+extensions.configure<LibraryExtension>("android") {
     namespace = "eu.europa.ec.corelogic"
 }
 

@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import com.android.build.api.dsl.LibraryExtension
 import project.convention.logic.config.LibraryModule
 
 plugins {
@@ -21,7 +22,7 @@ plugins {
     id("project.android.library.compose")
 }
 
-android {
+extensions.configure<LibraryExtension>("android") {
     namespace = "eu.europa.ec.resourceslogic"
 }
 
@@ -31,7 +32,7 @@ moduleConfig {
 
 dependencies {
     api(libs.androidx.compose.material3)
-    api(libs.androidx.compose.material.iconsExtended)
+    api(libs.androidx.compose.material.icons.extended)
     api(libs.androidx.compose.material3.windowSizeClass)
     api(libs.material)
 }

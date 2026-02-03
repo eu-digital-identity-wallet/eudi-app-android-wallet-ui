@@ -14,8 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 import androidx.baselineprofile.gradle.producer.BaselineProfileProducerExtension
+import com.android.build.api.dsl.TestExtension
 import com.android.build.api.variant.TestAndroidComponentsExtension
-import com.android.build.gradle.TestExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -31,7 +31,6 @@ class AndroidBaseLineProfilePlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("com.android.test")
-                apply("org.jetbrains.kotlin.android")
                 apply("androidx.baselineprofile")
             }
 

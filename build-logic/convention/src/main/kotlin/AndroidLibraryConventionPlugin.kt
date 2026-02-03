@@ -14,8 +14,8 @@
  * governing permissions and limitations under the Licence.
  */
 
+import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import com.android.build.gradle.LibraryExtension
 import com.google.android.libraries.mapsplatform.secrets_gradle_plugin.SecretsPluginExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -77,19 +77,16 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 apply("project.android.library.kover")
                 apply("project.android.lint")
                 apply("project.android.koin")
-                apply("org.jetbrains.kotlin.android")
                 apply("kotlinx-serialization")
                 apply("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
                 apply("kotlin-parcelize")
             }
 
-            extensions.configure<LibraryExtension> {
+            extensions.configure<LibraryExtension>("android") {
                 configureKotlinAndroid(this)
                 with(defaultConfig) {
 
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-                    targetSdk = 36
 
                     addConfigField("DEEPLINK", "$walletScheme://")
                     addConfigField("EUDI_OPENID4VP_SCHEME", eudiOpenId4VpScheme)

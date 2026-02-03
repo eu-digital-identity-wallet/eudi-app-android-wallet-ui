@@ -1,7 +1,7 @@
 [versions]
 accompanist = "0.37.3"
 androidDesugarJdkLibs = "2.1.5"
-androidGradlePlugin = "8.13.2"
+androidGradlePlugin = "9.0.0"
 androidxActivity = "1.12.3"
 androidxAppCompat = "1.7.1"
 androidxBrowser = "1.9.0"
@@ -37,7 +37,7 @@ kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.10.0"
 ksp = "2.3.4"
 lint = "32.0.0"
-protobuf = "4.33.4"
+protobuf = "4.33.5"
 protobufPlugin = "0.9.6"
 robolectric = "4.16.1"
 secrets = "2.0.1"
@@ -50,15 +50,15 @@ mockitoKotlin = "6.2.3"
 ktor = "3.4.0"
 slf4j = "2.0.17"
 gson = "2.13.2"
-googlePhoneNumber = "9.0.22"
+googlePhoneNumber = "9.0.23"
 zxing = "3.5.4"
-eudiWalletCore = "0.23.0"
+eudiWalletCore = "0.24.0"
 cameraCore = "1.5.3"
 owaspDependencyCheck = "12.2.0"
 material3 = "1.4.0"
-kover = "0.9.4"
+kover = "0.9.5"
 sonar = "7.2.2.6593"
-baselineprofile = "1.4.1"
+baselineprofile = "1.5.0-alpha02"
 timber = "5.0.1"
 treessence = "1.1.2"
 rqesUiSDK = "0.3.5-SNAPSHOT"
@@ -76,7 +76,7 @@ androidx-browser = { group = "androidx.browser", name = "browser", version.ref =
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
-androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material3" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-material3-windowSizeClass = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
@@ -175,7 +175,6 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
-org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 owasp-dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "owaspDependencyCheck" }
 kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
