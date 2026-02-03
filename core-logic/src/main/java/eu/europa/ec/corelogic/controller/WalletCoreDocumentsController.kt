@@ -69,8 +69,11 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import android.util.Log
 import java.net.URLDecoder
 import java.util.Locale
+
+private const val TAG = "WalletCoreDocuments"
 
 enum class IssuanceMethod {
     OPENID4VCI
@@ -370,17 +373,26 @@ class WalletCoreDocumentsControllerImpl(
         txCode: String?,
     ): Flow<IssueDocumentsPartialState> =
         callbackFlow {
+            Log.d(TAG, "=== ISSUE DOCUMENTS BY OFFER ===")
+            Log.d(TAG, "Offer: $offer")
+            Log.d(TAG, "TxCode: $txCode")
 
             val issuerId = offer
                 .credentialOffer
                 .credentialIssuerIdentifier
                 .toString()
 
+            Log.d(TAG, "Issuer ID: $issuerId")
+            Log.d(TAG, "Available managers: ${openId4VciManagers.keys}")
+
             val manager = openId4VciManagers[issuerId]
                 ?: openId4VciManagers.values.firstOrNull()
 
+            Log.d(TAG, "Selected manager: $manager")
+
             require(manager != null) { documentErrorMessage }
 
+            Log.d(TAG, "Starting issueDocumentByOffer...")
             manager.issueDocumentByOffer(
                 offer = offer,
                 onIssueEvent = issuanceCallback(),
@@ -388,6 +400,9 @@ class WalletCoreDocumentsControllerImpl(
             )
             awaitClose()
         }.safeAsync {
+            Log.e(TAG, "=== ISSUE DOCUMENTS ASYNC ERROR ===")
+            Log.e(TAG, "Error: ${it.message}")
+            Log.e(TAG, "Stacktrace:", it)
             IssueDocumentsPartialState.Failure(
                 errorMessage = documentErrorMessage
             )
@@ -486,9 +501,18 @@ class WalletCoreDocumentsControllerImpl(
 
             require(manager != null) { genericErrorMessage }
 
+            Log.d(TAG, "=== RESOLVING DOCUMENT OFFER ===")
+            Log.d(TAG, "Offer URI: $offerUri")
+            Log.d(TAG, "Issuer ID: $issuerId")
+            Log.d(TAG, "Manager: $manager")
+
             manager.resolveDocumentOffer(offerUri) { result ->
                 when (result) {
                     is OfferResult.Failure -> {
+                        Log.e(TAG, "=== OFFER RESOLUTION FAILED ===")
+                        Log.e(TAG, "Cause: ${result.cause}")
+                        Log.e(TAG, "Cause message: ${result.cause.message}")
+                        Log.e(TAG, "Cause stacktrace:", result.cause)
                         trySendBlocking(
                             ResolveDocumentOfferPartialState.Failure(
                                 result.cause.localizedMessage ?: genericErrorMessage
@@ -497,6 +521,8 @@ class WalletCoreDocumentsControllerImpl(
                     }
 
                     is OfferResult.Success -> {
+                        Log.d(TAG, "=== OFFER RESOLUTION SUCCESS ===")
+                        Log.d(TAG, "Offer: ${result.offer}")
                         trySendBlocking(
                             ResolveDocumentOfferPartialState.Success(
                                 offer = result.offer
@@ -676,6 +702,12 @@ class WalletCoreDocumentsControllerImpl(
         val listener = OpenId4VciManager.OnIssueEvent { event ->
             when (event) {
                 is IssueEvent.DocumentFailed -> {
+                    Log.e(TAG, "=== DOCUMENT FAILED ===")
+                    Log.e(TAG, "DocType: ${event.docType}")
+                    Log.e(TAG, "Name: ${event.name}")
+                    Log.e(TAG, "Cause: ${event.cause}")
+                    Log.e(TAG, "Cause message: ${event.cause.message}")
+                    Log.e(TAG, "Cause stacktrace:", event.cause)
                     nonIssuedDocuments[event.docType] = event.name
                 }
 
@@ -722,6 +754,10 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Failure -> {
+                    Log.e(TAG, "=== ISSUANCE FAILURE ===")
+                    Log.e(TAG, "Cause: ${event.cause}")
+                    Log.e(TAG, "Cause message: ${event.cause.message}")
+                    Log.e(TAG, "Cause stacktrace:", event.cause)
                     trySendBlocking(
                         IssueDocumentsPartialState.Failure(
                             errorMessage = documentErrorMessage
@@ -767,6 +803,8 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Started -> {
+                    Log.d(TAG, "=== ISSUANCE STARTED ===")
+                    Log.d(TAG, "Total documents to issue: ${event.total}")
                     totalDocumentsToBeIssued = event.total
                 }
 
