@@ -65,6 +65,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
@@ -502,9 +503,10 @@ class TestAddDocumentInteractor {
     @Test
     fun `Given Case 3, When handleUserAuth is called, Then Case 3 expected result is returned`() {
         // Given
-        val mockedOnAuthenticationFailure: () -> Unit = {}
-        whenever(resultHandler.onAuthenticationFailure)
-            .thenReturn(mockedOnAuthenticationFailure)
+        val onFailure = mock<() -> Unit>()
+        val resultHandler = DeviceAuthenticationResult(
+            onAuthenticationFailure = onFailure
+        )
 
         mockBiometricsAvailabilityResponse(
             response = BiometricsAvailability.Failure(
@@ -521,8 +523,7 @@ class TestAddDocumentInteractor {
         )
 
         // Then
-        verify(resultHandler, times(1))
-            .onAuthenticationFailure
+        verify(onFailure).invoke()
     }
     //endregion
 

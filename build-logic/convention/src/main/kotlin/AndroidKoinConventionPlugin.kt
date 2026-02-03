@@ -52,7 +52,7 @@ class AndroidKoinConventionPlugin : Plugin<Project> {
     private fun addVariantOptions(sourceSets: NamedDomainObjectContainer<out AndroidSourceSet>) {
         apply {
             sourceSets.all {
-                kotlin.srcDir("build/generated/ksp/$name/kotlin")
+                kotlin.directories.add("build/generated/ksp/$name/kotlin")
             }
         }
     }

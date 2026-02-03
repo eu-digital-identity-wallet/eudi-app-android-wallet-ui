@@ -14,13 +14,14 @@
  * governing permissions and limitations under the Licence.
  */
 
+import com.android.build.api.dsl.LibraryExtension
 import project.convention.logic.config.LibraryModule
 
 plugins {
     id("project.android.test")
 }
 
-android {
+extensions.configure<LibraryExtension>("android") {
     namespace = "eu.europa.ec.testlogic"
 }
 

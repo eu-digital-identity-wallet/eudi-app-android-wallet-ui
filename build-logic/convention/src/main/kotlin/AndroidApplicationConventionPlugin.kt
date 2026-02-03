@@ -30,7 +30,6 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("com.android.application")
-                apply("org.jetbrains.kotlin.android")
                 apply("project.android.application.flavors")
                 apply("project.android.koin")
                 apply("project.android.lint")

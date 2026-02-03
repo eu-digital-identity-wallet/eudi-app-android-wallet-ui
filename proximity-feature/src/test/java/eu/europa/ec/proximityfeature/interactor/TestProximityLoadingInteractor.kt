@@ -38,6 +38,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.times
@@ -269,9 +270,11 @@ class TestProximityLoadingInteractor {
                 errorMessage = mockedPlainFailureMessage
             )
         )
-        val mockedOnAuthenticationFailure: () -> Unit = {}
-        whenever(resultHandler.onAuthenticationFailure)
-            .thenReturn(mockedOnAuthenticationFailure)
+
+        val onFailure = mock<() -> Unit>()
+        val resultHandler = DeviceAuthenticationResult(
+            onAuthenticationFailure = onFailure
+        )
 
         // When
         interactor.handleUserAuthentication(
@@ -282,8 +285,7 @@ class TestProximityLoadingInteractor {
         )
 
         // Then
-        verify(resultHandler, times(1))
-            .onAuthenticationFailure
+        verify(onFailure).invoke()
     }
 
     //endregion

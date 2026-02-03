@@ -21,6 +21,7 @@ import com.android.build.api.dsl.ApplicationProductFlavor
 import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.ProductFlavor
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.invoke
 
 @Suppress("EnumEntryName")
 enum class FlavorDimension {
@@ -37,7 +38,7 @@ enum class AppFlavor(
 }
 
 fun Project.configureFlavors(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
+    commonExtension: CommonExtension,
     flavorConfigurationBlock: ProductFlavor.(flavor: AppFlavor) -> Unit = {}
 ) {
 
@@ -49,7 +50,7 @@ fun Project.configureFlavors(
     commonExtension.apply {
         flavorDimensions += FlavorDimension.contentType.name
         productFlavors {
-            AppFlavor.values().forEach {
+            AppFlavor.entries.forEach {
                 create(it.name.lowercase()) {
                     dimension = it.dimension.name
                     if (this@apply is ApplicationExtension && this is ApplicationProductFlavor) {

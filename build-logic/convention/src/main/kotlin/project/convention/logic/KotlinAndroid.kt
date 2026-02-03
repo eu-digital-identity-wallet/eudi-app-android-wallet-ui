@@ -35,47 +35,36 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
  * Configure base Kotlin with Android options
  */
 internal fun Project.configureKotlinAndroid(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
+    commonExtension: CommonExtension,
 ) {
     commonExtension.apply {
         compileSdk = 36
 
-        defaultConfig {
-            minSdk = 29
-        }
+        defaultConfig.minSdk = 29
 
-        buildFeatures {
-            buildConfig = true
-        }
+        buildFeatures.buildConfig = true
 
-        packaging {
-            resources {
-                excludes.add("/META-INF/{AL2.0,LGPL2.1}")
-                excludes.add("/META-INF/versions/9/OSGI-INF/MANIFEST.MF")
-            }
-            jniLibs {
-                pickFirsts.addAll(
-                    listOf(
-                        "lib/arm64-v8a/libc++_shared.so",
-                        "lib/armeabi-v7a/libc++_shared.so",
-                        "lib/x86/libc++_shared.so",
-                        "lib/x86_64/libc++_shared.so",
-                        "lib/mips/libc++_shared.so",
-                        "lib/mips64/libc++_shared.so",
-                    )
-                )
-            }
-        }
+        packaging.resources.excludes.add("/META-INF/{AL2.0,LGPL2.1}")
+        packaging.resources.excludes.add("/META-INF/versions/9/OSGI-INF/MANIFEST.MF")
 
-        compileOptions {
+        packaging.jniLibs.pickFirsts.addAll(
+            listOf(
+                "lib/arm64-v8a/libc++_shared.so",
+                "lib/armeabi-v7a/libc++_shared.so",
+                "lib/x86/libc++_shared.so",
+                "lib/x86_64/libc++_shared.so",
+                "lib/mips/libc++_shared.so",
+                "lib/mips64/libc++_shared.so",
+            )
+        )
+
+        compileOptions.apply {
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
             isCoreLibraryDesugaringEnabled = true
         }
 
-        lint {
-            abortOnError = false
-        }
+        lint.abortOnError = false
     }
 
     configureKotlin()

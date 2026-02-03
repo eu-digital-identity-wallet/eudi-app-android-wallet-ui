@@ -14,6 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
+import com.android.build.api.dsl.LibraryExtension
 import project.convention.logic.config.LibraryModule.AnalyticsLogic
 import project.convention.logic.config.LibraryModule.AssemblyLogic
 import project.convention.logic.config.LibraryModule.AuthenticationLogic
@@ -39,7 +40,7 @@ plugins {
     id("project.rqes.sdk")
 }
 
-android {
+extensions.configure<LibraryExtension>("android") {
     namespace = "eu.europa.ec.assemblylogic"
 
     defaultConfig {

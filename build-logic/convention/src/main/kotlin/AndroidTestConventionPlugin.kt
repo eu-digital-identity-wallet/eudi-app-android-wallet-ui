@@ -14,10 +14,9 @@
  * governing permissions and limitations under the Licence.
  */
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.kotlin
 import project.convention.logic.configureGradleManagedDevices
@@ -29,7 +28,7 @@ class AndroidTestConventionPlugin : Plugin<Project> {
             pluginManager.apply {
                 apply("project.android.library")
             }
-            extensions.configure<LibraryExtension> {
+            extensions.configure<LibraryExtension>("android") {
                 defaultConfig {
                     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 }
