@@ -16,6 +16,7 @@
 
 package eu.europa.ec.uilogic.extension
 
+import android.content.Context
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.platform.testTag
@@ -209,4 +211,10 @@ fun Modifier.exposeTestTagsAsResourceId(): Modifier {
         .semantics {
             this.testTagsAsResourceId = true
         }
+}
+
+fun Modifier.applyTestTag(testTag: String): Modifier = composed {
+    return@composed this.then(
+        Modifier.testTag(testTag)
+    )
 }
