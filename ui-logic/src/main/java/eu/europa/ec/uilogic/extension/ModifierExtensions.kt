@@ -214,7 +214,17 @@ fun Modifier.exposeTestTagsAsResourceId(): Modifier {
 }
 
 fun Modifier.applyTestTag(testTag: String): Modifier = composed {
+    val finalTestTag = createTestTag(context = LocalContext.current, testTag = testTag)
     return@composed this.then(
-        Modifier.testTag(testTag)
+        Modifier.testTag(finalTestTag)
     )
+}
+
+@Composable
+private fun createTestTag(context: Context, testTag: String): String {
+    return getApplicationId(context) + ":id/" + testTag
+}
+
+private fun getApplicationId(context: Context): String {
+    return context.packageName
 }
