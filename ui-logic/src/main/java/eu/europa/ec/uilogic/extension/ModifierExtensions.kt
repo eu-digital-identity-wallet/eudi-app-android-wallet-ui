@@ -199,7 +199,7 @@ fun Modifier.paddingFrom(
 fun Modifier.optionalTestTag(testTag: String?): Modifier {
     return this.then(
         if (testTag != null) {
-            Modifier.testTag(testTag)
+            Modifier.applyTestTag(testTag)
         } else {
             Modifier
         }

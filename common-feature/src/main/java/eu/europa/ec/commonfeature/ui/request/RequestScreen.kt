@@ -34,7 +34,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,6 +75,7 @@ import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
+import eu.europa.ec.uilogic.extension.applyTestTag
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -105,7 +105,7 @@ fun RequestScreen(
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 modifier = Modifier
-                    .testTag(TestTag.RequestScreen.BUTTON)
+                    .applyTestTag(TestTag.RequestScreen.BUTTON)
                     .fillMaxWidth()
                     .padding(paddingValues),
                 stickyBottomConfig = StickyBottomConfig(
@@ -260,7 +260,7 @@ private fun DisplayRequestItems(
                 requestDocuments.forEachIndexed { index, requestDocument ->
                     WrapExpandableListItem(
                         modifier = Modifier
-                            .testTag(TestTag.RequestScreen.requestedDocument(index = index))
+                            .applyTestTag(TestTag.RequestScreen.requestedDocument(index = index))
                             .fillMaxWidth(),
                         header = requestDocument.headerUi.header,
                         data = requestDocument.headerUi.nestedItems,

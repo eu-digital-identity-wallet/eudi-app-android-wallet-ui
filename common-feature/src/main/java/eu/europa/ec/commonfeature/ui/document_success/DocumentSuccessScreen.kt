@@ -32,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -51,6 +50,7 @@ import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
+import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.cacheDeepLink
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -69,7 +69,7 @@ fun DocumentSuccessScreen(
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 modifier = Modifier
-                    .testTag(TestTag.DocumentSuccessScreen.BUTTON)
+                    .applyTestTag(TestTag.DocumentSuccessScreen.BUTTON)
                     .fillMaxWidth()
                     .padding(paddingValues),
                 stickyBottomConfig = StickyBottomConfig(
@@ -161,7 +161,7 @@ private fun Content(
             state.items.forEachIndexed { index, successItem ->
                 WrapExpandableListItem(
                     modifier = Modifier
-                        .testTag(TestTag.DocumentSuccessScreen.successDocument(index = index))
+                        .applyTestTag(TestTag.DocumentSuccessScreen.successDocument(index = index))
                         .fillMaxWidth(),
                     header = successItem.header,
                     data = successItem.nestedItems,

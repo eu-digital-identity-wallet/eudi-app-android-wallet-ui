@@ -49,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -102,6 +101,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
+import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.paddingFrom
 import kotlinx.coroutines.CoroutineScope
@@ -233,7 +233,7 @@ private fun TopBar(
 
         WrapIconButton(
             modifier = Modifier
-                .testTag(TestTag.DocumentsScreen.PLUS_BUTTON)
+                .applyTestTag(TestTag.DocumentsScreen.PLUS_BUTTON)
                 .align(Alignment.CenterEnd),
             iconData = AppIcons.Add,
             customTint = MaterialTheme.colorScheme.onSurfaceVariant,

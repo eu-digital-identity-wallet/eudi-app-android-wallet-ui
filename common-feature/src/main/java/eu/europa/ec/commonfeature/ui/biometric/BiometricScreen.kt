@@ -34,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -64,6 +63,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
+import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.paddingFrom
@@ -269,7 +269,7 @@ private fun MainContent(
             ) {
                 Text(
                     modifier = Modifier
-                        .testTag(TestTag.BiometricScreen.PIN_TEXT)
+                        .applyTestTag(TestTag.BiometricScreen.PIN_TEXT)
                         .fillMaxWidth()
                         .padding(vertical = SPACING_SMALL.dp),
                     text = mode.textAbovePin,
@@ -304,7 +304,7 @@ private fun MainContent(
             ) {
                 Text(
                     text = mode.title,
-                    modifier = Modifier.testTag(TestTag.BiometricScreen.PIN_TITLE),
+                    modifier = Modifier.applyTestTag(TestTag.BiometricScreen.PIN_TITLE),
                     style = MaterialTheme.typography.headlineMedium.copy(
                         color = MaterialTheme.colorScheme.onSurface
                     )
