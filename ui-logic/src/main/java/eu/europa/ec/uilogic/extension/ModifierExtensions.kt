@@ -16,7 +16,7 @@
 
 package eu.europa.ec.uilogic.extension
 
-import android.content.Context
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
@@ -213,18 +213,15 @@ fun Modifier.exposeTestTagsAsResourceId(): Modifier {
         }
 }
 
+@SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.applyTestTag(testTag: String): Modifier = composed {
-    val finalTestTag = createTestTag(context = LocalContext.current, testTag = testTag)
-    return@composed this.then(
-        Modifier.testTag(finalTestTag)
+    val finalTestTag = createTestTag(
+        applicationId = LocalContext.current.packageName,
+        testTag = testTag
     )
+    return@composed this.then(Modifier.testTag(finalTestTag))
 }
 
-@Composable
-private fun createTestTag(context: Context, testTag: String): String {
-    return getApplicationId(context) + ":id/" + testTag
-}
-
-private fun getApplicationId(context: Context): String {
-    return context.packageName
+private fun createTestTag(applicationId: String, testTag: String): String {
+    return "$applicationId:id/$testTag"
 }
