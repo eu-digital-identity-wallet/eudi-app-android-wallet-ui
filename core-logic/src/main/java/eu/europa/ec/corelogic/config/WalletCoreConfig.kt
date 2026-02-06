@@ -184,16 +184,16 @@ interface WalletCoreConfig {
         get() = DocumentIssuanceConfig(
             defaultRule = DocumentIssuanceRule(
                 policy = CredentialPolicy.RotateUse,
-                numberOfCredentials = 1
+                numberOfCredentials = 3
             ),
             documentSpecificRules = mapOf(
                 DocumentIdentifier.MdocPid to DocumentIssuanceRule(
-                    policy = CredentialPolicy.OneTimeUse,
-                    numberOfCredentials = 10
+                    policy = CredentialPolicy.RotateUse,
+                    numberOfCredentials = 3
                 ),
                 DocumentIdentifier.SdJwtPid to DocumentIssuanceRule(
-                    policy = CredentialPolicy.OneTimeUse,
-                    numberOfCredentials = 10
+                    policy = CredentialPolicy.RotateUse,
+                    numberOfCredentials = 3
                 ),
             )
         )

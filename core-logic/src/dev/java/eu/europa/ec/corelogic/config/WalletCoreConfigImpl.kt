@@ -71,7 +71,9 @@ internal class WalletCoreConfigImpl(
                         R.raw.pidissuerca02_ut,
                         R.raw.dc4eu,
                         R.raw.r45_staging,
-                        R.raw.test_pid_issuer
+                        R.raw.test_pid_issuer,
+                        R.raw.verifier_example_com,
+                        R.raw.verifier2_theaustraliahack
                     )
                 }
             }
