@@ -143,28 +143,28 @@
     <!--endregion-->
 
     <!-- region Quick Pin -->
-    <string name="quick_pin_invalid_error">Invalid quick pin</string>
+    <string name="quick_pin_invalid_error">Invalid pin</string>
     <string name="quick_pin_numerical_rule_invalid_error_message">Only numerical values are allowed</string>
     <string name="quick_pin_non_match">Pins do not match</string>
 
     <string name="quick_pin_create_title">Welcome to your Wallet</string>
     <string name="quick_pin_create_enter_subtitle">Secure your wallet with a PIN code and connect to your National System.</string>
-    <string name="quick_pin_create_reenter_subtitle">Re-enter the quick pin</string>
+    <string name="quick_pin_create_reenter_subtitle">Re-enter the pin</string>
 
-    <string name="quick_pin_change_title">Change quick pin</string>
+    <string name="quick_pin_change_title">Change pin</string>
     <string name="quick_pin_change_validate_current_subtitle">Type your current pin</string>
-    <string name="quick_pin_change_enter_new_subtitle">Select a quick pin for future logins</string>
-    <string name="quick_pin_change_reenter_new_subtitle">Re-enter the new quick pin</string>
+    <string name="quick_pin_change_enter_new_subtitle">Select a pin for future logins</string>
+    <string name="quick_pin_change_reenter_new_subtitle">Re-enter the new pin</string>
 
     <string name="quick_pin_create_success_text">Your wallet is secured!</string>
     <string name="quick_pin_create_success_description">To activate your wallet, connect to your National System to add your Digital ID.</string>
     <string name="quick_pin_create_success_btn">Add my Digital ID</string>
     <string name="quick_pin_change_success_text">@string/generic_success</string>
-    <string name="quick_pin_change_success_description">You successfully changed the quick pin</string>
+    <string name="quick_pin_change_success_description">You successfully changed the pin</string>
     <string name="quick_pin_change_success_btn">BACK TO HOME</string>
 
-    <string name="quick_pin_bottom_sheet_cancel_title">Cancel quick pin changing?</string>
-    <string name="quick_pin_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the home without changing the quick pin</string>
+    <string name="quick_pin_bottom_sheet_cancel_title">Cancel pin changing?</string>
+    <string name="quick_pin_bottom_sheet_cancel_subtitle">Cancel will redirect you back to the home without changing the pin</string>
     <string name="quick_pin_bottom_sheet_cancel_primary_button_text">@string/generic_continue_capitalized</string>
     <string name="quick_pin_bottom_sheet_cancel_secondary_button_text">@string/generic_cancel_capitalized</string>
     <!--endregion-->
