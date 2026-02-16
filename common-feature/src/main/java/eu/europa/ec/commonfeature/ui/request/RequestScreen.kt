@@ -45,6 +45,7 @@ import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.util.TestTag
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.theme.values.warning
 import eu.europa.ec.uilogic.component.AppIcons
@@ -333,14 +334,17 @@ private fun ContentPreview() {
                         domainPayload = DocumentPayloadDomain(
                             docName = "docName",
                             docId = "docId",
-                            domainDocFormat = DomainDocumentFormat.MsoMdoc(namespace = "pid"),
+                            domainDocFormat = DomainDocumentFormat.MsoMdoc,
                             docClaimsDomain = listOf(
                                 ClaimDomain.Primitive(
                                     key = "key",
                                     displayTitle = "title",
                                     value = "value",
                                     isRequired = false,
-                                    path = ClaimPathDomain(value = listOf())
+                                    path = ClaimPathDomain(
+                                        value = listOf(),
+                                        type = ClaimType.MsoMdoc(namespace = "namespace")
+                                    )
                                 ),
                             )
                         ),

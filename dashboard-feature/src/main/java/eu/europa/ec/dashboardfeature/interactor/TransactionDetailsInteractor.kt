@@ -27,6 +27,7 @@ import eu.europa.ec.corelogic.extension.getLocalizedDocumentName
 import eu.europa.ec.corelogic.extension.sortRecursivelyBy
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.TransactionLogDataDomain
 import eu.europa.ec.corelogic.model.TransactionLogDataDomain.Companion.getTransactionTypeLabel
 import eu.europa.ec.dashboardfeature.ui.transactions.detail.model.TransactionDetailsCardUi
@@ -197,10 +198,18 @@ class TransactionDetailsInteractorImpl(
                     is SdJwtVcFormat -> presentedClaim.path.joinToString(".")
                 }
 
+                val claimType = when (presentedDocument.format) {
+                    is MsoMdocFormat -> ClaimType.MsoMdoc(
+                        namespace = presentedClaim.path.first()
+                    )
+
+                    is SdJwtVcFormat -> ClaimType.SdJwtVc
+                }
+
                 val itemPath = when (presentedDocument.format) {
                     is MsoMdocFormat -> listOf(elementIdentifier)
                     is SdJwtVcFormat -> presentedClaim.path
-                }.toClaimPathDomain()
+                }.toClaimPathDomain(type = claimType)
 
                 createKeyValue(
                     item = presentedClaim.value!!,

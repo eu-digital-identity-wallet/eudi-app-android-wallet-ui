@@ -137,7 +137,7 @@ class TestClaimPath {
         val available =
             MsoMdocItem(namespace = "ns2", elementIdentifier = "family_name").toClaimPath()
 
-        assertTrue(requested.isPrefixOf(available))
+        assertFalse(requested.isPrefixOf(available))
     }
 
     @Test

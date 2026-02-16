@@ -18,14 +18,21 @@ package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.toClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.SdJwtVcItem
 
 fun DocItem.toClaimPath(): ClaimPathDomain {
+    val type = when (this) {
+        is MsoMdocItem -> ClaimType.MsoMdoc(namespace = this.namespace)
+        is SdJwtVcItem -> ClaimType.SdJwtVc
+        else -> ClaimType.Unknown
+    }
+
     return when (this) {
         is MsoMdocItem -> listOf(this.elementIdentifier)
         is SdJwtVcItem -> this.path
         else -> emptyList()
-    }.toClaimPathDomain()
+    }.toClaimPathDomain(type = type)
 }

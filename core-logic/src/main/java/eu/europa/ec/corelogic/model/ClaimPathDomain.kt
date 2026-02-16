@@ -16,12 +16,31 @@
 
 package eu.europa.ec.corelogic.model
 
-data class ClaimPathDomain(val value: List<String>) {
+import eu.europa.ec.eudi.wallet.document.NameSpace
+
+sealed interface ClaimType {
+    data object SdJwtVc : ClaimType
+    data class MsoMdoc(val namespace: NameSpace) : ClaimType
+
+    data object Unknown : ClaimType
+}
+
+data class ClaimPathDomain(
+    val value: List<String>,
+    val type: ClaimType,
+) {
 
     companion object {
         const val PATH_SEPARATOR = ","
 
         fun toElementIdentifier(itemId: String): String {
+            return itemId
+                .split(PATH_SEPARATOR)
+                .drop(2)
+                .first()
+        }
+
+        fun toNameSpace(itemId: String): NameSpace {
             return itemId
                 .split(PATH_SEPARATOR)
                 .drop(1)
@@ -34,8 +53,8 @@ data class ClaimPathDomain(val value: List<String>) {
                 .drop(1)
         }
 
-        fun List<String>.toClaimPathDomain(): ClaimPathDomain {
-            return ClaimPathDomain(value = this)
+        fun List<String>.toClaimPathDomain(type: ClaimType): ClaimPathDomain {
+            return ClaimPathDomain(value = this, type = type)
         }
 
         /**
@@ -58,6 +77,7 @@ data class ClaimPathDomain(val value: List<String>) {
          */
         fun ClaimPathDomain.isPrefixOf(other: ClaimPathDomain): Boolean {
             return this.value.size <= other.value.size &&
+                    this.type == other.type &&
                     this.value.zip(other.value).all { (a, b) -> a == b }
         }
     }
@@ -65,6 +85,21 @@ data class ClaimPathDomain(val value: List<String>) {
     val joined: String
         get() = value.joinToString(PATH_SEPARATOR)
 
-    fun toId(docId: String): String =
-        (listOf(docId) + value).joinToString(separator = PATH_SEPARATOR)
+    fun toId(docId: String): String {
+        val namespaceOrNull: String? = when (type) {
+            is ClaimType.MsoMdoc -> type.namespace
+            is ClaimType.SdJwtVc -> null
+            is ClaimType.Unknown -> null
+        }
+
+        val finalId: String = buildList {
+            add(docId)
+            namespaceOrNull?.let { safeNamespace ->
+                add(safeNamespace)
+            }
+            addAll(value)
+        }.joinToString(separator = PATH_SEPARATOR)
+
+        return finalId
+    }
 }

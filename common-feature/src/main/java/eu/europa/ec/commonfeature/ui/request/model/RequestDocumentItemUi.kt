@@ -25,16 +25,13 @@ import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 
 sealed class DomainDocumentFormat {
     data object SdJwtVc : DomainDocumentFormat()
-    data class MsoMdoc(val namespace: String) :
-        DomainDocumentFormat()
+    data object MsoMdoc : DomainDocumentFormat()
 
     companion object {
-        fun getFormat(format: DocumentFormat, namespace: String?): DomainDocumentFormat {
+        fun getFormat(format: DocumentFormat): DomainDocumentFormat {
             return when (format) {
                 is SdJwtVcFormat -> SdJwtVc
-                is MsoMdocFormat -> MsoMdoc(
-                    namespace = namespace.toString()
-                )
+                is MsoMdocFormat -> MsoMdoc
             }
         }
     }

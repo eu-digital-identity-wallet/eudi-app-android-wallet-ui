@@ -21,7 +21,6 @@ import eu.europa.ec.commonfeature.extension.toSelectiveExpandableListItems
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
 import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.commonfeature.util.docNamespace
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.extension.toClaimPaths
@@ -85,7 +84,6 @@ object RequestTransformer {
                         docId = storageDocument.id,
                         domainDocFormat = DomainDocumentFormat.getFormat(
                             format = storageDocument.format,
-                            namespace = storageDocument.docNamespace
                         ),
                         docClaimsDomain = domainClaims
                     )
@@ -163,18 +161,33 @@ object RequestTransformer {
                             )
                         )
 
-                        is DomainDocumentFormat.MsoMdoc -> mDocItems.add(
-                            MsoMdocItem(
-                                namespace = documentPayload.domainDocFormat.namespace,
-                                elementIdentifier = ClaimPathDomain.toElementIdentifier(
-                                    selectedItemId
-                                )
+                        is DomainDocumentFormat.MsoMdoc -> {
+                            val elementIdentifier = ClaimPathDomain.toElementIdentifier(
+                                selectedItemId
                             )
-                        )
+
+                            val nameSpace = ClaimPathDomain.toNameSpace(selectedItemId)
+
+                            documentPayload.docClaimsDomain.find { claimDomain ->
+                                claimDomain.key == elementIdentifier && claimDomain.nameSpace == nameSpace
+                            }?.let { safeClaimDomain ->
+                                safeClaimDomain.nameSpace?.let { safeNamespace ->
+                                    mDocItems.add(
+                                        MsoMdocItem(
+                                            namespace = safeNamespace,
+                                            elementIdentifier = elementIdentifier
+                                        )
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
-                val disclosedItems = mDocItems.distinctBy { it.elementIdentifier } + sdJwtItems
+                val disclosedItems = mDocItems
+                    .distinctBy {
+                        it.namespace to it.elementIdentifier
+                    } + sdJwtItems
 
                 return@mapNotNull if (disclosedItems.isNotEmpty()) {
                     DisclosedDocument(

@@ -27,9 +27,11 @@ import eu.europa.ec.corelogic.extension.removeEmptyGroups
 import eu.europa.ec.corelogic.extension.sortRecursivelyBy
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
@@ -134,7 +136,7 @@ fun createKeyValue(
                 ClaimDomain.Group(
                     key = groupKey,
                     displayTitle = displayTitle,
-                    path = ClaimPathDomain(listOf(uuidProvider.provideUuid())),
+                    path = ClaimPathDomain(listOf(uuidProvider.provideUuid()), disclosurePath.type),
                     items = children
                 )
             )
@@ -227,7 +229,10 @@ fun createKeyValue(
                                         fallback = groupKey
                                     )
                                 } $position",
-                                path = ClaimPathDomain(listOf(uuidProvider.provideUuid())),
+                                path = ClaimPathDomain(
+                                    listOf(uuidProvider.provideUuid()),
+                                    disclosurePath.type
+                                ),
                                 items = entryChildren
                             )
                         )
@@ -331,9 +336,36 @@ private fun insertPath(
 
     val key = path.value.first()
 
-    val existingNode = tree.find { it.key == key }
+    val existingNode = tree.find {
+        when (val type = disclosurePath.type) {
+            is ClaimType.MsoMdoc -> {
+                it.key == key && it.nameSpace == type.namespace
+            }
 
-    val currentClaim: DocumentClaim? = claims.find { it.identifier == key }
+            is ClaimType.SdJwtVc -> {
+                it.key == key
+            }
+
+            is ClaimType.Unknown -> {
+                false
+            }
+        }
+    }
+
+    val currentClaim: DocumentClaim? =
+        when (val type = disclosurePath.type) {
+            is ClaimType.MsoMdoc -> {
+                claims
+                    .filterIsInstance<MsoMdocClaim>()
+                    .find { it.identifier == key && it.nameSpace == type.namespace }
+            }
+
+            is ClaimType.SdJwtVc -> {
+                claims.find { it.identifier == key }
+            }
+
+            is ClaimType.Unknown -> null
+        }
 
     return if (path.value.size == 1) {
         // Leaf node (Primitive or Nested Structure)
@@ -361,7 +393,7 @@ private fun insertPath(
             existingNode.copy(
                 items = insertPath(
                     tree = existingNode.items,
-                    path = ClaimPathDomain(path.value.drop(1)),
+                    path = ClaimPathDomain(path.value.drop(1), path.type),
                     disclosurePath = disclosurePath,
                     claims = childClaims,
                     resourceProvider = resourceProvider,
@@ -377,10 +409,13 @@ private fun insertPath(
                     userLocale = userLocale,
                     fallback = currentClaim?.identifier ?: key
                 ),
-                path = ClaimPathDomain(disclosurePath.value.take((disclosurePath.value.size - path.value.size) + 1)),
+                path = ClaimPathDomain(
+                    disclosurePath.value.take((disclosurePath.value.size - path.value.size) + 1),
+                    path.type
+                ),
                 items = insertPath(
                     tree = emptyList(),
-                    path = ClaimPathDomain(path.value.drop(1)),
+                    path = ClaimPathDomain(path.value.drop(1), path.type),
                     disclosurePath = disclosurePath,
                     claims = childClaims,
                     resourceProvider = resourceProvider,
@@ -389,7 +424,22 @@ private fun insertPath(
             )
         }
 
-        tree.filter { it.key != key } + updatedNode // Replace or add the updated node
+        // Replace or add the updated node
+        tree.filter {
+            when (val type = disclosurePath.type) {
+                is ClaimType.MsoMdoc -> {
+                    it.key != key || it.nameSpace != type.namespace
+                }
+
+                is ClaimType.SdJwtVc -> {
+                    it.key != key
+                }
+
+                is ClaimType.Unknown -> {
+                    true
+                }
+            }
+        } + updatedNode
     }
 }
 
