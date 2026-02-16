@@ -1,12 +1,12 @@
 [versions]
 accompanist = "0.37.3"
 androidDesugarJdkLibs = "2.1.5"
-androidGradlePlugin = "9.0.0"
-androidxActivity = "1.12.3"
+androidGradlePlugin = "9.0.1"
+androidxActivity = "1.12.4"
 androidxAppCompat = "1.7.1"
 androidxBrowser = "1.9.0"
-androidxComposeBom = "2026.01.01"
-androidxComposeRuntimeTracing = "1.10.2"
+androidxComposeBom = "2026.02.00"
+androidxComposeRuntimeTracing = "1.10.3"
 androidxCore = "1.17.0"
 androidxCoreSplashscreen = "1.2.0"
 androidxDataStore = "1.2.0"
@@ -31,12 +31,12 @@ coil = "3.3.0"
 constraintlayoutVersion = "1.1.1"
 gmsPlugin = "4.4.4"
 junit4 = "4.13.2"
-kotlin = "2.3.0"
+kotlin = "2.3.10"
 kotlinxCoroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.10.0"
 ksp = "2.3.4"
-lint = "32.0.0"
+lint = "32.0.1"
 protobuf = "4.33.5"
 protobufPlugin = "0.9.6"
 robolectric = "4.16.1"
@@ -55,10 +55,11 @@ zxing = "3.5.4"
 eudiWalletCore = "0.24.0"
 cameraCore = "1.5.3"
 owaspDependencyCheck = "12.2.0"
+materialIcons = "1.7.8"
 material3 = "1.4.0"
-kover = "0.9.5"
+kover = "0.9.7"
 sonar = "7.2.2.6593"
-baselineprofile = "1.5.0-alpha02"
+baselineprofile = "1.5.0-alpha03"
 timber = "5.0.1"
 treessence = "1.1.2"
 rqesUiSDK = "0.3.5"
@@ -76,7 +77,7 @@ androidx-browser = { group = "androidx.browser", name = "browser", version.ref =
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
-androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material3" }
+androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIcons" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-material3-windowSizeClass = { group = "androidx.compose.material3", name = "material3-window-size-class", version.ref = "material3" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
