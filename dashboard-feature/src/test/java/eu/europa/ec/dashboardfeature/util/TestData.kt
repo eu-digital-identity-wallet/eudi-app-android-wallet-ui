@@ -18,12 +18,15 @@ package eu.europa.ec.dashboardfeature.util
 
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
+import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
 import eu.europa.ec.testfeature.util.mockedMdlDocName
 import eu.europa.ec.testfeature.util.mockedMdlId
+import eu.europa.ec.testfeature.util.mockedMdocMdlNameSpace
+import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
 import eu.europa.ec.testfeature.util.mockedPidDocName
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.uilogic.component.ListItemDataUi
@@ -62,56 +65,80 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             key = "family_name",
             value = "ANDERSSON",
             displayTitle = "family_name",
-            path = ClaimPathDomain(value = listOf("family_name")),
+            path = ClaimPathDomain(
+                value = listOf("family_name"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "given_name",
             value = "JAN",
             displayTitle = "given_name",
-            path = ClaimPathDomain(value = listOf("given_name")),
+            path = ClaimPathDomain(
+                value = listOf("given_name"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "age_over_18",
             value = "yes",
             displayTitle = "age_over_18",
-            path = ClaimPathDomain(value = listOf("age_over_18")),
+            path = ClaimPathDomain(
+                value = listOf("age_over_18"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "age_over_65",
             value = "no",
             displayTitle = "age_over_65",
-            path = ClaimPathDomain(value = listOf("age_over_65")),
+            path = ClaimPathDomain(
+                value = listOf("age_over_65"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "age_birth_year",
             value = "1985",
             displayTitle = "age_birth_year",
-            path = ClaimPathDomain(value = listOf("age_birth_year")),
+            path = ClaimPathDomain(
+                value = listOf("age_birth_year"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "birth_city",
             value = "KATRINEHOLM",
             displayTitle = "birth_city",
-            path = ClaimPathDomain(value = listOf("birth_city")),
+            path = ClaimPathDomain(
+                value = listOf("birth_city"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "gender",
             value = "Male",
             displayTitle = "gender",
-            path = ClaimPathDomain(value = listOf("gender")),
+            path = ClaimPathDomain(
+                value = listOf("gender"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "expiry_date",
             value = "30 Mar 2050",
             displayTitle = "expiry_date",
-            path = ClaimPathDomain(value = listOf("expiry_date")),
+            path = ClaimPathDomain(
+                value = listOf("expiry_date"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         )
     ).sortedBy {
@@ -194,49 +221,70 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
             key = "family_name",
             value = "ANDERSSON",
             displayTitle = "family_name",
-            path = ClaimPathDomain(value = listOf("family_name")),
+            path = ClaimPathDomain(
+                value = listOf("family_name"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "given_name",
             value = "JAN",
             displayTitle = "given_name",
-            path = ClaimPathDomain(value = listOf("given_name")),
+            path = ClaimPathDomain(
+                value = listOf("given_name"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "birth_place",
             value = "SWEDEN",
             displayTitle = "birth_place",
-            path = ClaimPathDomain(value = listOf("birth_place")),
+            path = ClaimPathDomain(
+                value = listOf("birth_place"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "expiry_date",
             value = "30 Mar 2050",
             displayTitle = "expiry_date",
-            path = ClaimPathDomain(value = listOf("expiry_date")),
+            path = ClaimPathDomain(
+                value = listOf("expiry_date"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "portrait",
             value = "SE",
             displayTitle = "portrait",
-            path = ClaimPathDomain(value = listOf("portrait")),
+            path = ClaimPathDomain(
+                value = listOf("portrait"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "signature_usual_mark",
             value = "SE",
             displayTitle = "signature_usual_mark",
-            path = ClaimPathDomain(value = listOf("signature_usual_mark")),
+            path = ClaimPathDomain(
+                value = listOf("signature_usual_mark"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         ),
         ClaimDomain.Primitive(
             key = "sex",
             value = "Male",
             displayTitle = "sex",
-            path = ClaimPathDomain(value = listOf("sex")),
+            path = ClaimPathDomain(
+                value = listOf("sex"),
+                type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
+            ),
             isRequired = mockedClaimIsRequired
         )
     ).sortedBy {
