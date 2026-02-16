@@ -186,7 +186,7 @@ object RequestTransformer {
 
                 val disclosedItems = mDocItems
                     .distinctBy {
-                        it.namespace + it.elementIdentifier
+                        it.namespace to it.elementIdentifier
                     } + sdJwtItems
 
                 return@mapNotNull if (disclosedItems.isNotEmpty()) {
