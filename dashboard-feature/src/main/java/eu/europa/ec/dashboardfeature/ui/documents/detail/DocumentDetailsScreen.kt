@@ -49,7 +49,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -98,6 +97,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapText
+import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.clickableNoRipple
 import eu.europa.ec.uilogic.extension.paddingFrom
 import kotlinx.coroutines.CoroutineScope
@@ -654,7 +654,7 @@ private fun ButtonsSection(onEventSend: (Event) -> Unit) {
     ) {
         WrapButton(
             modifier = Modifier
-                .testTag(TestTag.DocumentDetailsScreen.DELETE_BUTTON)
+                .applyTestTag(TestTag.DocumentDetailsScreen.DELETE_BUTTON)
                 .fillMaxWidth(),
             buttonConfig = ButtonConfig(
                 type = ButtonType.SECONDARY,

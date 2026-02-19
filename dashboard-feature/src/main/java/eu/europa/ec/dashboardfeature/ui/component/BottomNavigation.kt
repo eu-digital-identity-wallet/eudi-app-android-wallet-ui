@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -39,6 +38,7 @@ import eu.europa.ec.uilogic.component.IconDataUi
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.wrap.WrapIcon
+import eu.europa.ec.uilogic.extension.applyTestTag
 
 sealed class BottomNavigationItem(
     val route: String,
@@ -80,7 +80,7 @@ fun BottomNavigationBar(navController: NavController) {
     ) {
         navItems.forEach { screen ->
             NavigationBarItem(
-                modifier = Modifier.testTag(
+                modifier = Modifier.applyTestTag(
                     TestTag.DashboardScreen.bottomNavigationItem(
                         navItem = screen.route.lowercase()
                     )
