@@ -20,6 +20,7 @@ import androidx.core.net.toUri
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
+import eu.europa.ec.corelogic.config.OrderedVciManagerConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.extension.documentIdentifier
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
@@ -216,9 +217,15 @@ class WalletCoreDocumentsControllerImpl(
     private val documentErrorMessage
         get() = resourceProvider.getString(R.string.issuance_generic_error)
 
-    private val openId4VciManagers by lazy {
-        walletCoreConfig.vciConfig.associate { config ->
-            config.issuerUrl to eudiWallet.createOpenId4VciManager(config = config)
+    /**
+     * A map of [OpenId4VciManager] instances, keyed by their [OrderedVciManagerConfig].
+     * This is initialized lazily, creating a manager for each configuration defined in
+     * `walletCoreConfig.vciConfig`. This allows the controller to interact with multiple
+     * credential issuers, each with its own specific configuration.
+     */
+    private val openId4VciManagers: Map<OrderedVciManagerConfig, OpenId4VciManager> by lazy {
+        walletCoreConfig.vciConfig.associateWith { orderConfig ->
+            eudiWallet.createOpenId4VciManager(config = orderConfig.config)
         }
     }
 
@@ -232,36 +239,38 @@ class WalletCoreDocumentsControllerImpl(
         return withContext(dispatcher) {
             runCatching {
 
-                val metadata: Map<String, CredentialIssuerMetadata> =
+                val metadata: Map<OrderedVciManagerConfig, CredentialIssuerMetadata> =
                     openId4VciManagers.mapValues { (_, manager) ->
                         manager.getIssuerMetadata().getOrThrow()
                     }
 
                 val documents: List<ScopedDocumentDomain> =
-                    metadata.flatMap { (issuer, meta) ->
-                        meta.credentialConfigurationsSupported.map { (id, config) ->
+                    metadata.flatMap { (orderedVciConfig, meta) ->
+                        meta.credentialConfigurationsSupported.map { (id, credentialConfig) ->
 
-                            val name: String = config.credentialMetadata.getLocalizedDisplayName(
-                                userLocale = locale,
-                                fallback = id.value
-                            )
+                            val name: String =
+                                credentialConfig.credentialMetadata.getLocalizedDisplayName(
+                                    userLocale = locale,
+                                    fallback = id.value
+                                )
 
-                            val isPid = when (config) {
-                                is MsoMdocCredential -> config.docType.toDocumentIdentifier() == DocumentIdentifier.MdocPid
-                                is SdJwtVcCredential -> config.type.toDocumentIdentifier() == DocumentIdentifier.SdJwtPid
+                            val isPid = when (credentialConfig) {
+                                is MsoMdocCredential -> credentialConfig.docType.toDocumentIdentifier() == DocumentIdentifier.MdocPid
+                                is SdJwtVcCredential -> credentialConfig.type.toDocumentIdentifier() == DocumentIdentifier.SdJwtPid
                                 else -> false
                             }
 
-                            val formatType = when (config) {
-                                is MsoMdocCredential -> config.docType
-                                is SdJwtVcCredential -> config.type
+                            val formatType = when (credentialConfig) {
+                                is MsoMdocCredential -> credentialConfig.docType
+                                is SdJwtVcCredential -> credentialConfig.type
                                 else -> null
                             }
 
                             ScopedDocumentDomain(
                                 name = name,
                                 configurationId = id.value,
-                                credentialIssuerId = issuer,
+                                credentialIssuerId = orderedVciConfig.config.issuerUrl,
+                                credentialIssuerOrder = orderedVciConfig.order,
                                 formatType = formatType,
                                 isPid = isPid
                             )
@@ -372,7 +381,10 @@ class WalletCoreDocumentsControllerImpl(
                 .credentialIssuerIdentifier
                 .toString()
 
-            val manager = openId4VciManagers[issuerId]
+            val manager: OpenId4VciManager? = openId4VciManagers.entries
+                .find { (orderedVciConfig, _) ->
+                    orderedVciConfig.config.issuerUrl == issuerId
+                }?.value
                 ?: openId4VciManagers.values.firstOrNull()
 
             require(manager != null) { documentErrorMessage }
@@ -477,8 +489,11 @@ class WalletCoreDocumentsControllerImpl(
 
             val issuerId = extractCredentialIssuerFromOfferUri(offerUri).getOrNull()
 
-            val manager = issuerId?.let { id -> openId4VciManagers[id] }
-                ?: openId4VciManagers.values.firstOrNull()
+            val manager: OpenId4VciManager? = issuerId?.let { id ->
+                openId4VciManagers.entries.find { (orderedVciConfig, _) ->
+                    orderedVciConfig.config.issuerUrl == id
+                }?.value
+            } ?: openId4VciManagers.values.firstOrNull()
 
             require(manager != null) { genericErrorMessage }
 
@@ -647,7 +662,10 @@ class WalletCoreDocumentsControllerImpl(
     ): Flow<IssueDocumentsPartialState> =
         callbackFlow {
 
-            val manager = openId4VciManagers[issuerId]
+            val manager: OpenId4VciManager? =
+                openId4VciManagers.entries.find { (orderedVciConfig, _) ->
+                    orderedVciConfig.config.issuerUrl == issuerId
+                }?.value
             require(manager != null) { documentErrorMessage }
 
             manager.issueDocumentByConfigurationIdentifiers(
