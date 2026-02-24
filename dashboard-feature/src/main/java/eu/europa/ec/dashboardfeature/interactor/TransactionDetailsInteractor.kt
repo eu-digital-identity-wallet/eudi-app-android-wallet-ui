@@ -193,33 +193,37 @@ class TransactionDetailsInteractorImpl(
             val domainClaims: MutableList<ClaimDomain> = mutableListOf()
 
             presentedDocument.claims.forEach { presentedClaim ->
-                val elementIdentifier = when (presentedDocument.format) {
-                    is MsoMdocFormat -> presentedClaim.path.last()
-                    is SdJwtVcFormat -> presentedClaim.path.joinToString(".")
-                }
+                presentedClaim.value?.let { safePresentedClaimValue ->
 
-                val claimType = when (presentedDocument.format) {
-                    is MsoMdocFormat -> ClaimType.MsoMdoc(
-                        namespace = presentedClaim.path.first()
+                    val elementIdentifier = when (presentedDocument.format) {
+                        is MsoMdocFormat -> presentedClaim.path.last()
+                        is SdJwtVcFormat -> presentedClaim.path.joinToString(".")
+                    }
+
+                    val claimType = when (presentedDocument.format) {
+                        is MsoMdocFormat -> ClaimType.MsoMdoc(
+                            namespace = presentedClaim.path.first()
+                        )
+
+                        is SdJwtVcFormat -> ClaimType.SdJwtVc
+                    }
+
+                    val itemPath = when (presentedDocument.format) {
+                        is MsoMdocFormat -> listOf(elementIdentifier)
+                        is SdJwtVcFormat -> presentedClaim.path
+                    }.toClaimPathDomain(type = claimType)
+
+
+                    createKeyValue(
+                        item = safePresentedClaimValue,
+                        groupKey = elementIdentifier,
+                        disclosurePath = itemPath,
+                        resourceProvider = resourceProvider,
+                        claimMetaData = presentedClaim.metadata,
+                        allItems = domainClaims,
+                        uuidProvider = uuidProvider
                     )
-
-                    is SdJwtVcFormat -> ClaimType.SdJwtVc
                 }
-
-                val itemPath = when (presentedDocument.format) {
-                    is MsoMdocFormat -> listOf(elementIdentifier)
-                    is SdJwtVcFormat -> presentedClaim.path
-                }.toClaimPathDomain(type = claimType)
-
-                createKeyValue(
-                    item = presentedClaim.value!!,
-                    groupKey = elementIdentifier,
-                    disclosurePath = itemPath,
-                    resourceProvider = resourceProvider,
-                    claimMetaData = presentedClaim.metadata,
-                    allItems = domainClaims,
-                    uuidProvider = uuidProvider
-                )
             }
 
             val uniqueId = itemIdentifierPrefix + index

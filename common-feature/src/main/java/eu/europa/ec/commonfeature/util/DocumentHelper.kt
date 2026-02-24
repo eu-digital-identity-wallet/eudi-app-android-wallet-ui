@@ -370,17 +370,21 @@ private fun insertPath(
     return if (path.value.size == 1) {
         // Leaf node (Primitive or Nested Structure)
         if (existingNode == null && currentClaim != null) {
-            val accumulatedClaims: MutableList<ClaimDomain> = mutableListOf()
-            createKeyValue(
-                item = currentClaim.value!!,
-                groupKey = currentClaim.identifier,
-                resourceProvider = resourceProvider,
-                uuidProvider = uuidProvider,
-                claimMetaData = currentClaim.issuerMetadata,
-                disclosurePath = disclosurePath,
-                allItems = accumulatedClaims,
-            )
-            tree + accumulatedClaims
+            currentClaim.value?.let { safeClaimValue ->
+                val accumulatedClaims: MutableList<ClaimDomain> = mutableListOf()
+
+                createKeyValue(
+                    item = safeClaimValue,
+                    groupKey = currentClaim.identifier,
+                    resourceProvider = resourceProvider,
+                    uuidProvider = uuidProvider,
+                    claimMetaData = currentClaim.issuerMetadata,
+                    disclosurePath = disclosurePath,
+                    allItems = accumulatedClaims,
+                )
+
+                tree + accumulatedClaims
+            } ?: tree // No value to add (claim value is null), return unchanged
         } else {
             tree // Already exists or not available, return unchanged
         }
