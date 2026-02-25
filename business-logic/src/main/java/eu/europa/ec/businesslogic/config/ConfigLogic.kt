@@ -57,7 +57,7 @@ interface ConfigLogic {
     /**
      * Set if the waller requires PID Activation.
      */
-    val forcePidActivation: Boolean get() = true
+    val forcePidActivation: Boolean get() = false
 }
 
 enum class AppFlavor {
