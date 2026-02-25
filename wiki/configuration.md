@@ -172,6 +172,23 @@ Each flavor can use different issuer URLs, wallet provider hosts, and trust stor
     }
     ```
 
+6. Wallet Activation
+
+   You can enable or disable the PID Wallet Activation flow. If you choose to enable this feature, the Wallet will not be operational unless a PID is issued first.
+   With this feature disabled, there are no such limitations, and the Wallet can operate without a PID being issued beforehand.
+
+   Via the *ConfigLogic* interface inside the business-logic module.
+
+   ```kotlin
+   interface ConfigLogic {
+   
+         /**
+         * Set if the waller requires PID Activation.
+         */
+        val forcePidActivation: Boolean get() = false
+   }
+    ```
+
 ## DeepLink Schemas configuration
 
 According to the specifications, issuance, presentation, and RQES require deep-linking for the same device flows.
