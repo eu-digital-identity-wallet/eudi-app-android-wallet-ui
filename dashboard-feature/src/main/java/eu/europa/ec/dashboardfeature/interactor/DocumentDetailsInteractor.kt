@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
@@ -94,6 +95,7 @@ class DocumentDetailsInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider,
+    private val configLogic: ConfigLogic
 ) : DocumentDetailsInteractor {
 
     private val genericErrorMsg
@@ -161,24 +163,25 @@ class DocumentDetailsInteractorImpl(
             val docType = (format as? MsoMdocFormat)?.docType ?: (format as? SdJwtVcFormat)?.vct
             val docIdentifier = docType?.toDocumentIdentifier()
 
-            val shouldDeleteAllDocuments: Boolean =
-                if (docIdentifier == DocumentIdentifier.MdocPid || docIdentifier == DocumentIdentifier.SdJwtPid) {
+            val shouldDeleteAllDocuments: Boolean = if (configLogic.forcePidActivation
+                && (docIdentifier == DocumentIdentifier.MdocPid || docIdentifier == DocumentIdentifier.SdJwtPid)
+            ) {
 
-                    val allPidDocuments = walletCoreDocumentsController.getAllDocumentsByType(
-                        documentIdentifiers = listOf(
-                            DocumentIdentifier.MdocPid,
-                            DocumentIdentifier.SdJwtPid
-                        )
+                val allPidDocuments = walletCoreDocumentsController.getAllDocumentsByType(
+                    documentIdentifiers = listOf(
+                        DocumentIdentifier.MdocPid,
+                        DocumentIdentifier.SdJwtPid
                     )
+                )
 
-                    if (allPidDocuments.count() > 1) {
-                        walletCoreDocumentsController.getMainPidDocument()?.id == documentId
-                    } else {
-                        true
-                    }
+                if (allPidDocuments.count() > 1) {
+                    walletCoreDocumentsController.getMainPidDocument()?.id == documentId
                 } else {
-                    false
+                    true
                 }
+            } else {
+                false
+            }
 
             if (shouldDeleteAllDocuments) {
                 walletCoreDocumentsController.deleteAllDocuments()

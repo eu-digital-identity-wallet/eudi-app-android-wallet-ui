@@ -16,6 +16,7 @@
 
 package eu.europa.ec.startupfeature.interactor
 
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
@@ -43,11 +44,15 @@ class SplashInteractorImpl(
     private val quickPinInteractor: QuickPinInteractor,
     private val uiSerializer: UiSerializer,
     private val resourceProvider: ResourceProvider,
-    private val walletCoreDocumentsController: WalletCoreDocumentsController
+    private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val configLogic: ConfigLogic
 ) : SplashInteractor {
 
     private val hasDocuments: Boolean
         get() = walletCoreDocumentsController.getAllDocuments().isNotEmpty()
+
+    private val shouldActivateWithPid: Boolean
+        get() = configLogic.forcePidActivation && !hasDocuments
 
     override fun getAfterSplashRoute(): String = when (quickPinInteractor.hasPin()) {
         true -> {
@@ -62,11 +67,22 @@ class SplashInteractorImpl(
     private fun getQuickPinConfig(): String {
         return generateComposableNavigationLink(
             screen = CommonScreens.QuickPin,
-            arguments = generateComposableArguments(mapOf("pinFlow" to PinFlow.CREATE))
+            arguments = generateComposableArguments(
+                mapOf(
+                    "pinFlow" to if (shouldActivateWithPid) {
+                        PinFlow.CREATE_WITH_ACTIVATION
+                    } else {
+                        PinFlow.CREATE_WITHOUT_ACTIVATION
+                    }
+                )
+            )
         )
     }
 
     private fun getBiometricsConfig(): String {
+
+        val shouldActivateWithPid = configLogic.forcePidActivation && !hasDocuments
+
         return generateComposableNavigationLink(
             screen = CommonScreens.Biometric,
             arguments = generateComposableArguments(
@@ -82,12 +98,12 @@ class SplashInteractorImpl(
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
                                 navigationType = NavigationType.PushScreen(
-                                    screen = if (hasDocuments) {
+                                    screen = if (!shouldActivateWithPid) {
                                         DashboardScreens.Dashboard
                                     } else {
                                         IssuanceScreens.AddDocument
                                     },
-                                    arguments = if (!hasDocuments) {
+                                    arguments = if (shouldActivateWithPid) {
                                         mapOf(
                                             IssuanceUiConfig.serializedKeyName to uiSerializer.toBase64(
                                                 model = IssuanceUiConfig(
