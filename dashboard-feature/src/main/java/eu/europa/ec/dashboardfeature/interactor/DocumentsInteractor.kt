@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.isBeyondNextDays
 import eu.europa.ec.businesslogic.extension.isExpired
 import eu.europa.ec.businesslogic.extension.isValid
@@ -169,6 +170,7 @@ class DocumentsInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val filterValidator: FilterValidator,
+    private val configLogic: ConfigLogic
 ) : DocumentsInteractor {
 
     private val genericErrorMsg
@@ -585,7 +587,9 @@ class DocumentsInteractorImpl(
                     }
 
                     is DeleteDocumentPartialState.Success -> {
-                        if (walletCoreDocumentsController.getAllDocuments().isEmpty()) {
+                        if (configLogic.forcePidActivation
+                            && walletCoreDocumentsController.getAllDocuments().isEmpty()
+                        ) {
                             emit(DocumentInteractorDeleteDocumentPartialState.AllDocumentsDeleted)
                         } else
                             emit(DocumentInteractorDeleteDocumentPartialState.SingleDocumentDeleted)

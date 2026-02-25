@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.validator.FilterValidator
 import eu.europa.ec.businesslogic.validator.FilterValidatorPartialState
 import eu.europa.ec.businesslogic.validator.model.FilterElement.FilterItem
@@ -77,6 +78,9 @@ class TestDocumentsInteractor {
     @Mock
     private lateinit var filterValidator: FilterValidator
 
+    @Mock
+    private lateinit var configLogic: ConfigLogic
+
     private lateinit var interactor: DocumentsInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -92,9 +96,11 @@ class TestDocumentsInteractor {
             resourceProvider = resourceProvider,
             walletCoreDocumentsController = walletCoreDocumentsController,
             filterValidator = filterValidator,
+            configLogic = configLogic
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
+        whenever(configLogic.forcePidActivation).thenReturn(true)
 
         mockDocumentId = "mockDocumentId"
         mockDocumentName = "mockDocumentName"

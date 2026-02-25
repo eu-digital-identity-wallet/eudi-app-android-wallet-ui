@@ -53,6 +53,11 @@ interface ConfigLogic {
      *   changelog is maintained for development builds.
      */
     val changelogUrl: String?
+
+    /**
+     * Set if the waller requires PID Activation.
+     */
+    val forcePidActivation: Boolean get() = true
 }
 
 enum class AppFlavor {

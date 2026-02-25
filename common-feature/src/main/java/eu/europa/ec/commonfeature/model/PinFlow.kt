@@ -17,6 +17,7 @@
 package eu.europa.ec.commonfeature.model
 
 enum class PinFlow {
-    CREATE,
+    CREATE_WITHOUT_ACTIVATION,
+    CREATE_WITH_ACTIVATION,
     UPDATE
 }

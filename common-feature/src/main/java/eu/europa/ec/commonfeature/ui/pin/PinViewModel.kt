@@ -74,7 +74,7 @@ data class State(
     val action: ScreenNavigateAction
         get() {
             return when (pinFlow) {
-                PinFlow.CREATE -> ScreenNavigateAction.NONE
+                PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> ScreenNavigateAction.NONE
                 PinFlow.UPDATE -> ScreenNavigateAction.CANCELABLE
             }
         }
@@ -82,7 +82,7 @@ data class State(
     val onBackEvent: Event
         get() {
             return when (pinFlow) {
-                PinFlow.CREATE -> Event.Finish
+                PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> Event.Finish
                 PinFlow.UPDATE -> Event.CancelPressed
             }
         }
@@ -131,7 +131,7 @@ class PinViewModel(
         val buttonText: String
 
         when (pinFlow) {
-            PinFlow.CREATE -> {
+            PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> {
                 title = resourceProvider.getString(R.string.quick_pin_create_title)
                 subtitle = resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
                 pinState = PinValidationState.ENTER
@@ -330,7 +330,7 @@ class PinViewModel(
                 }
             }
 
-            PinFlow.CREATE -> {
+            PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> {
                 when (pinState) {
                     PinValidationState.ENTER -> resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
                     PinValidationState.REENTER -> resourceProvider.getString(R.string.quick_pin_create_reenter_subtitle)
@@ -369,6 +369,13 @@ class PinViewModel(
             navigationType = NavigationType.PopTo(DashboardScreens.Dashboard),
         )
 
+        val navigationAfterCreateNoActivation = ConfigNavigation(
+            navigationType = NavigationType.PushScreen(
+                screen = DashboardScreens.Dashboard,
+                popUpToScreen = CommonScreens.QuickPin
+            ),
+        )
+
         return generateComposableNavigationLink(
             screen = CommonScreens.Success,
             arguments = generateComposableArguments(
@@ -377,16 +384,23 @@ class PinViewModel(
                         SuccessUIConfig(
                             textElementsConfig = SuccessUIConfig.TextElementsConfig(
                                 text = when (pinFlow) {
-                                    PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_text)
+                                    PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> resourceProvider.getString(
+                                        R.string.quick_pin_create_success_text
+                                    )
+
                                     PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_text)
                                 },
                                 description = when (pinFlow) {
-                                    PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_description)
+                                    PinFlow.CREATE_WITH_ACTIVATION -> resourceProvider.getString(R.string.quick_pin_create_success_description)
+                                    PinFlow.CREATE_WITHOUT_ACTIVATION -> resourceProvider.getString(
+                                        R.string.quick_pin_create_success_no_activation_description
+                                    )
+
                                     PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_description)
                                 }
                             ),
                             imageConfig = when (pinFlow) {
-                                PinFlow.CREATE -> SuccessUIConfig.ImageConfig(
+                                PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> SuccessUIConfig.ImageConfig(
                                     type = SuccessUIConfig.ImageConfig.Type.Drawable(
                                         icon = AppIcons.WalletSecured
                                     ),
@@ -398,18 +412,27 @@ class PinViewModel(
                             buttonConfig = listOf(
                                 SuccessUIConfig.ButtonConfig(
                                     text = when (pinFlow) {
-                                        PinFlow.CREATE -> resourceProvider.getString(R.string.quick_pin_create_success_btn)
+                                        PinFlow.CREATE_WITH_ACTIVATION -> resourceProvider.getString(
+                                            R.string.quick_pin_create_success_btn
+                                        )
+
+                                        PinFlow.CREATE_WITHOUT_ACTIVATION -> resourceProvider.getString(
+                                            R.string.quick_pin_create_success_no_activation_btn
+                                        )
+
                                         PinFlow.UPDATE -> resourceProvider.getString(R.string.quick_pin_change_success_btn)
                                     },
                                     style = SuccessUIConfig.ButtonConfig.Style.PRIMARY,
                                     navigation = when (pinFlow) {
-                                        PinFlow.CREATE -> navigationAfterCreate
+                                        PinFlow.CREATE_WITH_ACTIVATION -> navigationAfterCreate
+                                        PinFlow.CREATE_WITHOUT_ACTIVATION -> navigationAfterCreateNoActivation
                                         PinFlow.UPDATE -> navigationAfterUpdate
                                     }
                                 )
                             ),
                             onBackScreenToNavigate = when (pinFlow) {
-                                PinFlow.CREATE -> navigationAfterCreate
+                                PinFlow.CREATE_WITH_ACTIVATION -> navigationAfterCreate
+                                PinFlow.CREATE_WITHOUT_ACTIVATION -> navigationAfterCreateNoActivation
                                 PinFlow.UPDATE -> navigationAfterUpdate
                             },
                         ),
