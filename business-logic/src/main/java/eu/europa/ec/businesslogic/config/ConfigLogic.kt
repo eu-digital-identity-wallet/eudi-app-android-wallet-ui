@@ -55,7 +55,7 @@ interface ConfigLogic {
     val changelogUrl: String?
 
     /**
-     * Set if the waller requires PID Activation.
+     * Set if the wallet requires PID Activation.
      */
     val forcePidActivation: Boolean get() = false
 }
