@@ -183,7 +183,7 @@ Each flavor can use different issuer URLs, wallet provider hosts, and trust stor
    interface ConfigLogic {
    
          /**
-         * Set if the waller requires PID Activation.
+         * Set if the wallet requires PID Activation.
          */
         val forcePidActivation: Boolean get() = false
    }
