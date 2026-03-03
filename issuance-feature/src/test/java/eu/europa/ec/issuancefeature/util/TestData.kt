@@ -58,6 +58,7 @@ internal const val mockedCombinedPid = "PID Combined"
 internal const val mockedSuccessDescription = "Success description"
 internal const val mockedErrorDescription = "Error description"
 internal const val mockedIssuerId = "issuerId"
+internal const val mockedIssuerOrder = 0
 
 private const val mockedConfigIssuerId = "configurationId"
 
@@ -107,6 +108,7 @@ internal val mockedScopedDocuments: List<ScopedDocumentDomain>
             name = mockedPidDocName,
             configurationId = mockedConfigIssuerId,
             credentialIssuerId = mockedIssuerId,
+            credentialIssuerOrder = mockedIssuerOrder,
             isPid = true,
             formatType = mockedMdocPidFormat.docType
         ),
@@ -114,6 +116,7 @@ internal val mockedScopedDocuments: List<ScopedDocumentDomain>
             name = mockedMdlDocName,
             configurationId = mockedConfigIssuerId,
             credentialIssuerId = mockedIssuerId,
+            credentialIssuerOrder = mockedIssuerOrder,
             isPid = false,
             formatType = mockedMdocMdlFormat.docType
         ),
@@ -121,6 +124,7 @@ internal val mockedScopedDocuments: List<ScopedDocumentDomain>
             name = mockedAgeVerificationDocName,
             configurationId = mockedConfigIssuerId,
             credentialIssuerId = mockedIssuerId,
+            credentialIssuerOrder = mockedIssuerOrder,
             isPid = false,
             formatType = mockedMdocAgeVerificationFormat.docType
         ),
@@ -129,6 +133,7 @@ internal val mockedScopedDocuments: List<ScopedDocumentDomain>
             configurationId = mockedConfigIssuerId,
             credentialIssuerId = mockedIssuerId,
             isPid = false,
+            credentialIssuerOrder = mockedIssuerOrder,
             formatType = mockedMdocPhotoIdFormat.docType
         )
     ).sortedBy { it.name.lowercase() }
