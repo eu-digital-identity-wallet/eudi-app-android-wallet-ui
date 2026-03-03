@@ -80,9 +80,9 @@ internal class WalletCoreConfigImpl(
             return _config!!
         }
 
-    override val vciConfig: List<OrderedVciManagerConfig>
+    override val issuersConfig: List<VciConfig>
         get() = listOf(
-            OrderedVciManagerConfig(
+            VciConfig(
                 config = OpenId4VciManager.Config.Builder()
                     .withIssuerUrl(issuerUrl = "https://issuer.eudiw.dev")
                     .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
@@ -92,7 +92,7 @@ internal class WalletCoreConfigImpl(
                     .build(),
                 order = 0
             ),
-            OrderedVciManagerConfig(
+            VciConfig(
                 config = OpenId4VciManager.Config.Builder()
                     .withIssuerUrl(issuerUrl = "https://issuer-backend.eudiw.dev")
                     .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)

@@ -19,17 +19,16 @@ package eu.europa.ec.corelogic.config
 import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 
 /**
- * Configuration data class that associates an [OpenId4VciManager.Config] with an order.
+ * Configuration class that associates an [OpenId4VciManager.Config] with a specific order.
  *
- * This is used to maintain a specific order for different VCI (Verifiable Credential Issuance)
- * manager configurations, which can be useful when multiple issuer configurations need to be
- * processed or displayed in a predetermined sequence.
+ * This class facilitates the management of multiple Verifiable Credential Issuance (VCI)
+ * configurations by assigning a sequence, ensuring they are processed or displayed
+ * in a predetermined priority.
  *
- * @property config The configuration for an [OpenId4VciManager] instance.
- * @property order An integer representing the order or priority of this configuration.
- * Lower numbers indicate higher priority.
+ * @property config The [OpenId4VciManager.Config] instance containing issuance settings.
+ * @property order An integer defining the priority or sequence of this configuration.
  */
-data class OrderedVciManagerConfig(
+data class VciConfig(
     val config: OpenId4VciManager.Config,
     val order: Int,
 )

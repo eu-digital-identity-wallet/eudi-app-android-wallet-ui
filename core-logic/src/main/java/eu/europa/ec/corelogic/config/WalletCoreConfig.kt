@@ -37,13 +37,11 @@ interface WalletCoreConfig {
     /**
      * A list of configurations for Verifiable Credentials Issuance (VCI) using OpenID4VCI.
      *
-     * Each element in the list is an [OrderedVciManagerConfig] object, which contains:
+     * Each element in the list is an [VciConfig] object, which contains:
      * - The [OpenId4VciManager.Config] required to communicate with a specific issuer.
-     * - An `order` property to determine the priority or display order of the issuer.
-     *
-     * This allows the wallet to support multiple issuers, each with its own endpoint and settings.
+     * - An `order` property to determine the display order of the issuer.
      */
-    val vciConfig: List<OrderedVciManagerConfig>
+    val issuersConfig: List<VciConfig>
 
     /**
      * Returns a predefined set of document categories and their associated identifiers.

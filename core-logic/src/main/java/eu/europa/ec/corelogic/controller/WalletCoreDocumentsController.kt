@@ -20,7 +20,7 @@ import androidx.core.net.toUri
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.safeAsync
-import eu.europa.ec.corelogic.config.OrderedVciManagerConfig
+import eu.europa.ec.corelogic.config.VciConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.extension.documentIdentifier
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
@@ -218,13 +218,13 @@ class WalletCoreDocumentsControllerImpl(
         get() = resourceProvider.getString(R.string.issuance_generic_error)
 
     /**
-     * A map of [OpenId4VciManager] instances, keyed by their [OrderedVciManagerConfig].
+     * A map of [OpenId4VciManager] instances, keyed by their [VciConfig].
      * This is initialized lazily, creating a manager for each configuration defined in
-     * `walletCoreConfig.vciConfig`. This allows the controller to interact with multiple
+     * `[walletCoreConfig.issuerConfigs]`. This allows the controller to interact with multiple
      * credential issuers, each with its own specific configuration.
      */
-    private val openId4VciManagers: Map<OrderedVciManagerConfig, OpenId4VciManager> by lazy {
-        walletCoreConfig.vciConfig.associateWith { orderConfig ->
+    private val openId4VciManagers: Map<VciConfig, OpenId4VciManager> by lazy {
+        walletCoreConfig.issuersConfig.associateWith { orderConfig ->
             eudiWallet.createOpenId4VciManager(config = orderConfig.config)
         }
     }
@@ -239,7 +239,7 @@ class WalletCoreDocumentsControllerImpl(
         return withContext(dispatcher) {
             runCatching {
 
-                val metadata: Map<OrderedVciManagerConfig, CredentialIssuerMetadata> =
+                val metadata: Map<VciConfig, CredentialIssuerMetadata> =
                     openId4VciManagers.mapValues { (_, manager) ->
                         manager.getIssuerMetadata().getOrThrow()
                     }
