@@ -25,9 +25,10 @@ import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.FetchScopedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
-import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
+import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.issuancefeature.util.mockedAgeOptionItemUi
+import eu.europa.ec.issuancefeature.util.mockedCombinedPid
 import eu.europa.ec.issuancefeature.util.mockedConfigNavigationTypePopToScreen
 import eu.europa.ec.issuancefeature.util.mockedConfigNavigationTypePush
 import eu.europa.ec.issuancefeature.util.mockedIssuerId
@@ -130,7 +131,7 @@ class TestAddDocumentInteractor {
     // 2. walletCoreDocumentsController.getScopedDocuments() returns a non-empty list
 
     // Case 1 Expected Result:
-    // AddDocumentInteractorPartialState.Success state, with the following options:
+    // AddDocumentInteractorScopedPartialState.Success state, with the following options:
     // 1. a PID
     @Test
     fun `Given Case 1, When getAddDocumentOption is called, Then Case 1 Expected Result is returned`() {
@@ -141,13 +142,16 @@ class TestAddDocumentInteractor {
             )
             mockGetScopedDocumentsResponse(expectedResponse)
 
+            whenever(resourceProvider.getString(R.string.issuance_add_document_pid_combined))
+                .thenReturn(mockedCombinedPid)
+
             // When
             interactor.getAddDocumentOption(
                 flowType = IssuanceFlowType.NoDocument
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorPartialState.Success(
+                    AddDocumentInteractorScopedPartialState.Success(
                         options = listOf(
                             Pair(mockedIssuerId, listOf(mockedPidOptionItemUi))
                         )
@@ -163,7 +167,7 @@ class TestAddDocumentInteractor {
     // 2. walletCoreDocumentsController.getScopedDocuments() returns a non-empty list
 
     // Case 2 Expected Result:
-    // AddDocumentInteractorPartialState.Success state, with the following options:
+    // AddDocumentInteractorScopedPartialState.Success state, with the following options:
     // 1. an Age Verification,
     // 2. a PID,
     // 3. an mDL,
@@ -177,6 +181,9 @@ class TestAddDocumentInteractor {
             )
             mockGetScopedDocumentsResponse(expectedResponse)
 
+            whenever(resourceProvider.getString(R.string.issuance_add_document_pid_combined))
+                .thenReturn(mockedCombinedPid)
+
             // When
             interactor.getAddDocumentOption(
                 flowType = IssuanceFlowType.ExtraDocument(
@@ -185,15 +192,15 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorPartialState.Success(
+                    AddDocumentInteractorScopedPartialState.Success(
                         options = listOf(
                             Pair(
                                 mockedIssuerId,
                                 listOf(
                                     mockedAgeOptionItemUi,
-                                    mockedPidOptionItemUi,
                                     mockedMdlOptionItemUi,
-                                    mockedPhotoIdOptionItemUi
+                                    mockedPhotoIdOptionItemUi,
+                                    mockedPidOptionItemUi
                                 )
                             )
                         )
@@ -209,7 +216,7 @@ class TestAddDocumentInteractor {
     // 2. walletCoreDocumentsController.getScopedDocuments() returns an empty list
 
     // Case 3 Expected Result:
-    // AddDocumentInteractorPartialState.NoOptions state.
+    // AddDocumentInteractorScopedPartialState.NoOptions state.
     @Test
     fun `Given Case 3, When getAddDocumentOption is called, Then Case 3 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -229,7 +236,7 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorPartialState.NoOptions(
+                    AddDocumentInteractorScopedPartialState.NoOptions(
                         errorMsg = noDocumentsMsg
                     ),
                     awaitItem()
@@ -243,7 +250,7 @@ class TestAddDocumentInteractor {
     // 2. walletCoreDocumentsController.getScopedDocuments() returns a non-empty list
 
     // Case 4 Expected Result:
-    // AddDocumentInteractorPartialState.NoOptions state.
+    // AddDocumentInteractorScopedPartialState.NoOptions state.
     @Test
     fun `Given Case 4, When getAddDocumentOption is called, Then Case 4 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -263,7 +270,7 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorPartialState.NoOptions(
+                    AddDocumentInteractorScopedPartialState.NoOptions(
                         errorMsg = noDocumentsMsg
                     ),
                     awaitItem()
@@ -277,7 +284,7 @@ class TestAddDocumentInteractor {
     // 2. walletCoreDocumentsController.getScopedDocuments() returns only non-PID documents
 
     // Case 5 Expected Result:
-    // AddDocumentInteractorPartialState.NoOptions state.
+    // AddDocumentInteractorScopedPartialState.NoOptions state.
     @Test
     fun `Given Case 5, When getAddDocumentOption is called, Then Case 5 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -298,7 +305,7 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorPartialState.NoOptions(
+                    AddDocumentInteractorScopedPartialState.NoOptions(
                         errorMsg = noDocumentsMsg
                     ),
                     awaitItem()
@@ -313,7 +320,7 @@ class TestAddDocumentInteractor {
     //    FetchScopedDocumentsPartialState.Failure with an error message.
 
     // Case 6 Expected Result:
-    // AddDocumentInteractorPartialState.Failure with the same error message.
+    // AddDocumentInteractorScopedPartialState.Failure with the same error message.
     @Test
     fun `Given Case 6, When getAddDocumentOption is called, Then Case 6 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -329,7 +336,7 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorPartialState.Failure(
+                    AddDocumentInteractorScopedPartialState.Failure(
                         error = mockedPlainFailureMessage
                     ),
                     awaitItem()
@@ -343,7 +350,7 @@ class TestAddDocumentInteractor {
     // 2. walletCoreDocumentsController.getScopedDocuments() throws an exception with no error message.
 
     // Case 7 Expected Result:
-    // AddDocumentInteractorPartialState.Failure with the generic error message.
+    // AddDocumentInteractorScopedPartialState.Failure with the generic error message.
     @Test
     fun `Given Case 7, When getAddDocumentOption is called, Then Case 7 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -358,7 +365,7 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorPartialState.Failure(
+                    AddDocumentInteractorScopedPartialState.Failure(
                         error = mockedGenericErrorMessage
                     ),
                     awaitItem()
@@ -372,7 +379,7 @@ class TestAddDocumentInteractor {
     // 2. walletCoreDocumentsController.getScopedDocuments() throws an exception with an error message.
 
     // Case 8 Expected Result:
-    // AddDocumentInteractorPartialState.Failure with the exception's error message.
+    // AddDocumentInteractorScopedPartialState.Failure with the exception's error message.
     @Test
     fun `Given Case 8, When getAddDocumentOption is called, Then Case 8 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -387,7 +394,7 @@ class TestAddDocumentInteractor {
             ).runFlowTest {
                 // Then
                 assertEquals(
-                    AddDocumentInteractorPartialState.Failure(
+                    AddDocumentInteractorScopedPartialState.Failure(
                         error = mockedExceptionWithMessage.localizedMessage!!
                     ),
                     awaitItem()
@@ -402,21 +409,21 @@ class TestAddDocumentInteractor {
         coroutineRule.runTest {
             // Given
             val mockedIssuanceMethod = IssuanceMethod.OPENID4VCI
-            val mockedConfigId = "id"
+            val mockedConfigIds = listOf("id")
             val mockedIssuerId = "issuerId"
 
             whenever(
-                walletCoreDocumentsController.issueDocument(
+                walletCoreDocumentsController.issueDocuments(
                     issuanceMethod = mockedIssuanceMethod,
-                    configId = mockedConfigId,
+                    configIds = mockedConfigIds,
                     issuerId = mockedIssuerId
                 )
-            ).thenReturn(IssueDocumentPartialState.Success(mockedPidId).toFlow())
+            ).thenReturn(IssueDocumentsPartialState.Success(listOf(mockedPidId)).toFlow())
 
             // When
-            interactor.issueDocument(
+            interactor.issueDocuments(
                 issuanceMethod = mockedIssuanceMethod,
-                configId = mockedConfigId,
+                configIds = mockedConfigIds,
                 issuerId = mockedIssuerId
             ).runFlowTest {
 
@@ -425,9 +432,9 @@ class TestAddDocumentInteractor {
                 // Then
                 @Suppress("UnusedFlow")
                 verify(walletCoreDocumentsController, times(1))
-                    .issueDocument(
+                    .issueDocuments(
                         issuanceMethod = mockedIssuanceMethod,
-                        configId = mockedConfigId,
+                        configIds = mockedConfigIds,
                         issuerId = mockedIssuerId
                     )
             }

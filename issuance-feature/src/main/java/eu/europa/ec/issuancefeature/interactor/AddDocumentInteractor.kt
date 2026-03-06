@@ -26,9 +26,10 @@ import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.FetchScopedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.IssuanceMethod
-import eu.europa.ec.corelogic.controller.IssueDocumentPartialState
+import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.model.FormatType
+import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.issuancefeature.ui.add.model.AddDocumentUi
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -49,24 +50,38 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-sealed class AddDocumentInteractorPartialState {
-    data class Success(val options: List<Pair<String, List<AddDocumentUi>>>) :
-        AddDocumentInteractorPartialState()
+sealed class AddDocumentInteractorIssueDocumentsPartialState {
+    data class Success(val documentIds: List<DocumentId>) :
+        AddDocumentInteractorIssueDocumentsPartialState()
 
-    data class NoOptions(val errorMsg: String) : AddDocumentInteractorPartialState()
-    data class Failure(val error: String) : AddDocumentInteractorPartialState()
+    data object DeferredSuccess : AddDocumentInteractorIssueDocumentsPartialState()
+
+    data class Failure(val errorMessage: String) : AddDocumentInteractorIssueDocumentsPartialState()
+
+    data class UserAuthRequired(
+        val crypto: BiometricCrypto,
+        val resultHandler: DeviceAuthenticationResult,
+    ) : AddDocumentInteractorIssueDocumentsPartialState()
+}
+
+sealed class AddDocumentInteractorScopedPartialState {
+    data class Success(val options: List<Pair<String, List<AddDocumentUi>>>) :
+        AddDocumentInteractorScopedPartialState()
+
+    data class NoOptions(val errorMsg: String) : AddDocumentInteractorScopedPartialState()
+    data class Failure(val error: String) : AddDocumentInteractorScopedPartialState()
 }
 
 interface AddDocumentInteractor {
     fun getAddDocumentOption(
         flowType: IssuanceFlowType,
-    ): Flow<AddDocumentInteractorPartialState>
+    ): Flow<AddDocumentInteractorScopedPartialState>
 
-    fun issueDocument(
+    fun issueDocuments(
         issuanceMethod: IssuanceMethod,
-        configId: String,
+        configIds: List<String>,
         issuerId: String
-    ): Flow<IssueDocumentPartialState>
+    ): Flow<AddDocumentInteractorIssueDocumentsPartialState>
 
     fun handleUserAuth(
         context: Context,
@@ -92,61 +107,95 @@ class AddDocumentInteractorImpl(
 
     override fun getAddDocumentOption(
         flowType: IssuanceFlowType,
-    ): Flow<AddDocumentInteractorPartialState> =
+    ): Flow<AddDocumentInteractorScopedPartialState> =
         flow {
             val state =
                 walletCoreDocumentsController.getScopedDocuments(resourceProvider.getLocale())
+
             when (state) {
                 is FetchScopedDocumentsPartialState.Failure -> emit(
-                    AddDocumentInteractorPartialState.Failure(
+                    AddDocumentInteractorScopedPartialState.Failure(
                         error = state.errorMessage
                     )
                 )
 
                 is FetchScopedDocumentsPartialState.Success -> {
 
-                    val customFormatType: FormatType? =
+                    val formatType: FormatType? =
                         (flowType as? IssuanceFlowType.ExtraDocument)?.formatType
 
                     val options: List<Pair<String, List<AddDocumentUi>>> =
                         state.documents
                             .asSequence()
                             .filter { doc ->
-                                (customFormatType == null || doc.formatType == customFormatType) &&
+                                (formatType == null || doc.formatType == formatType) &&
                                         (flowType !is IssuanceFlowType.NoDocument || doc.isPid)
                             }
-                            .sortedWith(
-                                compareBy(
-                                    { it.credentialIssuerId },
-                                    { it.name.lowercase() }
-                                ))
-                            .map { doc ->
-                                AddDocumentUi(
-                                    credentialIssuerId = doc.credentialIssuerId,
-                                    configurationId = doc.configurationId,
-                                    itemData = ListItemDataUi(
-                                        itemId = doc.configurationId,
-                                        mainContentData = ListItemMainContentDataUi.Text(text = doc.name),
-                                        trailingContentData = ListItemTrailingContentDataUi.Icon(
-                                            iconData = AppIcons.Add
-                                        )
-                                    )
-                                )
-                            }
                             .groupBy { it.credentialIssuerId }
-                            .entries
-                            .map { (issuer, items) -> issuer to items }
+                            .map { (issuer, docs) ->
 
+                                val (pidDocs, otherDocs) = docs.partition { it.isPid }
+                                val pidIds = pidDocs.map { it.configurationId }
+
+                                val combinedPid: List<AddDocumentUi> =
+                                    if (pidDocs.isNotEmpty()) {
+                                        listOf(
+                                            AddDocumentUi(
+                                                credentialIssuerId = issuer,
+                                                configurationIds = pidIds,
+                                                itemData = ListItemDataUi(
+                                                    itemId = "${issuer}_${pidIds.joinToString(",")}",
+                                                    mainContentData = ListItemMainContentDataUi.Text(
+                                                        text = resourceProvider.getString(
+                                                            R.string.issuance_add_document_pid_combined
+                                                        )
+                                                    ),
+                                                    trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                                        iconData = AppIcons.Add
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    } else {
+                                        emptyList()
+                                    }
+
+                                val mappedOthers: List<AddDocumentUi> =
+                                    otherDocs.map { doc ->
+                                        AddDocumentUi(
+                                            credentialIssuerId = issuer,
+                                            configurationIds = listOf(doc.configurationId),
+                                            itemData = ListItemDataUi(
+                                                itemId = doc.configurationId,
+                                                mainContentData = ListItemMainContentDataUi.Text(
+                                                    text = doc.name
+                                                ),
+                                                trailingContentData = ListItemTrailingContentDataUi.Icon(
+                                                    iconData = AppIcons.Add
+                                                )
+                                            )
+                                        )
+                                    }
+
+                                val items = (combinedPid + mappedOthers)
+                                    .sortedBy {
+                                        (it.itemData.mainContentData as ListItemMainContentDataUi.Text)
+                                            .text
+                                            .lowercase()
+                                    }
+                                issuer to items
+                            }
+                            .sortedBy { it.first.lowercase() }
 
                     if (options.isEmpty()) {
                         emit(
-                            AddDocumentInteractorPartialState.NoOptions(
+                            AddDocumentInteractorScopedPartialState.NoOptions(
                                 errorMsg = resourceProvider.getString(R.string.issuance_add_document_no_options)
                             )
                         )
                     } else {
                         emit(
-                            AddDocumentInteractorPartialState.Success(
+                            AddDocumentInteractorScopedPartialState.Success(
                                 options = options
                             )
                         )
@@ -154,21 +203,72 @@ class AddDocumentInteractorImpl(
                 }
             }
         }.safeAsync {
-            AddDocumentInteractorPartialState.Failure(
+            AddDocumentInteractorScopedPartialState.Failure(
                 error = it.localizedMessage ?: genericErrorMsg
             )
         }
 
-    override fun issueDocument(
+    override fun issueDocuments(
         issuanceMethod: IssuanceMethod,
-        configId: String,
+        configIds: List<String>,
         issuerId: String
-    ): Flow<IssueDocumentPartialState> =
-        walletCoreDocumentsController.issueDocument(
+    ): Flow<AddDocumentInteractorIssueDocumentsPartialState> = flow {
+
+        walletCoreDocumentsController.issueDocuments(
             issuanceMethod = issuanceMethod,
-            configId = configId,
+            configIds = configIds,
             issuerId = issuerId
+        ).collect { state ->
+
+            val successIds: MutableList<String> = mutableListOf()
+            var isDeferred = false
+            var error: String? = null
+            var authenticationData: Pair<BiometricCrypto, DeviceAuthenticationResult>? = null
+
+            when (state) {
+                is IssueDocumentsPartialState.DeferredSuccess -> {
+                    isDeferred = true
+                }
+
+                is IssueDocumentsPartialState.Failure -> {
+                    error = state.errorMessage
+                }
+
+                is IssueDocumentsPartialState.PartialSuccess -> {
+                    successIds.addAll(state.documentIds)
+                }
+
+                is IssueDocumentsPartialState.Success -> {
+                    successIds.addAll(state.documentIds)
+                }
+
+                is IssueDocumentsPartialState.UserAuthRequired -> {
+                    authenticationData = state.crypto to state.resultHandler
+                }
+            }
+
+            val state = if (isDeferred) {
+                AddDocumentInteractorIssueDocumentsPartialState.DeferredSuccess
+            } else if (successIds.isNotEmpty()) {
+                AddDocumentInteractorIssueDocumentsPartialState.Success(successIds)
+            } else if (error != null) {
+                AddDocumentInteractorIssueDocumentsPartialState.Failure(error)
+            } else if (authenticationData != null) {
+                AddDocumentInteractorIssueDocumentsPartialState.UserAuthRequired(
+                    authenticationData.first,
+                    authenticationData.second
+                )
+            } else {
+                AddDocumentInteractorIssueDocumentsPartialState.Failure(genericErrorMsg)
+            }
+
+            emit(state)
+        }
+    }.safeAsync {
+        AddDocumentInteractorIssueDocumentsPartialState.Failure(
+            errorMessage = it.localizedMessage ?: genericErrorMsg
         )
+    }
 
     override fun handleUserAuth(
         context: Context,

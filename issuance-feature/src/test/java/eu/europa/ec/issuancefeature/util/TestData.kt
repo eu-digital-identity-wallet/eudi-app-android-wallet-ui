@@ -54,6 +54,7 @@ internal const val mockedPrimaryButtonText = "Primary button text"
 internal const val mockedRouteArguments = "mockedRouteArguments"
 internal const val mockedTxCode = "mockedTxCode"
 internal const val mockedSuccessText = "Success text"
+internal const val mockedCombinedPid = "PID Combined"
 internal const val mockedSuccessDescription = "Success description"
 internal const val mockedErrorDescription = "Error description"
 internal const val mockedIssuerId = "issuerId"
@@ -62,17 +63,17 @@ private const val mockedConfigIssuerId = "configurationId"
 
 internal val mockedPidOptionItemUi = AddDocumentUi(
     credentialIssuerId = mockedIssuerId,
-    configurationId = mockedConfigIssuerId,
+    configurationIds = listOf(mockedConfigIssuerId),
     itemData = ListItemDataUi(
-        itemId = mockedConfigIssuerId,
-        mainContentData = ListItemMainContentDataUi.Text(text = mockedPidDocName),
+        itemId = "${mockedIssuerId}_$mockedConfigIssuerId",
+        mainContentData = ListItemMainContentDataUi.Text(text = mockedCombinedPid),
         trailingContentData = ListItemTrailingContentDataUi.Icon(iconData = AppIcons.Add)
     ),
 )
 
 internal val mockedMdlOptionItemUi = AddDocumentUi(
     credentialIssuerId = mockedIssuerId,
-    configurationId = mockedConfigIssuerId,
+    configurationIds = listOf(mockedConfigIssuerId),
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedMdlDocName),
@@ -82,7 +83,7 @@ internal val mockedMdlOptionItemUi = AddDocumentUi(
 
 internal val mockedAgeOptionItemUi = AddDocumentUi(
     credentialIssuerId = mockedIssuerId,
-    configurationId = mockedConfigIssuerId,
+    configurationIds = listOf(mockedConfigIssuerId),
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedAgeVerificationDocName),
@@ -92,7 +93,7 @@ internal val mockedAgeOptionItemUi = AddDocumentUi(
 
 internal val mockedPhotoIdOptionItemUi = AddDocumentUi(
     credentialIssuerId = mockedIssuerId,
-    configurationId = mockedConfigIssuerId,
+    configurationIds = listOf(mockedConfigIssuerId),
     itemData = ListItemDataUi(
         itemId = mockedConfigIssuerId,
         mainContentData = ListItemMainContentDataUi.Text(text = mockedPhotoIdDocName),

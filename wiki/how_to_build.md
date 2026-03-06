@@ -46,7 +46,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
+      .withDPopConfig(DPopConfig.Default)
       .build()
 )
 ```
@@ -70,7 +70,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
+      .withDPopConfig(DPopConfig.Default)
       .build()
 )
 ```
@@ -85,7 +85,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
+      .withDPopConfig(DPopConfig.Default)
       .build()
 )
 ```
@@ -100,7 +100,7 @@ override val vciConfig: List<OpenId4VciManager.Config>
       .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
       .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
       .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
+      .withDPopConfig(DPopConfig.Default)
       .build()
 )
 ```

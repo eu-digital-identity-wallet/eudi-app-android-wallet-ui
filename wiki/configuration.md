@@ -48,7 +48,7 @@ Each flavor can use different issuer URLs, wallet provider hosts, and trust stor
           .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
           .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
           .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-          .withDPoPUsage(OpenId4VciManager.Config.DPoPUsage.IfSupported())
+          .withDPopConfig(DPopConfig.Default)
           .build()
     )
     ```

@@ -20,6 +20,7 @@ import android.content.Context
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
@@ -111,6 +112,9 @@ class TestDocumentOfferInteractor {
     private lateinit var uiSerializer: UiSerializer
 
     @Mock
+    private lateinit var configLogic: ConfigLogic
+
+    @Mock
     private lateinit var resultHandler: DeviceAuthenticationResult
 
     @Mock
@@ -130,12 +134,14 @@ class TestDocumentOfferInteractor {
             walletCoreDocumentsController = walletCoreDocumentsController,
             deviceAuthenticationInteractor = deviceAuthenticationInteractor,
             resourceProvider = resourceProvider,
-            uiSerializer = uiSerializer
+            uiSerializer = uiSerializer,
+            configLogic = configLogic
         )
         biometricCrypto = BiometricCrypto(cryptoObject = null)
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)
         whenever(resourceProvider.getLocale()).thenReturn(mockedDefaultLocale)
+        whenever(configLogic.forcePidActivation).thenReturn(true)
     }
 
     @After

@@ -415,6 +415,7 @@
     <string name="issuance_add_document_deferred_success_text">@string/generic_deferred_success_text</string>
     <string name="issuance_add_document_deferred_success_description">Your document has been requested. You will be notified when it has been issued to your wallet.</string>
     <string name="issuance_add_document_deferred_success_primary_button_text">@string/generic_ok</string>
+    <string name="issuance_add_document_pid_combined">PID Combined</string>
     <!--endregion-->
 
     <!-- region Issuance Success Screen -->

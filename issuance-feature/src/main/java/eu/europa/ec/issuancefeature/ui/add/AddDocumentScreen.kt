@@ -250,12 +250,12 @@ private fun MainContent(
                 options = state.options,
                 modifier = Modifier.fillMaxSize(),
                 footerIsShown = state.showFooterScanner,
-                onOptionClicked = { itemId, issuerId ->
+                onOptionClicked = { itemIds, issuerId ->
                     onEventSend(
                         Event.IssueDocument(
                             issuanceMethod = IssuanceMethod.OPENID4VCI,
                             issuerId = issuerId,
-                            configId = itemId,
+                            configIds = itemIds,
                             context = context
                         )
                     )
@@ -270,7 +270,7 @@ private fun Options(
     options: List<Pair<String, List<AddDocumentUi>>>,
     footerIsShown: Boolean,
     modifier: Modifier = Modifier,
-    onOptionClicked: (itemId: String, issuerId: String) -> Unit,
+    onOptionClicked: (itemIds: List<String>, issuerId: String) -> Unit,
 ) {
 
     val listState = remember(options) { LazyListState() }
@@ -296,11 +296,11 @@ private fun Options(
 
             itemsIndexed(
                 items = items,
-                key = { _, item -> "$issuerId-${item.configurationId}" }
+                key = { _, item -> "$issuerId-${item.configurationIds.joinToString(",")}" }
             ) { index, item ->
                 val testTag = TestTag.AddDocumentScreen.optionItem(
                     issuerId = issuerId,
-                    configId = item.configurationId
+                    configIds = item.configurationIds
                 )
                 WrapListItem(
                     modifier = Modifier
@@ -309,8 +309,8 @@ private fun Options(
                     item = item.itemData,
                     mainContentVerticalPadding = SPACING_LARGE.dp,
                     mainContentTextStyle = MaterialTheme.typography.titleMedium,
-                    onItemClick = { clicked ->
-                        onOptionClicked(clicked.itemId, issuerId)
+                    onItemClick = {
+                        onOptionClicked(item.configurationIds, issuerId)
                     }
                 )
                 if (index < items.lastIndex) {
@@ -393,7 +393,7 @@ private fun IssuanceAddDocumentScreenPreview() {
                         listOf(
                             AddDocumentUi(
                                 credentialIssuerId = "issuer1",
-                                configurationId = "configId1",
+                                configurationIds = listOf("configId1"),
                                 itemData = ListItemDataUi(
                                     itemId = "configId1",
                                     mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
@@ -409,7 +409,7 @@ private fun IssuanceAddDocumentScreenPreview() {
                         listOf(
                             AddDocumentUi(
                                 credentialIssuerId = "issuer2",
-                                configurationId = "configId2",
+                                configurationIds = listOf("configId2"),
                                 itemData = ListItemDataUi(
                                     itemId = "configId2",
                                     mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
@@ -452,7 +452,7 @@ private fun DashboardAddDocumentScreenPreview() {
                         listOf(
                             AddDocumentUi(
                                 credentialIssuerId = "issuer1",
-                                configurationId = "configId1",
+                                configurationIds = listOf("configId1"),
                                 itemData = ListItemDataUi(
                                     itemId = "configId1",
                                     mainContentData = ListItemMainContentDataUi.Text(text = "National ID"),
@@ -468,7 +468,7 @@ private fun DashboardAddDocumentScreenPreview() {
                         listOf(
                             AddDocumentUi(
                                 credentialIssuerId = "issuer2",
-                                configurationId = "configId2",
+                                configurationIds = listOf("configId2"),
                                 itemData = ListItemDataUi(
                                     itemId = "configId2",
                                     mainContentData = ListItemMainContentDataUi.Text(text = "Driving Licence"),
