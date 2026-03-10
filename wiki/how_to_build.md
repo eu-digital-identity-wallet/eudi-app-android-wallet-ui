@@ -39,15 +39,18 @@ depending on the flavor of your choice).
 These are the contents of the ConfigWalletCoreImpl file (dev flavor), and you don't need to change anything:
 
 ```kotlin
-override val vciConfig: List<OpenId4VciManager.Config>
+override val issuersConfig: List<VciConfig>
     get() = listOf(
-       OpenId4VciManager.Config.Builder()
-      .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
-      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPopConfig(DPopConfig.Default)
-      .build()
+       VciConfig(
+          config = OpenId4VciManager.Config.Builder()
+             .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
+             .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+             .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+             .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+             .withDPopConfig(DPopConfig.Default)
+             .build(),
+          order = 0
+       )
 )
 ```
 
@@ -63,45 +66,54 @@ After this, and assuming you are now running everything locally,
 you need to change the contents of the ConfigWalletCoreImpl file, from:
 
 ```kotlin
-override val vciConfig: List<OpenId4VciManager.Config>
+override val issuersConfig: List<VciConfig>
     get() = listOf(
-       OpenId4VciManager.Config.Builder()
-      .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
-      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPopConfig(DPopConfig.Default)
-      .build()
+       VciConfig(
+          config = OpenId4VciManager.Config.Builder()
+             .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
+             .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+             .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+             .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+             .withDPopConfig(DPopConfig.Default)
+             .build(),
+          order = 0
+       )
 )
 ```
 
 with this:
 
 ```kotlin
-override val vciConfig: List<OpenId4VciManager.Config>
+override val issuersConfig: List<VciConfig>
     get() = listOf(
-       OpenId4VciManager.Config.Builder()
-      .withIssuerUrl(issuerUrl = "local_IP_address_of_issuer")
-      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPopConfig(DPopConfig.Default)
-      .build()
+       VciConfig(
+          config = OpenId4VciManager.Config.Builder()
+             .withIssuerUrl(issuerUrl = "local_IP_address_of_issuer")
+             .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+             .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+             .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+             .withDPopConfig(DPopConfig.Default)
+             .build(),
+          order = 0
+       )
 )
 ```
 
 for example:
 
 ```kotlin
-override val vciConfig: List<OpenId4VciManager.Config>
+override val issuersConfig: List<VciConfig>
     get() = listOf(
-       OpenId4VciManager.Config.Builder()
-      .withIssuerUrl(issuerUrl = "https://10.0.2.2")
-      .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-      .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-      .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-      .withDPopConfig(DPopConfig.Default)
-      .build()
+       VciConfig(
+          config = OpenId4VciManager.Config.Builder()
+             .withIssuerUrl(issuerUrl = "https://10.0.2.2")
+             .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+             .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+             .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+             .withDPopConfig(DPopConfig.Default)
+             .build(),
+          order = 0
+       )
 )
 ```
 
