@@ -168,18 +168,12 @@ object RequestTransformer {
 
                             val nameSpace = ClaimPathDomain.toNameSpace(selectedItemId)
 
-                            documentPayload.docClaimsDomain.find { claimDomain ->
-                                claimDomain.key == elementIdentifier && claimDomain.nameSpace == nameSpace
-                            }?.let { safeClaimDomain ->
-                                safeClaimDomain.nameSpace?.let { safeNamespace ->
-                                    mDocItems.add(
-                                        MsoMdocItem(
-                                            namespace = safeNamespace,
-                                            elementIdentifier = elementIdentifier
-                                        )
-                                    )
-                                }
-                            }
+                            mDocItems.add(
+                                MsoMdocItem(
+                                    namespace = nameSpace,
+                                    elementIdentifier = elementIdentifier
+                                )
+                            )
                         }
                     }
                 }
