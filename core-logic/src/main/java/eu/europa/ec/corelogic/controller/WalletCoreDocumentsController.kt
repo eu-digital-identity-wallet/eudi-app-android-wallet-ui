@@ -220,7 +220,7 @@ class WalletCoreDocumentsControllerImpl(
     /**
      * A map of [OpenId4VciManager] instances, keyed by their [VciConfig].
      * This is initialized lazily, creating a manager for each configuration defined in
-     * `[walletCoreConfig.issuerConfigs]`. This allows the controller to interact with multiple
+     * `[WalletCoreConfig.issuersConfig]`. This allows the controller to interact with multiple
      * credential issuers, each with its own specific configuration.
      */
     private val openId4VciManagers: Map<VciConfig, OpenId4VciManager> by lazy {
@@ -245,7 +245,7 @@ class WalletCoreDocumentsControllerImpl(
                     }
 
                 val documents: List<ScopedDocumentDomain> =
-                    metadata.flatMap { (orderedVciConfig, meta) ->
+                    metadata.flatMap { (vciConfig, meta) ->
                         meta.credentialConfigurationsSupported.map { (id, credentialConfig) ->
 
                             val name: String =
@@ -269,8 +269,8 @@ class WalletCoreDocumentsControllerImpl(
                             ScopedDocumentDomain(
                                 name = name,
                                 configurationId = id.value,
-                                credentialIssuerId = orderedVciConfig.config.issuerUrl,
-                                credentialIssuerOrder = orderedVciConfig.order,
+                                credentialIssuerId = vciConfig.config.issuerUrl,
+                                credentialIssuerOrder = vciConfig.order,
                                 formatType = formatType,
                                 isPid = isPid
                             )
@@ -382,8 +382,8 @@ class WalletCoreDocumentsControllerImpl(
                 .toString()
 
             val manager: OpenId4VciManager? = openId4VciManagers.entries
-                .find { (orderedVciConfig, _) ->
-                    orderedVciConfig.config.issuerUrl == issuerId
+                .find { (vciConfig, _) ->
+                    vciConfig.config.issuerUrl == issuerId
                 }?.value
                 ?: openId4VciManagers.values.firstOrNull()
 
@@ -490,8 +490,8 @@ class WalletCoreDocumentsControllerImpl(
             val issuerId = extractCredentialIssuerFromOfferUri(offerUri).getOrNull()
 
             val manager: OpenId4VciManager? = issuerId?.let { id ->
-                openId4VciManagers.entries.find { (orderedVciConfig, _) ->
-                    orderedVciConfig.config.issuerUrl == id
+                openId4VciManagers.entries.find { (vciConfig, _) ->
+                    vciConfig.config.issuerUrl == id
                 }?.value
             } ?: openId4VciManagers.values.firstOrNull()
 
@@ -663,8 +663,8 @@ class WalletCoreDocumentsControllerImpl(
         callbackFlow {
 
             val manager: OpenId4VciManager? =
-                openId4VciManagers.entries.find { (orderedVciConfig, _) ->
-                    orderedVciConfig.config.issuerUrl == issuerId
+                openId4VciManagers.entries.find { (vciConfig, _) ->
+                    vciConfig.config.issuerUrl == issuerId
                 }?.value
             require(manager != null) { documentErrorMessage }
 
