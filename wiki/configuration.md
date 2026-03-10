@@ -18,7 +18,7 @@ All core network and trust settings are centralized in the `WalletCoreConfig` in
 ```kotlin
 interface WalletCoreConfig {
     // 1. Issuing API
-    val vciConfig: List<OpenId4VciManager.Config>
+    val issuersConfig: List<VciConfig>
 
     // 2. Wallet Provider Host
     val walletProviderHost: String
@@ -34,23 +34,26 @@ variant:
 * `core-logic/src/demo/config/WalletCoreConfigImpl.kt`
 * `core-logic/src/dev/config/WalletCoreConfigImpl.kt`
 
-Each flavor can use different issuer URLs, wallet provider hosts, and trust stores.
+Each flavor can use different issuer configs, wallet provider hosts, and trust stores.
 
 1. Issuing API
 
-   The Issuing API is configured via the `vciConfig` property:
+   The Issuing API is configured via the `issuersConfig` property:
 
     ```kotlin
-    override val vciConfig: List<OpenId4VciManager.Config>
+    override val issuersConfig: List<VciConfig>
         get() = listOf(
-           OpenId4VciManager.Config.Builder()
-          .withIssuerUrl(issuerUrl = "https://issuer.eudiw.dev")
-          .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-          .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-          .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-          .withDPopConfig(DPopConfig.Default)
-          .build()
-    )
+            VciConfig(
+                config = OpenId4VciManager.Config.Builder()
+                    .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
+                    .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+                    .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+                    .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+                    .withDPopConfig(DPopConfig.Default)
+                    .build(),
+                order = 0
+            )
+        )
     ```
 
    Adjust the configuration per flavor in the corresponding `WalletCoreConfigImpl`.
@@ -371,7 +374,11 @@ configureOpenId4Vp {
 
 ## Scoped Issuance Document Configuration
 
-The credential configuration is derived directly from the issuer's metadata. The issuer URL is configured per flavor via the *vciConfig* property inside the core-logic module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl.
+The credential configuration is derived directly from the issuer's metadata.
+The issuer URL is configured per flavor via the *issuersConfig* property inside the core-logic
+module at src/demo/config/WalletCoreConfigImpl and src/dev/config/WalletCoreConfigImpl.
+The *order* property determines the order the issuers appear into, in the *AddDocumentScreen*, if
+more than one exists.
 If you want to add or adjust the displayed scoped documents, you must modify the issuer's metadata, and the wallet will automatically resolve your changes.
 
 ## How to work with self-signed certificates

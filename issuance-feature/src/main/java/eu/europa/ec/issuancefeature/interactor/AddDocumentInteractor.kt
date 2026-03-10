@@ -131,6 +131,7 @@ class AddDocumentInteractorImpl(
                                 (formatType == null || doc.formatType == formatType) &&
                                         (flowType !is IssuanceFlowType.NoDocument || doc.isPid)
                             }
+                            .sortedBy { it.credentialIssuerOrder }
                             .groupBy { it.credentialIssuerId }
                             .map { (issuer, docs) ->
 
@@ -185,7 +186,6 @@ class AddDocumentInteractorImpl(
                                     }
                                 issuer to items
                             }
-                            .sortedBy { it.first.lowercase() }
 
                     if (options.isEmpty()) {
                         emit(

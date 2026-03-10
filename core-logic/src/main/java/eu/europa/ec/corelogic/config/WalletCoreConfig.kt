@@ -35,9 +35,13 @@ interface WalletCoreConfig {
     val config: EudiWalletConfig
 
     /**
-     * List of Configurations for Verifiable Credentials Issuance (VCI).
+     * A list of configurations for Verifiable Credentials Issuance (VCI) using OpenID4VCI.
+     *
+     * Each element in the list is an [VciConfig] object, which contains:
+     * - The [OpenId4VciManager.Config] required to communicate with a specific issuer.
+     * - An `order` property to determine the display order of the issuer.
      */
-    val vciConfig: List<OpenId4VciManager.Config>
+    val issuersConfig: List<VciConfig>
 
     /**
      * Returns a predefined set of document categories and their associated identifiers.

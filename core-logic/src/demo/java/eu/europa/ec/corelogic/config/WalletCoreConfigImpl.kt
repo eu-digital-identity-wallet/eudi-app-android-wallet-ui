@@ -80,22 +80,28 @@ internal class WalletCoreConfigImpl(
             return _config!!
         }
 
-    override val vciConfig: List<OpenId4VciManager.Config>
+    override val issuersConfig: List<VciConfig>
         get() = listOf(
-            OpenId4VciManager.Config.Builder()
-                .withIssuerUrl(issuerUrl = "https://issuer.eudiw.dev")
-                .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-                .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-                .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-                .withDPopConfig(DPopConfig.Default)
-                .build(),
-            OpenId4VciManager.Config.Builder()
-                .withIssuerUrl(issuerUrl = "https://issuer-backend.eudiw.dev")
-                .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-                .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-                .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-                .withDPopConfig(DPopConfig.Default)
-                .build()
+            VciConfig(
+                config = OpenId4VciManager.Config.Builder()
+                    .withIssuerUrl(issuerUrl = "https://issuer.eudiw.dev")
+                    .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+                    .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+                    .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+                    .withDPopConfig(DPopConfig.Default)
+                    .build(),
+                order = 0
+            ),
+            VciConfig(
+                config = OpenId4VciManager.Config.Builder()
+                    .withIssuerUrl(issuerUrl = "https://issuer-backend.eudiw.dev")
+                    .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
+                    .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+                    .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+                    .withDPopConfig(DPopConfig.Default)
+                    .build(),
+                order = 1
+            )
         )
 
     override val documentIssuanceConfig: DocumentIssuanceConfig
