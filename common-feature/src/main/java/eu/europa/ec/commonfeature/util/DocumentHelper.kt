@@ -29,12 +29,9 @@ import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
-import eu.europa.ec.eudi.wallet.document.NameSpace
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
-import eu.europa.ec.eudi.wallet.document.format.MsoMdocData
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
-import eu.europa.ec.eudi.wallet.document.format.SdJwtVcData
 import eu.europa.ec.eudi.wallet.document.metadata.IssuerMetadata
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -315,12 +312,6 @@ fun documentHasExpired(
         false
     }
 }
-
-val IssuedDocument.docNamespace: NameSpace?
-    get() = when (val data = this.data) {
-        is MsoMdocData -> data.nameSpaces.keys.first()
-        is SdJwtVcData -> null
-    }
 
 private fun insertPath(
     tree: List<ClaimDomain>,
