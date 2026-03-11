@@ -103,6 +103,10 @@
 # API Models
 -keep class eu.europa.ec.networklogic.model.** { *; }
 
+# Core Configuration
+-keep interface eu.europa.ec.corelogic.config.WalletCoreConfig
+-keepclassmembers class * implements eu.europa.ec.corelogic.config.WalletCoreConfig { *; }
+
 # Enum
 -keep enum * { *; }
 
