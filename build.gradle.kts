@@ -30,5 +30,11 @@ plugins {
     alias(libs.plugins.baselineprofile) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.androidx.room) apply false
+    alias(libs.plugins.dependencyGraph)
 }
+
+moduleGraphConfig {
+    readmePath.set("wiki/dependency-graph.md")
+}
+
 true
