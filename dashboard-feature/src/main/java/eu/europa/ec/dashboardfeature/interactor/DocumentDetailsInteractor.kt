@@ -118,13 +118,8 @@ class DocumentDetailsInteractorImpl(
                     )
                 val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
 
-                val documentIsLowOnCredentials =
-                    walletCoreDocumentsController.isDocumentLowOnCredentials(
-                        document = safeIssuedDocument
-                    )
                 val documentCredentialsInfo = createDocumentCredentialsInfoUi(
                     document = safeIssuedDocument,
-                    isLowOnCredentials = documentIsLowOnCredentials,
                     resourceProvider = resourceProvider
                 )
 

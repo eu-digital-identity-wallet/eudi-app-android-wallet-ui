@@ -88,8 +88,6 @@ sealed class Event : ViewEvent {
     data object OnBookmarkRemoved : Event()
     data object IssuerCardPressed : Event()
     data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
-    data object ToggleExpansionStateOfDocumentCredentialsSection : Event()
-    data object DocumentCredentialsSectionPrimaryButtonPressed : Event()
 
     sealed class IssuerDetails : Event() {
         data object OnExpandedStateChanged : IssuerDetails()
@@ -212,14 +210,6 @@ class DocumentDetailsViewModel(
 
             is Event.OnRevocationStatusChanged -> {
                 getDocumentDetails(event)
-            }
-
-            is Event.ToggleExpansionStateOfDocumentCredentialsSection -> toggleExpansionStateOfDocumentCredentialsSection()
-
-            is Event.DocumentCredentialsSectionPrimaryButtonPressed -> {
-                viewState.value.documentDetailsUi?.let { safeDocumentDetailsUi ->
-                    goToAddDocumentScreen(documentFormatType = safeDocumentDetailsUi.documentIdentifier.formatType)
-                }
             }
 
             is Event.IssuerDetails.OnExpandedStateChanged -> toggleIssuerDetailsCardExpansionState()
@@ -421,16 +411,6 @@ class DocumentDetailsViewModel(
             title = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_title),
             message = resourceProvider.getString(R.string.document_details_bottom_sheet_badge_subtitle)
         )
-    }
-
-    private fun toggleExpansionStateOfDocumentCredentialsSection() {
-        setState {
-            copy(
-                documentCredentialsInfoUi = documentCredentialsInfoUi?.copy(
-                    isExpanded = !documentCredentialsInfoUi.isExpanded
-                )
-            )
-        }
     }
 
     private fun goToAddDocumentScreen(documentFormatType: FormatType) {

@@ -363,8 +363,7 @@ class DocumentsInteractorImpl(
                                         R.string.dashboard_document_credentials_info_text,
                                         documentAvailableCredentials,
                                         documentTotalCredentials
-                                    ),
-                                    isExpanded = false,
+                                    )
                                 )
 
                                 val documentLowOnCredentials = walletCoreDocumentsController
