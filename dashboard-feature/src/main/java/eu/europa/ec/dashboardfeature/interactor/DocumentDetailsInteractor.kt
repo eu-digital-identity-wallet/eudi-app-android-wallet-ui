@@ -75,6 +75,7 @@ sealed class DocumentDetailsInteractorDeleteBookmarkPartialState {
 interface DocumentDetailsInteractor {
     fun getDocumentDetails(
         documentId: DocumentId,
+        wasIssuerDetailsExpanded: Boolean?
     ): Flow<DocumentDetailsInteractorPartialState>
 
     fun deleteDocument(
@@ -102,6 +103,7 @@ class DocumentDetailsInteractorImpl(
 
     override fun getDocumentDetails(
         documentId: DocumentId,
+        wasIssuerDetailsExpanded: Boolean?,
     ): Flow<DocumentDetailsInteractorPartialState> =
         flow {
             val issuedDocument =
@@ -146,7 +148,7 @@ class DocumentDetailsInteractorImpl(
                             expirationDate = documentDetailsDomain.documentExpirationDate
                         )
                     },
-                    isExpanded = false
+                    isExpanded = wasIssuerDetailsExpanded ?: false
                 )
 
                 emit(

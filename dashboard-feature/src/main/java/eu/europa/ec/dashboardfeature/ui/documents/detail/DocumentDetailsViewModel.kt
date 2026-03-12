@@ -244,6 +244,7 @@ class DocumentDetailsViewModel(
         viewModelScope.launch {
             documentDetailsInteractor.getDocumentDetails(
                 documentId = documentId,
+                wasIssuerDetailsExpanded = viewState.value.issuerDetails?.isExpanded
             ).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
