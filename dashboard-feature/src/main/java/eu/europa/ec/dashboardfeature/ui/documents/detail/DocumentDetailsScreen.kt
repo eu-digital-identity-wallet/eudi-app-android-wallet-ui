@@ -111,12 +111,6 @@ fun DocumentDetailsScreen(
                     onClick = { viewModel.setEvent(Event.BookmarkPressed) },
                     enabled = !state.isLoading,
                     throttleClicks = true,
-                ),
-                ToolbarActionUi(
-                    icon = if (state.hideSensitiveContent) AppIcons.VisibilityOff else AppIcons.Visibility,
-                    onClick = { viewModel.setEvent(Event.ChangeContentVisibility) },
-                    enabled = !state.isLoading,
-                    throttleClicks = false,
                 )
             )
         } else {
@@ -252,6 +246,7 @@ private fun Content(
                     onEventSend = onEventSend,
                     documentDetailsUi = safeDocumentDetailsUi,
                     hideSensitiveContent = state.hideSensitiveContent,
+                    isLoading = state.isLoading
                 )
 
                 BottomSection(
@@ -381,6 +376,7 @@ private fun DocumentDetails(
     onEventSend: (Event) -> Unit,
     documentDetailsUi: DocumentDetailsUi,
     hideSensitiveContent: Boolean,
+    isLoading: Boolean,
 ) {
     Column(
         modifier = modifier,
@@ -389,6 +385,10 @@ private fun DocumentDetails(
         SectionTitle(
             modifier = Modifier.fillMaxWidth(),
             text = stringResource(R.string.document_details_main_section_text),
+            icon = if (hideSensitiveContent) AppIcons.Visibility else AppIcons.VisibilityOff,
+            onIconClick = { onEventSend(Event.ChangeContentVisibility) },
+            iconEnabled = !isLoading,
+            throttleIconClicks = false,
         )
 
         WrapListItems(
