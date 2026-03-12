@@ -17,7 +17,6 @@
 package eu.europa.ec.dashboardfeature.ui.documents.detail
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -36,7 +35,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
@@ -91,12 +89,10 @@ import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
 import eu.europa.ec.uilogic.component.wrap.ExpandableListItemUi
 import eu.europa.ec.uilogic.component.wrap.SimpleBottomSheet
-import eu.europa.ec.uilogic.component.wrap.TextConfig
 import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapCard
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapText
 import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.clickableNoRipple
 import eu.europa.ec.uilogic.extension.paddingFrom
@@ -107,7 +103,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.net.URI
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -248,42 +243,24 @@ private fun Content(
                 )
             }
 
-            AnimatedVisibility(
-                visible = state.isRevoked
-            ) {
-                WrapCard(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    shape = MaterialTheme.shapes.small,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(SPACING_MEDIUM.dp)
-                    ) {
-                        WrapText(
-                            text = stringResource(
-                                R.string.document_details_revoked_document_message
-                            ),
-                            textConfig = TextConfig(
-                                style = MaterialTheme.typography.bodyMedium,
-                                maxLines = Int.MAX_VALUE
-                            )
-                        )
-                    }
-                }
-
-                VSpacer.Large()
-            }
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
             ) {
+                state.issuerDetails?.let { safeIssuerDetails ->
+                    IssuerDetails(
+                        modifier = Modifier.fillMaxWidth(),
+                        data = safeIssuerDetails,
+                        onExpandedStateChanged = {
+                            onEventSend(Event.IssuerDetails.OnExpandedStateChanged)
+                        },
+                        onActionButtonClick = { documentState ->
+                            onEventSend(Event.IssuerDetails.OnActionButtonClicked(documentState))
+                        }
+                    )
+                }
+
                 state.documentCredentialsInfoUi?.let { safeDocumentCredentialsInfo ->
                     ExpandableDocumentCredentialsSection(
                         modifier = Modifier
@@ -303,21 +280,9 @@ private fun Content(
                 DocumentDetails(
                     modifier = Modifier.fillMaxWidth(),
                     onEventSend = onEventSend,
-                    sectionTitle = state.documentDetailsSectionTitle,
                     documentDetailsUi = safeDocumentDetailsUi,
                     hideSensitiveContent = state.hideSensitiveContent,
                 )
-
-                if (state.issuerName != null || state.issuerLogo != null) {
-                    VSpacer.ExtraLarge()
-
-                    IssuerDetails(
-                        modifier = Modifier.fillMaxWidth(),
-                        sectionTitle = state.documentIssuerSectionTitle,
-                        issuerName = state.issuerName,
-                        issuerLogo = state.issuerLogo,
-                    )
-                }
 
                 ButtonsSection(
                     onEventSend = onEventSend
@@ -413,9 +378,9 @@ private fun SheetContent(
 @Composable
 private fun IssuerDetails(
     modifier: Modifier = Modifier,
-    sectionTitle: String,
-    issuerName: String?,
-    issuerLogo: URI?,
+    data: IssuerDetailsCardDataUi,
+    onExpandedStateChanged: () -> Unit,
+    onActionButtonClick: (IssuerDetailsCardDataUi.DocumentState) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -423,16 +388,15 @@ private fun IssuerDetails(
     ) {
         SectionTitle(
             modifier = Modifier.fillMaxWidth(),
-            text = sectionTitle,
+            text = stringResource(R.string.document_details_issuer_section_text),
         )
         IssuerDetailsCard(
             modifier = Modifier.fillMaxWidth(),
-            item = IssuerDetailsCardDataUi(
-                issuerName = issuerName,
-                issuerLogo = issuerLogo,
-                issuerIsVerified = false,
-            ),
-            onClick = null,
+            data = data,
+            onExpandedChange = onExpandedStateChanged,
+            onActionButtonClick = {
+                onActionButtonClick(data.documentState)
+            }
         )
     }
 }
@@ -616,7 +580,6 @@ private fun CollapsedDocumentCredentials(
 private fun DocumentDetails(
     modifier: Modifier = Modifier,
     onEventSend: (Event) -> Unit,
-    sectionTitle: String,
     documentDetailsUi: DocumentDetailsUi,
     hideSensitiveContent: Boolean,
 ) {
@@ -626,7 +589,7 @@ private fun DocumentDetails(
     ) {
         SectionTitle(
             modifier = Modifier.fillMaxWidth(),
-            text = sectionTitle,
+            text = stringResource(R.string.document_details_main_section_text),
         )
 
         WrapListItems(
@@ -680,6 +643,15 @@ private fun DocumentDetailsScreenPreview() {
         val availableCredentials = 3
         val totalCredentials = 15
         val state = State(
+            issuerDetails = IssuerDetailsCardDataUi(
+                issuerName = "Issuer Name",
+                issuerLogo = null,
+                documentState = IssuerDetailsCardDataUi.DocumentState.Issued(
+                    issuanceDate = "16 February 2024 - 13:18",
+                    expirationDate = "22 March 2030"
+                ),
+                isExpanded = true,
+            ),
             documentCredentialsInfoUi = DocumentCredentialsInfoUi(
                 availableCredentials = availableCredentials,
                 totalCredentials = totalCredentials,
@@ -698,8 +670,6 @@ private fun DocumentDetailsScreenPreview() {
                 ),
                 isExpanded = false,
             ),
-            documentDetailsSectionTitle = stringResource(R.string.document_details_main_section_text),
-            documentIssuerSectionTitle = stringResource(R.string.document_details_issuer_section_text),
             documentDetailsUi = DocumentDetailsUi(
                 documentId = "1",
                 documentName = "Mobile Driving License",
@@ -739,7 +709,6 @@ private fun DocumentDetailsScreenPreview() {
                 ),
                 documentIssuanceStateUi = DocumentIssuanceStateUi.Issued,
             ),
-            issuerName = "Digital Credentials Issuer",
             hideSensitiveContent = false,
             sheetContent = DocumentDetailsBottomSheetContent.DeleteDocumentConfirmation
         )

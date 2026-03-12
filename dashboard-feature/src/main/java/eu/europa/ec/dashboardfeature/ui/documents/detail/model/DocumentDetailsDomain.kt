@@ -25,4 +25,6 @@ data class DocumentDetailsDomain(
     val docId: DocumentId,
     val documentIdentifier: DocumentIdentifier,
     val documentClaims: List<ClaimDomain>,
+    val documentIssuanceDate: String,
+    val documentExpirationDate: String?,
 )

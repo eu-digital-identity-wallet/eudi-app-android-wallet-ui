@@ -347,7 +347,6 @@
     <!--endregion-->
 
     <!-- region Document Details -->
-    <string name="document_details_revoked_document_message">This document has been revoked by the issuer. Contact the issuing service for more information.</string>
     <string name="document_details_boolean_item_true_readable_value">yes</string>
     <string name="document_details_boolean_item_false_readable_value">no</string>
 
@@ -361,9 +360,18 @@
     <string name="document_details_document_credentials_info_expanded_text_subtitle">For security reasons, this document can be shared a limited number of times before it needs to be re-issued by the issuing authority.</string>
     <string name="document_details_document_credentials_info_expanded_button_update_now_text">Issue new</string>
     <string name="document_details_document_credentials_info_expanded_button_hide_text">Hide</string>
-    <string name="document_details_main_section_text">DOCUMENT DETAILS</string>
-    <string name="document_details_issuer_section_text">ISSUER</string>
-    <string name="document_details_secondary_button_text">Delete document</string>
+    <string name="document_details_main_section_text">DOCUMENT DATA</string>
+    <string name="document_details_issuer_section_text">ISSUER DETAILS</string>
+    <string name="document_details_issuer_card_expires_on_text">Expires on:\ %1$s</string>
+    <string name="document_details_issuer_card_revoked_text">Document revoked</string>
+    <string name="document_details_issuer_card_issued_on_text">Issued on:\ %1$s</string>
+    <string name="document_details_issuer_card_revoked_on_text">Revoked on:\ %1$s</string>
+    <string name="document_details_issuer_card_issued_message_text">You may reissue this document at any time.</string>
+    <string name="document_details_issuer_card_issued_action_btn_text">Reissue document</string>
+    <string name="document_details_issuer_card_revoked_message_text">You may still use this document for verification.</string>
+    <string name="document_details_issuer_card_revoked_action_btn_text">More information</string>
+    <string name="document_details_issuer_card_id">issuerDetailsCardId</string>
+    <string name="document_details_secondary_button_text">Remove from wallet</string>
 
     <string name="document_details_bottom_sheet_bookmark_info_title">Saved to favourites</string>
     <string name="document_details_bottom_sheet_bookmark_info_message">The document was successfully added to your favourites list.</string>
