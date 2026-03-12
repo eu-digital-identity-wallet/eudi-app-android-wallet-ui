@@ -365,11 +365,9 @@
     <string name="document_details_issuer_card_expires_on_text">Expires on:\ %1$s</string>
     <string name="document_details_issuer_card_revoked_text">Document revoked</string>
     <string name="document_details_issuer_card_issued_on_text">Issued on:\ %1$s</string>
-    <string name="document_details_issuer_card_revoked_on_text">Revoked on:\ %1$s</string>
     <string name="document_details_issuer_card_issued_message_text">You may reissue this document at any time.</string>
     <string name="document_details_issuer_card_issued_action_btn_text">Reissue document</string>
-    <string name="document_details_issuer_card_revoked_message_text">You may still use this document for verification.</string>
-    <string name="document_details_issuer_card_revoked_action_btn_text">More information</string>
+    <string name="document_details_issuer_card_revoked_message_text">This document cannot be used for verification.</string>
     <string name="document_details_issuer_card_id">issuerDetailsCardId</string>
     <string name="document_details_secondary_button_text">Remove from wallet</string>
 

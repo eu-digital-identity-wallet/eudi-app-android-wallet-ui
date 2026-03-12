@@ -53,7 +53,6 @@ data class State(
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val isRevoked: Boolean = false,
 
     val documentDetailsUi: DocumentDetailsUi? = null,
     val title: String? = null,
@@ -212,11 +211,7 @@ class DocumentDetailsViewModel(
             }
 
             is Event.OnRevocationStatusChanged -> {
-                setState {
-                    copy(
-                        isRevoked = event.revokedIds.contains(documentId)
-                    )
-                }
+                getDocumentDetails(event)
             }
 
             is Event.ToggleExpansionStateOfDocumentCredentialsSection -> toggleExpansionStateOfDocumentCredentialsSection()
@@ -259,7 +254,6 @@ class DocumentDetailsViewModel(
                                 documentCredentialsInfoUi = response.documentCredentialsInfoUi,
                                 title = documentDetailsUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
-                                isRevoked = response.isRevoked,
                                 issuerDetails = response.issuerDetails,
                             )
                         }

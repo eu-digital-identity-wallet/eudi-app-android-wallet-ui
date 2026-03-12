@@ -44,7 +44,6 @@ sealed class DocumentDetailsInteractorPartialState {
         val issuerDetails: IssuerDetailsCardDataUi,
         val documentDetailsDomain: DocumentDetailsDomain,
         val documentIsBookmarked: Boolean,
-        val isRevoked: Boolean,
         val documentCredentialsInfoUi: DocumentCredentialsInfoUi,
     ) : DocumentDetailsInteractorPartialState()
 
@@ -141,7 +140,7 @@ class DocumentDetailsInteractorImpl(
                     issuerName = issuerName,
                     issuerLogo = issuerLogo?.uri,
                     documentState = if (documentIsRevoked) {
-                        IssuerDetailsCardDataUi.DocumentState.Revoked("")
+                        IssuerDetailsCardDataUi.DocumentState.Revoked
                     } else {
                         IssuerDetailsCardDataUi.DocumentState.Issued(
                             issuanceDate = documentDetailsDomain.documentIssuanceDate,
@@ -156,7 +155,6 @@ class DocumentDetailsInteractorImpl(
                         issuerDetails = issuerDetails,
                         documentDetailsDomain = documentDetailsDomain,
                         documentIsBookmarked = documentIsBookmarked,
-                        isRevoked = documentIsRevoked,
                         documentCredentialsInfoUi = documentCredentialsInfo,
                     )
                 )

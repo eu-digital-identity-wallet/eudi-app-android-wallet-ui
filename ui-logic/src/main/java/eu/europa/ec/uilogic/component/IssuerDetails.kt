@@ -73,9 +73,7 @@ data class IssuerDetailsCardDataUi(
             val expirationDate: String?
         ) : DocumentState()
 
-        data class Revoked(
-            val revocationDate: String?,
-        ) : DocumentState()
+        data object Revoked : DocumentState()
     }
 
     /**
@@ -98,9 +96,9 @@ data class IssuerDetailsCardDataUi(
 
     /**
      * The string resource ID for the text displayed on the action button in the expanded state.
-     * The text varies depending on whether the document is [DocumentState.Issued] or [DocumentState.Revoked].
+     * Returns a valid resource ID for [DocumentState.Issued] or null if the document is [DocumentState.Revoked].
      */
-    val expandedActionButtonTextResId: Int
+    val expandedActionButtonTextResId: Int?
         @StringRes
         get() {
             return when (documentState) {
@@ -109,7 +107,7 @@ data class IssuerDetailsCardDataUi(
                 }
 
                 is DocumentState.Revoked -> {
-                    R.string.document_details_issuer_card_revoked_action_btn_text
+                    null
                 }
             }
         }
@@ -238,17 +236,7 @@ private fun IssuerDetailsCardExpanded(
             }
 
             is IssuerDetailsCardDataUi.DocumentState.Revoked -> {
-                docState.revocationDate?.let { safeRevocationDate ->
-                    Text(
-                        text = stringResource(
-                            R.string.document_details_issuer_card_revoked_on_text,
-                            safeRevocationDate
-                        ),
-                        modifier = Modifier.fillMaxWidth(),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                // Nothing to show
             }
         }
 
@@ -266,17 +254,19 @@ private fun IssuerDetailsCardExpanded(
                 style = MaterialTheme.typography.bodySmall
             )
 
-            WrapButton(
-                buttonConfig = ButtonConfig(
-                    type = ButtonType.PRIMARY,
-                    onClick = onActionButtonClick,
-                    buttonColors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.primary
+            data.expandedActionButtonTextResId?.let { safeExpandedActionButtonTextResId ->
+                WrapButton(
+                    buttonConfig = ButtonConfig(
+                        type = ButtonType.PRIMARY,
+                        onClick = onActionButtonClick,
+                        buttonColors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
                     )
-                )
-            ) {
-                Text(text = stringResource(data.expandedActionButtonTextResId))
+                ) {
+                    Text(text = stringResource(safeExpandedActionButtonTextResId))
+                }
             }
         }
     }
@@ -294,9 +284,7 @@ private fun IssuerDetailsCardPreview() {
             issuanceDate = "16 February 2024 - 13:18",
             expirationDate = "22 March 2030"
         )
-        val revokedState = IssuerDetailsCardDataUi.DocumentState.Revoked(
-            revocationDate = "12 January 2025 - 15:32",
-        )
+        val revokedState = IssuerDetailsCardDataUi.DocumentState.Revoked
 
         val issuerDetailsItems = listOf(
             IssuerDetailsCardDataUi(
