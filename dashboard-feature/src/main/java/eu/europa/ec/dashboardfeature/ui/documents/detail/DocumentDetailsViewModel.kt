@@ -91,8 +91,7 @@ sealed class Event : ViewEvent {
 
     sealed class IssuerDetails : Event() {
         data object OnExpandedStateChanged : IssuerDetails()
-        data class OnActionButtonClicked(val documentState: IssuerDetailsCardDataUi.DocumentState) :
-            IssuerDetails()
+        data object OnActionButtonClicked : IssuerDetails()
     }
 }
 
@@ -214,7 +213,11 @@ class DocumentDetailsViewModel(
 
             is Event.IssuerDetails.OnExpandedStateChanged -> toggleIssuerDetailsCardExpansionState()
 
-            is Event.IssuerDetails.OnActionButtonClicked -> handleIssuerDetailsAction(event.documentState)
+            is Event.IssuerDetails.OnActionButtonClicked -> {
+                viewState.value.issuerDetails?.documentState?.let { safeDocumentState ->
+                    handleIssuerDetailsAction(documentState = safeDocumentState)
+                }
+            }
         }
     }
 

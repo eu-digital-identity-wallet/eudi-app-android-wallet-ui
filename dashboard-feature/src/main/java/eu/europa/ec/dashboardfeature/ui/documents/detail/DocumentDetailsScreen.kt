@@ -103,19 +103,9 @@ fun DocumentDetailsScreen(
         skipPartiallyExpanded = true
     )
 
-    val toolbarConfig = ToolbarConfig(
-        actions = if (state.error == null) {
-            listOf(
-                ToolbarActionUi(
-                    icon = if (state.isDocumentBookmarked) AppIcons.BookmarkFilled else AppIcons.Bookmark,
-                    onClick = { viewModel.setEvent(Event.BookmarkPressed) },
-                    enabled = !state.isLoading,
-                    throttleClicks = true,
-                )
-            )
-        } else {
-            emptyList()
-        }
+    val toolbarConfig = getToolbarConfig(
+        state = state,
+        onEventSend = { viewModel.setEvent(it) }
     )
 
     ContentScreen(
@@ -179,6 +169,42 @@ fun DocumentDetailsScreen(
     }
 }
 
+@Composable
+private fun getToolbarConfig(
+    state: State,
+    onEventSend: (Event) -> Unit
+): ToolbarConfig {
+    return ToolbarConfig(
+        actions = if (state.error == null) {
+            listOf(
+                ToolbarActionUi(
+                    icon = if (state.isDocumentBookmarked) AppIcons.BookmarkFilled else AppIcons.Bookmark,
+                    onClick = { onEventSend(Event.BookmarkPressed) },
+                    enabled = !state.isLoading,
+                    throttleClicks = true,
+                ),
+                ToolbarActionUi(
+                    text = stringResource(R.string.document_details_toolbar_action_reissue),
+                    icon = null,
+                    onClick = { onEventSend(Event.IssuerDetails.OnActionButtonClicked) },
+                    enabled = !state.isLoading && state.issuerDetails?.documentState != IssuerDetailsCardDataUi.DocumentState.Revoked,
+                    throttleClicks = true,
+                ),
+                ToolbarActionUi(
+                    text = stringResource(R.string.document_details_toolbar_action_remove),
+                    icon = null,
+                    onClick = { onEventSend(Event.SecondaryButtonPressed) },
+                    enabled = !state.isLoading,
+                    throttleClicks = true,
+                )
+            )
+        } else {
+            emptyList()
+        },
+        maxVisibleActions = 1
+    )
+}
+
 private fun handleNavigationEffect(
     navigationEffect: Effect.Navigation,
     navController: NavController,
@@ -235,8 +261,8 @@ private fun Content(
                         onExpandedStateChanged = {
                             onEventSend(Event.IssuerDetails.OnExpandedStateChanged)
                         },
-                        onActionButtonClick = { documentState ->
-                            onEventSend(Event.IssuerDetails.OnActionButtonClicked(documentState))
+                        onActionButtonClick = {
+                            onEventSend(Event.IssuerDetails.OnActionButtonClicked)
                         }
                     )
                 }
@@ -349,7 +375,7 @@ private fun IssuerDetails(
     modifier: Modifier = Modifier,
     data: IssuerDetailsCardDataUi,
     onExpandedStateChanged: () -> Unit,
-    onActionButtonClick: (IssuerDetailsCardDataUi.DocumentState) -> Unit,
+    onActionButtonClick: () -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -363,9 +389,7 @@ private fun IssuerDetails(
             modifier = Modifier.fillMaxWidth(),
             data = data,
             onExpandedChange = onExpandedStateChanged,
-            onActionButtonClick = {
-                onActionButtonClick(data.documentState)
-            }
+            onActionButtonClick = onActionButtonClick,
         )
     }
 }
