@@ -37,9 +37,9 @@
     <string name="generic_default_issuer_name">Issuer</string>
     <string name="generic_view_details">View details</string>
     <string name="generic_deferred_success_text">In progress!</string>
-    <string name="generic_bottom_sheet_delete_title">Delete document?</string>
-    <string name="generic_bottom_sheet_delete_subtitle">This document will be permanently deleted from your wallet and may affect access to services.</string>
-    <string name="generic_bottom_sheet_delete_primary_button_text">Delete</string>
+    <string name="generic_bottom_sheet_delete_title">Remove document?</string>
+    <string name="generic_bottom_sheet_delete_subtitle">This document will be removed from your wallet and may affect access to services.</string>
+    <string name="generic_bottom_sheet_delete_primary_button_text">Remove</string>
     <string name="generic_bottom_sheet_delete_secondary_button_text">Cancel</string>
     <string name="generic_scan_qr">Scan QR</string>
     <string name="generic_or">OR</string>
