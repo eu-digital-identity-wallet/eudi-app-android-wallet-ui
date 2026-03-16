@@ -38,13 +38,11 @@ object StringResourceProviderMocker {
 
     fun mockGetDocumentDetailsStrings(
         resourceProvider: ResourceProvider,
-        docIsLowOnCredentials: Boolean,
         availableCredentials: Int,
         totalCredentials: Int,
     ) {
         mockCreateDocumentCredentialsInfoStrings(
             resourceProvider = resourceProvider,
-            docIsLowOnCredentials = docIsLowOnCredentials,
             availableCredentials = availableCredentials,
             totalCredentials = totalCredentials
         )
@@ -54,24 +52,9 @@ object StringResourceProviderMocker {
 
     fun mockCreateDocumentCredentialsInfoStrings(
         resourceProvider: ResourceProvider,
-        docIsLowOnCredentials: Boolean,
         availableCredentials: Int,
         totalCredentials: Int,
     ) {
-        val mockedStrings = listOf(
-            R.string.document_details_document_credentials_info_more_info_text to "More info",
-            R.string.document_details_document_credentials_info_expanded_text_subtitle to "For security reasons, this document can be shared a limited number of times before it needs to be re-issued by the issuing authority.",
-            R.string.document_details_document_credentials_info_expanded_button_hide_text to "Hide",
-        ).apply {
-            if (docIsLowOnCredentials) {
-                this.toMutableList()
-                    .add(
-                        R.string.document_details_document_credentials_info_expanded_button_update_now_text to "Issue new"
-                    )
-            }
-        }
-        mockResourceProviderStrings(resourceProvider, mockedStrings)
-
         whenever(
             resourceProvider.getString(
                 R.string.document_details_document_credentials_info_text,
