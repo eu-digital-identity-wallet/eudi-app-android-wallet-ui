@@ -31,6 +31,7 @@ import eu.europa.ec.dashboardfeature.ui.documents.model.DocumentCredentialsInfoU
 import eu.europa.ec.eudi.wallet.document.DocumentId
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
 import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.extension.toggleExpansionState
@@ -47,21 +48,16 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
 import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
-import java.net.URI
 
 data class State(
     val isLoading: Boolean = true,
     val error: ContentErrorConfig? = null,
     val isBottomSheetOpen: Boolean = false,
-    val isRevoked: Boolean = false,
 
     val documentDetailsUi: DocumentDetailsUi? = null,
     val title: String? = null,
-    val issuerName: String? = null,
-    val issuerLogo: URI? = null,
+    val issuerDetails: IssuerDetailsCardDataUi? = null,
     val documentCredentialsInfoUi: DocumentCredentialsInfoUi? = null,
-    val documentDetailsSectionTitle: String,
-    val documentIssuerSectionTitle: String,
 
     val isDocumentBookmarked: Boolean = false,
     val hideSensitiveContent: Boolean = true,
@@ -92,8 +88,11 @@ sealed class Event : ViewEvent {
     data object OnBookmarkRemoved : Event()
     data object IssuerCardPressed : Event()
     data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
-    data object ToggleExpansionStateOfDocumentCredentialsSection : Event()
-    data object DocumentCredentialsSectionPrimaryButtonPressed : Event()
+
+    sealed class IssuerDetails : Event() {
+        data object OnExpandedStateChanged : IssuerDetails()
+        data object OnActionButtonClicked : IssuerDetails()
+    }
 }
 
 sealed class Effect : ViewSideEffect {
@@ -136,10 +135,7 @@ class DocumentDetailsViewModel(
     private val resourceProvider: ResourceProvider,
     @InjectedParam private val documentId: DocumentId,
 ) : MviViewModel<Event, State, Effect>() {
-    override fun setInitialState(): State = State(
-        documentDetailsSectionTitle = resourceProvider.getString(R.string.document_details_main_section_text),
-        documentIssuerSectionTitle = resourceProvider.getString(R.string.document_details_issuer_section_text),
-    )
+    override fun setInitialState(): State = State()
 
     override fun handleEvents(event: Event) {
         when (event) {
@@ -212,18 +208,14 @@ class DocumentDetailsViewModel(
             }
 
             is Event.OnRevocationStatusChanged -> {
-                setState {
-                    copy(
-                        isRevoked = event.revokedIds.contains(documentId)
-                    )
-                }
+                getDocumentDetails(event)
             }
 
-            is Event.ToggleExpansionStateOfDocumentCredentialsSection -> toggleExpansionStateOfDocumentCredentialsSection()
+            is Event.IssuerDetails.OnExpandedStateChanged -> toggleIssuerDetailsCardExpansionState()
 
-            is Event.DocumentCredentialsSectionPrimaryButtonPressed -> {
-                viewState.value.documentDetailsUi?.let { safeDocumentDetailsUi ->
-                    goToAddDocumentScreen(documentFormatType = safeDocumentDetailsUi.documentIdentifier.formatType)
+            is Event.IssuerDetails.OnActionButtonClicked -> {
+                viewState.value.issuerDetails?.documentState?.let { safeDocumentState ->
+                    handleIssuerDetailsAction(documentState = safeDocumentState)
                 }
             }
         }
@@ -240,6 +232,7 @@ class DocumentDetailsViewModel(
         viewModelScope.launch {
             documentDetailsInteractor.getDocumentDetails(
                 documentId = documentId,
+                wasIssuerDetailsExpanded = viewState.value.issuerDetails?.isExpanded
             ).collect { response ->
                 when (response) {
                     is DocumentDetailsInteractorPartialState.Success -> {
@@ -254,9 +247,7 @@ class DocumentDetailsViewModel(
                                 documentCredentialsInfoUi = response.documentCredentialsInfoUi,
                                 title = documentDetailsUi.documentName,
                                 isDocumentBookmarked = response.documentIsBookmarked,
-                                isRevoked = response.isRevoked,
-                                issuerName = response.issuerName,
-                                issuerLogo = response.issuerLogo
+                                issuerDetails = response.issuerDetails,
                             )
                         }
                     }
@@ -425,16 +416,6 @@ class DocumentDetailsViewModel(
         )
     }
 
-    private fun toggleExpansionStateOfDocumentCredentialsSection() {
-        setState {
-            copy(
-                documentCredentialsInfoUi = documentCredentialsInfoUi?.copy(
-                    isExpanded = !documentCredentialsInfoUi.isExpanded
-                )
-            )
-        }
-    }
-
     private fun goToAddDocumentScreen(documentFormatType: FormatType) {
         val addDocumentScreenRoute = generateComposableNavigationLink(
             screen = IssuanceScreens.AddDocument,
@@ -458,6 +439,30 @@ class DocumentDetailsViewModel(
                 popUpToScreenRoute = null,
                 inclusive = null
             )
+        }
+    }
+
+    private fun toggleIssuerDetailsCardExpansionState() {
+        setState {
+            copy(
+                issuerDetails = issuerDetails?.copy(
+                    isExpanded = !issuerDetails.isExpanded
+                )
+            )
+        }
+    }
+
+    private fun handleIssuerDetailsAction(documentState: IssuerDetailsCardDataUi.DocumentState) {
+        when (documentState) {
+            is IssuerDetailsCardDataUi.DocumentState.Issued -> {
+                viewState.value.documentDetailsUi?.let { safeDocumentDetailsUi ->
+                    goToAddDocumentScreen(documentFormatType = safeDocumentDetailsUi.documentIdentifier.formatType)
+                }
+            }
+
+            is IssuerDetailsCardDataUi.DocumentState.Revoked -> {
+                // No-op
+            }
         }
     }
 }

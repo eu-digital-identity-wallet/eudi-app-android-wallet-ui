@@ -46,6 +46,8 @@ import eu.europa.ec.testfeature.util.mockedDocumentAvailableCredentials
 import eu.europa.ec.testfeature.util.mockedDocumentTotalCredentials
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
+import eu.europa.ec.testfeature.util.mockedFormattedExpirationDate
+import eu.europa.ec.testfeature.util.mockedFormattedIssuanceDate
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedMdlId
 import eu.europa.ec.testfeature.util.mockedMdocPidNameSpace
@@ -57,6 +59,7 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
+import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
@@ -67,6 +70,7 @@ import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
+import java.net.URI
 
 class TestDocumentDetailsInteractor {
 
@@ -127,7 +131,6 @@ class TestDocumentDetailsInteractor {
             val mockedDocIsLowOnCredentials = false
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
@@ -136,8 +139,9 @@ class TestDocumentDetailsInteractor {
             mockIsDocumentLowOnCredentialsCall(response = mockedDocIsLowOnCredentials)
             val documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
+
+            val issuerDetails = getMockedIssuerDetailsCardDataUi()
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -145,15 +149,14 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
             ).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
+                        issuerDetails = issuerDetails,
                         documentDetailsDomain = mockedBasicPidDomain,
                         documentIsBookmarked = false,
-                        issuerName = null,
-                        issuerLogo = null,
-                        isRevoked = false,
                         documentCredentialsInfoUi = documentCredentialsInfoUi,
                     ),
                     awaitItem()
@@ -169,10 +172,7 @@ class TestDocumentDetailsInteractor {
 
     // Case 2 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with
-    // a PID document item,
-    // documentIsLowOnCredentials.isExpanded true,
-    // documentIsLowOnCredentials.expandedInfo.updateNowButtonText not null, and
-    // documentIsBookmarked is false.
+    // a PID document item.
     @Test
     fun `Given Case 2, When getDocumentDetails is called, Then Case 2 Expected Result is returned`() {
         coroutineRule.runTest {
@@ -180,7 +180,6 @@ class TestDocumentDetailsInteractor {
             val mockedDocIsLowOnCredentials = true
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
@@ -189,8 +188,9 @@ class TestDocumentDetailsInteractor {
             mockIsDocumentLowOnCredentialsCall(response = mockedDocIsLowOnCredentials)
             val documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
+
+            val issuerDetails = getMockedIssuerDetailsCardDataUi()
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -198,15 +198,14 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
             ).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
+                        issuerDetails = issuerDetails,
                         documentDetailsDomain = mockedBasicPidDomain,
                         documentIsBookmarked = false,
-                        issuerName = null,
-                        issuerLogo = null,
-                        isRevoked = false,
                         documentCredentialsInfoUi = documentCredentialsInfoUi,
                     ),
                     awaitItem()
@@ -230,7 +229,6 @@ class TestDocumentDetailsInteractor {
             val mockedDocIsLowOnCredentials = false
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
@@ -239,8 +237,9 @@ class TestDocumentDetailsInteractor {
             mockIsDocumentLowOnCredentialsCall(response = mockedDocIsLowOnCredentials)
             val documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
+
+            val issuerDetails = getMockedIssuerDetailsCardDataUi()
 
             mockRetrieveBookmarkCall(response = true)
             mockIsDocumentRevoked(isRevoked = false)
@@ -248,15 +247,14 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
             ).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
+                        issuerDetails = issuerDetails,
                         documentDetailsDomain = mockedBasicPidDomain,
                         documentIsBookmarked = true,
-                        issuerName = null,
-                        issuerLogo = null,
-                        isRevoked = false,
                         documentCredentialsInfoUi = documentCredentialsInfoUi,
                     ),
                     awaitItem()
@@ -280,7 +278,6 @@ class TestDocumentDetailsInteractor {
             val mockedDocIsLowOnCredentials = false
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
 
             val mockedMdlWithBasicFields = getMockedMdlWithBasicFields()
@@ -289,8 +286,9 @@ class TestDocumentDetailsInteractor {
             mockIsDocumentLowOnCredentialsCall(response = mockedDocIsLowOnCredentials)
             val documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
+
+            val issuerDetails = getMockedIssuerDetailsCardDataUi()
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -298,15 +296,14 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedMdlId,
+                wasIssuerDetailsExpanded = null,
             ).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
+                        issuerDetails = issuerDetails,
                         documentDetailsDomain = mockedBasicMdlDomain,
                         documentIsBookmarked = false,
-                        issuerName = null,
-                        issuerLogo = null,
-                        isRevoked = false,
                         documentCredentialsInfoUi = documentCredentialsInfoUi,
                     ),
                     awaitItem()
@@ -330,6 +327,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -352,9 +350,6 @@ class TestDocumentDetailsInteractor {
 
     // Case 6 Expected Result:
     // DocumentDetailsInteractorPartialState.Success state, with a PID document item, with:
-    // an empty string for documentExpirationDateFormatted,
-    // an empty string for documentImage, and
-    // an empty string for userFullName, and
     // documentIsBookmarked is false.
     @Test
     fun `Given Case 6, When getDocumentDetails is called, Then Case 6 Expected Result is returned`() {
@@ -363,7 +358,6 @@ class TestDocumentDetailsInteractor {
             val mockedDocIsLowOnCredentials = false
             mockGetDocumentDetailsStrings(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
 
             val mockedPidWithBasicFields = getMockedPidWithBasicFields()
@@ -385,8 +379,9 @@ class TestDocumentDetailsInteractor {
             mockIsDocumentLowOnCredentialsCall(response = mockedDocIsLowOnCredentials)
             val documentCredentialsInfoUi = getMockedDocumentCredentialsInfoUi(
                 resourceProvider = resourceProvider,
-                docIsLowOnCredentials = mockedDocIsLowOnCredentials,
             )
+
+            val issuerDetails = getMockedIssuerDetailsCardDataUi()
 
             mockRetrieveBookmarkCall(response = false)
             mockIsDocumentRevoked(isRevoked = false)
@@ -394,10 +389,12 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
             ).runFlowTest {
                 // Then
                 assertEquals(
                     DocumentDetailsInteractorPartialState.Success(
+                        issuerDetails = issuerDetails,
                         documentDetailsDomain = DocumentDetailsDomain(
                             docName = mockedPidDocName,
                             docId = mockedPidId,
@@ -414,11 +411,10 @@ class TestDocumentDetailsInteractor {
                                     isRequired = false,
                                 ),
                             ),
+                            documentIssuanceDate = mockedFormattedIssuanceDate,
+                            documentExpirationDate = mockedFormattedExpirationDate,
                         ),
                         documentIsBookmarked = false,
-                        issuerName = null,
-                        issuerLogo = null,
-                        isRevoked = false,
                         documentCredentialsInfoUi = documentCredentialsInfoUi,
                     ),
                     awaitItem()
@@ -443,6 +439,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -471,6 +468,7 @@ class TestDocumentDetailsInteractor {
             // When
             interactor.getDocumentDetails(
                 documentId = mockedPidId,
+                wasIssuerDetailsExpanded = null,
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -902,7 +900,6 @@ class TestDocumentDetailsInteractor {
 
     private fun getMockedDocumentCredentialsInfoUi(
         resourceProvider: ResourceProvider,
-        docIsLowOnCredentials: Boolean,
         availableCredentials: Int = mockedDocumentAvailableCredentials,
         totalCredentials: Int = mockedDocumentTotalCredentials,
     ): DocumentCredentialsInfoUi {
@@ -914,31 +911,33 @@ class TestDocumentDetailsInteractor {
                 availableCredentials,
                 totalCredentials
             ),
-            collapsedInfo = DocumentCredentialsInfoUi.CollapsedInfo(
-                moreInfoText = resourceProvider.getString(R.string.document_details_document_credentials_info_more_info_text),
-            ),
-            expandedInfo = DocumentCredentialsInfoUi.ExpandedInfo(
-                subtitle = resourceProvider.getString(R.string.document_details_document_credentials_info_expanded_text_subtitle),
-                updateNowButtonText = if (docIsLowOnCredentials) {
-                    resourceProvider.getString(R.string.document_details_document_credentials_info_expanded_button_update_now_text)
-                } else {
-                    null
-                },
-                hideButtonText = resourceProvider.getString(R.string.document_details_document_credentials_info_expanded_button_hide_text),
-            ),
-            isExpanded = docIsLowOnCredentials,
+        )
+    }
+
+    private fun getMockedIssuerDetailsCardDataUi(
+        issuerName: String? = null,
+        issuerLogo: URI? = null,
+        documentState: IssuerDetailsCardDataUi.DocumentState = IssuerDetailsCardDataUi.DocumentState.Issued(
+            issuanceDate = mockedFormattedIssuanceDate,
+            expirationDate = mockedFormattedExpirationDate
+        ),
+        isExpanded: Boolean = false,
+    ): IssuerDetailsCardDataUi {
+        return IssuerDetailsCardDataUi(
+            issuerName = issuerName,
+            issuerLogo = issuerLogo,
+            documentState = documentState,
+            isExpanded = isExpanded,
         )
     }
 
     private fun mockGetDocumentDetailsStrings(
         resourceProvider: ResourceProvider,
-        docIsLowOnCredentials: Boolean,
         availableCredentials: Int = mockedDocumentAvailableCredentials,
         totalCredentials: Int = mockedDocumentTotalCredentials
     ) {
         StringResourceProviderMocker.mockGetDocumentDetailsStrings(
             resourceProvider = resourceProvider,
-            docIsLowOnCredentials = docIsLowOnCredentials,
             availableCredentials = availableCredentials,
             totalCredentials = totalCredentials,
         )

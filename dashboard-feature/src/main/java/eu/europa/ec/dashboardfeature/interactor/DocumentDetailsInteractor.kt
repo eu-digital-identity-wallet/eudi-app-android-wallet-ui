@@ -34,18 +34,16 @@ import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import java.net.URI
 
 sealed class DocumentDetailsInteractorPartialState {
     data class Success(
-        val issuerName: String?,
-        val issuerLogo: URI?,
+        val issuerDetails: IssuerDetailsCardDataUi,
         val documentDetailsDomain: DocumentDetailsDomain,
         val documentIsBookmarked: Boolean,
-        val isRevoked: Boolean,
         val documentCredentialsInfoUi: DocumentCredentialsInfoUi,
     ) : DocumentDetailsInteractorPartialState()
 
@@ -76,6 +74,7 @@ sealed class DocumentDetailsInteractorDeleteBookmarkPartialState {
 interface DocumentDetailsInteractor {
     fun getDocumentDetails(
         documentId: DocumentId,
+        wasIssuerDetailsExpanded: Boolean?
     ): Flow<DocumentDetailsInteractorPartialState>
 
     fun deleteDocument(
@@ -103,6 +102,7 @@ class DocumentDetailsInteractorImpl(
 
     override fun getDocumentDetails(
         documentId: DocumentId,
+        wasIssuerDetailsExpanded: Boolean?,
     ): Flow<DocumentDetailsInteractorPartialState> =
         flow {
             val issuedDocument =
@@ -118,13 +118,8 @@ class DocumentDetailsInteractorImpl(
                     )
                 val documentDetailsDomain = documentDetailsDomainResult.getOrThrow()
 
-                val documentIsLowOnCredentials =
-                    walletCoreDocumentsController.isDocumentLowOnCredentials(
-                        document = safeIssuedDocument
-                    )
                 val documentCredentialsInfo = createDocumentCredentialsInfoUi(
                     document = safeIssuedDocument,
-                    isLowOnCredentials = documentIsLowOnCredentials,
                     resourceProvider = resourceProvider
                 )
 
@@ -136,14 +131,25 @@ class DocumentDetailsInteractorImpl(
                     walletCoreDocumentsController.isDocumentBookmarked(documentId)
 
                 val documentIsRevoked = walletCoreDocumentsController.isDocumentRevoked(documentId)
+                val issuerDetails = IssuerDetailsCardDataUi(
+                    issuerName = issuerName,
+                    issuerLogo = issuerLogo?.uri,
+                    documentState = if (documentIsRevoked) {
+                        IssuerDetailsCardDataUi.DocumentState.Revoked
+                    } else {
+                        IssuerDetailsCardDataUi.DocumentState.Issued(
+                            issuanceDate = documentDetailsDomain.documentIssuanceDate,
+                            expirationDate = documentDetailsDomain.documentExpirationDate
+                        )
+                    },
+                    isExpanded = wasIssuerDetailsExpanded ?: false
+                )
 
                 emit(
                     DocumentDetailsInteractorPartialState.Success(
-                        issuerName = issuerName,
+                        issuerDetails = issuerDetails,
                         documentDetailsDomain = documentDetailsDomain,
                         documentIsBookmarked = documentIsBookmarked,
-                        issuerLogo = issuerLogo?.uri,
-                        isRevoked = documentIsRevoked,
                         documentCredentialsInfoUi = documentCredentialsInfo,
                     )
                 )

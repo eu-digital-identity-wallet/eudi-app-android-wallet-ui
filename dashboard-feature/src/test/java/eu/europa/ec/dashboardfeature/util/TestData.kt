@@ -23,6 +23,8 @@ import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
+import eu.europa.ec.testfeature.util.mockedFormattedExpirationDate
+import eu.europa.ec.testfeature.util.mockedFormattedIssuanceDate
 import eu.europa.ec.testfeature.util.mockedMdlDocName
 import eu.europa.ec.testfeature.util.mockedMdlId
 import eu.europa.ec.testfeature.util.mockedMdocMdlNameSpace
@@ -143,7 +145,9 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
         )
     ).sortedBy {
         it.displayTitle.lowercase()
-    }
+    },
+    documentIssuanceDate = mockedFormattedIssuanceDate,
+    documentExpirationDate = mockedFormattedExpirationDate,
 )
 
 internal val mockedFullMdlUi = DocumentDetailsUi(
@@ -289,7 +293,9 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
         )
     ).sortedBy {
         it.displayTitle.lowercase()
-    }
+    },
+    documentIssuanceDate = mockedFormattedIssuanceDate,
+    documentExpirationDate = mockedFormattedExpirationDate,
 )
 
 internal val mockedMdlUiWithNoUserNameAndNoUserImage: DocumentDetailsUi = mockedFullMdlUi

@@ -16,12 +16,19 @@
 
 package eu.europa.ec.uilogic.component
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
+import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.TextConfig
+import eu.europa.ec.uilogic.component.wrap.WrapIconButton
 import eu.europa.ec.uilogic.component.wrap.WrapText
 
 /**
@@ -40,13 +47,32 @@ fun SectionTitle(
     textConfig: TextConfig = TextConfig(
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+    ),
+    icon: IconDataUi? = null,
+    throttleIconClicks: Boolean = true,
+    iconEnabled: Boolean = true,
+    onIconClick: () -> Unit = {},
 ) {
-    WrapText(
+    Row(
         modifier = modifier,
-        text = text,
-        textConfig = textConfig,
-    )
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        WrapText(
+            modifier = Modifier.padding(end = SPACING_SMALL.dp),
+            text = text,
+            textConfig = textConfig,
+        )
+
+        icon?.let { safeIcon ->
+            WrapIconButton(
+                iconData = safeIcon,
+                enabled = iconEnabled,
+                throttleClicks = throttleIconClicks,
+                onClick = onIconClick
+            )
+        }
+    }
 }
 
 @ThemeModePreviews
@@ -56,6 +82,18 @@ private fun SectionTitlePreview() {
         SectionTitle(
             modifier = Modifier,
             text = "DOCUMENT DETAILS"
+        )
+    }
+}
+
+@ThemeModePreviews
+@Composable
+private fun SectionTitleWithIconPreview() {
+    PreviewTheme {
+        SectionTitle(
+            modifier = Modifier,
+            text = "DOCUMENT DETAILS",
+            icon = AppIcons.Visibility,
         )
     }
 }
