@@ -20,6 +20,7 @@ import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
 import eu.europa.ec.corelogic.model.DocumentIdentifier
+import eu.europa.ec.eudi.openid4vp.dcql.ClaimPathElement
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsDomain
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentDetailsUi
 import eu.europa.ec.dashboardfeature.ui.documents.detail.model.DocumentIssuanceStateUi
@@ -68,7 +69,7 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             value = "ANDERSSON",
             displayTitle = "family_name",
             path = ClaimPathDomain(
-                value = listOf("family_name"),
+                value = listOf(ClaimPathElement.Claim("family_name")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -78,7 +79,7 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             value = "JAN",
             displayTitle = "given_name",
             path = ClaimPathDomain(
-                value = listOf("given_name"),
+                value = listOf(ClaimPathElement.Claim("given_name")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -88,7 +89,7 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             value = "yes",
             displayTitle = "age_over_18",
             path = ClaimPathDomain(
-                value = listOf("age_over_18"),
+                value = listOf(ClaimPathElement.Claim("age_over_18")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -98,7 +99,7 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             value = "no",
             displayTitle = "age_over_65",
             path = ClaimPathDomain(
-                value = listOf("age_over_65"),
+                value = listOf(ClaimPathElement.Claim("age_over_65")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -108,7 +109,7 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             value = "1985",
             displayTitle = "age_birth_year",
             path = ClaimPathDomain(
-                value = listOf("age_birth_year"),
+                value = listOf(ClaimPathElement.Claim("age_birth_year")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -118,7 +119,7 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             value = "KATRINEHOLM",
             displayTitle = "birth_city",
             path = ClaimPathDomain(
-                value = listOf("birth_city"),
+                value = listOf(ClaimPathElement.Claim("birth_city")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -128,7 +129,7 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             value = "Male",
             displayTitle = "gender",
             path = ClaimPathDomain(
-                value = listOf("gender"),
+                value = listOf(ClaimPathElement.Claim("gender")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -138,7 +139,7 @@ internal val mockedBasicPidDomain = DocumentDetailsDomain(
             value = "30 Mar 2050",
             displayTitle = "expiry_date",
             path = ClaimPathDomain(
-                value = listOf("expiry_date"),
+                value = listOf(ClaimPathElement.Claim("expiry_date")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocPidNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -226,7 +227,7 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
             value = "ANDERSSON",
             displayTitle = "family_name",
             path = ClaimPathDomain(
-                value = listOf("family_name"),
+                value = listOf(ClaimPathElement.Claim("family_name")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -236,7 +237,7 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
             value = "JAN",
             displayTitle = "given_name",
             path = ClaimPathDomain(
-                value = listOf("given_name"),
+                value = listOf(ClaimPathElement.Claim("given_name")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -246,7 +247,7 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
             value = "SWEDEN",
             displayTitle = "birth_place",
             path = ClaimPathDomain(
-                value = listOf("birth_place"),
+                value = listOf(ClaimPathElement.Claim("birth_place")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -256,7 +257,7 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
             value = "30 Mar 2050",
             displayTitle = "expiry_date",
             path = ClaimPathDomain(
-                value = listOf("expiry_date"),
+                value = listOf(ClaimPathElement.Claim("expiry_date")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -266,7 +267,7 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
             value = "SE",
             displayTitle = "portrait",
             path = ClaimPathDomain(
-                value = listOf("portrait"),
+                value = listOf(ClaimPathElement.Claim("portrait")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -276,7 +277,7 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
             value = "SE",
             displayTitle = "signature_usual_mark",
             path = ClaimPathDomain(
-                value = listOf("signature_usual_mark"),
+                value = listOf(ClaimPathElement.Claim("signature_usual_mark")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
             ),
             isRequired = mockedClaimIsRequired
@@ -286,7 +287,7 @@ internal val mockedBasicMdlDomain = DocumentDetailsDomain(
             value = "Male",
             displayTitle = "sex",
             path = ClaimPathDomain(
-                value = listOf("sex"),
+                value = listOf(ClaimPathElement.Claim("sex")),
                 type = ClaimType.MsoMdoc(namespace = mockedMdocMdlNameSpace)
             ),
             isRequired = mockedClaimIsRequired

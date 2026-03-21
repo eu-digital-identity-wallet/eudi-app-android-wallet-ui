@@ -325,7 +325,7 @@ private fun insertPath(
 
     val userLocale = resourceProvider.getLocale()
 
-    val key = path.value.first()
+    val key = path.value.first().toString()
 
     val existingNode = tree.find {
         when (val type = disclosurePath.type) {

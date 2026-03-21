@@ -18,6 +18,7 @@ package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
+import eu.europa.ec.eudi.openid4vp.dcql.ClaimPathElement
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
 import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
@@ -42,11 +43,11 @@ import eu.europa.ec.eudi.wallet.document.format.SdJwtVcClaim
  * - The type of the returned [ClaimPathDomain] will be [ClaimType.MsoMdoc], which includes the claim's namespace.
  */
 fun DocumentClaim.toClaimPaths(
-    parentPath: List<String> = emptyList()
+    parentPath: List<ClaimPathElement> = emptyList()
 ): List<ClaimPathDomain> {
     return when (this) {
         is SdJwtVcClaim -> {
-            val currentPath: List<String> = parentPath + this.identifier
+            val currentPath = parentPath + ClaimPathElement.Claim(this.identifier)
             if (children.isEmpty() || this.value is Collection<*>) {
                 listOf(ClaimPathDomain(value = currentPath, type = ClaimType.SdJwtVc))
             } else {
@@ -59,7 +60,7 @@ fun DocumentClaim.toClaimPaths(
         is MsoMdocClaim -> {
             listOf(
                 ClaimPathDomain(
-                    value = listOf(this.identifier),
+                    value = listOf(ClaimPathElement.Claim(this.identifier)),
                     type = ClaimType.MsoMdoc(this.nameSpace)
                 )
             )

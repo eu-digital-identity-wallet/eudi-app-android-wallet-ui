@@ -16,6 +16,8 @@
 
 package eu.europa.ec.corelogic.model
 
+import eu.europa.ec.eudi.openid4vp.dcql.ClaimPath
+import eu.europa.ec.eudi.openid4vp.dcql.ClaimPathElement
 import eu.europa.ec.eudi.wallet.document.NameSpace
 
 sealed interface ClaimType {
@@ -26,7 +28,7 @@ sealed interface ClaimType {
 }
 
 data class ClaimPathDomain(
-    val value: List<String>,
+    val value: List<ClaimPathElement>,
     val type: ClaimType,
 ) {
 
@@ -47,43 +49,55 @@ data class ClaimPathDomain(
                 .first()
         }
 
-        fun toSdJwtVcPath(itemId: String): List<String> {
-            return itemId
+        fun toSdJwtVcClaimPath(itemId: String): ClaimPath {
+            val elements = itemId
                 .split(PATH_SEPARATOR)
                 .drop(1)
+                .map { ClaimPathElement.Claim(it) }
+            return ClaimPath(elements)
         }
 
+        /**
+         * Converts a list of strings to a [ClaimPathDomain] where all elements
+         * are treated as [ClaimPathElement.Claim]s. Use this for paths from stored
+         * credentials or transaction logs where no wildcards are expected.
+         */
         fun List<String>.toClaimPathDomain(type: ClaimType): ClaimPathDomain {
-            return ClaimPathDomain(value = this, type = type)
+            return ClaimPathDomain(
+                value = this.map { ClaimPathElement.Claim(it) },
+                type = type
+            )
         }
 
         /**
          * Checks whether this [ClaimPathDomain] is a prefix of another [ClaimPathDomain].
          *
-         * A prefix match means that all elements of this path must appear in the same order
-         * and at the beginning of the [other] path. This allows partial matches useful in scenarios
-         * where the verifier requests a parent claim (e.g., `"address"`) and the wallet contains
-         * deeper nested claims (e.g., `"address.street"`, `"address.city"`).
-         *
-         * Examples:
-         * ```
-         * ClaimPath(listOf("address")).isPrefixOf(ClaimPath(listOf("address", "city"))) == true
-         * ClaimPath(listOf("claim1", "a")).isPrefixOf(ClaimPath(listOf("claim1", "a", "b"))) == true
-         * ClaimPath(listOf("name")).isPrefixOf(ClaimPath(listOf("name_birth"))) == false
-         * ```
+         * Supports DCQL wildcard matching via [ClaimPathElement.AllArrayElements]:
+         * - A wildcard element matches any value at that position.
+         * - Trailing wildcard elements are tolerated when the available path ends
+         *   at the array claim itself.
          *
          * @param other The [ClaimPathDomain] to compare against.
          * @return `true` if this path is a prefix of [other]; `false` otherwise.
          */
         fun ClaimPathDomain.isPrefixOf(other: ClaimPathDomain): Boolean {
-            return this.value.size <= other.value.size &&
-                    this.type == other.type &&
-                    this.value.zip(other.value).all { (a, b) -> a == b }
+            if (this.type != other.type) return false
+
+            // The effective prefix length ignores trailing wildcard elements,
+            // because a trailing wildcard means "any element inside this array"
+            // and the credential may store the array as a single leaf claim.
+            val effectiveSize =
+                this.value.indexOfLast { it !is ClaimPathElement.AllArrayElements } + 1
+            if (effectiveSize > other.value.size) return false
+
+            val compareSize = minOf(this.value.size, other.value.size)
+            return this.value.take(compareSize).zip(other.value.take(compareSize))
+                .all { (a, b) -> a in b || b in a }
         }
     }
 
     val joined: String
-        get() = value.joinToString(PATH_SEPARATOR)
+        get() = value.joinToString(PATH_SEPARATOR) { it.toString() }
 
     fun toId(docId: String): String {
         val namespaceOrNull: String? = when (type) {
@@ -97,7 +111,7 @@ data class ClaimPathDomain(
             namespaceOrNull?.let { safeNamespace ->
                 add(safeNamespace)
             }
-            addAll(value)
+            addAll(value.map { it.toString() })
         }.joinToString(separator = PATH_SEPARATOR)
 
         return finalId

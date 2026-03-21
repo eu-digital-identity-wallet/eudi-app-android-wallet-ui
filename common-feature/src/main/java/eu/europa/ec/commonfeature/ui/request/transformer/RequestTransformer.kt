@@ -157,7 +157,7 @@ object RequestTransformer {
 
                         is DomainDocumentFormat.SdJwtVc -> sdJwtItems.add(
                             SdJwtVcItem(
-                                path = ClaimPathDomain.toSdJwtVcPath(selectedItemId)
+                                path = ClaimPathDomain.toSdJwtVcClaimPath(selectedItemId)
                             )
                         )
 
