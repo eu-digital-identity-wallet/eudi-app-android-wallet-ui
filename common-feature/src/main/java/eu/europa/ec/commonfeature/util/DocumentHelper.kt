@@ -28,6 +28,7 @@ import eu.europa.ec.corelogic.extension.sortRecursivelyBy
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
+import eu.europa.ec.eudi.openid4vp.dcql.ClaimPathElement
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.format.DocumentClaim
 import eu.europa.ec.eudi.wallet.document.format.MsoMdocClaim
@@ -133,7 +134,7 @@ fun createKeyValue(
                 ClaimDomain.Group(
                     key = groupKey,
                     displayTitle = displayTitle,
-                    path = ClaimPathDomain(listOf(uuidProvider.provideUuid()), disclosurePath.type),
+                    path = ClaimPathDomain(listOf(ClaimPathElement.Claim(uuidProvider.provideUuid())), disclosurePath.type),
                     items = children
                 )
             )
@@ -227,7 +228,7 @@ fun createKeyValue(
                                     )
                                 } $position",
                                 path = ClaimPathDomain(
-                                    listOf(uuidProvider.provideUuid()),
+                                    listOf(ClaimPathElement.Claim(uuidProvider.provideUuid())),
                                     disclosurePath.type
                                 ),
                                 items = entryChildren

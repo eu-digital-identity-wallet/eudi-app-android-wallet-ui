@@ -49,12 +49,11 @@ data class ClaimPathDomain(
                 .first()
         }
 
-        fun toSdJwtVcClaimPath(itemId: String): ClaimPath {
-            val elements = itemId
+        fun toSdJwtVcClaimPath(itemId: String): List<ClaimPathElement> {
+            return itemId
                 .split(PATH_SEPARATOR)
                 .drop(1)
                 .map { ClaimPathElement.Claim(it) }
-            return ClaimPath(elements)
         }
 
         /**
@@ -111,7 +110,7 @@ data class ClaimPathDomain(
             namespaceOrNull?.let { safeNamespace ->
                 add(safeNamespace)
             }
-            addAll(value.map { it.toString() })
+            addAll(value.map { element -> element.toString() })
         }.joinToString(separator = PATH_SEPARATOR)
 
         return finalId

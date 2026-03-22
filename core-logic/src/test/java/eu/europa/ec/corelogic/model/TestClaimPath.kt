@@ -28,13 +28,19 @@ import org.junit.Test
 
 class TestClaimPath {
 
-    /** Helper: create a SdJwtVcItem with Claim path elements from strings. */
+    /** Helper: create a ClaimPathDomain for SD-JWT VC from claim name strings. */
     private fun sdJwtVc(vararg names: String) =
-        SdJwtVcItem(ClaimPath(names.map { ClaimPathElement.Claim(it) })).toClaimPath()
+        ClaimPathDomain(
+            value = names.map { ClaimPathElement.Claim(it) },
+            type = ClaimType.SdJwtVc
+        )
 
-    /** Helper: create a SdJwtVcItem with mixed ClaimPathElements. */
+    /** Helper: create a ClaimPathDomain for SD-JWT VC from mixed ClaimPathElements. */
     private fun sdJwtVcPath(vararg elements: ClaimPathElement) =
-        SdJwtVcItem(ClaimPath(elements.toList())).toClaimPath()
+        ClaimPathDomain(
+            value = elements.toList(),
+            type = ClaimType.SdJwtVc
+        )
 
     @Test
     fun `SdJwt - prefix match with deeper nesting`() {
@@ -105,7 +111,7 @@ class TestClaimPath {
 
     @Test
     fun `SdJwt - empty requested path is prefix of any`() {
-        val requested = SdJwtVcItem(ClaimPath(emptyList())).toClaimPath()
+        val requested = ClaimPathDomain(value = emptyList(), type = ClaimType.SdJwtVc)
         val available = sdJwtVc("anything", "deep")
 
         assertTrue(requested.isPrefixOf(available))

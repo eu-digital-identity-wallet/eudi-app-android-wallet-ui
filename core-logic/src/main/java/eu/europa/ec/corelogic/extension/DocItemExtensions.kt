@@ -18,6 +18,7 @@ package eu.europa.ec.corelogic.extension
 
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimType
+import eu.europa.ec.eudi.openid4vp.dcql.ClaimPath
 import eu.europa.ec.eudi.openid4vp.dcql.ClaimPathElement
 import eu.europa.ec.eudi.iso18013.transfer.response.DocItem
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
@@ -30,10 +31,14 @@ fun DocItem.toClaimPath(): ClaimPathDomain {
             type = ClaimType.MsoMdoc(namespace = this.namespace)
         )
 
-        is SdJwtVcItem -> ClaimPathDomain(
-            value = this.path.value,
-            type = ClaimType.SdJwtVc
-        )
+        is SdJwtVcItem -> {
+            @Suppress("UNCHECKED_CAST")
+            val elements = this.path as List<ClaimPathElement>
+            ClaimPathDomain(
+                value = elements,
+                type = ClaimType.SdJwtVc
+            )
+        }
 
         else -> ClaimPathDomain(
             value = emptyList(),

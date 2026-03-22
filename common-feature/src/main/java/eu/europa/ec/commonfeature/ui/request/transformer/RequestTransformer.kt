@@ -26,6 +26,7 @@ import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.corelogic.extension.toClaimPaths
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.corelogic.model.ClaimPathDomain.Companion.isPrefixOf
+import eu.europa.ec.eudi.openid4vp.dcql.ClaimPath
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocuments
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
@@ -155,11 +156,10 @@ object RequestTransformer {
 
                     when (documentPayload.domainDocFormat) {
 
-                        is DomainDocumentFormat.SdJwtVc -> sdJwtItems.add(
-                            SdJwtVcItem(
-                                path = ClaimPathDomain.toSdJwtVcClaimPath(selectedItemId)
-                            )
-                        )
+                        is DomainDocumentFormat.SdJwtVc -> {
+                            val claimPath = ClaimPath(ClaimPathDomain.toSdJwtVcClaimPath(selectedItemId))
+                            sdJwtItems.add(SdJwtVcItem(claimPath))
+                        }
 
                         is DomainDocumentFormat.MsoMdoc -> {
                             val elementIdentifier = ClaimPathDomain.toElementIdentifier(
