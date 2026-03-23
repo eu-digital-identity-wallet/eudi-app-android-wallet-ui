@@ -24,13 +24,24 @@ import eu.europa.ec.uilogic.serializer.UiSerializableParser
 import eu.europa.ec.uilogic.serializer.adapter.SerializableTypeAdapter
 
 sealed interface PresentationMode {
-    data class OpenId4Vp(val uri: String, val initiatorRoute: String) : PresentationMode
-    data class Ble(val initiatorRoute: String) : PresentationMode
+    val scopeId: String
+
+    data class OpenId4Vp(val uri: String, val initiatorRoute: String) : PresentationMode {
+        override val scopeId: String
+            get() = "vp_presentation_scope_id"
+    }
+
+    data class Ble(val initiatorRoute: String) : PresentationMode {
+        override val scopeId: String
+            get() = "ble_presentation_scope_id"
+    }
 }
 
 data class RequestUriConfig(
     val mode: PresentationMode
 ) : UiSerializable {
+
+    val presentationScopeId: String = mode.scopeId
 
     companion object Parser : UiSerializableParser {
         override val serializedKeyName = "requestUriConfig"

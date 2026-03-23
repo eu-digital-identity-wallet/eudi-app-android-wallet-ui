@@ -20,10 +20,12 @@ import android.content.Context
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.resourceslogic.provider.ResourceProviderImpl
 import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
 @Module
+@Configuration
 @ComponentScan("eu.europa.ec.resourceslogic")
 class LogicResourceModule
 

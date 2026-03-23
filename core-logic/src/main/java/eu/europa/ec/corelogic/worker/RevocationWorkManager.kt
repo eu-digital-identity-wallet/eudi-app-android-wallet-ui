@@ -28,8 +28,7 @@ import eu.europa.ec.eudi.statium.Status
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.model.RevokedDocument
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
+import org.koin.android.annotation.KoinWorker
 
 /**
  * [RevocationWorkManager] is a [CoroutineWorker] responsible for checking the revocation status of issued documents
@@ -54,13 +53,13 @@ import org.koin.core.component.inject
  * @param appContext The application context.
  * @param workerParams Parameters for the worker.
  */
+@KoinWorker
 class RevocationWorkManager(
     appContext: Context,
     workerParams: WorkerParameters,
-) : CoroutineWorker(appContext, workerParams), KoinComponent {
-
-    private val revokedDocumentDao: RevokedDocumentDao by inject()
-    private val walletCoreDocumentsController: WalletCoreDocumentsController by inject()
+    private val revokedDocumentDao: RevokedDocumentDao,
+    private val walletCoreDocumentsController: WalletCoreDocumentsController,
+) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
         const val REVOCATION_WORK_NAME = "revocationWorker"

@@ -37,11 +37,13 @@ import eu.europa.ec.businesslogic.validator.FormValidator
 import eu.europa.ec.businesslogic.validator.FormValidatorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
 @Module
+@Configuration
 @ComponentScan("eu.europa.ec.businesslogic")
 class LogicBusinessModule
 

@@ -76,7 +76,7 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
                 }
             ),
             arguments = listOf(
-                navArgument(RequestUriConfig.serializedKeyName) {
+                navArgument("scopeId") {
                     type = NavType.StringType
                 },
             )
@@ -86,7 +86,7 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
                 koinViewModel(
                     parameters = {
                         parametersOf(
-                            it.arguments?.getString(RequestUriConfig.serializedKeyName).orEmpty()
+                            it.arguments?.getString("scopeId").orEmpty()
                         )
                     }
                 )
@@ -96,26 +96,42 @@ fun NavGraphBuilder.featureProximityGraph(navController: NavController) {
         // Loading
         composable(
             route = ProximityScreens.Loading.screenRoute,
+            arguments = listOf(
+                navArgument("scopeId") {
+                    type = NavType.StringType
+                },
+            )
         ) {
             ProximityLoadingScreen(
                 navController,
-                koinViewModel()
+                koinViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString("scopeId").orEmpty()
+                        )
+                    }
+                )
             )
         }
 
         // Success
         composable(
             route = ProximityScreens.Success.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + ProximityScreens.Request.screenRoute
-                }
-            ),
+            arguments = listOf(
+                navArgument("scopeId") {
+                    type = NavType.StringType
+                },
+            )
         ) {
             ProximitySuccessScreen(
                 navController,
-                koinViewModel()
+                koinViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString("scopeId").orEmpty()
+                        )
+                    }
+                )
             )
         }
     }

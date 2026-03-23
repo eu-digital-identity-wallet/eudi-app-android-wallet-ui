@@ -67,25 +67,41 @@ fun NavGraphBuilder.presentationGraph(navController: NavController) {
 
         composable(
             route = PresentationScreens.PresentationLoading.screenRoute,
+            arguments = listOf(
+                navArgument("scopeId") {
+                    type = NavType.StringType
+                }
+            )
         ) {
             PresentationLoadingScreen(
                 navController,
-                koinViewModel()
+                koinViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString("scopeId").orEmpty()
+                        )
+                    }
+                )
             )
         }
 
         composable(
             route = PresentationScreens.PresentationSuccess.screenRoute,
-            deepLinks = listOf(
-                navDeepLink {
-                    uriPattern =
-                        BuildConfig.DEEPLINK + PresentationScreens.PresentationSuccess.screenRoute
+            arguments = listOf(
+                navArgument("scopeId") {
+                    type = NavType.StringType
                 }
-            ),
+            )
         ) {
             PresentationSuccessScreen(
                 navController,
-                koinViewModel()
+                koinViewModel(
+                    parameters = {
+                        parametersOf(
+                            it.arguments?.getString("scopeId").orEmpty()
+                        )
+                    }
+                )
             )
         }
     }

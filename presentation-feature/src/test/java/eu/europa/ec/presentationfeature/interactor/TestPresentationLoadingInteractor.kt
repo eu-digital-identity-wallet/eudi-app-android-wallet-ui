@@ -31,6 +31,7 @@ import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
 import junit.framework.TestCase
+import junit.framework.TestCase.assertEquals
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -300,6 +301,20 @@ class TestPresentationLoadingInteractor {
 
         // Then
         verify(onFailure).invoke()
+    }
+    //endregion
+
+    //region setScopeId
+    @Test
+    fun `Given a scopeId, When setScopeId is called, Then Verify presentationScopeId is set to the provided scopeId`() {
+        // Given
+        val mockScopeId = "mockScopeId"
+
+        // When
+        interactor.setScopeId(mockScopeId)
+
+        // Then
+        assertEquals(interactor.presentationScopeId, mockScopeId)
     }
     //endregion
 

@@ -40,10 +40,12 @@ import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractor
 import eu.europa.ec.dashboardfeature.interactor.TransactionsInteractorImpl
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 
 @Module
+@Configuration
 @ComponentScan("eu.europa.ec.dashboardfeature")
 class FeatureDashboardModule
 

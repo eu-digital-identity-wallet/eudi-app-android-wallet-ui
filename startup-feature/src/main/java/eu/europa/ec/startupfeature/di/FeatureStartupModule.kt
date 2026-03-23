@@ -24,10 +24,12 @@ import eu.europa.ec.startupfeature.interactor.SplashInteractor
 import eu.europa.ec.startupfeature.interactor.SplashInteractorImpl
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 
 @Module
+@Configuration
 @ComponentScan("eu.europa.ec.startupfeature")
 class FeatureStartupModule
 

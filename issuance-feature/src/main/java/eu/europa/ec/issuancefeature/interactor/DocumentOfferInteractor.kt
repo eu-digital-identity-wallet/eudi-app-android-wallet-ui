@@ -24,7 +24,6 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.util.safeLet
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
-import eu.europa.ec.commonfeature.di.CredentialOfferIssuanceScope
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.ResolveDocumentOfferPartialState
@@ -51,8 +50,6 @@ import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import org.koin.core.annotation.Scope
-import org.koin.core.annotation.Scoped
 import java.net.URI
 
 sealed class ResolveDocumentOfferInteractorPartialState {
@@ -111,8 +108,6 @@ interface DocumentOfferInteractor {
     fun resumeOpenId4VciWithAuthorization(uri: String)
 }
 
-@Scope(CredentialOfferIssuanceScope::class)
-@Scoped
 class DocumentOfferInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,

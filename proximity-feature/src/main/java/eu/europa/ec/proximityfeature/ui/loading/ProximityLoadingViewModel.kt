@@ -33,9 +33,12 @@ import eu.europa.ec.uilogic.component.content.ContentHeaderConfig
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.ProximityScreens
 import eu.europa.ec.uilogic.navigation.Screen
+import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
+import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.KoinViewModel
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -44,6 +47,7 @@ import kotlin.time.toDuration
 class ProximityLoadingViewModel(
     private val resourceProvider: ResourceProvider,
     private val interactor: ProximityLoadingInteractor,
+    @InjectedParam private val presentationScopeId: String
 ) : LoadingViewModel() {
 
     override fun getHeaderConfig(): ContentHeaderConfig {
@@ -61,13 +65,21 @@ class ProximityLoadingViewModel(
     }
 
     private fun getNextScreen(): String {
-        return ProximityScreens.Success.screenRoute
+        return generateComposableNavigationLink(
+            screen = ProximityScreens.Success.screenRoute,
+            arguments = generateComposableArguments(
+                mapOf("scopeId" to presentationScopeId)
+            )
+        )
     }
 
     override fun getCancellableTimeout(): Duration = 5.toDuration(DurationUnit.SECONDS)
 
     override fun doWork(context: Context) {
         viewModelScope.launch {
+
+            interactor.setScopeId(presentationScopeId)
+
             interactor.observeResponse().collect {
                 when (it) {
                     is ProximityLoadingObserveResponsePartialState.Failure -> {

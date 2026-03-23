@@ -33,35 +33,32 @@ import eu.europa.ec.storagelogic.di.LogicStorageModule
 import eu.europa.ec.uilogic.di.LogicUiModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.core.KoinApplication
-import org.koin.core.context.GlobalContext.startKoin
-import org.koin.ksp.generated.module
+import org.koin.androidx.workmanager.koin.workManagerFactory
+import org.koin.core.annotation.KoinApplication
+import org.koin.plugin.module.dsl.startKoin
 
-private val assembledModules = listOf(
-
-    // Logic Modules
-    LogicNetworkModule().module,
-    LogicUiModule().module,
-    LogicResourceModule().module,
-    LogicBusinessModule().module,
-    LogicAnalyticsModule().module,
-    LogicAuthenticationModule().module,
-    LogicCoreModule().module,
-    LogicStorageModule().module,
-
-    // Feature Modules
-    FeatureCommonModule().module,
-    FeatureDashboardModule().module,
-    FeatureStartupModule().module,
-    FeaturePresentationModule().module,
-    FeatureProximityModule().module,
-    FeatureIssuanceModule().module
+@KoinApplication(
+    modules = [
+        LogicNetworkModule::class,
+        LogicUiModule::class,
+        LogicResourceModule::class,
+        LogicBusinessModule::class,
+        LogicAnalyticsModule::class,
+        LogicAuthenticationModule::class,
+        LogicCoreModule::class,
+        LogicStorageModule::class,
+        FeatureCommonModule::class,
+        FeatureDashboardModule::class,
+        FeatureStartupModule::class,
+        FeaturePresentationModule::class,
+        FeatureProximityModule::class,
+        FeatureIssuanceModule::class
+    ]
 )
+class EudiWalletKoin
 
-internal fun Application.setupKoin(): KoinApplication {
-    return startKoin {
-        androidContext(this@setupKoin)
-        androidLogger()
-        modules(assembledModules)
-    }
+internal fun Application.setupKoin() = startKoin<EudiWalletKoin> {
+    androidContext(this@setupKoin)
+    androidLogger()
+    workManagerFactory()
 }

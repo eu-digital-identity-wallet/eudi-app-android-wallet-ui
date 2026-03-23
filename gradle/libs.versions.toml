@@ -2,14 +2,14 @@
 accompanist = "0.37.3"
 androidDesugarJdkLibs = "2.1.5"
 androidGradlePlugin = "9.1.0"
-androidxActivity = "1.12.4"
+androidxActivity = "1.13.0"
 androidxAppCompat = "1.7.1"
 androidxBrowser = "1.9.0"
-androidxComposeBom = "2026.02.01"
-androidxComposeRuntimeTracing = "1.10.4"
-androidxCore = "1.17.0"
+androidxComposeBom = "2026.03.00"
+androidxComposeRuntimeTracing = "1.10.5"
+androidxCore = "1.18.0"
 androidxCoreSplashscreen = "1.2.0"
-androidxDataStore = "1.2.0"
+androidxDataStore = "1.2.1"
 androidxEspresso = "3.7.0"
 androidxLifecycle = "2.10.0"
 androidxMacroBenchmark = "1.4.1"
@@ -32,26 +32,27 @@ constraintlayoutVersion = "1.1.1"
 dependencyGraphPlugin = "0.13.0"
 gmsPlugin = "4.4.4"
 junit4 = "4.13.2"
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 kotlinxCoroutines = "1.10.2"
 kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.10.0"
 ksp = "2.3.4"
 lint = "32.1.0"
-protobuf = "4.34.0"
+protobuf = "4.34.1"
 protobufPlugin = "0.9.6"
 robolectric = "4.16.1"
 secrets = "2.0.1"
 turbine = "1.2.1"
-koin = "4.1.1"
-koinAnnotations = "2.3.1"
+koin = "4.2.0"
+koinAnnotations = "4.2.0"
+koinPlugin = "0.4.1"
 material = "1.13.0"
-mockito = "5.22.0"
-mockitoKotlin = "6.2.3"
+mockito = "5.23.0"
+mockitoKotlin = "6.3.0"
 ktor = "3.4.1"
 slf4j = "2.0.17"
 gson = "2.13.2"
-googlePhoneNumber = "9.0.25"
+googlePhoneNumber = "9.0.26"
 zxing = "3.5.4"
 eudiWalletCore = "0.25.0"
 cameraCore = "1.5.3"
@@ -60,7 +61,7 @@ materialIcons = "1.7.8"
 material3 = "1.4.0"
 kover = "0.9.7"
 sonar = "7.2.3.7755"
-baselineprofile = "1.5.0-alpha03"
+baselineprofile = "1.5.0-alpha04"
 timber = "5.0.1"
 treessence = "1.1.2"
 rqesUiSDK = "0.3.6"
@@ -132,8 +133,8 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 koin-test = { group = "io.insert-koin", name = "koin-android-test", version.ref = "koin" }
+koin-workmanager = { group = "io.insert-koin", name = "koin-androidx-workmanager", version.ref = "koin" }
 koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koinAnnotations" }
-koin-ksp = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koinAnnotations" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 mockito-kotlin = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoKotlin" }
 ktor-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
@@ -184,3 +185,4 @@ kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 sonar = { id = "org.sonarqube", version.ref = "sonar" }
 baselineprofile = { id = "androidx.baselineprofile", version.ref = "baselineprofile" }
 androidx-room = { id = "androidx.room", version.ref = "androidxRoom" }
+koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koinPlugin" }

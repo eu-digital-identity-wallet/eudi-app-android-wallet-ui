@@ -25,6 +25,7 @@ class RoomPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
+                apply("com.google.devtools.ksp")
                 apply("androidx.room")
             }
             extensions.configure<RoomExtension> {

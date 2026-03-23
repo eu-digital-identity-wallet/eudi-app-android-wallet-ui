@@ -28,9 +28,7 @@ import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.di.getOrCreateCredentialOfferScope
 import eu.europa.ec.corelogic.controller.IssuanceMethod
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.issuancefeature.interactor.AddDocumentInteractor
 import eu.europa.ec.issuancefeature.interactor.AddDocumentInteractorIssueDocumentsPartialState
 import eu.europa.ec.issuancefeature.interactor.AddDocumentInteractorScopedPartialState
@@ -57,8 +55,8 @@ import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.KoinViewModel
 
 data class State(
     val navigatableAction: ScreenNavigateAction,
@@ -172,7 +170,6 @@ class AddDocumentViewModel(
             }
 
             is Event.OnDynamicPresentation -> {
-                getOrCreatePresentationScope()
                 setEffect {
                     Effect.Navigation.SwitchScreen(
                         generateComposableNavigationLink(
@@ -469,7 +466,6 @@ class AddDocumentViewModel(
     private fun handleDeepLink(uri: Uri, action: DeepLinkAction) {
         when (action.type) {
             DeepLinkType.CREDENTIAL_OFFER -> {
-                getOrCreateCredentialOfferScope()
                 setEffect {
                     Effect.Navigation.OpenDeepLinkAction(
                         deepLinkUri = uri,

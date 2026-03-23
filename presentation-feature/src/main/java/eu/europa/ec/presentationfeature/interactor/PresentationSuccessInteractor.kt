@@ -23,6 +23,7 @@ import eu.europa.ec.commonfeature.extension.toExpandableListItems
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -50,25 +51,53 @@ sealed class PresentationSuccessInteractorGetUiItemsPartialState {
 }
 
 interface PresentationSuccessInteractor {
+    val presentationScopeId: String
     val initiatorRoute: String
     val redirectUri: URI?
     fun getUiItems(): Flow<PresentationSuccessInteractorGetUiItemsPartialState>
     fun stopPresentation()
+    fun setScopeId(scopeId: String)
 }
 
 class PresentationSuccessInteractorImpl(
-    private val walletCorePresentationController: WalletCorePresentationController,
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider
 ) : PresentationSuccessInteractor {
 
+    constructor(
+        walletCoreDocumentsController: WalletCoreDocumentsController,
+        resourceProvider: ResourceProvider,
+        uuidProvider: UuidProvider,
+        walletCorePresentationController: WalletCorePresentationController
+    ) : this(walletCoreDocumentsController, resourceProvider, uuidProvider) {
+        _walletCorePresentationController = walletCorePresentationController
+    }
+
+    private lateinit var _walletCorePresentationController: WalletCorePresentationController
+    override var presentationScopeId: String = "DefaultPresentationScopeId"
+
+    private val walletCorePresentationController: WalletCorePresentationController
+        get() {
+            if (!::_walletCorePresentationController.isInitialized) {
+                _walletCorePresentationController =
+                    getOrCreatePresentationScope(presentationScopeId).get()
+            }
+            return _walletCorePresentationController
+        }
+
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override val initiatorRoute: String = walletCorePresentationController.initiatorRoute
+    override val initiatorRoute: String
+        get() = walletCorePresentationController.initiatorRoute
 
-    override val redirectUri: URI? = walletCorePresentationController.redirectUri
+    override val redirectUri: URI?
+        get() = walletCorePresentationController.redirectUri
+
+    override fun setScopeId(scopeId: String) {
+        presentationScopeId = scopeId
+    }
 
     override fun getUiItems(): Flow<PresentationSuccessInteractorGetUiItemsPartialState> {
         return flow {
