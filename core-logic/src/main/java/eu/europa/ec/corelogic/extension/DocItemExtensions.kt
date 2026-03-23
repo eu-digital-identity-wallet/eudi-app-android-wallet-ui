@@ -31,14 +31,10 @@ fun DocItem.toClaimPath(): ClaimPathDomain {
             type = ClaimType.MsoMdoc(namespace = this.namespace)
         )
 
-        is SdJwtVcItem -> {
-            @Suppress("UNCHECKED_CAST")
-            val elements = this.path as List<ClaimPathElement>
-            ClaimPathDomain(
-                value = elements,
-                type = ClaimType.SdJwtVc
-            )
-        }
+        is SdJwtVcItem -> ClaimPathDomain(
+            value = this.path.value,
+            type = ClaimType.SdJwtVc
+        )
 
         else -> ClaimPathDomain(
             value = emptyList(),
