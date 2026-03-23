@@ -378,6 +378,8 @@ class TestProximityQRInteractor {
         // Then
         verify(walletCorePresentationController, times(1))
             .setConfig(PresentationControllerConfig.Ble(initiator))
+
+        assertEquals(interactor.presentationScopeId, "ble_presentation_scope_id")
     }
 
     @Test
@@ -394,6 +396,8 @@ class TestProximityQRInteractor {
         // Then
         verify(walletCorePresentationController, times(1))
             .setConfig(PresentationControllerConfig.OpenId4VP(uri = "", initiator))
+
+        assertEquals(interactor.presentationScopeId, "vp_presentation_scope_id")
     }
     //endregion
 

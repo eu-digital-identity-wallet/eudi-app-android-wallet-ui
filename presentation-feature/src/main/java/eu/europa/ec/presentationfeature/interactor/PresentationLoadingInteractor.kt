@@ -24,6 +24,7 @@ import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.SendRequestedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.AuthenticationData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -46,6 +47,7 @@ sealed class PresentationLoadingSendRequestedDocumentPartialState {
 }
 
 interface PresentationLoadingInteractor {
+    val presentationScopeId: String
     fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState>
     fun sendRequestedDocuments(): PresentationLoadingSendRequestedDocumentPartialState
     fun handleUserAuthentication(
@@ -54,12 +56,36 @@ interface PresentationLoadingInteractor {
         notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult,
     )
+
+    fun setScopeId(scopeId: String)
 }
 
 class PresentationLoadingInteractorImpl(
-    private val walletCorePresentationController: WalletCorePresentationController,
     private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
 ) : PresentationLoadingInteractor {
+
+    constructor(
+        deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
+        walletCorePresentationController: WalletCorePresentationController
+    ) : this(deviceAuthenticationInteractor) {
+        _walletCorePresentationController = walletCorePresentationController
+    }
+
+    private lateinit var _walletCorePresentationController: WalletCorePresentationController
+    override var presentationScopeId: String = "DefaultPresentationScopeId"
+
+    private val walletCorePresentationController: WalletCorePresentationController
+        get() {
+            if (!::_walletCorePresentationController.isInitialized) {
+                _walletCorePresentationController =
+                    getOrCreatePresentationScope(presentationScopeId).get()
+            }
+            return _walletCorePresentationController
+        }
+
+    override fun setScopeId(scopeId: String) {
+        presentationScopeId = scopeId
+    }
 
     override fun observeResponse(): Flow<PresentationLoadingObserveResponsePartialState> =
         walletCorePresentationController.observeSentDocumentsRequest().mapNotNull { response ->

@@ -18,13 +18,12 @@ package eu.europa.ec.proximityfeature.interactor
 
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -46,24 +45,46 @@ sealed class ProximityRequestInteractorPartialState {
 }
 
 interface ProximityRequestInteractor {
+    val presentationScopeId: String
     fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState>
     fun stopPresentation()
     fun updateRequestedDocuments(items: List<RequestDocumentItemUi>)
-    fun setConfig(config: RequestUriConfig)
+    fun setScopeId(scopeId: String)
 }
 
 class ProximityRequestInteractorImpl(
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider,
-    private val walletCorePresentationController: WalletCorePresentationController,
     private val walletCoreDocumentsController: WalletCoreDocumentsController
 ) : ProximityRequestInteractor {
+
+    constructor(
+        resourceProvider: ResourceProvider,
+        uuidProvider: UuidProvider,
+        walletCoreDocumentsController: WalletCoreDocumentsController,
+        walletCorePresentationController: WalletCorePresentationController
+    ) : this(resourceProvider, uuidProvider, walletCoreDocumentsController) {
+        _walletCorePresentationController = walletCorePresentationController
+    }
+
+    private lateinit var _walletCorePresentationController: WalletCorePresentationController
+    override var presentationScopeId: String = "DefaultPresentationScopeId"
+
+
+    private val walletCorePresentationController: WalletCorePresentationController
+        get() {
+            if (!::_walletCorePresentationController.isInitialized) {
+                _walletCorePresentationController =
+                    getOrCreatePresentationScope(presentationScopeId).get()
+            }
+            return _walletCorePresentationController
+        }
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun setConfig(config: RequestUriConfig) {
-        walletCorePresentationController.setConfig(config.toDomainConfig())
+    override fun setScopeId(scopeId: String) {
+        presentationScopeId = scopeId
     }
 
     override fun getRequestDocuments(): Flow<ProximityRequestInteractorPartialState> =

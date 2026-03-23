@@ -290,6 +290,20 @@ class TestProximityLoadingInteractor {
 
     //endregion
 
+    //region setScopeId
+    @Test
+    fun `Given a scopeId, When setScopeId is called, Then Verify presentationScopeId is set to the provided scopeId`() {
+        // Given
+        val mockScopeId = "mockScopeId"
+
+        // When
+        interactor.setScopeId(mockScopeId)
+
+        // Then
+        assertEquals(interactor.presentationScopeId, mockScopeId)
+    }
+    //endregion
+
     //region helper functions
     private fun mockWalletCorePresentationControllerEventEmission(event: WalletCorePartialState) {
         whenever(walletCorePresentationController.observeSentDocumentsRequest())

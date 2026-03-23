@@ -22,6 +22,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.config.toDomainConfig
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -36,6 +37,7 @@ sealed class ProximityQRPartialState {
 }
 
 interface ProximityQRInteractor {
+    val presentationScopeId: String
     fun startQrEngagement(): Flow<ProximityQRPartialState>
     fun toggleNfcEngagement(
         componentActivity: ComponentActivity,
@@ -48,13 +50,32 @@ interface ProximityQRInteractor {
 
 class ProximityQRInteractorImpl(
     private val resourceProvider: ResourceProvider,
-    private val walletCorePresentationController: WalletCorePresentationController
 ) : ProximityQRInteractor {
+
+    constructor(
+        resourceProvider: ResourceProvider,
+        walletCorePresentationController: WalletCorePresentationController
+    ) : this(resourceProvider) {
+        _walletCorePresentationController = walletCorePresentationController
+    }
+
+    private lateinit var _walletCorePresentationController: WalletCorePresentationController
+    override var presentationScopeId: String = "DefaultPresentationScopeId"
+
+    private val walletCorePresentationController: WalletCorePresentationController
+        get() {
+            if (!::_walletCorePresentationController.isInitialized) {
+                _walletCorePresentationController =
+                    getOrCreatePresentationScope(presentationScopeId).get()
+            }
+            return _walletCorePresentationController
+        }
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
     override fun setConfig(config: RequestUriConfig) {
+        presentationScopeId = config.presentationScopeId
         walletCorePresentationController.setConfig(config.toDomainConfig())
     }
 

@@ -21,7 +21,6 @@ import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.addOrReplace
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.extension.toUri
-import eu.europa.ec.corelogic.di.WalletPresentationScope
 import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.corelogic.util.EudiWalletListenerWrapper
 import eu.europa.ec.eudi.iso18013.transfer.response.DisclosedDocument
@@ -48,8 +47,6 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Scope
-import org.koin.core.annotation.Scoped
 import java.net.URI
 
 sealed class PresentationControllerConfig(val initiatorRoute: String) {
@@ -194,8 +191,6 @@ interface WalletCorePresentationController {
     fun observeSentDocumentsRequest(): Flow<WalletCorePartialState>
 }
 
-@Scope(WalletPresentationScope::class)
-@Scoped
 class WalletCorePresentationControllerImpl(
     private val eudiWallet: EudiWallet,
     private val resourceProvider: ResourceProvider,

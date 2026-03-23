@@ -18,7 +18,6 @@ package eu.europa.ec.commonfeature.ui.request
 
 import eu.europa.ec.commonfeature.ui.request.model.DomainDocumentFormat
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.ClaimPathDomain
 import eu.europa.ec.uilogic.component.AppIcons
 import eu.europa.ec.uilogic.component.ListItemTrailingContentDataUi
@@ -43,6 +42,7 @@ data class State(
     val isBottomSheetOpen: Boolean = false,
     val sheetContent: RequestBottomSheetContent = RequestBottomSheetContent.WARNING,
     val hasWarnedUser: Boolean = false,
+    val presentationScopeId: String = "",
 
     val items: List<RequestDocumentItemUi> = emptyList(),
     val noItems: Boolean = false,
@@ -92,13 +92,8 @@ abstract class RequestViewModel : MviViewModel<Event, State, Effect>() {
 
     /**
      * Called during [NavigationType.Pop].
-     *
-     * Kill presentation scope.
-     *
      * */
-    open fun cleanUp() {
-        getOrCreatePresentationScope().close()
-    }
+    open fun cleanUp() {}
 
     open fun updateData(
         updatedItems: List<RequestDocumentItemUi>,

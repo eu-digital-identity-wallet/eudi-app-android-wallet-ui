@@ -17,10 +17,7 @@
 package eu.europa.ec.proximityfeature.interactor
 
 import eu.europa.ec.businesslogic.provider.UuidProvider
-import eu.europa.ec.commonfeature.config.PresentationMode
-import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.transformer.RequestTransformer
-import eu.europa.ec.corelogic.controller.PresentationControllerConfig
 import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
@@ -42,7 +39,6 @@ import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
-import eu.europa.ec.uilogic.navigation.DashboardScreens
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.flow
@@ -666,37 +662,17 @@ class TestProximityRequestInteractor {
     }
     //endregion
 
-    //region setConfig
+    //region setScopeId
     @Test
-    fun `Given a RequestUriConfig with Ble mode, When setConfig is called, Then it calls walletCorePresentationController#setConfig with PresentationControllerConfig_Ble`() {
+    fun `Given a scopeId, When setScopeId is called, Then Verify presentationScopeId is set to the provided scopeId`() {
         // Given
-        val initiator = DashboardScreens.Dashboard.screenRoute
-        val config = RequestUriConfig(
-            mode = PresentationMode.Ble(initiator)
-        )
+        val mockScopeId = "mockScopeId"
 
         // When
-        interactor.setConfig(config = config)
+        interactor.setScopeId(mockScopeId)
 
         // Then
-        verify(walletCorePresentationController, times(1))
-            .setConfig(PresentationControllerConfig.Ble(initiator))
-    }
-
-    @Test
-    fun `Given a RequestUriConfig with OpenId4Vp mode, When setConfig is called, Then it calls walletCorePresentationController#setConfig with PresentationControllerConfig_OpenId4Vp`() {
-        // Given
-        val initiator = DashboardScreens.Dashboard.screenRoute
-        val config = RequestUriConfig(
-            mode = PresentationMode.OpenId4Vp(uri = "", initiator)
-        )
-
-        // When
-        interactor.setConfig(config = config)
-
-        // Then
-        verify(walletCorePresentationController, times(1))
-            .setConfig(PresentationControllerConfig.OpenId4VP(uri = "", initiator))
+        assertEquals(interactor.presentationScopeId, mockScopeId)
     }
     //endregion
 

@@ -408,6 +408,8 @@ class TestPresentationRequestInteractor {
         // Then
         verify(walletCorePresentationController, times(1))
             .setConfig(config = requestConfig.toDomainConfig())
+
+        assertEquals(interactor.presentationScopeId, "ble_presentation_scope_id")
     }
     //endregion
 

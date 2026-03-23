@@ -67,9 +67,11 @@ sealed class PresentationScreens {
         parameters = "?requestUriConfig={requestUriConfig}"
     )
 
-    data object PresentationLoading : Screen(name = "PRESENTATION_LOADING")
+    data object PresentationLoading :
+        Screen(name = "PRESENTATION_LOADING", parameters = "?scopeId={scopeId}")
 
-    data object PresentationSuccess : Screen(name = "PRESENTATION_SUCCESS")
+    data object PresentationSuccess :
+        Screen(name = "PRESENTATION_SUCCESS", parameters = "?scopeId={scopeId}")
 }
 
 sealed class ProximityScreens {
@@ -80,12 +82,12 @@ sealed class ProximityScreens {
 
     data object Request : Screen(
         name = "PROXIMITY_REQUEST",
-        parameters = "?requestUriConfig={requestUriConfig}"
+        parameters = "?scopeId={scopeId}"
     )
 
-    data object Loading : Screen(name = "PROXIMITY_LOADING")
+    data object Loading : Screen(name = "PROXIMITY_LOADING", parameters = "?scopeId={scopeId}")
 
-    data object Success : Screen(name = "PROXIMITY_SUCCESS")
+    data object Success : Screen(name = "PROXIMITY_SUCCESS", parameters = "?scopeId={scopeId}")
 }
 
 sealed class IssuanceScreens {

@@ -25,6 +25,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -40,8 +41,8 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class PresentationRequestViewModel(
@@ -77,7 +78,10 @@ class PresentationRequestViewModel(
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
-                                navigationType = NavigationType.PushScreen(PresentationScreens.PresentationLoading),
+                                navigationType = NavigationType.PushScreen(
+                                    screen = PresentationScreens.PresentationLoading,
+                                    arguments = mapOf("scopeId" to viewState.value.presentationScopeId)
+                                ),
                             ),
                             onBackNavigationConfig = OnBackNavigationConfig(
                                 onBackNavigation = ConfigNavigation(
@@ -94,18 +98,20 @@ class PresentationRequestViewModel(
     }
 
     override fun doWork() {
-        setState {
-            copy(
-                isLoading = true,
-                error = null
-            )
-        }
 
         val requestUriConfig = uiSerializer.fromBase64(
             requestUriConfigRaw,
             RequestUriConfig::class.java,
             RequestUriConfig.Parser
         ) ?: throw RuntimeException("RequestUriConfig:: is Missing or invalid")
+
+        setState {
+            copy(
+                isLoading = true,
+                error = null,
+                presentationScopeId = requestUriConfig.presentationScopeId
+            )
+        }
 
         interactor.setConfig(requestUriConfig)
 
@@ -182,6 +188,7 @@ class PresentationRequestViewModel(
     override fun cleanUp() {
         super.cleanUp()
         interactor.stopPresentation()
+        getOrCreatePresentationScope(viewState.value.presentationScopeId)
     }
 
     private fun getRelyingPartyData(

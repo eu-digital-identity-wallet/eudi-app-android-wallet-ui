@@ -26,9 +26,7 @@ import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.QrScanFlow
 import eu.europa.ec.commonfeature.config.QrScanUiConfig
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.di.getOrCreateCredentialOfferScope
 import eu.europa.ec.commonfeature.interactor.QrScanInteractor
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.eudi.rqesui.domain.extension.toUriOrEmpty
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
@@ -45,8 +43,8 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.KoinViewModel
 
 private const val MAX_ALLOWED_FAILED_SCANS = 5
 
@@ -209,7 +207,6 @@ class QrScanViewModel(
 
     private fun navigateToPresentationRequest(scanResult: String) {
         setEffect {
-            getOrCreatePresentationScope()
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(
                     screen = PresentationScreens.PresentationRequest,
@@ -232,7 +229,6 @@ class QrScanViewModel(
     }
 
     private fun navigateToDocumentOffer(scanResult: String, issuanceFlowType: IssuanceFlowType) {
-        getOrCreateCredentialOfferScope()
         setEffect {
             Effect.Navigation.SwitchScreen(
                 screenRoute = generateComposableNavigationLink(

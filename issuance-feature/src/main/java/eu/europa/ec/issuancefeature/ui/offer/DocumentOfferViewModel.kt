@@ -26,10 +26,8 @@ import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.di.CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID
-import eu.europa.ec.commonfeature.di.getOrCreateCredentialOfferScope
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.issuancefeature.di.getOrCreateCredentialOfferScope
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
 import eu.europa.ec.issuancefeature.interactor.ResolveDocumentOfferInteractorPartialState
@@ -54,9 +52,8 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.ScopeId
+import org.koin.core.annotation.KoinViewModel
 import java.net.URI
 
 data class State(
@@ -107,11 +104,29 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class DocumentOfferViewModel(
-    @ScopeId(name = CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID) private val documentOfferInteractor: DocumentOfferInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
     @InjectedParam private val offerSerializedConfig: String,
 ) : MviViewModel<Event, State, Effect>() {
+
+    constructor(
+        resourceProvider: ResourceProvider,
+        uiSerializer: UiSerializer,
+        offerSerializedConfig: String,
+        documentOfferInteractor: DocumentOfferInteractor
+    ) : this(resourceProvider, uiSerializer, offerSerializedConfig) {
+        _documentOfferInteractor = documentOfferInteractor
+    }
+
+    private lateinit var _documentOfferInteractor: DocumentOfferInteractor
+
+    private val documentOfferInteractor: DocumentOfferInteractor
+        get() {
+            if (!::_documentOfferInteractor.isInitialized) {
+                _documentOfferInteractor = getOrCreateCredentialOfferScope().get()
+            }
+            return _documentOfferInteractor
+        }
 
     override fun setInitialState(): State {
         val deserializedOfferUiConfig = uiSerializer.fromBase64(
@@ -174,7 +189,6 @@ class DocumentOfferViewModel(
             }
 
             is Event.OnDynamicPresentation -> {
-                getOrCreatePresentationScope()
                 setEffect {
                     Effect.Navigation.SwitchScreen(
                         generateComposableNavigationLink(

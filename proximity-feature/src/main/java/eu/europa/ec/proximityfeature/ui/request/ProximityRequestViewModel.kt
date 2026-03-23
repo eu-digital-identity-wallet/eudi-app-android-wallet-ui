@@ -21,10 +21,10 @@ import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
-import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
+import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -40,15 +40,15 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class ProximityRequestViewModel(
     private val interactor: ProximityRequestInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
-    @InjectedParam private val requestUriConfigRaw: String
+    @InjectedParam private val presentationScopeId: String
 ) : RequestViewModel() {
 
     override fun getHeaderConfig(): ContentHeaderConfig {
@@ -77,7 +77,10 @@ class ProximityRequestViewModel(
                             isPreAuthorization = false,
                             shouldInitializeBiometricAuthOnCreate = true,
                             onSuccessNavigation = ConfigNavigation(
-                                navigationType = NavigationType.PushScreen(ProximityScreens.Loading)
+                                navigationType = NavigationType.PushScreen(
+                                    screen = ProximityScreens.Loading,
+                                    arguments = mapOf("scopeId" to presentationScopeId)
+                                )
                             ),
                             onBackNavigationConfig = OnBackNavigationConfig(
                                 onBackNavigation = ConfigNavigation(
@@ -94,22 +97,19 @@ class ProximityRequestViewModel(
     }
 
     override fun doWork() {
+
         setState {
             copy(
                 isLoading = true,
-                error = null
+                error = null,
+                presentationScopeId = presentationScopeId
             )
         }
 
-        val requestUriConfig = uiSerializer.fromBase64(
-            requestUriConfigRaw,
-            RequestUriConfig::class.java,
-            RequestUriConfig.Parser
-        ) ?: throw RuntimeException("RequestUriConfig:: is Missing or invalid")
-
-        interactor.setConfig(requestUriConfig)
-
         viewModelJob = viewModelScope.launch {
+
+            interactor.setScopeId(presentationScopeId)
+
             interactor.getRequestDocuments().collect { response ->
                 when (response) {
                     is ProximityRequestInteractorPartialState.Failure -> {
@@ -182,6 +182,7 @@ class ProximityRequestViewModel(
     override fun cleanUp() {
         super.cleanUp()
         interactor.stopPresentation()
+        getOrCreatePresentationScope(presentationScopeId)
     }
 
     private fun getRelyingPartyData(

@@ -21,9 +21,7 @@ import android.net.Uri
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.commonfeature.di.getOrCreateCredentialOfferScope
 import eu.europa.ec.commonfeature.model.PinFlow
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.RevokedDocumentDataDomain
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
 import eu.europa.ec.dashboardfeature.ui.dashboard.model.SideMenuItemUi
@@ -46,7 +44,7 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
-import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.KoinViewModel
 
 data class State(
 
@@ -264,7 +262,6 @@ class DashboardViewModel(
             hasDeepLink(uri)?.let {
                 val arguments: String? = when (it.type) {
                     DeepLinkType.OPENID4VP -> {
-                        getOrCreatePresentationScope()
                         generateComposableArguments(
                             mapOf(
                                 RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
@@ -281,7 +278,6 @@ class DashboardViewModel(
                     }
 
                     DeepLinkType.CREDENTIAL_OFFER -> {
-                        getOrCreateCredentialOfferScope()
                         generateComposableArguments(
                             mapOf(
                                 OfferUiConfig.serializedKeyName to uiSerializer.toBase64(

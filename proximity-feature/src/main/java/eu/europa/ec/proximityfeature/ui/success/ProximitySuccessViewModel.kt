@@ -25,11 +25,13 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
+import org.koin.core.annotation.InjectedParam
+import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class ProximitySuccessViewModel(
     private val interactor: ProximitySuccessInteractor,
+    @InjectedParam private val presentationScopeId: String
 ) : DocumentSuccessViewModel() {
 
     override fun getNextScreenConfigNavigation(): ConfigNavigation {
@@ -46,6 +48,9 @@ class ProximitySuccessViewModel(
         }
 
         viewModelScope.launch {
+
+            interactor.setScopeId(presentationScopeId)
+
             interactor.getUiItems().collect { response ->
                 when (response) {
                     is ProximitySuccessInteractorGetUiItemsPartialState.Failed -> {
@@ -73,6 +78,6 @@ class ProximitySuccessViewModel(
     override fun onCleared() {
         super.onCleared()
         interactor.stopPresentation()
-        getOrCreatePresentationScope().close()
+        getOrCreatePresentationScope(presentationScopeId).close()
     }
 }

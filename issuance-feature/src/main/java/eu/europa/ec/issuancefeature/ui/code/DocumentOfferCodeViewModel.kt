@@ -20,8 +20,8 @@ import android.content.Context
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
-import eu.europa.ec.commonfeature.di.CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID
 import eu.europa.ec.eudi.wallet.document.DocumentId
+import eu.europa.ec.issuancefeature.di.getOrCreateCredentialOfferScope
 import eu.europa.ec.issuancefeature.interactor.DocumentOfferInteractor
 import eu.europa.ec.issuancefeature.interactor.IssueDocumentsInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -37,9 +37,8 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import kotlinx.coroutines.launch
-import org.koin.android.annotation.KoinViewModel
 import org.koin.core.annotation.InjectedParam
-import org.koin.core.annotation.ScopeId
+import org.koin.core.annotation.KoinViewModel
 
 private typealias PinCode = String
 
@@ -72,11 +71,29 @@ sealed class Effect : ViewSideEffect {
 
 @KoinViewModel
 class DocumentOfferCodeViewModel(
-    @ScopeId(name = CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID) private val documentOfferInteractor: DocumentOfferInteractor,
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
     @InjectedParam private val offerCodeSerializedConfig: String
 ) : MviViewModel<Event, State, Effect>() {
+
+    constructor(
+        resourceProvider: ResourceProvider,
+        uiSerializer: UiSerializer,
+        offerCodeSerializedConfig: String,
+        documentOfferInteractor: DocumentOfferInteractor
+    ) : this(resourceProvider, uiSerializer, offerCodeSerializedConfig) {
+        _documentOfferInteractor = documentOfferInteractor
+    }
+
+    private lateinit var _documentOfferInteractor: DocumentOfferInteractor
+
+    private val documentOfferInteractor: DocumentOfferInteractor
+        get() {
+            if (!::_documentOfferInteractor.isInitialized) {
+                _documentOfferInteractor = getOrCreateCredentialOfferScope().get()
+            }
+            return _documentOfferInteractor
+        }
 
     override fun setInitialState(): State {
         val deserializedOfferCodeUiConfig = uiSerializer.fromBase64(
