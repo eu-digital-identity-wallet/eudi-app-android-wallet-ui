@@ -181,7 +181,7 @@ class ProximityQRViewModel(
      * */
     private fun cleanUp() {
         unsubscribe()
-        getOrCreatePresentationScope(viewState.value.presentationScopeId).close()
         interactor.cancelTransfer()
+        getOrCreatePresentationScope(viewState.value.presentationScopeId).close()
     }
 }

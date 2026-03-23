@@ -51,7 +51,9 @@ class PresentationSuccessViewModel(
         }
 
         viewModelScope.launch {
+
             interactor.setScopeId(presentationScopeId)
+
             interactor.getUiItems().collect { response ->
                 when (response) {
                     is PresentationSuccessInteractorGetUiItemsPartialState.Failed -> {
