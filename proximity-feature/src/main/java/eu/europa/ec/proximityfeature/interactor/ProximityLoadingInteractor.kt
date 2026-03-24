@@ -21,10 +21,11 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvai
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
+import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractor
+import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractorDelegate
 import eu.europa.ec.corelogic.controller.SendRequestedDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCorePartialState
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.model.AuthenticationData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
@@ -44,8 +45,7 @@ sealed class ProximityLoadingSendRequestedDocumentPartialState {
     data object Success : ProximityLoadingSendRequestedDocumentPartialState()
 }
 
-interface ProximityLoadingInteractor {
-    val presentationScopeId: String
+interface ProximityLoadingInteractor : ScopedPresentationInteractor {
     fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState>
     fun sendRequestedDocuments(): ProximityLoadingSendRequestedDocumentPartialState
     fun handleUserAuthentication(
@@ -54,36 +54,13 @@ interface ProximityLoadingInteractor {
         notifyOnAuthenticationFailure: Boolean,
         resultHandler: DeviceAuthenticationResult,
     )
-
-    fun setScopeId(scopeId: String)
 }
 
 class ProximityLoadingInteractorImpl(
     private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
-) : ProximityLoadingInteractor {
-
-    constructor(
-        deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
-        walletCorePresentationController: WalletCorePresentationController
-    ) : this(deviceAuthenticationInteractor) {
-        _walletCorePresentationController = walletCorePresentationController
-    }
-
-    private lateinit var _walletCorePresentationController: WalletCorePresentationController
-    override var presentationScopeId: String = "DefaultPresentationScopeId"
-
-    private val walletCorePresentationController: WalletCorePresentationController
-        get() {
-            if (!::_walletCorePresentationController.isInitialized) {
-                _walletCorePresentationController =
-                    getOrCreatePresentationScope(presentationScopeId).get()
-            }
-            return _walletCorePresentationController
-        }
-
-    override fun setScopeId(scopeId: String) {
-        presentationScopeId = scopeId
-    }
+    walletCorePresentationController: WalletCorePresentationController? = null
+) : ProximityLoadingInteractor,
+    ScopedPresentationInteractorDelegate(walletCorePresentationController) {
 
     override fun observeResponse(): Flow<ProximityLoadingObserveResponsePartialState> =
         walletCorePresentationController.observeSentDocumentsRequest().mapNotNull { response ->

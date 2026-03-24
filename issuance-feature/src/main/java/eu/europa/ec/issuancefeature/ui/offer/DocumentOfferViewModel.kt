@@ -107,26 +107,16 @@ class DocumentOfferViewModel(
     private val resourceProvider: ResourceProvider,
     private val uiSerializer: UiSerializer,
     @InjectedParam private val offerSerializedConfig: String,
+    documentOfferInteractor: DocumentOfferInteractor? = null
 ) : MviViewModel<Event, State, Effect>() {
 
-    constructor(
-        resourceProvider: ResourceProvider,
-        uiSerializer: UiSerializer,
-        offerSerializedConfig: String,
-        documentOfferInteractor: DocumentOfferInteractor
-    ) : this(resourceProvider, uiSerializer, offerSerializedConfig) {
-        _documentOfferInteractor = documentOfferInteractor
-    }
-
-    private lateinit var _documentOfferInteractor: DocumentOfferInteractor
+    private var _documentOfferInteractor: DocumentOfferInteractor? = documentOfferInteractor
 
     private val documentOfferInteractor: DocumentOfferInteractor
-        get() {
-            if (!::_documentOfferInteractor.isInitialized) {
-                _documentOfferInteractor = getOrCreateCredentialOfferScope().get()
+        get() = _documentOfferInteractor
+            ?: getOrCreateCredentialOfferScope().get<DocumentOfferInteractor>().also {
+                _documentOfferInteractor = it
             }
-            return _documentOfferInteractor
-        }
 
     override fun setInitialState(): State {
         val deserializedOfferUiConfig = uiSerializer.fromBase64(
