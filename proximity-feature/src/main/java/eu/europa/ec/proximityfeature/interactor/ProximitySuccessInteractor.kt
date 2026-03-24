@@ -20,10 +20,11 @@ import eu.europa.ec.businesslogic.extension.ifEmptyOrNull
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.extension.toExpandableListItems
+import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractor
+import eu.europa.ec.commonfeature.interactor.ScopedPresentationInteractorDelegate
 import eu.europa.ec.commonfeature.util.transformPathsToDomainClaims
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
 import eu.europa.ec.corelogic.extension.toClaimPath
 import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.resourceslogic.R
@@ -49,46 +50,21 @@ sealed class ProximitySuccessInteractorGetUiItemsPartialState {
     ) : ProximitySuccessInteractorGetUiItemsPartialState()
 }
 
-interface ProximitySuccessInteractor {
-    val presentationScopeId: String
+interface ProximitySuccessInteractor : ScopedPresentationInteractor {
     fun getUiItems(): Flow<ProximitySuccessInteractorGetUiItemsPartialState>
     fun stopPresentation()
-    fun setScopeId(scopeId: String)
 }
 
 class ProximitySuccessInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider,
-) : ProximitySuccessInteractor {
-
-    constructor(
-        walletCoreDocumentsController: WalletCoreDocumentsController,
-        resourceProvider: ResourceProvider,
-        uuidProvider: UuidProvider,
-        walletCorePresentationController: WalletCorePresentationController
-    ) : this(walletCoreDocumentsController, resourceProvider, uuidProvider) {
-        _walletCorePresentationController = walletCorePresentationController
-    }
-
-    private lateinit var _walletCorePresentationController: WalletCorePresentationController
-    override var presentationScopeId: String = "DefaultPresentationScopeId"
-
-    private val walletCorePresentationController: WalletCorePresentationController
-        get() {
-            if (!::_walletCorePresentationController.isInitialized) {
-                _walletCorePresentationController =
-                    getOrCreatePresentationScope(presentationScopeId).get()
-            }
-            return _walletCorePresentationController
-        }
+    walletCorePresentationController: WalletCorePresentationController? = null
+) : ProximitySuccessInteractor,
+    ScopedPresentationInteractorDelegate(walletCorePresentationController) {
 
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
-
-    override fun setScopeId(scopeId: String) {
-        presentationScopeId = scopeId
-    }
 
     override fun getUiItems(): Flow<ProximitySuccessInteractorGetUiItemsPartialState> {
         return flow {
