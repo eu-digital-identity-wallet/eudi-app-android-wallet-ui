@@ -16,7 +16,6 @@
 
 package eu.europa.ec.proximityfeature.router
 
-import ProximityRequestScreen
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
@@ -28,6 +27,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.proximityfeature.BuildConfig
 import eu.europa.ec.proximityfeature.ui.loading.ProximityLoadingScreen
 import eu.europa.ec.proximityfeature.ui.qr.ProximityQRScreen
+import eu.europa.ec.proximityfeature.ui.request.ProximityRequestScreen
 import eu.europa.ec.proximityfeature.ui.success.ProximitySuccessScreen
 import eu.europa.ec.uilogic.navigation.ModuleRoute
 import eu.europa.ec.uilogic.navigation.ProximityScreens
