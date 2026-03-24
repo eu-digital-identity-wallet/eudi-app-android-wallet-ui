@@ -182,7 +182,7 @@ class ProximityRequestViewModel(
     override fun cleanUp() {
         super.cleanUp()
         interactor.stopPresentation()
-        getOrCreatePresentationScope(presentationScopeId)
+        getOrCreatePresentationScope(presentationScopeId).close()
     }
 
     private fun getRelyingPartyData(

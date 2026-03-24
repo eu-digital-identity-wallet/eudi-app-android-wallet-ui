@@ -188,7 +188,7 @@ class PresentationRequestViewModel(
     override fun cleanUp() {
         super.cleanUp()
         interactor.stopPresentation()
-        getOrCreatePresentationScope(viewState.value.presentationScopeId)
+        getOrCreatePresentationScope(viewState.value.presentationScopeId).close()
     }
 
     private fun getRelyingPartyData(

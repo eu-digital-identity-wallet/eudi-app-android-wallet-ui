@@ -67,7 +67,9 @@ class PresentationLoadingViewModel(
     private fun getNextScreen(): String {
         return generateComposableNavigationLink(
             screen = PresentationScreens.PresentationSuccess,
-            arguments = generateComposableArguments(mapOf("scopeId" to presentationScopeId))
+            arguments = generateComposableArguments(
+                mapOf("scopeId" to presentationScopeId)
+            )
         )
     }
 
@@ -75,7 +77,9 @@ class PresentationLoadingViewModel(
 
     override fun doWork(context: Context) {
         viewModelScope.launch {
+
             interactor.setScopeId(presentationScopeId)
+
             interactor.observeResponse().collect {
                 when (it) {
                     is PresentationLoadingObserveResponsePartialState.Failure -> {

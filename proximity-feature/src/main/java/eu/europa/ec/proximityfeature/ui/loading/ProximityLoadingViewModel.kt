@@ -66,7 +66,7 @@ class ProximityLoadingViewModel(
 
     private fun getNextScreen(): String {
         return generateComposableNavigationLink(
-            screen = ProximityScreens.Success.screenRoute,
+            screen = ProximityScreens.Success,
             arguments = generateComposableArguments(
                 mapOf("scopeId" to presentationScopeId)
             )
