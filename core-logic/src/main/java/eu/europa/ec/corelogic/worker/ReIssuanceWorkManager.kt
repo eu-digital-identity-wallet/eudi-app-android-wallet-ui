@@ -26,7 +26,6 @@ import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import org.koin.android.annotation.KoinWorker
 
@@ -45,8 +44,6 @@ class ReIssuanceWorkManager(
 
     override suspend fun doWork(): Result {
 
-        delay(10000L)
-
         try {
 
             val failed = mutableListOf<String>()
@@ -63,7 +60,7 @@ class ReIssuanceWorkManager(
                 .filter { credential ->
 
                     val belowMinCount =
-                        credential.credentialsCount() > config.minNumberOfCredentials
+                        credential.credentialsCount() <= config.minNumberOfCredentials
 
                     val expiresWithinThreshold =
                         credential.getValidUntil()
@@ -82,25 +79,21 @@ class ReIssuanceWorkManager(
 
                     when (state) {
                         is IssueDocumentsPartialState.DeferredSuccess -> {
-                            val test = state.deferredDocuments.keys
-                            print(test)
                             succeed.addAll(state.deferredDocuments.keys)
                         }
+
                         is IssueDocumentsPartialState.PartialSuccess -> {
-                            val test = state.documentIds
-                            print(test)
                             succeed.addAll(state.documentIds)
                         }
+
                         is IssueDocumentsPartialState.Success -> {
-                            val test = state.documentIds
-                            print(test)
                             succeed.addAll(state.documentIds)
                         }
+
                         is IssueDocumentsPartialState.Failure -> {
-                            val test = document.id
-                            print(test)
                             failed.add(document.id)
                         }
+
                         is IssueDocumentsPartialState.UserAuthRequired -> {
                             state.resultHandler.onAuthenticationFailure
                             failed.add(document.id)
@@ -116,9 +109,6 @@ class ReIssuanceWorkManager(
                 removeFailedFromStorage(succeed)
                 notifyDocumentsList()
             }
-
-            val test = failedReIssuedDocumentDao.retrieveAll()
-            print(test)
 
             return Result.success()
         } catch (_: Exception) {
