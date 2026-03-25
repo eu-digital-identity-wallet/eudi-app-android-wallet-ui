@@ -30,10 +30,12 @@ import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
  * @property documentSpecificRules A map where keys are [eu.europa.ec.corelogic.model.DocumentIdentifier]s and values are
  *                                  [DocumentIssuanceRule]s, defining specific rules for
  *                                  particular document types.
+ * @property reissuanceRule defining rules for automated document re-issuance background operation.
  */
 data class DocumentIssuanceConfig(
     val defaultRule: DocumentIssuanceRule,
-    val documentSpecificRules: Map<DocumentIdentifier, DocumentIssuanceRule>
+    val documentSpecificRules: Map<DocumentIdentifier, DocumentIssuanceRule>,
+    val reissuanceRule: ReIssuanceRule
 ) {
 
     /**
@@ -63,4 +65,15 @@ data class DocumentIssuanceConfig(
 data class DocumentIssuanceRule(
     val policy: CredentialPolicy,
     val numberOfCredentials: Int,
+)
+
+/**
+ * Represents a rule for the re-issuance of a document
+ *
+ * @property minNumberOfCredentials Minimum number of instances remaining.
+ * @property minExpirationHours Minimum number of hours remaining before expiration.
+ */
+data class ReIssuanceRule(
+    val minNumberOfCredentials: Int,
+    val minExpirationHours: Int
 )

@@ -119,6 +119,10 @@ internal class WalletCoreConfigImpl(
                     policy = CredentialPolicy.OneTimeUse,
                     numberOfCredentials = 10
                 ),
+            ),
+            reissuanceRule = ReIssuanceRule(
+                minNumberOfCredentials = 2,
+                minExpirationHours = 24
             )
         )
 

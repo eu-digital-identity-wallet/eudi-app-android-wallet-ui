@@ -20,6 +20,7 @@ import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.validator.FilterValidator
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.dashboardfeature.interactor.DashboardInteractor
@@ -113,12 +114,14 @@ fun provideDocumentSignInteractor(
 @Factory
 fun provideDocumentDetailsInteractor(
     walletCoreDocumentsController: WalletCoreDocumentsController,
+    deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
     configLogic: ConfigLogic
 ): DocumentDetailsInteractor =
     DocumentDetailsInteractorImpl(
         walletCoreDocumentsController,
+        deviceAuthenticationInteractor,
         resourceProvider,
         uuidProvider,
         configLogic

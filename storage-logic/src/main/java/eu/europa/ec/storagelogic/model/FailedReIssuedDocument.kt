@@ -14,19 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.dashboardfeature.ui.documents.detail.model
+package eu.europa.ec.storagelogic.model
 
-import eu.europa.ec.corelogic.model.ClaimDomain
-import eu.europa.ec.corelogic.model.DocumentIdentifier
-import eu.europa.ec.eudi.wallet.document.DocumentId
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-data class DocumentDetailsDomain(
-    val docName: String,
-    val docId: DocumentId,
-    val issuerId: String,
-    val documentConfigId: String,
-    val documentIdentifier: DocumentIdentifier,
-    val documentClaims: List<ClaimDomain>,
-    val documentIssuanceDate: String,
-    val documentExpirationDate: String?,
+@Entity(tableName = "failedReIssuedDocuments")
+data class FailedReIssuedDocument(
+    @PrimaryKey
+    val identifier: String
 )
