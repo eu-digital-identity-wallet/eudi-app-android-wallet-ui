@@ -280,6 +280,7 @@ private fun IssuerDetailsCardPreview() {
             mutableStateOf(false)
         }
         val issuerName = "Hellenic Government"
+        val issuerId = "issuerId"
         val issuedState = IssuerDetailsCardDataUi.DocumentState.Issued(
             issuanceDate = "16 February 2024 - 13:18",
             expirationDate = "22 March 2030"

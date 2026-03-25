@@ -168,8 +168,8 @@ interface WalletCoreConfig {
     /**
      * Configuration for document issuance, including default rules and specific overrides.
      *
-     * This property defines the behavior for how many credentials of each document type are issued
-     * and their usage policy (e.g., rotate use, one-time use).
+     * This property defines the behavior for how many credentials of each document type are issued,
+     * the background re-issuance policy and their usage policy (e.g., rotate use, one-time use).
      *
      * It consists of:
      * - `defaultRule`: A [DocumentIssuanceRule] that applies to all document types unless overridden.
@@ -177,6 +177,7 @@ interface WalletCoreConfig {
      * - `documentSpecificRules`: A map allowing overrides for specific document types.
      *   - Keys are [DocumentIdentifier] objects representing specific document types.
      *   - Values are [DocumentIssuanceRule] objects defining the policy and number of credentials for that document.
+     * - `reissuanceRule`: A [ReIssuanceRule] that defines the background re-issuance policy.
      *
      * For example:
      * - [DocumentIdentifier.MdocPid] is configured for [CredentialPolicy.OneTimeUse] with 10 credentials.

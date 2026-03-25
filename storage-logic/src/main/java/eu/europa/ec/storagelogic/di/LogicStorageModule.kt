@@ -19,6 +19,7 @@ package eu.europa.ec.storagelogic.di
 import android.content.Context
 import androidx.room.Room
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import eu.europa.ec.storagelogic.service.DatabaseService
@@ -50,3 +51,7 @@ fun provideRevokedDocumentDao(service: DatabaseService): RevokedDocumentDao =
 @Single
 fun provideTransactionLogDao(service: DatabaseService): TransactionLogDao =
     service.transactionLogDao()
+
+@Single
+fun provideFailedReIssuedDocumentDao(service: DatabaseService): FailedReIssuedDocumentDao =
+    service.failedReIssuedDocumentDao()

@@ -29,6 +29,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.extension.exposeTestTagsAsResourceId
+import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkAction
@@ -113,7 +114,8 @@ open class EudiComponentActivity : FragmentActivity() {
             } else if (it.type == DeepLinkType.OPENID4VP
                 && routerHost.userIsLoggedInWithDocuments()
                 && (routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.AddDocument)
-                        || routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.DocumentOffer))
+                        || routerHost.isScreenOnBackStackOrForeground(IssuanceScreens.DocumentOffer)
+                        || routerHost.isScreenOnBackStackOrForeground(DashboardScreens.DocumentDetails))
             ) {
                 handleDeepLinkAction(
                     routerHost.getNavController(),

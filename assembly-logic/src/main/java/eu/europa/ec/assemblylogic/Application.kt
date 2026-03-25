@@ -18,16 +18,19 @@ package eu.europa.ec.assemblylogic
 
 import android.app.Application
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ListenableWorker
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
 import eu.europa.ec.assemblylogic.di.setupKoin
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.worker.ReIssuanceWorkManager
 import eu.europa.ec.corelogic.worker.RevocationWorkManager
 import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import org.koin.android.ext.android.inject
 import org.koin.core.KoinApplication
+import java.time.Duration
 
 class Application : Application() {
 
@@ -39,7 +42,7 @@ class Application : Application() {
         super.onCreate()
         initializeKoin().initializeRqes()
         initializeReporting()
-        initializeRevocationWorkManager()
+        initializeWorkManagers()
     }
 
     private fun KoinApplication.initializeRqes() {
@@ -58,15 +61,31 @@ class Application : Application() {
         analyticsController.initialize(this)
     }
 
-    private fun initializeRevocationWorkManager() {
+    private fun initializeWorkManagers() {
+        enqueuePeriodicWorker(
+            RevocationWorkManager.REVOCATION_WORK_NAME,
+            walletCoreConfig.revocationInterval,
+            RevocationWorkManager::class.java
+        )
+        enqueuePeriodicWorker(
+            ReIssuanceWorkManager.RE_ISSUANCE_WORK_NAME,
+            walletCoreConfig.documentIssuanceConfig.reissuanceRule.backgroundInterval,
+            ReIssuanceWorkManager::class.java
+        )
+    }
 
+    private fun enqueuePeriodicWorker(
+        uniqueName: String,
+        duration: Duration,
+        workerClass: Class<out ListenableWorker>
+    ) {
         val periodicWorkRequest = PeriodicWorkRequest.Builder(
-            workerClass = RevocationWorkManager::class.java,
-            repeatInterval = walletCoreConfig.revocationInterval,
+            workerClass,
+            duration
         ).build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            RevocationWorkManager.REVOCATION_WORK_NAME,
+            uniqueName,
             ExistingPeriodicWorkPolicy.KEEP,
             periodicWorkRequest
         )
