@@ -21,6 +21,7 @@ object CoreActions {
     const val VCI_DYNAMIC_PRESENTATION = "vci.dynamic.presentation.eudi.action"
 
     const val REVOCATION_WORK_REFRESH_ACTION = "revocation.refresh.action"
+    const val RE_ISSUANCE_WORK_REFRESH_ACTION = "reissuance.refresh.action"
     const val REVOCATION_WORK_REFRESH_DETAILS_ACTION = "revocation.refresh_details.action"
     const val REVOCATION_WORK_MESSAGE_ACTION = "revocation.message.action"
     const val REVOCATION_IDS_EXTRA = "revocation.ids.extra"
