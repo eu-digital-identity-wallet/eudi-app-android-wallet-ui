@@ -101,12 +101,13 @@ class ReIssuanceWorkManager(
                     }
                 }
 
+            removeAllFailedFromStorage()
+
             if (failed.isNotEmpty()) {
                 storeFailedToStorage(failed)
             }
 
             if (succeed.isNotEmpty()) {
-                removeFailedFromStorage(succeed)
                 notifyDocumentsList()
             }
 
@@ -124,10 +125,8 @@ class ReIssuanceWorkManager(
     }
 
     @Throws(IllegalArgumentException::class)
-    private suspend fun removeFailedFromStorage(ids: List<String>) {
-        ids.forEach {
-            failedReIssuedDocumentDao.delete(it)
-        }
+    private suspend fun removeAllFailedFromStorage() {
+        failedReIssuedDocumentDao.deleteAll()
     }
 
     private fun notifyDocumentsList() {
