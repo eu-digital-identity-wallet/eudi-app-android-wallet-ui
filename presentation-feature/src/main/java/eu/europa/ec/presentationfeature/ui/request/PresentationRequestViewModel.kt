@@ -25,7 +25,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -198,7 +198,7 @@ class PresentationRequestViewModel(
     override fun cleanUp() {
         super.cleanUp()
         interactor.stopPresentation()
-        getOrCreatePresentationScope(viewState.value.presentationScopeId).close()
+        getOrNullKoinScope(viewState.value.presentationScopeId)?.close()
     }
 
     private fun getRelyingPartyData(

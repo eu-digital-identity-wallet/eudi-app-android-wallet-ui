@@ -17,6 +17,7 @@
 package eu.europa.ec.uilogic.di
 
 import eu.europa.ec.analyticslogic.controller.AnalyticsController
+import eu.europa.ec.businesslogic.di.LogicBusinessModule
 import eu.europa.ec.uilogic.config.ConfigUILogic
 import eu.europa.ec.uilogic.config.ConfigUILogicImpl
 import eu.europa.ec.uilogic.navigation.RouterHost
@@ -29,7 +30,7 @@ import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
-@Module
+@Module(includes = [LogicBusinessModule::class])
 @Configuration
 @ComponentScan("eu.europa.ec.uilogic")
 class LogicUiModule

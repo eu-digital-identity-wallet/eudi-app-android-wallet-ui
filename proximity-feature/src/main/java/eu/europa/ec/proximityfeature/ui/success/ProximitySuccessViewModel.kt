@@ -19,7 +19,7 @@ package eu.europa.ec.proximityfeature.ui.success
 import android.content.Intent
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessViewModel
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximitySuccessInteractorGetUiItemsPartialState
 import eu.europa.ec.uilogic.config.ConfigNavigation
@@ -83,6 +83,6 @@ class ProximitySuccessViewModel(
     override fun onCleared() {
         super.onCleared()
         interactor.stopPresentation()
-        getOrCreatePresentationScope(presentationScopeId).close()
+        getOrNullKoinScope(presentationScopeId)?.close()
     }
 }

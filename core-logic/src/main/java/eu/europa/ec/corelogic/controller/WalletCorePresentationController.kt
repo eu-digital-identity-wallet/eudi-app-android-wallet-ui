@@ -19,9 +19,12 @@ package eu.europa.ec.corelogic.controller
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.addOrReplace
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.extension.toUri
+import eu.europa.ec.corelogic.di.WalletCoreScope
+import eu.europa.ec.corelogic.di.getOrCreateKoinScope
 import eu.europa.ec.corelogic.model.AuthenticationData
 import eu.europa.ec.corelogic.util.EudiWalletListenerWrapper
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
@@ -201,10 +204,29 @@ interface WalletCorePresentationController {
 }
 
 class WalletCorePresentationControllerImpl(
-    private val eudiWallet: EudiWallet,
     private val resourceProvider: ResourceProvider,
+    private val prefKeys: PrefKeys,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    walletCore: EudiWallet? = null,
 ) : WalletCorePresentationController {
+
+    private var _eudiWallet: EudiWallet? = walletCore
+
+    private val eudiWallet: EudiWallet
+        get() {
+
+            val sessionId = prefKeys.getSessionId()
+
+            if (sessionId.isEmpty()) {
+                throw RuntimeException("Missing SessionId")
+            }
+
+            return _eudiWallet
+                ?: getOrCreateKoinScope<WalletCoreScope>(sessionId).get<EudiWallet>()
+                    .also {
+                        _eudiWallet = it
+                    }
+        }
 
     private val genericErrorMessage = resourceProvider.genericErrorMessage()
 

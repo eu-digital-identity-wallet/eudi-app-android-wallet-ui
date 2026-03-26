@@ -59,8 +59,8 @@ fun providePrefsController(resourceProvider: ResourceProvider): PrefsController 
     PrefsControllerImpl(resourceProvider)
 
 @Single
-fun providePrefKeys(prefsController: PrefsController): PrefKeys =
-    PrefKeysImpl(prefsController)
+fun providePrefKeys(prefsController: PrefsController, uuidProvider: UuidProvider): PrefKeys =
+    PrefKeysImpl(prefsController, uuidProvider)
 
 @Single
 fun provideKeystoreController(
@@ -69,6 +69,11 @@ fun provideKeystoreController(
     uuidProvider: UuidProvider
 ): KeystoreController =
     KeystoreControllerImpl(prefKeys, logController, uuidProvider)
+
+@Single
+fun provideUuidProvider(): UuidProvider {
+    return UuidProviderImpl()
+}
 
 @Factory
 fun provideCryptoController(keystoreController: KeystoreController): CryptoController =
@@ -80,8 +85,3 @@ fun provideFormValidator(logController: LogController): FormValidator =
 
 @Factory
 fun provideFiltersValidator(): FilterValidator = FilterValidatorImpl()
-
-@Single
-fun provideUuidProvider(): UuidProvider {
-    return UuidProviderImpl()
-}

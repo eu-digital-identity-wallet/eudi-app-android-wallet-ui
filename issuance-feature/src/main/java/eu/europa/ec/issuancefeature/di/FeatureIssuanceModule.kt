@@ -91,3 +91,6 @@ class CredentialOfferIssuanceScope
 fun getOrCreateCredentialOfferScope(scopeId: String = CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID): org.koin.core.scope.Scope =
     KoinPlatform.getKoin()
         .getOrCreateScope<CredentialOfferIssuanceScope>(scopeId)
+
+fun getOrNullCredentialOfferScope(scopeId: String = CREDENTIAL_OFFER_ISSUANCE_SCOPE_ID): org.koin.core.scope.Scope? =
+    KoinPlatform.getKoin().getScopeOrNull(scopeId)

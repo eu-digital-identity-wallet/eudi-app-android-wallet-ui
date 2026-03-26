@@ -19,7 +19,7 @@ package eu.europa.ec.proximityfeature.ui.qr
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.RequestUriConfig
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.proximityfeature.interactor.ProximityQRInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityQRPartialState
 import eu.europa.ec.uilogic.component.content.ContentErrorConfig
@@ -182,6 +182,6 @@ class ProximityQRViewModel(
     private fun cleanUp() {
         unsubscribe()
         interactor.cancelTransfer()
-        getOrCreatePresentationScope(viewState.value.presentationScopeId).close()
+        getOrNullKoinScope(viewState.value.presentationScopeId)?.close()
     }
 }

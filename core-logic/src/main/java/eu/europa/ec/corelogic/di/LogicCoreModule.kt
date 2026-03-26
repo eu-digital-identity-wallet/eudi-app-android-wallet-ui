@@ -18,6 +18,7 @@ package eu.europa.ec.corelogic.di
 
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfigImpl
@@ -52,7 +53,8 @@ import org.koin.mp.KoinPlatform
 @ComponentScan("eu.europa.ec.corelogic")
 class LogicCoreModule
 
-@Factory
+@Scope(WalletCoreScope::class)
+@Scoped
 fun provideEudiWallet(
     context: Context,
     walletCoreConfig: WalletCoreConfig,
@@ -101,30 +103,30 @@ fun provideWalletCoreAttestationProvider(
 @Factory
 fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
-    eudiWallet: EudiWallet,
     walletCoreConfig: WalletCoreConfig,
     bookmarkDao: BookmarkDao,
     transactionLogDao: TransactionLogDao,
-    revokedDocumentDao: RevokedDocumentDao
+    revokedDocumentDao: RevokedDocumentDao,
+    prefKeys: PrefKeys
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
         resourceProvider,
-        eudiWallet,
         walletCoreConfig,
         bookmarkDao,
         transactionLogDao,
-        revokedDocumentDao
+        revokedDocumentDao,
+        prefKeys
     )
 
 @Scope(WalletPresentationScope::class)
 @Scoped
 fun provideWalletCorePresentationController(
-    eudiWallet: EudiWallet,
     resourceProvider: ResourceProvider,
+    prefKeys: PrefKeys
 ): WalletCorePresentationController =
     WalletCorePresentationControllerImpl(
-        eudiWallet = eudiWallet,
         resourceProvider = resourceProvider,
+        prefKeys = prefKeys
     )
 
 /**
@@ -134,8 +136,14 @@ fun provideWalletCorePresentationController(
 @Scope
 class WalletPresentationScope
 
+@Scope
+class WalletCoreScope
+
 /**
  * Get Koin scope that lives during document presentation flow
  * */
-fun getOrCreatePresentationScope(scopeId: String): org.koin.core.scope.Scope =
-    KoinPlatform.getKoin().getOrCreateScope<WalletPresentationScope>(scopeId)
+inline fun <reified T : Any> getOrCreateKoinScope(scopeId: String): org.koin.core.scope.Scope =
+    KoinPlatform.getKoin().getOrCreateScope<T>(scopeId)
+
+fun getOrNullKoinScope(scopeId: String): org.koin.core.scope.Scope? =
+    KoinPlatform.getKoin().getScopeOrNull(scopeId)

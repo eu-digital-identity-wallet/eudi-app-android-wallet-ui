@@ -24,9 +24,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.extension.exposeTestTagsAsResourceId
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
@@ -41,11 +44,15 @@ import eu.europa.ec.uilogic.navigation.helper.toIntentAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.koin.core.annotation.KoinViewModel
 
 open class EudiComponentActivity : FragmentActivity() {
 
     private val routerHost: RouterHost by inject()
+
+    private val viewModel: EudiComponentActivityViewModel by viewModel()
 
     private var flowStarted: Boolean = false
 
@@ -67,6 +74,7 @@ open class EudiComponentActivity : FragmentActivity() {
         intent: Intent?,
         builder: NavGraphBuilder.(NavController) -> Unit,
     ) {
+        viewModel.bind()
         ThemeManager.instance.Theme {
             Surface(
                 modifier = Modifier
@@ -148,6 +156,31 @@ open class EudiComponentActivity : FragmentActivity() {
             IntentType.DC_API -> {
                 cacheIntent(action.intent)
             }
+        }
+    }
+}
+
+@KoinViewModel
+internal class EudiComponentActivityViewModel(
+    private val prefKeys: PrefKeys
+) : ViewModel() {
+
+    init {
+        prefKeys.generateSessionId()
+    }
+
+    fun bind() {}
+
+    override fun onCleared() {
+        destroySession()
+        super.onCleared()
+    }
+
+    private fun destroySession() {
+        val sessionId = prefKeys.getSessionId()
+        if (sessionId.isNotEmpty()) {
+            getOrNullKoinScope(sessionId)?.close()
+            prefKeys.clearSessionId()
         }
     }
 }
