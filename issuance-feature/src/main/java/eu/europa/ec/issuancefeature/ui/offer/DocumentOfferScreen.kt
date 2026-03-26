@@ -64,8 +64,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.applyTestTag
-import eu.europa.ec.uilogic.extension.cacheDeepLink
-import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.cacheUri
+import eu.europa.ec.uilogic.extension.getPendingUri
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
@@ -147,7 +147,7 @@ fun DocumentOfferScreen(
         lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
-        viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
+        viewModel.setEvent(Event.Init(context.getPendingUri()))
     }
 }
 
@@ -238,7 +238,7 @@ private fun handleNavigationEffect(
 
         is Effect.Navigation.DeepLink -> {
             navigationEffect.routeToPop?.let {
-                context.cacheDeepLink(navigationEffect.link)
+                context.cacheUri(navigationEffect.link)
                 navController.popBackStack(
                     route = it,
                     inclusive = false

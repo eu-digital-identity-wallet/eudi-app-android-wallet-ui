@@ -60,7 +60,6 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
-import eu.europa.ec.uilogic.extension.getPendingDeepLink
 import eu.europa.ec.uilogic.extension.getPendingIntent
 import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.extension.openBleSettings
@@ -172,8 +171,7 @@ internal fun DashboardScreen(
     ) {
         viewModel.setEvent(
             Event.Init(
-                intent = context.getPendingIntent(alsoClearIt = true),
-                deepLinkUri = context.getPendingDeepLink()
+                intent = context.getPendingIntent()
             )
         )
     }

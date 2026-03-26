@@ -64,7 +64,7 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.applyTestTag
-import eu.europa.ec.uilogic.extension.cacheDeepLink
+import eu.europa.ec.uilogic.extension.cacheUri
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.paddingFrom
 import eu.europa.ec.uilogic.extension.resetBackStack
@@ -143,7 +143,7 @@ fun BiometricScreen(
 
                     is Effect.Navigation.Deeplink -> {
                         navigationEffect.routeToPop?.let { route ->
-                            context.cacheDeepLink(navigationEffect.link)
+                            context.cacheUri(navigationEffect.link)
                             if (navigationEffect.isPreAuthorization) {
                                 navController.navigate(route) {
                                     popUpTo(CommonScreens.Biometric.screenRoute) {

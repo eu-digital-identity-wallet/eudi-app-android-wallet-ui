@@ -45,7 +45,7 @@ import eu.europa.ec.uilogic.navigation.helper.IntentType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
-import eu.europa.ec.uilogic.navigation.helper.toIntentAction
+import eu.europa.ec.uilogic.navigation.helper.hasIntentAction
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.core.annotation.KoinViewModel
 
@@ -66,8 +66,7 @@ data class State(
 
 sealed class Event : ViewEvent {
     data class Init(
-        val intent: Intent?,
-        val deepLinkUri: Uri?
+        val intent: Intent?
     ) : Event()
 
     data object Pop : Event()
@@ -148,8 +147,7 @@ class DashboardViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                handleIntent(event.intent)
-                handleDeepLink(event.deepLinkUri)
+                handleDeepLink(event.intent)
             }
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
@@ -272,8 +270,8 @@ class DashboardViewModel(
         }
     }
 
-    private fun handleDeepLink(deepLinkUri: Uri?) {
-        deepLinkUri?.let { uri ->
+    private fun handleDeepLink(intent: Intent?) {
+        intent?.data?.let { uri ->
             hasDeepLink(uri)?.let {
                 val arguments: String? = when (it.type) {
                     DeepLinkType.OPENID4VP -> {
@@ -322,12 +320,8 @@ class DashboardViewModel(
                     )
                 }
             }
-        }
-    }
-
-    private fun handleIntent(intent: Intent?) {
-        intent?.toIntentAction()?.let { safeIntentAction ->
-            when (safeIntentAction.type) {
+        } ?: hasIntentAction(intent)?.let { action ->
+            when (action.type) {
                 IntentType.DC_API -> {
                     val arguments: String = generateComposableArguments(
                         mapOf(
@@ -344,7 +338,7 @@ class DashboardViewModel(
 
                     setEffect {
                         Effect.Navigation.OpenIntentAction(
-                            intentAction = safeIntentAction,
+                            intentAction = action,
                             arguments = arguments
                         )
                     }

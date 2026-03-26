@@ -94,6 +94,10 @@ fun hasDeepLink(deepLinkUri: Uri?): DeepLinkAction? {
     }
 }
 
+fun hasIntentAction(intent: Intent?): IntentAction? {
+    return intent?.toIntentAction()
+}
+
 fun handleDeepLinkAction(
     navController: NavController,
     uri: Uri,
@@ -220,16 +224,6 @@ enum class IntentType(val associatedActions: List<String>) {
     ),
 }
 
-fun Intent.toIntentAction(): IntentAction? {
-    return IntentType
-        .entries
-        .firstOrNull {
-            it.associatedActions.contains(this.action?.lowercase())
-        }?.let { matchedType ->
-            IntentAction(intent = this, type = matchedType)
-        }
-}
-
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)
 enum class DeepLinkType(val schemas: List<String>, val host: String? = null) {
 
@@ -299,4 +293,14 @@ private fun notify(context: Context, action: String, bundle: Bundle? = null) {
         bundle?.let { intent.putExtras(it) }
         context.sendBroadcast(intent)
     }
+}
+
+private fun Intent.toIntentAction(): IntentAction? {
+    return IntentType
+        .entries
+        .firstOrNull {
+            it.associatedActions.contains(this.action?.lowercase())
+        }?.let { matchedType ->
+            IntentAction(intent = this, type = matchedType)
+        }
 }

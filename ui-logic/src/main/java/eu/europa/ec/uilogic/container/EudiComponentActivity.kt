@@ -17,7 +17,6 @@
 package eu.europa.ec.uilogic.container
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -37,11 +36,10 @@ import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
-import eu.europa.ec.uilogic.navigation.helper.IntentAction
 import eu.europa.ec.uilogic.navigation.helper.IntentType
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
-import eu.europa.ec.uilogic.navigation.helper.toIntentAction
+import eu.europa.ec.uilogic.navigation.helper.hasIntentAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -52,22 +50,13 @@ import org.koin.core.annotation.KoinViewModel
 open class EudiComponentActivity : FragmentActivity() {
 
     private val routerHost: RouterHost by inject()
-
     private val viewModel: EudiComponentActivityViewModel by viewModel()
 
-    private var flowStarted: Boolean = false
-
-    internal var pendingDeepLink: Uri? = null
-
-    internal var pendingIntent: Intent? = null
-
-    internal fun cacheDeepLink(intent: Intent?) {
-        pendingDeepLink = intent?.data
-    }
-
     internal fun cacheIntent(intent: Intent?) {
-        pendingIntent = intent
+        viewModel.cacheIntent(intent)
     }
+
+    internal fun getCachedIntent(): Intent? = viewModel.getCachedIntent()
 
     @OptIn(KoinExperimentalAPI::class)
     @Composable
@@ -75,7 +64,7 @@ open class EudiComponentActivity : FragmentActivity() {
         intent: Intent?,
         builder: NavGraphBuilder.(NavController) -> Unit,
     ) {
-        viewModel.bind()
+        viewModel.onCreate()
         ThemeManager.instance.Theme {
             Surface(
                 modifier = Modifier
@@ -86,7 +75,7 @@ open class EudiComponentActivity : FragmentActivity() {
                 routerHost.StartFlow {
                     builder(it)
                 }
-                flowStarted = true
+                viewModel.onFlowStart()
                 handleDeepLink(intent, coldBoot = true)
             }
         }
@@ -99,7 +88,7 @@ open class EudiComponentActivity : FragmentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (flowStarted) {
+        if (viewModel.isFlowStarted()) {
             handleDeepLink(intent)
         } else {
             runPendingDeepLink(intent)
@@ -109,7 +98,7 @@ open class EudiComponentActivity : FragmentActivity() {
     private fun runPendingDeepLink(intent: Intent?) {
         lifecycleScope.launch {
             var count = 0
-            while (!flowStarted && count <= 10) {
+            while (!viewModel.isFlowStarted() && count <= 10) {
                 count++
                 delay(500)
             }
@@ -131,7 +120,7 @@ open class EudiComponentActivity : FragmentActivity() {
                 && !routerHost.userIsLoggedInWithDocuments()
                 && routerHost.userIsLoggedInWithNoDocuments()
             ) {
-                cacheDeepLink(intent)
+                cacheIntent(intent)
                 routerHost.popToIssuanceOnboardingScreen()
             } else if (it.type == DeepLinkType.OPENID4VP
                 && routerHost.userIsLoggedInWithDocuments()
@@ -143,25 +132,22 @@ open class EudiComponentActivity : FragmentActivity() {
                     DeepLinkAction(it.link, DeepLinkType.DYNAMIC_PRESENTATION)
                 )
             } else if (it.type != DeepLinkType.ISSUANCE) {
-                cacheDeepLink(intent)
+                cacheIntent(intent)
                 if (routerHost.userIsLoggedInWithDocuments()) {
                     routerHost.popToDashboardScreen()
                 }
             }
             setIntent(Intent())
-        } ?: run {
-            intent?.toIntentAction()?.let {
-                handleIntentAction(it)
-                setIntent(Intent())
+        } ?: hasIntentAction(intent)?.let {
+            when (it.type) {
+                IntentType.DC_API -> {
+                    cacheIntent(it.intent)
+                    if (routerHost.userIsLoggedInWithDocuments()) {
+                        routerHost.popToDashboardScreen()
+                    }
+                }
             }
-        }
-    }
-
-    private fun handleIntentAction(action: IntentAction) {
-        when (action.type) {
-            IntentType.DC_API -> {
-                cacheIntent(action.intent)
-            }
+            setIntent(Intent())
         }
     }
 }
@@ -172,27 +158,33 @@ internal class EudiComponentActivityViewModel(
     uuidProvider: UuidProvider
 ) : ViewModel() {
 
-    val sessionId: String = uuidProvider.provideUuid()
+    private val sessionId: String = uuidProvider.provideUuid()
 
-    fun bind() {
-        prefKeys.setSessionId(sessionId)
-    }
-
-    internal fun onResume() {
-        prefKeys.setSessionId(sessionId)
-    }
+    private var flowStarted: Boolean = false
+    private var pendingIntent: Intent? = null
 
     override fun onCleared() {
-        destroySession()
+        getOrNullKoinScope(sessionId)?.close()
         super.onCleared()
     }
 
-    private fun destroySession() {
-        //val sessionId = prefKeys.getSessionId()
-        val sessionId = sessionId
-        if (sessionId.isNotEmpty()) {
-            getOrNullKoinScope(sessionId)?.close()
-            //prefKeys.clearSessionId()
-        }
+    fun onCreate() {
+        prefKeys.setSessionId(sessionId)
     }
+
+    fun onResume() {
+        prefKeys.setSessionId(sessionId)
+    }
+
+    fun onFlowStart() {
+        flowStarted = true
+    }
+
+    fun cacheIntent(intent: Intent?) {
+        pendingIntent = intent
+    }
+
+    fun getCachedIntent(): Intent? = pendingIntent
+
+    fun isFlowStarted(): Boolean = flowStarted
 }
