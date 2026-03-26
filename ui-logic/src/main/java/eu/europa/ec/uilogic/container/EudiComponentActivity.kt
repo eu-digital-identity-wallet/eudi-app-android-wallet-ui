@@ -29,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.resourceslogic.theme.ThemeManager
 import eu.europa.ec.uilogic.extension.exposeTestTagsAsResourceId
@@ -89,6 +90,11 @@ open class EudiComponentActivity : FragmentActivity() {
                 handleDeepLink(intent, coldBoot = true)
             }
         }
+    }
+
+    override fun onResume() {
+        viewModel.onResume()
+        super.onResume()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -162,14 +168,19 @@ open class EudiComponentActivity : FragmentActivity() {
 
 @KoinViewModel
 internal class EudiComponentActivityViewModel(
-    private val prefKeys: PrefKeys
+    private val prefKeys: PrefKeys,
+    uuidProvider: UuidProvider
 ) : ViewModel() {
 
-    init {
-        prefKeys.generateSessionId()
+    val sessionId: String = uuidProvider.provideUuid()
+
+    fun bind() {
+        prefKeys.setSessionId(sessionId)
     }
 
-    fun bind() {}
+    internal fun onResume() {
+        prefKeys.setSessionId(sessionId)
+    }
 
     override fun onCleared() {
         destroySession()
@@ -177,10 +188,11 @@ internal class EudiComponentActivityViewModel(
     }
 
     private fun destroySession() {
-        val sessionId = prefKeys.getSessionId()
+        //val sessionId = prefKeys.getSessionId()
+        val sessionId = sessionId
         if (sessionId.isNotEmpty()) {
             getOrNullKoinScope(sessionId)?.close()
-            prefKeys.clearSessionId()
+            //prefKeys.clearSessionId()
         }
     }
 }

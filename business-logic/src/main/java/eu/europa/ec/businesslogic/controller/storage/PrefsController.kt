@@ -21,7 +21,6 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import eu.europa.ec.businesslogic.extension.shuffle
 import eu.europa.ec.businesslogic.extension.unShuffle
-import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 
 interface PrefsController {
@@ -310,14 +309,13 @@ class PrefsControllerImpl(
 interface PrefKeys {
     fun getCryptoAlias(): String
     fun setCryptoAlias(value: String)
-    fun generateSessionId()
+    fun setSessionId(value: String)
     fun getSessionId(): String
     fun clearSessionId()
 }
 
 class PrefKeysImpl(
-    private val prefsController: PrefsController,
-    private val uuidProvider: UuidProvider
+    private val prefsController: PrefsController
 ) : PrefKeys {
 
 
@@ -344,8 +342,8 @@ class PrefKeysImpl(
         prefsController.setString("CryptoAlias", value)
     }
 
-    override fun generateSessionId() {
-        prefsController.setString("SessionId", uuidProvider.provideUuid())
+    override fun setSessionId(value: String) {
+        prefsController.setString("SessionId", value)
     }
 
     override fun getSessionId(): String = prefsController.getString("SessionId", "")

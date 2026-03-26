@@ -59,8 +59,8 @@ fun providePrefsController(resourceProvider: ResourceProvider): PrefsController 
     PrefsControllerImpl(resourceProvider)
 
 @Single
-fun providePrefKeys(prefsController: PrefsController, uuidProvider: UuidProvider): PrefKeys =
-    PrefKeysImpl(prefsController, uuidProvider)
+fun providePrefKeys(prefsController: PrefsController): PrefKeys =
+    PrefKeysImpl(prefsController)
 
 @Single
 fun provideKeystoreController(
