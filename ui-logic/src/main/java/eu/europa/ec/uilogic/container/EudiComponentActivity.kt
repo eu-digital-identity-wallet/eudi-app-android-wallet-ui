@@ -88,7 +88,7 @@ open class EudiComponentActivity : FragmentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (viewModel.isFlowStarted()) {
+        if (viewModel.hasFlowStarted()) {
             handleDeepLink(intent)
         } else {
             runPendingDeepLink(intent)
@@ -98,7 +98,7 @@ open class EudiComponentActivity : FragmentActivity() {
     private fun runPendingDeepLink(intent: Intent?) {
         lifecycleScope.launch {
             var count = 0
-            while (!viewModel.isFlowStarted() && count <= 10) {
+            while (!viewModel.hasFlowStarted() && count <= 10) {
                 count++
                 delay(500)
             }
@@ -186,5 +186,5 @@ internal class EudiComponentActivityViewModel(
 
     fun getCachedIntent(): Intent? = pendingIntent
 
-    fun isFlowStarted(): Boolean = flowStarted
+    fun hasFlowStarted(): Boolean = flowStarted
 }
