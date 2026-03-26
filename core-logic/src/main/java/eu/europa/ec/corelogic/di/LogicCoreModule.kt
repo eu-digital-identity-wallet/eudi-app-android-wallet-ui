@@ -139,6 +139,11 @@ fun provideWalletCorePresentationController(
 @Scope
 class WalletPresentationScope
 
+/**
+ * Koin scope that defines the lifecycle for core wallet components.
+ * This scope is used to manage the EUDI Wallet instance and its related
+ * dependencies, ensuring they are preserved across the core logic operations.
+ */
 @Scope
 class WalletCoreScope
 
@@ -148,5 +153,11 @@ class WalletCoreScope
 inline fun <reified T : Any> getOrCreateKoinScope(scopeId: String): org.koin.core.scope.Scope =
     KoinPlatform.getKoin().getOrCreateScope<T>(scopeId)
 
+/**
+ * Retrieves an existing Koin scope by its identifier.
+ *
+ * @param scopeId The unique identifier of the scope to retrieve.
+ * @return The [org.koin.core.scope.Scope] instance if it exists, or null if no scope with the given ID is found.
+ */
 fun getOrNullKoinScope(scopeId: String): org.koin.core.scope.Scope? =
     KoinPlatform.getKoin().getScopeOrNull(scopeId)
