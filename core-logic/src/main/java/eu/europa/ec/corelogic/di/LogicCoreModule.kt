@@ -19,6 +19,7 @@ package eu.europa.ec.corelogic.di
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.businesslogic.di.LogicBusinessModule
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfigImpl
@@ -49,7 +50,7 @@ import org.koin.core.annotation.Scoped
 import org.koin.core.annotation.Single
 import org.koin.mp.KoinPlatform
 
-@Module
+@Module([LogicBusinessModule::class])
 @Configuration
 @ComponentScan("eu.europa.ec.corelogic")
 class LogicCoreModule
