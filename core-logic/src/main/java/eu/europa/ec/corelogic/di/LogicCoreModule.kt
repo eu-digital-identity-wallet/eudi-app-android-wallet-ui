@@ -126,11 +126,11 @@ fun provideWalletCoreDocumentsController(
 @Scoped
 fun provideWalletCorePresentationController(
     resourceProvider: ResourceProvider,
-    prefKeys: PrefKeys
+    prefKeys: PrefKeys,
 ): WalletCorePresentationController =
     WalletCorePresentationControllerImpl(
         resourceProvider = resourceProvider,
-        prefKeys = prefKeys
+        prefKeys = prefKeys,
     )
 
 /**

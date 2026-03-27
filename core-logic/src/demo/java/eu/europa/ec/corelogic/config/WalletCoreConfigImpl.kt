@@ -64,6 +64,10 @@ internal class WalletCoreConfigImpl(
                         )
                     }
 
+                    configureDCAPI {
+                        withEnabled(true)
+                    }
+
                     configureReaderTrustStore(
                         context,
                         R.raw.pidissuerca02_cz,

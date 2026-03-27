@@ -81,8 +81,8 @@ open class EudiComponentActivity : FragmentActivity() {
     }
 
     override fun onResume() {
-        viewModel.onResume()
         super.onResume()
+        viewModel.onResume()
     }
 
     override fun onNewIntent(intent: Intent) {

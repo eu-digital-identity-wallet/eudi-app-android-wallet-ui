@@ -113,6 +113,8 @@ class PresentationRequestViewModel(
         }
 
         interactor.setConfig(requestUriConfig, intentAction)
+
+        doWork()
     }
 
     override fun doWork() {
@@ -126,7 +128,7 @@ class PresentationRequestViewModel(
 
         viewModelJob = viewModelScope.launch {
 
-        interactor.getRequestDocuments().collect { response ->
+            interactor.getRequestDocuments().collect { response ->
                 when (response) {
                     is PresentationRequestInteractorPartialState.Failure -> {
                         setState {
@@ -135,7 +137,7 @@ class PresentationRequestViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(Event.DoWork) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.Pop) }
+                                    onCancel = { setEvent(Event.OnBack) }
                                 )
                             )
                         }
@@ -162,7 +164,7 @@ class PresentationRequestViewModel(
                     }
 
                     is PresentationRequestInteractorPartialState.Disconnect -> {
-                        setEvent(Event.Pop)
+                        setEvent(Event.OnBack)
                     }
 
                     is PresentationRequestInteractorPartialState.NoData -> {

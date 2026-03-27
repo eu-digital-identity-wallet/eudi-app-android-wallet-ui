@@ -119,7 +119,7 @@ class ProximityRequestViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(Event.DoWork) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.Pop) }
+                                    onCancel = { setEvent(Event.OnBack) }
                                 )
                             )
                         }
@@ -146,7 +146,7 @@ class ProximityRequestViewModel(
                     }
 
                     is ProximityRequestInteractorPartialState.Disconnect -> {
-                        setEvent(Event.Pop)
+                        setEvent(Event.OnBack)
                     }
 
                     is ProximityRequestInteractorPartialState.NoData -> {

@@ -107,7 +107,7 @@ fun RequestScreen(
     ContentScreen(
         navigatableAction = ScreenNavigateAction.BACKABLE,
         isLoading = state.isLoading,
-        onBack = { viewModel.setEvent(Event.Pop) },
+        onBack = { viewModel.setEvent(Event.OnBack) },
         stickyBottom = { paddingValues ->
             WrapStickyBottomContent(
                 modifier = Modifier
@@ -181,7 +181,6 @@ fun RequestScreen(
 
     OneTimeLaunchedEffect {
         viewModel.setEvent(Event.Init(intentAction = intentAction))
-        viewModel.setEvent(Event.DoWork)
     }
 }
 

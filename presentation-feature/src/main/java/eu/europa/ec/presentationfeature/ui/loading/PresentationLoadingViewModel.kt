@@ -76,10 +76,9 @@ class PresentationLoadingViewModel(
     override fun getCancellableTimeout(): Duration = 5.toDuration(DurationUnit.SECONDS)
 
     override fun doWork(context: Context) {
-
-        interactor.setScopeId(presentationScopeId)
-
         viewModelScope.launch {
+
+            interactor.setScopeId(presentationScopeId)
 
             interactor.observeResponse().collect {
                 when (it) {
