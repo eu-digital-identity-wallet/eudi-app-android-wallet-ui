@@ -144,7 +144,8 @@ fun DocumentsScreen(
         },
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
-                CoreActions.REVOCATION_WORK_REFRESH_ACTION
+                CoreActions.REVOCATION_WORK_REFRESH_ACTION,
+                CoreActions.RE_ISSUANCE_WORK_REFRESH_ACTION
             ),
             callback = {
                 viewModel.setEvent(Event.GetDocuments)

@@ -59,9 +59,11 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import eu.europa.ec.storagelogic.model.Bookmark
+import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ProducerScope
@@ -169,8 +171,15 @@ interface WalletCoreDocumentsController {
         prioritizeDeferred: Boolean = true
     ): Flow<IssueDocumentsPartialState>
 
+    fun reIssueDocument(
+        documentId: DocumentId,
+        issuerId: String,
+        allowAuthorizationFallback: Boolean,
+        prioritizeDeferred: Boolean = false
+    ): Flow<IssueDocumentsPartialState>
+
     fun deleteDocument(
-        documentId: String,
+        documentId: DocumentId,
     ): Flow<DeleteDocumentPartialState>
 
     fun deleteAllDocuments(): Flow<DeleteAllDocumentsPartialState>
@@ -197,11 +206,15 @@ interface WalletCoreDocumentsController {
 
     suspend fun isDocumentBookmarked(documentId: DocumentId): Boolean
 
-    suspend fun storeBookmark(bookmarkId: DocumentId)
+    suspend fun storeBookmark(bookmarkId: String)
 
-    suspend fun deleteBookmark(bookmarkId: DocumentId)
+    suspend fun deleteBookmark(bookmarkId: String)
 
     suspend fun isDocumentLowOnCredentials(document: IssuedDocument): Boolean
+
+    suspend fun storeFailedReIssuedDocument(documentId: DocumentId)
+
+    suspend fun deleteFailedReIssuedDocument(documentId: DocumentId)
 }
 
 class WalletCoreDocumentsControllerImpl(
@@ -210,6 +223,7 @@ class WalletCoreDocumentsControllerImpl(
     private val bookmarkDao: BookmarkDao,
     private val transactionLogDao: TransactionLogDao,
     private val revokedDocumentDao: RevokedDocumentDao,
+    private val failedReIssuedDocumentDao: FailedReIssuedDocumentDao,
     private val prefKeys: PrefKeys,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     walletCore: EudiWallet? = null,
@@ -389,6 +403,33 @@ class WalletCoreDocumentsControllerImpl(
         }
     }.safeAsync {
         IssueDocumentsPartialState.Failure(errorMessage = documentErrorMessage)
+    }
+
+    override fun reIssueDocument(
+        documentId: DocumentId,
+        issuerId: String,
+        allowAuthorizationFallback: Boolean,
+        prioritizeDeferred: Boolean
+    ): Flow<IssueDocumentsPartialState> = callbackFlow {
+
+        val manager: OpenId4VciManager? =
+            openId4VciManagers.entries.find { (vciConfig, _) ->
+                vciConfig.config.issuerUrl == issuerId
+            }?.value
+        require(manager != null) { documentErrorMessage }
+
+        manager.reissueDocument(
+            documentId,
+            allowAuthorizationFallback,
+            onIssueEvent = issuanceCallback(prioritizeDeferred = prioritizeDeferred)
+        )
+
+        awaitClose()
+
+    }.safeAsync {
+        IssueDocumentsPartialState.Failure(
+            errorMessage = documentErrorMessage
+        )
     }
 
     override fun issueDocumentsByOffer(
@@ -660,6 +701,14 @@ class WalletCoreDocumentsControllerImpl(
 
     override suspend fun deleteBookmark(bookmarkId: DocumentId) =
         bookmarkDao.delete(bookmarkId)
+
+    override suspend fun storeFailedReIssuedDocument(documentId: DocumentId) {
+        failedReIssuedDocumentDao.store(FailedReIssuedDocument(documentId))
+    }
+
+    override suspend fun deleteFailedReIssuedDocument(documentId: DocumentId) {
+        failedReIssuedDocumentDao.delete(documentId)
+    }
 
     override suspend fun isDocumentLowOnCredentials(document: IssuedDocument): Boolean {
         val documentRemainingCredentials = document.credentialsCount()

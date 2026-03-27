@@ -36,6 +36,7 @@ import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.networklogic.repository.WalletAttestationRepository
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import io.ktor.client.HttpClient
@@ -107,6 +108,7 @@ fun provideWalletCoreDocumentsController(
     bookmarkDao: BookmarkDao,
     transactionLogDao: TransactionLogDao,
     revokedDocumentDao: RevokedDocumentDao,
+    failedReIssuedDocumentDao: FailedReIssuedDocumentDao,
     prefKeys: PrefKeys
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
@@ -115,6 +117,7 @@ fun provideWalletCoreDocumentsController(
         bookmarkDao,
         transactionLogDao,
         revokedDocumentDao,
+        failedReIssuedDocumentDao,
         prefKeys
     )
 
