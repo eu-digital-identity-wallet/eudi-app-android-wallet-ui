@@ -16,6 +16,8 @@
 
 package eu.europa.ec.commonfeature.ui.document_success
 
+import android.app.Activity
+import android.content.Intent
 import android.net.Uri
 import eu.europa.ec.businesslogic.extension.toUri
 import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
@@ -65,6 +67,11 @@ sealed class Effect : ViewSideEffect {
             val link: Uri,
             val routeToPop: String?,
         ) : Navigation()
+
+        data class FinishWithResult(
+            val intent: Intent,
+            val resultCode: Int,
+        ) : Navigation()
     }
 }
 
@@ -72,6 +79,7 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
 
     abstract fun getNextScreenConfigNavigation(): ConfigNavigation
     abstract fun doWork()
+    abstract fun getPendingIntent(): Intent?
 
     override fun setInitialState(): State {
         return State(
@@ -88,9 +96,16 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
 
             is Event.ExpandOrCollapseSuccessDocumentItem -> expandOrCollapseSuccessDocumentItem(id = event.itemId)
 
-            is Event.StickyButtonPressed -> doNavigation(
-                navigation = getNextScreenConfigNavigation()
-            )
+            is Event.StickyButtonPressed -> handleStickyButtonPressed()
+        }
+    }
+
+    private fun handleStickyButtonPressed() {
+        val pendingIntent = getPendingIntent()
+        if (pendingIntent != null) {
+            handleIntent(pendingIntent)
+        } else {
+            doNavigation(navigation = getNextScreenConfigNavigation())
         }
     }
 
@@ -128,6 +143,15 @@ abstract class DocumentSuccessViewModel : MviViewModel<Event, State, Effect>() {
         setState {
             copy(
                 items = updatedItems
+            )
+        }
+    }
+
+    private fun handleIntent(intent: Intent) {
+        setEffect {
+            Effect.Navigation.FinishWithResult(
+                intent = intent,
+                resultCode = Activity.RESULT_OK,
             )
         }
     }

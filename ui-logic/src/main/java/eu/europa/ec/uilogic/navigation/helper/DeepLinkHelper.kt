@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.extension.toUri
@@ -29,10 +30,12 @@ import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import eu.europa.ec.eudi.rqesui.infrastructure.RemoteUri
 import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
+import eu.europa.ec.uilogic.extension.navigateWithIntentAction
 import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
 import eu.europa.ec.uilogic.navigation.Screen
+import kotlinx.parcelize.Parcelize
 
 fun <T> generateComposableArguments(arguments: Map<String, T>): String {
     if (arguments.isEmpty()) return ""
@@ -99,6 +102,35 @@ fun handleDeepLinkAction(
     hasDeepLink(uri)?.let { action ->
         handleDeepLinkAction(navController, action, arguments)
     }
+}
+
+fun handleIntentAction(
+    navController: NavController,
+    action: IntentAction,
+    arguments: String? = null
+) {
+    val screen: Screen
+
+    when (action.type) {
+        IntentType.DC_API -> {
+            screen = PresentationScreens.PresentationRequest
+        }
+    }
+
+    val navigationLink = arguments?.let {
+        generateComposableNavigationLink(
+            screen = screen,
+            arguments = arguments
+        )
+    } ?: screen.screenRoute
+
+    navController.navigateWithIntentAction(
+        route = navigationLink,
+        intentAction = action,
+        builder = {
+            popUpTo(screen.screenRoute) { inclusive = true }
+        }
+    )
 }
 
 fun handleDeepLinkAction(
@@ -169,6 +201,33 @@ fun handleDeepLinkAction(
     navController.navigate(navigationLink) {
         popUpTo(screen.screenRoute) { inclusive = true }
     }
+}
+
+const val INTENT_ACTION_KEY = "intent_action"
+
+@Parcelize
+data class IntentAction(
+    val intent: Intent,
+    val type: IntentType
+) : Parcelable
+
+enum class IntentType(val associatedActions: List<String>) {
+    DC_API(
+        associatedActions = listOf(
+            "androidx.identitycredentials.action.get_credentials",
+            "androidx.credentials.registry.provider.action.get_credential"
+        )
+    ),
+}
+
+fun Intent.toIntentAction(): IntentAction? {
+    return IntentType
+        .entries
+        .firstOrNull {
+            it.associatedActions.contains(this.action?.lowercase())
+        }?.let { matchedType ->
+            IntentAction(intent = this, type = matchedType)
+        }
 }
 
 data class DeepLinkAction(val link: Uri, val type: DeepLinkType)

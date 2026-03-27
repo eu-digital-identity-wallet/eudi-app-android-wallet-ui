@@ -61,11 +61,13 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetWithOptionsList
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.getPendingIntent
 import eu.europa.ec.uilogic.extension.openAppSettings
 import eu.europa.ec.uilogic.extension.openBleSettings
 import eu.europa.ec.uilogic.extension.openIntentChooser
 import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
+import eu.europa.ec.uilogic.navigation.helper.handleIntentAction
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -170,6 +172,7 @@ internal fun DashboardScreen(
     ) {
         viewModel.setEvent(
             Event.Init(
+                intent = context.getPendingIntent(alsoClearIt = true),
                 deepLinkUri = context.getPendingDeepLink()
             )
         )
@@ -239,6 +242,14 @@ private fun handleNavigationEffect(
                 navController,
                 navigationEffect.deepLinkUri,
                 navigationEffect.arguments
+            )
+        }
+
+        is Effect.Navigation.OpenIntentAction -> {
+            handleIntentAction(
+                navController = navController,
+                action = navigationEffect.intentAction,
+                arguments = navigationEffect.arguments,
             )
         }
 

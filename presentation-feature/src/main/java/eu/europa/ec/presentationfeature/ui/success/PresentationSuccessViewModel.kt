@@ -16,6 +16,7 @@
 
 package eu.europa.ec.presentationfeature.ui.success
 
+import android.content.Intent
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessViewModel
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
@@ -76,6 +77,10 @@ class PresentationSuccessViewModel(
                 }
             }
         }
+    }
+
+    override fun getPendingIntent(): Intent? {
+        return interactor.getPendingIntent()
     }
 
     override fun onCleared() {

@@ -34,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,6 +77,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.extension.applyTestTag
+import eu.europa.ec.uilogic.extension.finish
+import eu.europa.ec.uilogic.navigation.helper.IntentAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -87,10 +90,13 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RequestScreen(
+    intentAction: IntentAction?,
     navController: NavController,
     viewModel: RequestViewModel,
 ) {
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
+
+    val context = LocalContext.current
 
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
@@ -144,6 +150,10 @@ fun RequestScreen(
                             inclusive = false
                         )
                     }
+
+                    is Effect.Navigation.Finish -> {
+                        context.finish()
+                    }
                 }
             },
             paddingValues = paddingValues,
@@ -170,6 +180,7 @@ fun RequestScreen(
     }
 
     OneTimeLaunchedEffect {
+        viewModel.setEvent(Event.Init(intentAction = intentAction))
         viewModel.setEvent(Event.DoWork)
     }
 }

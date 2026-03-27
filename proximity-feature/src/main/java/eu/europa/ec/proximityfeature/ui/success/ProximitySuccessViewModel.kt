@@ -16,6 +16,7 @@
 
 package eu.europa.ec.proximityfeature.ui.success
 
+import android.content.Intent
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessViewModel
 import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
@@ -73,6 +74,10 @@ class ProximitySuccessViewModel(
                 }
             }
         }
+    }
+
+    override fun getPendingIntent(): Intent? {
+        return null
     }
 
     override fun onCleared() {

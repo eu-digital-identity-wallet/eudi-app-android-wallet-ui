@@ -26,6 +26,7 @@ fun ProximityRequestScreen(
     viewModel: ProximityRequestViewModel
 ) {
     RequestScreen(
+        intentAction = null,
         navController = navController,
         viewModel = viewModel
     )

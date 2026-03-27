@@ -76,9 +76,10 @@ class PresentationLoadingViewModel(
     override fun getCancellableTimeout(): Duration = 5.toDuration(DurationUnit.SECONDS)
 
     override fun doWork(context: Context) {
-        viewModelScope.launch {
 
-            interactor.setScopeId(presentationScopeId)
+        interactor.setScopeId(presentationScopeId)
+
+        viewModelScope.launch {
 
             interactor.observeResponse().collect {
                 when (it) {
@@ -123,6 +124,10 @@ class PresentationLoadingViewModel(
                                 sendRequestedDocuments(Event.DoWork(context))
                             }
                         )
+                    }
+
+                    is PresentationLoadingObserveResponsePartialState.IntentToSend -> {
+                        onSuccess()
                     }
                 }
             }

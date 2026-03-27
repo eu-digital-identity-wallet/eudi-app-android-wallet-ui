@@ -52,7 +52,7 @@ import org.koin.mp.KoinPlatform
 @ComponentScan("eu.europa.ec.corelogic")
 class LogicCoreModule
 
-@Single
+@Factory
 fun provideEudiWallet(
     context: Context,
     walletCoreConfig: WalletCoreConfig,
@@ -75,11 +75,11 @@ fun provideWalletCoreConfig(
     context: Context,
 ): WalletCoreConfig = WalletCoreConfigImpl(context)
 
-@Single
+@Factory
 fun provideWalletCoreLogController(logController: LogController): WalletCoreLogController =
     WalletCoreLogControllerImpl(logController)
 
-@Single
+@Factory
 fun provideWalletCoreTransactionLogController(
     transactionLogDao: TransactionLogDao,
     uuidProvider: UuidProvider
@@ -88,7 +88,7 @@ fun provideWalletCoreTransactionLogController(
     uuidProvider = uuidProvider
 )
 
-@Single
+@Factory
 fun provideWalletCoreAttestationProvider(
     walletAttestationRepository: WalletAttestationRepository,
     walletCoreConfig: WalletCoreConfig
@@ -123,8 +123,8 @@ fun provideWalletCorePresentationController(
     resourceProvider: ResourceProvider,
 ): WalletCorePresentationController =
     WalletCorePresentationControllerImpl(
-        eudiWallet,
-        resourceProvider
+        eudiWallet = eudiWallet,
+        resourceProvider = resourceProvider,
     )
 
 /**

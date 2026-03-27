@@ -34,7 +34,7 @@ import org.koin.core.annotation.Single
 @ComponentScan("eu.europa.ec.uilogic")
 class LogicUiModule
 
-@Single
+@Factory
 fun provideRouterHost(
     configUILogic: ConfigUILogic,
     analyticsController: AnalyticsController

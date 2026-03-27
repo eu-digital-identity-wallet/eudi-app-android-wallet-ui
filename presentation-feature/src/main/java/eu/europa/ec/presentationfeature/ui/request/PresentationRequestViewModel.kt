@@ -37,6 +37,7 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.helper.IntentAction
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -97,8 +98,7 @@ class PresentationRequestViewModel(
         )
     }
 
-    override fun doWork() {
-
+    override fun init(intentAction: IntentAction?) {
         val requestUriConfig = uiSerializer.fromBase64(
             requestUriConfigRaw,
             RequestUriConfig::class.java,
@@ -107,16 +107,26 @@ class PresentationRequestViewModel(
 
         setState {
             copy(
-                isLoading = true,
-                error = null,
-                presentationScopeId = requestUriConfig.presentationScopeId
+                presentationScopeId = requestUriConfig.presentationScopeId,
+                intentAction = intentAction,
             )
         }
 
-        interactor.setConfig(requestUriConfig)
+        interactor.setConfig(requestUriConfig, intentAction)
+    }
+
+    override fun doWork() {
+
+        setState {
+            copy(
+                isLoading = true,
+                error = null
+            )
+        }
 
         viewModelJob = viewModelScope.launch {
-            interactor.getRequestDocuments().collect { response ->
+
+        interactor.getRequestDocuments().collect { response ->
                 when (response) {
                     is PresentationRequestInteractorPartialState.Failure -> {
                         setState {

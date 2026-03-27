@@ -52,6 +52,7 @@ import eu.europa.ec.uilogic.component.wrap.WrapExpandableListItem
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
 import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.cacheDeepLink
+import eu.europa.ec.uilogic.extension.findActivity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -121,6 +122,15 @@ fun DocumentSuccessScreen(
                     }
 
                     is Effect.Navigation.Pop -> navController.popBackStack()
+
+                    is Effect.Navigation.FinishWithResult -> {
+                        context.findActivity().let { activity ->
+                            navigationEffect.intent.let { intent ->
+                                activity.setResult(navigationEffect.resultCode, intent)
+                                activity.finish()
+                            }
+                        }
+                    }
                 }
             },
             paddingValues = paddingValues

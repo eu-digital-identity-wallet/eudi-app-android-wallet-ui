@@ -33,8 +33,11 @@ import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.RouterHost
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
+import eu.europa.ec.uilogic.navigation.helper.IntentAction
+import eu.europa.ec.uilogic.navigation.helper.IntentType
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
+import eu.europa.ec.uilogic.navigation.helper.toIntentAction
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -48,8 +51,14 @@ open class EudiComponentActivity : FragmentActivity() {
 
     internal var pendingDeepLink: Uri? = null
 
+    internal var pendingIntent: Intent? = null
+
     internal fun cacheDeepLink(intent: Intent?) {
         pendingDeepLink = intent?.data
+    }
+
+    internal fun cacheIntent(intent: Intent?) {
+        pendingIntent = intent
     }
 
     @OptIn(KoinExperimentalAPI::class)
@@ -126,6 +135,19 @@ open class EudiComponentActivity : FragmentActivity() {
                 }
             }
             setIntent(Intent())
+        } ?: run {
+            intent?.toIntentAction()?.let {
+                handleIntentAction(it)
+                setIntent(Intent())
+            }
+        }
+    }
+
+    private fun handleIntentAction(action: IntentAction) {
+        when (action.type) {
+            IntentType.DC_API -> {
+                cacheIntent(action.intent)
+            }
         }
     }
 }
