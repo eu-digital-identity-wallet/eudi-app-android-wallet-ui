@@ -16,7 +16,6 @@
 
 package eu.europa.ec.uilogic.extension
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -25,29 +24,25 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import eu.europa.ec.uilogic.container.EudiComponentActivity
 
-fun Context.openDeepLink(deepLink: Uri) {
-    val intent = Intent(Intent.ACTION_VIEW).apply {
-        data = deepLink
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-    try {
-        startActivity(intent)
-    } catch (_: ActivityNotFoundException) {
+fun Context.getPendingUri(): Uri? {
+    return (this as? EudiComponentActivity)?.getCachedIntent()?.data.let { uri ->
+        clearPendingIntent()
+        uri
     }
 }
 
-fun Context.getPendingDeepLink(): Uri? {
-    return (this as? EudiComponentActivity)?.pendingDeepLink?.let { deepLink ->
-        clearPendingDeepLink()
-        deepLink
+fun Context.getPendingIntent(): Intent? {
+    return (this as? EudiComponentActivity)?.getCachedIntent()?.let { intent ->
+        clearPendingIntent()
+        intent
     }
 }
 
-fun Context.cacheDeepLink(uri: Uri) {
+fun Context.cacheUri(uri: Uri) {
     val intent = Intent().apply {
         data = uri
     }
-    (this as? EudiComponentActivity)?.cacheDeepLink(intent)
+    (this as? EudiComponentActivity)?.cacheIntent(intent)
 }
 
 fun Context.finish() {
@@ -63,8 +58,8 @@ fun Context.findActivity(): ComponentActivity {
     throw IllegalStateException("No Activity found.")
 }
 
-private fun Context.clearPendingDeepLink() {
-    (this as? EudiComponentActivity)?.pendingDeepLink = null
+private fun Context.clearPendingIntent() {
+    (this as? EudiComponentActivity)?.cacheIntent(null)
 }
 
 /**

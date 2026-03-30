@@ -212,6 +212,13 @@
                     android:scheme="${rqesDocRetrievalScheme}" />
 
             </intent-filter>
+
+            <intent-filter> <!--Required for DCAPI -->
+                <action android:name="androidx.credentials.registry.provider.action.GET_CREDENTIAL" />
+                <action android:name="androidx.identitycredentials.action.GET_CREDENTIALS" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <provider

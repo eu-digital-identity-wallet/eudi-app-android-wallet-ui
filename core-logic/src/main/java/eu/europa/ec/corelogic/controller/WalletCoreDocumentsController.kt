@@ -19,9 +19,12 @@ package eu.europa.ec.corelogic.controller
 import androidx.core.net.toUri
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.config.VciConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfig
+import eu.europa.ec.corelogic.di.WalletCoreScope
+import eu.europa.ec.corelogic.di.getOrCreateKoinScope
 import eu.europa.ec.corelogic.extension.documentIdentifier
 import eu.europa.ec.corelogic.extension.getLocalizedDisplayName
 import eu.europa.ec.corelogic.extension.parseTransactionLog
@@ -216,14 +219,33 @@ interface WalletCoreDocumentsController {
 
 class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
-    private val eudiWallet: EudiWallet,
     private val walletCoreConfig: WalletCoreConfig,
     private val bookmarkDao: BookmarkDao,
     private val transactionLogDao: TransactionLogDao,
     private val revokedDocumentDao: RevokedDocumentDao,
     private val failedReIssuedDocumentDao: FailedReIssuedDocumentDao,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val prefKeys: PrefKeys,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    walletCore: EudiWallet? = null,
 ) : WalletCoreDocumentsController {
+
+    private var _eudiWallet: EudiWallet? = walletCore
+
+    private val eudiWallet: EudiWallet
+        get() {
+
+            val sessionId = prefKeys.getSessionId()
+
+            if (sessionId.isEmpty()) {
+                throw RuntimeException("Missing SessionId")
+            }
+
+            return _eudiWallet
+                ?: getOrCreateKoinScope<WalletCoreScope>(sessionId).get<EudiWallet>()
+                    .also {
+                        _eudiWallet = it
+                    }
+        }
 
     private val genericErrorMessage
         get() = resourceProvider.genericErrorMessage()

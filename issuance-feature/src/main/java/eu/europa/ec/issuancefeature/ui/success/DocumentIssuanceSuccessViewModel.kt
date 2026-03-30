@@ -16,6 +16,7 @@
 
 package eu.europa.ec.issuancefeature.ui.success
 
+import android.content.Intent
 import androidx.lifecycle.viewModelScope
 import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.ui.document_success.DocumentSuccessViewModel
@@ -72,6 +73,10 @@ class DocumentIssuanceSuccessViewModel(
                 }
             }
         }
+    }
+
+    override fun getPendingIntent(): Intent? {
+        return null
     }
 
     private fun getDeserializedIssuanceSuccessUiConfig(): IssuanceSuccessUiConfig {

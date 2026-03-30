@@ -82,8 +82,8 @@ import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.applyTestTag
-import eu.europa.ec.uilogic.extension.cacheDeepLink
-import eu.europa.ec.uilogic.extension.getPendingDeepLink
+import eu.europa.ec.uilogic.extension.cacheUri
+import eu.europa.ec.uilogic.extension.getPendingUri
 import eu.europa.ec.uilogic.extension.paddingFrom
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.CoroutineScope
@@ -199,7 +199,7 @@ fun DocumentDetailsScreen(
         lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
-        viewModel.setEvent(Event.Init(context.getPendingDeepLink()))
+        viewModel.setEvent(Event.Init(context.getPendingUri()))
     }
 }
 
@@ -258,7 +258,7 @@ private fun handleNavigationEffect(
 
         is Effect.Navigation.DeepLink -> {
             navigationEffect.routeToPop?.let {
-                context.cacheDeepLink(navigationEffect.link)
+                context.cacheUri(navigationEffect.link)
                 navController.popBackStack(
                     route = it,
                     inclusive = false

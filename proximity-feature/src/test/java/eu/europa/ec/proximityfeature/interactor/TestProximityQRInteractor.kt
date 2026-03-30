@@ -16,7 +16,6 @@
 
 package eu.europa.ec.proximityfeature.interactor
 
-import androidx.activity.ComponentActivity
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.corelogic.controller.PresentationControllerConfig
@@ -27,8 +26,6 @@ import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
-import eu.europa.ec.testlogic.base.TestApplication
-import eu.europa.ec.testlogic.base.createActivity
 import eu.europa.ec.testlogic.extension.expectNoEvents
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
@@ -44,18 +41,14 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import java.net.URI
 
-@RunWith(RobolectricTestRunner::class)
-@Config(application = TestApplication::class)
 class TestProximityQRInteractor {
 
     @get:Rule
@@ -323,8 +316,7 @@ class TestProximityQRInteractor {
     // with those exact arguments.
     @Test
     fun `Given Case 1, When toggleNfcEngagement is called, Then Case 1 Expected Result is returned`() {
-        val componentActivity =
-            createActivity(EudiComponentActivity::class.java) as ComponentActivity
+        val componentActivity = mock<EudiComponentActivity>()
 
         interactor.toggleNfcEngagement(
             componentActivity = componentActivity,
@@ -347,8 +339,7 @@ class TestProximityQRInteractor {
     // with those exact arguments.
     @Test
     fun `Given Case 2, When toggleNfcEngagement is called, Then Case 2 Expected Result is returned`() {
-        val componentActivity =
-            createActivity(EudiComponentActivity::class.java) as ComponentActivity
+        val componentActivity = mock<EudiComponentActivity>()
 
         interactor.toggleNfcEngagement(
             componentActivity = componentActivity,

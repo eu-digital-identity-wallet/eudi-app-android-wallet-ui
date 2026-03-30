@@ -17,7 +17,8 @@
 package eu.europa.ec.commonfeature.interactor
 
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.di.WalletPresentationScope
+import eu.europa.ec.corelogic.di.getOrCreateKoinScope
 
 interface ScopedPresentationInteractor {
     val presentationScopeId: String
@@ -35,7 +36,7 @@ abstract class ScopedPresentationInteractorDelegate(
 
     protected val walletCorePresentationController: WalletCorePresentationController
         get() = _walletCorePresentationController
-            ?: getOrCreatePresentationScope(presentationScopeId).get<WalletCorePresentationController>()
+            ?: getOrCreateKoinScope<WalletPresentationScope>(presentationScopeId).get<WalletCorePresentationController>()
                 .also {
                     _walletCorePresentationController = it
                 }

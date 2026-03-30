@@ -40,9 +40,12 @@ import eu.europa.ec.uilogic.mvi.ViewState
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.DashboardScreens
 import eu.europa.ec.uilogic.navigation.helper.DeepLinkType
+import eu.europa.ec.uilogic.navigation.helper.IntentAction
+import eu.europa.ec.uilogic.navigation.helper.IntentType
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
+import eu.europa.ec.uilogic.navigation.helper.hasIntentAction
 import eu.europa.ec.uilogic.serializer.UiSerializer
 import org.koin.core.annotation.KoinViewModel
 
@@ -62,7 +65,10 @@ data class State(
 ) : ViewState
 
 sealed class Event : ViewEvent {
-    data class Init(val deepLinkUri: Uri?) : Event()
+    data class Init(
+        val intent: Intent?
+    ) : Event()
+
     data object Pop : Event()
 
     data class DocumentRevocationNotificationReceived(
@@ -98,6 +104,11 @@ sealed class Effect : ViewSideEffect {
 
         data class OpenDeepLinkAction(val deepLinkUri: Uri, val arguments: String?) :
             Navigation()
+
+        data class OpenIntentAction(
+            val intentAction: IntentAction,
+            val arguments: String?
+        ) : Navigation()
 
         data object OnAppSettings : Navigation()
         data object OnSystemSettings : Navigation()
@@ -135,7 +146,7 @@ class DashboardViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.Init -> handleDeepLink(event.deepLinkUri)
+            is Event.Init -> handleDeepLink(event.intent)
 
             is Event.Pop -> setEffect { Effect.Navigation.Pop }
 
@@ -257,8 +268,8 @@ class DashboardViewModel(
         }
     }
 
-    private fun handleDeepLink(deepLinkUri: Uri?) {
-        deepLinkUri?.let { uri ->
+    private fun handleDeepLink(intent: Intent?) {
+        intent?.data?.let { uri ->
             hasDeepLink(uri)?.let {
                 val arguments: String? = when (it.type) {
                     DeepLinkType.OPENID4VP -> {
@@ -305,6 +316,30 @@ class DashboardViewModel(
                         deepLinkUri = uri,
                         arguments = arguments
                     )
+                }
+            }
+        } ?: hasIntentAction(intent)?.let { action ->
+            when (action.type) {
+                IntentType.DC_API -> {
+                    val arguments: String = generateComposableArguments(
+                        mapOf(
+                            RequestUriConfig.serializedKeyName to uiSerializer.toBase64(
+                                RequestUriConfig(
+                                    PresentationMode.DcApi(
+                                        initiatorRoute = DashboardScreens.Dashboard.screenRoute
+                                    )
+                                ),
+                                RequestUriConfig.Parser
+                            )
+                        )
+                    )
+
+                    setEffect {
+                        Effect.Navigation.OpenIntentAction(
+                            intentAction = action,
+                            arguments = arguments
+                        )
+                    }
                 }
             }
         }
