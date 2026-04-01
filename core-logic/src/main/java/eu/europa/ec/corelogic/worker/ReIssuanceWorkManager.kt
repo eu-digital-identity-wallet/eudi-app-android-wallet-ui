@@ -24,6 +24,7 @@ import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.util.CoreActions
+import eu.europa.ec.corelogic.util.CoreActions.RE_ISSUANCE_IDS_DETAILS_EXTRA
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import kotlinx.coroutines.flow.first
@@ -48,6 +49,7 @@ class ReIssuanceWorkManager(
 
             val failed = mutableListOf<String>()
             val succeed = mutableListOf<String>()
+            val idsRemoved = mutableListOf<String>()
 
             val config = walletCoreConfig.documentIssuanceConfig.reissuanceRule
             val now = java.time.Instant.now()
@@ -80,14 +82,17 @@ class ReIssuanceWorkManager(
                     when (state) {
                         is IssueDocumentsPartialState.DeferredSuccess -> {
                             succeed.addAll(state.deferredDocuments.keys)
+                            idsRemoved.add(document.id)
                         }
 
                         is IssueDocumentsPartialState.PartialSuccess -> {
                             succeed.addAll(state.documentIds)
+                            idsRemoved.add(document.id)
                         }
 
                         is IssueDocumentsPartialState.Success -> {
                             succeed.addAll(state.documentIds)
+                            idsRemoved.add(document.id)
                         }
 
                         is IssueDocumentsPartialState.Failure -> {
@@ -109,6 +114,7 @@ class ReIssuanceWorkManager(
 
             if (succeed.isNotEmpty()) {
                 notifyDocumentsList()
+                notifyDocumentDetails(idsRemoved)
             }
 
             return Result.success()
@@ -127,6 +133,16 @@ class ReIssuanceWorkManager(
     @Throws(IllegalArgumentException::class)
     private suspend fun removeAllFailedFromStorage() {
         failedReIssuedDocumentDao.deleteAll()
+    }
+
+    private fun notifyDocumentDetails(removedIds: List<String>) {
+        val detailsIntent = Intent(CoreActions.RE_ISSUANCE_WORK_REFRESH_DETAILS_ACTION).apply {
+            putStringArrayListExtra(
+                RE_ISSUANCE_IDS_DETAILS_EXTRA,
+                ArrayList(removedIds)
+            )
+        }
+        applicationContext.sendBroadcast(detailsIntent)
     }
 
     private fun notifyDocumentsList() {

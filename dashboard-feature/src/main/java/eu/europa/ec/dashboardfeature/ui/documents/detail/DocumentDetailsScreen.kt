@@ -124,6 +124,7 @@ fun DocumentDetailsScreen(
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
                 CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION,
+                CoreActions.RE_ISSUANCE_WORK_REFRESH_DETAILS_ACTION,
                 CoreActions.VCI_RESUME_ACTION,
                 CoreActions.VCI_DYNAMIC_PRESENTATION
             ),
@@ -145,6 +146,15 @@ fun DocumentDetailsScreen(
                             ?: emptyList()
 
                         viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
+                    }
+
+                    CoreActions.RE_ISSUANCE_WORK_REFRESH_DETAILS_ACTION -> {
+                        val ids = it
+                            .getStringArrayListExtra(CoreActions.RE_ISSUANCE_IDS_DETAILS_EXTRA)
+                            ?.toList()
+                            ?: emptyList()
+
+                        viewModel.setEvent(Event.OnReIssuanceTriggered(ids))
                     }
                 }
             }

@@ -98,6 +98,7 @@ sealed class Event : ViewEvent {
     data object OnBookmarkRemoved : Event()
     data object IssuerCardPressed : Event()
     data class OnRevocationStatusChanged(val revokedIds: List<String>) : Event()
+    data class OnReIssuanceTriggered(val reIssuedIds: List<String>) : Event()
 
     sealed class IssuerDetails : Event() {
         data object OnExpandedStateChanged : IssuerDetails()
@@ -235,6 +236,10 @@ class DocumentDetailsViewModel(
             }
 
             is Event.OnRevocationStatusChanged -> {
+                getDocumentDetails(event)
+            }
+
+            is Event.OnReIssuanceTriggered -> {
                 getDocumentDetails(event)
             }
 
