@@ -65,15 +65,15 @@ class ReIssuanceWorkManager(
                     val belowMinCount =
                         credential.credentialsCount() <= config.minNumberOfCredentials
 
-                    val hasRotationUsePolicy =
-                        credential.credentialPolicy == CredentialPolicy.RotateUse
+                    val hasOneTimeUseUsePolicy =
+                        credential.credentialPolicy == CredentialPolicy.OneTimeUse
 
                     val expiresWithinThreshold =
                         credential.getValidUntil()
                             .map { validUntil -> validUntil.isBefore(expirationLimit) }
                             .getOrDefault(false)
 
-                    (belowMinCount && hasRotationUsePolicy) || expiresWithinThreshold
+                    (belowMinCount && hasOneTimeUseUsePolicy) || expiresWithinThreshold
                 }
                 .forEach { document ->
 
