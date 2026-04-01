@@ -240,7 +240,7 @@ class DocumentDetailsViewModel(
             }
 
             is Event.OnReIssuanceTriggered -> {
-                getDocumentDetails(event)
+                checkIfRemoved(event.reIssuedIds)
             }
 
             is Event.IssuerDetails.OnExpandedStateChanged -> toggleIssuerDetailsCardExpansionState()
@@ -291,6 +291,16 @@ class DocumentDetailsViewModel(
                     copy(isLoading = true)
                 }
                 documentDetailsInteractor.resumeOpenId4VciWithAuthorization(event.uri)
+            }
+        }
+    }
+
+    private fun checkIfRemoved(ids: List<String>) {
+        viewState.value.documentDetailsUi?.documentId?.let {
+            if (ids.contains(it)) {
+                setEffect {
+                    Effect.Navigation.Pop
+                }
             }
         }
     }
