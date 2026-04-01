@@ -25,6 +25,7 @@ import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.util.CoreActions
 import eu.europa.ec.corelogic.util.CoreActions.RE_ISSUANCE_IDS_DETAILS_EXTRA
+import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.model.FailedReIssuedDocument
 import kotlinx.coroutines.flow.first
@@ -63,13 +64,15 @@ class ReIssuanceWorkManager(
 
                     val belowMinCount =
                         credential.credentialsCount() <= config.minNumberOfCredentials
+                    val hasOneTimeUsePolicy =
+                        credential.credentialPolicy == CredentialPolicy.OneTimeUse
 
                     val expiresWithinThreshold =
                         credential.getValidUntil()
                             .map { validUntil -> validUntil.isBefore(expirationLimit) }
                             .getOrDefault(false)
 
-                    belowMinCount || expiresWithinThreshold
+                    (belowMinCount && hasOneTimeUsePolicy) || expiresWithinThreshold
                 }
                 .forEach { document ->
 
