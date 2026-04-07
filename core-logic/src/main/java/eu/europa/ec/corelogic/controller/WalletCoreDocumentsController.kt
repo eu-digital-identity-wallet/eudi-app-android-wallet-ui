@@ -415,7 +415,7 @@ class WalletCoreDocumentsControllerImpl(
         val manager: OpenId4VciManager? =
             openId4VciManagers.entries.find { (vciConfig, _) ->
                 vciConfig.config.issuerUrl == issuerId
-            }?.value
+            }?.value ?: openId4VciManagers.values.firstOrNull()
         require(manager != null) { documentErrorMessage }
 
         manager.reissueDocument(
