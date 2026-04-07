@@ -412,11 +412,11 @@ class WalletCoreDocumentsControllerImpl(
         prioritizeDeferred: Boolean
     ): Flow<IssueDocumentsPartialState> = callbackFlow {
 
-        val manager: OpenId4VciManager? =
-            openId4VciManagers.entries.find { (vciConfig, _) ->
-                vciConfig.config.issuerUrl == issuerId
-            }?.value ?: openId4VciManagers.values.firstOrNull()
-        require(manager != null) { documentErrorMessage }
+        val manager = getVciManager(
+            issuerId = issuerId,
+            useDefault = true,
+            errorMessage = documentErrorMessage
+        ).getOrThrow()
 
         manager.reissueDocument(
             documentId,
@@ -444,13 +444,11 @@ class WalletCoreDocumentsControllerImpl(
                 .credentialIssuerIdentifier
                 .toString()
 
-            val manager: OpenId4VciManager? = openId4VciManagers.entries
-                .find { (vciConfig, _) ->
-                    vciConfig.config.issuerUrl == issuerId
-                }?.value
-                ?: openId4VciManagers.values.firstOrNull()
-
-            require(manager != null) { documentErrorMessage }
+            val manager = getVciManager(
+                issuerId = issuerId,
+                useDefault = true,
+                errorMessage = documentErrorMessage
+            ).getOrThrow()
 
             manager.issueDocumentByOffer(
                 offer = offer,
@@ -550,15 +548,14 @@ class WalletCoreDocumentsControllerImpl(
     override fun resolveDocumentOffer(offerUri: String): Flow<ResolveDocumentOfferPartialState> =
         callbackFlow {
 
-            val issuerId = extractCredentialIssuerFromOfferUri(offerUri).getOrNull()
+            val issuerId = extractCredentialIssuerFromOfferUri(offerUri)
+                .getOrDefault("unknown")
 
-            val manager: OpenId4VciManager? = issuerId?.let { id ->
-                openId4VciManagers.entries.find { (vciConfig, _) ->
-                    vciConfig.config.issuerUrl == id
-                }?.value
-            } ?: openId4VciManagers.values.firstOrNull()
-
-            require(manager != null) { genericErrorMessage }
+            val manager = getVciManager(
+                issuerId = issuerId,
+                useDefault = true,
+                errorMessage = genericErrorMessage
+            ).getOrThrow()
 
             manager.resolveDocumentOffer(offerUri) { result ->
                 when (result) {
@@ -733,11 +730,11 @@ class WalletCoreDocumentsControllerImpl(
     ): Flow<IssueDocumentsPartialState> =
         callbackFlow {
 
-            val manager: OpenId4VciManager? =
-                openId4VciManagers.entries.find { (vciConfig, _) ->
-                    vciConfig.config.issuerUrl == issuerId
-                }?.value
-            require(manager != null) { documentErrorMessage }
+            val manager = getVciManager(
+                issuerId = issuerId,
+                useDefault = false,
+                errorMessage = documentErrorMessage
+            ).getOrThrow()
 
             manager.issueDocumentByConfigurationIdentifiers(
                 credentialConfigurationIds = configIds,
@@ -874,4 +871,19 @@ class WalletCoreDocumentsControllerImpl(
             val json = JSONObject(decoded)
             json.getString("credential_issuer")
         }
+
+    private fun getVciManager(
+        issuerId: String,
+        useDefault: Boolean,
+        errorMessage: String
+    ): Result<OpenId4VciManager> {
+
+        val manager = openId4VciManagers.entries
+            .firstOrNull { (vciConfig, _) -> vciConfig.config.issuerUrl == issuerId }
+            ?.value
+            ?: if (useDefault) openId4VciManagers.values.firstOrNull() else null
+
+        return manager?.let(Result.Companion::success)
+            ?: Result.failure(RuntimeException(errorMessage))
+    }
 }
