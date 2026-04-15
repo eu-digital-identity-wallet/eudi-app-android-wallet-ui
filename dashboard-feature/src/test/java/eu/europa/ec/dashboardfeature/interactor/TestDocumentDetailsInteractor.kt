@@ -18,6 +18,7 @@ package eu.europa.ec.dashboardfeature.interactor
 
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.provider.UuidProvider
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -89,6 +90,9 @@ class TestDocumentDetailsInteractor {
     @Mock
     private lateinit var configLogic: ConfigLogic
 
+    @Mock
+    private lateinit var deviceAuthenticationInteractor: DeviceAuthenticationInteractor
+
     private lateinit var interactor: DocumentDetailsInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -99,6 +103,7 @@ class TestDocumentDetailsInteractor {
 
         interactor = DocumentDetailsInteractorImpl(
             walletCoreDocumentsController = walletCoreDocumentsController,
+            deviceAuthenticationInteractor = deviceAuthenticationInteractor,
             resourceProvider = resourceProvider,
             uuidProvider = uuidProvider,
             configLogic = configLogic
@@ -398,6 +403,8 @@ class TestDocumentDetailsInteractor {
                         documentDetailsDomain = DocumentDetailsDomain(
                             docName = mockedPidDocName,
                             docId = mockedPidId,
+                            issuerId = "",
+                            documentConfigId = "",
                             documentIdentifier = DocumentIdentifier.MdocPid,
                             documentClaims = listOf(
                                 ClaimDomain.Primitive(

@@ -16,11 +16,17 @@
 
 package eu.europa.ec.dashboardfeature.interactor
 
+import android.content.Context
+import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
+import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
+import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.config.ConfigLogic
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.businesslogic.provider.UuidProvider
+import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.DeleteAllDocumentsPartialState
 import eu.europa.ec.corelogic.controller.DeleteDocumentPartialState
+import eu.europa.ec.corelogic.controller.IssueDocumentsPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.extension.localizedIssuerMetadata
 import eu.europa.ec.corelogic.model.DocumentIdentifier
@@ -38,6 +44,17 @@ import eu.europa.ec.uilogic.component.IssuerDetailsCardDataUi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+
+sealed class DocumentDetailsInteractorIssuancePartialState {
+    data object Success : DocumentDetailsInteractorIssuancePartialState()
+
+    data class Failure(val errorMessage: String) : DocumentDetailsInteractorIssuancePartialState()
+
+    data class UserAuthRequired(
+        val crypto: BiometricCrypto,
+        val resultHandler: DeviceAuthenticationResult,
+    ) : DocumentDetailsInteractorIssuancePartialState()
+}
 
 sealed class DocumentDetailsInteractorPartialState {
     data class Success(
@@ -88,10 +105,25 @@ interface DocumentDetailsInteractor {
     fun deleteBookmark(
         documentId: String
     ): Flow<DocumentDetailsInteractorDeleteBookmarkPartialState>
+
+    fun reIssueDocument(
+        documentId: String,
+        issuerId: String
+    ): Flow<DocumentDetailsInteractorIssuancePartialState>
+
+    fun handleUserAuth(
+        context: Context,
+        crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
+        resultHandler: DeviceAuthenticationResult
+    )
+
+    fun resumeOpenId4VciWithAuthorization(uri: String)
 }
 
 class DocumentDetailsInteractorImpl(
     private val walletCoreDocumentsController: WalletCoreDocumentsController,
+    private val deviceAuthenticationInteractor: DeviceAuthenticationInteractor,
     private val resourceProvider: ResourceProvider,
     private val uuidProvider: UuidProvider,
     private val configLogic: ConfigLogic
@@ -234,4 +266,95 @@ class DocumentDetailsInteractorImpl(
         }.safeAsync {
             DocumentDetailsInteractorDeleteBookmarkPartialState.Failure
         }
+
+    override fun reIssueDocument(
+        documentId: String,
+        issuerId: String
+    ): Flow<DocumentDetailsInteractorIssuancePartialState> = flow {
+
+        walletCoreDocumentsController.reIssueDocument(
+            documentId = documentId,
+            issuerId = issuerId,
+            allowAuthorizationFallback = true
+        ).collect { state ->
+
+            val successIds: MutableList<String> = mutableListOf()
+            var isDeferred = false
+            var error: String? = null
+            var authenticationData: Pair<BiometricCrypto, DeviceAuthenticationResult>? = null
+
+            when (state) {
+                is IssueDocumentsPartialState.DeferredSuccess -> {
+                    isDeferred = true
+                }
+
+                is IssueDocumentsPartialState.Failure -> {
+                    error = state.errorMessage
+                }
+
+                is IssueDocumentsPartialState.PartialSuccess -> {
+                    successIds.addAll(state.documentIds)
+                }
+
+                is IssueDocumentsPartialState.Success -> {
+                    successIds.addAll(state.documentIds)
+                }
+
+                is IssueDocumentsPartialState.UserAuthRequired -> {
+                    authenticationData = state.crypto to state.resultHandler
+                }
+            }
+
+            val state = if (successIds.isNotEmpty() || isDeferred) {
+                DocumentDetailsInteractorIssuancePartialState.Success
+            } else if (error != null) {
+                DocumentDetailsInteractorIssuancePartialState.Failure(error)
+            } else if (authenticationData != null) {
+                DocumentDetailsInteractorIssuancePartialState.UserAuthRequired(
+                    authenticationData.first,
+                    authenticationData.second
+                )
+            } else {
+                DocumentDetailsInteractorIssuancePartialState.Failure(genericErrorMsg)
+            }
+
+            emit(state)
+        }
+    }.safeAsync {
+        DocumentDetailsInteractorIssuancePartialState.Failure(
+            errorMessage = it.localizedMessage ?: genericErrorMsg
+        )
+    }
+
+    override fun handleUserAuth(
+        context: Context,
+        crypto: BiometricCrypto,
+        notifyOnAuthenticationFailure: Boolean,
+        resultHandler: DeviceAuthenticationResult
+    ) {
+        deviceAuthenticationInteractor.getBiometricsAvailability {
+            when (it) {
+                is BiometricsAvailability.CanAuthenticate -> {
+                    deviceAuthenticationInteractor.authenticateWithBiometrics(
+                        context = context,
+                        crypto = crypto,
+                        notifyOnAuthenticationFailure = notifyOnAuthenticationFailure,
+                        resultHandler = resultHandler
+                    )
+                }
+
+                is BiometricsAvailability.NonEnrolled -> {
+                    deviceAuthenticationInteractor.launchBiometricSystemScreen()
+                }
+
+                is BiometricsAvailability.Failure -> {
+                    resultHandler.onAuthenticationFailure()
+                }
+            }
+        }
+    }
+
+    override fun resumeOpenId4VciWithAuthorization(uri: String) {
+        walletCoreDocumentsController.resumeOpenId4VciWithAuthorization(uri)
+    }
 }

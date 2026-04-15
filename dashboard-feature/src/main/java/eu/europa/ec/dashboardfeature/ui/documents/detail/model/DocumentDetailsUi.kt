@@ -26,6 +26,8 @@ enum class DocumentIssuanceStateUi {
 
 data class DocumentDetailsUi(
     val documentId: DocumentId,
+    val issuerId: String,
+    val documentConfigId: String,
     val documentName: String,
     val documentIdentifier: DocumentIdentifier,
     val documentIssuanceStateUi: DocumentIssuanceStateUi,

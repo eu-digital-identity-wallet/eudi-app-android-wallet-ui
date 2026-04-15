@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2025 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -14,13 +14,13 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.testlogic.base
+package eu.europa.ec.storagelogic.model
 
-import android.app.Activity
-import org.robolectric.Robolectric
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-fun <T : Activity> createActivity(activity: Class<T>): Activity {
-    return Robolectric.buildActivity(activity)
-        .setup()
-        .get()
-}
+@Entity(tableName = "failedReIssuedDocuments")
+data class FailedReIssuedDocument(
+    @PrimaryKey
+    val identifier: String
+)

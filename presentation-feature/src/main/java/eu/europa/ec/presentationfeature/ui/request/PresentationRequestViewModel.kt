@@ -25,7 +25,7 @@ import eu.europa.ec.commonfeature.config.RequestUriConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractor
 import eu.europa.ec.presentationfeature.interactor.PresentationRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -37,6 +37,7 @@ import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.navigation.CommonScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
+import eu.europa.ec.uilogic.navigation.helper.IntentAction
 import eu.europa.ec.uilogic.navigation.helper.generateComposableArguments
 import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
@@ -97,8 +98,7 @@ class PresentationRequestViewModel(
         )
     }
 
-    override fun doWork() {
-
+    override fun init(intentAction: IntentAction?) {
         val requestUriConfig = uiSerializer.fromBase64(
             requestUriConfigRaw,
             RequestUriConfig::class.java,
@@ -107,15 +107,27 @@ class PresentationRequestViewModel(
 
         setState {
             copy(
-                isLoading = true,
-                error = null,
-                presentationScopeId = requestUriConfig.presentationScopeId
+                presentationScopeId = requestUriConfig.presentationScopeId,
+                intentAction = intentAction,
             )
         }
 
-        interactor.setConfig(requestUriConfig)
+        interactor.setConfig(requestUriConfig, intentAction)
+
+        doWork()
+    }
+
+    override fun doWork() {
+
+        setState {
+            copy(
+                isLoading = true,
+                error = null
+            )
+        }
 
         viewModelJob = viewModelScope.launch {
+
             interactor.getRequestDocuments().collect { response ->
                 when (response) {
                     is PresentationRequestInteractorPartialState.Failure -> {
@@ -125,7 +137,7 @@ class PresentationRequestViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(Event.DoWork) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.Pop) }
+                                    onCancel = { setEvent(Event.OnBack) }
                                 )
                             )
                         }
@@ -152,7 +164,7 @@ class PresentationRequestViewModel(
                     }
 
                     is PresentationRequestInteractorPartialState.Disconnect -> {
-                        setEvent(Event.Pop)
+                        setEvent(Event.OnBack)
                     }
 
                     is PresentationRequestInteractorPartialState.NoData -> {
@@ -188,7 +200,7 @@ class PresentationRequestViewModel(
     override fun cleanUp() {
         super.cleanUp()
         interactor.stopPresentation()
-        getOrCreatePresentationScope(viewState.value.presentationScopeId).close()
+        getOrNullKoinScope(viewState.value.presentationScopeId)?.close()
     }
 
     private fun getRelyingPartyData(

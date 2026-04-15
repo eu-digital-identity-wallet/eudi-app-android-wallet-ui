@@ -58,7 +58,10 @@ class ProximityQRInteractorImpl(
 
     override fun setConfig(config: RequestUriConfig) {
         setScopeId(config.presentationScopeId)
-        walletCorePresentationController.setConfig(config.toDomainConfig())
+
+        walletCorePresentationController.setConfig(
+            config.toDomainConfig(intentAction = null)
+        )
     }
 
     override fun startQrEngagement(): Flow<ProximityQRPartialState> = flow {

@@ -14,20 +14,26 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.proximityfeature.ui.request
+package eu.europa.ec.uilogic.navigation.helper
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
-import eu.europa.ec.commonfeature.ui.request.RequestScreen
+import android.content.Intent
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
-@Composable
-fun ProximityRequestScreen(
-    navController: NavController,
-    viewModel: ProximityRequestViewModel
-) {
-    RequestScreen(
-        intentAction = null,
-        navController = navController,
-        viewModel = viewModel
-    )
+const val INTENT_ACTION_KEY = "intent_action"
+
+@Parcelize
+data class IntentAction(
+    val intent: Intent,
+    val type: IntentType
+) : Parcelable
+
+enum class IntentType(val associatedActions: List<String>) {
+    DC_API(
+        associatedActions = listOf(
+            "androidx.identitycredentials.action.get_credentials",
+            "androidx.credentials.registry.provider.action.get_credential"
+        )
+    ),
 }
+

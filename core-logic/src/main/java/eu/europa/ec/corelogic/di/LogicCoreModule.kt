@@ -18,6 +18,8 @@ package eu.europa.ec.corelogic.di
 
 import android.content.Context
 import eu.europa.ec.businesslogic.controller.log.LogController
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
+import eu.europa.ec.businesslogic.di.LogicBusinessModule
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.corelogic.config.WalletCoreConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfigImpl
@@ -35,6 +37,7 @@ import eu.europa.ec.eudi.wallet.EudiWallet
 import eu.europa.ec.networklogic.repository.WalletAttestationRepository
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
+import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import io.ktor.client.HttpClient
@@ -47,12 +50,13 @@ import org.koin.core.annotation.Scoped
 import org.koin.core.annotation.Single
 import org.koin.mp.KoinPlatform
 
-@Module
+@Module([LogicBusinessModule::class])
 @Configuration
 @ComponentScan("eu.europa.ec.corelogic")
 class LogicCoreModule
 
-@Single
+@Scope(WalletCoreScope::class)
+@Scoped
 fun provideEudiWallet(
     context: Context,
     walletCoreConfig: WalletCoreConfig,
@@ -75,11 +79,11 @@ fun provideWalletCoreConfig(
     context: Context,
 ): WalletCoreConfig = WalletCoreConfigImpl(context)
 
-@Single
+@Factory
 fun provideWalletCoreLogController(logController: LogController): WalletCoreLogController =
     WalletCoreLogControllerImpl(logController)
 
-@Single
+@Factory
 fun provideWalletCoreTransactionLogController(
     transactionLogDao: TransactionLogDao,
     uuidProvider: UuidProvider
@@ -88,7 +92,7 @@ fun provideWalletCoreTransactionLogController(
     uuidProvider = uuidProvider
 )
 
-@Single
+@Factory
 fun provideWalletCoreAttestationProvider(
     walletAttestationRepository: WalletAttestationRepository,
     walletCoreConfig: WalletCoreConfig
@@ -101,30 +105,32 @@ fun provideWalletCoreAttestationProvider(
 @Factory
 fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
-    eudiWallet: EudiWallet,
     walletCoreConfig: WalletCoreConfig,
     bookmarkDao: BookmarkDao,
     transactionLogDao: TransactionLogDao,
-    revokedDocumentDao: RevokedDocumentDao
+    revokedDocumentDao: RevokedDocumentDao,
+    failedReIssuedDocumentDao: FailedReIssuedDocumentDao,
+    prefKeys: PrefKeys
 ): WalletCoreDocumentsController =
     WalletCoreDocumentsControllerImpl(
         resourceProvider,
-        eudiWallet,
         walletCoreConfig,
         bookmarkDao,
         transactionLogDao,
-        revokedDocumentDao
+        revokedDocumentDao,
+        failedReIssuedDocumentDao,
+        prefKeys
     )
 
 @Scope(WalletPresentationScope::class)
 @Scoped
 fun provideWalletCorePresentationController(
-    eudiWallet: EudiWallet,
     resourceProvider: ResourceProvider,
+    prefKeys: PrefKeys,
 ): WalletCorePresentationController =
     WalletCorePresentationControllerImpl(
-        eudiWallet,
-        resourceProvider
+        resourceProvider = resourceProvider,
+        prefKeys = prefKeys,
     )
 
 /**
@@ -135,7 +141,24 @@ fun provideWalletCorePresentationController(
 class WalletPresentationScope
 
 /**
+ * Koin scope that defines the lifecycle for core wallet components.
+ * This scope is used to manage the EUDI Wallet instance and its related
+ * dependencies, ensuring they are preserved across the core logic operations.
+ */
+@Scope
+class WalletCoreScope
+
+/**
  * Get Koin scope that lives during document presentation flow
  * */
-fun getOrCreatePresentationScope(scopeId: String): org.koin.core.scope.Scope =
-    KoinPlatform.getKoin().getOrCreateScope<WalletPresentationScope>(scopeId)
+inline fun <reified T : Any> getOrCreateKoinScope(scopeId: String): org.koin.core.scope.Scope =
+    KoinPlatform.getKoin().getOrCreateScope<T>(scopeId)
+
+/**
+ * Retrieves an existing Koin scope by its identifier.
+ *
+ * @param scopeId The unique identifier of the scope to retrieve.
+ * @return The [org.koin.core.scope.Scope] instance if it exists, or null if no scope with the given ID is found.
+ */
+fun getOrNullKoinScope(scopeId: String): org.koin.core.scope.Scope? =
+    KoinPlatform.getKoin().getScopeOrNull(scopeId)

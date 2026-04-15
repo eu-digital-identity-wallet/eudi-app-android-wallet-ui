@@ -23,6 +23,8 @@ import eu.europa.ec.eudi.wallet.document.DocumentId
 data class DocumentDetailsDomain(
     val docName: String,
     val docId: DocumentId,
+    val issuerId: String,
+    val documentConfigId: String,
     val documentIdentifier: DocumentIdentifier,
     val documentClaims: List<ClaimDomain>,
     val documentIssuanceDate: String,

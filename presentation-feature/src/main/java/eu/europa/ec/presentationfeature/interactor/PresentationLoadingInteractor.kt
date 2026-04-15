@@ -17,6 +17,7 @@
 package eu.europa.ec.presentationfeature.interactor
 
 import android.content.Context
+import android.content.Intent
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
@@ -40,6 +41,7 @@ sealed class PresentationLoadingObserveResponsePartialState {
     data object Success : PresentationLoadingObserveResponsePartialState()
     data class Redirect(val uri: URI) : PresentationLoadingObserveResponsePartialState()
     data object RequestReadyToBeSent : PresentationLoadingObserveResponsePartialState()
+    data class IntentToSend(val intent: Intent) : PresentationLoadingObserveResponsePartialState()
 }
 
 sealed class PresentationLoadingSendRequestedDocumentPartialState {
@@ -86,6 +88,12 @@ class PresentationLoadingInteractorImpl(
                 }
 
                 is WalletCorePartialState.RequestIsReadyToBeSent -> PresentationLoadingObserveResponsePartialState.RequestReadyToBeSent
+
+                is WalletCorePartialState.IntentToSend -> {
+                    PresentationLoadingObserveResponsePartialState.IntentToSend(
+                        intent = response.intent
+                    )
+                }
             }
         }
 

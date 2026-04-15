@@ -24,7 +24,7 @@ import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
 import eu.europa.ec.commonfeature.ui.request.Event
 import eu.europa.ec.commonfeature.ui.request.RequestViewModel
 import eu.europa.ec.commonfeature.ui.request.model.RequestDocumentItemUi
-import eu.europa.ec.corelogic.di.getOrCreatePresentationScope
+import eu.europa.ec.corelogic.di.getOrNullKoinScope
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractor
 import eu.europa.ec.proximityfeature.interactor.ProximityRequestInteractorPartialState
 import eu.europa.ec.resourceslogic.R
@@ -119,7 +119,7 @@ class ProximityRequestViewModel(
                                 error = ContentErrorConfig(
                                     onRetry = { setEvent(Event.DoWork) },
                                     errorSubTitle = response.error,
-                                    onCancel = { setEvent(Event.Pop) }
+                                    onCancel = { setEvent(Event.OnBack) }
                                 )
                             )
                         }
@@ -146,7 +146,7 @@ class ProximityRequestViewModel(
                     }
 
                     is ProximityRequestInteractorPartialState.Disconnect -> {
-                        setEvent(Event.Pop)
+                        setEvent(Event.OnBack)
                     }
 
                     is ProximityRequestInteractorPartialState.NoData -> {
@@ -182,7 +182,7 @@ class ProximityRequestViewModel(
     override fun cleanUp() {
         super.cleanUp()
         interactor.stopPresentation()
-        getOrCreatePresentationScope(presentationScopeId).close()
+        getOrNullKoinScope(presentationScopeId)?.close()
     }
 
     private fun getRelyingPartyData(

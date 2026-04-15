@@ -403,11 +403,11 @@ class TestPresentationRequestInteractor {
             PresentationMode.Ble(initiatorRoute = mockedInitiatorRoute)
         )
         // When
-        interactor.setConfig(config = requestConfig)
+        interactor.setConfig(config = requestConfig, intentAction = null)
 
         // Then
         verify(walletCorePresentationController, times(1))
-            .setConfig(config = requestConfig.toDomainConfig())
+            .setConfig(config = requestConfig.toDomainConfig(intentAction = null))
 
         assertEquals(interactor.presentationScopeId, "ble_presentation_scope_id")
     }

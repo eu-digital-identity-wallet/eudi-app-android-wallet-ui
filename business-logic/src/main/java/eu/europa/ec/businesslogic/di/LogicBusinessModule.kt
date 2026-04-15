@@ -70,6 +70,11 @@ fun provideKeystoreController(
 ): KeystoreController =
     KeystoreControllerImpl(prefKeys, logController, uuidProvider)
 
+@Single
+fun provideUuidProvider(): UuidProvider {
+    return UuidProviderImpl()
+}
+
 @Factory
 fun provideCryptoController(keystoreController: KeystoreController): CryptoController =
     CryptoControllerImpl(keystoreController)
@@ -80,8 +85,3 @@ fun provideFormValidator(logController: LogController): FormValidator =
 
 @Factory
 fun provideFiltersValidator(): FilterValidator = FilterValidatorImpl()
-
-@Single
-fun provideUuidProvider(): UuidProvider {
-    return UuidProviderImpl()
-}

@@ -53,6 +53,8 @@ object DocumentDetailsTransformer {
         return@runCatching DocumentDetailsDomain(
             docName = document.name,
             docId = document.id,
+            issuerId = document.issuerMetadata?.credentialIssuerIdentifier.orEmpty(),
+            documentConfigId = document.issuerMetadata?.documentConfigurationIdentifier.orEmpty(),
             documentIdentifier = document.toDocumentIdentifier(),
             documentClaims = domainClaims,
             documentIssuanceDate = document.issuedAt.formatInstant(
@@ -71,6 +73,8 @@ object DocumentDetailsTransformer {
         return DocumentDetailsUi(
             documentId = this.docId,
             documentName = this.docName,
+            issuerId = this.issuerId,
+            documentConfigId = this.documentConfigId,
             documentIdentifier = this.documentIdentifier,
             documentIssuanceStateUi = DocumentIssuanceStateUi.Issued,
             documentClaims = documentDetailsUi,

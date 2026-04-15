@@ -16,6 +16,7 @@
 
 package eu.europa.ec.corelogic.util
 
+import android.content.Intent
 import eu.europa.ec.eudi.iso18013.transfer.TransferEvent
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestProcessor
 import java.net.URI
@@ -29,7 +30,7 @@ class EudiWalletListenerWrapper(
     private val onRequestReceived: (RequestProcessor.ProcessedRequest) -> Unit,
     private val onResponseSent: () -> Unit,
     private val onRedirect: (URI) -> Unit,
-    private val intentToSend: () -> Unit
+    private val intentToSend: (Intent) -> Unit
 ) : TransferEvent.Listener {
     override fun onTransferEvent(event: TransferEvent) {
         when (event) {
@@ -41,7 +42,7 @@ class EudiWalletListenerWrapper(
             is TransferEvent.RequestReceived -> onRequestReceived(event.processedRequest)
             is TransferEvent.ResponseSent -> onResponseSent()
             is TransferEvent.Redirect -> onRedirect(event.redirectUri)
-            is TransferEvent.IntentToSend -> intentToSend()
+            is TransferEvent.IntentToSend -> intentToSend(event.intent)
         }
     }
 }

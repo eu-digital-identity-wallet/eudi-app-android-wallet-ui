@@ -69,7 +69,8 @@ class ProximityLoadingInteractorImpl(
                     error = response.error
                 )
 
-                is WalletCorePartialState.Redirect -> null
+                is WalletCorePartialState.Redirect,
+                is WalletCorePartialState.IntentToSend -> null
 
                 is WalletCorePartialState.Success -> ProximityLoadingObserveResponsePartialState.Success
                 is WalletCorePartialState.UserAuthenticationRequired -> {

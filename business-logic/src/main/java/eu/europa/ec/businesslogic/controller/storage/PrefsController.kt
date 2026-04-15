@@ -309,6 +309,8 @@ class PrefsControllerImpl(
 interface PrefKeys {
     fun getCryptoAlias(): String
     fun setCryptoAlias(value: String)
+    fun setSessionId(value: String)
+    fun getSessionId(): String
 }
 
 class PrefKeysImpl(
@@ -328,7 +330,6 @@ class PrefKeysImpl(
         return prefsController.getString("CryptoAlias", "")
     }
 
-
     /**
      * Stores the crypto alias used for the secret key in android keystore.
      * This is used for cryptographic operations not related to biometrics.
@@ -338,4 +339,21 @@ class PrefKeysImpl(
     override fun setCryptoAlias(value: String) {
         prefsController.setString("CryptoAlias", value)
     }
+
+    /**
+     * Stores the session identifier in the application's shared preferences.
+     * This ID is used to maintain the current session state across application launches.
+     *
+     * @param value The session identifier string to be stored.
+     */
+    override fun setSessionId(value: String) {
+        prefsController.setString("SessionId", value)
+    }
+
+    /**
+     * Retrieves the unique session identifier from the application storage.
+     *
+     * @return The current session ID string, or an empty string if no session ID has been set.
+     */
+    override fun getSessionId(): String = prefsController.getString("SessionId", "")
 }

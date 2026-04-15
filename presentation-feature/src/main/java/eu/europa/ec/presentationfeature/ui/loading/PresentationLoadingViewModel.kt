@@ -124,6 +124,10 @@ class PresentationLoadingViewModel(
                             }
                         )
                     }
+
+                    is PresentationLoadingObserveResponsePartialState.IntentToSend -> {
+                        onSuccess()
+                    }
                 }
             }
         }

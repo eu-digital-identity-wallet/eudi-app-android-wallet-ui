@@ -28,6 +28,7 @@ import eu.europa.ec.corelogic.controller.TransferEventPartialState
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
 import eu.europa.ec.corelogic.controller.WalletCorePresentationController
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
+import eu.europa.ec.uilogic.navigation.helper.IntentAction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
 
@@ -51,7 +52,7 @@ interface PresentationRequestInteractor : ScopedPresentationInteractor {
     fun getRequestDocuments(): Flow<PresentationRequestInteractorPartialState>
     fun stopPresentation()
     fun updateRequestedDocuments(items: List<RequestDocumentItemUi>)
-    fun setConfig(config: RequestUriConfig)
+    fun setConfig(config: RequestUriConfig, intentAction: IntentAction?)
 }
 
 class PresentationRequestInteractorImpl(
@@ -65,9 +66,12 @@ class PresentationRequestInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun setConfig(config: RequestUriConfig) {
+    override fun setConfig(config: RequestUriConfig, intentAction: IntentAction?) {
         setScopeId(config.presentationScopeId)
-        walletCorePresentationController.setConfig(config.toDomainConfig())
+
+        walletCorePresentationController.setConfig(
+            config.toDomainConfig(intentAction = intentAction)
+        )
     }
 
     override fun getRequestDocuments(): Flow<PresentationRequestInteractorPartialState> =

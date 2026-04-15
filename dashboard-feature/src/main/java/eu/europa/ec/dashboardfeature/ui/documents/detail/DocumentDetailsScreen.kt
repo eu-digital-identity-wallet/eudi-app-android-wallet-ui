@@ -16,6 +16,7 @@
 
 package eu.europa.ec.dashboardfeature.ui.documents.detail
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,6 +36,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -80,7 +82,10 @@ import eu.europa.ec.uilogic.component.wrap.WrapButton
 import eu.europa.ec.uilogic.component.wrap.WrapListItems
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
 import eu.europa.ec.uilogic.extension.applyTestTag
+import eu.europa.ec.uilogic.extension.cacheUri
+import eu.europa.ec.uilogic.extension.getPendingUri
 import eu.europa.ec.uilogic.extension.paddingFrom
+import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -102,8 +107,10 @@ fun DocumentDetailsScreen(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val context = LocalContext.current
 
     val toolbarConfig = getToolbarConfig(
+        context = context,
         state = state,
         onEventSend = { viewModel.setEvent(it) }
     )
@@ -116,24 +123,54 @@ fun DocumentDetailsScreen(
         toolBarConfig = toolbarConfig,
         broadcastAction = BroadcastAction(
             intentFilters = listOf(
-                CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION
+                CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION,
+                CoreActions.RE_ISSUANCE_WORK_REFRESH_DETAILS_ACTION,
+                CoreActions.VCI_RESUME_ACTION,
+                CoreActions.VCI_DYNAMIC_PRESENTATION
             ),
             callback = {
-                val ids = it
-                    ?.getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)
-                    ?.toList()
-                    ?: emptyList()
+                when (it?.action) {
+                    CoreActions.VCI_RESUME_ACTION -> it.extras?.getString("uri")?.let { link ->
+                        viewModel.setEvent(Event.OnResumeIssuance(link))
+                    }
 
-                viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
+                    CoreActions.VCI_DYNAMIC_PRESENTATION -> it.extras?.getString("uri")
+                        ?.let { link ->
+                            viewModel.setEvent(Event.OnDynamicPresentation(link))
+                        }
+
+                    CoreActions.REVOCATION_IDS_DETAILS_EXTRA -> {
+                        val ids = it
+                            .getStringArrayListExtra(CoreActions.REVOCATION_IDS_DETAILS_EXTRA)
+                            ?.toList()
+                            ?: emptyList()
+
+                        viewModel.setEvent(Event.OnRevocationStatusChanged(ids))
+                    }
+
+                    CoreActions.RE_ISSUANCE_WORK_REFRESH_DETAILS_ACTION -> {
+                        val ids = it
+                            .getStringArrayListExtra(CoreActions.RE_ISSUANCE_IDS_DETAILS_EXTRA)
+                            ?.toList()
+                            ?: emptyList()
+
+                        viewModel.setEvent(Event.OnReIssuanceTriggered(ids))
+                    }
+                }
             }
         )
     ) { paddingValues ->
         Content(
+            context = context,
             state = state,
             effectFlow = viewModel.effect,
             onEventSend = { viewModel.setEvent(it) },
             onNavigationRequested = { navigationEffect ->
-                handleNavigationEffect(navigationEffect, navController)
+                handleNavigationEffect(
+                    context = context,
+                    navigationEffect = navigationEffect,
+                    navController = navController
+                )
             },
             paddingValues = paddingValues,
             coroutineScope = scope,
@@ -163,14 +200,22 @@ fun DocumentDetailsScreen(
 
     LifecycleEffect(
         lifecycleOwner = LocalLifecycleOwner.current,
+        lifecycleEvent = Lifecycle.Event.ON_PAUSE
+    ) {
+        viewModel.setEvent(Event.OnPause)
+    }
+
+    LifecycleEffect(
+        lifecycleOwner = LocalLifecycleOwner.current,
         lifecycleEvent = Lifecycle.Event.ON_RESUME
     ) {
-        viewModel.setEvent(Event.Init)
+        viewModel.setEvent(Event.Init(context.getPendingUri()))
     }
 }
 
 @Composable
 private fun getToolbarConfig(
+    context: Context,
     state: State,
     onEventSend: (Event) -> Unit
 ): ToolbarConfig {
@@ -186,7 +231,7 @@ private fun getToolbarConfig(
                 ToolbarActionUi(
                     text = stringResource(R.string.document_details_toolbar_action_reissue),
                     icon = null,
-                    onClick = { onEventSend(Event.IssuerDetails.OnActionButtonClicked) },
+                    onClick = { onEventSend(Event.IssuerDetails.OnActionButtonClicked(context)) },
                     enabled = !state.isLoading && state.issuerDetails?.documentState != IssuerDetailsCardDataUi.DocumentState.Revoked,
                     throttleClicks = true,
                 ),
@@ -206,6 +251,7 @@ private fun getToolbarConfig(
 }
 
 private fun handleNavigationEffect(
+    context: Context,
     navigationEffect: Effect.Navigation,
     navController: NavController,
 ) {
@@ -220,6 +266,16 @@ private fun handleNavigationEffect(
             }
         }
 
+        is Effect.Navigation.DeepLink -> {
+            navigationEffect.routeToPop?.let {
+                context.cacheUri(navigationEffect.link)
+                navController.popBackStack(
+                    route = it,
+                    inclusive = false
+                )
+            } ?: handleDeepLinkAction(navController, navigationEffect.link)
+        }
+
         is Effect.Navigation.Pop -> navController.popBackStack()
     }
 }
@@ -227,6 +283,7 @@ private fun handleNavigationEffect(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Content(
+    context: Context,
     state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
@@ -262,7 +319,7 @@ private fun Content(
                             onEventSend(Event.IssuerDetails.OnExpandedStateChanged)
                         },
                         onActionButtonClick = {
-                            onEventSend(Event.IssuerDetails.OnActionButtonClicked)
+                            onEventSend(Event.IssuerDetails.OnActionButtonClicked(context))
                         }
                     )
                 }
@@ -492,6 +549,8 @@ private fun DocumentDetailsScreenPreview() {
             ),
             documentDetailsUi = DocumentDetailsUi(
                 documentId = "1",
+                issuerId = "Id",
+                documentConfigId = "Id",
                 documentName = "Mobile Driving License",
                 documentIdentifier = DocumentIdentifier.OTHER(formatType = "org.iso.18013.5.1.mDL"),
                 documentClaims = listOf(
@@ -534,6 +593,7 @@ private fun DocumentDetailsScreenPreview() {
         )
 
         Content(
+            context = LocalContext.current,
             state = state,
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSend = {},
