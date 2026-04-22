@@ -104,7 +104,7 @@ class ReIssuanceWorkManager(
                         }
 
                         is IssueDocumentsPartialState.UserAuthRequired -> {
-                            state.resultHandler.onAuthenticationFailure
+                            state.resultHandler.onAuthenticationFailure()
                             failed.add(document.id)
                         }
                     }
