@@ -42,6 +42,14 @@ class PrefsPinStorageProvider(
         private const val ALGORITHM = "PBKDF2WithHmacSHA256"
     }
 
+    /**
+     * Checks if a PIN has been previously stored in the persistent storage.
+     *
+     * It verifies that all required components (salt, hash, and iteration count)
+     * are present and valid.
+     *
+     * @return `true` if a valid PIN configuration exists, `false` otherwise.
+     */
     override suspend fun hasPin(): Boolean = withContext(Dispatchers.IO) {
         val salt = prefsController.getString(KEY_PIN_SALT, "")
         val hash = prefsController.getString(KEY_PIN_HASH, "")
@@ -49,6 +57,14 @@ class PrefsPinStorageProvider(
         salt.isNotBlank() && hash.isNotBlank() && iterations > 0
     }
 
+    /**
+     * Hashes and securely stores a new PIN using PBKDF2 with a randomly generated salt.
+     *
+     * This method generates a unique salt, derives a hash from the provided [pin],
+     * and persists the salt, hash, and iteration count to the preference storage.
+     *
+     * @param pin The plain-text PIN to be stored.
+     */
     override suspend fun setPin(pin: String) {
 
         val salt = ByteArray(SALT_SIZE_BYTES).also {
@@ -76,6 +92,17 @@ class PrefsPinStorageProvider(
         }
     }
 
+    /**
+     * Validates whether the provided [pin] matches the stored hash.
+     *
+     * This method retrieves the salt, hash, and iteration count from the storage provider,
+     * derives a hash from the candidate PIN, and performs a constant-time comparison
+     * to determine validity while mitigating timing attacks.
+     *
+     * @param pin The candidate PIN string to be validated.
+     * @return `true` if the PIN is valid and matches the stored credentials; `false` if the
+     * PIN is blank, storage is uninitialized, or the PIN is incorrect.
+     */
     override suspend fun isPinValid(pin: String): Boolean {
 
         if (pin.isBlank()) return false
