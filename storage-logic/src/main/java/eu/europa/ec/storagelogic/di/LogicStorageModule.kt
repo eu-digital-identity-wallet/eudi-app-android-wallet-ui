@@ -18,11 +18,14 @@ package eu.europa.ec.storagelogic.di
 
 import android.content.Context
 import androidx.room.Room
+import eu.europa.ec.businesslogic.controller.crypto.CryptoController
+import eu.europa.ec.businesslogic.controller.storage.PrefKeys
 import eu.europa.ec.storagelogic.dao.BookmarkDao
 import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import eu.europa.ec.storagelogic.service.DatabaseService
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
@@ -34,12 +37,24 @@ import org.koin.core.annotation.Single
 class LogicStorageModule
 
 @Single
-fun provideAppDatabase(context: Context): DatabaseService =
-    Room.databaseBuilder(
+fun provideAppDatabase(
+    context: Context,
+    prefKeys: PrefKeys,
+    cryptoController: CryptoController
+): DatabaseService {
+    System.loadLibrary("sqlcipher")
+    val key = prefKeys.getDbKey() ?: cryptoController.createRandomKey(context).also {
+        prefKeys.setDbKey(it.toString(Charsets.UTF_8))
+    }
+    return Room.databaseBuilder(
         context,
         DatabaseService::class.java,
         "eudi.app.wallet.storage"
-    ).fallbackToDestructiveMigration(true).build()
+    )
+        .openHelperFactory(SupportOpenHelperFactory(key))
+        .fallbackToDestructiveMigration(true)
+        .build()
+}
 
 @Single
 fun provideBookmarkDao(service: DatabaseService): BookmarkDao = service.bookmarkDao()

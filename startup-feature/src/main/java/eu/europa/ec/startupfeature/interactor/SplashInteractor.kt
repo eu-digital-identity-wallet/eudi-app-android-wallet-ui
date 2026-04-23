@@ -37,7 +37,7 @@ import eu.europa.ec.uilogic.navigation.helper.generateComposableNavigationLink
 import eu.europa.ec.uilogic.serializer.UiSerializer
 
 interface SplashInteractor {
-    fun getAfterSplashRoute(): String
+    suspend fun getAfterSplashRoute(): String
 }
 
 class SplashInteractorImpl(
@@ -54,7 +54,7 @@ class SplashInteractorImpl(
     private val shouldActivateWithPid: Boolean
         get() = configLogic.forcePidActivation && !hasDocuments
 
-    override fun getAfterSplashRoute(): String = when (quickPinInteractor.hasPin()) {
+    override suspend fun getAfterSplashRoute(): String = when (quickPinInteractor.hasPin()) {
         true -> {
             getBiometricsConfig()
         }

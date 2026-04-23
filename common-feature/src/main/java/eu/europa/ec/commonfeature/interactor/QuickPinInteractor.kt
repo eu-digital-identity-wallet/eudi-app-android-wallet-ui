@@ -36,7 +36,7 @@ interface QuickPinInteractor : FormValidator {
         newPin: String
     ): Flow<QuickPinInteractorPinValidPartialState>
 
-    fun hasPin(): Boolean
+    suspend fun hasPin(): Boolean
 }
 
 class QuickPinInteractorImpl(
@@ -48,7 +48,7 @@ class QuickPinInteractorImpl(
     private val genericErrorMsg
         get() = resourceProvider.genericErrorMessage()
 
-    override fun hasPin(): Boolean = pinStorageController.retrievePin().isNotBlank()
+    override suspend fun hasPin(): Boolean = pinStorageController.hasPin()
 
     override fun setPin(
         newPin: String,

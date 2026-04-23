@@ -311,6 +311,8 @@ interface PrefKeys {
     fun setCryptoAlias(value: String)
     fun setSessionId(value: String)
     fun getSessionId(): String
+    fun setDbKey(value: String)
+    fun getDbKey(): ByteArray?
 }
 
 class PrefKeysImpl(
@@ -356,4 +358,27 @@ class PrefKeysImpl(
      * @return The current session ID string, or an empty string if no session ID has been set.
      */
     override fun getSessionId(): String = prefsController.getString("SessionId", "")
+
+    /**
+     * Retrieves the database encryption key from the application storage.
+     * This key is typically used to initialize or open the encrypted local database.
+     *
+     * @return The database key as a [ByteArray], or `null` if the key has not been set.
+     */
+    override fun getDbKey(): ByteArray? {
+        val key = prefsController.getString("dbKey", "").ifEmpty {
+            null
+        }
+        return key?.toByteArray(Charsets.UTF_8)
+    }
+
+    /**
+     * Stores the database encryption key in the application's shared preferences.
+     * This key is used to secure the local database.
+     *
+     * @param value The encryption key string to be stored.
+     */
+    override fun setDbKey(value: String) {
+        prefsController.setString("dbKey", value)
+    }
 }

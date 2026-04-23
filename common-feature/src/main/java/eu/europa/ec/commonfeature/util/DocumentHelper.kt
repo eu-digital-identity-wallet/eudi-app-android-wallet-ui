@@ -17,7 +17,7 @@
 package eu.europa.ec.commonfeature.util
 
 import android.util.Base64
-import eu.europa.ec.businesslogic.extension.decodeFromBase64
+import eu.europa.ec.businesslogic.extension.decodeFromBase64ToString
 import eu.europa.ec.businesslogic.extension.encodeToBase64String
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.businesslogic.util.safeLet
@@ -263,7 +263,7 @@ fun createKeyValue(
             val formattedValue = when {
                 base64Image != null -> base64Image
                 keyIsGender(groupKey) -> getGenderValue(item.toString(), resourceProvider)
-                keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64()
+                keyIsUserPseudonym(groupKey) -> item.toString().decodeFromBase64ToString()
                 date != null -> date
                 item is Boolean -> resourceProvider.getString(
                     resId = if (item)
