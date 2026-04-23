@@ -36,8 +36,8 @@ class KeystoreControllerImpl(
     private val uuidProvider: UuidProvider
 ) : KeystoreController {
 
-    companion object {
-        private const val STORE_TYPE = "AndroidKeyStore"
+    private companion object {
+        const val STORE_TYPE = "AndroidKeyStore"
     }
 
     private var androidKeyStore: KeyStore? = null

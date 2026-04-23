@@ -39,6 +39,9 @@ dependencies {
     implementation(libs.google.phonenumber)
     implementation(libs.timber)
     implementation(libs.treessence)
+    implementation(libs.androidx.datastore.prefs)
+    implementation(libs.androidx.datastore.core)
+    implementation(libs.androidx.datastore.tink)
 
     testImplementation(project(LibraryModule.TestLogic.path))
     androidTestImplementation(project(LibraryModule.TestLogic.path))

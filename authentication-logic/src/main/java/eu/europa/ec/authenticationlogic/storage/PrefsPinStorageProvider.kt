@@ -32,14 +32,13 @@ class PrefsPinStorageProvider(
 ) : PinStorageProvider {
 
     private companion object {
-        private const val KEY_PIN_SALT = "PinSalt"
-        private const val KEY_PIN_HASH = "PinHash"
-        private const val KEY_PIN_ITERATIONS = "PinIterations"
-
-        private const val SALT_SIZE_BYTES = 32
-        private const val HASH_SIZE_BITS = 256
-        private const val DEFAULT_ITERATIONS = 210_000
-        private const val ALGORITHM = "PBKDF2WithHmacSHA256"
+        const val KEY_PIN_SALT = "PinSalt"
+        const val KEY_PIN_HASH = "PinHash"
+        const val KEY_PIN_ITERATIONS = "PinIterations"
+        const val SALT_SIZE_BYTES = 32
+        const val HASH_SIZE_BITS = 256
+        const val DEFAULT_ITERATIONS = 210_000
+        const val ALGORITHM = "PBKDF2WithHmacSHA256"
     }
 
     /**

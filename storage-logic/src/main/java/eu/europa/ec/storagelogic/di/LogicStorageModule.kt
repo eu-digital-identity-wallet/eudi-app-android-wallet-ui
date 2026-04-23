@@ -44,7 +44,7 @@ fun provideAppDatabase(
 ): DatabaseService {
     System.loadLibrary("sqlcipher")
     val key = prefKeys.getDbKey() ?: cryptoController.createRandomKey(context).also {
-        prefKeys.setDbKey(it.toString(Charsets.UTF_8))
+        prefKeys.setDbKey(it)
     }
     return Room.databaseBuilder(
         context,
