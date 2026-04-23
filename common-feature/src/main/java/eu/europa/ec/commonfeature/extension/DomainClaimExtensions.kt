@@ -17,8 +17,8 @@
 package eu.europa.ec.commonfeature.extension
 
 import eu.europa.ec.commonfeature.ui.request.model.DocumentPayloadDomain
-import eu.europa.ec.commonfeature.util.keyIsPortrait
 import eu.europa.ec.commonfeature.util.keyIsSignature
+import eu.europa.ec.commonfeature.util.keyIsUserImage
 import eu.europa.ec.corelogic.model.ClaimDomain
 import eu.europa.ec.eudi.wallet.document.ElementIdentifier
 import eu.europa.ec.uilogic.component.AppIcons
@@ -102,7 +102,7 @@ private fun calculateMainContent(
     value: String,
 ): ListItemMainContentDataUi {
     return when {
-        keyIsPortrait(key = key) -> {
+        keyIsUserImage(key = key) -> {
             ListItemMainContentDataUi.Text(text = "")
         }
 
@@ -120,7 +120,7 @@ private fun calculateLeadingContent(
     key: ElementIdentifier,
     value: String,
 ): ListItemLeadingContentDataUi? {
-    return if (keyIsPortrait(key = key)) {
+    return if (keyIsUserImage(key = key)) {
         ListItemLeadingContentDataUi.UserImage(userBase64Image = value)
     } else {
         null
