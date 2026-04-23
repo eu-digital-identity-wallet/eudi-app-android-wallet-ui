@@ -210,6 +210,7 @@ class PinViewModel(
     }
 
     private fun validatePin(currentPin: String) {
+        setState { copy(isLoading = true) }
         viewModelScope.launch {
             interactor.isCurrentPinValid(
                 pin = currentPin
@@ -218,7 +219,8 @@ class PinViewModel(
                     is QuickPinInteractorPinValidPartialState.Failed -> {
                         setState {
                             copy(
-                                quickPinError = it.errorMessage
+                                quickPinError = it.errorMessage,
+                                isLoading = false
                             )
                         }
                     }
@@ -242,7 +244,8 @@ class PinViewModel(
                 buttonText = calculateButtonText(newPinState),
                 pin = "",
                 resetPin = true,
-                subtitle = calculateSubtitle(newPinState)
+                subtitle = calculateSubtitle(newPinState),
+                isLoading = false
             )
         }
     }
@@ -258,12 +261,14 @@ class PinViewModel(
                 buttonText = calculateButtonText(newPinState),
                 pin = "",
                 resetPin = true,
-                subtitle = calculateSubtitle(newPinState)
+                subtitle = calculateSubtitle(newPinState),
+                isLoading = false
             )
         }
     }
 
     private fun saveNewPin(newPin: String, enteredPin: String) {
+        setState { copy(isLoading = true) }
         viewModelScope.launch {
             interactor.setPin(
                 newPin = newPin,
@@ -273,7 +278,8 @@ class PinViewModel(
                     is QuickPinInteractorSetPinPartialState.Failed -> {
                         setState {
                             copy(
-                                quickPinError = it.errorMessage
+                                quickPinError = it.errorMessage,
+                                isLoading = false
                             )
                         }
                     }

@@ -5,8 +5,8 @@ androidGradlePlugin = "9.2.0"
 androidxActivity = "1.13.0"
 androidxAppCompat = "1.7.1"
 androidxBrowser = "1.10.0"
-androidxComposeBom = "2026.03.01"
-androidxComposeRuntimeTracing = "1.10.6"
+androidxComposeBom = "2026.04.01"
+androidxComposeRuntimeTracing = "1.11.0"
 androidxCore = "1.18.0"
 androidxCoreSplashscreen = "1.2.0"
 androidxDataStore = "1.2.1"
@@ -14,7 +14,7 @@ androidxEspresso = "3.7.0"
 androidxLifecycle = "2.10.0"
 androidxMacroBenchmark = "1.4.1"
 androidxMetrics = "1.0.0"
-androidxNavigation = "2.9.7"
+androidxNavigation = "2.9.8"
 androidxProfileinstaller = "1.4.1"
 androidxTestCore = "1.7.0"
 androidxTestExt = "1.3.0"
@@ -68,6 +68,7 @@ rqesUiSDK = "0.3.8"
 androidxRoom = "2.8.4"
 cloudy = "0.5.0"
 sqlcipher = "4.14.1"
+datastore = "1.3.0-alpha08"
 
 [libraries]
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
@@ -93,7 +94,6 @@ androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
-androidx-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }
 androidx-lifecycle-runtimeCompose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewModelCompose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-metrics = { group = "androidx.metrics", name = "metrics-performance", version.ref = "androidxMetrics" }
@@ -102,6 +102,9 @@ androidx-appAuth = { group = "androidx.security", name = "security-app-authentic
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
 androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "androidxNavigation" }
 androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "androidxProfileinstaller" }
+androidx-datastore-prefs = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+androidx-datastore-core = { group = "androidx.datastore", name = "datastore-preferences-core", version.ref = "datastore" }
+androidx-datastore-tink = { group = "androidx.datastore", name = "datastore-tink", version.ref = "datastore" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidxEspresso" }
 androidx-test-ext = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "androidxTestExt" }
