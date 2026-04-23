@@ -16,7 +16,7 @@
 
 package eu.europa.ec.uilogic.serializer
 
-import eu.europa.ec.businesslogic.extension.decodeFromBase64
+import eu.europa.ec.businesslogic.extension.decodeFromBase64ToString
 import eu.europa.ec.businesslogic.extension.encodeToBase64
 
 interface UiSerializer {
@@ -52,7 +52,7 @@ class UiSerializerImpl : UiSerializer {
     ): M? {
         return try {
             parser.provideParser().fromJson(
-                payload?.decodeFromBase64(),
+                payload?.decodeFromBase64ToString(),
                 model
             )
         } catch (_: Exception) {

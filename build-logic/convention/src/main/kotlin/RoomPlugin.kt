@@ -33,6 +33,7 @@ class RoomPlugin : Plugin<Project> {
             }
             dependencies {
                 add("implementation", libs.findLibrary("androidx-room").get())
+                add("implementation", libs.findLibrary("sqlcipher-android").get())
                 add("ksp", libs.findLibrary("androidx-room-ksp").get())
             }
         }

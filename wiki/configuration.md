@@ -486,17 +486,20 @@ Implementation Example:
 
 ```kotlin
 class PrefsPinStorageProvider(
-    private val prefsController: PrefsController,
-    private val cryptoController: CryptoController
+    private val prefsController: PrefsController
 ) : PinStorageProvider {
 
-    override fun retrievePin(): String = decryptedAndLoad()
-
-    override fun setPin(pin: String) {
-       encryptAndStore(pin)
+    override suspend fun hasPin(): Boolean {
+       // Implementation
     }
 
-    override fun isPinValid(pin: String): Boolean = retrievePin() == pin
+    override suspend fun setPin(pin: String) {
+       // Implementation
+    }
+
+    override suspend fun isPinValid(pin: String): Boolean {
+       // Implementation
+    }
 }
 ```
 
@@ -519,10 +522,9 @@ Config Construction via Koin DI Example:
 ```kotlin
 @Single
 fun provideStorageConfig(
-    prefsController: PrefsController,
-    cryptoController: CryptoController
+    prefsController: PrefsController
 ): StorageConfig = StorageConfigImpl(
-    pinImpl = PrefsPinStorageProvider(prefsController, cryptoController),
+    pinImpl = PrefsPinStorageProvider(prefsController),
     biometryImpl = PrefsBiometryStorageProvider(prefsController)
 )
 ```

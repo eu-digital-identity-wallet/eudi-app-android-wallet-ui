@@ -22,32 +22,41 @@ import com.google.gson.Gson
 import java.net.URLEncoder
 
 /**
- * Encodes a string to a Base64 string using UTF-8 charset and URL-safe encoding.
+ * Encodes the string into a Base64 string using the UTF-8 charset.
  *
- * This function encodes the string using the standard Base64 algorithm, but with the following modifications:
- * - Uses UTF-8 encoding to convert the string to bytes.
- * - Removes padding characters from the end of the encoded string.
- * - Does not wrap the output.  It will be a single line.
- * - Uses URL-safe characters (replacing '+' with '-' and '/' with '_').
+ * This function applies the following configuration:
+ * - [Base64.NO_WRAP]: Omits all line terminators.
+ * - [Base64.NO_PADDING]: Omits the padding '=' characters at the end.
+ * - [Base64.URL_SAFE]: Uses '-' and '_' instead of '+' and '/' to make the output safe for URLs.
  *
- * These modifications are suitable for encoding data intended to be used in URLs or other contexts where standard Base64 encoding may be problematic due to padding or special characters.
- *
- * @return The Base64 encoded string.
+ * @return A URL-safe Base64 encoded representation of the string.
  */
-fun String.encodeToBase64(): String = Base64.encodeToString(
-    this.toByteArray(Charsets.UTF_8),
-    Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE
-)
+fun String.encodeToBase64(flags: Int = Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE): String =
+    Base64.encodeToString(
+        this.toByteArray(Charsets.UTF_8),
+        flags
+    )
 
 /**
- * Decodes a Base64 encoded string to its original UTF-8 representation.
- *  It uses URL_SAFE, NO_WRAP and NO_PADDING flags for decoding.
- *
- * @return The decoded string.
+ * Decodes a Base64 encoded string back to its original UTF-8 string representation
  */
-fun String.decodeFromBase64(): String = Base64.decode(
-    this, Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE
-).toString(Charsets.UTF_8)
+fun String.decodeFromBase64ToString(flags: Int = Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE): String =
+    this.decodeFromBase64(flags).toString(Charsets.UTF_8)
+
+/**
+ * Decodes a Base64 encoded string back to its original byte array representation.
+ *
+ * This function reverses the encoding performed by [encodeToBase64], using the following configuration:
+ * - Supports URL-safe decoding (interprets '-' as '+' and '_' as '/').
+ * - Handles strings without padding characters and ignores line wraps.
+ *
+ * @return The decoded [ByteArray].
+ */
+fun String.decodeFromBase64(flags: Int = Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE): ByteArray =
+    Base64.decode(
+        this,
+        flags
+    )
 
 /**
  * Encodes a string into a URL-safe format using UTF-8 encoding.
@@ -189,7 +198,7 @@ internal fun String.shuffle(seed: IntArray = FY_SEED): String =
     encodeToBase64().computeShuffle(seed)
 
 internal fun String.unShuffle(seed: IntArray = FY_SEED): String =
-    computeShuffle(seed, true).decodeFromBase64()
+    computeShuffle(seed, true).decodeFromBase64ToString()
 
 private fun String.computeShuffle(seed: IntArray, unShuffle: Boolean = false): String {
 

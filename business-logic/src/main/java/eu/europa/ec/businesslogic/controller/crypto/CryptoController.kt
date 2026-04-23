@@ -16,6 +16,7 @@
 
 package eu.europa.ec.businesslogic.controller.crypto
 
+import android.content.Context
 import android.util.Base64
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -76,6 +77,17 @@ interface CryptoController {
      * [byteArray] that needed to be encrypted or decrypted (Depending always on [Cipher] provided.
      */
     fun encryptDecrypt(cipher: Cipher?, byteArray: ByteArray): ByteArray
+
+    /**
+     * Generates a random cryptographic key as a byte array.
+     *
+     * This function utilizes [SecureRandom] to generate a high-entropy 32-byte array,
+     * which is then converted into a hexadecimal string and returned as UTF-8 bytes.
+     * This is primarily used for securing sensitive data or generating passphrases.
+     *
+     * @return A [ByteArray] containing the generated hexadecimal key.
+     */
+    fun createRandomKey(context: Context): ByteArray
 }
 
 class CryptoControllerImpl(
@@ -123,5 +135,15 @@ class CryptoControllerImpl(
 
     override fun encryptDecrypt(cipher: Cipher?, byteArray: ByteArray): ByteArray {
         return cipher?.doFinal(byteArray) ?: ByteArray(0)
+    }
+
+    override fun createRandomKey(context: Context): ByteArray {
+        val hex: String = run {
+            val bytes = ByteArray(32)
+            SecureRandom().nextBytes(bytes)
+            val generated = bytes.joinToString("") { "%02x".format(it) }
+            generated
+        }
+        return hex.toByteArray(Charsets.UTF_8)
     }
 }

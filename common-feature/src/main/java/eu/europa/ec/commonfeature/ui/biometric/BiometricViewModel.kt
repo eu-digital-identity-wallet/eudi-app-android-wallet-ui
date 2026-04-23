@@ -180,7 +180,10 @@ class BiometricViewModel(
 
             is Event.OnQuickPinEntered -> {
                 setState {
-                    copy(quickPin = event.quickPin, quickPinError = null)
+                    copy(
+                        quickPin = event.quickPin,
+                        quickPinError = null
+                    )
                 }
                 authorizeWithPin(event.quickPin)
             }
@@ -193,6 +196,12 @@ class BiometricViewModel(
             return
         }
 
+        setState {
+            copy(
+                isLoading = true
+            )
+        }
+
         viewModelScope.launch {
             biometricInteractor.isPinValid(pin)
                 .collect {
@@ -200,7 +209,8 @@ class BiometricViewModel(
                         is QuickPinInteractorPinValidPartialState.Failed -> {
                             setState {
                                 copy(
-                                    quickPinError = it.errorMessage
+                                    quickPinError = it.errorMessage,
+                                    isLoading = false
                                 )
                             }
                         }

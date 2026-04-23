@@ -17,7 +17,7 @@
 package eu.europa.ec.authenticationlogic.provider
 
 interface PinStorageProvider {
-    fun retrievePin(): String
-    fun setPin(pin: String)
-    fun isPinValid(pin: String): Boolean
+    suspend fun hasPin(): Boolean
+    suspend fun setPin(pin: String)
+    suspend fun isPinValid(pin: String): Boolean
 }
