@@ -20,6 +20,7 @@ import android.net.Uri
 import android.util.Base64
 import com.google.gson.Gson
 import java.net.URLEncoder
+import kotlin.math.min
 
 /**
  * Encodes the string into a Base64 string using the UTF-8 charset.
@@ -157,7 +158,7 @@ fun String.splitToLines(lineLength: Int): String {
         var result = ""
         var index = 0
         while (index < length) {
-            val line = substring(index, Math.min(index + lineLength, length))
+            val line = substring(index, min(index + lineLength, length))
             result += (if (result.isEmpty()) line else "\n$line")
             index += lineLength
         }
@@ -165,6 +166,15 @@ fun String.splitToLines(lineLength: Int): String {
     }
 }
 
+/**
+ * Returns the first part of the string before the specified separator.
+ *
+ * If the separator is found, this function returns the substring preceding the first occurrence.
+ * If the separator is not found or the string is empty, the original string is returned.
+ *
+ * @param separator The string used to split the receiver string.
+ * @return The substring before the first occurrence of the separator, or the original string if not found.
+ */
 fun String.firstPart(separator: String): String = this.split(separator).firstOrNull() ?: this
 
 /**
@@ -190,36 +200,4 @@ fun String.firstPart(separator: String): String = this.split(separator).firstOrN
  */
 fun String?.ifEmptyOrNull(default: String): String {
     return if (this.isNullOrBlank()) default else this
-}
-
-private val FY_SEED = intArrayOf(1, 3, 5, 7, 9, 2, 4, 6, 8)
-
-internal fun String.shuffle(seed: IntArray = FY_SEED): String =
-    encodeToBase64().computeShuffle(seed)
-
-internal fun String.unShuffle(seed: IntArray = FY_SEED): String =
-    computeShuffle(seed, true).decodeFromBase64ToString()
-
-private fun String.computeShuffle(seed: IntArray, unShuffle: Boolean = false): String {
-
-    val items = mutableMapOf<Int, String?>()
-    this.toCharArray().forEachIndexed { index, character -> items[index] = character.toString() }
-
-    val iterator = mutableListOf<Int>()
-    items.forEach { iterator.add(it.key) }
-
-    if (unShuffle) iterator.reverse()
-
-    iterator.forEach { i ->
-
-        val k = seed[i % seed.size] % items.size
-
-        val element1 = items[k]
-        val element2 = items[i]
-
-        items[k] = element2
-        items[i] = element1
-    }
-
-    return items.map { it.value }.joinToString(separator = "")
 }
