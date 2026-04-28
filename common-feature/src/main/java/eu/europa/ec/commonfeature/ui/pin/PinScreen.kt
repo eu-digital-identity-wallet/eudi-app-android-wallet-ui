@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -57,11 +56,13 @@ import eu.europa.ec.uilogic.component.wrap.BottomSheetTextDataUi
 import eu.europa.ec.uilogic.component.wrap.ButtonConfig
 import eu.europa.ec.uilogic.component.wrap.ButtonType
 import eu.europa.ec.uilogic.component.wrap.DialogBottomSheet
+import eu.europa.ec.uilogic.component.wrap.SecurePinTextFieldState
 import eu.europa.ec.uilogic.component.wrap.StickyBottomConfig
 import eu.europa.ec.uilogic.component.wrap.StickyBottomType
 import eu.europa.ec.uilogic.component.wrap.WrapModalBottomSheet
-import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
+import eu.europa.ec.uilogic.component.wrap.WrapSecurePinTextField
 import eu.europa.ec.uilogic.component.wrap.WrapStickyBottomContent
+import eu.europa.ec.uilogic.component.wrap.rememberSecurePinTextFieldState
 import eu.europa.ec.uilogic.extension.applyTestTag
 import eu.europa.ec.uilogic.extension.finish
 import eu.europa.ec.uilogic.navigation.CommonScreens
@@ -84,6 +85,9 @@ fun PinScreen(
 
     val isBottomSheetOpen = state.isBottomSheetOpen
     val scope = rememberCoroutineScope()
+    val pinInputState = rememberSecurePinTextFieldState(
+        expectedPinLength = state.quickPinSize
+    )
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -103,9 +107,15 @@ fun PinScreen(
                     type = StickyBottomType.OneButton(
                         config = ButtonConfig(
                             type = ButtonType.PRIMARY,
-                            enabled = state.isButtonEnabled,
+                            enabled = state.isButtonEnabled && pinInputState.isComplete,
                             onClick = {
-                                viewModel.setEvent(Event.NextButtonPressed(pin = state.pin))
+                                if (pinInputState.isComplete) {
+                                    viewModel.setEvent(
+                                        Event.NextButtonPressed(
+                                            pin = pinInputState.toSecurePinAndClear()
+                                        )
+                                    )
+                                }
                             }
                         )
                     )
@@ -129,6 +139,7 @@ fun PinScreen(
             paddingValues = paddingValues,
             coroutineScope = scope,
             modalBottomSheetState = bottomSheetState,
+            pinInputState = pinInputState,
         )
 
         if (isBottomSheetOpen) {
@@ -183,6 +194,7 @@ private fun Content(
     paddingValues: PaddingValues,
     coroutineScope: CoroutineScope,
     modalBottomSheetState: SheetState,
+    pinInputState: SecurePinTextFieldState,
 ) {
     Column(
         modifier = Modifier
@@ -227,8 +239,9 @@ private fun Content(
             PinFieldLayout(
                 modifier = Modifier.fillMaxWidth(),
                 state = state,
+                pinInputState = pinInputState,
                 onPinInput = { quickPin ->
-                    onEventSend(Event.OnQuickPinEntered(quickPin))
+                    onEventSend(Event.OnQuickPinLengthChanged(quickPin))
                 }
             )
         }
@@ -277,15 +290,15 @@ private fun SheetContent(
 private fun PinFieldLayout(
     modifier: Modifier = Modifier,
     state: State,
-    onPinInput: (String) -> Unit,
+    pinInputState: SecurePinTextFieldState,
+    onPinInput: (Int) -> Unit,
 ) {
-    WrapPinTextField(
+    WrapSecurePinTextField(
         modifier = modifier,
-        onPinUpdate = onPinInput,
-        length = state.quickPinSize,
+        state = pinInputState,
+        onPinLengthChanged = onPinInput,
         hasError = !state.quickPinError.isNullOrEmpty(),
         errorMessage = state.quickPinError,
-        visualTransformation = PasswordVisualTransformation(),
         pinWidth = 42.dp,
         clearCode = state.resetPin,
         focusOnCreate = true
@@ -308,6 +321,7 @@ private fun PinScreenEmptyPreview() {
             paddingValues = PaddingValues(10.dp),
             coroutineScope = rememberCoroutineScope(),
             modalBottomSheetState = rememberModalBottomSheetState(),
+            pinInputState = rememberSecurePinTextFieldState(expectedPinLength = 6),
         )
     }
 }

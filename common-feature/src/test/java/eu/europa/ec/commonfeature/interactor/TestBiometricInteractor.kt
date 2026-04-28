@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -20,6 +20,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthe
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
+import eu.europa.ec.businesslogic.model.SecurePinImpl
 import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testlogic.base.TestApplication
 import eu.europa.ec.testlogic.base.getMockedContext
@@ -86,12 +87,13 @@ class TestBiometricInteractor {
     fun `Given isCurrentPinValid returns state Success, When isPinValid is called, Then assert the result is the expected`() =
         coroutineRule.runTest {
             // Given
-            whenever(quickPinInteractor.isCurrentPinValid(mockedPin)).thenReturn(
+            val pin = SecurePinImpl(mockedPin)
+            whenever(quickPinInteractor.isCurrentPinValid(pin)).thenReturn(
                 QuickPinInteractorPinValidPartialState.Success.toFlow()
             )
 
             // When
-            interactor.isPinValid(mockedPin).runFlowTest {
+            interactor.isPinValid(pin).runFlowTest {
                 // Then
                 val expectedResult = QuickPinInteractorPinValidPartialState.Success
                 assertEquals(expectedResult, awaitItem())

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -16,6 +16,8 @@
 
 package eu.europa.ec.testfeature.util
 
+import eu.europa.ec.businesslogic.model.SecurePin
+import eu.europa.ec.businesslogic.model.SecurePinImpl
 import eu.europa.ec.eudi.iso18013.transfer.response.ReaderAuth
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem
@@ -802,3 +804,5 @@ suspend fun getMockedMdlWithNoUserNameAndNoUserImage(): IssuedDocument = getMock
 suspend fun getMockedFullDocuments(): List<IssuedDocument> = listOf(
     getMockedFullPid(), getMockedFullMdl()
 )
+
+fun securePin(value: String): SecurePin = SecurePinImpl(value)

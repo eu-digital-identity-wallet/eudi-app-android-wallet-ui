@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -18,6 +18,7 @@ package eu.europa.ec.issuancefeature.ui.code
 
 import android.content.Context
 import androidx.lifecycle.viewModelScope
+import eu.europa.ec.businesslogic.model.SecurePin
 import eu.europa.ec.commonfeature.config.IssuanceSuccessUiConfig
 import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.eudi.wallet.document.DocumentId
@@ -40,8 +41,6 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
-private typealias PinCode = String
-
 data class State(
     val offerCodeUiConfig: OfferCodeUiConfig,
 
@@ -56,7 +55,7 @@ data class State(
 sealed class Event : ViewEvent {
     data object Pop : Event()
     data object DismissError : Event()
-    data class OnPinChange(val code: PinCode, val context: Context) : Event()
+    data class OnPinEntered(val code: SecurePin, val context: Context) : Event()
 }
 
 sealed class Effect : ViewSideEffect {
@@ -109,16 +108,14 @@ class DocumentOfferCodeViewModel(
                 setState { copy(error = null) }
             }
 
-            is Event.OnPinChange -> {
-                if (event.code.isPinValid()) {
-                    issueDocuments(
-                        context = event.context,
-                        offerUri = viewState.value.offerCodeUiConfig.offerUri,
-                        issuerName = viewState.value.offerCodeUiConfig.issuerName,
-                        onSuccessNavigation = viewState.value.offerCodeUiConfig.onSuccessNavigation,
-                        pinCode = event.code
-                    )
-                }
+            is Event.OnPinEntered -> {
+                issueDocuments(
+                    context = event.context,
+                    offerUri = viewState.value.offerCodeUiConfig.offerUri,
+                    issuerName = viewState.value.offerCodeUiConfig.issuerName,
+                    onSuccessNavigation = viewState.value.offerCodeUiConfig.onSuccessNavigation,
+                    pinCode = event.code
+                )
             }
         }
     }
@@ -128,7 +125,7 @@ class DocumentOfferCodeViewModel(
         offerUri: String,
         issuerName: String,
         onSuccessNavigation: ConfigNavigation,
-        pinCode: PinCode
+        pinCode: SecurePin
     ) {
         viewModelScope.launch {
 
@@ -233,7 +230,4 @@ class DocumentOfferCodeViewModel(
 
     private fun calculateScreenCaption(txCodeLength: Int): String =
         resourceProvider.getString(R.string.issuance_code_caption, txCodeLength)
-
-    private fun PinCode.isPinValid(): Boolean =
-        this.length == viewState.value.offerCodeUiConfig.txCodeLength
 }

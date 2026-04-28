@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -21,6 +21,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthe
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
+import eu.europa.ec.businesslogic.model.SecurePin
 import kotlinx.coroutines.flow.Flow
 
 interface BiometricInteractor {
@@ -34,7 +35,7 @@ interface BiometricInteractor {
     )
 
     fun launchBiometricSystemScreen()
-    fun isPinValid(pin: String): Flow<QuickPinInteractorPinValidPartialState>
+    fun isPinValid(pin: SecurePin): Flow<QuickPinInteractorPinValidPartialState>
 }
 
 class BiometricInteractorImpl(
@@ -43,7 +44,7 @@ class BiometricInteractorImpl(
     private val quickPinInteractor: QuickPinInteractor,
 ) : BiometricInteractor {
 
-    override fun isPinValid(pin: String): Flow<QuickPinInteractorPinValidPartialState> =
+    override fun isPinValid(pin: SecurePin): Flow<QuickPinInteractorPinValidPartialState> =
         quickPinInteractor.isCurrentPinValid(pin)
 
     override fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean) {

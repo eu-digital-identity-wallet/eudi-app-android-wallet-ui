@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -17,12 +17,13 @@
 package eu.europa.ec.commonfeature.interactor
 
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
-import eu.europa.ec.businesslogic.validator.FormValidator
+import eu.europa.ec.businesslogic.model.SecurePin
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage
 import eu.europa.ec.testfeature.util.mockedExceptionWithNoMessage
 import eu.europa.ec.testfeature.util.mockedGenericErrorMessage
+import eu.europa.ec.testfeature.util.securePin
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.rule.CoroutineTestRule
@@ -32,8 +33,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
-import org.mockito.Mockito.anyString
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -42,9 +43,6 @@ class TestQuickPinInteractor {
 
     @get:Rule
     val coroutineRule = CoroutineTestRule()
-
-    @Mock
-    private lateinit var formValidator: FormValidator
 
     @Mock
     private lateinit var pinStorageController: PinStorageController
@@ -61,7 +59,6 @@ class TestQuickPinInteractor {
         closeable = MockitoAnnotations.openMocks(this)
 
         interactor = QuickPinInteractorImpl(
-            formValidator = formValidator,
             pinStorageController = pinStorageController,
             resourceProvider = resourceProvider
         )
@@ -129,13 +126,13 @@ class TestQuickPinInteractor {
     fun `Given Case 1, When setPin is called, Then it returns Success`() {
         coroutineRule.runTest {
             // Given
-            val mockedNewPin = mockedPin
-            val mockedInitialPin = mockedPin
+            val newPin = securePin(mockedPin)
+            val initialPin = securePin(mockedPin)
 
             // When
             interactor.setPin(
-                newPin = mockedNewPin,
-                initialPin = mockedInitialPin,
+                newPin = newPin,
+                initialPin = initialPin,
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -145,7 +142,7 @@ class TestQuickPinInteractor {
             }
 
             verify(pinStorageController, times(1))
-                .setPin(pin = mockedPin)
+                .setPin(any<SecurePin>())
         }
     }
 
@@ -158,13 +155,13 @@ class TestQuickPinInteractor {
             whenever(resourceProvider.getString(R.string.quick_pin_non_match))
                 .thenReturn(mockedPinsDontMatchMessage)
 
-            val mockedNewPin = mockedNewPin
-            val mockedInitialPin = mockedInitialPin
+            val newPin = securePin(mockedNewPin)
+            val initialPin = securePin(mockedInitialPin)
 
             // When
             interactor.setPin(
-                newPin = mockedNewPin,
-                initialPin = mockedInitialPin,
+                newPin = newPin,
+                initialPin = initialPin,
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -187,15 +184,15 @@ class TestQuickPinInteractor {
     fun `Given Case 3, When setPin is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            val mockedNewPin = mockedPin
-            val mockedInitialPin = mockedPin
-            whenever(pinStorageController.setPin(anyString()))
+            val newPin = securePin(mockedPin)
+            val initialPin = securePin(mockedPin)
+            whenever(pinStorageController.setPin(any<SecurePin>()))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
             interactor.setPin(
-                newPin = mockedNewPin,
-                initialPin = mockedInitialPin,
+                newPin = newPin,
+                initialPin = initialPin,
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -215,15 +212,15 @@ class TestQuickPinInteractor {
     fun `Given Case 4, When setPin is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            val mockedNewPin = mockedPin
-            val mockedInitialPin = mockedPin
-            whenever(pinStorageController.setPin(anyString()))
+            val newPin = securePin(mockedPin)
+            val initialPin = securePin(mockedPin)
+            whenever(pinStorageController.setPin(any<SecurePin>()))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
             interactor.setPin(
-                newPin = mockedNewPin,
-                initialPin = mockedInitialPin,
+                newPin = newPin,
+                initialPin = initialPin,
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -247,7 +244,7 @@ class TestQuickPinInteractor {
 
             // When
             interactor.changePin(
-                newPin = mockedNewPin
+                newPin = securePin(mockedNewPin)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -264,12 +261,12 @@ class TestQuickPinInteractor {
     fun `Given Case 2, When changePin is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            whenever(pinStorageController.setPin(mockedNewPin))
+            whenever(pinStorageController.setPin(any<SecurePin>()))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
             interactor.changePin(
-                newPin = mockedNewPin
+                newPin = securePin(mockedNewPin)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -288,12 +285,12 @@ class TestQuickPinInteractor {
     fun `Given Case 3, When changePin is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            whenever(pinStorageController.setPin(mockedNewPin))
+            whenever(pinStorageController.setPin(any<SecurePin>()))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
             interactor.changePin(
-                newPin = mockedNewPin
+                newPin = securePin(mockedNewPin)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -315,12 +312,12 @@ class TestQuickPinInteractor {
     fun `Given Case 1, When isCurrentPinValid is called, Then it returns Success`() {
         coroutineRule.runTest {
             // Given
-            whenever(pinStorageController.isPinValid(anyString()))
+            whenever(pinStorageController.isPinValid(any<SecurePin>()))
                 .thenReturn(true)
 
             // When
             interactor.isCurrentPinValid(
-                pin = mockedPin
+                pin = securePin(mockedPin)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -337,7 +334,7 @@ class TestQuickPinInteractor {
     fun `Given Case 2, When isCurrentPinValid is called, Then it returns Failed with the appropriate error message`() {
         coroutineRule.runTest {
             // Given
-            whenever(pinStorageController.isPinValid(anyString()))
+            whenever(pinStorageController.isPinValid(any<SecurePin>()))
                 .thenReturn(false)
 
             whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
@@ -345,7 +342,7 @@ class TestQuickPinInteractor {
 
             // When
             interactor.isCurrentPinValid(
-                pin = mockedNewPin
+                pin = securePin(mockedNewPin)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -367,12 +364,12 @@ class TestQuickPinInteractor {
     fun `Given Case 3, When isCurrentPinValid is called, Then it returns Failed with exception's localized message`() {
         coroutineRule.runTest {
             // Given
-            whenever(pinStorageController.isPinValid(anyString()))
+            whenever(pinStorageController.isPinValid(any<SecurePin>()))
                 .thenThrow(mockedExceptionWithMessage)
 
             // When
             interactor.isCurrentPinValid(
-                pin = mockedPin
+                pin = securePin(mockedPin)
             ).runFlowTest {
                 // Then
                 assertEquals(
@@ -391,116 +388,12 @@ class TestQuickPinInteractor {
     fun `Given Case 4, When isCurrentPinValid is called, Then it returns Failed with the generic error message`() {
         coroutineRule.runTest {
             // Given
-            whenever(pinStorageController.isPinValid(anyString()))
+            whenever(pinStorageController.isPinValid(any<SecurePin>()))
                 .thenThrow(mockedExceptionWithNoMessage)
 
             // When
             interactor.isCurrentPinValid(
-                pin = mockedPin
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    QuickPinInteractorPinValidPartialState.Failed(
-                        errorMessage = mockedGenericErrorMessage
-                    ),
-                    awaitItem()
-                )
-            }
-        }
-    }
-    //endregion
-
-    //region isPinMatched
-
-    // Case 1:
-    // resourceProvider.getString() throws no errors.
-    // currentPin == newPin is true.
-    @Test
-    fun `Given Case 1, When isPinMatched is called, Then it returns Success`() {
-        coroutineRule.runTest {
-            // Given
-
-            // When
-            interactor.isPinMatched(
-                currentPin = mockedPin,
-                newPin = mockedPin
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    QuickPinInteractorPinValidPartialState.Success,
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    // Case 2:
-    // resourceProvider.getString() throws no errors.
-    // currentPin == newPin is false.
-    @Test
-    fun `Given Case 2, When isPinMatched is called, Then it returns Failed with the appropriate error message`() {
-        coroutineRule.runTest {
-            // Given
-            whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
-                .thenReturn(mockedInvalidPinMessage)
-
-            // When
-            interactor.isPinMatched(
-                currentPin = mockedPin,
-                newPin = mockedNewPin
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    QuickPinInteractorPinValidPartialState.Failed(
-                        errorMessage = mockedInvalidPinMessage
-                    ),
-                    awaitItem()
-                )
-
-                verify(resourceProvider, times(1))
-                    .getString(R.string.quick_pin_invalid_error)
-            }
-        }
-    }
-
-    // Case 3:
-    // resourceProvider.getString() throws an exception with a message.
-    @Test
-    fun `Given Case 3, When isPinMatched is called, Then it returns Failed with exception's localized message`() {
-        coroutineRule.runTest {
-            // Given
-            whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
-                .thenThrow(mockedExceptionWithMessage)
-
-            // When
-            interactor.isPinMatched(
-                currentPin = mockedPin,
-                newPin = mockedNewPin
-            ).runFlowTest {
-                // Then
-                assertEquals(
-                    QuickPinInteractorPinValidPartialState.Failed(
-                        errorMessage = mockedExceptionWithMessage.localizedMessage!!
-                    ),
-                    awaitItem()
-                )
-            }
-        }
-    }
-
-    // Case 4:
-    // resourceProvider.getString() throws an exception with no message.
-    @Test
-    fun `Given Case 4, When isPinMatched is called, Then it returns Failed with the generic error message`() {
-        coroutineRule.runTest {
-            // Given
-            whenever(resourceProvider.getString(R.string.quick_pin_invalid_error))
-                .thenThrow(mockedExceptionWithNoMessage)
-
-            // When
-            interactor.isPinMatched(
-                currentPin = mockedPin,
-                newPin = mockedNewPin
+                pin = securePin(mockedPin)
             ).runFlowTest {
                 // Then
                 assertEquals(

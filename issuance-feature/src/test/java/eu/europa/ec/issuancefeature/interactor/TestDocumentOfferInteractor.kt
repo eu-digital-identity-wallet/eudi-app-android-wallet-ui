@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -72,6 +72,7 @@ import eu.europa.ec.testfeature.util.mockedNotifyOnAuthenticationFailure
 import eu.europa.ec.testfeature.util.mockedPidId
 import eu.europa.ec.testfeature.util.mockedPlainFailureMessage
 import eu.europa.ec.testfeature.util.mockedUriPath1
+import eu.europa.ec.testfeature.util.securePin
 import eu.europa.ec.testlogic.extension.runFlowTest
 import eu.europa.ec.testlogic.extension.runTest
 import eu.europa.ec.testlogic.extension.toFlow
@@ -536,7 +537,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 // Then
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
@@ -611,7 +612,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 // Then
                 val expectedResult = IssueDocumentsInteractorPartialState.UserAuthRequired(
@@ -647,7 +648,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Success(
                     documentIds = listOf(mockedPidId)
@@ -727,7 +728,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.DeferredSuccess(
                     successRoute = "SUCCESS?successConfig=$mockedRouteArguments"
@@ -802,7 +803,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Success(
                     documentIds = listOf(mockSuccessfullyIssuedDocId)
@@ -851,7 +852,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Success(
                     documentIds = listOf(mockSuccessfullyIssuedDocId),
@@ -888,7 +889,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
                     errorMessage = mockedExceptionWithMessage.localizedMessage!!
@@ -923,7 +924,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
                     errorMessage = mockedGenericErrorMessage
@@ -947,7 +948,7 @@ class TestDocumentOfferInteractor {
                 offerUri = mockedUriPath1,
                 issuerName = mockedIssuerName,
                 navigation = mockedConfigNavigationTypePop,
-                txCode = mockedTxCode
+                txCode = securePin(mockedTxCode)
             ).runFlowTest {
                 val expectedResult = IssueDocumentsInteractorPartialState.Failure(
                     errorMessage = mockedGenericErrorMessage

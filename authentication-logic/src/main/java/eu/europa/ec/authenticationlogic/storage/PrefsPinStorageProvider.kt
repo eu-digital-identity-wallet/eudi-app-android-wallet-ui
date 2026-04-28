@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -21,6 +21,7 @@ import eu.europa.ec.authenticationlogic.provider.PinStorageProvider
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.extension.encodeToBase64String
+import eu.europa.ec.businesslogic.model.SecurePin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.security.SecureRandom
@@ -62,32 +63,43 @@ class PrefsPinStorageProvider(
      * This method generates a unique salt, derives a hash from the provided [pin],
      * and persists the salt, hash, and iteration count to the preference storage.
      *
-     * @param pin The plain-text PIN to be stored.
+     * @param pin The PIN to be stored. The value is consumed and cleared by this method.
      */
-    override suspend fun setPin(pin: String) {
+    override suspend fun setPin(pin: SecurePin) {
 
         val salt = ByteArray(SALT_SIZE_BYTES).also {
             SecureRandom().nextBytes(it)
         }
 
-        val hash = withContext(Dispatchers.Default) {
-            derivePinHash(
-                pin = pin,
-                salt = salt,
-                iterations = DEFAULT_ITERATIONS
-            )
-        }
+        val pinData = pin.getAndClear()
+        var hash: ByteArray? = null
+        try {
+            hash = withContext(Dispatchers.Default) {
+                pinData.useChars { chars ->
+                    derivePinHash(
+                        pin = chars,
+                        salt = salt,
+                        iterations = DEFAULT_ITERATIONS
+                    )
+                }
+            }
+            val currentHash = hash
 
-        withContext(Dispatchers.IO) {
-            prefsController.setString(
-                KEY_PIN_SALT,
-                salt.encodeToBase64String(flags = Base64.NO_WRAP)
-            )
-            prefsController.setString(
-                KEY_PIN_HASH,
-                hash.encodeToBase64String(flags = Base64.NO_WRAP)
-            )
-            prefsController.setInt(KEY_PIN_ITERATIONS, DEFAULT_ITERATIONS)
+            withContext(Dispatchers.IO) {
+                prefsController.setString(
+                    KEY_PIN_SALT,
+                    salt.encodeToBase64String(flags = Base64.NO_WRAP)
+                )
+                prefsController.setString(
+                    KEY_PIN_HASH,
+                    currentHash.encodeToBase64String(flags = Base64.NO_WRAP)
+                )
+                prefsController.setInt(KEY_PIN_ITERATIONS, DEFAULT_ITERATIONS)
+            }
+        } finally {
+            pinData.close()
+            salt.fill(0)
+            hash?.fill(0)
         }
     }
 
@@ -98,13 +110,16 @@ class PrefsPinStorageProvider(
      * derives a hash from the candidate PIN, and performs a constant-time comparison
      * to determine validity while mitigating timing attacks.
      *
-     * @param pin The candidate PIN string to be validated.
+     * @param pin The candidate PIN to be validated. The value is consumed and cleared by this method.
      * @return `true` if the PIN is valid and matches the stored credentials; `false` if the
      * PIN is blank, storage is uninitialized, or the PIN is incorrect.
      */
-    override suspend fun isPinValid(pin: String): Boolean {
+    override suspend fun isPinValid(pin: SecurePin): Boolean {
 
-        if (pin.isBlank()) return false
+        if (pin.length == 0) {
+            pin.close()
+            return false
+        }
 
         val (saltBase64, hashBase64, iterations) = withContext(Dispatchers.IO) {
             Triple(
@@ -115,40 +130,53 @@ class PrefsPinStorageProvider(
         }
 
         if (saltBase64.isBlank() || hashBase64.isBlank() || iterations <= 0) {
+            pin.close()
             return false
         }
 
         val salt = try {
             saltBase64.decodeFromBase64(flags = Base64.NO_WRAP)
         } catch (_: IllegalArgumentException) {
+            pin.close()
             return false
         }
 
         val expectedHash = try {
             hashBase64.decodeFromBase64(flags = Base64.NO_WRAP)
         } catch (_: IllegalArgumentException) {
+            pin.close()
+            salt.fill(0)
             return false
         }
 
-        val candidateHash = withContext(Dispatchers.Default) {
-            derivePinHash(
-                pin = pin,
-                salt = salt,
-                iterations = iterations
-            )
+        val pinData = pin.getAndClear()
+        var candidateHash: ByteArray? = null
+        return try {
+            candidateHash = withContext(Dispatchers.Default) {
+                pinData.useChars { chars ->
+                    derivePinHash(
+                        pin = chars,
+                        salt = salt,
+                        iterations = iterations
+                    )
+                }
+            }
+            constantTimeEquals(expectedHash, candidateHash)
+        } finally {
+            pinData.close()
+            salt.fill(0)
+            expectedHash.fill(0)
+            candidateHash?.fill(0)
         }
-
-        return constantTimeEquals(expectedHash, candidateHash)
     }
 
     private fun derivePinHash(
-        pin: String,
+        pin: CharArray,
         salt: ByteArray,
         iterations: Int
     ): ByteArray {
-        val chars = pin.toCharArray()
         val spec = PBEKeySpec(
-            chars,
+            pin,
             salt,
             iterations,
             HASH_SIZE_BITS
@@ -161,7 +189,7 @@ class PrefsPinStorageProvider(
                 .encoded
         } finally {
             spec.clearPassword()
-            chars.fill('\u0000')
+            pin.fill('\u0000')
         }
     }
 
