@@ -19,8 +19,8 @@ package eu.europa.ec.authenticationlogic.provider
 import eu.europa.ec.authenticationlogic.model.BiometricAuthentication
 
 interface BiometryStorageProvider {
-    fun getBiometricAuthentication(): BiometricAuthentication?
-    fun setBiometricAuthentication(value: BiometricAuthentication?)
-    fun setUseBiometricsAuth(value: Boolean)
-    fun getUseBiometricsAuth(): Boolean
+    suspend fun getBiometricAuthentication(): BiometricAuthentication?
+    suspend fun setBiometricAuthentication(value: BiometricAuthentication?)
+    suspend fun setUseBiometricsAuth(value: Boolean)
+    suspend fun getUseBiometricsAuth(): Boolean
 }

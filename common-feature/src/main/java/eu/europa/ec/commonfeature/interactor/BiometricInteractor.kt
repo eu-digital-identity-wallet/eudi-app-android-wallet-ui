@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface BiometricInteractor {
     fun getBiometricsAvailability(listener: (BiometricsAvailability) -> Unit)
-    fun getBiometricUserSelection(): Boolean
-    fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean)
+    suspend fun getBiometricUserSelection(): Boolean
+    suspend fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean)
     fun authenticateWithBiometrics(
         context: Context,
         notifyOnAuthenticationFailure: Boolean,
@@ -47,11 +47,11 @@ class BiometricInteractorImpl(
     override fun isPinValid(pin: SecurePin): Flow<QuickPinInteractorPinValidPartialState> =
         quickPinInteractor.isCurrentPinValid(pin)
 
-    override fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean) {
+    override suspend fun storeBiometricsUsageDecision(shouldUseBiometrics: Boolean) {
         biometryStorageController.setUseBiometricsAuth(shouldUseBiometrics)
     }
 
-    override fun getBiometricUserSelection(): Boolean {
+    override suspend fun getBiometricUserSelection(): Boolean {
         return biometryStorageController.getUseBiometricsAuth()
     }
 

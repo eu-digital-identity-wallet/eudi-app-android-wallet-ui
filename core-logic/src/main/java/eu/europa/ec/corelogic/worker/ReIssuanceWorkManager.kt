@@ -141,6 +141,7 @@ class ReIssuanceWorkManager(
 
     private fun notifyDocumentDetails(removedIds: List<String>) {
         val detailsIntent = Intent(CoreActions.RE_ISSUANCE_WORK_REFRESH_DETAILS_ACTION).apply {
+            setPackage(applicationContext.packageName)
             putStringArrayListExtra(
                 RE_ISSUANCE_IDS_DETAILS_EXTRA,
                 ArrayList(removedIds)
@@ -150,7 +151,9 @@ class ReIssuanceWorkManager(
     }
 
     private fun notifyDocumentsList() {
-        val refreshIntent = Intent(CoreActions.RE_ISSUANCE_WORK_REFRESH_ACTION)
+        val refreshIntent = Intent(CoreActions.RE_ISSUANCE_WORK_REFRESH_ACTION).apply {
+            setPackage(applicationContext.packageName)
+        }
         applicationContext.sendBroadcast(refreshIntent)
     }
 }

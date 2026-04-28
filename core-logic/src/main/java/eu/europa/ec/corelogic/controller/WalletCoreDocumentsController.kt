@@ -73,6 +73,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URLDecoder
@@ -234,7 +235,7 @@ class WalletCoreDocumentsControllerImpl(
     private val eudiWallet: EudiWallet
         get() {
 
-            val sessionId = prefKeys.getSessionId()
+            val sessionId = runBlocking(Dispatchers.IO) { prefKeys.getSessionId() }
 
             if (sessionId.isEmpty()) {
                 throw RuntimeException("Missing SessionId")

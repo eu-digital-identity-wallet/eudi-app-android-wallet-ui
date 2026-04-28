@@ -52,6 +52,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.net.URI
 
 sealed class PresentationControllerConfig(val initiatorRoute: String) {
@@ -215,7 +216,7 @@ class WalletCorePresentationControllerImpl(
     private val eudiWallet: EudiWallet
         get() {
 
-            val sessionId = prefKeys.getSessionId()
+            val sessionId = runBlocking(Dispatchers.IO) { prefKeys.getSessionId() }
 
             if (sessionId.isEmpty()) {
                 throw RuntimeException("Missing SessionId")

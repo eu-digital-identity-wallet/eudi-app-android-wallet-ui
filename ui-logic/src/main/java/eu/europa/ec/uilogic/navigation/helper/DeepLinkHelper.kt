@@ -137,6 +137,7 @@ private fun notify(
 ) {
     Intent().also { intent ->
         intent.action = action
+        intent.setPackage(context.packageName)
         bundle?.let { intent.putExtras(it) }
         context.sendBroadcast(intent)
     }

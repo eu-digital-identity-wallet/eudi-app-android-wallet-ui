@@ -63,7 +63,7 @@ interface CryptoController {
      * @return A configured [Cipher] instance if initialization is successful, or `null` if an
      * exception occurs during initialization.
      */
-    fun getCipher(
+    suspend fun getCipher(
         encrypt: Boolean = false,
         ivBytes: ByteArray? = null,
         userAuthenticationRequired: Boolean = true
@@ -108,7 +108,7 @@ class CryptoControllerImpl(
         return Base64.encodeToString(code, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
     }
 
-    override fun getCipher(
+    override suspend fun getCipher(
         encrypt: Boolean,
         ivBytes: ByteArray?,
         userAuthenticationRequired: Boolean

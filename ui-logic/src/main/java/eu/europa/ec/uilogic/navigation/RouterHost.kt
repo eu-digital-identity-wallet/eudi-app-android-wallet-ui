@@ -18,6 +18,7 @@ package eu.europa.ec.uilogic.navigation
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -55,17 +56,29 @@ class RouterHostImpl(
 
     @Composable
     override fun StartFlow(builder: NavGraphBuilder.(NavController) -> Unit) {
+
         navController = rememberNavController()
         context = LocalContext.current
+
         NavHost(
             navController = navController,
             startDestination = ModuleRoute.StartupModule.route
         ) {
             builder(navController)
         }
-        navController.addOnDestinationChangedListener { _, destination, args ->
-            destination.route?.let { route ->
-                analyticsController.logScreen(route.firstPart("?"), args.toMapOrEmpty())
+
+        DisposableEffect(navController) {
+            val listener = NavController.OnDestinationChangedListener { _, destination, args ->
+                destination.route?.let { route ->
+                    analyticsController.logScreen(
+                        route.firstPart("?"),
+                        args.toMapOrEmpty()
+                    )
+                }
+            }
+            navController.addOnDestinationChangedListener(listener)
+            onDispose {
+                navController.removeOnDestinationChangedListener(listener)
             }
         }
     }
