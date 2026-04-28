@@ -27,7 +27,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
 interface KeystoreController {
-    fun retrieveOrGenerateSecretKey(userAuthenticationRequired: Boolean): SecretKey?
+    suspend fun retrieveOrGenerateSecretKey(userAuthenticationRequired: Boolean): SecretKey?
 }
 
 class KeystoreControllerImpl(
@@ -72,7 +72,7 @@ class KeystoreControllerImpl(
      * @return The retrieved or newly generated [SecretKey], or `null` if the Android KeyStore
      *         is unavailable or if any other error occurs during the process.
      */
-    override fun retrieveOrGenerateSecretKey(userAuthenticationRequired: Boolean): SecretKey? {
+    override suspend fun retrieveOrGenerateSecretKey(userAuthenticationRequired: Boolean): SecretKey? {
         return androidKeyStore?.let {
             val alias = prefKeys.getCryptoAlias()
             if (alias.isEmpty()) {

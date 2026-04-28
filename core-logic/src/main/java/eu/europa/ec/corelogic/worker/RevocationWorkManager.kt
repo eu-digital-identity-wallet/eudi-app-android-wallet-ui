@@ -133,6 +133,7 @@ class RevocationWorkManager(
     private fun sendRevocationBroadcasts(revokedDocuments: List<IssuedDocument>) {
 
         val messageIntent = Intent(CoreActions.REVOCATION_WORK_MESSAGE_ACTION).apply {
+            setPackage(applicationContext.packageName)
             putParcelableArrayListExtra(
                 CoreActions.REVOCATION_IDS_EXTRA,
                 ArrayList(
@@ -144,6 +145,7 @@ class RevocationWorkManager(
         }
 
         val detailsIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_DETAILS_ACTION).apply {
+            setPackage(applicationContext.packageName)
             putStringArrayListExtra(
                 REVOCATION_IDS_DETAILS_EXTRA,
                 ArrayList(
@@ -157,7 +159,9 @@ class RevocationWorkManager(
     }
 
     private fun notifyDocumentsList() {
-        val refreshIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_ACTION)
+        val refreshIntent = Intent(CoreActions.REVOCATION_WORK_REFRESH_ACTION).apply {
+            setPackage(applicationContext.packageName)
+        }
         applicationContext.sendBroadcast(refreshIntent)
     }
 }

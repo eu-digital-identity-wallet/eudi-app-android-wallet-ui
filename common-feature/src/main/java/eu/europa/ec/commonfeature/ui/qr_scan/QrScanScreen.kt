@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -82,6 +83,7 @@ import eu.europa.ec.uilogic.navigation.CommonScreens
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import java.util.concurrent.Executors
 
 @Composable
 fun QrScanScreen(
@@ -207,6 +209,18 @@ private fun OpenCamera(
     val cameraProviderFuture = remember {
         ProcessCameraProvider.getInstance(context)
     }
+    val analysisExecutor = remember {
+        Executors.newSingleThreadExecutor()
+    }
+    val mainExecutor = remember(context) {
+        ContextCompat.getMainExecutor(context)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            analysisExecutor.shutdown()
+        }
+    }
 
     val scannerAreaSize = screenWidthInDp(true) - SIZE_100.dp
 
@@ -253,9 +267,11 @@ private fun OpenCamera(
                         .build()
 
                     imageAnalysis.setAnalyzer(
-                        ContextCompat.getMainExecutor(context),
+                        analysisExecutor,
                         QrCodeAnalyzer { result ->
-                            onQrScanned(result)
+                            mainExecutor.execute {
+                                onQrScanned(result)
+                            }
                         }
                     )
                     try {

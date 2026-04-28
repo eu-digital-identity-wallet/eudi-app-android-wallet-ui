@@ -21,6 +21,8 @@ import eu.europa.ec.corelogic.di.WalletCoreScope
 import eu.europa.ec.corelogic.di.getOrCreateKoinScope
 import eu.europa.ec.eudi.iso18013.transfer.TransferManager
 import eu.europa.ec.eudi.wallet.EudiWallet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.android.inject
 import eu.europa.ec.eudi.iso18013.transfer.engagement.NfcEngagementService as BaseService
 
@@ -29,7 +31,7 @@ class NfcEngagementService : BaseService() {
     private val prefKeys: PrefKeys by inject()
 
     private val wallet: EudiWallet by lazy {
-        val sessionId = prefKeys.getSessionId()
+        val sessionId = runBlocking(Dispatchers.IO) { prefKeys.getSessionId() }
         if (sessionId.isEmpty()) {
             throw RuntimeException("Missing SessionId")
         }

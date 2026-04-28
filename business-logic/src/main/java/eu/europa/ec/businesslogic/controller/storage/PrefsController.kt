@@ -42,20 +42,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 
 interface PrefsController {
-    fun contains(key: String): Boolean
-    fun clear(key: String)
-    fun clear()
-    fun setString(key: String, value: String)
-    fun setLong(key: String, value: Long)
-    fun setBool(key: String, value: Boolean)
-    fun getString(key: String, defaultValue: String): String
-    fun getLong(key: String, defaultValue: Long): Long
-    fun getBool(key: String, defaultValue: Boolean): Boolean
-    fun setInt(key: String, value: Int)
-    fun getInt(key: String, defaultValue: Int): Int
+    suspend fun contains(key: String): Boolean
+    suspend fun clear(key: String)
+    suspend fun clear()
+    suspend fun setString(key: String, value: String)
+    suspend fun setLong(key: String, value: Long)
+    suspend fun setBool(key: String, value: Boolean)
+    suspend fun getString(key: String, defaultValue: String): String
+    suspend fun getLong(key: String, defaultValue: Long): Long
+    suspend fun getBool(key: String, defaultValue: Boolean): Boolean
+    suspend fun setInt(key: String, value: Int)
+    suspend fun getInt(key: String, defaultValue: Int): Int
 }
 
 /**
@@ -65,8 +64,7 @@ interface PrefsController {
  * This class handles the persistence of primitive types (String, Long, Boolean, Int) and ensures
  * that the underlying data is encrypted at rest using a master key stored in the Android Keystore.
  *
- * All operations are performed synchronously using [runBlocking] on [Dispatchers.IO] to maintain
- * compatibility.
+ * All operations are exposed as suspend functions and executed by DataStore on its IO-backed scope.
  *
  * @property resourceProvider An instance of [ResourceProvider] used to access the application context.
  */
@@ -96,12 +94,12 @@ class PrefsControllerImpl(
         )
     }
 
-    override fun contains(key: String): Boolean {
+    override suspend fun contains(key: String): Boolean {
         val prefs = read()
         return prefs.asMap().keys.any { it.name == key }
     }
 
-    override fun clear(key: String) {
+    override suspend fun clear(key: String) {
         edit { prefs ->
             prefs.remove(stringPreferencesKey(key))
             prefs.remove(longPreferencesKey(key))
@@ -110,60 +108,57 @@ class PrefsControllerImpl(
         }
     }
 
-    override fun clear() {
+    override suspend fun clear() {
         edit { it.clear() }
     }
 
-    override fun setString(key: String, value: String) {
+    override suspend fun setString(key: String, value: String) {
         edit { prefs ->
             prefs[stringPreferencesKey(key)] = value
         }
     }
 
-    override fun setLong(key: String, value: Long) {
+    override suspend fun setLong(key: String, value: Long) {
         edit { prefs ->
             prefs[longPreferencesKey(key)] = value
         }
     }
 
-    override fun setBool(key: String, value: Boolean) {
+    override suspend fun setBool(key: String, value: Boolean) {
         edit { prefs ->
             prefs[booleanPreferencesKey(key)] = value
         }
     }
 
-    override fun setInt(key: String, value: Int) {
+    override suspend fun setInt(key: String, value: Int) {
         edit { prefs ->
             prefs[intPreferencesKey(key)] = value
         }
     }
 
-    override fun getString(key: String, defaultValue: String): String {
+    override suspend fun getString(key: String, defaultValue: String): String {
         return read()[stringPreferencesKey(key)] ?: defaultValue
     }
 
-    override fun getLong(key: String, defaultValue: Long): Long {
+    override suspend fun getLong(key: String, defaultValue: Long): Long {
         return read()[longPreferencesKey(key)] ?: defaultValue
     }
 
-    override fun getBool(key: String, defaultValue: Boolean): Boolean {
+    override suspend fun getBool(key: String, defaultValue: Boolean): Boolean {
         return read()[booleanPreferencesKey(key)] ?: defaultValue
     }
 
-    override fun getInt(key: String, defaultValue: Int): Int {
+    override suspend fun getInt(key: String, defaultValue: Int): Int {
         return read()[intPreferencesKey(key)] ?: defaultValue
     }
 
-    private fun read(): Preferences = runBlocking(Dispatchers.IO) {
-        dataStore.data.first()
-    }
+    private suspend fun read(): Preferences = dataStore.data.first()
 
-    private fun edit(block: suspend (MutablePreferences) -> Unit) =
-        runBlocking(Dispatchers.IO) {
-            dataStore.edit { prefs ->
-                block(prefs)
-            }
+    private suspend fun edit(block: suspend (MutablePreferences) -> Unit) {
+        dataStore.edit { prefs ->
+            block(prefs)
         }
+    }
 
     private fun provideAead(context: Context): Aead {
 
@@ -184,40 +179,40 @@ class PrefsControllerImpl(
 }
 
 interface PrefKeys {
-    fun getCryptoAlias(): String
-    fun setCryptoAlias(value: String)
-    fun setSessionId(value: String)
-    fun getSessionId(): String
-    fun setDbKey(value: ByteArray)
-    fun getDbKey(): ByteArray?
+    suspend fun getCryptoAlias(): String
+    suspend fun setCryptoAlias(value: String)
+    suspend fun setSessionId(value: String)
+    suspend fun getSessionId(): String
+    suspend fun setDbKey(value: ByteArray)
+    suspend fun getDbKey(): ByteArray?
 }
 
 class PrefKeysImpl(
     private val prefsController: PrefsController
 ) : PrefKeys {
 
-    override fun getCryptoAlias(): String {
+    override suspend fun getCryptoAlias(): String {
         return prefsController.getString("CryptoAlias", "")
     }
 
-    override fun setCryptoAlias(value: String) {
+    override suspend fun setCryptoAlias(value: String) {
         prefsController.setString("CryptoAlias", value)
     }
 
-    override fun setSessionId(value: String) {
+    override suspend fun setSessionId(value: String) {
         prefsController.setString("SessionId", value)
     }
 
-    override fun getSessionId(): String {
+    override suspend fun getSessionId(): String {
         return prefsController.getString("SessionId", "")
     }
 
-    override fun setDbKey(value: ByteArray) {
+    override suspend fun setDbKey(value: ByteArray) {
         val encoded = value.encodeToBase64String(flags = Base64.NO_WRAP)
         prefsController.setString("dbKey", encoded)
     }
 
-    override fun getDbKey(): ByteArray? {
+    override suspend fun getDbKey(): ByteArray? {
         val encoded = prefsController.getString("dbKey", "").ifBlank { return null }
         return encoded.decodeFromBase64(flags = Base64.NO_WRAP)
     }

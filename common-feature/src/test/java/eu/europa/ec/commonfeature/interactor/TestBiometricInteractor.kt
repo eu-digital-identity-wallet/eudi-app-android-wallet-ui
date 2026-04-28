@@ -120,33 +120,35 @@ class TestBiometricInteractor {
     // When getUseBiometricsAuth returns true, the expected result of getBiometricUserSelection
     // should be true
     @Test
-    fun `When getBiometricUserSelection is called, Then assert the correct value is returned`() {
-        // Given
-        whenever(biometryStorageController.getUseBiometricsAuth()).thenReturn(true)
+    fun `When getBiometricUserSelection is called, Then assert the correct value is returned`() =
+        coroutineRule.runTest {
+            // Given
+            whenever(biometryStorageController.getUseBiometricsAuth()).thenReturn(true)
 
-        // When
-        val result = interactor.getBiometricUserSelection()
+            // When
+            val result = interactor.getBiometricUserSelection()
 
-        // Then
-        assertEquals(true, result)
-        verify(biometryStorageController).getUseBiometricsAuth()
-    }
+            // Then
+            assertEquals(true, result)
+            verify(biometryStorageController).getUseBiometricsAuth()
+        }
     //endregion
 
     //region storeBiometricsUsageDecision
 
     // Case: storeBiometricsUsageDecision behaviour
     @Test
-    fun `When storeBiometricsUsageDecision is called, Then verify setUseBiometricsAuth is executed`() {
-        // Given
-        val shouldUseBiometrics = true
+    fun `When storeBiometricsUsageDecision is called, Then verify setUseBiometricsAuth is executed`() =
+        coroutineRule.runTest {
+            // Given
+            val shouldUseBiometrics = true
 
-        // When
-        interactor.storeBiometricsUsageDecision(shouldUseBiometrics = shouldUseBiometrics)
+            // When
+            interactor.storeBiometricsUsageDecision(shouldUseBiometrics = shouldUseBiometrics)
 
-        // Then
-        verify(biometryStorageController).setUseBiometricsAuth(shouldUseBiometrics)
-    }
+            // Then
+            verify(biometryStorageController).setUseBiometricsAuth(shouldUseBiometrics)
+        }
     //endregion
 
     //region getBiometricsAvailability

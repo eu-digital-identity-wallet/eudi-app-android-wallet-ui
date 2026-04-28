@@ -25,6 +25,8 @@ import eu.europa.ec.storagelogic.dao.FailedReIssuedDocumentDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
 import eu.europa.ec.storagelogic.service.DatabaseService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Configuration
@@ -43,8 +45,10 @@ fun provideAppDatabase(
     cryptoController: CryptoController
 ): DatabaseService {
     System.loadLibrary("sqlcipher")
-    val key = prefKeys.getDbKey() ?: cryptoController.createRandomKey(context).also {
-        prefKeys.setDbKey(it)
+    val key = runBlocking(Dispatchers.IO) {
+        prefKeys.getDbKey() ?: cryptoController.createRandomKey(context).also {
+            prefKeys.setDbKey(it)
+        }
     }
     return Room.databaseBuilder(
         context,

@@ -111,7 +111,7 @@ class BiometricViewModel(
         ) ?: throw RuntimeException("BiometricUiConfig:: is Missing or invalid")
         return State(
             config = config,
-            userBiometricsAreEnabled = biometricInteractor.getBiometricUserSelection(),
+            userBiometricsAreEnabled = false,
             isBackable = config.onBackNavigationConfig.isBackable
         )
     }
@@ -119,9 +119,18 @@ class BiometricViewModel(
     override fun handleEvents(event: Event) {
         when (event) {
             is Event.Init -> {
-                if (biometricUiConfig.shouldInitializeBiometricAuthOnCreate && viewState.value.userBiometricsAreEnabled) {
-                    setEffect {
-                        Effect.InitializeBiometricAuthOnCreate
+                viewModelScope.launch {
+                    val userBiometricsAreEnabled = biometricInteractor.getBiometricUserSelection()
+                    setState {
+                        copy(userBiometricsAreEnabled = userBiometricsAreEnabled)
+                    }
+                    if (
+                        biometricUiConfig.shouldInitializeBiometricAuthOnCreate
+                        && userBiometricsAreEnabled
+                    ) {
+                        setEffect {
+                            Effect.InitializeBiometricAuthOnCreate
+                        }
                     }
                 }
             }

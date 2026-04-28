@@ -64,7 +64,7 @@ internal fun Project.configureKotlinAndroid(
             isCoreLibraryDesugaringEnabled = true
         }
 
-        lint.abortOnError = false
+        lint.abortOnError = true
     }
 
     configureKotlin()

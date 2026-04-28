@@ -20,25 +20,25 @@ import eu.europa.ec.authenticationlogic.config.StorageConfig
 import eu.europa.ec.authenticationlogic.model.BiometricAuthentication
 
 interface BiometryStorageController {
-    fun getBiometricAuthentication(): BiometricAuthentication?
-    fun setBiometricAuthentication(value: BiometricAuthentication?)
-    fun setUseBiometricsAuth(value: Boolean)
-    fun getUseBiometricsAuth(): Boolean
+    suspend fun getBiometricAuthentication(): BiometricAuthentication?
+    suspend fun setBiometricAuthentication(value: BiometricAuthentication?)
+    suspend fun setUseBiometricsAuth(value: Boolean)
+    suspend fun getUseBiometricsAuth(): Boolean
 }
 
 class BiometryStorageControllerImpl(private val storageConfig: StorageConfig) :
     BiometryStorageController {
-    override fun getBiometricAuthentication(): BiometricAuthentication? =
+    override suspend fun getBiometricAuthentication(): BiometricAuthentication? =
         storageConfig.biometryStorageProvider.getBiometricAuthentication()
 
-    override fun setBiometricAuthentication(value: BiometricAuthentication?) {
+    override suspend fun setBiometricAuthentication(value: BiometricAuthentication?) {
         storageConfig.biometryStorageProvider.setBiometricAuthentication(value)
     }
 
-    override fun setUseBiometricsAuth(value: Boolean) {
+    override suspend fun setUseBiometricsAuth(value: Boolean) {
         storageConfig.biometryStorageProvider.setUseBiometricsAuth(value)
     }
 
-    override fun getUseBiometricsAuth(): Boolean =
+    override suspend fun getUseBiometricsAuth(): Boolean =
         storageConfig.biometryStorageProvider.getUseBiometricsAuth()
 }

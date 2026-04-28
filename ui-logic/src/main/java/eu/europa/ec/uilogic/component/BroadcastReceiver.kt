@@ -49,7 +49,7 @@ fun SystemBroadcastReceiver(
             context,
             broadcastReceiver,
             intentFilter,
-            ContextCompat.RECEIVER_EXPORTED
+            ContextCompat.RECEIVER_NOT_EXPORTED
         )
 
         // When the effect leaves the Composition, remove the callback
