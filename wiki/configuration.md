@@ -493,11 +493,11 @@ class PrefsPinStorageProvider(
        // Implementation
     }
 
-    override suspend fun setPin(pin: String) {
+    override suspend fun setPin(pin: SecurePin) {
        // Implementation
     }
 
-    override suspend fun isPinValid(pin: String): Boolean {
+    override suspend fun isPinValid(pin: SecurePin): Boolean {
        // Implementation
     }
 }

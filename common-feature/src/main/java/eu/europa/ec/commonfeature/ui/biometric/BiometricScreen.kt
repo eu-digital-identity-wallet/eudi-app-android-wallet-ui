@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -35,10 +35,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import eu.europa.ec.businesslogic.model.SecurePin
 import eu.europa.ec.commonfeature.config.BiometricMode
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.config.OnBackNavigationConfig
@@ -58,8 +58,10 @@ import eu.europa.ec.uilogic.component.utils.OneTimeLaunchedEffect
 import eu.europa.ec.uilogic.component.utils.SIZE_MEDIUM
 import eu.europa.ec.uilogic.component.utils.SPACING_LARGE
 import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
+import eu.europa.ec.uilogic.component.wrap.SecurePinTextFieldState
 import eu.europa.ec.uilogic.component.wrap.WrapIconButton
-import eu.europa.ec.uilogic.component.wrap.WrapPinTextField
+import eu.europa.ec.uilogic.component.wrap.WrapSecurePinTextField
+import eu.europa.ec.uilogic.component.wrap.rememberSecurePinTextFieldState
 import eu.europa.ec.uilogic.config.ConfigNavigation
 import eu.europa.ec.uilogic.config.FlowCompletion
 import eu.europa.ec.uilogic.config.NavigationType
@@ -85,6 +87,9 @@ fun BiometricScreen(
 ) {
     val state: State by viewModel.viewState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val pinInputState = rememberSecurePinTextFieldState(
+        expectedPinLength = state.quickPinSize
+    )
 
     ContentScreen(
         isLoading = state.isLoading,
@@ -164,7 +169,8 @@ fun BiometricScreen(
                     is Effect.Navigation.Finish -> context.finish()
                 }
             },
-            padding = it
+            padding = it,
+            pinInputState = pinInputState
         )
     }
 
@@ -179,7 +185,8 @@ private fun Body(
     effectFlow: Flow<Effect>,
     onEventSent: ((event: Event) -> Unit),
     onNavigationRequested: ((navigationEffect: Effect.Navigation) -> Unit),
-    padding: PaddingValues
+    padding: PaddingValues,
+    pinInputState: SecurePinTextFieldState
 ) {
 
     // Get application context.
@@ -199,6 +206,7 @@ private fun Body(
             MainContent(
                 state = state,
                 onEventSent = onEventSent,
+                pinInputState = pinInputState,
             )
         }
 
@@ -248,7 +256,8 @@ private fun Body(
 @Composable
 private fun MainContent(
     state: State,
-    onEventSent: (event: Event) -> Unit
+    onEventSent: (event: Event) -> Unit,
+    pinInputState: SecurePinTextFieldState
 ) {
     when (val mode = state.config.mode) {
         is BiometricMode.Default -> {
@@ -281,8 +290,12 @@ private fun MainContent(
                 PinFieldLayout(
                     modifier = Modifier.fillMaxWidth(),
                     state = state,
+                    pinInputState = pinInputState,
                     onPinInput = { quickPin ->
-                        onEventSent(Event.OnQuickPinEntered(quickPin))
+                        onEventSent(Event.OnQuickPinLengthChanged(quickPin))
+                    },
+                    onPinComplete = { securePin ->
+                        onEventSent(Event.OnQuickPinEntered(securePin))
                     }
                 )
             }
@@ -328,8 +341,12 @@ private fun MainContent(
                     .fillMaxWidth()
                     .padding(vertical = SPACING_LARGE.dp),
                 state = state,
+                pinInputState = pinInputState,
                 onPinInput = { quickPin ->
-                    onEventSent(Event.OnQuickPinEntered(quickPin))
+                    onEventSent(Event.OnQuickPinLengthChanged(quickPin))
+                },
+                onPinComplete = { securePin ->
+                    onEventSent(Event.OnQuickPinEntered(securePin))
                 }
             )
         }
@@ -340,17 +357,20 @@ private fun MainContent(
 private fun PinFieldLayout(
     modifier: Modifier = Modifier,
     state: State,
-    onPinInput: (String) -> Unit,
+    pinInputState: SecurePinTextFieldState,
+    onPinInput: (Int) -> Unit,
+    onPinComplete: (SecurePin) -> Unit,
 ) {
-    WrapPinTextField(
+    WrapSecurePinTextField(
         modifier = modifier,
-        onPinUpdate = onPinInput,
-        length = state.quickPinSize,
+        state = pinInputState,
+        onPinLengthChanged = onPinInput,
+        onPinComplete = onPinComplete,
         hasError = !state.quickPinError.isNullOrEmpty(),
         errorMessage = state.quickPinError,
-        visualTransformation = PasswordVisualTransformation(),
         pinWidth = 42.dp,
-        focusOnCreate = !state.userBiometricsAreEnabled
+        focusOnCreate = !state.userBiometricsAreEnabled,
+        shouldHideKeyboardOnCompletion = true
     )
 }
 
@@ -384,7 +404,8 @@ private fun PreviewBiometricScreen() {
             effectFlow = Channel<Effect>().receiveAsFlow(),
             onEventSent = {},
             onNavigationRequested = {},
-            padding = PaddingValues(SIZE_MEDIUM.dp)
+            padding = PaddingValues(SIZE_MEDIUM.dp),
+            pinInputState = rememberSecurePinTextFieldState(expectedPinLength = 6)
         )
     }
 }

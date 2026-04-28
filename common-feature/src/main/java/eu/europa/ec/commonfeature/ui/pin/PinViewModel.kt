@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -17,9 +17,7 @@
 package eu.europa.ec.commonfeature.ui.pin
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.validator.Form
-import eu.europa.ec.businesslogic.validator.FormValidationResult
-import eu.europa.ec.businesslogic.validator.Rule
+import eu.europa.ec.businesslogic.model.SecurePin
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig
@@ -60,11 +58,8 @@ data class State(
     val isLoading: Boolean = false,
     val isButtonEnabled: Boolean = false,
     val quickPinError: String? = null,
-    val validationResult: FormValidationResult = FormValidationResult(false),
     val subtitle: String = "",
     val title: String = "",
-    val pin: String = "",
-    val enteredPin: String = "",
     val buttonText: String = "",
     val resetPin: Boolean = false,
     val pinState: PinValidationState,
@@ -89,8 +84,8 @@ data class State(
 }
 
 sealed class Event : ViewEvent {
-    data class NextButtonPressed(val pin: String) : Event()
-    data class OnQuickPinEntered(val quickPin: String) : Event()
+    data class NextButtonPressed(val pin: SecurePin) : Event()
+    data class OnQuickPinLengthChanged(val length: Int) : Event()
     data object CancelPressed : Event()
     data object Finish : Event()
     sealed class BottomSheet : Event() {
@@ -123,6 +118,8 @@ class PinViewModel(
     private val uiSerializer: UiSerializer,
     @InjectedParam private val pinFlow: PinFlow
 ) : MviViewModel<Event, State, Effect>() {
+
+    private var enteredPin: SecurePin? = null
 
     override fun setInitialState(): State {
         val title: String
@@ -159,8 +156,8 @@ class PinViewModel(
 
     override fun handleEvents(event: Event) {
         when (event) {
-            is Event.OnQuickPinEntered -> {
-                validateForm(event.quickPin)
+            is Event.OnQuickPinLengthChanged -> {
+                validatePinLength(event.length)
             }
 
             is Event.NextButtonPressed -> {
@@ -174,16 +171,17 @@ class PinViewModel(
 
                     PinValidationState.REENTER -> {
                         // Save the new pin
-                        saveNewPin(newPin = state.pin, enteredPin = state.enteredPin)
+                        saveNewPin(newPin = event.pin)
                     }
 
                     PinValidationState.VALIDATE -> {
-                        validatePin(currentPin = state.pin)
+                        validatePin(currentPin = event.pin)
                     }
                 }
             }
 
             is Event.CancelPressed -> {
+                clearPendingPin()
                 showBottomSheet()
             }
 
@@ -199,17 +197,21 @@ class PinViewModel(
 
             is Event.BottomSheet.Cancel.SecondaryButtonPressed -> {
                 viewModelScope.launch {
+                    clearPendingPin()
                     hideBottomSheet()
                     delay(200L)
                     setEffect { Effect.Navigation.Pop }
                 }
             }
 
-            is Event.Finish -> setEffect { Effect.Navigation.Finish }
+            is Event.Finish -> {
+                clearPendingPin()
+                setEffect { Effect.Navigation.Finish }
+            }
         }
     }
 
-    private fun validatePin(currentPin: String) {
+    private fun validatePin(currentPin: SecurePin) {
         setState { copy(isLoading = true) }
         viewModelScope.launch {
             interactor.isCurrentPinValid(
@@ -235,14 +237,12 @@ class PinViewModel(
 
     private fun setupEnterPhase() {
         val newPinState = PinValidationState.ENTER
-
         setState {
             copy(
                 quickPinError = null,
-                enteredPin = "",
                 pinState = newPinState,
                 buttonText = calculateButtonText(newPinState),
-                pin = "",
+                isButtonEnabled = false,
                 resetPin = true,
                 subtitle = calculateSubtitle(newPinState),
                 isLoading = false
@@ -250,16 +250,15 @@ class PinViewModel(
         }
     }
 
-    private fun setupReenterPhase(enteredPin: String) {
+    private fun setupReenterPhase(enteredPin: SecurePin) {
         val newPinState = PinValidationState.REENTER
-
+        replacePendingPin(enteredPin)
         setState {
             copy(
                 quickPinError = null,
-                enteredPin = enteredPin,
                 pinState = PinValidationState.REENTER,
                 buttonText = calculateButtonText(newPinState),
-                pin = "",
+                isButtonEnabled = false,
                 resetPin = true,
                 subtitle = calculateSubtitle(newPinState),
                 isLoading = false
@@ -267,12 +266,22 @@ class PinViewModel(
         }
     }
 
-    private fun saveNewPin(newPin: String, enteredPin: String) {
+    private fun saveNewPin(newPin: SecurePin) {
+
+        val initialPin = enteredPin
+        enteredPin = null
+        if (initialPin == null) {
+            newPin.close()
+            setState { copy(isLoading = true) }
+            return
+        }
+
         setState { copy(isLoading = true) }
+
         viewModelScope.launch {
             interactor.setPin(
                 newPin = newPin,
-                initialPin = enteredPin
+                initialPin = initialPin
             ).collect {
                 when (it) {
                     is QuickPinInteractorSetPinPartialState.Failed -> {
@@ -285,6 +294,7 @@ class PinViewModel(
                     }
 
                     is QuickPinInteractorSetPinPartialState.Success -> {
+                        clearPendingPin()
                         setEffect {
                             Effect.Navigation.SwitchScreen(getNextScreenRoute())
                         }
@@ -294,35 +304,13 @@ class PinViewModel(
         }
     }
 
-    private fun getListOfRules(pin: String): Form {
-        return Form(
-            mapOf(
-                listOf(
-                    Rule.ValidateStringRange(
-                        viewState.value.quickPinSize..viewState.value.quickPinSize,
-                        ""
-                    ),
-                    Rule.ValidateRegex(
-                        "-?\\d+(\\.\\d+)?".toRegex(),
-                        resourceProvider.getString(R.string.quick_pin_numerical_rule_invalid_error_message)
-                    )
-                ) to pin
+    private fun validatePinLength(length: Int) {
+        setState {
+            copy(
+                isButtonEnabled = length == quickPinSize,
+                quickPinError = null,
+                resetPin = false
             )
-        )
-    }
-
-    private fun validateForm(pin: String) {
-        viewModelScope.launch {
-            val validationResult = interactor.validateForm(getListOfRules(pin))
-            setState {
-                copy(
-                    validationResult = validationResult,
-                    isButtonEnabled = validationResult.isValid,
-                    quickPinError = validationResult.message,
-                    pin = pin,
-                    resetPin = false
-                )
-            }
         }
     }
 
@@ -459,5 +447,20 @@ class PinViewModel(
         setEffect {
             Effect.CloseBottomSheet
         }
+    }
+
+    private fun replacePendingPin(pin: SecurePin) {
+        clearPendingPin()
+        enteredPin = pin
+    }
+
+    private fun clearPendingPin() {
+        enteredPin?.close()
+        enteredPin = null
+    }
+
+    override fun onCleared() {
+        clearPendingPin()
+        super.onCleared()
     }
 }

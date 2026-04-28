@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 European Commission
+ * Copyright (c) 2026 European Commission
  *
  * Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the European
  * Commission - subsequent versions of the EUPL (the "Licence"); You may not use this work
@@ -22,6 +22,7 @@ import androidx.lifecycle.viewModelScope
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.businesslogic.extension.toUri
+import eu.europa.ec.businesslogic.model.SecurePin
 import eu.europa.ec.commonfeature.config.BiometricUiConfig
 import eu.europa.ec.commonfeature.interactor.BiometricInteractor
 import eu.europa.ec.commonfeature.interactor.QuickPinInteractorPinValidPartialState
@@ -51,7 +52,8 @@ sealed class Event : ViewEvent {
     data object OnNavigateBack : Event()
     data object OnErrorDismiss : Event()
     data object Init : Event()
-    data class OnQuickPinEntered(val quickPin: String) : Event()
+    data class OnQuickPinEntered(val quickPin: SecurePin) : Event()
+    data class OnQuickPinLengthChanged(val length: Int) : Event()
 }
 
 data class State(
@@ -59,7 +61,6 @@ data class State(
     val error: ContentErrorConfig? = null,
     val config: BiometricUiConfig,
     val quickPinError: String? = null,
-    val quickPin: String = "",
     val userBiometricsAreEnabled: Boolean = false,
     val isBackable: Boolean = false,
     val notifyOnAuthenticationFailure: Boolean = true,
@@ -181,18 +182,26 @@ class BiometricViewModel(
             is Event.OnQuickPinEntered -> {
                 setState {
                     copy(
-                        quickPin = event.quickPin,
                         quickPinError = null
                     )
                 }
                 authorizeWithPin(event.quickPin)
             }
+
+            is Event.OnQuickPinLengthChanged -> {
+                setState {
+                    copy(
+                        quickPinError = null
+                    )
+                }
+            }
         }
     }
 
-    private fun authorizeWithPin(pin: String) {
+    private fun authorizeWithPin(pin: SecurePin) {
 
         if (pin.length != viewState.value.quickPinSize) {
+            pin.close()
             return
         }
 
