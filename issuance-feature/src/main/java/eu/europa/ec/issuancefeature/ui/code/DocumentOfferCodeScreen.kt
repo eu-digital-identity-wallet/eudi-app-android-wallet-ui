@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import eu.europa.ec.businesslogic.model.SecurePin
+import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.uilogic.component.AppIconAndText
 import eu.europa.ec.uilogic.component.AppIconAndTextDataUi
 import eu.europa.ec.uilogic.component.content.ContentScreen
@@ -50,6 +51,8 @@ import eu.europa.ec.uilogic.component.utils.SPACING_SMALL
 import eu.europa.ec.uilogic.component.wrap.SecurePinTextFieldState
 import eu.europa.ec.uilogic.component.wrap.WrapSecurePinTextField
 import eu.europa.ec.uilogic.component.wrap.rememberSecurePinTextFieldState
+import eu.europa.ec.uilogic.config.ConfigNavigation
+import eu.europa.ec.uilogic.config.NavigationType
 import eu.europa.ec.uilogic.extension.paddingFrom
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import kotlinx.coroutines.channels.Channel
@@ -86,7 +89,8 @@ fun DocumentOfferCodeScreen(
             onNavigationRequested = { navigationEffect ->
                 handleNavigationEffect(navigationEffect, navController)
             },
-            paddingValues = paddingValues
+            paddingValues = paddingValues,
+            state = state
         )
     }
 }
@@ -97,6 +101,7 @@ private fun Content(
     title: String,
     subTitle: String,
     pinInputState: SecurePinTextFieldState,
+    state: State,
     effectFlow: Flow<Effect>,
     onEventSend: (Event) -> Unit,
     onNavigationRequested: (Effect.Navigation) -> Unit,
@@ -141,6 +146,7 @@ private fun Content(
                 .fillMaxWidth()
                 .padding(top = SPACING_LARGE.dp),
             pinInputState = pinInputState,
+            state = state,
             onPinComplete = { securePin ->
                 onEventSend(
                     Event.OnPinEntered(
@@ -165,6 +171,7 @@ private fun Content(
 private fun CodeFieldLayout(
     modifier: Modifier = Modifier,
     pinInputState: SecurePinTextFieldState,
+    state: State,
     onPinComplete: (SecurePin) -> Unit,
 ) {
     WrapSecurePinTextField(
@@ -174,7 +181,8 @@ private fun CodeFieldLayout(
         onPinComplete = onPinComplete,
         pinWidth = 42.dp,
         focusOnCreate = true,
-        shouldHideKeyboardOnCompletion = true
+        shouldHideKeyboardOnCompletion = true,
+        enabled = !state.isLoading
     )
 }
 
@@ -212,7 +220,22 @@ private fun DocumentOfferCodeScreenEmptyPreview() {
             onEventSend = {},
             onNavigationRequested = {},
             paddingValues = PaddingValues(SPACING_MEDIUM.dp),
-            context = LocalContext.current
+            context = LocalContext.current,
+            state = State(
+                isLoading = false,
+                error = null,
+                notifyOnAuthenticationFailure = false,
+                screenTitle = "Demo Issuer requires verification",
+                screenSubtitle = "Type the 5-digit transaction code you received.",
+                offerCodeUiConfig = OfferCodeUiConfig(
+                    offerUri = "https://offer.uri.com",
+                    txCodeLength = 5,
+                    issuerName = "Demo Issuer",
+                    onSuccessNavigation = ConfigNavigation(
+                        navigationType = NavigationType.Pop
+                    )
+                )
+            ),
         )
     }
 }

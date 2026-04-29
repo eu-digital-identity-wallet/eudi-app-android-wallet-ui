@@ -268,11 +268,8 @@ class PinViewModel(
 
     private fun saveNewPin(newPin: SecurePin) {
 
-        val initialPin = enteredPin
-        enteredPin = null
-        if (initialPin == null) {
+        val initialPin = enteredPin ?: run {
             newPin.close()
-            setState { copy(isLoading = true) }
             return
         }
 

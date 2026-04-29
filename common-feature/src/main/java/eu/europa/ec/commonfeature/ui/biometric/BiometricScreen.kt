@@ -370,7 +370,8 @@ private fun PinFieldLayout(
         errorMessage = state.quickPinError,
         pinWidth = 42.dp,
         focusOnCreate = !state.userBiometricsAreEnabled,
-        shouldHideKeyboardOnCompletion = true
+        shouldHideKeyboardOnCompletion = true,
+        enabled = !state.isLoading
     )
 }
 

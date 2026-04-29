@@ -76,7 +76,7 @@ interface CryptoController {
      * returned.
      * [byteArray] that needed to be encrypted or decrypted (Depending always on [Cipher] provided.
      */
-    fun encryptDecrypt(cipher: Cipher?, byteArray: ByteArray): ByteArray
+    suspend fun encryptDecrypt(cipher: Cipher?, byteArray: ByteArray): ByteArray
 
     /**
      * Generates a random cryptographic key as a byte array.
@@ -87,7 +87,7 @@ interface CryptoController {
      *
      * @return A [ByteArray] containing the generated hexadecimal key.
      */
-    fun createRandomKey(context: Context): ByteArray
+    suspend fun createRandomKey(context: Context): ByteArray
 }
 
 class CryptoControllerImpl(
@@ -133,11 +133,11 @@ class CryptoControllerImpl(
         }
 
 
-    override fun encryptDecrypt(cipher: Cipher?, byteArray: ByteArray): ByteArray {
+    override suspend fun encryptDecrypt(cipher: Cipher?, byteArray: ByteArray): ByteArray {
         return cipher?.doFinal(byteArray) ?: ByteArray(0)
     }
 
-    override fun createRandomKey(context: Context): ByteArray {
+    override suspend fun createRandomKey(context: Context): ByteArray {
         val hex: String = run {
             val bytes = ByteArray(32)
             SecureRandom().nextBytes(bytes)

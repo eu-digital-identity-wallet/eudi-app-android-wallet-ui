@@ -131,7 +131,8 @@ fun WrapSecurePinTextField(
     pinWidth: Dp? = null,
     clearCode: Boolean = false,
     focusOnCreate: Boolean = false,
-    shouldHideKeyboardOnCompletion: Boolean = false
+    shouldHideKeyboardOnCompletion: Boolean = false,
+    enabled: Boolean = true
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -195,6 +196,7 @@ fun WrapSecurePinTextField(
                         keyboardType = KeyboardType.NumberPassword,
                         imeAction = ImeAction.Done
                     ),
+                    readOnly = !enabled,
                     cursorBrush = SolidColor(Color.Transparent),
                     textObfuscationMode = TextObfuscationMode.Hidden,
                     decorator = TextFieldDecorator { innerTextField ->
