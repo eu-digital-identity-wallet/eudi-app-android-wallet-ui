@@ -49,15 +49,71 @@ fun ByteArray.encodeToBase64String(flags: Int = Base64.DEFAULT): String {
 }
 
 /**
- * Attempts to decode a [Base64] encoded String.
- * @return A [ByteArray] with the encoded bytes if it succeeds,
- * empty if it fails.
+ * Decodes a Base64 encoded string into a list of possible byte array representations.
+ *
+ * This function attempts to decode the input string by:
+ * 1. Stripping common prefixes (e.g., "base64,").
+ * 2. Removing all whitespace characters.
+ * 3. Attempting to fix potential missing padding.
+ * 4. Iterating through various decoding flags (DEFAULT, NO_WRAP, URL_SAFE) to find valid outputs.
+ *
+ * @param value The Base64 encoded string to decode.
+ * @return A list of [ByteArray] objects representing the successful decodings. Returns an empty list if no valid decodings are found or if the input is blank.
  */
-fun decodeFromBase64(base64EncodedString: String, flags: Int = Base64.DEFAULT): ByteArray {
-    return try {
-        Base64.decode(base64EncodedString, flags)
-    } catch (_: Exception) {
-        ByteArray(size = 0)
+fun decodeBase64ToByteArrays(value: String): List<ByteArray> {
+    return runCatching {
+        val sanitizedBase64 = value
+            .extractBase64Payload()
+            .removeWhitespace()
+            .takeIf { base64 -> base64.isNotBlank() }
+            ?: return emptyList()
+
+        val candidates = listOf(
+            sanitizedBase64,
+            sanitizedBase64.withBase64Padding()
+        ).distinct()
+
+        val decodingFlags = listOf(
+            Base64.DEFAULT,
+            Base64.NO_WRAP,
+            Base64.URL_SAFE,
+            Base64.URL_SAFE or Base64.NO_WRAP
+        )
+
+        candidates
+            .flatMap { candidate ->
+                decodingFlags.map { flags ->
+                    candidate to flags
+                }
+            }
+            .mapNotNull { (candidate, flags) ->
+                candidate.decodeBase64OrNull(flags)
+            }
+    }.getOrDefault(emptyList())
+}
+
+private fun String.extractBase64Payload(): String {
+    return substringAfter(delimiter = "base64,", missingDelimiterValue = this)
+}
+
+private fun String.removeWhitespace(): String {
+    return filterNot { character ->
+        character.isWhitespace()
     }
 }
 
+private fun String.withBase64Padding(): String {
+    val missingPadding = (4 - length % 4) % 4
+
+    return if (missingPadding == 0) {
+        this
+    } else {
+        this + "=".repeat(missingPadding)
+    }
+}
+
+private fun String.decodeBase64OrNull(flags: Int): ByteArray? {
+    return runCatching {
+        Base64.decode(this, flags)
+    }.getOrNull()
+}
