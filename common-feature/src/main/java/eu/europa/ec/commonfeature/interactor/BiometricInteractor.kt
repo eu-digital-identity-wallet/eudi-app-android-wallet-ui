@@ -21,7 +21,7 @@ import eu.europa.ec.authenticationlogic.controller.authentication.BiometricAuthe
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAuthenticate
 import eu.europa.ec.authenticationlogic.controller.authentication.BiometricsAvailability
 import eu.europa.ec.authenticationlogic.controller.storage.BiometryStorageController
-import eu.europa.ec.businesslogic.model.SecurePin
+import eu.europa.ec.authenticationlogic.secure.SecurePin
 import kotlinx.coroutines.flow.Flow
 
 interface BiometricInteractor {

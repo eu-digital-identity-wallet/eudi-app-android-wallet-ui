@@ -17,11 +17,11 @@
 package eu.europa.ec.authenticationlogic.storage
 
 import android.util.Base64
+import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.authenticationlogic.provider.PinStorageProvider
 import eu.europa.ec.businesslogic.controller.storage.PrefsController
 import eu.europa.ec.businesslogic.extension.decodeFromBase64
 import eu.europa.ec.businesslogic.extension.encodeToBase64String
-import eu.europa.ec.businesslogic.model.SecurePin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.security.SecureRandom
