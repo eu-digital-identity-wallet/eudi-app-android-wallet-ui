@@ -16,8 +16,8 @@
 
 package eu.europa.ec.testfeature.util
 
-import eu.europa.ec.businesslogic.model.SecurePin
-import eu.europa.ec.businesslogic.model.SecurePinImpl
+import eu.europa.ec.authenticationlogic.secure.SecurePin
+import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
 import eu.europa.ec.eudi.iso18013.transfer.response.ReaderAuth
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.response.device.MsoMdocItem

@@ -16,7 +16,7 @@
 
 package eu.europa.ec.authenticationlogic.provider
 
-import eu.europa.ec.businesslogic.model.SecurePin
+import eu.europa.ec.authenticationlogic.secure.SecurePin
 
 interface PinStorageProvider {
     suspend fun hasPin(): Boolean

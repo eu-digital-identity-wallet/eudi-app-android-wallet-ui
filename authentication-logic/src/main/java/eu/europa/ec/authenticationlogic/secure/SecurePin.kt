@@ -14,7 +14,7 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.model
+package eu.europa.ec.authenticationlogic.secure
 
 interface SecurePin : AutoCloseable {
 
