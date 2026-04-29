@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import eu.europa.ec.businesslogic.controller.storage.PrefKeys
@@ -44,8 +43,10 @@ import eu.europa.ec.uilogic.navigation.helper.IntentType
 import eu.europa.ec.uilogic.navigation.helper.handleDeepLinkAction
 import eu.europa.ec.uilogic.navigation.helper.hasDeepLink
 import eu.europa.ec.uilogic.navigation.helper.hasIntentAction
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.annotation.KoinViewModel
@@ -178,15 +179,11 @@ internal class EudiComponentActivityViewModel(
     }
 
     fun onCreate() {
-        viewModelScope.launch {
-            prefKeys.setSessionId(sessionId)
-        }
+        setSessionId()
     }
 
     fun onResume() {
-        viewModelScope.launch {
-            prefKeys.setSessionId(sessionId)
-        }
+        setSessionId()
     }
 
     fun onFlowStart() {
@@ -200,4 +197,10 @@ internal class EudiComponentActivityViewModel(
     fun getCachedIntent(): Intent? = pendingIntent
 
     fun hasFlowStarted(): Boolean = flowStarted
+
+    private fun setSessionId() {
+        runBlocking(Dispatchers.IO) {
+            prefKeys.setSessionId(sessionId)
+        }
+    }
 }

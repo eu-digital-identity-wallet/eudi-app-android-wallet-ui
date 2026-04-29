@@ -154,7 +154,7 @@ class PrefsControllerImpl(
 
     private suspend fun read(): Preferences = dataStore.data.first()
 
-    private suspend fun edit(block: suspend (MutablePreferences) -> Unit) {
+    private suspend fun edit(block: (MutablePreferences) -> Unit) {
         dataStore.edit { prefs ->
             block(prefs)
         }

@@ -301,7 +301,8 @@ private fun PinFieldLayout(
         errorMessage = state.quickPinError,
         pinWidth = 42.dp,
         clearCode = state.resetPin,
-        focusOnCreate = true
+        focusOnCreate = true,
+        enabled = !state.isLoading
     )
 }
 
