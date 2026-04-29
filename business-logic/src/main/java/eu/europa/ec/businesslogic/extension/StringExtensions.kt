@@ -201,3 +201,72 @@ fun String.firstPart(separator: String): String = this.split(separator).firstOrN
 fun String?.ifEmptyOrNull(default: String): String {
     return if (this.isNullOrBlank()) default else this
 }
+
+/**
+ * Decodes a Base64 string into a list of possible [ByteArray] representations by attempting
+ * multiple decoding strategies.
+ *
+ * This function handles various Base64 formats by:
+ * 1. Extracting the payload if the string contains a "base64," prefix.
+ * 2. Removing all whitespace characters.
+ * 3. Attempting to decode both the raw string and a padded version of the string.
+ * 4. Iterating through several decoding flags ([Base64.DEFAULT], [Base64.NO_WRAP], [Base64.URL_SAFE]).
+ *
+ * It is particularly useful when the exact encoding format (standard vs. URL-safe) or
+ * padding status of the input string is uncertain.
+ *
+ * @return A list of successfully decoded [ByteArray] objects. Returns an empty list if
+ * the string is blank or if all decoding attempts fail.
+ */
+fun String.decodeBase64ToByteArrays(): List<ByteArray> {
+
+    fun String.extractBase64Payload(): String {
+        return substringAfter(delimiter = "base64,", missingDelimiterValue = this)
+    }
+
+    fun String.removeWhitespace(): String {
+        return filterNot { character ->
+            character.isWhitespace()
+        }
+    }
+
+    fun String.withBase64Padding(): String {
+        val missingPadding = (4 - length % 4) % 4
+
+        return if (missingPadding == 0) {
+            this
+        } else {
+            this + "=".repeat(missingPadding)
+        }
+    }
+
+    return runCatching {
+        val sanitizedBase64 = this
+            .extractBase64Payload()
+            .removeWhitespace()
+            .takeIf { base64 -> base64.isNotBlank() }
+            ?: return emptyList()
+
+        val candidates = listOf(
+            sanitizedBase64,
+            sanitizedBase64.withBase64Padding()
+        ).distinct()
+
+        val decodingFlags = listOf(
+            Base64.DEFAULT,
+            Base64.NO_WRAP,
+            Base64.URL_SAFE,
+            Base64.URL_SAFE or Base64.NO_WRAP
+        )
+
+        candidates
+            .flatMap { candidate ->
+                decodingFlags.map { flags ->
+                    candidate to flags
+                }
+            }
+            .map { (candidate, flags) ->
+                candidate.decodeFromBase64(flags)
+            }
+    }.getOrDefault(emptyList())
+}

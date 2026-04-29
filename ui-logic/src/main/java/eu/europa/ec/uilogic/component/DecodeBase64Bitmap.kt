@@ -48,7 +48,7 @@ fun rememberBase64DecodedBitmap(base64Image: String): ImageBitmap? {
 }
 
 private fun decodeBase64Bitmap(value: String): Bitmap? {
-    return decodeBase64ToByteArrays(value).toBitmapOrNull()
+    return value.decodeBase64ToByteArrays().toBitmapOrNull()
 }
 
 private fun List<ByteArray>.toBitmapOrNull(): Bitmap? {
