@@ -203,22 +203,29 @@ fun String?.ifEmptyOrNull(default: String): String {
 }
 
 /**
- * Decodes a Base64 string into a list of possible [ByteArray] representations by attempting
- * multiple decoding strategies.
+ * Decodes a Base64 encoded string into a list of possible [ByteArray] results using various decoding flags.
  *
- * This function handles various Base64 formats by:
- * 1. Extracting the payload if the string contains a "base64," prefix.
- * 2. Removing all whitespace characters.
- * 3. Attempting to decode both the raw string and a padded version of the string.
- * 4. Iterating through several decoding flags ([Base64.DEFAULT], [Base64.NO_WRAP], [Base64.URL_SAFE]).
+ * This function is designed to be highly resilient by attempting to decode the string using multiple strategies:
+ * 1. It extracts the payload if the string is a Data URI (strips the "base64," prefix).
+ * 2. It removes all whitespace characters.
+ * 3. It attempts decoding both with and without manual '=' padding.
+ * 4. It iterates through a list of provided [Base64] flags to find all valid representations.
  *
- * It is particularly useful when the exact encoding format (standard vs. URL-safe) or
- * padding status of the input string is uncertain.
+ * This is particularly useful when dealing with Base64 strings from diverse sources where the exact
+ * encoding format (URL-safe vs. Default, Padded vs. Unpadded) might be inconsistent or unknown.
  *
- * @return A list of successfully decoded [ByteArray] objects. Returns an empty list if
- * the string is blank or if all decoding attempts fail.
+ * @param flags A list of [Base64] flag configurations to attempt during decoding.
+ * Defaults to [Base64.DEFAULT], [Base64.NO_WRAP], [Base64.URL_SAFE], and a combination of URL_SAFE/NO_WRAP.
+ * @return A list of successfully decoded [ByteArray] objects. Returns an empty list if no decoding attempt succeeds.
  */
-fun String.decodeBase64ToByteArrays(): List<ByteArray> {
+fun String.decodeBase64ToByteArrays(
+    flags: List<Int> = listOf(
+        Base64.DEFAULT,
+        Base64.NO_WRAP,
+        Base64.URL_SAFE,
+        Base64.URL_SAFE or Base64.NO_WRAP
+    )
+): List<ByteArray> {
 
     fun String.extractBase64Payload(): String {
         return substringAfter(delimiter = "base64,", missingDelimiterValue = this)
@@ -252,16 +259,9 @@ fun String.decodeBase64ToByteArrays(): List<ByteArray> {
             sanitizedBase64.withBase64Padding()
         ).distinct()
 
-        val decodingFlags = listOf(
-            Base64.DEFAULT,
-            Base64.NO_WRAP,
-            Base64.URL_SAFE,
-            Base64.URL_SAFE or Base64.NO_WRAP
-        )
-
         candidates
             .flatMap { candidate ->
-                decodingFlags.map { flags ->
+                flags.map { flags ->
                     candidate to flags
                 }
             }
