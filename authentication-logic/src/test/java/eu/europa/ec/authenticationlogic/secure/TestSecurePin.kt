@@ -14,24 +14,29 @@
  * governing permissions and limitations under the Licence.
  */
 
-package eu.europa.ec.businesslogic.model
+package eu.europa.ec.authenticationlogic.secure
 
+import org.junit.Assert
 import org.junit.Assert.assertArrayEquals
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class TestSecurePin {
 
     @Test
     fun `getAndClear returns characters once`() {
+
+        // Given
         val pin = SecurePinImpl("123456")
 
+        // When
         val data = pin.getAndClear()
 
+        // Then
         data.useChars {
             assertArrayEquals(charArrayOf('1', '2', '3', '4', '5', '6'), it)
         }
@@ -43,12 +48,35 @@ class TestSecurePin {
     }
 
     @Test
-    fun `close clears sensitive data`() {
-        val data = SecurePinImpl("1234").getAndClear()
+    fun `getAndClearAsString returns string once`() {
 
+        // Given
+        val mockedPin = "123456"
+        val pin = SecurePinImpl(mockedPin)
+
+        // When
+        val data = pin.getAndClearAsString()
+
+        // Then
+        assertEquals(data, mockedPin)
+        assertTrue(pin.isCleared)
+        assertThrows(IllegalStateException::class.java) {
+            pin.getAndClearAsString()
+        }
+    }
+
+    @Test
+    fun `close clears sensitive data`() {
+
+        // Given
+        val pin = SecurePinImpl("1234")
+
+        // When
+        val data = pin.getAndClear()
         data.close()
 
-        assertEquals(0, data.length)
+        // Then
+        Assert.assertEquals(0, data.length)
         assertThrows(IllegalStateException::class.java) {
             data.useChars {}
         }
@@ -56,10 +84,13 @@ class TestSecurePin {
 
     @Test
     fun `contentEquals compares without clearing pins`() {
+
+        // Given
         val pinA = SecurePinImpl("1234")
         val pinB = SecurePinImpl("1234")
         val pinC = SecurePinImpl("4321")
 
+        // Then
         assertTrue(pinA.contentEquals(pinB))
         assertFalse(pinA.contentEquals(pinC))
         assertFalse(pinA.isCleared)
@@ -73,13 +104,19 @@ class TestSecurePin {
 
     @Test
     fun `object methods do not expose pin content`() {
+
+        // Given
         val pin = SecurePinImpl("987654")
         val sameValuePin = SecurePinImpl("987654")
 
+        // Then
         assertFalse(pin.toString().contains("987654"))
         assertNotEquals(pin, sameValuePin)
 
+        // Given
         val data = pin.getAndClear()
+
+        // Then
         assertFalse(data.toString().contains("987654"))
 
         data.close()

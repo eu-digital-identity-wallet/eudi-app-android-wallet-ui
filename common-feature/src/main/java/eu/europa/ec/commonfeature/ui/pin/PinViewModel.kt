@@ -17,7 +17,7 @@
 package eu.europa.ec.commonfeature.ui.pin
 
 import androidx.lifecycle.viewModelScope
-import eu.europa.ec.businesslogic.model.SecurePin
+import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.commonfeature.config.IssuanceFlowType
 import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.SuccessUIConfig

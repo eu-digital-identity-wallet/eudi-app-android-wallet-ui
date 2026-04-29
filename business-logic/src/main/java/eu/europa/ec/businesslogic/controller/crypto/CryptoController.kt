@@ -37,8 +37,7 @@ interface CryptoController {
      *
      * @return A [String] representing the generated code verifier.
      */
-    fun generateCodeVerifier(): String
-
+    suspend fun generateCodeVerifier(): String
 
     /**
      * Retrieves a [Cipher] instance configured for either encryption or decryption.
@@ -100,7 +99,7 @@ class CryptoControllerImpl(
         const val MAX_GUID_LENGTH = 64
     }
 
-    override fun generateCodeVerifier(): String {
+    override suspend fun generateCodeVerifier(): String {
         val code = ByteArray(32)
         SecureRandom().apply {
             nextBytes(code)

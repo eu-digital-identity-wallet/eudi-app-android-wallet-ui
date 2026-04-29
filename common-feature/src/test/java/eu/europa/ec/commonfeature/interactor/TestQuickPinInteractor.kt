@@ -17,7 +17,7 @@
 package eu.europa.ec.commonfeature.interactor
 
 import eu.europa.ec.authenticationlogic.controller.storage.PinStorageController
-import eu.europa.ec.businesslogic.model.SecurePin
+import eu.europa.ec.authenticationlogic.secure.SecurePin
 import eu.europa.ec.resourceslogic.R
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.testfeature.util.mockedExceptionWithMessage

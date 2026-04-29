@@ -39,6 +39,7 @@ dependencies {
     implementation(project(LibraryModule.AnalyticsLogic.path))
     implementation(project(LibraryModule.CoreLogic.path))
     implementation(project(LibraryModule.StorageLogic.path))
+    implementation(project(LibraryModule.AuthenticationLogic.path))
 
     implementation(libs.zxing)
     implementation(libs.gson)

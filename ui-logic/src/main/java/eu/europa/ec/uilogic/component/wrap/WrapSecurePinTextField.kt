@@ -66,8 +66,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import eu.europa.ec.businesslogic.model.SecurePin
-import eu.europa.ec.businesslogic.model.SecurePinImpl
+import eu.europa.ec.authenticationlogic.secure.SecurePin
+import eu.europa.ec.authenticationlogic.secure.SecurePinImpl
 import eu.europa.ec.uilogic.component.preview.PreviewTheme
 import eu.europa.ec.uilogic.component.preview.ThemeModePreviews
 import eu.europa.ec.uilogic.component.utils.EmptyTextToolbar
