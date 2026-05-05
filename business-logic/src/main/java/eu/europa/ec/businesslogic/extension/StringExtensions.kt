@@ -261,12 +261,14 @@ fun String.decodeBase64ToByteArrays(
 
         candidates
             .flatMap { candidate ->
-                flags.map { flags ->
-                    candidate to flags
+                flags.map { flag ->
+                    candidate to flag
                 }
             }
-            .map { (candidate, flags) ->
-                candidate.decodeFromBase64(flags)
+            .mapNotNull { (candidate, flag) ->
+                runCatching {
+                    candidate.decodeFromBase64(flag)
+                }.getOrNull()
             }
     }.getOrDefault(emptyList())
 }
