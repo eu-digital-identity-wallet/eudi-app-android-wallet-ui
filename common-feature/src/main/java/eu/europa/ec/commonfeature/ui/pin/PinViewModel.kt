@@ -138,7 +138,7 @@ class PinViewModel(
         when (pinFlow) {
             PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> {
                 title = resourceProvider.getString(R.string.quick_pin_create_title)
-                subtitle = resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
+                subtitle = resourceProvider.getString(R.string.quick_pin_create_subtitle)
                 pinState = PinValidationState.ENTER
                 pinInputLabel = calculatePinInputLabel(pinState)
                 buttonText = calculateButtonText(pinState)
@@ -418,12 +418,9 @@ class PinViewModel(
                 }
             }
 
-            PinFlow.CREATE_WITH_ACTIVATION, PinFlow.CREATE_WITHOUT_ACTIVATION -> {
-                when (pinState) {
-                    PinValidationState.ENTER -> resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
-                    PinValidationState.REENTER -> resourceProvider.getString(R.string.quick_pin_create_reenter_subtitle)
-                    PinValidationState.VALIDATE -> viewState.value.subtitle
-                }
+            PinFlow.CREATE_WITH_ACTIVATION,
+            PinFlow.CREATE_WITHOUT_ACTIVATION -> {
+                resourceProvider.getString(R.string.quick_pin_create_subtitle)
             }
         }
     }
