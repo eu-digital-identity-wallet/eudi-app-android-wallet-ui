@@ -144,7 +144,6 @@
 
     <!-- region Quick Pin -->
     <string name="quick_pin_invalid_error">Invalid pin</string>
-    <string name="quick_pin_numerical_rule_invalid_error_message">Only numerical values are allowed</string>
     <string name="quick_pin_non_match">Pins do not match</string>
     <string name="quick_pin_locked_out">You have entered the wrong PIN %1$d times in a row.\nPlease wait %2$s before trying again.</string>
 
