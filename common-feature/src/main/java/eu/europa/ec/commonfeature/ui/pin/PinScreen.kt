@@ -241,6 +241,14 @@ private fun Content(
                 .padding(top = SPACING_LARGE.dp),
             verticalArrangement = Arrangement.spacedBy(SPACING_SMALL.dp, Alignment.Top)
         ) {
+            state.pinInputLabel?.let { safePinInputLabel ->
+                Text(
+                    text = safePinInputLabel,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+
             PinFieldLayout(
                 modifier = Modifier.fillMaxWidth(),
                 state = state,

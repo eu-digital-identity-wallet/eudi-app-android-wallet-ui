@@ -62,6 +62,7 @@ data class State(
     val quickPinError: String? = null,
     val subtitle: String = "",
     val title: String = "",
+    val pinInputLabel: String? = null,
     val buttonText: String = "",
     val resetPin: Boolean = false,
     val pinState: PinValidationState,
@@ -130,6 +131,7 @@ class PinViewModel(
     override fun setInitialState(): State {
         val title: String
         val subtitle: String
+        val pinInputLabel: String?
         val pinState: PinValidationState
         val buttonText: String
 
@@ -138,6 +140,7 @@ class PinViewModel(
                 title = resourceProvider.getString(R.string.quick_pin_create_title)
                 subtitle = resourceProvider.getString(R.string.quick_pin_create_enter_subtitle)
                 pinState = PinValidationState.ENTER
+                pinInputLabel = calculatePinInputLabel(pinState)
                 buttonText = calculateButtonText(pinState)
             }
 
@@ -146,6 +149,7 @@ class PinViewModel(
                 subtitle =
                     resourceProvider.getString(R.string.quick_pin_change_validate_current_subtitle)
                 pinState = PinValidationState.VALIDATE
+                pinInputLabel = calculatePinInputLabel(pinState)
                 buttonText = calculateButtonText(pinState)
             }
         }
@@ -154,6 +158,7 @@ class PinViewModel(
             isLoading = false,
             title = title,
             subtitle = subtitle,
+            pinInputLabel = pinInputLabel,
             pinState = pinState,
             buttonText = buttonText,
             pinFlow = pinFlow
@@ -283,6 +288,7 @@ class PinViewModel(
                 isButtonEnabled = false,
                 resetPin = true,
                 subtitle = calculateSubtitle(newPinState),
+                pinInputLabel = calculatePinInputLabel(newPinState),
                 isLoading = false
             )
         }
@@ -299,6 +305,7 @@ class PinViewModel(
                 isButtonEnabled = false,
                 resetPin = true,
                 subtitle = calculateSubtitle(newPinState),
+                pinInputLabel = calculatePinInputLabel(newPinState),
                 isLoading = false
             )
         }
@@ -426,6 +433,21 @@ class PinViewModel(
             PinValidationState.ENTER -> resourceProvider.getString(R.string.generic_next_capitalized)
             PinValidationState.REENTER -> resourceProvider.getString(R.string.generic_confirm_capitalized)
             PinValidationState.VALIDATE -> resourceProvider.getString(R.string.generic_next_capitalized)
+        }
+    }
+
+    private fun calculatePinInputLabel(pinState: PinValidationState): String? {
+        return when (pinFlow) {
+            PinFlow.CREATE_WITHOUT_ACTIVATION,
+            PinFlow.CREATE_WITH_ACTIVATION -> {
+                when (pinState) {
+                    PinValidationState.ENTER -> resourceProvider.getString(R.string.quick_pin_create_enter_pin_input_label)
+                    PinValidationState.REENTER -> resourceProvider.getString(R.string.quick_pin_create_reenter_pin_input_label)
+                    PinValidationState.VALIDATE -> null
+                }
+            }
+
+            PinFlow.UPDATE -> null
         }
     }
 
