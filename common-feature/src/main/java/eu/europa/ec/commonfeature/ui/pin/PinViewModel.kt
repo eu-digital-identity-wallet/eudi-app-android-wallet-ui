@@ -202,7 +202,6 @@ class PinViewModel(
             }
 
             is Event.CancelPressed -> {
-                clearPendingPin()
                 showBottomSheet()
             }
 
