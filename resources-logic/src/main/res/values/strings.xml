@@ -24,8 +24,6 @@
     <string name="generic_error_retry">Please try again</string>
     <string name="generic_cancel">Cancel</string>
     <string name="generic_cancel_capitalized" tools:ignore="ButtonCase">CANCEL</string>
-    <string name="generic_next_capitalized" tools:ignore="ButtonCase">NEXT</string>
-    <string name="generic_confirm_capitalized" tools:ignore="ButtonCase">CONFIRM</string>
     <string name="generic_continue">Continue</string>
     <string name="generic_continue_capitalized" tools:ignore="ButtonCase">CONTINUE</string>
     <string name="generic_enable_capitalized" tools:ignore="ButtonCase">ENABLE</string>
