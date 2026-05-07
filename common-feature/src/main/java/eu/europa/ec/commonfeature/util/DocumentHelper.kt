@@ -16,7 +16,6 @@
 
 package eu.europa.ec.commonfeature.util
 
-import android.util.Base64
 import eu.europa.ec.businesslogic.extension.decodeFromBase64ToString
 import eu.europa.ec.businesslogic.extension.encodeToBase64String
 import eu.europa.ec.businesslogic.provider.UuidProvider
@@ -256,7 +255,7 @@ fun createKeyValue(
 
         else -> {
 
-            val base64Image = (item as? ByteArray)?.encodeToBase64String(Base64.URL_SAFE)
+            val base64Image = (item as? ByteArray)?.encodeToBase64String()
 
             val date: String? = (item as? String)?.toDateFormatted()
                 ?: (item as? LocalDate)?.toDateFormatted()
