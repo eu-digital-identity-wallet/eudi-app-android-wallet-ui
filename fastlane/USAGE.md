@@ -57,6 +57,10 @@ Release signing is configured by Gradle, not Fastlane. Current Gradle signing re
 | `ANDROID_KEY_ALIAS` or `androidKeyAlias` | Release key alias. |
 | `ANDROID_KEY_PASSWORD` or `androidKeyPassword` | Release key password. |
 
+The current `app/build.gradle.kts` also uses `ANDROID_KEY_PASSWORD` / `androidKeyPassword` for the
+keystore `storePassword`. If your release keystore uses a separate store password, update the Gradle
+signing config to read a distinct CI secret, for example `ANDROID_KEYSTORE_PASSWORD`.
+
 For production, store signing values in CI secret storage, HSM/KMS-backed signing, Play App Signing,
 or another approved key management process. Do not commit keystores or signing passwords.
 

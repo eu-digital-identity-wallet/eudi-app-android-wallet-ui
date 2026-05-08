@@ -158,11 +158,11 @@ business-logic/src/prod/java/eu/europa/ec/businesslogic/config/ConfigLogicImpl.k
 business-logic/src/prod/java/eu/europa/ec/businesslogic/config/RQESConfigImpl.kt
 ```
 
-In `ConfigLogicImpl`, set:
+In `ConfigLogicImpl`, set the production flavor explicitly:
 
 ```kotlin
 override val appFlavor: AppFlavor
-    get() = AppFlavor.DEMO // Replace this with PROD after adding PROD to the business enum.
+    get() = AppFlavor.PROD
 ```
 
 Also update:
@@ -236,6 +236,8 @@ The reference configuration expects:
 * Keystore file at the repo root as `sign`.
 * Key alias from `local.properties` or `ANDROID_KEY_ALIAS`.
 * Key password from `local.properties` or `ANDROID_KEY_PASSWORD`.
+* Store password from the same `androidKeyPassword` / `ANDROID_KEY_PASSWORD` value in the current
+  reference Gradle file.
 
 Production requirements:
 
@@ -244,6 +246,8 @@ Production requirements:
 * Do not store production signing material in a developer workstation as the only source.
 * Prefer CI secret storage backed by HSM/KMS, Google Play App Signing, or an equivalent controlled process.
 * Use separate passwords for keystore and key if your policy requires it.
+* If using separate store and key passwords, change `app/build.gradle.kts` to read a distinct
+  `ANDROID_KEYSTORE_PASSWORD` or equivalent CI secret for `storePassword`.
 * Record the SHA-256 fingerprint of the app signing certificate.
 * Restrict who can produce signed production artifacts.
 
@@ -625,6 +629,14 @@ freshness, and attestation-chain validity. Using them requires the wallet client
 the Android attestation certificate chain and challenge-bound evidence expected by the Wallet
 Provider API.
 
+Production implementers must update the wallet client integration as well as the backend. The
+current `WalletAttestationRepository` constants point to the plain-JWK paths and send a JWK/JWK-set
+payload. A production build that uses Android platform key attestation must change those repository
+paths, request/generate Android Key Attestation evidence for the relevant wallet keys, send the
+attestation certificate chain and challenge-bound payload expected by the Wallet Provider, and parse
+the same `walletInstanceAttestation` / `walletUnitAttestation` response fields after backend
+validation. Do not only configure the backend and leave the app calling the JWK endpoints.
+
 Production endpoints must also validate wallet application integrity, not only key provenance. Use
 Play Integrity API, a national/app-store equivalent, commercial RASP attestation, or another
 server-verified integrity mechanism to bind wallet attestations to the expected package name,
@@ -984,11 +996,11 @@ is disabled.
 
 ## Local Development With Self-Signed Certificates
 
-The existing build/config docs include a trust-all `X509TrustManager` example for local services.
+The build and configuration docs now recommend debug-only CA trust for local services.
 
 Production rule:
 
-Do not ship any code that trusts all certificates or disables hostname verification.
+Do not add or ship any code that trusts all certificates or disables hostname verification.
 
 For production-like test environments:
 

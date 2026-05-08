@@ -139,7 +139,10 @@ app/build/outputs/apk/demo/release/app-demo-release.apk
 
 Release signing is configured in `app/build.gradle.kts`. The current reference setup expects a
 keystore file at the project root named `sign` and reads signing values from `local.properties` or
-environment variables. For production signing, see [go_live.md](go_live.md#release-signing).
+environment variables. In the current Gradle file, `storePassword` is read from the same
+`androidKeyPassword` / `ANDROID_KEY_PASSWORD` value used for `keyPassword`; if your keystore uses a
+separate store password, update the Gradle signing config before building release artifacts. For
+production signing, see [go_live.md](go_live.md#release-signing).
 
 ## Running with remote services
 

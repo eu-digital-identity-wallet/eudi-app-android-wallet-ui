@@ -99,7 +99,7 @@ Each flavor can use different issuer configs, wallet provider hosts, and trust s
 
     ```kotlin
     _config = EudiWalletConfig {
-       configureReaderTrustStore(context, R.raw.eudi_pid_issuer_ut)
+       configureReaderTrustStore(context, R.raw.pidissuerca02_ut)
     }
     ```
 
