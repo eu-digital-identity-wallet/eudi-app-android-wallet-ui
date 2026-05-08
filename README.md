@@ -186,7 +186,7 @@ graph TD;
   issuance-feature --> assembly-logic
   
   test-logic --> test-feature
-  test-feature -> common-feature
+  test-feature --> common-feature
   
   test-logic --> business-logic
   test-logic --> ui-logic
